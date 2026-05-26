@@ -888,5 +888,1379 @@
       "SWITCHBACK EXPERIMENTS",
       "EXPERIMENT DESIGN"
     ]
+  },
+  {
+    "id": 93036,
+    "order": 23,
+    "topic": "experimentation",
+    "type": "scenario",
+    "difficulty": "hard",
+    "title": "Continuous monitoring with alpha spending: when can you stop early?",
+    "scenario_context": "Your team implements a group sequential design with O'Brien-Fleming alpha spending across 4 equally-spaced looks (day 7, 14, 21, 28). The alpha boundaries are: look 1 z > 4.05 (p < 0.00005), look 2 z > 2.86 (p < 0.0021), look 3 z > 2.34 (p < 0.0097), look 4 z > 2.02 (p < 0.022). At day 14 (look 2), the observed z-score is 2.9. The PM wants to ship immediately.",
+    "description": "Is stopping at look 2 valid, and what is the correct interpretation?",
+    "options": [
+      "Stopping is not valid \u2014 you must wait until look 4; alpha spending only guarantees Type I error control at the final planned analysis, and early stopping always inflates the false-positive rate.",
+      "Stopping is valid: z = 2.9 exceeds the look-2 boundary of 2.86. The pre-specified alpha spending function preserves the overall Type I error rate regardless of which look triggers the stop.",
+      "Stopping is valid, but you must report the effect size as zero because the winner's curse means early-stopping estimates are always unreliable and cannot be reported.",
+      "Stopping is not valid \u2014 the conservative O'Brien-Fleming boundary at look 2 was designed to be almost never crossed in practice; a z = 2.9 crossing is most likely sampling noise."
+    ],
+    "correct_option": 1,
+    "explanation": "Group sequential designs with alpha spending are explicitly built for valid early stopping at pre-specified interim analyses. The O'Brien-Fleming function allocates very little alpha to early looks (requiring very strong evidence at look 1) and progressively more to later looks, preserving the overall familywise Type I error at \u03b1. At look 2, z = 2.9 exceeds the pre-specified boundary of 2.86, so stopping is valid \u2014 the alpha budget is correctly allocated and the Type I error rate is controlled. Option A is false: the guarantee of Type I error control holds at each look, not just the final one \u2014 that is the definition of a valid alpha spending function. Option C is wrong: the winner's curse (upward bias in effect estimates at early stopping) is a real phenomenon that practitioners should account for, but the correction is to use an appropriate median-unbiased estimator or shrinkage estimate \u2014 not to report zero. Option D inverts the logic: the high boundary at look 2 is the mechanism that makes crossing it meaningful, not a sign that it was never intended to be crossed.",
+    "hints": [
+      "Alpha spending pre-allocates portions of the total Type I error budget to each interim look. If z exceeds the look-2 boundary and that boundary was pre-specified, is the overall false-positive rate still controlled?",
+      "What distinguishes stopping early under a pre-specified alpha spending plan from the 'peeking' problem the plan was designed to prevent?"
+    ],
+    "concepts": [
+      "SEQUENTIAL TESTING",
+      "TYPE I AND TYPE II ERRORS"
+    ]
+  },
+  {
+    "id": 93037,
+    "order": 24,
+    "topic": "experimentation",
+    "type": "debug",
+    "difficulty": "hard",
+    "title": "Metric insensitivity: why your OEC hides a real treatment effect",
+    "scenario_context": "A search team tests a re-ranking algorithm. Primary metric: revenue per query (RPQ). After 21 days with 500K queries per arm, RPQ shows +0.8% lift, p = 0.31, 95% CI [\u22120.7%, +2.3%]. Pre-experiment power analysis predicted 80% power for a 1% MDE. Post-analysis reveals: (1) 92% of queries produce zero revenue (informational queries), (2) the revenue-generating 8% has coefficient of variation 4.2 and kurtosis 38, (3) a parallel analysis on click-through rate (CTR, \u03c3 lower by 12\u00d7) shows +2.1% lift, p = 0.004. The team concludes the algorithm does not work.",
+    "description": "Diagnose the flaw and identify what should change in future experiment design.",
+    "options": [
+      "The conclusion is correct \u2014 CTR is a proxy metric; RPQ is the business metric and the null result is authoritative. Run the experiment longer.",
+      "The flaw is insufficient sample size \u2014 500K queries per arm is too small; double the sample and rerun with the same metric.",
+      "The flaw is metric insensitivity: RPQ averages the zero-revenue query mass with a fat-tailed revenue distribution, structurally diluting any conversion effect. Future experiments should use a conditional metric (revenue per converting query) or a higher-sensitivity proxy (CTR, add-to-cart rate) as primary, with RPQ as a guardrail.",
+      "The flaw is novelty effect bias inflating the CTR result; the RPQ null result is the correct long-run estimate."
+    ],
+    "correct_option": 2,
+    "explanation": "RPQ's composition \u2014 92% zeros plus an extreme fat tail \u2014 makes it the wrong primary metric for detecting effects on the conversion funnel. The pre-experiment power calc assumed a \u03c3 inconsistent with this distributional structure. Averaging over the zero-revenue query mass dilutes the signal: any conversion gain affects only 8% of queries, and within that 8%, extreme variance means you need a sample roughly 100\u00d7 larger than the 500K used. Doubling sample size (Option 1) doesn't address the structural problem \u2014 at the observed \u03c3, you remain severely underpowered. RPQ is not more 'authoritative' than CTR (Option 0) \u2014 the question is whether it's the right instrument to measure the treatment's intended effect; here it demonstrably isn't. The novelty-effect explanation (Option 3) is ad hoc: a novelty effect decays over weeks, but a 21-day experiment with sustained CTR lift is inconsistent with a novelty pattern. The correct design fix is to primary on conversion rate or CTR (which directly measures the algorithm's effect surface), use RPQ as a guardrail metric, and confirm revenue impact via a longer-running holdout if needed.",
+    "hints": [
+      "If 92% of queries produce zero revenue, what fraction of the metric's signal is actually driven by the treatment? How does that fraction affect the effective signal-to-noise ratio?",
+      "What is the difference between 'the experiment was underpowered' and 'the metric definition structurally can't detect this class of effect at any feasible sample size'?"
+    ],
+    "concepts": [
+      "METRIC SENSITIVITY",
+      "STATISTICAL POWER"
+    ]
+  },
+  {
+    "id": 93038,
+    "order": 34,
+    "topic": "experimentation",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Churn prediction model targets wrong customers \u2014 what is the right causal framing?",
+    "scenario_context": "A retention team trains a churn prediction model (AUC = 0.88) and plans to send a 30% discount to the top 10% of users by predicted churn probability. A data scientist argues this is the wrong approach. The predicted-churn segment includes: (A) users who will churn regardless of the discount, (B) users who won't churn regardless, (C) users who churn without the discount but stay with it, and (D) users who stay without the discount but would churn after receiving it (perceived as desperate).",
+    "description": "What is the fundamental modeling flaw, and what is the correct approach?",
+    "options": [
+      "The model's AUC is too low \u2014 retrain to achieve AUC > 0.95 before using it for targeting; a more accurate prediction model will correctly identify the right customers.",
+      "The flaw is that targeting high-predicted-churn customers conflates prediction with causation. The discount's causal effect (the lift in P(retain | discount) \u2212 P(retain | no discount)) is not captured by a churn prediction model. The model identifies who will churn (groups A and C mixed together), not who will respond to treatment (group C only \u2014 the Persuadables). The correct approach is uplift modeling: estimate the incremental causal effect of the discount on each customer using experimental data, and target only those with positive incremental uplift.",
+      "The approach is correct \u2014 high-churn-probability users are exactly the right targets for retention offers; the model is identifying the customers most at risk.",
+      "The flaw is targeting only 10%; expanding to 25% captures more true churners and improves ROI by reducing the per-saved-customer cost."
+    ],
+    "correct_option": 1,
+    "explanation": "This is the fundamental distinction between predictive and causal modeling in a business context. A churn prediction model identifies *who will churn*, not *who will respond to a retention offer*. The four customer segments illustrate the problem: Segment A (Sure things \u2014 churn regardless) get the discount but can't be retained; this is wasted spend. Segment B (Lost causes \u2014 stay regardless) don't need the discount; this is margin erosion. Segment C (Persuadables \u2014 churn without discount, stay with it) are the only valuable targets \u2014 the treatment has positive incremental lift. Segment D (Do Not Disturbs \u2014 stay without discount, churn if offered) are actively harmed by targeting; the discount signals desperation and triggers cancellation. A churn prediction score mixes A and C (both are high-risk), completely missing the causal structure. Uplift modeling estimates P(retain | treatment) \u2212 P(retain | control) for each customer using past A/B experiment data, directly identifying Persuadables. Option A confuses prediction accuracy with causal validity \u2014 a perfect AUC churn model still targets wrong segments. Option C is the targeting fallacy being diagnosed. Option D addresses coverage without addressing the causal identification problem.",
+    "hints": [
+      "A customer with 80% predicted churn probability who churns regardless of your offer: does giving them a discount improve your retention rate?",
+      "What experimental data structure would let you estimate the causal effect of a discount on each customer's retention probability?"
+    ],
+    "concepts": [
+      "CAUSAL INFERENCE",
+      "SEGMENTATION ANALYSIS"
+    ]
+  },
+  {
+    "id": 93039,
+    "order": 35,
+    "topic": "experimentation",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "PM wants to monitor a sequential test daily and stop whenever the line crosses \u2014 what goes wrong?",
+    "scenario_context": "Your team implements an mSPRT sequential test with a target Type I error of 5%. The PM's understanding is: 'We can now check the dashboard every day and stop whenever the likelihood ratio exceeds the threshold.' On day 6 out of a planned 21-day window, the mSPRT statistic exceeds the threshold. The PM stops the experiment and ships. However, the experiment's power at day 6 is only 38% for the target 2% MDE.",
+    "description": "Has the team used the sequential test correctly, and what is the power implication of stopping at day 6?",
+    "options": [
+      "Yes, the team used the test correctly \u2014 mSPRT allows stopping at any point the threshold is crossed, and the Type I error guarantee holds regardless of when the stop occurs.",
+      "Stopping at day 6 is statistically valid under mSPRT (the Type I error guarantee does hold at any stopping time), but the practical implication is that the effect estimate is highly uncertain: at 38% power for a 2% MDE, a significant mSPRT crossing at day 6 is consistent with a real effect but also consistent with a large upward-biased estimate. The team should understand that early mSPRT stops produce winner's-curse-inflated effect estimates and plan accordingly.",
+      "The team used the test incorrectly \u2014 mSPRT requires pre-committing to a maximum sample and the test is only valid at that maximum, not at interim stops.",
+      "The test is invalid because 38% power is below the 80% threshold required for a valid sequential test to produce trustworthy results."
+    ],
+    "correct_option": 1,
+    "explanation": "mSPRT (mixture Sequential Probability Ratio Test) is an anytime-valid inference method: the Type I error guarantee holds at every stopping time, not just at a pre-specified maximum. This is the core property that distinguishes mSPRT from a fixed-horizon test with interim looks. The stop at day 6 is therefore statistically valid \u2014 the false-positive rate is controlled at 5%. The practical concern is the power and effect-estimate reliability: at 38% power for a 2% MDE, a significant crossing on day 6 has a meaningful winner's curse component \u2014 the observed effect size is likely upward-biased from the true effect. The team should (1) treat the effect size estimate with appropriate caution, (2) communicate the uncertainty range, and (3) monitor post-ship metrics as a de facto holdout check. Option A is correct that stopping is valid but omits the crucial winner's curse caveat. Option C is wrong: mSPRT is specifically designed to avoid the 'must wait for maximum sample' requirement of fixed-horizon tests. Option D introduces a non-existent rule: there is no minimum power threshold for mSPRT validity; power is a design-time consideration (how long you'd expect to wait for a true effect), not a stopping-time validity condition.",
+    "hints": [
+      "mSPRT's anytime-valid property means Type I error is controlled at every possible stopping time. What does that say about the validity of stopping at day 6?",
+      "At 38% power, if you stop at the first significant threshold crossing, what can you say about the expected bias of the effect estimate?"
+    ],
+    "concepts": [
+      "SEQUENTIAL TESTING",
+      "EXPERIMENT DURATION"
+    ]
+  },
+  {
+    "id": 93040,
+    "order": 36,
+    "topic": "experimentation",
+    "type": "predict_output",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Group sequential with O'Brien-Fleming: predict whether stopping at look 3 is valid",
+    "scenario_context": "An experiment uses O'Brien-Fleming alpha spending with 4 planned looks (days 7, 14, 21, 28) at overall \u03b1 = 0.05. The pre-specified z-score thresholds are: look 1: z > 4.05, look 2: z > 2.86, look 3: z > 2.34, look 4: z > 2.02. At look 3 (day 21), z = 2.29. The PM notes: 'The z is very close to the threshold of 2.34 \u2014 can we call it significant given the closeness?'",
+    "description": "Predict whether the look 3 result is statistically valid for stopping, and evaluate the PM's reasoning.",
+    "options": [
+      "Yes \u2014 z = 2.29 is close to the threshold of 2.34, and in practice the difference is within rounding error of the data. Statistical thresholds are guidelines, not hard rules.",
+      "No \u2014 z = 2.29 does not exceed the pre-specified look-3 threshold of 2.34. The alpha spending function allocated exactly enough alpha to each look to keep the overall FWER at 5%; crossing 2.29 but not 2.34 means the alpha at look 3 has not been spent. The experiment must continue to look 4 with the lower final threshold of 2.02.",
+      "Stopping is valid because the experiment has already spent alpha at looks 1 and 2 without crossing; the unused alpha from those looks rolls over to look 3, reducing the threshold.",
+      "The result is borderline \u2014 apply a Bayesian posterior check at look 3; if posterior probability of improvement exceeds 95%, stop despite the frequentist miss."
+    ],
+    "correct_option": 1,
+    "explanation": "The O'Brien-Fleming boundary at look 3 is exactly z > 2.34. z = 2.29 does not exceed this threshold, so the experiment has not reached the pre-specified stopping criterion at look 3. The alpha spending function pre-allocates the total Type I error budget across looks in a way that guarantees the overall FWER stays at 5% \u2014 it is not a 'guideline' to be rounded. Stopping at z = 2.29 would exceed the look-3 budget and inflate the overall Type I error. The correct path: continue to look 4, where the threshold is the more lenient z > 2.02. There, z = 2.29 would clearly exceed the threshold \u2014 so the team will very likely be able to stop at look 4 with the same data. The PM's 'rounding error' framing is the peeking fallacy in disguise: the threshold is exact, not approximate. Option C misunderstands alpha spending: unused alpha from not crossing earlier boundaries does NOT roll over to later looks. Each look's boundary is pre-specified and fixed. Option D applies Bayesian criteria to override a frequentist sequential design \u2014 mixing frameworks arbitrarily negates the FWER control guarantee of the sequential plan.",
+    "hints": [
+      "Does z = 2.29 exceed the look-3 threshold of z > 2.34? What happens to the overall FWER if you stop at z = 2.29?",
+      "In an O'Brien-Fleming design, does failing to stop at an early look allow you to use a lower threshold at the next look?"
+    ],
+    "concepts": [
+      "SEQUENTIAL TESTING",
+      "STATISTICAL SIGNIFICANCE"
+    ]
+  },
+  {
+    "id": 93041,
+    "order": 37,
+    "topic": "experimentation",
+    "type": "debug",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Flat alpha spending vs O'Brien-Fleming: debug the power implication",
+    "scenario_context": "A team designs a group sequential experiment with 4 looks and total \u03b1 = 0.05. Instead of O'Brien-Fleming, they use a flat alpha spending function (equal \u03b1/4 = 0.0125 per look, threshold z > 2.24 at each look). A statistician argues this approach costs substantial power relative to O'Brien-Fleming. The team disagrees: 'We're using the same total \u03b1 = 0.05 across all looks, so power should be the same.'",
+    "description": "Who is correct, and why does the alpha spending shape affect power?",
+    "options": [
+      "The team is correct \u2014 total alpha is fixed at 0.05 regardless of spending shape; power at the final analysis depends only on the total alpha budget, not its allocation.",
+      "The statistician is correct. Flat spending allocates \u03b1/4 = 0.0125 per look, requiring z > 2.24 to stop at any look. O'Brien-Fleming allocates much less alpha early (look 1: \u03b1 \u2248 0.00005, z > 4.05) and more at the final look (\u03b1 \u2248 0.022, z > 2.02). The final look threshold under flat spending (z > 2.24) is more conservative than O'Brien-Fleming's (z > 2.02), meaning flat spending has lower power at the final analysis. Total alpha is the same, but its shape changes the final-look threshold and therefore power.",
+      "Neither is fully correct \u2014 power depends on the true effect size, not the alpha spending shape; both designs have the same power if the true effect size is the same.",
+      "The statistician is wrong \u2014 flat spending is actually more powerful because it gives each look the same opportunity to stop, rather than concentrating alpha at the end."
+    ],
+    "correct_option": 1,
+    "explanation": "Total alpha being equal (0.05) does not mean power is equal. Power depends on the specific threshold at the final analysis, not the total alpha budget. O'Brien-Fleming concentrates its alpha at the final look: the look-4 threshold under OBF is approximately z > 2.02 (p \u2248 0.022). Flat spending allocates \u03b1/4 = 0.0125 to each look, so the final-look threshold is z > 2.24 (p = 0.0125) \u2014 more conservative than OBF's 2.02. Since most experiments stop at the final look (early stopping requires very strong evidence), the power of the design is dominated by the final-look threshold. A stricter final threshold (2.24 vs 2.02) means lower power. OBF's design insight: protect early looks with very high thresholds (sacrificing almost no power) and preserve maximum power at the final look by concentrating alpha there. The team's intuition that 'same total alpha = same power' is wrong because alpha allocation shape directly determines the final-look critical value. Option A makes the incorrect 'total alpha = same power' argument. Option C correctly notes power depends on effect size but misses that for a fixed effect size, the alpha spending shape changes the rejection probability at each look. Option D inverts the logic: flat spending's equal early allocation uses alpha inefficiently, reducing power at the final analysis.",
+    "hints": [
+      "What is the final-look z-threshold under flat spending (\u03b1/4 = 0.0125)? Under O'Brien-Fleming (\u03b1\u2084 \u2248 0.022)? Which threshold is easier to exceed?",
+      "If most experiments fail to stop early, which analysis (the final look) determines most of the power? How does the final-look threshold affect that?"
+    ],
+    "concepts": [
+      "SEQUENTIAL TESTING",
+      "STATISTICAL POWER"
+    ]
+  },
+  {
+    "id": 93042,
+    "order": 38,
+    "topic": "experimentation",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Design a sequential experiment when business pressure peaks in week 2",
+    "scenario_context": "Your team wants to detect a 3% lift on checkout conversion (\u03c3 = 22%). Standard fixed-horizon analysis requires 14 days (80% power, \u03b1 = 0.05). The business has a Q4 deadline that creates maximum pressure to ship in week 2 (days 8\u201310). You propose a group sequential design with O'Brien-Fleming alpha spending and 2 looks: look 1 at day 8, final look at day 14.",
+    "description": "Design the look-1 and look-2 thresholds and explain what the design buys relative to fixed-horizon.",
+    "options": [
+      "Set both looks to z > 1.96 (the standard threshold) \u2014 sequential designs don't require changing the threshold if you pre-specify the looks.",
+      "With 2 looks at an O'Brien-Fleming-style spending, look 1 (day 8, 57% of information) should use a conservative threshold (z \u2248 2.80, p \u2248 0.005) and the final look (day 14) a slightly more conservative threshold than fixed-horizon (z \u2248 2.04, p \u2248 0.021). This design offers a valid early stop at day 8 if the effect is very strong, while preserving most of the fixed-horizon power at day 14 (\u224876% vs 80%). The business gets a legitimate day-8 check-out with controlled Type I error.",
+      "Use a Pocock design (equal thresholds z \u2248 2.18 at both looks) \u2014 this maximises the chance of stopping at look 1 and gives the business the earliest possible decision.",
+      "Run the fixed-horizon test for 14 days without looks \u2014 interim looks always inflate Type I error and the business deadline should not drive statistical design."
+    ],
+    "correct_option": 1,
+    "explanation": "An OBF 2-look design at the proposed interim/final split provides the best balance between business pressure and statistical validity. At 57% of information at look 1 (day 8 out of 14), OBF alpha spending allocates approximately \u03b1\u2081 \u2248 0.005 and \u03b1\u2082 \u2248 0.045, giving approximate z-thresholds of 2.80 and 2.04 respectively. The design has two key properties: (1) Type I error is controlled at 5% across both looks; (2) the final-look power (\u224876%) is only slightly lower than fixed-horizon (80%), because the OBF design concentrates most of the alpha at the final look. The business gets a valid early-out on day 8 if the effect is very large (z > 2.80) without invalidating the final analysis. Option A is the peeking problem: using z > 1.96 at both looks without alpha spending would make the overall Type I error approximately 1 \u2212 (1 \u2212 0.05)^2 \u2248 9.75%, not 5%. Option C (Pocock design) uses equal thresholds (z \u2248 2.18) \u2014 this makes look 1 more accessible, which sounds good for business pressure, but Pocock's final-look threshold (also 2.18) is more conservative than OBF's 2.04, reducing final-look power more. OBF is preferred when early stopping is expected to be infrequent and power preservation matters. Option D ignores the legitimate use case for a pre-specified sequential design when business constraints are real.",
+    "hints": [
+      "How does OBF alpha spending allocate alpha between an early interim (57% of information) and a final analysis? Does the early interim get more or less alpha?",
+      "Pocock vs OBF: which preserves more power at the final analysis for a given overall \u03b1? Why?"
+    ],
+    "concepts": [
+      "SEQUENTIAL TESTING",
+      "EXPERIMENT DESIGN"
+    ]
+  },
+  {
+    "id": 93043,
+    "order": 39,
+    "topic": "experimentation",
+    "type": "debug",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Revenue per session as primary metric for a 1% conversion change \u2014 diagnose structural insensitivity",
+    "scenario_context": "A team chooses revenue per session (RPS) as the primary metric for a checkout redesign experiment. Product data: 78% of sessions generate zero revenue; revenue-generating sessions have a heavy right tail (kurtosis = 24, \u03c3 = $38, mean = $4.20). The team targets a 1% relative conversion lift and runs a power analysis using the metric's full \u03c3 = $38 and mean = $4.20. Required sample: 3.6M sessions per arm. Daily traffic: 150K sessions. Estimated duration: 24 days.",
+    "description": "Diagnose why RPS is structurally insensitive to a conversion rate change, and identify the better metric.",
+    "options": [
+      "RPS is a valid primary metric; the high variance just requires more sample. The 24-day estimate is operationally acceptable.",
+      "RPS has two compounding insensitivity problems: (1) 78% zeros dilute the effect \u2014 a 1% conversion lift affects only the 22% non-zero sessions, so the lift on RPS from a 1% conversion lift is approximately 1% \u00d7 0.22 = 0.22% in expectation; (2) the heavy tail (kurtosis = 24) means the variance is driven by extreme sessions that are insensitive to the treatment, so you're comparing signal (0.22% lift) against noise dominated by unrelated outliers. Conversion rate avoids both problems: it has no zero-mass dilution and \u03c3 scales with \u221a(p(1-p)) \u2248 0.18 at p = 12%, making it orders of magnitude more sensitive per observation.",
+      "The solution is to cap revenue at the 95th percentile to remove the heavy tail \u2014 winsorizing RPS will reduce variance enough to achieve the required sample size in under 14 days.",
+      "RPS is fine if you use a ratio metric estimator (delta method) to correct the standard error for the ratio structure \u2014 this accounts for the zeros and the heavy tail."
+    ],
+    "correct_option": 1,
+    "explanation": "RPS is structurally insensitive to conversion rate changes for two compounding reasons. First, zero-mass dilution: 78% of sessions contribute zero to the metric regardless of treatment. A 1% lift on conversion rate moves only 22% of sessions; the implied effect on RPS is ~0.22%, not 1%. The signal is diluted by a factor of 4.5\u00d7 before any variance is considered. Second, the heavy tail (kurtosis = 24) means the metric's variance is dominated by the top 1\u20135% of sessions \u2014 outlier spenders whose behavior is essentially independent of the checkout redesign. You're comparing a 0.22% signal against noise from unrelated high-value sessions. Conversion rate directly measures the treatment's first-order effect (does the redesign move users to purchase?) with variance bounded by p(1-p) \u2248 0.18\u00b2, which is far more favorable. Option C (winsorizing) helps but doesn't fix the zero-mass dilution \u2014 capping at the 95th percentile removes outliers but the 78% zeros remain. You'd still need 3\u20135\u00d7 more sample than conversion rate. Option D (delta method) corrects the standard error calculation for ratio structure but doesn't change the fundamental variance-driven insensitivity \u2014 a more precise standard error on a high-variance metric still requires more data.",
+    "hints": [
+      "A 1% conversion lift on sessions that are 78% zero-revenue: what is the implied lift on revenue per session in expectation? How does that affect your signal-to-noise ratio?",
+      "Kurtosis = 24 means extreme values dominate the variance. Are those extreme-value sessions sensitive to a checkout redesign?"
+    ],
+    "concepts": [
+      "METRIC SENSITIVITY",
+      "METRIC SELECTION"
+    ]
+  },
+  {
+    "id": 93044,
+    "order": 40,
+    "topic": "experimentation",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Log-revenue vs raw revenue in a skewed distribution \u2014 when does log-transformation help and when does it mask?",
+    "scenario_context": "Your team tests a subscription pricing change. Revenue per user has extreme right skew (kurtosis = 18, 95th percentile = $220, median = $12, mean = $31). You apply log(1 + revenue) as the metric. Log-revenue variance drops from \u03c3\u00b2 = 1840 to \u03c3\u00b2 = 2.1. The required sample size drops from 2.8M to 3,200 per arm. The transformation makes the experiment 875\u00d7 more efficient.",
+    "description": "What does the log-transformation achieve, and what must the team be careful about in interpretation?",
+    "options": [
+      "Log-transformation is always valid for right-skewed revenue data \u2014 the efficiency gain is real and the results are fully interpretable on the original revenue scale by exponentiating the estimate.",
+      "Log-transformation effectively removes the heavy tail's influence on variance, making the experiment highly sensitive to multiplicative changes in revenue. The 875\u00d7 efficiency gain is genuine. However, the treatment effect is now estimated on the log scale \u2014 the reported estimate is a relative (multiplicative) lift in geometric mean revenue, not an absolute dollar lift in mean revenue. The team must be clear: they are measuring whether revenue is higher by a constant factor, not whether mean revenue increased by a specific dollar amount. Absolute dollar lift on mean revenue requires a separate analysis.",
+      "The transformation is invalid because log(1 + revenue) is not a pre-registered metric; using it after observing the variance reduction is HARKing.",
+      "The efficiency gain is misleading \u2014 the 875\u00d7 reduction in required sample reflects a change in what is being measured, not a genuine power improvement for the business question."
+    ],
+    "correct_option": 1,
+    "explanation": "Log-transformation is a legitimate variance-reduction technique for heavily right-skewed revenue metrics. By transforming to log(1 + revenue), the extreme outliers are compressed and the metric's variance drops dramatically (from 1840 to 2.1) \u2014 this is real and produces a genuine reduction in required sample. The critical interpretation constraint: the treatment effect on log-revenue is an estimate of the multiplicative effect on geometric mean revenue. If log(1 + revenue) increases by \u03b4, then geometric mean revenue increases by a factor of e^\u03b4 \u2212 1. This is not the same as the mean revenue change. For a pricing test, the business cares about total revenue impact (which depends on mean revenue, not geometric mean). Both are legitimate metrics, but they answer different questions. The team must communicate clearly which they are measuring. Option A is partly right about the efficiency but wrong about interpretability: exponentiating the log estimate gives the geometric mean ratio, not the mean revenue ratio \u2014 these are different in the presence of skew. Option C incorrectly frames a pre-transformation metric choice as HARKing \u2014 if log-revenue is a legitimate metric for the question (and it is for multiplicative pricing effects), pre-specifying it is correct practice, not HARKing. Option D is incorrect: the efficiency gain is real in the sense that the log-metric captures the pricing test's effect with much higher sensitivity; the concern about 'what is being measured' is valid but leads to careful interpretation, not dismissal.",
+    "hints": [
+      "The mean of log(X) is not the log of the mean of X. When you estimate an effect on log-revenue, what does exponentiating the estimate give you \u2014 and how is that different from mean revenue?",
+      "Is the 875\u00d7 efficiency gain 'real'? In what sense yes, and in what sense does it come with a measurement tradeoff?"
+    ],
+    "concepts": [
+      "METRIC SENSITIVITY",
+      "VARIANCE REDUCTION"
+    ]
+  },
+  {
+    "id": 93045,
+    "order": 41,
+    "topic": "experimentation",
+    "type": "predict_output",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Two metrics with different variance structures \u2014 predict sample size ratio",
+    "scenario_context": "Your team needs to detect a 2% relative lift on two candidate metrics: Metric A: revenue per session (mean = $5.00, \u03c3 = $42, CV = 8.4). Metric B: conversion rate (mean = 0.12, \u03c3 = 0.325, CV = 2.7). MDE for both: 2% relative lift (\u03b4_A = $0.10, \u03b4_B = 0.0024). Power = 80%, \u03b1 = 0.05.",
+    "description": "Predict the ratio of required sample sizes (n_A / n_B) and what this implies for experiment design.",
+    "options": [
+      "n_A / n_B \u2248 3.1 \u2014 revenue has 3\u00d7 the CV of conversion rate, so it needs roughly 3\u00d7 the sample.",
+      "n_A / n_B \u2248 70.3 \u2014 required n \u221d (\u03c3/\u03b4)\u00b2. For metric A: (\u03c3_A / \u03b4_A)\u00b2 = ($42 / $0.10)\u00b2 = 420\u00b2 = 176,400. For metric B: (\u03c3_B / \u03b4_B)\u00b2 = (0.325 / 0.0024)\u00b2 = 135.4\u00b2 = 18,333. Ratio: 176,400 / 18,333 \u2248 9.6. This represents a roughly 10\u00d7 sample advantage for conversion rate at a 2% relative MDE.",
+      "n_A / n_B \u2248 70.3 \u2014 the CV ratio squared is (8.4 / 2.7)\u00b2 = 9.7, confirming the approximately 10\u00d7 sample ratio.",
+      "n_A / n_B \u2248 70.3 \u2014 but in practice the two estimates match (both approximately 10\u00d7), so either option B or C correctly calculates the ratio."
+    ],
+    "correct_option": 2,
+    "explanation": "Required sample size \u221d (\u03c3/\u03b4)\u00b2 at fixed \u03b1 and power. For a relative MDE of 2%, \u03b4 = 0.02 \u00d7 mean. For metric A: \u03b4_A = 0.02 \u00d7 $5.00 = $0.10; (\u03c3_A/\u03b4_A)\u00b2 = ($42/$0.10)\u00b2 = 420\u00b2 = 176,400. For metric B: \u03b4_B = 0.02 \u00d7 0.12 = 0.0024; (\u03c3_B/\u03b4_B)\u00b2 = (0.325/0.0024)\u00b2 \u2248 135.4\u00b2 \u2248 18,333. Ratio: 176,400 / 18,333 \u2248 9.6 \u2014 approximately 10\u00d7 more sample required for revenue. The CV-ratio shortcut: (CV_A/CV_B)\u00b2 = (8.4/2.7)\u00b2 \u2248 9.7, which matches. The implication: detecting a 2% relative revenue lift requires ~10\u00d7 more data than detecting a 2% conversion lift. At 100K DAU, revenue experiments run ~10\u00d7 longer \u2014 weeks versus days. This drives the common practice of using conversion rate as primary for funnel tests and monitoring revenue as a guardrail. Options A misidentifies the correct approach (CV ratio is correct but the numerical value given is wrong). The correct answer is C, which correctly states the ratio as approximately 9.6\u20139.7 via the CV-squared approach and confirms it against option B's direct calculation.",
+    "hints": [
+      "Required sample size \u221d (\u03c3/\u03b4)\u00b2. For a relative MDE of 2%, \u03b4 = 0.02 \u00d7 mean. Compute (\u03c3/\u03b4) for each metric and square the ratio.",
+      "The CV (\u03c3/mean) captures the relative noise. If the MDE is also expressed as a relative lift, how does CV directly determine sample size requirements?"
+    ],
+    "concepts": [
+      "METRIC SENSITIVITY",
+      "SEGMENTATION ANALYSIS"
+    ]
+  },
+  {
+    "id": 93046,
+    "order": 42,
+    "topic": "experimentation",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Fuzzy RDD: the eligibility threshold is not perfectly enforced \u2014 what does this mean for your estimate?",
+    "scenario_context": "Your team wants to use regression discontinuity design (RDD) to estimate the causal effect of a credit limit increase on customer spending. The policy: users above a credit score of 700 automatically get a $500 credit increase. However, your data shows: (a) 15% of users with score > 700 did not receive the increase (manual review exceptions), (b) 8% of users with score < 700 did receive it (manager overrides). Compliance at the threshold is approximately 77%.",
+    "description": "How does imperfect compliance at the threshold affect the RDD estimate?",
+    "options": [
+      "The non-compliance makes the RDD invalid \u2014 imperfect threshold enforcement means the discontinuity cannot be used for causal identification.",
+      "Imperfect compliance converts the design from a sharp RDD to a fuzzy RDD. The running variable (credit score) still determines assignment probability, but not deterministically. In a fuzzy RDD, the estimated causal effect is a local average treatment effect (LATE) for compliers \u2014 users near the threshold whose treatment status actually changes with the running variable. The estimate is scaled by 1/compliance: if the ITT (intent-to-treat) estimate is X, the LATE is approximately X / 0.77. The LATE is a valid causal estimate, but for a more restricted sub-population (compliers near the threshold, not all users).",
+      "Imperfect compliance is fine \u2014 average out the non-compliers across both sides of the threshold and proceed with a standard sharp RDD analysis.",
+      "Use an IV approach instead of RDD: instrument the credit increase with the credit score threshold. This fully resolves the non-compliance problem."
+    ],
+    "correct_option": 1,
+    "explanation": "A fuzzy RDD exists when treatment probability is discontinuous at the threshold but not a step function from 0 to 1. The credit score threshold at 700 creates a jump in P(treatment): below 700, ~8% get the increase; above 700, ~85% get it \u2014 a compliance rate of ~77%. In a fuzzy RDD, the standard sharp RDD estimator (ratio of outcome discontinuity to treatment discontinuity at the threshold) gives the LATE for compliers: those whose treatment status is driven by the running variable, not by override decisions. This is a valid and well-defined causal estimate, but it applies to a more restricted population than sharp RDD. The estimate is also less precise because the first stage (treatment discontinuity) is weaker (77% vs 100% compliance). Option A is too categorical \u2014 fuzzy RDD is a recognized, valid design; 'imperfect compliance = invalid' is wrong. Option C (average out non-compliers) would give an ITT estimate without scaling by compliance \u2014 valid but has a different interpretation (it measures the effect of eligibility, not the effect of treatment). Option D is partially correct: IV with the threshold as instrument is mathematically equivalent to fuzzy RDD at the threshold \u2014 they give the same LATE estimate. But 'use IV instead' is not a resolution; it's the same estimator described differently.",
+    "hints": [
+      "What is the difference between sharp RDD (perfect compliance) and fuzzy RDD (imperfect compliance) in terms of what the estimator identifies?",
+      "If 77% of eligible users actually receive treatment, how does the fuzzy RDD estimate relate to the intent-to-treat estimate?"
+    ],
+    "concepts": [
+      "QUASI-EXPERIMENTAL METHODS",
+      "CAUSAL INFERENCE"
+    ]
+  },
+  {
+    "id": 93047,
+    "order": 43,
+    "topic": "experimentation",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Holdout group reveals 14-day A/B read missed 60% of the long-run effect",
+    "scenario_context": "A team launches a personalization algorithm and maintains a 5% holdout group. The initial 14-day A/B test showed +1.8% retention lift. At 6 months, the holdout analysis shows +4.6% retention lift. The PM asks: 'Did our A/B test fail to detect the real effect?'",
+    "description": "How should you interpret the 14-day vs 6-month divergence, and what does it imply about the 14-day read's validity?",
+    "options": [
+      "The 14-day read was correct \u2014 the algorithm improved by +2.8 percentage points over 6 months due to personalization model retraining, which is a different effect than the original A/B.",
+      "The 14-day and 6-month estimates measure fundamentally different quantities: the 14-day A/B measures the short-run causal effect of the initial algorithm (real and valid); the 6-month holdout measures the long-run effect, which can be larger due to compounding model improvements, engagement flywheel effects, and network-benefit accumulation that take months to manifest. Neither read is 'wrong' \u2014 they answer different causal questions about different time horizons. The implication: the 14-day A/B was not a measurement failure; it correctly captured the early effect. The holdout provides the long-run causal estimate that the short A/B cannot.",
+      "The 14-day A/B was underpowered \u2014 if it had run for 6 months it would have detected +4.6% directly, with no holdout needed.",
+      "The holdout result is biased upward because holdout users are increasingly different from treated users over 6 months due to selection effects; the 14-day A/B is the more reliable estimate."
+    ],
+    "correct_option": 1,
+    "explanation": "The divergence between short-run A/B and long-run holdout is expected and does not indicate a measurement failure. The 14-day A/B captured the immediate causal effect of switching from the old to the new algorithm \u2014 a real, valid estimate for its time horizon. The long-run holdout captures compounding mechanisms: (1) the personalization model trains on new user data, improving over time in treatment but not in holdout; (2) users in treatment develop engagement patterns that compound (returning more often, building preferences that improve recommendations further); (3) content producers may adjust to the algorithm, increasing the quality of recommended content. These are real long-run causal effects that a short-horizon A/B by design cannot capture. The holdout group answers: 'What is the 6-month causal effect of this system?' \u2014 which is different from the 14-day question. Option A correctly notes model retraining as one mechanism but frames it as a 'correction' to the A/B rather than a different quantity being measured. Option C mistakes the long-run effect for something a longer A/B would have detected \u2014 a 6-month A/B would measure long-run effects but at the cost of delaying launch and without the compounding benefits of the launched product. Option D raises selection bias in holdouts (holdout users' behavior diverges over time), which is a real concern, but the solution is accounting for this, not dismissing the holdout.",
+    "hints": [
+      "A 14-day A/B measures the short-run effect of a fixed algorithm state. What mechanisms can cause the long-run effect to be larger?",
+      "Is a holdout group measuring the same causal quantity as a 14-day A/B? If not, which is 'right'?"
+    ],
+    "concepts": [
+      "HOLDOUT GROUPS",
+      "EXPERIMENT DURATION"
+    ]
+  },
+  {
+    "id": 93048,
+    "order": 44,
+    "topic": "experimentation",
+    "type": "debug",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "40% of holdout users accessed treatment via referral links \u2014 assess the contamination bias",
+    "scenario_context": "A team maintains a 10% holdout group to measure the long-run effect of a new social sharing feature. After 3 months, data shows: 40% of holdout users received referral links from treatment users and saw the feature-gated shared content (though they could not use the feature's active components). Holdout users who clicked referral links showed 12% higher retention than holdout non-clickers. The overall holdout comparison (vs treatment) shows +2.1% retention lift for treatment.",
+    "description": "In which direction does the referral-link contamination bias the treatment effect estimate?",
+    "options": [
+      "Upward bias \u2014 holdout users who see shared content are exposed to positive feature experiences, making holdout retention higher than it would be in a clean holdout. This makes the treatment-vs-holdout gap appear smaller, not larger.",
+      "Downward bias \u2014 the contaminated holdout users have higher retention (12% above non-clickers), which inflates the holdout comparison group's retention rate. A higher holdout baseline means the treatment lift estimate (treatment minus holdout) is smaller than the true causal effect \u2014 the +2.1% underestimates the true long-run effect.",
+      "No systematic bias \u2014 referral-link exposure affects both high-engagement and low-engagement holdout users equally, so the holdout group remains representative.",
+      "The bias direction is indeterminate \u2014 referral links could increase holdout engagement (upward bias) or create jealousy/frustration at being locked out (downward bias)."
+    ],
+    "correct_option": 1,
+    "explanation": "The contamination is downward-biasing the treatment effect estimate. The causal chain: holdout users who receive referral links (40%) have 12% higher retention \u2014 they are partially benefiting from the treatment's social spillover (seeing shared content, staying engaged with the ecosystem). This raises the holdout group's retention rate above what a clean holdout would show. The treatment effect is estimated as (treatment retention) \u2212 (holdout retention). If holdout retention is inflated by spillover, the gap shrinks \u2014 the +2.1% observed is a lower bound on the true causal effect. The contamination mechanism is called 'spillover' or 'interference': the treatment's benefits leak to holdout users through the social sharing network, violating SUTVA. Option A confuses the direction: spillover raises the holdout group's retention, which narrows the treatment-holdout gap, not widening it. Option C is wrong \u2014 referral links selectively reach higher-engagement users (those with treatment social connections), creating a non-representative enriched holdout sample. Option D cites frustration as an alternative mechanism \u2014 while theoretically possible, the data shows 12% higher retention in referral-link clickers, which is evidence of positive spillover, not frustration.",
+    "hints": [
+      "If holdout users' retention is partially elevated by spillover from treatment, does that make the holdout control group's baseline higher or lower than a clean control?",
+      "Treatment effect = treatment retention \u2212 holdout retention. If holdout retention is inflated by spillover, what happens to the measured treatment effect?"
+    ],
+    "concepts": [
+      "HOLDOUT GROUPS",
+      "CAUSAL INFERENCE"
+    ]
+  },
+  {
+    "id": 93049,
+    "order": 45,
+    "topic": "experimentation",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Bayesian shows 95% probability of improvement but frequentist p = 0.07 \u2014 how do you reconcile this for the PM?",
+    "scenario_context": "Your team runs parallel Bayesian and frequentist analyses on a checkout experiment. Frequentist: +1.6% conversion lift, 95% CI [\u22120.1%, +3.3%], p = 0.07. Bayesian (flat prior): posterior probability of positive effect = 96.5%, posterior median = +1.7%, 95% credible interval [+0.05%, +3.35%]. The PM asks: 'Bayesian says 96.5% likely to be positive, frequentist says not significant \u2014 which do I use for my ship decision?'",
+    "description": "Reconcile the two results and provide a defensible ship/no-ship recommendation.",
+    "options": [
+      "Use the Bayesian result \u2014 96.5% probability of improvement is high enough for a business decision; the frequentist threshold is overly conservative.",
+      "The two results are more consistent than they appear. The frequentist CI [\u22120.1%, +3.3%] and the Bayesian credible interval [+0.05%, +3.35%] are nearly identical \u2014 the practical uncertainty is the same. The difference is the decision framework: frequentist p = 0.07 means 'if there is no effect, observing this result 7% of the time' (not the probability that the effect is positive); the Bayesian posterior directly estimates the probability the effect is positive at 96.5% given the flat prior. With a flat prior, this means 96.5% of the posterior mass is above zero \u2014 almost identical to 1 \u2212 (0.07/2) from the CI interpretation, approximately. The right question is: does the business value a 1.7% expected lift at an acceptable posterior risk? If the cost of a false positive is low relative to the expected gain, 96.5% posterior is sufficient. Define the decision criterion before interpreting either result.",
+      "Use the frequentist result \u2014 Bayesian analysis requires informative priors; a flat prior is not appropriate for a business context and invalidates the 96.5% claim.",
+      "The results are contradictory \u2014 run more sample until both methods agree before making a decision."
+    ],
+    "correct_option": 1,
+    "explanation": "The apparent contradiction dissolves under careful interpretation. The frequentist CI [\u22120.1%, +3.3%] and Bayesian credible interval [+0.05%, +3.35%] are nearly numerically identical \u2014 they express the same uncertainty about the effect. The difference is what they mean: the Bayesian posterior P(effect > 0) = 96.5% is a direct probability statement about the parameter; the frequentist p = 0.07 is the probability of observing this data (or more extreme) under the null. With a flat prior, the Bayesian analysis with a one-sided frequentist test are nearly equivalent: p/2 \u2248 0.035, and 1 \u2212 0.035 \u2248 96.5% \u2014 confirming consistency. The decision depends on the business context, not the statistical framework: at 96.5% posterior probability of a positive effect with expected value +1.7%, the ship decision depends on whether the cost of a false ship (3.5% chance of a null or negative effect) is tolerable relative to the expected gain. Option A cherry-picks the Bayesian result without explaining why the frequentist result doesn't contradict it. Option C is wrong: flat priors are a legitimate and commonly used choice in Bayesian analysis; they represent maximal prior ignorance and produce the most data-driven posteriors. Option D recommends more data without recognizing that the results are already consistent.",
+    "hints": [
+      "With a flat prior, the Bayesian 95% credible interval and the frequentist 95% CI should be numerically similar. Are they, in this case?",
+      "If the frequentist CI barely includes zero (lower bound = \u22120.1%) and the Bayesian posterior P(positive) = 96.5%, are these consistent or contradictory? What explains the relationship?"
+    ],
+    "concepts": [
+      "BAYESIAN EXPERIMENTATION",
+      "STATISTICAL SIGNIFICANCE"
+    ]
+  },
+  {
+    "id": 93050,
+    "order": 46,
+    "topic": "experimentation",
+    "type": "predict_output",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Posterior 95% credible interval [+0.5%, +2.3%] \u2014 predict the correct interpretation vs frequentist CI",
+    "scenario_context": "A Bayesian A/B test (uninformative prior) produces a posterior distribution over the conversion rate lift. The 95% posterior credible interval (CrI) is [+0.5%, +2.3%]. A frequentist analysis of the same data produces a 95% CI of [+0.5%, +2.3%] (identical bounds). The PM asks: 'What is the difference between the Bayesian and frequentist intervals if they have the same numbers?'",
+    "description": "Predict the correct interpretation of each interval and the key difference in meaning.",
+    "options": [
+      "No difference \u2014 if the intervals have the same bounds, they make the same claim. The Bayesian and frequentist intervals are interchangeable in practice.",
+      "The bounds are numerically the same (due to a flat prior making the posterior \u2248 the likelihood), but the interpretations differ fundamentally. The frequentist 95% CI means: 'If we repeated this experiment many times, 95% of such intervals would contain the true parameter.' It does NOT mean there is a 95% probability that the true effect is in [+0.5%, +2.3%]. The Bayesian 95% CrI means: 'Given the data and prior, there is a 95% probability that the true effect is in [+0.5%, +2.3%].' The Bayesian interpretation is the one most people intuitively want from an interval.",
+      "The frequentist CI is valid only for large samples (n > 30); the Bayesian CrI is valid for any sample size. With identical bounds, the Bayesian interval is always preferred.",
+      "The frequentist CI refers to future experiments; the Bayesian CrI refers to the current experiment. They answer different time-horizon questions."
+    ],
+    "correct_option": 1,
+    "explanation": "When a flat (uninformative) prior is used, the Bayesian posterior is proportional to the likelihood, making the credible interval numerically identical to the confidence interval. But the interpretations are different. The frequentist CI is a statement about the procedure's long-run behavior: 'If the experiment were repeated many times under the same setup, 95% of the computed intervals would contain the true effect.' It does not say the probability that the true effect is in this specific interval is 95% \u2014 the true effect is fixed, not random, in frequentist statistics. The Bayesian CrI is a direct probability statement about the parameter: 'Given the observed data and the prior, the probability that the true effect lies in [+0.5%, +2.3%] is 95%.' This is the natural interpretation people want. Both are valid, but they answer different questions. The practical difference matters most when (1) the prior is not flat (informative Bayesian priors pull the CrI toward prior beliefs), or (2) you want to directly say 'the probability is X' \u2014 only the Bayesian framework licenses that statement. Option A is wrong despite being practically tempting: identical bounds with different interpretations are not equivalent statements. Option C confuses sample-size requirements with framework validity. Option D mischaracterizes the frequentist CI as about future experiments \u2014 it's about the long-run behavior of the interval-generating procedure.",
+    "hints": [
+      "In frequentist statistics, is the 'true effect' a fixed quantity or a random variable? How does that affect what a CI can claim about probability?",
+      "Which interpretation \u2014 frequentist CI or Bayesian CrI \u2014 licenses the statement 'there is a 95% probability the effect is in this range'?"
+    ],
+    "concepts": [
+      "BAYESIAN EXPERIMENTATION",
+      "CONFIDENCE INTERVALS"
+    ]
+  },
+  {
+    "id": 93051,
+    "order": 47,
+    "topic": "experimentation",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "DiD shows +5% effect but parallel trends is violated \u2014 what does this mean for the causal claim?",
+    "scenario_context": "A policy team uses difference-in-differences (DiD) to estimate the effect of a new discount program on customer spending. Treatment: users in cities A, B, C (program rolled out). Control: users in cities D, E, F (no program). Pre-period trends: treatment group spending grew at 8% per month; control group spending grew at 3% per month. The DiD estimate at 3 months: +5% spending lift in treatment vs control.",
+    "description": "What does the violation of parallel trends mean for the +5% estimate?",
+    "options": [
+      "The +5% estimate is valid \u2014 DiD compares the change in the treatment group to the change in the control group, which corrects for any baseline difference between groups.",
+      "Parallel trends violation means the two groups were on divergent trajectories before the treatment. DiD assumes treatment and control would have had the same trend absent the treatment \u2014 if treatment cities were already growing at 8% vs control's 3%, the 5% DiD estimate confounds the program effect with the pre-existing 5% per month trend difference. The estimated causal effect cannot be isolated from this pre-existing divergence.",
+      "The parallel trends violation only matters if the pre-period trend difference (8% vs 3%) is statistically significant; if the difference in pre-trends is not significant, the DiD estimate is valid.",
+      "DiD is still valid \u2014 the parallel trends assumption requires that groups trend similarly, not identically; a 5% difference in monthly growth rate is within normal variation."
+    ],
+    "correct_option": 1,
+    "explanation": "The parallel trends assumption requires that in the absence of treatment, treatment and control would have followed the same time trend. Pre-period evidence of divergent trends (8% vs 3% monthly growth, a 5 percentage-point divergence) means this assumption is violated. The DiD estimator is (\u0394Y_treatment \u2212 \u0394Y_control), which implicitly attributes all differential change to the treatment. If treatment cities were already growing faster, the 5% DiD estimate mixes the program's causal effect with the pre-existing trend difference. The estimated +5% could reflect the program working, or the continuation of the trend divergence, or both \u2014 it is unidentifiable from the DiD design alone. Possible remedies: (1) use a synthetic control that matches pre-trends, (2) use a longer pre-period to test trend stability, (3) apply a continuous DiD model with trend controls. Option A misunderstands what DiD corrects for \u2014 it corrects for level differences between groups (different baselines), not trend differences. Option C introduces a null-hypothesis test on pre-trends as the validity criterion \u2014 this is common in practice but is a statistical test with finite power; non-significance doesn't imply parallel trends hold. Option D redefines 'same trend' as 'similar enough,' which is not the assumption \u2014 the assumption is that the counterfactual trend is parallel, and evidence of pre-period divergence directly contradicts this.",
+    "hints": [
+      "DiD removes time-invariant group differences. Does it also remove pre-existing trend differences between groups?",
+      "If treatment cities were already growing 5 percentage points faster per month before the program, what would the DiD estimate show even if the program had zero causal effect?"
+    ],
+    "concepts": [
+      "QUASI-EXPERIMENTAL METHODS",
+      "CAUSAL INFERENCE"
+    ]
+  },
+  {
+    "id": 93052,
+    "order": 48,
+    "topic": "experimentation",
+    "type": "debug",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "DiD control group differs in 3 demographic dimensions \u2014 identify the bias source",
+    "scenario_context": "A team estimates the effect of a loyalty program using DiD. Treatment cities received the program; control cities did not. Post-hoc analysis reveals: control cities have (a) 18% higher median income, (b) 35% lower urban density, (c) 22% younger median age than treatment cities. The DiD estimate shows +7% spend lift. A reviewer says the estimate is biased.",
+    "description": "Which demographic differences create bias in the DiD estimate, and what is the direction?",
+    "options": [
+      "Demographic differences between groups do not bias DiD \u2014 DiD differences out all time-invariant group characteristics, including demographic composition.",
+      "Level differences (higher income, different density, younger age) are differenced out by DiD as time-invariant group fixed effects. The bias arises if these demographic differences produce different trends over time \u2014 for example, if high-income cities respond differently to macroeconomic conditions, or if younger populations have different spending trajectories. The demographic gap creates a risk of parallel trends violation, not a mechanical level bias. The direction of bias depends on whether the differenced trends favour treatment or control.",
+      "All three differences bias the DiD estimate upward \u2014 control cities have characteristics (higher income, lower density, younger age) that produce higher baseline spending, which makes the treatment look worse by comparison.",
+      "Only the income difference matters \u2014 density and age are not correlated with spending growth and do not affect the DiD estimate."
+    ],
+    "correct_option": 1,
+    "explanation": "DiD removes group-level time-invariant differences \u2014 this is its key identification property. If treatment and control cities differ in income, density, and age at baseline, DiD differences these out through the before-after comparison. The bias risk is not from level differences but from differential trends caused by those demographic differences. For example: (a) High-income control cities may respond differently to the same macroeconomic shock (divergent trend); (b) Low-density control areas may have different retail seasonality (non-parallel seasonal trends); (c) Younger control populations may have different spending growth trajectories over the measurement period. Any of these can invalidate the parallel trends assumption \u2014 the demographic differences are the mechanism by which trends might diverge. The bias direction depends on the interaction between the demographic gaps and the time trends. Option A is partially correct (level differences are differenced out) but misses the trend-divergence risk. Option C describes a level bias that DiD specifically removes \u2014 it incorrectly applies static comparison logic to a difference-in-differences design. Option D oversimplifies \u2014 density and age can affect spending trends (not just levels), and all three gaps are potential trend-divergence risks.",
+    "hints": [
+      "DiD removes time-invariant group differences (levels). What kind of group difference does DiD NOT remove?",
+      "If high-income control cities respond differently to macroeconomic shocks than lower-income treatment cities, what does that imply about the parallel trends assumption?"
+    ],
+    "concepts": [
+      "QUASI-EXPERIMENTAL METHODS",
+      "SEGMENTATION ANALYSIS"
+    ]
+  },
+  {
+    "id": 93053,
+    "order": 49,
+    "topic": "experimentation",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Marketplace with 40% buyer-seller overlap: why user-level randomization biases the estimate",
+    "scenario_context": "A marketplace platform tests a new seller-tools feature. 40% of buyers are also sellers on the platform. User-level randomization: treatment sellers get the new tools; control sellers do not. After 14 days, the primary metric (buyer GMV) shows +2.8% lift (p = 0.018). A skeptic argues the estimate is biased due to buyer-seller interference.",
+    "description": "Explain the SUTVA violation and predict the direction of bias.",
+    "options": [
+      "No violation \u2014 treatment sellers are assigned to treatment and control buyers are separate users; there is no crossover.",
+      "SUTVA is violated because 40% of buyers are also sellers. A buyer who is in the control arm for buyers may be in the treatment arm for sellers \u2014 they use the new tools as a seller, which improves their listings and product quality. Their buyer behavior (spending as buyers) may be affected by their improved seller experience. Control buyers who are also sellers in treatment experience improved marketplace quality as sellers but are counted as 'control' buyers. This inflates the control group's GMV (control buyers who are treatment sellers buy more), narrowing the treatment-control gap and underestimating the true treatment effect.",
+      "SUTVA is violated and the bias is upward \u2014 treatment sellers improve their listings, attracting more buyers from the control arm into the marketplace, inflating treatment GMV.",
+      "The violation creates bidirectional bias that cannot be determined without further analysis of the buyer-seller overlap network."
+    ],
+    "correct_option": 1,
+    "explanation": "The buyer-seller overlap creates a classic SUTVA violation: a user's potential outcome as a buyer is not independent of the treatment assignment of other users (specifically, the sellers they interact with). The mechanism: treatment sellers have improved tools \u2192 they create better listings \u2192 buyers (including control buyers who happen to be treatment sellers themselves) benefit from improved marketplace quality. The 40% who are both buyers and sellers are in treatment (seller arm) and potentially in control (buyer arm) simultaneously \u2014 their GMV as buyers is elevated by their seller-arm treatment status. This inflates the control arm's buyer GMV, narrowing the treatment-control gap. Implication: the +2.8% GMV lift understates the true causal effect of the seller tools. The correct design: geo-cluster or marketplace-cluster randomization, assigning entire local markets to treatment or control. Option A is wrong \u2014 the buyer-seller overlap creates a direct channel for treatment spillover into the control arm via user identity. Option C describes a different mechanism (attracting more buyers into the marketplace, a supply-side effect) \u2014 valid in principle but conflates the mechanism and direction; the primary bias is through the buyer-seller overlap contaminating the control arm, not through attracting new buyers. Option D defers when the direction is actually determinable from the mechanism.",
+    "hints": [
+      "If a user is assigned to control as a buyer but to treatment as a seller, which arm does their buyer GMV get counted in? What does their improved seller experience do to their buyer behavior?",
+      "If control buyers' GMV is elevated by the 40% who are also treatment sellers, is the treatment-control gap larger or smaller than the true effect?"
+    ],
+    "concepts": [
+      "NETWORK EFFECTS",
+      "EXPERIMENT DESIGN"
+    ]
+  },
+  {
+    "id": 93054,
+    "order": 50,
+    "topic": "experimentation",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "SRM with +3% lift: PM says 'fix the routing and the lift will hold' \u2014 evaluate this",
+    "scenario_context": "A checkout redesign experiment shows +3.1% conversion lift (p = 0.009). SRM check: 53.8% control / 46.2% treatment (chi-squared p = 6 \u00d7 10^-15). Investigation reveals the cause: a CDN caching bug routes users reaching checkout via organic search to control at a higher rate. Organic-search users convert at 5.2% vs direct-navigation users at 2.8%. The PM proposes: 'Fix the CDN bug, re-randomize, and the +3.1% lift will hold \u2014 the algorithm clearly works.'",
+    "description": "Evaluate the PM's reasoning and predict what the corrected estimate is likely to be.",
+    "options": [
+      "The PM is correct \u2014 fixing the CDN bug removes the randomization problem, and the true effect will be close to +3.1% since the treatment is genuinely better.",
+      "The PM's reasoning is flawed. The SRM over-routes high-converting users (organic-search, 5.2% conversion) to control, inflating control's conversion rate. The +3.1% lift is largely an artifact of the biased comparison. After correcting the bug and re-randomizing, the true effect is likely much smaller \u2014 possibly near zero. The PM is mistaking correlation for causation.",
+      "The PM is partially right \u2014 fix the bug and re-randomize. The true lift will be between +1.5% and +3.1% because only part of the effect is due to the SRM bias.",
+      "The PM is wrong for a different reason: the CDN bug affects both arms equally, so the direction of lift is also wrong \u2014 the true effect could be negative."
+    ],
+    "correct_option": 1,
+    "explanation": "The SRM is caused by systematically routing high-converting users (organic-search, 5.2% conversion) to control. This means control has a disproportionate share of high-intent users, inflating its conversion rate above what a fair 50/50 split would show. The treatment group underrepresents organic-search users and has a lower baseline conversion rate. The measured +3.1% lift is the difference between an inflated control and a deflated treatment \u2014 it may entirely reflect the user-composition difference rather than any causal effect of the redesign. After fixing the bug and re-randomizing with balanced assignment, organic-search users will be equally represented in both arms, raising control's denominator quality and likely eliminating or greatly reducing the apparent lift. The PM's 'the algorithm clearly works' conclusion is invalid \u2014 you cannot read causality from a biased experiment. Option A accepts the PM's reasoning by assuming bug removal preserves the estimate. Option C acknowledges bias but speculates a specific magnitude range without basis \u2014 the correct answer is that the direction and magnitude of the true effect are unknown until a clean experiment runs. Option D raises the possibility of a negative true effect, which is possible but not the direct diagnosis of the described mechanism.",
+    "hints": [
+      "The control arm has over-represented high-converting users (5.2% vs 2.8%). What does that do to the control arm's observed conversion rate relative to a balanced sample?",
+      "If the lift is primarily driven by user-composition differences, what happens to the lift estimate when the composition is equalized?"
+    ],
+    "concepts": [
+      "SAMPLE RATIO MISMATCH",
+      "EXPERIMENT DESIGN"
+    ],
+    "follow_ups": [
+      93064,
+      93065
+    ]
+  },
+  {
+    "id": 93055,
+    "order": 51,
+    "topic": "experimentation",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Q4 deadline in 3 weeks with asymmetric cost: design the most defensible experiment plan",
+    "scenario_context": "Your team must test a new pricing algorithm before a Q4 deadline in 3 weeks. Standard fixed-horizon analysis requires 21 days (80% power, 2% MDE, \u03b1 = 0.05). The business risk is asymmetric: shipping a bad pricing algorithm costs $2M in revenue loss. Missing a good one costs approximately $300K in forgone revenue. You have exactly 21 days.",
+    "description": "Design the most defensible experiment plan given the deadline and asymmetric cost structure.",
+    "options": [
+      "Run fixed-horizon for 21 days \u2014 sequential designs add complexity and the 21-day window exactly matches the required duration, providing no benefit over a standard fixed test.",
+      "Implement a group sequential design with O'Brien-Fleming alpha spending and 2 looks: look 1 at day 10 (early stop threshold z > 2.8, p < 0.005 \u2014 conservative because false-positive cost is 6.7\u00d7 false-negative cost), final analysis at day 21 (z > 2.02, preserving most power). If the algorithm shows early harm, stop and avoid the $2M loss. If clearly beneficial, optionally stop. Otherwise, run to completion.",
+      "Run for 14 days with a one-tailed test \u2014 this halves the effective alpha and provides extra protection against a false positive on the pricing algorithm within a tighter timeline.",
+      "Run for 21 days with daily monitoring at \u03b1 = 0.005 per look \u2014 this conservative per-look threshold keeps family-wise Type I error below 5% over 21 looks."
+    ],
+    "correct_option": 1,
+    "explanation": "The group sequential design with OBF alpha spending provides two concrete benefits the fixed-horizon cannot: (1) an early stop at day 10 if the effect is clearly harmful (protecting against the $2M revenue risk \u2014 the primary asymmetric cost), and (2) a valid final analysis at day 21 with most of the original 80% power preserved. OBF's final-look threshold (z > 2.02) costs approximately 4 percentage points of power vs fixed-horizon \u2014 a small price for the early-harm-detection capability. The conservative early threshold (z > 2.8) is appropriate given that false positives cost 6.7\u00d7 more than false negatives; the bar for early shipping should be very high. Option A ignores the harm-early-stop benefit \u2014 a fixed-horizon design requires waiting the full 21 days even if day-10 data clearly shows a negative effect. Option C (one-tailed, 14 days) changes the hypothesis structure and reduces duration without solving the early-harm-detection problem. Option D (daily monitoring at 0.005 per day) is not a valid sequential test \u2014 it doesn't correspond to a valid alpha spending function, and \u03b1 = 0.005 \u00d7 21 > 0.05 in the worst case.",
+    "hints": [
+      "If the pricing algorithm is clearly harmful at day 10, what is the benefit of pre-specified interim analysis vs running the full 21 days?",
+      "The asymmetric cost (false positive $2M, false negative $300K) \u2014 does this push toward a more or less conservative early-stop threshold?"
+    ],
+    "concepts": [
+      "SEQUENTIAL TESTING",
+      "EXPERIMENT DESIGN"
+    ],
+    "follow_ups": [
+      93066,
+      93067
+    ]
+  },
+  {
+    "id": 93056,
+    "order": 52,
+    "topic": "experimentation",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Thompson Sampling bandit vs A/B for 3-variant test: what does the bandit optimize and sacrifice?",
+    "scenario_context": "A team tests 3 homepage variants to maximize conversion rate. They propose Thompson Sampling bandit that dynamically allocates traffic based on real-time conversion estimates. An experimenter pushes back: 'Use a standard A/B test \u2014 bandits don't give you valid causal estimates.' The PM supports the bandit: 'We care about optimizing conversion during the experiment, not just learning.'",
+    "description": "Evaluate both positions and identify what the bandit optimizes and what it sacrifices.",
+    "options": [
+      "The experimenter is right \u2014 Thompson Sampling bandits always produce biased estimates and should never be used when causal learning is the goal.",
+      "Both positions are partially correct. The bandit optimizes cumulative reward during the experiment (less opportunity cost from showing inferior variants) but sacrifices statistical inference validity: as the bandit concentrates traffic on the apparent winner, losing variants receive decreasing sample, making their final estimates noisy and potentially biased. A standard A/B maintains equal allocation and produces unbiased estimates of all variants' effects, but incurs higher regret. The right choice depends on whether the team values maximum conversions during the test or reliable causal estimates of all variants for future decision-making.",
+      "The bandit is always better \u2014 it adapts to data and focuses sample on the winning variant, giving it more data and producing better estimates.",
+      "Use a Bayesian A/B test \u2014 this combines Bayesian posterior updates with fixed allocation, getting the benefits of both without the tradeoffs of a bandit."
+    ],
+    "correct_option": 1,
+    "explanation": "Thompson Sampling balances exploration (learning variant quality) with exploitation (showing the apparent winner). As the bandit runs, traffic concentrates on the apparent winner, reducing sample to losing variants. This creates two inference problems: (1) losing variants' estimates become increasingly uncertain; (2) the allocation itself becomes correlated with the outcome \u2014 samples are no longer exchangeable, which can introduce selection bias in estimates. The bandit is good for scenarios where opportunity cost during the experiment is high and where you continuously deploy without a formal ship/no-ship decision. A standard A/B is good for getting unbiased estimates of all variants for future planning and for making a formal post-experiment causal claim. Option A overstates the case \u2014 bandits produce estimates, but those estimates are less precise for losing variants and causal validity depends on the allocation history. Option C is wrong: concentrating sample on the winner improves the winner's estimate but worsens the losers', which matters if you want to understand the full experiment. Option D (Bayesian A/B) is valid for learning but still uses fixed allocation and doesn't solve the regret problem.",
+    "hints": [
+      "As the bandit concentrates traffic on the apparent winner, what happens to sample size (and estimate quality) for the losing variants?",
+      "What does the bandit optimize over the course of the experiment \u2014 cumulative reward or causal learning? Are these the same objective?"
+    ],
+    "concepts": [
+      "MULTI-ARMED BANDIT",
+      "STATISTICAL SIGNIFICANCE"
+    ],
+    "follow_ups": [
+      93068,
+      93069
+    ]
+  },
+  {
+    "id": 93057,
+    "order": 53,
+    "topic": "experimentation",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Leadership mandates stop-at-95% posterior: evaluate the policy and the Day 8 ship decision",
+    "scenario_context": "Leadership sets a policy: all A/B tests use Bayesian analysis and ship when posterior P(improvement) > 95%. Week 1 results on a checkout algorithm: P(improvement) = 94.3%, posterior median = +1.4%, 95% CrI [\u22120.1%, +2.9%]. The team argues: 'Run one more day.' Day 8: P(improvement) = 95.2%. Leadership says ship.",
+    "description": "Evaluate the policy and the specific Day 8 ship decision.",
+    "options": [
+      "The policy is sound \u2014 Bayesian analysis with a pre-specified 95% threshold is a valid decision rule, and 95.2% at Day 8 clearly crosses it.",
+      "The policy has a hidden peeking problem: checking daily until 95% is crossed without a pre-specified maximum sample is equivalent to optional stopping. Even a Bayesian posterior can be exploited by continuous monitoring if the stopping rule is 'stop when threshold is crossed.' The 95% threshold is not equivalent to 5% Type I error control unless the stopping rule is pre-specified and the inference framework is anytime-valid. The 95% CrI barely excluding zero (lower bound \u22120.1% at Day 7) means practical significance is marginal.",
+      "The policy is wrong because Bayesian posteriors are subjective \u2014 the 95% figure depends on the prior, making it unsuitable for business decisions.",
+      "The policy is correct but the threshold should be 99%, not 95%, for decisions with financial impact."
+    ],
+    "correct_option": 1,
+    "explanation": "The optional stopping problem applies to Bayesian analyses. For a true null effect, continuous monitoring of a Bayesian posterior will eventually cross 95% with non-trivial probability if monitored indefinitely \u2014 the probability of false crossing depends on the prior, monitoring frequency, and maximum sample. 'Stop when P(improvement) > 95%' without a pre-specified maximum sample or an anytime-valid inference framework is not equivalent to controlling the false-positive rate at 5%. The pattern here is particularly concerning: the team was at 94.3% and added one day to try to cross the threshold \u2014 this is the Bayesian equivalent of peeking. The 95% CrI barely excluding zero (lower bound \u22120.1%) means the practical effect is uncertain even if the threshold is crossed. The correct design: pre-specify a maximum sample and decision threshold before the experiment starts, or use an anytime-valid inference framework. Option A treats the threshold as automatically valid without questioning the stopping rule. Option C raises a legitimate concern about priors but mislabels Bayesian decisions as 'unsuitable' \u2014 explicit priors are a feature, not a flaw. Option D changes the threshold without addressing the optional stopping problem.",
+    "hints": [
+      "Is 'stop when posterior P(improvement) > 95%' equivalent to controlling the false-positive rate at 5%? Under what conditions does it hold?",
+      "What is the Bayesian version of the peeking problem? Does the Bayesian framework automatically solve it?"
+    ],
+    "concepts": [
+      "BAYESIAN EXPERIMENTATION",
+      "EXPERIMENT DESIGN"
+    ],
+    "follow_ups": [
+      93070,
+      93071
+    ]
+  },
+  {
+    "id": 93058,
+    "order": 54,
+    "topic": "experimentation",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Switchback experiment for ride-sharing driver pricing: design and interference",
+    "scenario_context": "A ride-sharing platform tests surge pricing algorithm V2 on driver incentives. The platform has 50K active drivers and 500K daily rider sessions. Rider sessions and driver assignments are tightly coupled: a driver in treatment serves riders in both treatment and control zones. User-level randomization would contaminate rider experiences based on which driver they get.",
+    "description": "Why is a switchback experiment appropriate here, and what design parameters matter most?",
+    "options": [
+      "A switchback experiment is not needed \u2014 randomize drivers to treatment or control; rider experiences are independent of which driver they get.",
+      "A switchback experiment is appropriate because driver-rider coupling means user-level randomization violates SUTVA: treatment drivers affect riders across the network regardless of rider assignment. A switchback assigns the entire platform to V1 or V2 alternately across time periods, eliminating cross-arm contamination. Key design parameters: (1) period length must exceed carryover duration (how long driver behavior from the prior pricing regime persists), (2) sufficient period count for statistical power given between-period variance, (3) balanced timing across peak and off-peak hours to avoid confounding.",
+      "Use geo-cluster randomization instead of switchback \u2014 assign cities to V1 or V2 and compare. Switchback experiments have higher variance due to temporal confounds.",
+      "Randomize at the city level with a 24-hour washout between arms \u2014 this eliminates carryover without the complexity of switchback timing."
+    ],
+    "correct_option": 1,
+    "explanation": "User-level or driver-level randomization fails on a marketplace with tight coupling: a driver assigned to V2 pricing adjusts routing and acceptance behavior in ways that affect all rider sessions they serve, regardless of those riders' assignment. SUTVA is violated because a rider's experience depends on the treatment assignment of their matched driver. A switchback experiment avoids this by randomizing across time rather than users: the entire platform operates under V1 or V2 in alternating periods, ensuring all interactions within a period are under the same pricing regime. Critical design parameters: period length must exceed carryover (if drivers take 30 minutes to adjust behavior after a pricing switch, the period must account for this); the number of periods determines effective sample size (not user count, but independent time periods); peak vs off-peak balance prevents confounding treatment with time-of-day effects. Option A incorrectly assumes driver-rider independence \u2014 in a marketplace, driver behavior (acceptance rates, routing) affects all riders they serve regardless of rider assignment. Option C (geo-cluster) is a valid alternative but creates market imbalances on a national platform. Option D (city-level with washout) is a form of geo-cluster randomization with the same market imbalance problem.",
+    "hints": [
+      "If a treatment driver serves riders from both treatment and control groups, is that rider's experience independent of the driver's pricing assignment?",
+      "A switchback randomizes time periods, not users. What constitutes 'sufficient sample' \u2014 more users or more independent time periods?"
+    ],
+    "concepts": [
+      "SWITCHBACK EXPERIMENTS",
+      "NETWORK EFFECTS"
+    ],
+    "follow_ups": [
+      93072,
+      93073
+    ]
+  },
+  {
+    "id": 93059,
+    "order": 55,
+    "topic": "experimentation",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "National policy launch with no holdout: which quasi-experimental approach is most appropriate?",
+    "scenario_context": "A fintech company launches a new fee structure nationally on March 1. There is no control group \u2014 all users are affected simultaneously. You want to estimate the causal effect on monthly transaction volume. You have 24 months of pre-launch data and 6 months of post-launch data. Competitor fintech companies did not change their fee structures.",
+    "description": "Which quasi-experimental approach is most appropriate, and what assumptions must hold?",
+    "options": [
+      "Use a pre-post comparison (post-launch average minus pre-launch average). This directly measures the change without needing a control group.",
+      "Difference-in-differences using competitor customers as a control group. Key assumption: in the absence of the fee change, your customers and competitor customers would have had the same transaction volume trend (parallel trends). Pre-period data can test trend stability, strengthening (but not proving) the assumption.",
+      "Interrupted time series (ITS) on your platform alone. Fit a trend model on the 24-month pre-period, project the counterfactual post-launch trend, and estimate the effect as the deviation from the projected trend.",
+      "Both DiD and ITS are valid with different assumptions \u2014 DiD is preferred when competitor trends are available and likely parallel; ITS is preferred when no control group is accessible. Neither is definitively superior without testing the assumptions against the data."
+    ],
+    "correct_option": 3,
+    "explanation": "Both DiD and ITS are legitimate quasi-experimental approaches, and the choice depends on assumption plausibility. DiD requires the parallel trends assumption: your customers and competitor customers would have followed the same trend without the fee change. With 24 months of pre-data you can test pre-trend parallelism. Threat: competitor customers may differ in geography, demographics, or product usage in ways that cause divergent trends during the post-period. ITS uses only your platform's own historical trend as the counterfactual, avoiding assumptions about a different population. Threat: any concurrent event (macroeconomic shock, competitor campaign) that coincidentally changes at March 1 will confound the ITS estimate. Neither is unconditionally better. The best practice: run both and check consistency. If DiD and ITS estimates are close and their respective assumption tests pass, confidence is higher. Option A (pre-post) conflates time trends and seasonality with the treatment effect \u2014 the most biased of the three. Options B and C are each correct conditional on their assumptions holding, which is why Option D (acknowledging both) is the most defensible answer.",
+    "hints": [
+      "Pre-post assumes no time trend. DiD assumes parallel trends with a control group. ITS assumes the pre-period trend extrapolates as the counterfactual. Which assumption is easiest to test with 24 months of pre-data?",
+      "If DiD and ITS give similar estimates, what does that suggest about the robustness of the causal claim?"
+    ],
+    "concepts": [
+      "QUASI-EXPERIMENTAL METHODS",
+      "CAUSAL INFERENCE"
+    ],
+    "follow_ups": [
+      93074,
+      93075
+    ]
+  },
+  {
+    "id": 93060,
+    "order": 56,
+    "topic": "experimentation",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "5% holdout for 12 months: holdout engagement declining \u2014 explain and assess bias direction",
+    "scenario_context": "A team launches a new recommendation algorithm and keeps a 5% holdout group unexposed for 12 months. After month 3, holdout users' engagement is declining faster than treatment users. After month 6, holdout users show 8% lower session frequency than pre-launch baseline. The 12-month holdout analysis shows +11% session frequency lift for treatment vs holdout.",
+    "description": "What is the most likely explanation for the holdout group's declining engagement, and what does it mean for the 12-month causal estimate?",
+    "options": [
+      "The holdout group decline is expected \u2014 holdout users are not benefiting from improved recommendations, causing natural engagement drift. The +11% estimate is the correct causal effect.",
+      "The declining holdout engagement reflects holdout degradation bias: as the recommendation algorithm improves content discovery for 95% of users, the platform ecosystem evolves around the new system. Holdout users receive old-algorithm recommendations as the platform optimizes for treatment users \u2014 their experience degrades relative to the platform's actual trajectory. This inflates the holdout-vs-treatment gap, causing the +11% estimate to overstate the true causal effect of the algorithm.",
+      "The holdout engagement decline is a seasonality artifact \u2014 months 3\u20136 post-launch coincide with a seasonal period when engagement typically drops. This is unrelated to the experiment.",
+      "The holdout decline is caused by selection bias: the 5% holdout selection over-represents low-engagement users who would have declined anyway."
+    ],
+    "correct_option": 1,
+    "explanation": "Long-running holdout groups in recommendation system experiments suffer from holdout degradation bias: the holdout is not held against a static counterfactual but against a platform actively evolving around the treatment. As the algorithm improves content discovery and engagement for 95% of users, the platform ecosystem changes: content creation may shift toward formats that perform well in the new algorithm; social interactions increase among treatment users; the overall platform quality degrades from the holdout user's perspective (who receives old recommendations in a platform optimized for new-algorithm content). This makes the holdout's experience deteriorate over time \u2014 not because the old system is bad in isolation but because the platform evolves away from it. The measured treatment effect (treatment engagement minus holdout engagement) becomes upwardly biased as the holdout baseline degrades. Option A correctly identifies that holdout users miss improvements but doesn't recognize this as creating upward bias in the estimate. Option C (seasonality) is possible but contradicted by the holdout declining relative to its own pre-launch baseline, not just relative to treatment. Option D (selection bias) is contradicted by the randomized 5% holdout selection from launch day 1.",
+    "hints": [
+      "If the recommendation algorithm is improving content discovery for 95% of users, how does that change the platform ecosystem for the 5% in the holdout?",
+      "If the holdout group's experience is actively degrading (not just failing to improve), does that make the treatment-vs-holdout gap larger or smaller than the true causal effect?"
+    ],
+    "concepts": [
+      "HOLDOUT GROUPS",
+      "CAUSAL INFERENCE"
+    ],
+    "follow_ups": [
+      93076,
+      93077
+    ]
+  },
+  {
+    "id": 93061,
+    "order": 57,
+    "topic": "experimentation",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "HTE: \u22122% mobile, +8% desktop. PM wants to ship to desktop only \u2014 evaluate the risks",
+    "scenario_context": "A search redesign experiment shows overall: +5.1% lift (p = 0.001). Segment analysis (post-hoc, unplanned): desktop (40% of users): +8.3% lift (p = 0.0003). Mobile (60% of users): \u22122.1% lift (p = 0.12). The PM wants to ship to desktop only and continue testing on mobile.",
+    "description": "What are the statistical and operational risks of shipping to desktop only based on this HTE analysis?",
+    "options": [
+      "Ship to desktop only \u2014 p = 0.0003 is very strong evidence, and the non-significant mobile result means there is no evidence of harm. Selective deployment is the right call.",
+      "Shipping to desktop only based on an unplanned HTE carries two risks: (1) the HTE finding needs multiple-testing correction (Bonferroni for 2 segments gives threshold 0.025; desktop p = 0.0003 clears this, but the decision was informed by seeing both segment results); (2) the mobile \u22122.1% (p = 0.12) is non-significant but the CI likely includes meaningfully negative values. Selective deployment creates platform inconsistency for cross-device users and warrants a focused mobile follow-up before dismissing the negative signal.",
+      "Do not ship at all \u2014 the mobile negative effect must be resolved before any deployment, even to desktop.",
+      "Ship to all users \u2014 the overall +5.1% is significant and the HTE reflects known measurement noise. The overall estimate is the reliable one."
+    ],
+    "correct_option": 1,
+    "explanation": "Selective deployment based on an unplanned HTE finding requires careful handling. The desktop effect (p = 0.0003) does clear a Bonferroni correction for 2 segments (threshold 0.025), so statistical evidence for a desktop positive effect is real. However: (1) HTE findings are notoriously sample-sensitive \u2014 the interaction (desktop vs mobile differential) needs its own power calculation; the observed \u22122.1% on mobile could be noise or a real harm. (2) Selective desktop deployment has operational consequences: cross-device users see inconsistent experiences; the mobile redesign must eventually be resolved. (3) Non-significant \u2260 no effect: the mobile CI likely includes meaningfully negative values given the 60% mobile share. The defensible action: ship to desktop (strong evidence), run a focused mobile-specific follow-up experiment to confirm or refute the negative trend. Option A dismisses the mobile signal too quickly on 'non-significant' grounds. Option C is overly conservative \u2014 the desktop evidence is strong. Option D ignores the HTE by relying solely on the overall estimate, masking a potentially harmful mobile effect.",
+    "hints": [
+      "The mobile result (\u22122.1%, p = 0.12) is non-significant. Does non-significant mean there is no harm? What does the 90% CI on the mobile segment likely include?",
+      "A cross-device user under desktop-only deployment: what do they experience? Is the platform experience consistent?"
+    ],
+    "concepts": [
+      "SEGMENTATION ANALYSIS",
+      "MULTIPLE TESTING"
+    ],
+    "follow_ups": [
+      93078,
+      93079
+    ]
+  },
+  {
+    "id": 93062,
+    "order": 58,
+    "topic": "experimentation",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Email sharing feature: 30% control users clicked referral links \u2014 does +3.8% over- or under-estimate?",
+    "scenario_context": "A team tests a new email-sharing feature. 30% of control users received referral links from treatment users and clicked through. Control users who received links have 11% higher 30-day retention than control non-link-recipients. Measured treatment-vs-control lift: +3.8% retention (p = 0.024).",
+    "description": "Explain the SUTVA violation and assess whether +3.8% over- or under-estimates the true causal effect.",
+    "options": [
+      "The +3.8% overestimates the true effect \u2014 referral links contaminate control users positively, raising their retention and narrowing the true treatment-control gap.",
+      "The +3.8% underestimates the true effect. Referral links elevate control users' retention (11% higher among link-recipients vs non-recipients), raising the control arm's average retention above a clean counterfactual (no-feature world). The measured gap (treatment minus inflated control) is smaller than the true causal effect of fully deploying the feature.",
+      "The +3.8% is unbiased \u2014 referral-link exposure is correlated with high engagement, not caused by the treatment. High-engagement control users were going to be retained regardless.",
+      "The bias direction is indeterminate without knowing the counterfactual retention rate of control users without any referral links."
+    ],
+    "correct_option": 1,
+    "explanation": "Referral links from treatment users deliver a measurable benefit to the control users who receive them (11% higher retention among link-recipients). These control users have been partially treated \u2014 they've engaged with the feature's output (the shared email content), even without access to the active feature. This inflates the control arm's retention above what it would be in a true no-feature world. The measured treatment effect (treatment retention \u2212 inflated control retention) is narrowed below the true causal effect of fully deploying the feature. In a fully deployed world, even more referral links would circulate (from the new treatment users), compounding the retention benefit. The +3.8% is a lower bound on the true causal effect. Option A inverts the direction: referral links raise control retention (making control look better), which narrows the gap \u2014 the estimate is smaller, not larger, than the true effect. Option C attributes the elevated retention to pre-existing engagement: even if this is true, the directional impact on the estimate is the same \u2014 if link-recipients are higher-engagement regardless, removing them from the control group would lower the control baseline, widening the gap further. Option D defers when the direction is determinable from the mechanism.",
+    "hints": [
+      "Control users who received referral links have 11% higher retention. How does this affect the control arm's average retention relative to a clean control?",
+      "If the control arm's retention is artificially elevated by spillover, is the measured treatment-control gap larger or smaller than the true causal effect?"
+    ],
+    "concepts": [
+      "NETWORK EFFECTS",
+      "CAUSAL INFERENCE"
+    ],
+    "follow_ups": [
+      93080,
+      93081
+    ]
+  },
+  {
+    "id": 93063,
+    "order": 59,
+    "topic": "experimentation",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "MDE = 0.5% needs 4M per arm; PM has 200K DAU for 2 weeks \u2014 what are the honest options?",
+    "scenario_context": "Your power analysis requires 4,047,000 users per arm to detect 0.5% relative lift (10% conversion rate, \u03c3 = 30%, 80% power, \u03b1 = 0.05). The PM has 200K DAU and a 2-week constraint. CUPED reduces variance by 35%. At 100K per arm per day, 2 weeks gives 1.4M per arm.",
+    "description": "What is the honest set of options, and which tradeoff must the PM accept?",
+    "options": [
+      "Run for 2 weeks at \u03b1 = 0.10 instead of 0.05 \u2014 loosening the threshold reduces required sample by ~15%, partially closing the gap.",
+      "With CUPED (35% variance reduction), required n drops to ~2.63M per arm (not 1.4M). At 100K per arm per day, that requires ~26 days \u2014 still outside the 2-week constraint. The honest options: (A) Widen the MDE to ~2.5% \u2014 required n drops to ~105K per arm after CUPED, achievable in ~1 day; or (B) Accept ~42% power at 0.5% MDE with CUPED in the 2-week window \u2014 valid but under-powered. The PM must choose between a wider MDE target or drastically lower power.",
+      "Apply CUPED (35% variance reduction) and run 2 weeks \u2014 this gives approximately 60% power at 0.5% MDE, which is acceptable for a business decision.",
+      "Extend the experiment to 40 days \u2014 CUPED reduces required sample to 2.63M per arm, achievable in ~27 days at 100K per arm per day."
+    ],
+    "correct_option": 1,
+    "explanation": "After CUPED: required n = 4,047,000 \u00d7 0.65 \u2248 2,630,000 per arm. At 100K per arm per day: 2,630,000 / 100,000 = 26.3 days needed \u2014 still 12 days beyond the constraint. At the 2-week window: 1.4M per arm. Power at 0.5% MDE with variance-reduced \u03c3 \u2248 24.5% and n = 1.4M: approximately 42\u201345%, not 60%. For MDE widening: at 2.5% MDE, required n = 4,047,000 \u00d7 (0.5/2.5)\u00b2 \u00d7 0.65 = 4,047,000 \u00d7 0.04 \u00d7 0.65 \u2248 105K per arm \u2014 achievable in ~1 day. The PM has only two real options: (1) widen the MDE substantially (0.5% \u2192 2.5%) and get a valid 2-week result, or (2) accept ~42% power (not 60%) for the original 0.5% MDE. Option A (widen \u03b1 to 0.10) reduces required n by ~15% \u2014 from 2.63M to ~2.23M per arm \u2014 still 10\u00d7 too large for 2 weeks. Option C claims 60% power at 2 weeks with CUPED \u2014 the actual power is ~42%, not 60%. Option D correctly identifies the needed duration (~27 days) but ignores the PM's 2-week constraint and doesn't give the PM the tradeoff options.",
+    "hints": [
+      "After a 35% variance reduction from pre-experiment covariates, what is the new required n per arm? At 100K per arm per day, how many days does that take?",
+      "At 1.4M per arm (2-week constraint) and variance-reduced \u03c3 \u2248 24.5%, what power do you actually achieve at 0.5% MDE? Is it 60%?"
+    ],
+    "concepts": [
+      "SAMPLE SIZE BASICS",
+      "VARIANCE REDUCTION"
+    ],
+    "follow_ups": [
+      93082,
+      93083
+    ]
+  },
+  {
+    "id": 93064,
+    "order": 60,
+    "topic": "experimentation",
+    "type": "debug",
+    "difficulty": "hard",
+    "mock_only": true,
+    "parent_id": 93054,
+    "follow_up_dimension": "data_quality_pivot",
+    "title": "Post-fix investigation reveals bot traffic imbalance \u2014 what does this mean for your SRM?",
+    "scenario_context": "After fixing the CDN routing bug (from the previous question), you investigate the assignment logs and discover that before the fix, 62% of bot traffic was landing in treatment and 38% in control. Human user splits remain close to 50/50 throughout. Your product metric (checkout conversion) is near-zero for bots. The PM argues: 'Bots don't convert, so they can't affect conversion rate \u2014 the lift is still valid.'",
+    "description": "Is the PM's reasoning correct?",
+    "options": [
+      "The PM is wrong. Even if bots have near-zero conversion, imbalanced bot counts inflate the denominator in one arm asymmetrically. If bots crowd out human impressions in the treatment arm (e.g., through session slots or logging), the human sample composition may differ. The conversion rate denominator is biased, invalidating the lift estimate even if bots themselves do not convert.",
+      "The PM is correct. Bots have ~0 conversion rate, so they add noise equally to numerator (0 conversions) and denominator. The conversion rate for human users is unaffected and the lift remains a valid causal estimate.",
+      "The PM is correct for the primary metric (conversion) but wrong for secondary metrics like page load time, where bot behavior would directly inflate the treatment arm's average.",
+      "The PM is wrong because bot sessions always convert at a non-zero rate due to automated form submissions; the numerator is inflated in treatment."
+    ],
+    "correct_option": 0,
+    "explanation": "Option 0 is correct. The PM's reasoning fails because 'bots don't convert' does not mean they are benign for the analysis. Imbalanced bots change the denominator of the conversion rate in each arm. If the treatment arm has proportionally more bot sessions, it has proportionally fewer human sessions per unit of exposure \u2014 meaning the treatment sample is drawn from a different pool of human users than the control sample. Even if every bot produces 0 conversions, the human-to-bot ratio determines how representative the human subsample is. Option 1 assumes bots are additive noise but ignores the denominator bias in session-based metrics. Option 2 is a partial truth that misses the denominator problem for conversion. Option 3 introduces an unsupported claim about bot conversion rates.",
+    "hints": [
+      "Focus on what the denominator of your conversion rate represents.",
+      "If the treatment arm has more bots, what fraction of its sessions are human?"
+    ],
+    "concepts": [
+      "SAMPLE RATIO MISMATCH",
+      "A/B TEST MECHANICS"
+    ]
+  },
+  {
+    "id": 93065,
+    "order": 61,
+    "topic": "experimentation",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "parent_id": 93054,
+    "follow_up_dimension": "stakeholder_pivot",
+    "title": "PM wants to ship based on biased SRM window \u2014 how do you respond?",
+    "scenario_context": "The CDN routing bug ran for days 1\u20134 of your 14-day experiment. Days 5\u201314 show a clean 50/50 split. The PM proposes: 'Let's just use days 5\u201314 data \u2014 that's 10 clean days, plenty of sample. The lift is still +3.2% (p=0.04) on those days. Ship it.' You have 180K sessions in the clean window (90K per arm).",
+    "description": "What is your recommendation?",
+    "options": [
+      "Agree \u2014 the 10-day clean window is a valid post-hoc experiment; the SRM only affected days 1\u20134, which are now excluded, and the p-value is below 0.05.",
+      "Reject the ship recommendation. The clean-window analysis is a post-hoc slice that was not pre-specified; the decision to cut at day 5 was made after seeing the split, introducing selection bias. Additionally, novelty effects and week-of-week seasonality are not controlled in a 10-day slice that starts mid-week. Restart with a fresh pre-specified experiment.",
+      "Accept the analysis but widen the confidence interval by a Bonferroni factor of 2 to account for the multiple looks (dirty window vs. clean window), then ship if still significant.",
+      "Use the full 14-day window but reweight days 1\u20134 to match the 50/50 expected split using inverse-probability weighting, then ship if lift holds."
+    ],
+    "correct_option": 1,
+    "explanation": "Option 1 is correct. Post-hoc window selection is a form of data dredging: the cut point (day 5) was chosen after observing the data pattern, not pre-specified in the analysis plan. The resulting estimate has unknown bias from the selection process itself (we might have chosen a different cut if the SRM had lasted 7 days). Additionally, a mid-experiment fresh start is not the same randomized sample as a pre-specified experiment \u2014 day 5 onward users are already post-exposure to the broken assignment period. Option 0 treats a post-hoc decision as if it were a clean RCT. Option 2 applies Bonferroni to the wrong problem (multiple comparisons, not selection bias). Option 3 is an interesting reweighting idea but it corrects days 1\u20134 without addressing the post-hoc selection problem and introduces IPW complexity that still cannot fix the non-pre-specified cut.",
+    "hints": [
+      "What makes a post-hoc window selection different from a pre-specified analysis?",
+      "Who chose day 5 as the cut point, and when was that decision made?"
+    ],
+    "concepts": [
+      "SAMPLE RATIO MISMATCH",
+      "EXPERIMENT DESIGN"
+    ]
+  },
+  {
+    "id": 93066,
+    "order": 62,
+    "topic": "experimentation",
+    "type": "debug",
+    "difficulty": "hard",
+    "mock_only": true,
+    "parent_id": 93055,
+    "follow_up_dimension": "data_quality_pivot",
+    "title": "6-hour tracking gap at look 1 \u2014 does it invalidate the sequential boundary?",
+    "scenario_context": "Your mSPRT sequential test has three pre-planned looks: day 7, day 14, and day 21. During look 1 (day 7), you discover a 6-hour logging outage that equally affected both treatment and control arms (confirmed via assignment logs: 4,812 events dropped in control, 4,798 in treatment \u2014 within 0.3% of each other). The look-1 statistic is below the stopping boundary, so you did not stop. The gap represents about 4% of day-7 observations.",
+    "description": "How should you handle the tracking gap for the remainder of the sequential analysis?",
+    "options": [
+      "The symmetric gap (both arms equally affected, <0.3% imbalance) means the conversion rate comparison is unbiased for the affected window. Document the outage, note it in the analysis, and continue the sequential test without modification \u2014 the boundary calibration is robust to small symmetric noise of this magnitude.",
+      "A symmetric gap in session count does not guarantee an unbiased conversion rate comparison. High-intent afternoon shoppers may have higher conversion intent; if the outage occurred during peak hours, the missing events may be non-randomly distributed within the funnel. Assess the gap's timing against conversion rate patterns before concluding neutrality.",
+      "Exclude all of day 7 from both arms and recompute the sequential boundary from scratch using only days 8\u201321 as the new horizon \u2014 this removes the contaminated period cleanly.",
+      "The gap invalidates the sequential analysis because mSPRT requires uninterrupted data collection to maintain the always-valid guarantee; restart the experiment from day 1."
+    ],
+    "correct_option": 0,
+    "explanation": "Option 0 is correct for this scenario. The gap is symmetric (both arms affected proportionally, <0.3% imbalance), small (4% of day-7 data), and the look-1 statistic did not trigger stopping. mSPRT's anytime-valid property is robust to small symmetric data-quality noise \u2014 the always-valid guarantee is about Type I error control across the martingale, not about requiring every observation. Documenting the gap and continuing is the operationally sound call. Option 1 raises a valid concern (peak-hour selection) but without evidence of differential timing it is speculative; the near-equal counts suggest the outage was not arm-specific. Option 2 discards clean data unnecessarily and rebasing the horizon changes the preplanned look schedule, which introduces its own multiple-testing complexity. Option 3 overstates the fragility of mSPRT \u2014 restarting wastes 7 days of valid data for a 4% symmetric gap.",
+    "hints": [
+      "What does 'symmetric gap' mean for the treatment-control comparison?",
+      "Does mSPRT's always-valid guarantee require zero missing data, or tolerance for small symmetric noise?"
+    ],
+    "concepts": [
+      "SEQUENTIAL TESTING",
+      "STATISTICAL SIGNIFICANCE"
+    ]
+  },
+  {
+    "id": 93067,
+    "order": 63,
+    "topic": "experimentation",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "parent_id": 93055,
+    "follow_up_dimension": "business_rule_pivot",
+    "title": "Business changes primary metric mid-sequential experiment \u2014 what now?",
+    "scenario_context": "You are at look 2 (day 14) of your 3-look mSPRT sequential test, originally powered on checkout conversion rate. The business has just rebranded its Q4 goal from 'checkout conversion' to 'revenue per session' (RPS) as the primary success metric. The VP of Product says: 'Just rerun the sequential analysis on RPS \u2014 the experiment is the same, just the metric changed.' Look-2 data is already collected.",
+    "description": "What is the right response to the VP's request?",
+    "options": [
+      "Refuse to rerun on RPS as the primary metric. The mSPRT boundary was calibrated for checkout conversion variance; applying it to RPS (a higher-variance, skewed metric) with data already collected is a post-hoc metric swap that inflates Type I error. Report the current conversion result as the pre-specified primary outcome and treat RPS as an exploratory secondary.",
+      "Rerun the sequential analysis on RPS \u2014 the experiment design (randomization, duration, look schedule) is unchanged; only the metric changed, which does not affect the boundary validity.",
+      "Restart the experiment from scratch with RPS as the primary metric and a freshly calibrated mSPRT boundary \u2014 the current data cannot be used for any inference on RPS.",
+      "Apply a Bonferroni correction dividing alpha by 2 (one for conversion, one for RPS) and rerun the sequential test on both; ship if either metric is significant."
+    ],
+    "correct_option": 0,
+    "explanation": "Option 0 is correct. Switching the primary metric mid-experiment after observing data is a form of p-hacking / HARKing (Hypothesizing After Results are Known). The mSPRT boundary was calibrated for the variance profile of checkout conversion; RPS is a skewed, higher-variance metric where the boundary may be miscalibrated. More fundamentally, if the business is now looking at RPS because conversion results were disappointing, the metric swap is outcome-driven \u2014 exactly the selection bias that Type I error control is designed to prevent. The pre-specified analysis plan (conversion) must be reported as the primary outcome. RPS can be reported as exploratory with appropriate caveats. Option 1 incorrectly asserts that boundary validity is independent of metric variance. Option 2 is overly conservative \u2014 the collected data is valid for the pre-specified primary metric. Option 3 applies Bonferroni to a problem of post-hoc selection, not planned multiple comparisons.",
+    "hints": [
+      "Was the decision to switch to RPS made before or after seeing the look-2 conversion result?",
+      "What happens to Type I error control when you swap the metric the boundary was calibrated for?"
+    ],
+    "concepts": [
+      "SEQUENTIAL TESTING",
+      "EXPERIMENT DURATION"
+    ]
+  },
+  {
+    "id": 93068,
+    "order": 64,
+    "topic": "experimentation",
+    "type": "debug",
+    "difficulty": "hard",
+    "mock_only": true,
+    "parent_id": 93056,
+    "follow_up_dimension": "ambiguity_pivot",
+    "title": "Thompson Sampling routes only 3% to variant C after 7 days \u2014 is this a problem?",
+    "scenario_context": "Your Thompson Sampling bandit (from the previous question) has been running for 7 days across three variants (A, B, C). Traffic allocation has stabilized: A=48%, B=49%, C=3%. Variant C is a bold redesign your design team spent 3 months on. The design team lead argues: 'The bandit killed C unfairly \u2014 it got much less data early and was never given a fair chance. We should reset the priors and give C a 33%/33%/33% fresh start.'",
+    "description": "How do you respond to the design team lead?",
+    "options": [
+      "Reject the reset request. The bandit allocating 3% to C is the algorithm working correctly \u2014 C performed poorly on early observations and the bandit reduced its allocation to protect users. Resetting to uniform priors discards 7 days of signal and restarts the exploration-exploitation tradeoff from scratch, likely repeating the same allocation outcome if C's underlying performance is genuinely weak.",
+      "Agree with the reset. Thompson Sampling is known to be sensitive to early outcomes and C may have received bad luck in the first few days; a uniform restart gives it a fair trial.",
+      "Agree with the reset but run C as a separate A/B test against A (the current winner) rather than a 3-variant bandit, to give it a statistically clean comparison.",
+      "Keep the current allocation but manually boost C to 15% traffic by overriding the bandit, then let the algorithm rebalance from that floor."
+    ],
+    "correct_option": 0,
+    "explanation": "Option 0 is correct. Thompson Sampling's allocation is Bayesian posterior-based: C receiving 3% reflects the evidence accumulated over 7 days, not arbitrary bad luck. Resetting priors discards that evidence \u2014 it is analytically equivalent to saying 'ignore the last 7 days of data,' which the design team would not accept for any other reason. If C is genuinely underperforming, a reset will re-route users to a worse variant during the re-exploration phase. The right response is to examine C's posterior distribution: if its 95% credible interval still overlaps A and B, it has not been statistically eliminated and exploration will continue. If it has been dominated, the bandit's conclusion is correct. Option 1 conflates 'the algorithm gave bad luck' with 'the algorithm gave a bad outcome' \u2014 Thompson Sampling is robust to early-arm variance by design. Option 2 introduces a new experiment design mid-stream. Option 3 manually overrides the algorithm's posterior-based allocation, which negates the bandit's function.",
+    "hints": [
+      "What does a 3% allocation mean in a Bayesian bandit's posterior framework?",
+      "What is the difference between 'C got unlucky' and 'C performed poorly'?"
+    ],
+    "concepts": [
+      "MULTI-ARMED BANDIT",
+      "EXPERIMENT DURATION"
+    ]
+  },
+  {
+    "id": 93069,
+    "order": 65,
+    "topic": "experimentation",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "parent_id": 93056,
+    "follow_up_dimension": "edge_case_pivot",
+    "title": "Reward for Thompson Sampling is observed 24 hours after exposure \u2014 what is the design implication?",
+    "scenario_context": "Your e-commerce bandit tests checkout-flow variants against a 7-day repeat-purchase rate (the business's key loyalty metric). The reward signal (did the user repurchase within 7 days?) arrives 7 days after the visit. Thompson Sampling updates its posteriors on each new reward observation. The engineering team proposes: 'We'll just wait 7 days per batch before updating the bandit \u2014 that limits us to one posterior update per week.'",
+    "description": "What is the core design tension this delayed reward creates, and how should it be resolved?",
+    "options": [
+      "Delayed rewards create a feedback lag that decouples the bandit's posterior from current user behavior. Weekly batch updates are operationally safe but sacrifice most of the bandit's regret advantage \u2014 it is nearly equivalent to a fixed-allocation A/B test with weekly looks. Consider a short-horizon surrogate metric (e.g., add-to-cart or same-session purchase) to update posteriors in near-real-time, validated against 7-day repeat purchase in a holdout.",
+      "The 7-day delay is not a design problem \u2014 Thompson Sampling does not require real-time updates. Batch updates every 7 days are standard and fully preserve the Bayesian regret guarantees.",
+      "The delay means the bandit cannot be used at all for 7-day metrics; switch to a fixed A/B test with 7-day conversion as the primary endpoint.",
+      "Run two bandits in parallel: one on a 1-day surrogate metric and one on the 7-day metric, then combine their allocations using a weighted average of the two posteriors."
+    ],
+    "correct_option": 0,
+    "explanation": "Option 0 is correct. The bandit's regret advantage over a fixed A/B test comes from its ability to shift traffic quickly toward better-performing arms. A 7-day reward lag plus weekly posterior updates means the bandit is essentially making decisions based on week-old evidence \u2014 if one variant spikes or tanks in the current week, the bandit cannot respond for 7 more days. This erases the adaptive advantage. The surrogate-metric approach (near-real-time proxy for the eventual 7-day metric) is the standard solution in e-commerce bandit design. Option 1 is wrong: batch updates do not fully preserve regret guarantees when the lag is as long as the update interval \u2014 the regret bound degrades significantly with feedback delay. Option 2 overstates the limitation; bandits with delayed rewards are used in practice, just with careful design choices. Option 3 is an interesting idea but combining posteriors from different metrics with a 'weighted average' is not statistically principled and conflates two different optimization targets.",
+    "hints": [
+      "What is the bandit's main advantage over a fixed A/B test, and what does feedback lag do to that advantage?",
+      "What is a surrogate metric, and why is it used in delayed-reward bandit settings?"
+    ],
+    "concepts": [
+      "MULTI-ARMED BANDIT",
+      "BAYESIAN EXPERIMENTATION"
+    ]
+  },
+  {
+    "id": 93070,
+    "order": 66,
+    "topic": "experimentation",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "parent_id": 93057,
+    "follow_up_dimension": "stakeholder_pivot",
+    "title": "Board asks: 'What is our confidence level?' \u2014 how do you translate the Bayesian result?",
+    "scenario_context": "You stopped your Bayesian experiment at 95% posterior probability that treatment beats control (P(treatment > control) = 0.951). The board is presenting to investors and asks: 'Can we say we are 95.1% confident the new checkout flow is better?' You know the board will quote this number publicly.",
+    "description": "What is the correct response?",
+    "options": [
+      "Correct the framing before it goes public. '95.1% posterior probability' is a Bayesian statement about the parameter given your prior and data \u2014 it is not a frequentist confidence level and should not be quoted as generic 'confidence.' For investor communication, say: 'Our Bayesian analysis gives a 95.1% posterior probability that the new checkout flow has a higher conversion rate, under our stated prior assumptions.' Omitting the prior dependency is misleading.",
+      "The statement is accurate as-is. Bayesian posterior probability is the most intuitive form of confidence and the board can quote it directly.",
+      "Do not allow the board to quote any Bayesian result to investors \u2014 Bayesian statistics are not accepted in regulated financial disclosures and create legal liability.",
+      "Convert the posterior probability to a frequentist p-value before communicating \u2014 p = 1 - 0.951 = 0.049 \u2014 and quote that instead, as it is more universally understood."
+    ],
+    "correct_option": 0,
+    "explanation": "Option 0 is correct. The Bayesian posterior probability is a conditional statement: P(treatment > control | data, prior). The prior dependency is not a technicality \u2014 it is load-bearing. If the prior was informative (e.g., you assumed a 50% chance of a positive effect with a specific effect-size distribution), the 95.1% figure reflects that assumption. Public statements that strip the prior condition mislead audiences into treating it as an unconditional probability. The correction is not to avoid Bayesian results but to communicate them with their conditioning clearly stated. Option 1 ignores the prior dependency. Option 2 is false \u2014 Bayesian methods are widely used in regulated industries with appropriate disclosure. Option 3 is statistically wrong: p = 1 - posterior_probability only if the prior was uniform and the test was two-sided, which is generally not the case; conflating the two frameworks produces an invalid hybrid.",
+    "hints": [
+      "What is the full conditioning statement for a Bayesian posterior probability?",
+      "Does '95.1% posterior probability' depend on the prior? What happens if the prior was wrong?"
+    ],
+    "concepts": [
+      "BAYESIAN EXPERIMENTATION",
+      "STATISTICAL SIGNIFICANCE"
+    ]
+  },
+  {
+    "id": 93071,
+    "order": 67,
+    "topic": "experimentation",
+    "type": "debug",
+    "difficulty": "hard",
+    "mock_only": true,
+    "parent_id": 93057,
+    "follow_up_dimension": "business_rule_pivot",
+    "title": "Leadership changes success metric to revenue after Bayesian experiment stopped on conversion",
+    "scenario_context": "You stopped your Bayesian experiment at P(treatment > control on conversion rate) = 0.951. Leadership now says: 'Conversion is fine, but we really care about revenue per user. Can you rerun the same Bayesian analysis on revenue?' Revenue per user in your data is highly right-skewed (median: $12, mean: $34, 90th percentile: $180). You have 85,000 users per arm.",
+    "description": "What are the two distinct problems with running a Bayesian analysis on revenue using the already-collected data?",
+    "options": [
+      "Problem 1: Post-hoc metric selection. The decision to analyze revenue was made after seeing the conversion result, introducing the same selection bias as frequentist p-hacking \u2014 you are choosing the metric most likely to support a ship decision. Problem 2: Distributional mismatch. Revenue is highly right-skewed; a standard Bayesian model with a conjugate beta-binomial prior (designed for conversion rates) is the wrong likelihood, and the posterior will be miscalibrated. Both problems compound to produce an untrustworthy result.",
+      "There is only one problem: the distributional mismatch (revenue is skewed). Use a log-normal Bayesian model instead of beta-binomial, rerun the analysis, and report the posterior on revenue \u2014 there is no post-hoc selection issue because Bayesian inference does not have a Type I error problem.",
+      "There are no problems. Bayesian analysis on the same dataset with a different metric is always valid because Bayesian posteriors are not affected by multiple comparisons.",
+      "The only problem is sample size: 85,000 per arm is sufficient for conversion but may be underpowered for the higher-variance revenue metric. Compute the posterior probability on revenue and report it with a wider credible interval."
+    ],
+    "correct_option": 0,
+    "explanation": "Option 0 is correct on both counts. (1) Post-hoc metric selection: the Bayesian framework does not eliminate selection bias. If you choose to analyze revenue because conversion was significant (or because you hope revenue will be significant), you are fishing for a favorable result. The prior and likelihood are chosen after seeing what was available \u2014 this is HARKing regardless of the inference framework. (2) Distributional mismatch: a beta-binomial model is parameterized for binary outcomes (converted / did not convert). Revenue is continuous and highly skewed; a log-normal, gamma, or mixture model is needed. Using the wrong likelihood produces posteriors that do not reflect the true parameter distribution. Option 1 correctly identifies the distributional problem but incorrectly claims Bayesian inference is immune to selection bias. Option 2 is a common misconception: multiple comparison protection is a frequentist concept, but post-hoc selection bias affects all inference frameworks. Option 3 only addresses power, missing both the selection and distributional problems.",
+    "hints": [
+      "Does the Bayesian framework protect against choosing your metric after seeing the data?",
+      "What likelihood function is appropriate for a right-skewed revenue distribution?"
+    ],
+    "concepts": [
+      "BAYESIAN EXPERIMENTATION",
+      "METRIC SELECTION"
+    ]
+  },
+  {
+    "id": 93072,
+    "order": 68,
+    "topic": "experimentation",
+    "type": "debug",
+    "difficulty": "hard",
+    "mock_only": true,
+    "parent_id": 93058,
+    "follow_up_dimension": "data_quality_pivot",
+    "title": "Switchback shows 45-minute carryover into a 1-hour period \u2014 is the design valid?",
+    "scenario_context": "Your switchback experiment uses 1-hour time periods, alternating between control and treatment surge pricing. Analysis of driver repositioning behavior reveals a 45-minute carryover effect: after a period ends, driver positions influenced by the previous period's pricing persist for ~45 minutes into the next period. Your switchback design assumed 15-minute carryover when setting the 1-hour period length.",
+    "description": "What does the 45-minute carryover mean for your experiment's validity?",
+    "options": [
+      "The design is severely compromised. With 45-minute carryover in a 1-hour period, only ~15 minutes of each period reflects 'pure' treatment or control conditions. Observations in the first 45 minutes of each period are contaminated by the previous period's pricing. The causal estimate from this design conflates the previous period's effect with the current period's effect, biasing the result in an unknown direction. The experiment must be redesigned with longer periods (e.g., 3\u20134 hours) or a washout gap between periods.",
+      "The carryover is a minor issue. The 45-minute effect only affects the first 45 minutes of each period; since the period is 60 minutes, 75% of observations are clean. Average the last 15 minutes of each period and ignore the first 45.",
+      "Carryover effects cancel out in expectation in a switchback design because treatment and control alternate \u2014 what bleeds from treatment into control also bleeds from control into treatment symmetrically.",
+      "Extend each period to 90 minutes without changing the alternation schedule \u2014 this gives more time per period for the carryover to dissipate before the next switch."
+    ],
+    "correct_option": 0,
+    "explanation": "Option 0 is correct. The carryover/washout assumption is foundational to switchback validity. If carryover is 45 minutes and the period is 60 minutes, only 15 minutes of 'pure signal' exists per period \u2014 and only if the carryover is exactly 45 minutes (not longer). The estimate computed from full-period data is a weighted mix of the current and previous treatments, not a clean causal estimate of the current treatment alone. Option 1's suggestion to use only the last 15 minutes dramatically reduces power (one-quarter of the data) and may still be contaminated if the carryover estimate of 45 minutes is itself noisy. Option 2 is wrong: carryover effects do not cancel in a switchback \u2014 they systematically contaminate the early portion of every period regardless of direction. Option 3 is on the right track (longer periods) but 90 minutes still barely exceeds the 45-minute carryover, leaving an insufficient washout margin; the standard recommendation is 3\u20134\u00d7 the estimated carryover.",
+    "hints": [
+      "What fraction of each period is 'pure signal' when carryover is 45 minutes and the period is 60 minutes?",
+      "Do carryover effects cancel when you alternate treatment and control?"
+    ],
+    "concepts": [
+      "SWITCHBACK EXPERIMENTS",
+      "EXPERIMENT DESIGN"
+    ]
+  },
+  {
+    "id": 93073,
+    "order": 69,
+    "topic": "experimentation",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "parent_id": 93058,
+    "follow_up_dimension": "scale_pivot",
+    "title": "Expanding switchback to 3 new markets mid-experiment \u2014 what's the risk?",
+    "scenario_context": "Your ride-sharing switchback experiment has been running in New York for 3 weeks. Leadership asks you to expand to Chicago and Los Angeles mid-experiment to 'get results faster.' The new markets would be added to the existing switchback schedule starting in week 4. Supply elasticity, driver density, and surge pricing response rates differ substantially across the three cities.",
+    "description": "What is the primary experimental validity concern with mid-experiment market expansion?",
+    "options": [
+      "Adding markets mid-experiment introduces heterogeneous treatment effects across markets that were not present in the original design, confounding city-level differences with the treatment effect. If Chicago and LA have different supply elasticity, their causal response to surge pricing cannot be pooled with New York's without a market fixed effect. More critically, the week 4 addition creates a non-random time-market interaction: New York has 3 weeks of data while new markets have 1 week, making the pooled estimate sensitive to time-varying confounders in weeks 1\u20133.",
+      "Mid-experiment market expansion is standard in switchback designs \u2014 more markets increase statistical power. Add the markets and pool all data from week 1 onward for Chicago and LA.",
+      "The primary concern is timezone differences: since switchbacks alternate by hour, Chicago (CT) and LA (PT) periods do not align with New York (ET), causing the alternation schedule to be desynchronized.",
+      "Expanding markets mid-experiment is fine as long as you use clustered standard errors at the market-period level to account for within-market correlation."
+    ],
+    "correct_option": 0,
+    "explanation": "Option 0 is correct. Mid-experiment expansion has two compounding problems. First, heterogeneous treatment effects: if the causal effect of surge pricing on driver supply differs by city (plausible given different driver density and market maturity), pooling creates a mixture estimate that is not generalizable to any single market. Second, the time-market confound: New York has 3 weeks of data including any early novelty effects; Chicago and LA start in week 4 under potentially different market conditions (season, local events, competitor changes). This creates a spurious correlation between market identity and experiment phase. Options 2 and 4 address the right direction (power, variance structure) but ignore the selection confound from non-random market timing. Option 3 identifies a real operational challenge (timezone alignment) but it is secondary to the confounding concern.",
+    "hints": [
+      "If NYC has 3 weeks and Chicago has 1 week of data, what time-varying factors might differ?",
+      "Can you pool causal estimates across cities with different supply elasticities without accounting for those differences?"
+    ],
+    "concepts": [
+      "SWITCHBACK EXPERIMENTS",
+      "SEGMENTATION ANALYSIS"
+    ]
+  },
+  {
+    "id": 93074,
+    "order": 70,
+    "topic": "experimentation",
+    "type": "debug",
+    "difficulty": "hard",
+    "mock_only": true,
+    "parent_id": 93059,
+    "follow_up_dimension": "ambiguity_pivot",
+    "title": "DiD and interrupted time series disagree by 3pp \u2014 which do you trust?",
+    "scenario_context": "Your national policy rollout used two quasi-experimental methods: (1) Difference-in-Differences (DiD) comparing early-adopter regions vs. late-adopter regions before and after rollout, yielding a +5.2% estimated effect. (2) Interrupted Time Series (ITS) on the early-adopter regions alone, using pre-rollout trend extrapolation, yielding a +8.1% estimated effect. The disagreement is 2.9 percentage points.",
+    "description": "What does the disagreement between DiD and ITS tell you, and which estimate should you report?",
+    "options": [
+      "The disagreement is diagnostic, not a problem to resolve by picking a winner. DiD assumes parallel trends between early and late adopters (any violation biases it); ITS assumes the pre-rollout trend would have continued unchanged (any structural break biases it). A 2.9pp gap suggests at least one assumption is violated. Investigate: (a) test the parallel-trends assumption using pre-period data, (b) check for confounding events near rollout that ITS's counterfactual trend would miss. Report both estimates with their assumption dependencies and flag the disagreement as uncertainty.",
+      "Trust DiD because it uses a control group (late adopters), making it more robust than ITS which relies only on trend extrapolation.",
+      "Trust ITS because it uses only early-adopter data, avoiding any contamination from the late-adopter group's behavior near the rollout date.",
+      "Average the two estimates (+6.65%) and report that as the consensus effect \u2014 this hedges against the failure of either single assumption."
+    ],
+    "correct_option": 0,
+    "explanation": "Option 0 is correct. When two valid quasi-experimental methods disagree, the disagreement is evidence that at least one identifying assumption is violated \u2014 it is not resolved by picking the 'better' method a priori. DiD's parallel-trends assumption can be tested empirically using pre-period trend data (if early and late adopters diverged before the policy, the assumption fails). ITS's counterfactual-trend assumption is violated when there are contemporaneous shocks (macro events, competitor changes, seasonality shifts near rollout). The right response is to surface both estimates with their conditioning assumptions and explain what the gap implies. Option 1 correctly notes DiD's control-group advantage but incorrectly dismisses ITS; DiD is not universally better and can fail on parallel trends. Option 2 is the reverse error. Option 3 averaging arbitrary estimators is not statistically principled \u2014 averaging a biased and an unbiased estimate produces a biased result.",
+    "hints": [
+      "What assumption does DiD require that ITS does not? What assumption does ITS require that DiD does not?",
+      "When two methods disagree, what does that disagreement tell you about their assumptions?"
+    ],
+    "concepts": [
+      "QUASI-EXPERIMENTAL METHODS",
+      "CAUSAL INFERENCE"
+    ]
+  },
+  {
+    "id": 93075,
+    "order": 71,
+    "topic": "experimentation",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "parent_id": 93059,
+    "follow_up_dimension": "business_rule_pivot",
+    "title": "Business wants a 95% CI on a quasi-experimental effect \u2014 can you provide one?",
+    "scenario_context": "After your DiD analysis (from the previous question), the finance team asks for a 95% confidence interval on the +5.2% policy effect for their revenue forecast model. They want to use the CI bounds as the pessimistic and optimistic inputs. Your DiD standard errors come from a standard OLS regression with region-clustered standard errors (12 regions, 24 months of data).",
+    "description": "What is the correct response to the finance team's request?",
+    "options": [
+      "Provide the CI with explicit caveats. The statistical CI from your OLS regression quantifies sampling uncertainty (noise around the point estimate given the model), but it does NOT capture assumption uncertainty \u2014 specifically, the risk that parallel trends is violated. If parallel trends fails, the entire +5.2% estimate is biased and the CI interval around a biased estimate is also biased. Communicate: 'The statistical CI is [X%, Y%], but this interval conditions on the parallel trends assumption being valid. Our assumption-violation risk (evidenced by the DiD/ITS disagreement) is not captured in these bounds.'",
+      "Do not provide a CI for quasi-experimental estimates \u2014 confidence intervals require random sampling and quasi-experimental designs are not randomized, so standard error computations are invalid.",
+      "Provide the CI as-is from the OLS regression. Standard errors with region clustering are the appropriate measure of uncertainty for DiD, and the finance team can use the bounds directly.",
+      "Widen the CI manually by a factor of 2 to account for assumption uncertainty, then provide it to the finance team as a conservative interval."
+    ],
+    "correct_option": 0,
+    "explanation": "Option 0 is correct. A CI from OLS regression captures one type of uncertainty: sampling variability around the point estimate, conditional on the model being correctly specified. It does not capture assumption uncertainty \u2014 the risk that parallel trends is violated, that the treatment timing is endogenous, or that there is an omitted variable. In a setting where DiD and ITS already disagree by 2.9pp (from the previous question), assumption uncertainty is real and material. Communicating the CI without this caveat leads the finance team to treat the bounds as capturing all relevant uncertainty, which they do not. Option 2 is incorrect: frequentist standard errors are applicable to regression on observational data \u2014 the issue is not about random sampling but about model assumptions. Option 3 provides the CI without the critical caveat about assumption uncertainty. Option 4's arbitrary 2\u00d7 widening has no principled basis \u2014 it is better than providing no caveat but worse than explaining what the CI actually measures.",
+    "hints": [
+      "What does a confidence interval from OLS regression measure? What does it not measure?",
+      "If parallel trends is violated, what happens to the point estimate that the CI is centered on?"
+    ],
+    "concepts": [
+      "QUASI-EXPERIMENTAL METHODS",
+      "CONFIDENCE INTERVALS"
+    ]
+  },
+  {
+    "id": 93076,
+    "order": 72,
+    "topic": "experimentation",
+    "type": "debug",
+    "difficulty": "hard",
+    "mock_only": true,
+    "parent_id": 93060,
+    "follow_up_dimension": "data_quality_pivot",
+    "title": "Holdout tracking shows 2% measurement gap in long-run holdout \u2014 how does this affect the estimate?",
+    "scenario_context": "Your 12-month holdout (5% of users withheld from all feature launches) shows a +3.8% cumulative revenue lift for the treated group vs. holdout after 12 months. A data audit reveals that 2% of holdout users were accidentally enrolled in a feature during month 7 (a logging bug briefly assigned them treatment). The 2% contamination received the feature for approximately 3 weeks before being re-assigned to holdout.",
+    "description": "What is the impact of the contamination on your holdout estimate?",
+    "options": [
+      "The contamination introduces treatment spillover into the holdout arm, causing the estimated lift to be understated. If 2% of 'holdout' users actually received treatment for 3 weeks, the holdout arm's revenue is slightly inflated relative to a pure holdout, compressing the treatment-holdout gap. The true long-run lift is likely larger than +3.8%. The magnitude of the bias depends on how much of the long-run effect accrued during those 3 weeks.",
+      "The contamination inflates the estimated lift. The 2% of holdout users who received the feature behaved better than pure holdout users, widening the treatment-holdout gap.",
+      "A 2% contamination rate over 3 weeks out of 12 months is negligible \u2014 the estimate is effectively unbiased.",
+      "The direction of the bias is indeterminate without knowing whether the contaminated users were higher or lower value than the average holdout user."
+    ],
+    "correct_option": 0,
+    "explanation": "Option 0 is correct. Intent-to-treat (ITT) analysis counts contaminated users as holdout \u2014 their actual behavior (which includes 3 weeks of feature exposure) partially inflates the holdout arm's revenue. This narrows the treatment-holdout gap, understating the true incremental lift. The direction of the bias is determinate: holdout arm revenue goes up (due to contamination), so the gap shrinks, so lift is understated. Option 1 reverses the logic: contaminated holdout users inflate the holdout arm, not the treatment arm. Option 2 is wrong in both direction and magnitude: the 3-week contamination during a mid-experiment period can have lasting behavioral effects (particularly for retention metrics), and 2% of a holdout group is not trivially small when the effect size is 3.8%. Option 3 incorrectly claims the direction is indeterminate \u2014 the contamination direction (holdout users received treatment) uniquely determines the bias direction (holdout revenue up, gap down, lift understated).",
+    "hints": [
+      "If holdout users accidentally received the feature, does the holdout arm's revenue go up or down?",
+      "If holdout arm revenue increases, does the treatment-holdout gap grow or shrink?"
+    ],
+    "concepts": [
+      "HOLDOUT GROUPS",
+      "EXPERIMENT DURATION"
+    ]
+  },
+  {
+    "id": 93077,
+    "order": 73,
+    "topic": "experimentation",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "parent_id": 93060,
+    "follow_up_dimension": "edge_case_pivot",
+    "title": "5% holdout is too small to detect 0.3% long-run lift \u2014 what are the options?",
+    "scenario_context": "Post-hoc power analysis on your 12-month holdout reveals: with 5% holdout (approximately 50,000 users), your minimum detectable effect (MDE) at 80% power is 1.8% lift. Your actual measured lift is +3.8%, so this holdout was adequately powered. However, the business now wants to know if a future holdout could detect a 0.3% lift (the threshold for a 'meaningful' effect on a large annual revenue base). A 0.3% MDE would require approximately 4.2 million users in the holdout arm.",
+    "description": "What are the trade-offs in designing a holdout that can detect a 0.3% lift?",
+    "options": [
+      "Detecting a 0.3% lift requires ~4.2M holdout users. At 5% holdout, this implies 84M total users \u2014 either the platform must be that large or the holdout fraction must increase. Increasing holdout to 15\u201320% detects smaller effects but imposes a significant cost: holdout users are permanently deprived of shipped improvements, creating ethical and revenue trade-offs. The right framing is: what is the minimum effect size the business cares about, and what holdout cost is acceptable to detect it? Very small MDEs may not be worth the holdout cost.",
+      "The solution is to extend the holdout duration to 24 months \u2014 doubling the duration roughly halves the MDE, making 0.3% detectable with the same 5% holdout.",
+      "Switch from a global holdout to a feature-specific holdout for high-sensitivity metrics \u2014 running 5% holdout per feature independently will aggregate to higher effective power across all features.",
+      "Use Bayesian inference instead of frequentist power analysis \u2014 Bayesian methods do not have an MDE constraint and can detect arbitrarily small effects with enough evidence."
+    ],
+    "correct_option": 0,
+    "explanation": "Option 0 is correct. It frames the 0.3% MDE question as a business trade-off (cost of holdout deprivation vs. precision of measurement), which is the right lens. The power calculation is real: 4.2M users in holdout is a massive sample requirement, and the ethical cost of withholding improvements from a large permanent holdout is non-trivial. Option 1 is wrong: doubling duration does not halve the MDE. MDE scales with the inverse square root of sample size, not with duration directly. Doubling duration increases sample size (more observations) but only if the metric is time-averaged rather than point-in-time; for a 12-month cumulative metric, extending to 24 months changes the metric definition, not just the power. Option 2 confuses feature-level holdouts with the power calculation \u2014 running N separate 5% holdouts does not combine their power for a single effect estimate. Option 3 is a common Bayesian misconception: Bayesian methods still require sufficient data to update the posterior away from the prior; they cannot detect arbitrarily small effects without large samples.",
+    "hints": [
+      "What is the cost of maintaining a large holdout group for users in that group?",
+      "Does extending experiment duration double your statistical power?"
+    ],
+    "concepts": [
+      "HOLDOUT GROUPS",
+      "STATISTICAL POWER"
+    ]
+  },
+  {
+    "id": 93078,
+    "order": 74,
+    "topic": "experimentation",
+    "type": "debug",
+    "difficulty": "hard",
+    "mock_only": true,
+    "parent_id": 93061,
+    "follow_up_dimension": "data_quality_pivot",
+    "title": "Mobile segment has 12% non-random missing values \u2014 what does this mean for HTE analysis?",
+    "scenario_context": "Your HTE analysis (from the previous question) found a +6.1% lift on desktop but a -1.3% lift on mobile. A data audit reveals that 12% of mobile users have missing values for the primary conversion metric. Investigation shows the missing data is not random: mobile users with older OS versions (iOS 13 and below, Android 8 and below) are 3\u00d7 more likely to have missing conversion data. These older OS users tend to have lower baseline conversion rates.",
+    "description": "What is the implication of this non-random missingness for your HTE finding on mobile?",
+    "options": [
+      "The non-random missingness biases the mobile estimate. Older OS users (who systematically miss conversion data) have lower baseline conversion \u2014 if they are disproportionately excluded from the mobile analysis, the observed mobile sample overrepresents higher-converting users. The -1.3% mobile lift is computed on a positively selected subsample, not the full mobile population. The true mobile effect could be more negative (if older OS users respond worse to the treatment) or less negative (if they are unaffected), but it is not the -1.3% measured on the observed subsample.",
+      "Non-random missingness biases the overall experiment estimate but not the segment-level HTE \u2014 since mobile and desktop are analyzed separately, the missingness only affects the mobile segment's precision, not its direction.",
+      "Exclude the 12% missing users and report the HTE on the observed mobile subsample with a note that older OS users are underrepresented.",
+      "Impute the missing mobile conversion values using the mean conversion rate of the observed mobile users, then rerun the HTE analysis."
+    ],
+    "correct_option": 0,
+    "explanation": "Option 0 is correct. Missing not at random (MNAR) data causes selection bias in the observed subsample. Older OS users are systematically excluded from the mobile analysis, and they differ from included users in a way that is correlated with both the treatment and the outcome (they have lower baseline conversion). This means the mobile arm's treatment and control groups are not representative of all mobile users \u2014 they overrepresent higher-converting users in both arms. The -1.3% estimate is the effect for the 88% observed mobile users, not for mobile users as a whole. Option 1 is wrong: segment-level analysis is equally subject to selection bias within the segment. Option 3 (exclude and note) produces the same biased estimate while appearing more rigorous. Option 4 (mean imputation) imputes the outcome for users whose outcome is structurally missing for device-related reasons \u2014 this assumes MCAR (missing completely at random), which the audit has already disproven.",
+    "hints": [
+      "If older OS users are both more likely to be missing AND have lower baseline conversion, what kind of users are left in your mobile sample?",
+      "What is MNAR and why does it cause selection bias at the segment level?"
+    ],
+    "concepts": [
+      "SEGMENTATION ANALYSIS",
+      "EXPERIMENT DESIGN"
+    ]
+  },
+  {
+    "id": 93079,
+    "order": 75,
+    "topic": "experimentation",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "parent_id": 93061,
+    "follow_up_dimension": "stakeholder_pivot",
+    "title": "PM wants 'no mobile harm' claim in press release \u2014 can you support it?",
+    "scenario_context": "Your HTE analysis showed desktop: +6.1%, mobile: -1.3% (95% CI: -4.1% to +1.5%). The PM wants to include in a public press release: 'The new checkout flow improves desktop experience and does not harm mobile users.' The mobile CI spans zero, so the result is not statistically significant at alpha=0.05.",
+    "description": "Can you support the 'no harm on mobile' claim, and what is the correct statistical reasoning?",
+    "options": [
+      "Do not support the 'no harm' claim as stated. A non-significant result (CI includes zero) means you cannot reject the null of no effect \u2014 it does not mean the effect is zero. The mobile CI (-4.1% to +1.5%) is consistent with a real negative effect of up to 4.1%. 'No harm' requires equivalence testing (TOST) with a pre-specified equivalence margin, not simply failing to reach significance. The correct claim, if supported by equivalence testing, would be 'we found no evidence of meaningful harm beyond X%.'",
+      "The 'no harm' claim is statistically supported. The CI includes zero, meaning the result is not significant \u2014 this is the standard interpretation that the effect is indistinguishable from zero.",
+      "Support the claim but reframe it as 'no statistically significant harm' \u2014 this is accurate and appropriate for a press release.",
+      "Widen the experiment to mobile-only and run 2 more weeks to get a significant result in either direction before the press release."
+    ],
+    "correct_option": 0,
+    "explanation": "Option 0 is correct. Absence of evidence is not evidence of absence. A non-significant result (CI includes zero) means the data is consistent with both zero effect and a meaningful negative effect. The mobile CI of (-4.1% to +1.5%) explicitly includes a -4.1% conversion harm as a statistically compatible outcome \u2014 that is a real potential harm. 'No harm' as a factual claim requires demonstrating that the effect is practically zero \u2014 i.e., falls within a pre-specified equivalence margin using TOST (two one-sided tests). Without equivalence testing, the correct statement is 'we did not detect a statistically significant mobile effect.' Option 1 commits the classic null-hypothesis-significance testing error of treating failure to reject as accepting the null. Option 2's reframe ('no statistically significant harm') is marginally better but still implies the effect is zero to a general audience. Option 3 extends the experiment for the wrong reason \u2014 the goal is to avoid communicating a falsehood, not to run more data until a convenient result appears.",
+    "hints": [
+      "What does 'CI includes zero' tell you vs. 'the effect is zero'?",
+      "What statistical procedure tests equivalence rather than superiority?"
+    ],
+    "concepts": [
+      "SEGMENTATION ANALYSIS",
+      "TYPE I AND TYPE II ERRORS"
+    ]
+  },
+  {
+    "id": 93080,
+    "order": 76,
+    "topic": "experimentation",
+    "type": "debug",
+    "difficulty": "hard",
+    "mock_only": true,
+    "parent_id": 93062,
+    "follow_up_dimension": "ambiguity_pivot",
+    "title": "Geo-cluster shows +1.2% lift vs user-level +3.8% \u2014 which is the right estimate?",
+    "scenario_context": "Your referral-sharing experiment measured +3.8% lift at the user level (standard A/B). After discovering network-effect contamination (from the previous question), you re-ran the analysis using geo-cluster randomization across 200 cities. The geo-cluster estimate is +1.2% (95% CI: +0.2% to +2.2%). The user-level and geo-cluster estimates differ by 2.6 percentage points.",
+    "description": "Which estimate is more likely to be the true causal effect of the referral feature, and why?",
+    "options": [
+      "The geo-cluster estimate (+1.2%) is more likely to capture the true causal effect. User-level randomization in a network product violates SUTVA: treatment users sharing referrals reach control users, inflating the control arm's outcomes and widening the apparent treatment-control gap. Geo-cluster randomization reduces this spillover by keeping treatment and control networks geographically separated. The 2.6pp difference is the estimated magnitude of the SUTVA violation \u2014 network contamination made the user-level estimate look 3\u00d7 larger than the true effect.",
+      "The user-level estimate (+3.8%) is more reliable because it has more statistical power (individual users as units vs. 200 cities) and a tighter confidence interval.",
+      "Neither estimate is trustworthy \u2014 the 2.6pp gap between them indicates a fundamental flaw in the experiment design that makes both estimates unusable.",
+      "Average the two estimates (+2.5%) to get a balanced view that accounts for both individual-level and network-level effects."
+    ],
+    "correct_option": 0,
+    "explanation": "Option 0 is correct. The defining problem in network-effect experiments is SUTVA violation: treatment users' actions (sharing referrals) directly affect control users' outcomes (receiving referrals), so the potential outcomes of each unit are not independent. User-level randomization cannot solve this because the interference travels across the assignment boundary. Geo-cluster randomization is the standard solution: by assigning entire geographic communities to treatment or control, within-city network interactions stay within a single arm. The treatment-control gap is measured between cities, where cross-arm spillover is minimized (only border effects remain). The user-level estimate inflates the apparent lift because treatment users are sharing into the control pool, improving control arm retention and compressing the true gap \u2014 so the user-level estimate overstates the true causal effect. Option 1 conflates statistical power with causal identification: high power estimates an inflated quantity precisely. Option 3 is incorrect: the gap between the two estimates is itself informative (it quantifies the SUTVA violation), not a sign both are broken. Option 4 averaging is not statistically principled when one estimator is known to be biased.",
+    "hints": [
+      "In a referral experiment, what happens to control users when treatment users share referral links?",
+      "Why does geo-cluster randomization reduce SUTVA violations compared to user-level randomization?"
+    ],
+    "concepts": [
+      "NETWORK EFFECTS",
+      "CAUSAL INFERENCE"
+    ]
+  },
+  {
+    "id": 93081,
+    "order": 77,
+    "topic": "experimentation",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "parent_id": 93062,
+    "follow_up_dimension": "scale_pivot",
+    "title": "Expanding referral experiment to international markets with 8% sharing rate \u2014 what changes?",
+    "scenario_context": "Your US referral experiment used geo-cluster randomization across 200 US cities and found +1.2% lift. You are now expanding to 5 international markets (UK, Germany, Brazil, India, Japan). Preliminary data shows sharing rates vary dramatically: UK 12%, Germany 6%, Brazil 18%, India 22%, Japan 3%. In Japan, network density is low enough that the spillover concern motivating geo-cluster randomization may not apply.",
+    "description": "How should the experiment design change for the international rollout?",
+    "options": [
+      "Design by market spillover risk, not uniformly. In Brazil and India (18\u201322% sharing rates), network effects are strong and geo-cluster randomization is essential. In Japan (3% sharing rate, low network density), user-level randomization may be acceptable \u2014 the spillover contamination is small enough that SUTVA is approximately satisfied, and user-level randomization provides more power. Run separate experiments per market with appropriate designs, then synthesize results using a meta-analytic approach that respects market-level heterogeneity.",
+      "Use geo-cluster randomization uniformly across all international markets \u2014 consistency in design is more important than local optimization, and it avoids cherry-picking claims about which markets need geo-clustering.",
+      "Combine all international markets into a single geo-cluster experiment using city-level randomization \u2014 this maximizes total sample size and power for the global estimate.",
+      "Use user-level randomization in all markets but apply a post-hoc network correction factor (dividing the estimated lift by the observed sharing rate) to account for spillover in high-sharing markets."
+    ],
+    "correct_option": 0,
+    "explanation": "Option 0 is correct. The need for geo-cluster randomization is driven by the severity of SUTVA violation, which scales with network density and sharing rate. Japan's 3% sharing rate implies low cross-arm contamination \u2014 the expected number of control users reached by a treatment user's referral is small, making SUTVA approximately satisfied. Applying costly geo-cluster randomization uniformly across markets with very different spillover risks sacrifices power without proportional benefit. The meta-analytic synthesis respects that the effect size (and possibly direction) may differ by market \u2014 a pooled global estimate may mask meaningful heterogeneity. Option 1 is overly rigid: design should be driven by the assumption violations that each design is meant to solve, not by aesthetic consistency. Option 2's single global geo-cluster experiment pools markets with different market maturities, regulatory environments, and network densities into one estimate, which is likely heterogeneous. Option 3's 'network correction factor' is not a valid statistical procedure \u2014 it divides a biased estimate by an unrelated scalar, which does not produce an unbiased causal estimate.",
+    "hints": [
+      "What drives the need for geo-cluster randomization vs. user-level randomization?",
+      "In a market with 3% sharing rate, how many control users does a typical treatment user's referral reach?"
+    ],
+    "concepts": [
+      "NETWORK EFFECTS",
+      "EXPERIMENT DESIGN"
+    ]
+  },
+  {
+    "id": 93082,
+    "order": 78,
+    "topic": "experimentation",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "parent_id": 93063,
+    "follow_up_dimension": "business_rule_pivot",
+    "title": "PM accepts 2.5% MDE but CFO wants revenue metric instead of conversion \u2014 what changes?",
+    "scenario_context": "After agreeing to a 2.5% MDE (requiring ~640K users per arm) on checkout conversion rate (from the previous question), the CFO intervenes: 'I don't care about conversion rate \u2014 I care about revenue per user. Show me the effect in dollars.' Revenue per user in your platform has mean $28, standard deviation $180 (heavily right-skewed: many $0 sessions, occasional $1000+ transactions). Your current enrollment is 400K per arm and still growing.",
+    "description": "What happens to your sample size requirement when you switch from conversion rate to revenue per user as the primary metric?",
+    "options": [
+      "Sample size requirements increase substantially. For a continuous metric like revenue per user, sample size scales with (variance / effect_size)^2. Revenue per user has a coefficient of variation of 180/28 \u2248 6.4, which is far higher than a binary conversion rate metric. To detect a $0.70 revenue lift (2.5% of $28 mean) at 80% power with alpha=0.05, the required sample is roughly (2 \u00d7 1.96 + 0.84)^2 \u00d7 (180^2 / 0.70^2) \u2248 4.3 million per arm \u2014 approximately 7\u00d7 more than the 640K needed for the conversion rate MDE.",
+      "Sample size requirements decrease when switching to a continuous metric like revenue \u2014 continuous metrics carry more information per observation than binary conversion, requiring fewer users.",
+      "Sample size requirements are unchanged \u2014 the 2.5% MDE applies to any metric regardless of its variance, so 640K per arm is still correct.",
+      "Revenue per user cannot be used as a primary metric in A/B tests because its right-skewed distribution violates the normality assumption required for t-tests."
+    ],
+    "correct_option": 0,
+    "explanation": "Option 0 is correct. The sample size formula for continuous metrics is n = 2 \u00d7 (z_alpha/2 + z_beta)^2 \u00d7 \u03c3^2 / \u03b4^2, where \u03c3 is the metric standard deviation and \u03b4 is the effect size in the metric's units. Revenue per user has \u03c3 = $180 and \u03b4 = $0.70 (2.5% of $28), giving n \u2248 4.3M per arm. This is ~7\u00d7 higher than the conversion rate requirement because revenue's high variance (driven by the skewed distribution) requires far more observations to average out. Switching to a high-variance continuous metric without recalculating power is a common and costly mistake. Option 1 inverts the relationship: more information per observation (higher precision) reduces n, but only if variance is low. Revenue's variance is catastrophically high, overwhelming the 'continuous is better than binary' intuition. Option 2 is wrong: MDE in relative terms (2.5%) produces wildly different absolute effect sizes (and thus different sample requirements) depending on the metric's mean and variance. Option 3 is a common misconception: t-tests are robust to non-normal distributions at large n (Central Limit Theorem), though log transformation or bootstrap methods may be preferred for highly skewed revenue metrics.",
+    "hints": [
+      "What is the coefficient of variation for revenue per user, and how does it compare to a binary conversion metric?",
+      "What is the sample size formula for a continuous metric, and what drives the denominator?"
+    ],
+    "concepts": [
+      "SAMPLE SIZE BASICS",
+      "METRIC SENSITIVITY"
+    ]
+  },
+  {
+    "id": 93083,
+    "order": 79,
+    "topic": "experimentation",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "parent_id": 93063,
+    "follow_up_dimension": "performance_pivot",
+    "title": "30-day vs 7-day CUPED covariate raises variance reduction from 35% to 52% \u2014 is it worth it?",
+    "scenario_context": "To address the sample size challenge (from the previous question), your data science team proposes CUPED (Controlled-experiment Using Pre-Experiment Data) using pre-experiment revenue per user as a covariate. A 7-day pre-period covariate reduces variance by 35%, cutting required sample from 4.3M to ~2.8M per arm. A 30-day pre-period covariate reduces variance by 52%, cutting required sample to ~2.1M per arm. The 30-day covariate requires users to have been active for 30 days before the experiment \u2014 this excludes 28% of eligible users who are newer.",
+    "description": "How do you decide between the 7-day and 30-day CUPED covariate?",
+    "options": [
+      "The 30-day covariate's 17pp additional variance reduction (52% vs 35%) must be weighed against the 28% exclusion of newer users. If new users have different treatment response (likely, given they have less purchase history), the 30-day-covariate experiment answers a different question: 'What is the effect for established users?' The 7-day covariate includes all eligible users with lower exclusion, giving a more representative sample at the cost of slightly more variance. The right choice depends on which population the business decision applies to \u2014 if the feature affects all users equally, 7-day is preferred for generalizability; if new-user exclusion is acceptable (e.g., the feature targets established users), 30-day is preferred for efficiency.",
+      "Always use the longer covariate window \u2014 more variance reduction is strictly better and the 28% exclusion is a minor sample size concern that the remaining 72% compensates for.",
+      "Always use the shorter covariate window \u2014 excluding 28% of users invalidates the experiment regardless of variance reduction gains.",
+      "Use both covariates simultaneously in a multiple regression CUPED model \u2014 this maximizes variance reduction to above 52% without excluding any users."
+    ],
+    "correct_option": 0,
+    "explanation": "Option 0 is correct. CUPED efficiency and sample representativeness are in tension, and the right trade-off is determined by the scope of the business question. The 28% exclusion from the 30-day covariate is not merely a sample size issue \u2014 it is a representativeness issue. Newer users who are excluded may respond differently to the checkout feature (less price sensitivity, different funnel behavior, less historical data to correlate with the covariate). If the feature is intended for all users, excluding 28% makes the estimate conditional on user tenure, not the general population. Option 1 treats variance reduction as universally superior to representativeness, ignoring the external validity concern. Option 2 treats any exclusion as invalidating \u2014 this is too absolute; exclusions that are not related to the treatment effect may be acceptable with appropriate scope caveats. Option 3 contains a statistical error: you cannot use both 7-day and 30-day pre-period data as separate covariates for users without 30 days of history (those users would have missing 30-day values), so the 'no exclusion' claim is false. Additionally, adding a 30-day covariate for only 72% of users introduces missing data complexity.",
+    "hints": [
+      "If you exclude 28% of users (newer users) from the experiment, which question does your estimate answer?",
+      "Why might newer users respond differently to a checkout feature than established users?"
+    ],
+    "concepts": [
+      "SAMPLE SIZE BASICS",
+      "VARIANCE REDUCTION"
+    ]
   }
 ]

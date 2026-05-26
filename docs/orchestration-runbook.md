@@ -295,13 +295,14 @@ Update this section after each track closes / each retro-cleanup completes.
 | Data Modeling | ✅ Closed (Phase 2.5 pending) | DIMENSIONAL MODELING 93.8% ceiling breach + 2 dead families + 1 practice-floor | **Separate Phase 2.5 re-balance cycle** — not a retro-cleanup; needs Stage A→B→C |
 | Statistics | ✅ Closed | ✅ Phase 2 closed 2026-05-26 (Stage C PASS after 2 remediation rounds — see tracker decision log). 13-family registry locked (expanded from 12 via Stage A Deliverable 2). 100 practice + 116 mock-only authored; 12 chains all 7 follow-up dimensions exercised. Dual-subtype (conceptual + numerical); per-subtype ratios conceptual 1.42× / numerical 0.78× (numerical below 1.0× — provisional, first-remediation candidate if exhaustion observed). Path (ii) no realism by design (union-of-modalities defence in `statistics.md`). | Practice 100, mock 116, ratio 1.16× (band low end); validator-enabled |
 | ML Fundamentals | ✅ Closed | ✅ Phase 2 closed 2026-05-26 (Stage C PASS after remediation). 29-family registry locked. 97 practice + 139 mock-only (0e/59m/80h; 64 hard standalone + 16 chain children from 8 chains); ratio 1.43×. Stage C E4 remediation: 7 medium mock-only tagging-lie questions promoted to hard (83119–83125) with natural-fit concept tags. All 29 families pass ≥4 mock-only floor. | Practice 97, mock 139, ratio 1.43×; validator-enabled |
-| Experimentation | ⏸ Pending | 0 orphans / 22 families — clean enough to enforce now | Phase 2 pending |
+| Experimentation | ✅ Closed | ✅ Phase 2 closed 2026-05-26. 24-family registry locked (22→24 via SEQUENTIAL TESTING + METRIC SENSITIVITY). 87 practice + 104 mock-only (0e/45m/59h; 39 hard standalone + 20 chain children from 10 chains); ratio 1.20×. Realism path (ii): no realism families by design (MCQ-only, all reasoning lenses directly gradeable). Q83029 resurrected from ML as 93038. Validator-enabled. | Practice 87, mock 104, ratio 1.20×; validator-enabled |
 
 ### 6.2 Validator coverage state (`_TAXONOMY_VALIDATED_TRACKS`)
 
 In set: SQL, Python, Pandas (`python-data`), PySpark, Data Engineering, Data Modeling.
 In set (post Stats + ML Fundamentals closure): SQL, Python, Pandas (`python-data`), PySpark, Data Engineering, Data Modeling, Statistics, ML Fundamentals.
-Out of set: Experimentation. Validator emits stderr warning naming it on every run.
+In set (post Experimentation closure): SQL, Python, Pandas (`python-data`), PySpark, Data Engineering, Data Modeling, Statistics, ML Fundamentals, Experimentation.
+Out of set: none (all active tracks enrolled).
 
 ### 6.3 Precedent table (sizing-benchmark anchor for next Stage A)
 
@@ -315,6 +316,7 @@ Out of set: Experimentation. Validator emits stderr warning naming it on every r
 | DM | 80 | 96 | 1.20 | 10 | 31 (10p + 21c) | 32% |
 | Statistics | 100 | 116 | 1.16 | 12 | 35 (12p + 23c) | 30% |
 | ML Fundamentals | 97 | 139† | 1.43 | 8 | 24 (8p + 16c) | 17%† |
+| Experimentation | 87 | 104 | 1.20 | 10 | 30 (10p + 20c) | 29% |
 
 †Total mock-only 139 includes 16 chain children; standalone mock-only = 123. Chain-member % is 17% against total mock (24/139) — below the 30–35% cluster but chains were sized at ~20% of the planned 120 mock-only under a prior estimate that undercounted chain-member math (parent-only vs parent+children). See chain-member % note below.
 

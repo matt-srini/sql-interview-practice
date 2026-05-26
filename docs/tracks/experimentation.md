@@ -35,8 +35,8 @@ Experimentation samples are auto-sliced from the first 3 practice questions per 
 | Tier | Reasoning depth | Topics |
 |---|---|---|
 | **Easy** | Single concept, clear right answer | Experiment design basics, hypothesis formulation, statistical significance, Type I/II, metric selection, power basics |
-| **Medium** | Trade-off; tempting distractors | Multiple testing, sample-ratio mismatch (SRM), novelty effects, variance reduction (CUPED), network effects, segmentation analysis |
-| **Hard** | Multi-factor; all distractors plausible | Causal inference (IV, propensity scoring, RDD), switchback experiments, Bayesian experimentation, multi-armed bandit, holdout groups, quasi-experimental methods |
+| **Medium** | Trade-off; tempting distractors | Multiple testing, sample-ratio mismatch (SRM), novelty effects, variance reduction (CUPED), network effects, segmentation analysis, metric sensitivity |
+| **Hard** | Multi-factor; all distractors plausible | Causal inference (IV, propensity scoring, RDD), switchback experiments, Bayesian experimentation, multi-armed bandit, holdout groups, quasi-experimental methods, sequential testing, metric sensitivity (advanced) |
 
 ### Representative scenarios per tier
 
@@ -54,13 +54,13 @@ Difficulty controls reasoning depth, never licenses formula or tool-name recall.
 |---|---|
 | Easy | Experiment design basics → hypothesis formulation → significance → Type I and II errors → metric selection → power basics |
 | Medium | Multiple testing → SRM → novelty effects → variance reduction (CUPED) → network effects → segmentation |
-| Hard | Causal inference (IV / propensity / RDD) → switchback experiments → Bayesian experimentation → multi-armed bandit → holdout groups → quasi-experimental methods |
+| Hard | Causal inference (IV / propensity / RDD) → switchback experiments → Bayesian experimentation → multi-armed bandit → holdout groups → quasi-experimental methods → sequential testing → metric sensitivity (advanced) |
 
 ## Concept families
 
 Full registry: [`docs/concept-taxonomy.md` → Experimentation section](../concept-taxonomy.md#experimentation--concept-families).
 
-22 families. **The tightest pre-existing registry in the bank** (22 unique tags total). Formalisation endorses current practice.
+24 families (Phase 2 expanded from 22 → 24: added SEQUENTIAL TESTING at hard difficulty and METRIC SENSITIVITY at medium + hard). **The tightest registry in the bank** (24 unique tags total).
 
 ## Authoring allocation matrix
 
@@ -117,6 +117,28 @@ Required:
 - Exactly 4 options, each ≥ 20 characters.
 - Explanation refutes every distractor with a specific reason.
 - Scenarios use plausible real numbers — sample sizes that match the implied product, lifts in believable ranges, p-values that match the lift / sample / variance.
+
+## Coverage (Phase 2 final state)
+
+| Metric | Value |
+|---|---|
+| Practice questions | 87 (30 easy / 33 medium / 24 hard) |
+| Mock-only questions | 104 (0 easy / 45 medium / 59 hard) |
+| Mock / practice ratio | 1.20× |
+| Mock m:h split | 45 medium : 59 hard |
+| Chain count | 10 (10 parents + 20 children = 30 members, 29% of mock-only) |
+| Realism path | (ii) — no mock-only realism families; all 24 families are direct-gradeable via MCQ |
+| Load-bearing family | `SAMPLE RATIO MISMATCH` — appears on >25% of medium mock-only questions; anchors the core "broken experiment" diagnosis skill |
+| Registry | 24 families (22 original + 2 added in Phase 2: SEQUENTIAL TESTING, METRIC SENSITIVITY) |
+| Validator gate | Added to `_TAXONOMY_VALIDATED_TRACKS` in `backend/scripts/validate_content.py` |
+
+**Type mix in mock-only (approximate):** ~48% scenario · ~28% debug · ~15% predict_output · ~9% conceptual.
+
+**Phase 2 decision log:**
+- Registry expanded 22→24: SEQUENTIAL TESTING (hard) covers mSPRT / group sequential / alpha spending / optional stopping; METRIC SENSITIVITY (medium + hard) covers structural detectability limits from high-variance or coarsely-defined metrics.
+- Realism path (ii) chosen: MCQ-only track. Every reasoning lens (SRM diagnosis, novelty detection, peeking, network contamination) is directly gradeable as scenario/debug/predict_output without a code-execution harness. The "assessment lens" rationale for SQL/Pandas mock-only realism families does not transfer here.
+- 10 chains (30 members) cover: SRM+CDN bias, sequential testing Q4 pressure, Thompson Sampling bandit, Bayesian stop-at-95%, switchback carryover, national policy quasi-exp, 5% long-run holdout, HTE desktop+mobile, email referral network effects, MDE/CUPED sample size.
+- Q83029 resurrected from ML Fundamentals (git `60005e9`) at ID 93038 with tags CAUSAL INFERENCE + SEGMENTATION ANALYSIS (uplift modeling, 4-segment HTE).
 
 ## Verification before commit
 

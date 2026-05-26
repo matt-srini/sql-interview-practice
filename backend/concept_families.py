@@ -76,6 +76,15 @@ MOCK_ONLY_REALISM_FAMILIES: dict[str, set[str]] = {
     "data-modeling": set(),
     # Statistics: union-of-modalities — MCQ subtype + numerical harness already grade judgment; no realism lens needed.
     "statistics": set(),
+    # Experimentation: NO realism families by design. Exp is constructed reasoning
+    # (MCQ-only, no code execution). MCQ format makes every reasoning lens
+    # (SRM diagnosis, novelty detection, network-effect contamination, peeking)
+    # directly gradeable as scenario / debug / predict_output — the "assessment lens"
+    # rationale for SQL/Pandas mock-only realism does not apply here. Real-world
+    # experimentation pathology clusters (SRM, novelty, peer effects, peeking) ARE
+    # the registered concept families themselves, not lenses on top.
+    # See docs/tracks/experimentation.md Coverage section (Phase 2 decision log).
+    "experimentation": set(),
     # ML Fundamentals: NO realism families by design. ML is constructed
     # reasoning (MCQ-only, no code execution). The curriculum absorbs the
     # realism lens via six pathology-flavoured families (DATA LEAKAGE DETECTION,
@@ -2126,6 +2135,22 @@ CONCEPT_FAMILIES: dict[str, dict[str, list[str]]] = {
         "SAMPLE SIZE BASICS": [
             "SAMPLE SIZE BASICS",
             "POWER VS SAMPLE SIZE",
+        ],
+        "SEQUENTIAL TESTING": [
+            "SEQUENTIAL TESTING",
+            "ALWAYS-VALID",
+            "MSPRT",
+            "GROUP SEQUENTIAL",
+            "ALPHA SPENDING",
+            "OPTIONAL STOPPING",
+            "ANYTIME-VALID",
+        ],
+        "METRIC SENSITIVITY": [
+            "METRIC SENSITIVITY",
+            "SENSITIVE METRIC",
+            "LOW-SENSITIVITY METRIC",
+            "METRIC GRANULARITY",
+            "METRIC DEFINITION TIGHTNESS",
         ],
     },
 }

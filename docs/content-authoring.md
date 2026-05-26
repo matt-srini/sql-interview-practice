@@ -389,6 +389,7 @@ Mock-only inventory must support a power user who completes most of practice and
 | Data Modeling | 80 | 96 | **1.20×** | constructed reasoning (MCQ) |
 | Statistics | 100 | 116 | **1.16×** | hybrid (conceptual MCQ + numerical Python) |
 | ML Fundamentals | 97 | 139† | **1.43×** | constructed reasoning (MCQ); †includes 16 chain children from 8 chains |
+| Experimentation | 87 | 104 | **1.20×** | constructed reasoning (MCQ); 10 chains (20 chain children); 24-family registry; path (ii) no realism families |
 
 A track audit proposing **< 1.0×** must record the track-specific reason in the brief and the decision log (e.g. interview-frequency data showing low demand, a finite pattern-space argument that more mock would only produce clones, etc.) — and the reason must survive critical pushback. *"Lean"* in this contract applies to **practice** (don't pad the curriculum with puzzles or low-value variants); **mock** sizes to the runway. A small mock pool is a power-user runway failure, not a virtue.
 
@@ -401,7 +402,7 @@ A track audit proposing **< 1.0×** must record the track-specific reason in the
 - **Operational ceiling:** `target + ~5pp`. Exceeding the band also requires escalation (prevents over-authoring into near-clone territory under the anti-duplication rule).
 - **Quality > integer.** If the anti-duplication rule binds before the band's lower bound, stop authoring, record the binding reason in the closeout commit, and hand back for re-audit. Do not pad with near-clones to hit a number.
 
-**Closed tracks (SQL, Python, PySpark, Pandas, Data Engineering, Data Modeling, Statistics) keep their locked targets** — this rule applies only to track audits running 2026-05-24 onward (ML Fundamentals, Experimentation). The precedent table above records LANDED ratios (history), not retro-fitted targets.
+**Closed tracks (SQL, Python, PySpark, Pandas, Data Engineering, Data Modeling, Statistics, ML Fundamentals, Experimentation) keep their locked targets** — all active tracks have now closed Phase 2. The precedent table above records LANDED ratios (history), not retro-fitted targets.
 
 ---
 
@@ -463,10 +464,10 @@ Practice questions are the full curriculum. Mock-only questions live in the same
 | Data Modeling | 25 | 30 | 25 | **80** | Constructed reasoning (MCQ) |
 | Statistics | 31 | 43 | 26 | **100** | Hybrid (conceptual MCQ + numerical Python) |
 | ML Fundamentals | 30 | 39 | 28 | **97** | Constructed reasoning (MCQ) |
-| Experimentation | 30 | 32 | 22 | **84** | Constructed reasoning (MCQ) |
-| **Total** | | | | **869** | |
+| Experimentation | 30 | 33 | 24 | **87** | Constructed reasoning (MCQ) |
+| **Total** | | | | **872** | |
 
-Mock-only add-on bank: **1,018 questions** (Pro/Elite only). Samples: **36 total** SQL/Python/Pandas/PySpark + auto-sliced from practice for the other 5 tracks.
+Mock-only add-on bank: **1,097 questions** (Pro/Elite only). Samples: **36 total** SQL/Python/Pandas/PySpark + auto-sliced from practice for the other 5 tracks.
 
 **These counts evolve.** They reflect the bank at the time of the 2026-05 refactor. CLAUDE.md mirrors them; both files update together.
 

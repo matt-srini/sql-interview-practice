@@ -321,6 +321,7 @@ _TAXONOMY_VALIDATED_TRACKS: frozenset[str] = frozenset({
     "data-modeling",      # DM Phase 2: registry complete (22 families), 0 realism families by design (MCQ-only), 0e/45m/51h mock-only validated
     "statistics",         # Statistics Phase 2: registry complete (13 families), 0e/66m/50h mock-only validated; lowercase tag convention; dual-subtype (conceptual + numerical)
     "ml-fundamentals",    # ML Fundamentals Phase 2: registry complete (29 families), 0e/66m/57h standalone mock-only + 8 chains (16 children) validated; MCQ-only, no realism families
+    "experimentation",    # Experimentation Phase 2: registry complete (24 families), 0e/45m/59h mock-only validated; 10 chains (20 children); no realism families by design (MCQ-only)
     # Add a track here once its concept_families.py registry is fully populated.
 })
 

@@ -129,12 +129,12 @@ Required:
 
 | Type | Practice | Mock-only standalone | Chain children |
 |---|---|---|---|
-| conceptual | 41 (42%) | 19 | 2 |
-| scenario | 43 (44%) | 64 | 8 |
-| debug | 11 (11%) | 11 | 2 |
-| predict_output | 2 (2%) | 7 | 4 |
+| conceptual | 54 (56%) | 32 | 4 |
+| scenario | 36 (37%) | 62 | 9 |
+| debug | 4 (4%) | 16 | 2 |
+| predict_output | 3 (3%) | 13 | 1 |
 
-Mock-only intentionally skews toward scenario (heavier production realism framing) and away from conceptual (harder to differentiate from practice conceptual without the full mock narrative).
+Mock-only intentionally skews toward scenario (62/123 standalones = 50%) and away from conceptual (32/123 = 26%, vs practice's 56% conceptual share) — production-realism framing in mock differentiates from the conceptual-heavy practice tier (the conceptual mock-only allocation is held down because conceptual mock would be hard to differentiate from practice conceptual without the full mock narrative).
 
 **Chain dimensions used:** all 7 — data_quality_pivot ×3, business_rule_pivot ×3, ambiguity_pivot ×3, performance_pivot ×2, edge_case_pivot ×2, scale_pivot ×2, stakeholder_pivot ×1.
 
