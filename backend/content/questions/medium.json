@@ -1921,7 +1921,7 @@
     "mock_only": true,
     "type": "reverse",
     "title": "Write the query — department headcount and average pay",
-    "description": "Write a SQL query that produces the result table shown below. The result shows the top 5 departments by headcount, with each department's average salary.",
+    "description": "Write a SQL query that produces the result table shown below. The result shows the top 5 departments by headcount, with each department's average salary. Break ties on `department_name` ascending so the cutoff is deterministic.",
     "difficulty": "medium",
     "schema": {
       "employees": [
@@ -1965,8 +1965,8 @@
         "avg_salary": 107284.64
       }
     ],
-    "expected_query": "SELECT d.department_name, COUNT(e.employee_id) AS headcount, ROUND(AVG(e.salary),2) AS avg_salary\nFROM departments d\nJOIN employees e ON d.department_id = e.department_id\nGROUP BY d.department_name\nORDER BY headcount DESC\nLIMIT 5",
-    "solution_query": "SELECT d.department_name,\n       COUNT(e.employee_id) AS headcount,\n       ROUND(AVG(e.salary), 2) AS avg_salary\nFROM departments d\nJOIN employees e ON d.department_id = e.department_id\nGROUP BY d.department_name\nORDER BY headcount DESC\nLIMIT 5;",
+    "expected_query": "SELECT d.department_name, COUNT(e.employee_id) AS headcount, ROUND(AVG(e.salary),2) AS avg_salary\nFROM departments d\nJOIN employees e ON d.department_id = e.department_id\nGROUP BY d.department_name\nORDER BY headcount DESC, d.department_name ASC\nLIMIT 5",
+    "solution_query": "SELECT d.department_name,\n       COUNT(e.employee_id) AS headcount,\n       ROUND(AVG(e.salary), 2) AS avg_salary\nFROM departments d\nJOIN employees e ON d.department_id = e.department_id\nGROUP BY d.department_name\nORDER BY headcount DESC, d.department_name ASC\nLIMIT 5;",
     "required_concepts": [
       "join",
       "group_by",
