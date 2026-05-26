@@ -97,8 +97,8 @@ def isolated_state(monkeypatch):
     # the next TestClient's startup, TRUNCATE and CREATE INDEX deadlock on the same table.
     # _test_db_schema (scope="session") already created all indexes once, so it is safe to
     # no-op ensure_schema() for the duration of each test.
-    import db as _db_module
-    monkeypatch.setattr(_db_module, "ensure_schema", AsyncMock(return_value=None))
+    import main as _main_module
+    monkeypatch.setattr(_main_module, "ensure_schema", AsyncMock(return_value=None))
 
     asyncio.run(close_pool())
     _reset_db_sync()
