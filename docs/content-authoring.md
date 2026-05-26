@@ -256,7 +256,7 @@ The 4-step verbatim lookup procedure lives in [`.github/agents/question-authorin
 | Data Engineering | ✅ | clean | Phase 2 closed; no realism families by design |
 | Data Modeling | ✅ | clean | Phase 2 closed; no realism families by design |
 | Statistics | ✅ | clean (216 q, 0 orphans) | Phase 2 closed 2026-05-26; 13 families, no realism families by design; 100 practice + 116 mock-only |
-| ML Fundamentals | ✅ | clean (236 q, 0 orphans) | Phase 2 closed 2026-05-26; 29 families, no realism families by design; 97 practice + 139 mock-only (8 chains) |
+| ML Fundamentals | ✅ | clean (243 q, 0 orphans) | Phase 2 closed 2026-05-26; BIAS/FAIRNESS Phase 2.5 closed 2026-05-26; 30 families, no realism families by design; 100 practice + 143 mock-only (8 chains) |
 | Experimentation | ⛔ | 0 orphans / 109 q | Phase 2 pending; clean enough to enforce, awaiting Phase 2 closure |
 
 **Per-ITEM authoring discipline.** When the target track is NOT in `_TAXONOMY_VALIDATED_TRACKS`, Sonnet (or any executor) must run an explicit orphan-resolver one-liner after every ITEM (chunk of 8–12 questions) — `validate_content.py` is not sufficient. The one-liner appears in the Stage A handoff template; if orphans return, fix in that ITEM before authoring the next. Do not accumulate drift across multiple ITEMs.
@@ -388,7 +388,7 @@ Mock-only inventory must support a power user who completes most of practice and
 | Data Engineering | 91 | 110 | **1.21×** | constructed reasoning (MCQ) |
 | Data Modeling | 81 | 97 | **1.20×** | constructed reasoning (MCQ) |
 | Statistics | 100 | 116 | **1.16×** | hybrid (conceptual MCQ + numerical Python) |
-| ML Fundamentals | 97 | 139† | **1.43×** | constructed reasoning (MCQ); †includes 16 chain children from 8 chains |
+| ML Fundamentals | 100 | 143† | **1.43×** | constructed reasoning (MCQ); †includes 16 chain children from 8 chains; ALGORITHMIC FAIRNESS family added Phase 2.5 (2026-05-26), registry now 30 families |
 | Experimentation | 87 | 104 | **1.20×** | constructed reasoning (MCQ); 10 chains (20 chain children); 24-family registry; path (ii) no realism families |
 
 A track audit proposing **< 1.0×** must record the track-specific reason in the brief and the decision log (e.g. interview-frequency data showing low demand, a finite pattern-space argument that more mock would only produce clones, etc.) — and the reason must survive critical pushback. *"Lean"* in this contract applies to **practice** (don't pad the curriculum with puzzles or low-value variants); **mock** sizes to the runway. A small mock pool is a power-user runway failure, not a virtue.
@@ -463,11 +463,11 @@ Practice questions are the full curriculum. Mock-only questions live in the same
 | Data Engineering | 30 | 35 | 26 | **91** | Constructed reasoning (MCQ) |
 | Data Modeling | 25 | 31 | 25 | **81** | Constructed reasoning (MCQ) |
 | Statistics | 31 | 43 | 26 | **100** | Hybrid (conceptual MCQ + numerical Python) |
-| ML Fundamentals | 30 | 39 | 28 | **97** | Constructed reasoning (MCQ) |
+| ML Fundamentals | 30 | 40 | 30 | **100** | Constructed reasoning (MCQ) |
 | Experimentation | 30 | 33 | 24 | **87** | Constructed reasoning (MCQ) |
-| **Total** | | | | **873** | |
+| **Total** | | | | **876** | |
 
-Mock-only add-on bank: **1,098 questions** (Pro/Elite only). Samples: **36 total** SQL/Python/Pandas/PySpark + auto-sliced from practice for the other 5 tracks.
+Mock-only add-on bank: **1,102 questions** (Pro/Elite only). Samples: **36 total** SQL/Python/Pandas/PySpark + auto-sliced from practice for the other 5 tracks.
 
 **These counts evolve.** They reflect the bank at the time of the 2026-05 refactor. CLAUDE.md mirrors them; both files update together.
 

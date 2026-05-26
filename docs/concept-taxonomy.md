@@ -921,7 +921,7 @@ Total / between / within variance, ANOVA mechanics, F-statistic interpretation.
 
 **Modality:** Constructed reasoning. No execution. Question types: conceptual / scenario / predict_output / debug. Response: MCQ.
 **Reasoning archetype:** Diagnose model behavior, not write training code; recognise leakage and bias before they ship.
-**Current tag inventory:** 30 unique tags / 224 occurrences — **already tight.** (ALGORITHMIC FAIRNESS family added BIAS/FAIRNESS Phase 2.5 2026-05-26; 7 new questions + retag Q83031.)
+**Current tag inventory:** 30 unique tags / 488 occurrences — **already tight.** (ALGORITHMIC FAIRNESS family added BIAS/FAIRNESS Phase 2.5 2026-05-26; 7 new questions + retag Q83031. Prior count "210 occurrences" was stale pre-Phase-2; recount on full 243-question bank = 488.)
 
 ### Family registry
 

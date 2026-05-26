@@ -54,13 +54,13 @@ Difficulty controls reasoning depth, never licenses algorithm-name trivia. Even 
 |---|---|
 | Easy | Supervised vs unsupervised → overfitting / bias-variance → train/test/val splits → feature scaling necessity → classification metrics (precision / recall / F1 / AUC) |
 | Medium | Ensembles (bagging / boosting / stacking) → class imbalance handling → dimensionality reduction → calibration → leakage detection → boosting mechanics → feature importance interpretation |
-| Hard | NN design → gradient pathology → transfer learning → monitoring + drift → deployment constraints (latency / memory / batch vs online) → training-serving skew |
+| Hard | NN design → gradient pathology → transfer learning → monitoring + drift → deployment constraints (latency / memory / batch vs online) → training-serving skew → fairness diagnosis and metric selection |
 
 ## Concept families
 
 Full registry: [`docs/concept-taxonomy.md` → ML Fundamentals section](../concept-taxonomy.md#ml-fundamentals--concept-families).
 
-29 families. Already-tight pre-existing registry (29 unique tags total in the bank).
+30 families. ALGORITHMIC FAIRNESS added 2026-05-26 (BIAS/FAIRNESS Phase 2.5); path (ii) preserved — fairness is practice-grounded, not a realism lens. `MOCK_ONLY_REALISM_FAMILIES["ml-fundamentals"]` remains empty.
 
 ## Authoring allocation matrix
 
@@ -118,29 +118,31 @@ Required:
 - Explanation refutes every distractor.
 - Scenarios include enough numerical / behavioural detail that the diagnosis is grounded, not hand-waved.
 
-## Coverage (Phase 2 complete — 2026-05-26)
+## Coverage (Phase 2 complete — 2026-05-26; BIAS/FAIRNESS Phase 2.5 complete — 2026-05-26)
 
-**Practice:** 97 questions (30 easy / 39 medium / 28 hard) · ratio 1.433×  
-**Mock-only standalone:** 123 questions (0 easy / 59 medium / 64 hard)  
-**Mock chains:** 8 chains — 8 parents (all hard, counted in the 64h standalone) + 16 children (all hard) = 24 chain-member slots  
-**Mock-only total (standalone + chain children):** 139 (0e / 59m / 80h)
+**Practice:** 100 questions (30 easy / 40 medium / 30 hard) · ratio 1.430×  
+**Mock-only standalone:** 127 questions (0 easy / 59 medium / 68 hard)  
+**Mock chains:** 8 chains — 8 parents (all hard, counted in the 68h standalone) + 16 children (all hard) = 24 chain-member slots  
+**Mock-only total (standalone + chain children):** 143 (0e / 59m / 84h)
 
 **Type mix (practice + mock-only combined):**
 
 | Type | Practice | Mock-only standalone | Chain children |
 |---|---|---|---|
-| conceptual | 54 (56%) | 32 | 4 |
-| scenario | 36 (37%) | 62 | 9 |
+| conceptual | 54 (54%) | 32 | 4 |
+| scenario | 43 (43%) | 66 | 9 |
 | debug | 4 (4%) | 16 | 2 |
 | predict_output | 3 (3%) | 13 | 1 |
 
-Mock-only intentionally skews toward scenario (62/123 standalones = 50%) and away from conceptual (32/123 = 26%, vs practice's 56% conceptual share) — production-realism framing in mock differentiates from the conceptual-heavy practice tier (the conceptual mock-only allocation is held down because conceptual mock would be hard to differentiate from practice conceptual without the full mock narrative).
+Note: all 7 BIAS/FAIRNESS Phase 2.5 questions are `scenario` type, raising practice scenario share (36→43) and mock standalone scenario share (62→66).
+
+Mock-only intentionally skews toward scenario (66/127 standalones = 52%) and away from conceptual (32/127 = 25%, vs practice's 54% conceptual share) — production-realism framing in mock differentiates from the conceptual-heavy practice tier (the conceptual mock-only allocation is held down because conceptual mock would be hard to differentiate from practice conceptual without the full mock narrative).
 
 **Chain dimensions used:** all 7 — data_quality_pivot ×3, business_rule_pivot ×3, ambiguity_pivot ×3, performance_pivot ×2, edge_case_pivot ×2, scale_pivot ×2, stakeholder_pivot ×1.
 
 **Realism family decision (path ii):** No mock-only realism family. ML's curriculum already absorbs the realism lens via six pathology-flavoured families (`DATA LEAKAGE DETECTION`, `OVERFITTING DIAGNOSIS`, `MODEL MONITORING`, `TRAINING-SERVING SKEW`, `GRADIENT PATHOLOGY`, `DEPLOYMENT CONSTRAINTS`). `MOCK_ONLY_REALISM_FAMILIES["ml-fundamentals"] = set()` in `concept_families.py`.
 
-**Sizing note:** The hard mock-only count (64 standalone, including 8 chain parents) landed above the original Stage B plan (38 standalone targeted). Deviation sources: (a) 3 BOOSTING MECHANICS floor-fix questions (83084–83086); (b) the Item 8–10 batch allocation of 44 questions was sized to the correct *net total* including chain parents, but chain children (16) are additional rather than pulled from the batch count — making the hard total additive; (c) Stage C remediation promoted 7 medium mock-only tagging-lie questions to hard (83119–83125), which moved them from the 59m column to the 64h column with correct natural-fit concept tags. The ratio 1.433× is within acceptable range for a mock-bank that includes a heavy chain component (chain children are follow-up units, not independently-seekable questions).
+**Sizing note:** The hard mock-only count (68 standalone, including 8 chain parents) landed above the original Stage B plan. Deviation sources from Phase 2: (a) 3 BOOSTING MECHANICS floor-fix questions (83084–83086); (b) chain children (16) are additional rather than pulled from the batch count — making the hard total additive; (c) Stage C remediation promoted 7 medium mock-only questions to hard (83119–83125). BIAS/FAIRNESS Phase 2.5 added 4 more hard standalone (83128–83131): Stage A planned 2 medium + 2 hard mock, but M4 (DEPLOYMENT CONSTRAINTS) and M5 (MODEL MONITORING) were escalated to hard because these families have no easy/medium practice coverage (rule 1), consistent with the track's difficulty vocabulary placing both as hard-tier concepts. The ratio 1.430× is within acceptable range.
 
 ## Verification before commit
 
