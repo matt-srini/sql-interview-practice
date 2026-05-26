@@ -3446,12 +3446,13 @@
     "explanation": "split_part(email, '@', 2) extracts the second token when splitting on '@' — the domain. In DuckDB, split_part is 1-indexed. GROUP BY email_domain aggregates user counts and date ranges per domain. MIN/MAX on a DATE column return the earliest and latest dates respectively.",
     "hints": [
       "split_part(email, '@', 2) extracts the domain — the second element after splitting on '@'. DuckDB's split_part is 1-indexed.",
+      "The prompt explicitly includes users with no email in the output — think about what `split_part` returns when its input is NULL, and whether your grouping naturally preserves that bucket or quietly drops it.",
       "Group by the derived column expression (or alias it in a subquery) so you can reuse it in GROUP BY."
     ],
     "concepts": [
       "STRING PARSING & PATTERN MATCHING",
       "GROUPED AGGREGATION",
-      "RESULT SHAPING & ORDERING"
+      "NULL HANDLING & COALESCE"
     ],
     "companies": []
   },

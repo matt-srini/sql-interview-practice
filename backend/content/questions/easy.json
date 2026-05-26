@@ -826,7 +826,7 @@
     "enforce_concepts": true,
     "explanation": "COALESCE(discount_amount, 0) replaces NULL values with 0 so the subtraction never produces NULL. Without COALESCE, any row where discount_amount IS NULL would yield NULL for final_amount — a silent bug that propagates through downstream aggregations. This pattern (null-safe arithmetic) is ubiquitous in financial reporting queries.",
     "hints": [
-      "Subtracting a NULL `discount_amount` propagates NULL into the result — substitute a sensible default before the arithmetic.",
+      "Two of the columns you need feed an arithmetic expression — what happens to that expression if one of them has no value?",
       "COALESCE returns its first non-NULL argument, so COALESCE(discount_amount, 0) returns 0 when discount is missing"
     ],
     "concepts": [
