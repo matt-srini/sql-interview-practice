@@ -1,7 +1,7 @@
 # Track Phase 2 Orchestration Runbook
 
 **Status:** durable orchestration doc (survives Phase 3 tracker deletion)
-**Audience:** any Opus session picking up Phase 2 orchestration for an open track (Experimentation), the deferred DM Phase 2.5 re-balance, or any future Phase 2 round for a new track.
+**Audience:** any Opus session picking up the deferred DM Phase 2.5 re-balance, the BIAS/FAIRNESS Phase 2.5 (ML new-family addition), or any future Phase 2 round for a new track. **All 9 Phase 2 rounds closed 2026-05-26.**
 
 This is the **orchestration handbook**, not the contract. The contract (rules, philosophy, schemas) lives in the durable docs listed at the bottom. This doc captures the **process patterns** for running a track through Phase 2: how Stage A plans, how Sonnet executes Stage B, how Stage C audits — all the orchestration-level knowledge that doesn't fit in the contract docs and historically lived only in conversation context.
 
@@ -352,15 +352,23 @@ Outcome (historical reference for future hybrid-subtype tracks):
 - **W6**: Validator NOT enforcing ML yet. Per-ITEM orphan-resolver mandatory in handoff.
 - **DE Phase 2 finding still open**: "pre-existing ml-fundamentals validator failures — 10 single-concept questions — surfaced after B1 fix; out of PySpark scope, filed as ml-fundamentals Phase 2 prerequisite" (from the tracker decision log). Stage A must address this.
 
-### 7.3 Experimentation
+### 7.3 Experimentation — ✅ CLOSED 2026-05-26
 
-- **W1**: Current ratio 25/84 ≈ 0.30× — sub-band, needs ~84–126 mock-only target.
-- **W2**: Closest precedents: DE 1.21 / DM 1.20 / PySpark 1.17.
-- **W3**: Registry at 22 families / 0 orphans — clean. Like ML, can skip Deliverable 2; H2 adds to validator set.
-- **W4**: Realism-family decision — open. Experimentation has candidate clusters around real-world experimentation pathology (Simpson's paradox traps, novelty-effect traps, primacy/recency, network effects in A/B). Strong path-(i) candidate territory; defend.
-- **W5**: Adjacent-track tag bleeds — Stats's `STATISTICAL POWER`, `HYPOTHESIS TESTING`; ML's `MODEL EVALUATION`; SQL's `WINDOW FUNCTIONS` (no — Exp has its own metric-windowing concept).
-- **W6**: Validator NOT enforcing Exp yet. Per-ITEM orphan-resolver mandatory in handoff.
-- **Carry from ML Fundamentals Phase 2 Stage A (2026-05-26):** during ML D4 audit, mock-only Q83029 *"Causal vs Predictive Modeling: When the Distinction Matters"* (hard scenario, currently tagged `DATA LEAKAGE DETECTION` + `MODEL MONITORING`) was verdicted REPLACE in ML scope because its pedagogical centre is **causal-vs-predictive / uplift modeling** — out of ML's diagnostic-and-decision spine, in Experimentation territory. The marketing-churn-with-discount-targeting framing exercises uplift reasoning (predicting *who can be persuaded* vs *who will churn*). When Experimentation Phase 2 runs, the Stage A planner should consider resurrecting this question as a hard mock-only source for Exp — likely tagged `CAUSAL INFERENCE` + `EXPERIMENT DESIGN` or `QUASI-EXPERIMENTAL METHODS`. Question body is preserved in `git show` of the ML deletion commit.
+Outcome (historical reference for future tracks):
+- Final state: 87 practice (30e/33m/24h, +3 practice additions) + 104 mock-only (0e/45m/59h) = 1.20× ratio (precedent-aligned).
+- Registry: 22 → 24 families via Stage A Deliverable 2 (added SEQUENTIAL TESTING + METRIC SENSITIVITY as standalone families per Option-2 decision — both substantively distinct from EXPERIMENT DURATION and METRIC SELECTION; pattern-absorption would have conflated reasoning surfaces).
+- Stats carry resolved: all three platform-mechanic concepts (`SEQUENTIAL TESTING`, `METRIC SENSITIVITY`, `GUARDRAIL METRICS`) now resolve to Experimentation families.
+- 83029 ML carry resurrected as 93038 with `CAUSAL INFERENCE` + `EXPERIMENT DESIGN` tags.
+- Realism path (ii) no realism by design — MCQ-only format, all reasoning lenses directly gradeable.
+- 10 chains / 20 children = 30 chain members (29% chain-member share, precedent-aligned). All 7 follow-up dimensions covered.
+- **Lesson confirmed**: chain-children-IN-locked-total (runbook § 2.2 D5f, codified post-ML Stage C) worked as expected — no overage.
+- **Lesson confirmed**: new-family pattern-shadow check (runbook § 2.2 D2 warning, codified post-Stats Stage C) caught no surprises.
+
+### 7.4 DM Phase 2.5 re-balance (deferred)
+
+Not a Phase 2 first-pass; a re-balance of closed Phase 2 content.
+
+- **Primary issue**: `DIMENSIONAL MODELING` tagged on 90/96 mock-only (93.8%) — rule-3 ceiling breach.
 
 ### 7.4 DM Phase 2.5 re-balance (deferred)
 
