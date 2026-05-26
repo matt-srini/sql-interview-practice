@@ -2845,5 +2845,165 @@
       "MODEL MONITORING",
       "TRAINING-SERVING SKEW"
     ]
+  },
+  {
+    "id": 83126,
+    "order": 29,
+    "topic": "ml-fundamentals",
+    "type": "scenario",
+    "difficulty": "hard",
+    "title": "Demographic parity vs equalized odds in a lending approval model",
+    "scenario_context": "A consumer-lending model has identical approval rates for group A (majority) and group B (minority) \u2014 43% each \u2014 satisfying demographic parity. Disaggregated analysis shows TPR=0.81 for group A and TPR=0.66 for group B: the model misses 34% of creditworthy group B applicants versus 19% for group A. The compliance team cites demographic parity as satisfied and flags the model as cleared. Legal counsel is less certain: the jurisdiction applies disparate-impact doctrine and requires lenders to treat equally creditworthy applicants equivalently.",
+    "description": "Which framing better fits this lending context, and what does it imply for the compliance conclusion?",
+    "options": [
+      "Demographic parity is satisfied, so the compliance team's conclusion is correct \u2014 equal approval rates are the operative legal standard under disparate-impact doctrine.",
+      "Equalized odds is the relevant frame: equal approval rates mask a 15-point TPR gap meaning creditworthy group B applicants are denied at nearly double the rate, constituting differential treatment of similarly qualified individuals \u2014 a stronger disparate-impact concern than raw rate parity.",
+      "Equalize TPR by lowering group A's approval threshold to match group B's 0.66; this achieves metric parity without retraining the model.",
+      "Both metrics are insufficient \u2014 use a calibration-by-group audit instead, since probability calibration captures credit risk more directly than threshold-based fairness metrics."
+    ],
+    "correct_option": 1,
+    "explanation": "Demographic parity (equal approval rates) is a necessary but not sufficient fairness check in lending. The 15-point TPR gap means the model systematically misses creditworthy group B applicants \u2014 34% of qualified group B borrowers are denied versus 19% for group A. This differential treatment of equally creditworthy individuals is the core concern under disparate-impact doctrine; the compliance team's conclusion is not warranted. (Option 0) \u2014 Demographic parity can be achieved simultaneously with discrimination: if the model rejects more qualified group B applicants but also approves more marginal ones, the overall rates equalize while the quality-conditional treatment is unequal. (Option 2) \u2014 Lowering group A's threshold to match group B's lower TPR degrades outcomes for group A without improving group B's, producing equal mediocrity rather than equitable treatment. This is a perverse parity fix. (Option 3) \u2014 Calibration by group is a useful additional check but does not supersede the equalized-odds concern; the core issue is differential approval of creditworthy applicants, not miscalibrated probability outputs.",
+    "hints": [
+      "Equal approval rates (demographic parity) can coexist with unequal treatment of equally creditworthy applicants \u2014 what does the 15-point TPR gap actually mean for group B's qualified borrowers?",
+      "In lending, the legal question is often whether similarly situated applicants are treated the same \u2014 which fairness metric is designed to answer that question directly?"
+    ],
+    "concepts": [
+      "ALGORITHMIC FAIRNESS",
+      "CLASSIFICATION METRICS"
+    ]
+  },
+  {
+    "id": 83127,
+    "order": 30,
+    "topic": "ml-fundamentals",
+    "type": "scenario",
+    "difficulty": "hard",
+    "title": "Diagnose root cause of hiring-model disparate impact from symptom data",
+    "scenario_context": "A hiring model shows 35% selection rate for group A and 22% for group B \u2014 a 13-point gap. Symptom data: (a) training labels were audited by HR and an external reviewer with >95% inter-rater agreement; (b) group B represents 38% of the training set, close to their 40% share in the applicant pool; (c) the decision threshold was tuned on a stratified holdout with both groups present; (d) the model's top feature by importance gain is residential_zip, which has Pearson correlation 0.71 with group membership in the training data; (e) per-group held-out loss curves are similar in shape, indicating comparable model capacity for both groups.",
+    "description": "Which root cause is most consistent with the symptom pattern?",
+    "options": [
+      "Training-data underrepresentation: group B's 38% training share falls below their 40% applicant-pool share, producing a small-sample penalty on group B predictions.",
+      "Label noise concentrated in minority hires: hiring outcomes for group B were recorded with more error, inflating apparent selection difficulty for that group.",
+      "Proxy feature encoding group membership: the top feature residential_zip encodes demographic composition directly, causing the model to learn group membership as a decision signal rather than genuine job-relevant predictors.",
+      "Threshold optimization on majority distribution: the threshold was selected to maximise majority-group accuracy, systematically under-selecting group B."
+    ],
+    "correct_option": 2,
+    "explanation": "The symptom pattern \u2014 a top-importance feature correlating 0.71 with group membership, combined with confirmed label quality and representative training data \u2014 points squarely at the proxy feature. Residential zip code encodes the demographic composition of neighborhoods; the model learns to use group membership as an implicit signal even though it is not an explicit feature. This is structurally similar to target leakage: the feature carries information about the outcome through a pathway (group membership encoded in the feature) that would not be available at fair scoring time. (Option 0) \u2014 A 2-point underrepresentation shortfall is too small to drive a 13-point selection gap; the similar per-group loss curves confirm the model is not capacity-starved for group B. (Option 1) \u2014 Label noise is ruled out by the >95% inter-rater agreement from an independent external audit. (Option 3) \u2014 The threshold was tuned on a stratified holdout with both groups present; symptom (c) directly contradicts a majority-biased threshold as the primary cause.",
+    "hints": [
+      "Three of the five symptom data points each directly rule out one of the four candidate causes \u2014 identify which symptom eliminates which cause before deciding what remains.",
+      "A feature ranking #1 by importance gain with 0.71 correlation to group membership \u2014 what signal is the model actually extracting from that feature?"
+    ],
+    "concepts": [
+      "ALGORITHMIC FAIRNESS",
+      "DATA LEAKAGE DETECTION"
+    ]
+  },
+  {
+    "id": 83128,
+    "order": 106,
+    "topic": "ml-fundamentals",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Evaluate group-specific decision thresholds for FPR equalization in credit scoring",
+    "scenario_context": "A credit-scoring model has been audited post-deployment. Group A (majority) has FPR=0.04 (4% of creditworthy borrowers incorrectly denied); group B (minority) has FPR=0.11 (11% of creditworthy borrowers incorrectly denied). The model is well-calibrated overall (Platt scaling applied at training time). The fairness team proposes setting group-specific decision thresholds \u2014 a higher threshold for group B \u2014 to equalize FPR at approximately 0.04 for both groups.",
+    "description": "What does group-specific threshold adjustment achieve, what does it break, and what is the most defensible alternative?",
+    "options": [
+      "Group-specific thresholds equalize FPR and are legally unambiguous in lending; implement them and monitor calibration drift quarterly.",
+      "Group-specific thresholds reduce group B's FPR (fewer creditworthy borrowers incorrectly denied) but simultaneously lower group B's TPR \u2014 more true defaulters slip through as approved, increasing credit risk for that segment; explicit demographic decision-branching carries real legal exposure; the defensible alternative is root-cause investigation of why the FPR gap exists.",
+      "Group-specific thresholds are unnecessary because the model is well-calibrated overall; global calibration guarantees FPR parity across groups by construction.",
+      "Group-specific thresholds equalize FPR at the cost of raising group B's approval rate above group A's, violating demographic parity; apply SMOTE to group B training data instead to address the imbalance."
+    ],
+    "correct_option": 1,
+    "explanation": "Raising group B's threshold reduces FPR (fewer creditworthy borrowers denied) but simultaneously reduces TPR \u2014 more true defaulters score below the new threshold and receive approval, introducing new credit risk in that segment. The tradeoff is real and quantifiable. Explicit demographic decision-branching (separate thresholds keyed to group) is legally contested in lending: ECOA treats group-level branching as a protected-attribute decision pathway. The defensible alternative is root-cause investigation: why is group B's FPR 7 points higher? If it stems from a proxy feature encoding group membership, biased training labels, or asymmetric feature quality, fixing the source produces equalized FPR without operational or legal risk. (Option 0) \u2014 The legal claim is incorrect; group-specific thresholds explicitly use protected-attribute status in the decision path, which is legally contested in lending, not unambiguous. (Option 2) \u2014 Global calibration does not imply group-conditional calibration or FPR parity. A well-calibrated model can have significantly different FPR across groups if the score distributions differ by group. (Option 3) \u2014 Threshold adjustment does not change approval rates in the mechanically described way; SMOTE addresses training-data imbalance, not a post-hoc threshold policy, and would not equalize FPR on an already-deployed model.",
+    "hints": [
+      "A threshold is not a neutral knob: for a fixed model, moving it changes both the false-positive rate and the true-positive rate simultaneously \u2014 trace both directions for group B.",
+      "When a post-hoc threshold fix is proposed, ask: does it address why the FPR gap exists, or only what the gap produces at the output layer?"
+    ],
+    "concepts": [
+      "ALGORITHMIC FAIRNESS",
+      "MODEL CALIBRATION"
+    ]
+  },
+  {
+    "id": 83129,
+    "order": 107,
+    "topic": "ml-fundamentals",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Frame the accuracy-fairness tradeoff from adversarial debiasing to senior leadership",
+    "scenario_context": "A hiring-recommendation model was retrained with adversarial debiasing: an adversary network penalises group-predictive information during training, modifying the effective loss function. Result: overall AUC dropped from 0.86 to 0.83 (3 points); equalized-odds gap narrowed from 15 points to 4 points. The product team argues the AUC drop degrades the product's core value proposition. Legal counsel argues the 4-point residual gap remains actionable. The ML team must present this tradeoff to senior leadership.",
+    "description": "How should the ML team best frame this decision for senior leadership?",
+    "options": [
+      "Present the AUC drop as a product regression; recommend reverting to the original model and addressing fairness separately via post-hoc threshold adjustment.",
+      "Present the gap closure as a binary success; the 4-point residual is within measurement error and does not require further action.",
+      "Frame it as a constrained optimisation tradeoff with quantified costs: the 3-point AUC drop corresponds to an estimated business impact; the 11-point gap closure is a measurable legal-risk reduction; leadership should decide where the organisation's risk appetite sits, with the ML team providing the Pareto frontier rather than making the call.",
+      "Recommend retraining without the adversary network but adding a group-fairness regularisation term to the loss; this approach always recovers AUC while closing the gap further."
+    ],
+    "correct_option": 2,
+    "explanation": "Adversarial debiasing modifies the training loss to penalise group-predictive representations \u2014 the 3-point AUC drop is the cost of that constraint, not a bug. The ML team's job is to quantify both dimensions accurately and present the tradeoff: we moved 11 of 15 points of equalized-odds gap at a cost of 3 AUC points; here is the estimated business cost of those 3 points; here is the estimated legal and reputational exposure of the remaining 4-point gap; where does leadership want to be on this frontier? This is a values decision with quantified stakes \u2014 it belongs at the leadership level. (Option 0) \u2014 Reversion abandons the demonstrated 11-point gap closure; post-hoc threshold adjustment does not recover equivalent gap reduction and carries its own legal risk via explicit demographic branching. (Option 1) \u2014 Asserting the 4-point residual is within measurement error requires a confidence interval the option does not provide; and even if statistically true, legal exposure is not the same as statistical significance \u2014 regulators apply legal standards, not p-value thresholds. (Option 3) \u2014 Fairness regularisation may help, but the claim that it always recovers AUC while closing the gap further is false: fairness-accuracy tradeoffs are domain-dependent and no single technique guarantees both metrics improve simultaneously.",
+    "hints": [
+      "What is the ML team's role when a decision involves technical metrics and organisational risk appetite? Who should resolve a tradeoff between AUC and legal exposure?",
+      "Both the product concern and the legal concern can be valid simultaneously \u2014 what does a framing look like that quantifies both without dismissing either?"
+    ],
+    "concepts": [
+      "ALGORITHMIC FAIRNESS",
+      "LOSS FUNCTION SELECTION"
+    ]
+  },
+  {
+    "id": 83130,
+    "order": 108,
+    "topic": "ml-fundamentals",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Choose the correct fairness frame for a real-time content recommendation system",
+    "scenario_context": "A content-recommendation platform receives complaints from a minority user group reporting lower-quality recommendations than the majority group. The team is debating two framings: (A) individual fairness \u2014 two users with similar preference profiles should receive recommendations of similar quality; (B) group fairness \u2014 aggregate content-quality scores should be equal per protected demographic group. The system operates with an 80ms end-to-end latency budget; demographic labels are not available at inference time.",
+    "description": "Which fairness framing is most appropriate for this system, and why?",
+    "options": [
+      "Group fairness is correct: the complaints are from a demographic group, so the measure and fix must be group-level; individual fairness is appropriate only in systems that do not serve demographic groups.",
+      "Individual fairness is more appropriate here: it does not require protected-group labels at inference time (which are unavailable), aligns with the system\u2019s goal of matching users to content by preference similarity, and avoids a demographic-aggregation step that would exceed the latency budget.",
+      "Both framings are equivalent for this system; choose whichever is easier to implement given available infrastructure.",
+      "Individual fairness is inappropriate because it requires defining a similarity metric on users, which is computationally equivalent to retraining the model and would violate the latency budget."
+    ],
+    "correct_option": 1,
+    "explanation": "Individual fairness (similar users, similar outcomes) is the correct frame for three compounding reasons. First, demographic labels are not available at inference time, so group-fairness enforcement at prediction time is infeasible without an additional inference step. Second, the system\u2019s core function is user-preference similarity \u2014 individual fairness aligns with the problem\u2019s natural metric space rather than requiring a separate demographic grouping layer. Third, computing a group-level quality aggregate in the critical path would add latency that exceeds the 80ms budget. Individual fairness can be evaluated offline and enforced through embedding regularisation or representation audits without touching the inference path. (Option 0) \u2014 The observation that complaints came from a group does not mandate a group-fairness fix; the diagnostic signal is group-level, but the correct remedy depends on the system\u2019s architecture and what is enforceable at inference time. (Option 2) \u2014 The two framings differ operationally: group fairness requires group labels at inference or an offline aggregation step; individual fairness requires a user-similarity metric. They are not equivalent. (Option 3) \u2014 Defining a user-similarity metric for individual fairness is a one-time offline design decision, not a per-request computation; it does not require retraining and adds no inference latency.",
+    "hints": [
+      "What data is available at inference time? Fairness enforcement that requires inputs the system does not have at prediction time is operationally infeasible.",
+      "Individual fairness requires a user-similarity metric \u2014 is that something computed at inference time, or can it be pre-computed and baked into the model\u2019s representation space?"
+    ],
+    "concepts": [
+      "ALGORITHMIC FAIRNESS",
+      "DEPLOYMENT CONSTRAINTS"
+    ]
+  },
+  {
+    "id": 83131,
+    "order": 109,
+    "topic": "ml-fundamentals",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Identify the operative cause of equalized-odds drift in a production hiring model",
+    "scenario_context": "A hiring model has been monitored monthly since launch. At launch, the equalized-odds gap (TPR difference between majority and minority groups) was 4 points. Six months later it is 11 points. The model has not been retrained. Three candidate causes are under investigation: (i) applicant pool shifted \u2014 the minority group\u2019s share of applicants increased from 28% to 35%; (ii) label-delivery process changed \u2014 HR coding of minority-group hiring decisions moved from same-day to 14-day-lagged labels, affecting the feedback loop; (iii) feature distribution drifted asymmetrically \u2014 the years_in_current_role feature drifted +0.8 standard deviations for the majority group but stayed flat for the minority group.",
+    "description": "Which monitoring signal best discriminates the operative cause of the gap increase?",
+    "options": [
+      "Monitor overall model AUC monthly; a drop in AUC confirms the applicant-pool shift as the cause, since new applicants would differ from the training distribution.",
+      "Inspect the per-group feature distribution shift report: asymmetric drift in years_in_current_role would cause the model\u2019s learned decision boundary \u2014 optimised on historical joint distributions \u2014 to systematically favour majority applicants more than at launch, producing the observed widening gap.",
+      "Retrain the model on the last three months of data immediately; the increased gap confirms the model is stale regardless of which cause is operative.",
+      "Check the label lag report: 14-day-lagged labels mean recent minority-group outcomes are not yet in the feedback loop, so the current gap measurement is unreliable for the most recent cohorts."
+    ],
+    "correct_option": 1,
+    "explanation": "The asymmetric feature drift is the monitoring signal that most directly explains the gap widening. The model\u2019s decision boundary was optimised on historical feature distributions; when the majority group\u2019s years_in_current_role shifts +0.8 SD while the minority group\u2019s stays flat, the model sees majority applicants as stronger on this feature relative to what it learned at training time \u2014 majority applicants move closer to the approved region while minority applicants stay stationary. This manifests as a widening equalized-odds gap even without retraining. The monitoring signal to inspect is per-group feature distribution shift (PSI or KS test stratified by demographic), not overall AUC. (Option 0) \u2014 Overall AUC is not sensitive to group-level shifts; applicant-pool composition change affects overall metrics only weakly and does not explain an asymmetric gap widening. (Option 2) \u2014 Retraining treats the symptom without diagnosing the cause; if the feature drift continues post-retrain, the same gap will re-emerge on the next monitoring cycle. (Option 3) \u2014 The 14-day label lag affects label availability for future feedback, not the gap measurement on already-scored and already-labeled cohorts; the historical gap measurements remain reliable.",
+    "hints": [
+      "The model was not retrained yet the gap changed \u2014 what can change the effective behavior of a fixed model over time?",
+      "Which of the three candidate causes predicts an asymmetric change (one group\u2019s inputs shift, the other\u2019s stay flat), matching the direction of the gap widening?"
+    ],
+    "concepts": [
+      "ALGORITHMIC FAIRNESS",
+      "MODEL MONITORING"
+    ]
   }
 ]
