@@ -118,6 +118,30 @@ Required:
 - Explanation refutes every distractor.
 - Scenarios include enough numerical / behavioural detail that the diagnosis is grounded, not hand-waved.
 
+## Coverage (Phase 2 complete — 2026-05-26)
+
+**Practice:** 97 questions (30 easy / 39 medium / 28 hard) · ratio 1.433×  
+**Mock-only standalone:** 123 questions (0 easy / 66 medium / 57 hard)  
+**Mock chains:** 8 chains — 8 parents (all hard, counted in the 57h standalone) + 16 children (all hard) = 24 chain-member slots  
+**Mock-only total (standalone + chain children):** 139 (0e / 66m / 73h)
+
+**Type mix (practice + mock-only combined):**
+
+| Type | Practice | Mock-only standalone | Chain children |
+|---|---|---|---|
+| conceptual | 41 (42%) | 19 | 2 |
+| scenario | 43 (44%) | 64 | 8 |
+| debug | 11 (11%) | 11 | 2 |
+| predict_output | 2 (2%) | 7 | 4 |
+
+Mock-only intentionally skews toward scenario (heavier production realism framing) and away from conceptual (harder to differentiate from practice conceptual without the full mock narrative).
+
+**Chain dimensions used:** all 7 — data_quality_pivot ×3, business_rule_pivot ×3, ambiguity_pivot ×3, performance_pivot ×2, edge_case_pivot ×2, scale_pivot ×2, stakeholder_pivot ×1.
+
+**Realism family decision (path ii):** No mock-only realism family. ML's curriculum already absorbs the realism lens via six pathology-flavoured families (`DATA LEAKAGE DETECTION`, `OVERFITTING DIAGNOSIS`, `MODEL MONITORING`, `TRAINING-SERVING SKEW`, `GRADIENT PATHOLOGY`, `DEPLOYMENT CONSTRAINTS`). `MOCK_ONLY_REALISM_FAMILIES["ml-fundamentals"] = set()` in `concept_families.py`.
+
+**Sizing note:** The hard mock-only count (57 standalone) landed above the original Stage B plan (38 standalone targeted). Deviation sources: (a) 3 BOOSTING MECHANICS floor-fix questions (83084–83086), (b) the Item 8–10 batch allocation of 44 questions was sized to the correct *net total* including chain parents, but chain children (16) are additional rather than pulled from the batch count — making the hard total additive. The ratio 1.433× is within acceptable range for a mock-bank that includes a heavy chain component (chain children are follow-up units, not independently-seekable questions).
+
 ## Verification before commit
 
 ```bash

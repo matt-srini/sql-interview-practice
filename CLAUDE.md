@@ -99,7 +99,7 @@ The five-perspective pushback in § Standing instructions reads this section as 
 
 - **Active refactor — the canonical pickup point.** When in doubt about "what's the next work," read [`docs/phases/2026-05-authoring-refactor.md`](docs/phases/2026-05-authoring-refactor.md) — it is the single self-contained tracking doc for the in-flight authoring-system refactor. It explains every locked decision with rationale, lists the remaining work items (Phase 2, Phase 3), and points at every source-of-truth doc. **Delete this CLAUDE.md bullet once Phase 3 ships and the tracker doc is removed.**
 
-- **Phase 2 orchestration runbook — durable counterpart to the tracker.** Any Opus session running Phase 2 orchestration (Stage A planning, Stage C audit, retro-cleanup briefs) for the remaining open tracks (Statistics, ML Fundamentals, Experimentation) or the deferred DM Phase 2.5 must read [`docs/orchestration-runbook.md`](docs/orchestration-runbook.md) before producing any Stage artefact. The runbook codifies the three-stage process (A → B → C), the Stage A/B/C template skeletons, the retro-cleanup pattern, the current Phase 2 status table, and the pre-identified watch-outs per open track. Unlike the tracker bullet above, this doc is **durable** — it survives Phase 3 and is reusable for any future track Phase 2.
+- **Phase 2 orchestration runbook — durable counterpart to the tracker.** Any Opus session running Phase 2 orchestration (Stage A planning, Stage C audit, retro-cleanup briefs) for the remaining open tracks (Experimentation) or the deferred DM Phase 2.5, or the ML Fundamentals Stage C audit, must read [`docs/orchestration-runbook.md`](docs/orchestration-runbook.md) before producing any Stage artefact. The runbook codifies the three-stage process (A → B → C), the Stage A/B/C template skeletons, the retro-cleanup pattern, the current Phase 2 status table, and the pre-identified watch-outs per open track. Unlike the tracker bullet above, this doc is **durable** — it survives Phase 3 and is reusable for any future track Phase 2.
 
 - **Always commit after meaningful changes.** End every session of edits with a `git commit` carrying a clear, specific message (not "update files" — something like "add mock interview mode with timer and session summary"). Co-author line: `Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>`.
 
@@ -128,7 +128,7 @@ A data interview practice platform covering nine tracks. Users write SQL or Pyth
 - **Data Engineering** — 91 practice (30 easy / 35 medium / 26 hard) + 110 mock-only (0 easy / 34 medium / 76 hard), conceptual / scenario / debug (MCQ response), no code execution; `eval_kind="mcq"`, `unlock_profile="mcq"`, `in_mixed_mock=false`
 - **Data Modeling** — 80 practice (25 easy / 30 medium / 25 hard) + 96 mock-only, conceptual / scenario / debug (MCQ response), no code execution; `eval_kind="mcq"`, `unlock_profile="mcq"`, `in_mixed_mock=false`
 - **Statistics** — 100 practice (31 easy / 43 medium / 26 hard) + 116 mock-only (0 easy / 66 medium / 50 hard), **dual-subtype**: each question is either `conceptual` (MCQ response) or `numerical` (Python code execution); `eval_kind="mixed"`, `unlock_profile="code"`, `mixed_subtype=true`, `in_mixed_mock=false`
-- **ML Fundamentals** — 96 practice (30 easy / 38 medium / 28 hard) + 25 mock-only, conceptual / scenario / predict_output / debug (MCQ response), no code execution; `eval_kind="mcq"`, `unlock_profile="mcq"`, `in_mixed_mock=false`
+- **ML Fundamentals** — 97 practice (30 easy / 39 medium / 28 hard) + 139 mock-only (0 easy / 66 medium / 73 hard: 57 standalone + 16 chain children from 8 chains), conceptual / scenario / predict_output / debug (MCQ response), no code execution; `eval_kind="mcq"`, `unlock_profile="mcq"`, `in_mixed_mock=false`
 - **Experimentation** — 84 practice (30 easy / 32 medium / 22 hard) + 25 mock-only, conceptual / scenario / predict_output / debug (MCQ response), no code execution; `eval_kind="mcq"`, `unlock_profile="mcq"`, `in_mixed_mock=false`
 
 ---
@@ -161,11 +161,13 @@ Mock-only questions (`mock_only: true`) live in the same JSON files as practice 
 | Data Engineering | 30 + 0 | 35 + 34 | 26 + 76 | conceptual / scenario / debug (MCQ) | `backend/content/data_engineering_questions/` |
 | Data Modeling | 25 + 0 | 30 + 45 | 25 + 51 | conceptual / scenario / debug (MCQ) | `backend/content/data_modeling_questions/` |
 | Statistics | 31 + 0 | 43 + 66 | 26 + 50 | conceptual (MCQ) + numerical Python | `backend/content/statistics_questions/` |
-| ML Fundamentals | 30 + 0 | 38 + 12 | 28 + 13 | conceptual / scenario / predict_output / debug (MCQ) | `backend/content/ml_fundamentals_questions/` |
+| ML Fundamentals | 30 + 0 | 39 + 66 | 28 + 73† | conceptual / scenario / predict_output / debug (MCQ) | `backend/content/ml_fundamentals_questions/` |
 | Experimentation | 30 + 0 | 32 + 12 | 22 + 13 | conceptual / scenario / predict_output / debug (MCQ) | `backend/content/experimentation_questions/` |
 
-**Practice totals:** SQL 118 · Python 79 · Pandas 92 · PySpark 128 · Data Engineering 91 · Data Modeling 80 · Statistics 100 · ML Fundamentals 96 · Experimentation 84 = **868 practice questions**  
-**Mock-only totals:** SQL 165 · Python 103 · Pandas 114 · PySpark 150 · Statistics 116 · ML Fundamentals 25 · Experimentation 25 · Data Modeling 96 · Data Engineering 110 = **904 mock-only questions** (Pro/Elite only)
+†ML Fundamentals hard mock-only: 57 standalone + 16 chain children from 8 chains.
+
+**Practice totals:** SQL 118 · Python 79 · Pandas 92 · PySpark 128 · Data Engineering 91 · Data Modeling 80 · Statistics 100 · ML Fundamentals 97 · Experimentation 84 = **869 practice questions**  
+**Mock-only totals:** SQL 165 · Python 103 · Pandas 114 · PySpark 150 · Statistics 116 · ML Fundamentals 139 · Experimentation 25 · Data Modeling 96 · Data Engineering 110 = **1,018 mock-only questions** (Pro/Elite only)
 
 See [docs/content-authoring.md](docs/content-authoring.md) for the full mock-only authoring spec.
 

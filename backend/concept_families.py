@@ -76,6 +76,14 @@ MOCK_ONLY_REALISM_FAMILIES: dict[str, set[str]] = {
     "data-modeling": set(),
     # Statistics: union-of-modalities — MCQ subtype + numerical harness already grade judgment; no realism lens needed.
     "statistics": set(),
+    # ML Fundamentals: NO realism families by design. ML is constructed
+    # reasoning (MCQ-only, no code execution). The curriculum absorbs the
+    # realism lens via six pathology-flavoured families (DATA LEAKAGE DETECTION,
+    # OVERFITTING DIAGNOSIS, MODEL MONITORING, TRAINING-SERVING SKEW,
+    # GRADIENT PATHOLOGY, DEPLOYMENT CONSTRAINTS). Every ML family appears in
+    # practice questions and is re-combined under production framing in mock-only.
+    # See docs/tracks/ml-fundamentals.md Coverage section and Phase 2 decision log.
+    "ml-fundamentals": set(),
 }
 
 # ---------------------------------------------------------------------------
@@ -1896,17 +1904,22 @@ CONCEPT_FAMILIES: dict[str, dict[str, list[str]]] = {
             "IMPUTATION",
             "MISSINGNESS AS SIGNAL",
         ],
+        # BOOSTING MECHANICS must come BEFORE ENSEMBLE STRATEGY in the registry.
+        # "BOOSTING MECHANICS" (tag) would otherwise match ENSEMBLE STRATEGY via
+        # its "BOOSTING" substring pattern before reaching this family.
+        # "GRADIENT BOOSTING" still falls through to ENSEMBLE STRATEGY: none of
+        # our patterns ("BOOSTING MECHANICS", "XGBOOST", etc.) match it.
+        "BOOSTING MECHANICS": [
+            "BOOSTING MECHANICS",   # direct tag used in practice + mock-only
+            "XGBOOST",
+            "LIGHTGBM",
+            "CATBOOST",
+        ],
         "ENSEMBLE STRATEGY": [
             "ENSEMBLE",
             "BAGGING",
             "BOOSTING",
             "STACKING",
-        ],
-        "BOOSTING MECHANICS": [
-            "GRADIENT BOOSTING",
-            "XGBOOST",
-            "LIGHTGBM",
-            "CATBOOST",
         ],
         "MODEL CALIBRATION": [
             "CALIBRATION",

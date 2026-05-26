@@ -1088,7 +1088,7 @@
     "correct_option": 1,
     "explanation": "PyTorch's BatchNorm layers have two distinct operating modes controlled by model.train() / model.eval(). In train mode, each forward pass computes batch statistics (mean and variance) over the current batch and uses them for normalization, while also updating running statistics via exponential moving average. In eval mode, the stored running mean and running variance (accumulated during training) are used instead. With batch_size=1 at inference, train-mode BatchNorm computes mean and variance over a single sample \u2014 the batch mean equals the sample value and the variance is zero (or near-zero), producing normalization outputs that differ dramatically from training-time behavior. This explains the 0.91 \u2192 0.74 degradation on identical images. Option B is incorrect: eval mode does not freeze weights; requires_grad=False or torch.no_grad() control gradient computation. Option C: global average pooling is well-defined for any batch size including 1. Option D is entirely wrong \u2014 eval mode must be set explicitly.",
     "hints": [
-      "What does BatchNorm compute differently in train mode vs eval mode, and why does batch_size=1 make train-mode statistics pathological?",
+      "What statistics does this layer compute during training to normalize activations, and how does a batch of exactly one sample affect the reliability of those statistics?",
       "The running_mean and running_var attributes in BatchNorm layers are only used in eval mode \u2014 what are they compared against in train mode?"
     ],
     "concepts": [
@@ -1114,7 +1114,7 @@
     "correct_option": 1,
     "explanation": "With 150 samples per class, full BERT fine-tuning rapidly memorizes the labeled set (97% training accuracy in 3 epochs). More critically, the pre-trained BERT representations were learned from Wikipedia and BookCorpus \u2014 they are misaligned with support-ticket vocabulary (abbreviations, product names, casual spelling, domain jargon). This domain shift means the pre-trained embeddings provide weak signal for the task, and the small labeled set cannot compensate. Domain-adaptive pre-training (Gururangan et al. 2020) uses unlabeled in-domain text (often abundant and cheap) to continue masked LM pre-training before the supervised fine-tuning step, adapting token embeddings and attention patterns to the domain. The failing interventions confirm this: dropout, LR reduction, and head-only training all address capacity or optimization, not domain alignment. Option B: DistilBERT is still domain-misaligned; TF-IDF loses semantic structure and typically underperforms BERT even on small datasets when fine-tuned correctly. Option C: the 97%/71% gap is too large to be a learning rate artifact; warmup addresses training stability, not domain shift. Option D: changing label granularity is scientifically indefensible if the 8 classes are genuinely distinct.",
     "hints": [
-      "The training/validation gap widens each epoch despite three different regularization interventions \u2014 what does that pattern tell you about whether this is a capacity problem or a representation alignment problem?",
+      "When validation loss worsens each epoch even though the model shows low training loss, does this suggest the model has too much capacity, or that the feature distribution has fundamentally shifted between training and deployment data?",
       "When labeled data is scarce but unlabeled in-domain text is abundant, what pre-training strategy can adapt a general-purpose language model before the supervised fine-tuning step?"
     ],
     "concepts": [
@@ -1442,7 +1442,7 @@
     "correct_option": 1,
     "explanation": "PyTorch implements inverted dropout by default. During training with p=0.5: each neuron is independently dropped with probability p=0.5. The surviving neurons are scaled by 1/(1-p) = 1/0.5 = 2.0. For the specific mask [drop, keep, drop, keep]: neurons at index 0 and 2 become 0; neurons at index 1 and 3 are multiplied by 2 \u2192 [0, 4.0*2, 0, 8.0*2] = [0, 8.0, 0, 16.0]. The purpose of this scaling is to keep the expected activation magnitude consistent across training and inference: E[output | inverted] = (1-p) * (activation * 1/(1-p)) = activation. During inference (model.eval()), dropout is disabled entirely \u2014 all neurons are active and activations pass through unchanged: [2.0, 4.0, 6.0, 8.0]. No scaling is applied at inference. Option B describes naive dropout (no scaling during training) with test-time halving \u2014 the old approach before inverted dropout. Option C is correct for the training behavior but wrong on the scaling aspect. Option D correctly identifies the training output but wrongly applies halving at inference.",
     "hints": [
-      "PyTorch's dropout scales surviving neurons during training \u2014 what is the scale factor when p=0.5, and what mathematical property does this preserve?",
+      "Randomly zeroing p fraction of neurons each forward pass changes the expected sum of activations entering the next layer \u2014 what scaling must be applied during training to preserve that expected sum, and what happens at inference when no neurons are zeroed?",
       "At inference (eval mode), what does PyTorch's dropout layer do to its input activations?"
     ],
     "concepts": [
@@ -1858,11 +1858,11 @@
     "correct_option": 1,
     "explanation": "XGBoost's lambda penalizes the squared sum of leaf weights, encouraging smaller, more conservative leaf values. This reduces each tree's contribution to the ensemble prediction. Increasing lambda from 1 to 10 successfully closed the training-validation gap from 0.13 to 0.01 \u2014 the model is now well-regularized. Proposing to add more trees to recover training AUC is strategically incoherent: more trees allow the model to take more additive steps toward fitting the training data. With sufficient trees, the ensemble can still achieve high training AUC even under strong lambda \u2014 lambda slows the rate of fitting, but does not hard-cap it. The motivation 'recover training AUC to 0.95' is the wrong goal: the business goal is high validation (or test) AUC, not high training AUC. If the current 0.87 validation AUC is insufficient, the right levers are structural complexity (max_depth, min_child_weight, subsample) or more training data \u2014 not increasing training AUC as an intermediate goal. Option B contains a kernel of truth (they are different dimensions) but misses that the proposed motivation is wrong. Option C: learning_rate + n_estimators is a valid joint tuning strategy, but the stated goal of recovering training AUC is the incoherence. Option D misidentifies the reason for incoherence.",
     "hints": [
-      "The training-validation gap went from 0.13 to 0.01 after increasing lambda \u2014 what does that tell you about whether more regularization or less regularization is needed?",
+      "The gap between training and validation AUC shrank from 0.13 to 0.01 when one hyperparameter increased \u2014 what does a narrowing gap tell you about model fit, and does it suggest tightening or loosening the constraint further?",
       "If the goal is higher validation AUC and adding trees re-inflates training AUC, what does that trajectory predict about the training-validation gap as trees are added?"
     ],
     "concepts": [
-      "GRADIENT BOOSTING",
+      "XGBOOST",
       "REGULARIZATION EFFECT"
     ],
     "follow_ups": [
@@ -2078,7 +2078,7 @@
       "Which XGBoost importance metric directly measures how much each feature reduces the model's objective function when it is used for a split?"
     ],
     "concepts": [
-      "BOOSTING MECHANICS",
+      "XGBOOST",
       "ENSEMBLE STRATEGY"
     ]
   },
@@ -2160,7 +2160,7 @@
       "Two LightGBM parameters directly control overfitting on small datasets: one limits the total number of leaves, the other limits the minimum samples per leaf \u2014 which both need adjustment here?"
     ],
     "concepts": [
-      "BOOSTING MECHANICS",
+      "LIGHTGBM",
       "OVERFITTING DIAGNOSIS"
     ]
   },
@@ -2186,7 +2186,7 @@
       "CatBoost's ordered statistics compute the category mean for observation i using only observations that came before i in a permutation \u2014 what information about i is excluded from its own encoding?"
     ],
     "concepts": [
-      "BOOSTING MECHANICS",
+      "CATBOOST",
       "DATA LEAKAGE DETECTION"
     ]
   },
@@ -2212,7 +2212,7 @@
       "The time complexity for 'exact' scales with n*p per split candidate \u2014 for n=500,000 and p=200, what does that mean for training time relative to 'hist'?"
     ],
     "concepts": [
-      "BOOSTING MECHANICS",
+      "XGBOOST",
       "HYPERPARAMETER SENSITIVITY"
     ]
   },
@@ -2488,7 +2488,7 @@
     "correct_option": 1,
     "explanation": "An ambiguity_pivot asks the candidate to surface hidden assumptions rather than invent a threshold. ECE acceptability is genuinely context-dependent. If the risk model outputs probabilities that are directly used in pricing (e.g., probability 0.15 \u2192 interest rate 8%), tight calibration matters more than if the model is only used for rank-ordering (approve top 20%, review next 30%). The asymmetry between false positive (unnecessary review) and false negative (missed default) costs should inform how much miscalibration is acceptable on each side of the calibration curve. The current degradation (ECE 0.02 \u2192 0.09) should be decomposed by probability bin to understand whether overconfidence or underconfidence is worse for the specific use case. Committing to a specific number (option B's 0.05) without this context produces a defensible-sounding threshold with no actual basis. Option B: there is no universal 'industry standard' ECE threshold. Option C: statistical significance of ECE change does not determine business acceptability. Option D: the ML team should have a perspective on the technical drivers of acceptable calibration, not just implement and defer.",
     "hints": [
-      "Whether ECE of 0.09 is 'acceptable' depends on how the model's probabilities are consumed \u2014 what are the two main ways a risk score can be used, and how does each affect calibration requirements?",
+      "Before committing to a threshold for probability error, what must you know about how the model's outputs flow into actual decisions \u2014 specifically, does downstream logic use raw probability values or only their relative ordering?",
       "Before stating a threshold, what three pieces of context would a senior data scientist ask for in this situation?"
     ],
     "concepts": [
@@ -2516,11 +2516,11 @@
     "correct_option": 1,
     "explanation": "Lambda regularization controls model complexity and remains a valid tool regardless of the evaluation metric. However, the business_rule_pivot here reveals a hidden dependency: F1 at a fixed threshold=0.5 is sensitive to whether the model's predicted probabilities are calibrated at the 0.5 decision boundary. XGBoost with lambda=10 produces shrunken leaf weights, which affects the scale of predicted log-odds and therefore the probability distribution. If the training data is imbalanced (common in fraud/default prediction), the uncalibrated model may predict probabilities concentrated well below 0.5 for most examples \u2014 making the 0.5 threshold suboptimal for F1. The correct approach: tune lambda with cross-validation on F1 at the threshold that maximizes F1 on the validation fold (not a fixed 0.5), since the threshold should be tuned jointly with the model. Option B: lambda doesn't necessarily shift probabilities away from 0.5 \u2014 it regularizes the weights, which can improve calibration. Option C: while the logic is correct (lambda is metric-agnostic), it misses the threshold sensitivity issue. Option D is wrong: XGBoost internally optimizes log-loss for tree splits regardless of eval_metric; this is expected and appropriate.",
     "hints": [
-      "XGBoost's lambda regularization shrinks leaf weight magnitudes \u2014 how does this affect the distribution of predicted probabilities, and why does that matter for F1 at a fixed 0.5 threshold?",
+      "When leaf weight magnitudes are smaller, what happens to the model's predicted probability outputs near the decision boundary, and how does that interact with using a fixed 0.5 classification threshold?",
       "For an imbalanced classification problem, why is F1 at threshold=0.5 potentially a poor choice compared to F1 at the threshold that maximizes F1?"
     ],
     "concepts": [
-      "GRADIENT BOOSTING",
+      "XGBOOST",
       "REGULARIZATION EFFECT"
     ]
   },
@@ -2544,11 +2544,11 @@
     "correct_option": 1,
     "explanation": "The performance_pivot asks how to achieve the same quality at lower cost. The insight is that regularization can be applied through model structure (shallow trees, few leaves) or through weight penalties (lambda, alpha). A shallow tree (max_depth=3) naturally produces fewer leaf nodes (max 8 leaves) with more data per leaf \u2014 structural regularization that reduces variance without requiring the optimizer to fight against high lambda. With structural regularization handling the bias-variance trade-off, a lower lambda (2-3) achieves equivalent regularization while requiring fewer training iterations to converge. This is more computationally efficient than deep trees with high lambda. Option B: increasing learning_rate reduces iteration count but affects the quality of the solution \u2014 with high lambda and high LR, the optimizer may undershoot the optimal leaf weights on each iteration. Option C: L1 (alpha in XGBoost) encourages sparsity at the feature-split level, but convergence speed is not reliably faster than L2 \u2014 this is not a cost reduction strategy. Option D: early stopping is already best practice and can reduce iteration count, but it doesn't address the root cause of slow convergence under high lambda.",
     "hints": [
-      "XGBoost's lambda constrains leaf weight magnitudes \u2014 why does a model with fewer leaf nodes (shallower max_depth) require less lambda to achieve the same regularization effect?",
+      "A shallower tree has fewer leaf nodes and fewer weight parameters to constrain \u2014 how does reducing structural complexity compare to penalty-based constraints as a method of controlling the model's expressiveness?",
       "What is the relationship between max_depth and the number of leaf nodes in a tree, and why does fewer leaf nodes reduce the optimizer's workload?"
     ],
     "concepts": [
-      "GRADIENT BOOSTING",
+      "XGBOOST",
       "REGULARIZATION EFFECT"
     ]
   },

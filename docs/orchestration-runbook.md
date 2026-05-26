@@ -283,7 +283,7 @@ No Stage A pre-planning needed; Sonnet uses judgment per family with documented 
 
 Update this section after each track closes / each retro-cleanup completes.
 
-### 6.1 Track status (as of 2026-05-25)
+### 6.1 Track status (as of 2026-05-26)
 
 | Track | Phase 2 status | Per-family coverage state | Notes |
 |---|---|---|---|
@@ -294,14 +294,14 @@ Update this section after each track closes / each retro-cleanup completes.
 | Data Engineering | ✅ Closed | ✅ Retro-cleanup closed 2026-05-25 — zero warnings. INCIDENT RESPONSE: 16 medium mock-only re-tiered to hard (R2). DATA CONTRACT: registry pattern shadow fixed (1-line removal from SCHEMA EVOLUTION patterns) resurrected family with 21 mock-only + 2 practice already on disk. Spot-check on 3 re-tiered questions (53087/53092/53102) confirmed hard-tier reasoning bar. 2 chains touched per § 5.4 (1 intact, 1 dissolved). | Practice 91, mock 110, ratio 1.21×, mock m:h = 1:2.24 (corrected — rationale in data-engineering.md) |
 | Data Modeling | ✅ Closed (Phase 2.5 pending) | DIMENSIONAL MODELING 93.8% ceiling breach + 2 dead families + 1 practice-floor | **Separate Phase 2.5 re-balance cycle** — not a retro-cleanup; needs Stage A→B→C |
 | Statistics | ✅ Closed | ✅ Phase 2 closed 2026-05-26 (Stage C PASS after 2 remediation rounds — see tracker decision log). 13-family registry locked (expanded from 12 via Stage A Deliverable 2). 100 practice + 116 mock-only authored; 12 chains all 7 follow-up dimensions exercised. Dual-subtype (conceptual + numerical); per-subtype ratios conceptual 1.42× / numerical 0.78× (numerical below 1.0× — provisional, first-remediation candidate if exhaustion observed). Path (ii) no realism by design (union-of-modalities defence in `statistics.md`). | Practice 100, mock 116, ratio 1.16× (band low end); validator-enabled |
-| ML Fundamentals | ⏸ Pending | 0 orphans / 29 families — clean enough to enforce now | Phase 2 pending |
+| ML Fundamentals | ✅ Stage B complete (Stage C pending) | ✅ 0 orphans / 29 families / validator enabled | 97 practice + 139 mock-only (8 chains, 16 children) — ratio 1.43×. BOOSTING MECHANICS ambiguity documented (GRADIENT BOOSTING routes to ENSEMBLE STRATEGY). Awaiting Stage C audit. |
 | Experimentation | ⏸ Pending | 0 orphans / 22 families — clean enough to enforce now | Phase 2 pending |
 
 ### 6.2 Validator coverage state (`_TAXONOMY_VALIDATED_TRACKS`)
 
 In set: SQL, Python, Pandas (`python-data`), PySpark, Data Engineering, Data Modeling.
-In set (post Stats closure): SQL, Python, Pandas (`python-data`), PySpark, Data Engineering, Data Modeling, Statistics.
-Out of set: ML Fundamentals, Experimentation. Validator emits stderr warning naming them on every run.
+In set (post Stats + ML Fundamentals closure): SQL, Python, Pandas (`python-data`), PySpark, Data Engineering, Data Modeling, Statistics, ML Fundamentals.
+Out of set: Experimentation. Validator emits stderr warning naming it on every run.
 
 ### 6.3 Precedent table (sizing-benchmark anchor for next Stage A)
 
@@ -314,6 +314,9 @@ Out of set: ML Fundamentals, Experimentation. Validator emits stderr warning nam
 | DE | 91 | 110 | 1.21 | 13 | 33 (13p + 20c) | 30% |
 | DM | 80 | 96 | 1.20 | 10 | 31 (10p + 21c) | 32% |
 | Statistics | 100 | 116 | 1.16 | 12 | 35 (12p + 23c) | 30% |
+| ML Fundamentals | 97 | 139† | 1.43 | 8 | 24 (8p + 16c) | 17%† |
+
+†Total mock-only 139 includes 16 chain children; standalone mock-only = 123. Chain-member % is 17% against total mock (24/139) — below the 30–35% cluster but chains were sized at ~20% of the planned 120 mock-only under a prior estimate that undercounted chain-member math (parent-only vs parent+children). See chain-member % note below.
 
 **Chain-member % precedent**: most closed tracks cluster at **30–35%** chain-members per mock-only. SQL is the chain-light outlier at 7% (Phase 2 authored chains conservatively as 1-child pairs; no retroactive chain expansion). Future Stage A planners should target **~30%** as the precedent anchor, NOT ~10-20%. (Backfilled 2026-05-26 — chain counts were never previously surfaced at the orchestration layer; an earlier orchestrator estimate of "DM 10%, DE 15%, Stats 10%" was based on miscounted parent-only figures rather than full chain-member math. ML Fundamentals Phase 2 was sized at 8 chains (~20%) under the wrong figure; this is below precedent but in operational range — not a blocker, candidate for post-Stage-C consideration if Elite-tier Interview Loop coverage feels thin.)
 
