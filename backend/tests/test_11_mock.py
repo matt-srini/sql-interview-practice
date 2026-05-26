@@ -7,7 +7,7 @@ from starlette.testclient import TestClient
 import backend.main as main
 from conftest import _db_conn, _insert_progress, _make_user
 from unlock import compute_mock_access
-from pyspark_questions import get_questions_by_difficulty as get_pyspark_qs
+from pyspark_questions import get_questions_by_difficulty as get_pyspark_qs, get_question as _get_pyspark_q
 
 app = main.app
 pytestmark = pytest.mark.usefixtures("isolated_state")
@@ -1014,8 +1014,7 @@ def test_tc174_second_submit_after_correct_returns_409():
         r_start = _start_pyspark_session(client)
         session_id = r_start.json()["session_id"]
         first_q = r_start.json()["questions"][0]
-        all_qs = _pyspark_catalog["easy"] + _pyspark_catalog["medium"] + _pyspark_catalog["hard"]
-        q_obj = next((q for q in all_qs if q["id"] == first_q["id"]), None)
+        q_obj = _get_pyspark_q(first_q["id"])
         correct = q_obj["correct_option"] if q_obj else _pyspark_correct
 
         # First submit — correct
@@ -1043,8 +1042,7 @@ def test_tc175_second_submit_after_wrong_returns_409():
         r_start = _start_pyspark_session(client)
         session_id = r_start.json()["session_id"]
         first_q = r_start.json()["questions"][0]
-        all_qs = _pyspark_catalog["easy"] + _pyspark_catalog["medium"] + _pyspark_catalog["hard"]
-        q_obj = next((q for q in all_qs if q["id"] == first_q["id"]), None)
+        q_obj = _get_pyspark_q(first_q["id"])
         correct = q_obj["correct_option"] if q_obj else _pyspark_correct
         wrong = (correct + 1) % 4
 
@@ -1073,8 +1071,7 @@ def test_tc176_blank_submit_does_not_block_subsequent_real_submit():
         r_start = _start_pyspark_session(client)
         session_id = r_start.json()["session_id"]
         first_q = r_start.json()["questions"][0]
-        all_qs = _pyspark_catalog["easy"] + _pyspark_catalog["medium"] + _pyspark_catalog["hard"]
-        q_obj = next((q for q in all_qs if q["id"] == first_q["id"]), None)
+        q_obj = _get_pyspark_q(first_q["id"])
         correct = q_obj["correct_option"] if q_obj else _pyspark_correct
 
         # Blank submit — rejected

@@ -54,26 +54,38 @@ def _reset_db_sync() -> None:
     Using asyncio.run() for TRUNCATE created a race condition: asyncpg connections
     from the previous TestClient's event loop could still be open (in OS cleanup)
     when the next asyncio.run() created new connections, causing intermittent deadlocks
-    between TRUNCATE and CREATE INDEX.  A synchronous psycopg2 call eliminates
-    that race entirely.
+    between TRUNCATE and CREATE INDEX.  A synchronous psycopg2 call reduces that race,
+    but the deadlock can still occur if asyncpg GC hasn't released its connections yet.
+    Retry logic handles the remaining intermittent cases.
     """
+    import time
+
     _active_url = os.environ.get("DATABASE_URL", "")
     _db_name = urlparse(_active_url).path.lstrip("/")
     assert _db_name.endswith("_test"), (
         f"_reset_db_sync refused: DATABASE_URL targets '{_db_name}', "
         "which is not a test database."
     )
-    conn = _db_conn()
-    try:
-        with conn.cursor() as cur:
-            cur.execute(
-                "TRUNCATE TABLE mock_session_questions, mock_sessions, submissions, "
-                "plan_changes, payment_events, user_sample_seen, user_progress, "
-                "sessions, users RESTART IDENTITY CASCADE"
-            )
-        conn.commit()
-    finally:
-        conn.close()
+    last_err: Exception | None = None
+    for attempt in range(5):
+        if attempt > 0:
+            time.sleep(0.1 * attempt)  # 0.1 s, 0.2 s, 0.3 s, 0.4 s
+        conn = _db_conn()
+        try:
+            with conn.cursor() as cur:
+                cur.execute(
+                    "TRUNCATE TABLE mock_session_questions, mock_sessions, submissions, "
+                    "plan_changes, payment_events, user_sample_seen, user_progress, "
+                    "sessions, users RESTART IDENTITY CASCADE"
+                )
+            conn.commit()
+            return
+        except psycopg2.errors.DeadlockDetected as exc:
+            conn.rollback()
+            last_err = exc
+        finally:
+            conn.close()
+    raise last_err  # type: ignore[misc]
 
 
 @pytest.fixture
