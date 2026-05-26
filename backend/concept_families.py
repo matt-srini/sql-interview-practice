@@ -2010,6 +2010,25 @@ CONCEPT_FAMILIES: dict[str, dict[str, list[str]]] = {
             "BLACK BOX",
             "GLASS BOX",
         ],
+        # ALGORITHMIC FAIRNESS — practice-grounded family (path-ii preserved, not a realism lens).
+        # Added BIAS/FAIRNESS Phase 2.5 (2026-05-26). 7 distinct reasoning surfaces:
+        # metric selection, disparate-impact diagnosis, group-conditional metric reading,
+        # fairness-accuracy tradeoff, post-hoc threshold adjustment per group, fairness-
+        # constrained training, individual-vs-group frame selection. NOT a realism family —
+        # MOCK_ONLY_REALISM_FAMILIES["ml-fundamentals"] stays empty.
+        # NOTE: "BIAS" pattern intentionally excluded — owned by BIAS-VARIANCE TRADEOFF at
+        # position 1. Authors must never tag a question "ALGORITHMIC BIAS" (would shadow);
+        # use "ALGORITHMIC FAIRNESS" or one of the listed patterns instead.
+        "ALGORITHMIC FAIRNESS": [
+            "ALGORITHMIC FAIRNESS",
+            "FAIRNESS",
+            "DISPARATE IMPACT",
+            "DEMOGRAPHIC PARITY",
+            "EQUALIZED ODDS",
+            "GROUP FAIRNESS",
+            "FAIRNESS METRIC",
+            "FAIRNESS CONSTRAINT",
+        ],
     },
 
     # -----------------------------------------------------------------------
