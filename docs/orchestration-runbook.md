@@ -1,7 +1,7 @@
 # Track Phase 2 Orchestration Runbook
 
 **Status:** durable orchestration doc (survives Phase 3 tracker deletion)
-**Audience:** any Opus session picking up the deferred DM Phase 2.5 re-balance, the BIAS/FAIRNESS Phase 2.5 (ML new-family addition), or any future Phase 2 round for a new track. **All 9 Phase 2 rounds closed 2026-05-26.**
+**Audience:** any Opus session picking up Phase 3 of the 2026-05 authoring refactor, or any future Phase 2 round for a new track added post-refactor. **All 9 Phase 2 rounds + both Phase 2.5 cycles (DM re-balance, ML BIAS/FAIRNESS new-family addition) closed 2026-05-26.** The transitional tracker (`docs/phases/2026-05-authoring-refactor.md`) will be archived to `docs/archive/` once Phase 3 ships; this runbook is the durable orchestration handbook and stays authoritative.
 
 This is the **orchestration handbook**, not the contract. The contract (rules, philosophy, schemas) lives in the durable docs listed at the bottom. This doc captures the **process patterns** for running a track through Phase 2: how Stage A plans, how Sonnet executes Stage B, how Stage C audits — all the orchestration-level knowledge that doesn't fit in the contract docs and historically lived only in conversation context.
 
@@ -372,24 +372,21 @@ Outcome (historical reference):
 - Final state: 81 practice + 97 mock-only = 1.20× (band-aligned, +1 practice / +1 mock from baseline).
 - **Lesson confirmed**: tag-honesty (E5 audit dimension) caught zero tagging lies — Stage B's discipline of pre-surfacing 2-tag-constraint cases (62032, 63029) in the commit message rather than silently keeping them set a cleaner precedent for future Phase 2.5 work.
 
-### 7.5 BIAS/FAIRNESS Phase 2.5 — ML new-family addition (next pickup)
+### 7.5 BIAS/FAIRNESS Phase 2.5 — ✅ CLOSED 2026-05-26
 
-Not a Phase 2 first-pass and not a re-balance of existing rule violations — this is a **new-family addition** to ML Fundamentals registry. Smaller scope than DM 2.5.
+Outcome (historical reference for future new-family additions):
+- Family name locked: **`ALGORITHMIC FAIRNESS`** (chosen over `BIAS & FAIRNESS LENS` / `FAIRNESS & DISPARATE IMPACT` — concrete reasoning surface, avoids "lens" framing which would have signalled realism).
+- Final state: ML registry 29 → 30 families. ML practice 97 → 100 (+3: 1 medium + 2 hard). ML mock-only 139 → 143 (+4 new mock-only; Q83031 retagged in-place to `[ALGORITHMIC FAIRNESS, CLASSIFICATION METRICS]`, `DEPLOYMENT CONSTRAINTS` stripped as tag-honesty correction).
+- Ratio 1.43× (essentially unchanged from pre-2.5 baseline).
+- Practice tier distribution for the new family: 0e/1m/2h. Mock-only: 5 hard (5 ≥ 4 rule-2 floor); zero medium mock-only because at Stage B the M4/M5 questions were escalated to hard per rule 1 (DEPLOYMENT CONSTRAINTS and MODEL MONITORING co-tag families are hard-tier; medium-tier mock would have created a rule-1 floor violation). Tracker row 828 documents the escalation rationale.
+- **Pattern-shadow design**: new family's 7 patterns (`FAIRNESS`, `DISPARATE IMPACT`, `DEMOGRAPHIC PARITY`, `EQUALIZED ODDS`, `GROUP FAIRNESS`, `FAIRNESS METRIC`, `FAIRNESS CONSTRAINT`) intentionally exclude bare `"BIAS"` to preserve BIAS-VARIANCE TRADEOFF resolution. Two expected shadows documented in `docs/concept-taxonomy.md` author-guidance table (`ALGORITHMIC BIAS` → BIAS-VARIANCE TRADEOFF with author direction to use `ALGORITHMIC FAIRNESS`; `CALIBRATION BY GROUP` → MODEL CALIBRATION with co-tag direction).
+- W4 designation: path (ii) preserved (`MOCK_ONLY_REALISM_FAMILIES["ml-fundamentals"] = set()` unchanged). Family is practice-grounded.
+- **Lesson confirmed**: new-family pattern-shadow check (runbook § 2.2 D2) caught the BIAS-VARIANCE TRADEOFF collision risk upfront; Stage A's `"BIAS"`-exclusion design prevented mis-routing.
+- **Lesson confirmed**: P1 disclosure pattern — Sonnet surfaced the M4/M5 medium→hard escalation in commit message + tracker row + track-doc rationale (transparent deviation from Stage A plan, not silent drift).
 
-- **Origin**: P2 surfacing from ML Phase 2 Stage A. ML's 29-family registry is missing a `BIAS / FAIRNESS LENS` family. Algorithmic fairness, disparate impact, fairness metrics (demographic parity, equalized odds, calibration-within-groups), bias-audit workflows are legitimate ML practitioner concerns not currently covered.
-- **Existing signal**: two ML mock-only questions reach for this territory:
-  - **82046** ("Model Selection: When Simpler Beats Complex") — has a "regulators prefer it" framing edge.
-  - **83031** (group A/B AUC disparity) — the cleaner signal; currently tagged `CLASSIFICATION METRICS + DEPLOYMENT CONSTRAINTS` as least-bad ML registry fits, but the question's pedagogical centre IS fairness.
-- **Scope**:
-  - **New family registration** in `backend/concept_families.py` for ml-fundamentals. Family name TBD by Stage A (candidates: `BIAS & FAIRNESS LENS`, `ALGORITHMIC FAIRNESS`, `FAIRNESS & DISPARATE IMPACT`). Reasoning-depth defence required for the new family (fairness-constrained training, post-hoc threshold adjustment per group, fairness metric selection — distinct techniques, not just a realism lens).
-  - **Practice grounding**: 1 medium + 2 hard (1 easy optional if easy-tier framing avoids trivia). Per cross-track contract.
-  - **Mock-only**: ≥4 per rule-2 floor (one being the retagged 83031; others authored fresh).
-  - **W4 designation**: practice-grounded family, NOT realism — fairness has its own teachable techniques.
-- **Pattern-shadow check** mandatory at Stage A post-registry-add (lesson from Stats `variance` shadow). Walk ML registry top-to-bottom for substring collisions with `"BIAS"`, `"FAIRNESS"`, `"DISPARATE"`, etc. (BIAS-VARIANCE TRADEOFF is a separate ML family with `"BIAS"` patterns — collision risk.)
-- **Estimated scope**: ~8 questions + 1 family registration + concept-taxonomy doc update + CLAUDE.md / content-authoring.md IS-count sync + tracker tick. Smaller than DM Phase 2.5.
-- **Treat as Stage A → B → C cycle** (not retro-cleanup) — new family registration is a registry-contract change requiring upfront defence.
+---
 
-After BIAS/FAIRNESS Phase 2.5 closes: **Phase 3 ships and the transitional tracker (`docs/phases/2026-05-authoring-refactor.md`) self-deletes.** This runbook stays as the durable orchestration handbook.
+**🎉 ALL 2026-05 AUTHORING REFACTOR WORK COMPLETE.** Phase 2 + DM Phase 2.5 + BIAS/FAIRNESS Phase 2.5 closed. Phase 3 is the next pickup; once Phase 3 ships, the transitional tracker (`docs/phases/2026-05-authoring-refactor.md`) will be **moved to `docs/archive/`** and will become **non-authoritative historical record**. This runbook stays as the durable orchestration handbook.
 
 ---
 

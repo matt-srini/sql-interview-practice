@@ -1,6 +1,12 @@
 # Authoring System Refactor — Tracking Doc
 
-> **Delete this file once Phase 3 ships and Interview Loop is live in production.** This is a temporary tracking artifact, not canonical documentation. Source-of-truth for *what was decided* lives in the files this doc points to.
+> **STATUS — Phase 2 + Phase 2.5 complete (2026-05-26).** All 9 tracks Phase 2 closed. DM Phase 2.5 + BIAS/FAIRNESS Phase 2.5 closed. Only Phase 3 remains.
+>
+> **This file is transitional and will be MOVED to `docs/archive/2026-05-authoring-refactor.md` once Phase 3 ships and Interview Loop is live in production.** Once archived, this doc is **no longer authoritative** — it becomes a historical record of the refactor's decisions and execution log. Authoritative durable rules live in the files this doc points to (see § Durable-doc hygiene).
+>
+> **Audit posture during the live phase**: durable contract docs are the source of truth for content quality, family rules, mock contract, and orchestration. This tracker is consulted only for one-time migration items (remap residuals, per-track execution briefs, decision-log entries) — never for rule interpretation.
+>
+> **Audit posture once archived**: this doc moves to `docs/archive/`; any cross-reference from a durable doc must point to `docs/archive/2026-05-authoring-refactor.md` if historical context is needed. Future Stage A planners (if any) work entirely against the durable contract + `docs/orchestration-runbook.md`.
 
 **Started:** 2026-05-21
 **Owner:** matt + Claude
@@ -381,9 +387,9 @@ The locked semantics, applying to all track audits running 2026-05-24 onward (St
 
 **Now codified in durable docs (2026-05-24):** in `docs/content-authoring.md` § Power-user runway sizing benchmark (band semantics block, with the Pandas precedent row added to the precedent table) and `.github/agents/question-authoring.agent.md` (mock-only contract bullet + final checklist). Closed tracks (SQL, Python, PySpark, Pandas, Data Engineering, Data Modeling) keep their locked targets; the precedent table records landed ratios, not retrofitted targets. No machine enforcement — this is a contract for the Stage A planner and the authoring executor, not a per-question validator rule.
 
-### Durable-doc hygiene — MUST complete before this tracker is deleted
+### Durable-doc hygiene — MUST complete before this tracker is archived
 
-This tracker self-deletes when Phase 3 ships; any rule that lives only here is lost. Before deletion, verify the migration is complete and **strip the transitional scaffolding from the durable docs**:
+This tracker is **archived** (moved to `docs/archive/`) when Phase 3 ships; any rule that lives only here loses its authoritative status. Before archiving, verify the migration is complete and **strip the transitional scaffolding from the durable docs**:
 
 1. **Strip ⚡ migration framing from `docs/concept-taxonomy.md`.** Once a track's Phase 2 is complete, its gap families are normal registered families — remove that track's `⚡ *real-world gap*` markers, the "currently zero coverage" / "Phase 2 (SQL) status" / "establish in practice first" / "mock content will lean here" notes, and the top-of-file ⚡ callout. A populated family's entry should read like every other family (name, what it tests, match patterns, member tags). **The only durable residue is the `mock_only` realism designation** (which stays).
 2. **Confirm per-track durable homing** before deleting: realism designations (taxonomy + `concept_families.py`), sizing/coverage targets (each `docs/tracks/<track>.md`), and any track-specific contract rule are in authoritative docs — not only here.
@@ -858,4 +864,4 @@ Files in this refactor and what they own:
 | `docs/specs/practice-modality-spec.md` | Modality matrix, interaction modes, eval kinds | track docs, content-authoring.md |
 | `docs/concept-hooks.md` | Socratic interview-hook inventory (seeding tool, not registry) | track docs (informational) |
 | `CLAUDE.md` | Standing instructions, project overview, content footprint, doc-sync map | (the entry point) |
-| `docs/phases/2026-05-authoring-refactor.md` | This refactor's progress tracking | (self-deletes when done) |
+| `docs/phases/2026-05-authoring-refactor.md` | This refactor's progress tracking | (archived to `docs/archive/` once Phase 3 ships; non-authoritative thereafter) |
