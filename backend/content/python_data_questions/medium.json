@@ -198,7 +198,7 @@
     "solution_code": "import pandas as pd\n\ndef solve(df_orders):\n    df = df_orders.copy()\n    df['user_avg_order'] = df.groupby('user_id')['net_amount'].transform('mean').round(2)\n    return df[['order_id', 'user_id', 'net_amount', 'user_avg_order']].sort_values('order_id').reset_index(drop=True)",
     "explanation": "`groupby('user_id')['net_amount'].transform('mean')` computes the per-user mean and broadcasts it back to the original row positions — unlike `agg`, `transform` returns a Series aligned with the original index. Rounding and column selection finish the result.",
     "hints": [
-      "Reduce the frame to the requested grain and count how many records fall into each bucket.",
+      "Each row needs its user's mean attached alongside the existing value — a per-group statistic broadcast back to every row in the group, not a collapsed summary.",
       "Chain `.round(2)` directly on the transform result before assigning"
     ],
     "concepts": [
@@ -235,7 +235,7 @@
     "explanation": "After parsing dates, grouping by the date string gives one row per day. Sorting before rolling is critical — `.rolling(window=7)` operates in current row order. The first 6 rows will have fewer than 7 days of data and produce NaN by default; `.fillna(0)` replaces those.",
     "hints": [
       "Aggregate to the time grain you care about first, then compute a trailing summary over that ordered sequence.",
-      "Use `.rolling(window=7).sum().fillna(0)` for the rolling revenue column"
+      "After sorting by date, apply a 7-day trailing window over the daily series; the first few days have an incomplete window — fill those NaN values with zero."
     ],
     "concepts": [
       "DATETIME OPERATIONS",
@@ -267,7 +267,7 @@
     "starter_code": "import pandas as pd\n\ndef solve(df_products):\n    # Dense-rank products by price descending within each category_id\n    # Return: product_id, product_name, category_id, price, price_rank\n    # Sort by category_id asc, then price_rank asc\n    pass",
     "expected_code": "import pandas as pd\n\ndef solve(df_products):\n    df = df_products.copy()\n    df['price_rank'] = df.groupby('category_id')['price'].rank(method='dense', ascending=False).astype(int)\n    result = df[['product_id', 'product_name', 'category_id', 'price', 'price_rank']]\n    return result.sort_values(['category_id', 'price_rank']).reset_index(drop=True)",
     "solution_code": "import pandas as pd\n\ndef solve(df_products):\n    df = df_products.copy()\n    df['price_rank'] = df.groupby('category_id')['price'].rank(method='dense', ascending=False).astype(int)\n    result = df[['product_id', 'product_name', 'category_id', 'price', 'price_rank']]\n    return result.sort_values(['category_id', 'price_rank']).reset_index(drop=True)",
-    "explanation": "`groupby('category_id')['price'].rank(method='dense', ascending=False)` assigns rank 1 to the highest price within each category, with no gaps for ties. `astype(int)` converts the float ranks to integers. Sorting by `['category_id', 'price_rank']` groups by category with cheapest-first ordering.",
+    "explanation": "`groupby('category_id')['price'].rank(method='dense', ascending=False)` assigns rank 1 to the highest price within each category, with no gaps for ties. `astype(int)` converts the float ranks to integers. Sorting by `['category_id', 'price_rank']` groups by category with the most expensive products first (rank 1).",
     "hints": [
       "Compare each row against its peers inside the relevant group rather than across the full dataset.",
       "`method='dense'` gives consecutive ranks with no gaps for tied values"
@@ -308,7 +308,7 @@
     ],
     "concepts": [
       "GROUPED AGGREGATION",
-      "GROUPBY TRANSFORM"
+      "COLUMN SELECTION & PROJECTION"
     ]
   },
   {
@@ -372,8 +372,8 @@
     "solution_code": "import pandas as pd\n\ndef solve(df_products):\n    df = df_products.copy()\n    df['price_bucket'] = pd.cut(\n        df['price'],\n        bins=[0, 50, 200, float('inf')],\n        labels=['budget', 'mid', 'premium'],\n        right=False\n    ).astype(str)\n    result = df[['product_id', 'product_name', 'price', 'price_bucket']]\n    return result.sort_values('price').reset_index(drop=True)",
     "explanation": "`pd.cut` with `right=False` creates left-closed intervals `[0, 50)`, `[50, 200)`, `[200, inf)`. The `labels` list maps to these intervals in order. Converting to string with `.astype(str)` ensures the output column is a plain string rather than a Categorical dtype.",
     "hints": [
-      "Use `pd.cut(df['price'], bins=[0, 50, 200, float('inf')], labels=['budget','mid','premium'], right=False)`",
-      "Add `.astype(str)` to convert from Categorical to plain string"
+      "Each row's numeric price needs to be mapped to one of the named tiers using the boundaries given in the prompt.",
+      "`pd.cut` with `right=False` produces left-closed intervals matching the spec; chain `.astype(str)` to flatten the resulting Categorical to a plain string column."
     ],
     "concepts": [
       "CATEGORICAL & BINNING",
@@ -432,7 +432,7 @@
     "concepts": [
       "MULTI-DATAFRAME ENTITY LINKING",
       "GROUPED AGGREGATION",
-      "RANKING & TOP-N PER GROUP"
+      "OUTPUT SHAPE & ORDERING"
     ]
   },
   {
@@ -461,12 +461,12 @@
     "solution_code": "import pandas as pd\n\ndef solve(df_tickets):\n    total = len(df_tickets)\n    resolved = (df_tickets['status'] == 'resolved').sum()\n    rate = round(resolved / total * 100, 1)\n    return pd.DataFrame({'total_tickets': [total], 'resolved_tickets': [int(resolved)], 'resolution_rate_pct': [rate]})",
     "explanation": "`len(df_tickets)` counts total rows. A boolean comparison `== 'resolved'` creates a True/False Series; `.sum()` counts True values. Dividing and multiplying by 100 gives the rate. Wrapping scalars in lists when constructing a DataFrame ensures a proper single-row result.",
     "hints": [
-      "Count resolved tickets with `(df_tickets['status'] == 'resolved').sum()`",
+      "Two scalar numbers drive the answer: how many tickets total, and how many of them are resolved — the rate is just their ratio.",
       "Wrap scalar values in lists when building the result: `pd.DataFrame({'col': [value]})`"
     ],
     "concepts": [
-      "GROUPED AGGREGATION",
-      "BOOLEAN INDEXING & FILTERING"
+      "BOOLEAN INDEXING & FILTERING",
+      "OUTPUT SHAPE & ORDERING"
     ]
   },
   {
@@ -540,7 +540,7 @@
     "solution_code": "import pandas as pd\n\ndef solve(df_orders, df_payments):\n    pay = df_payments[['order_id', 'payment_method', 'status']].rename(columns={'status': 'payment_status_detail'})\n    merged = df_orders.merge(pay, on='order_id', how='left')\n    merged['payment_method'] = merged['payment_method'].fillna('none')\n    merged['payment_status_detail'] = merged['payment_status_detail'].fillna('none')\n    result = merged[['order_id', 'user_id', 'net_amount', 'payment_method', 'payment_status_detail']]\n    return result.sort_values('order_id').reset_index(drop=True)",
     "explanation": "Pre-selecting and renaming columns from `df_payments` before the merge avoids naming conflicts with `df_orders.status`. A left join keeps all orders including those with no matching payment — those rows will have NaN in the payment columns, which `.fillna('none')` replaces.",
     "hints": [
-      "This is an output-schema task: keep the data unchanged and only reshape the column labels.",
+      "Every order must survive in the output regardless of whether a payment exists, so the join type and the handling of unmatched rows are the two decisions to make.",
       "Use `how='left'` so all orders are kept, then fill NaN payment columns with `'none'`"
     ],
     "concepts": [
@@ -608,13 +608,12 @@
     "solution_code": "import pandas as pd\n\ndef solve(df_order_items):\n    df = df_order_items.copy()\n    df['item_revenue'] = df['unit_price'] * df['quantity']\n    result = df[['order_item_id', 'product_id', 'unit_price', 'quantity', 'item_revenue']]\n    return result.sort_values('item_revenue', ascending=False).head(20).reset_index(drop=True)",
     "explanation": "Multiplying two Series column-wise produces a new Series of the same length. Note `line_amount` already contains `unit_price * quantity` in this dataset, but computing explicitly from components demonstrates the derived-column pattern. Sorting descending and taking `.head(20)` gives the top earners.",
     "hints": [
-      "Create `item_revenue` with `df['unit_price'] * df['quantity']`",
+      "The revenue column is a derived per-row product of two existing columns; the rest is just shaping the top slice.",
       "Sort descending then use `.head(20)` to limit results"
     ],
     "concepts": [
       "COLUMN SELECTION & PROJECTION",
-      "OUTPUT SHAPE & ORDERING",
-      "RANKING & TOP-N PER GROUP"
+      "OUTPUT SHAPE & ORDERING"
     ]
   },
   {
@@ -692,7 +691,7 @@
     "solution_code": "import pandas as pd\n\ndef solve(df_order_items, df_products, df_categories):\n    items_products = df_order_items.merge(df_products[['product_id', 'category_id']], on='product_id', how='inner')\n    full = items_products.merge(df_categories[['category_id', 'category_name']], on='category_id', how='inner')\n    result = full.groupby('category_name', as_index=False)['line_amount'].sum()\n    result = result.rename(columns={'line_amount': 'total_revenue'})\n    overall = result['total_revenue'].sum()\n    result['pct_of_total'] = (result['total_revenue'] / overall * 100).round(2)\n    return result.sort_values('total_revenue', ascending=False).reset_index(drop=True)",
     "explanation": "Two merges link order items to product category IDs then to category names. Grouping by `category_name` and summing `line_amount` gives per-category revenue. The percentage is computed as `(cat_revenue / total_revenue) * 100`, rounded to 2 decimals.",
     "hints": [
-      "Chain: order_items → products (on product_id), then → categories (on category_id)",
+      "Get every line-item row enriched with its category name first, then aggregate revenue at the category grain.",
       "After aggregating by category, divide each row's revenue by the total revenue scalar for the percentage"
     ],
     "concepts": [
@@ -726,7 +725,7 @@
     "solution_code": "import pandas as pd\n\ndef solve(df_employees):\n    df = df_employees.copy()\n    df['salary_percentile'] = (df['salary'].rank(pct=True) * 100).round(1)\n    result = df[['employee_id', 'employee_name', 'salary', 'salary_percentile']]\n    return result.sort_values('salary_percentile', ascending=False).reset_index(drop=True)",
     "explanation": "`.rank(pct=True)` assigns each value its percentile position as a fraction between 0 and 1, handling ties by averaging ranks by default. Multiplying by 100 converts to a 0–100 scale. The highest-paid employee will have a percentile near 100.",
     "hints": [
-      "Compare each row against its peers inside the relevant group rather than across the full dataset.",
+      "The percentile measures where each employee sits in the full salary distribution — a global ordering of everyone, expressed as a fraction between 0 and 1.",
       "Chain `.round(1)` directly before assigning to the column"
     ],
     "concepts": [
@@ -804,8 +803,8 @@
     "solution_code": "import pandas as pd\n\ndef solve(df_order_items):\n    df = df_order_items.copy()\n    df['avg_price'] = df.groupby('product_id')['unit_price'].transform('mean').round(2)\n    df['above_avg'] = df['unit_price'] > df['avg_price']\n    return df.sort_values('order_item_id').reset_index(drop=True)",
     "explanation": "`groupby('product_id')['unit_price'].transform('mean')` broadcasts each product's mean price back to all rows for that product. Comparing `unit_price > avg_price` on a row-by-row basis produces the boolean `above_avg` flag. No column selection is needed since the question asks for all original columns plus the two new ones.",
     "hints": [
-      "Collapse the data to the requested grain and compute the average measure for each group.",
-      "The boolean column is simply `df['unit_price'] > df['avg_price']`"
+      "Every row needs its product's average price beside it — a per-group statistic broadcast back to row grain, not a collapsed summary — then a row-wise comparison flags the above-average rows.",
+      "`groupby(...).transform('mean')` returns a Series aligned to the original index; once `avg_price` is attached, a column-vs-column comparison produces the boolean."
     ],
     "concepts": [
       "GROUPED AGGREGATION",
@@ -849,7 +848,7 @@
     "explanation": "After computing per-product revenue, `groupby('category_id')['total_revenue'].idxmax()` returns the row index of the maximum revenue product within each category. Using `.loc[idx]` selects those rows from the revenue DataFrame, giving exactly one row per category — the top earner.",
     "hints": [
       "First compute total revenue per `(category_id, product_id)` pair",
-      "Then use `.groupby('category_id')['total_revenue'].idxmax()` to find the row index of the max per category, and `.loc[idx]` to select those rows"
+      "Within each category, the winning row is identified by an idxmax-style call that returns row labels — feed those labels back via label-based selection to pull the full rows."
     ],
     "concepts": [
       "MULTI-DATAFRAME ENTITY LINKING",
@@ -927,7 +926,7 @@
     "explanation": "Aggregating events first, then joining to sessions is more efficient than joining all events rows to all sessions rows before grouping. Counting `event_id` per session and renaming the column, then merging on `session_id` brings in the session metadata. The final sort puts the busiest sessions first.",
     "hints": [
       "Bring the related attributes into one aligned table before you filter, compare, or aggregate.",
-      "This is more efficient than merging first and grouping second on a large events table"
+      "Aggregate event counts per session first, then merge the session metadata onto the small per-session result."
     ],
     "concepts": [
       "MULTI-DATAFRAME ENTITY LINKING",
@@ -960,8 +959,8 @@
     "solution_code": "import pandas as pd\n\ndef solve(df_employees):\n    df = df_employees.copy()\n    df['dept_avg_salary'] = df.groupby('department_id')['salary'].transform('mean').round(2)\n    df['above_avg'] = df['salary'] > df['dept_avg_salary']\n    result = df[['employee_id', 'employee_name', 'department_id', 'salary', 'dept_avg_salary', 'above_avg']]\n    return result.sort_values(['department_id', 'salary'], ascending=[True, False]).reset_index(drop=True)",
     "explanation": "`groupby('department_id')['salary'].transform('mean')` computes each department's mean salary and broadcasts it back to every row in that department. Comparing `salary > dept_avg_salary` row-by-row produces the boolean flag. `sort_values(['department_id', 'salary'], ascending=[True, False])` sorts by department first, then highest salary first within each department.",
     "hints": [
-      "Collapse the data to the requested grain and compute the average measure for each group.",
-      "Pass a list to `ascending` in `sort_values` to mix ascending and descending: `ascending=[True, False]`"
+      "Every row needs its department's average attached alongside it — a per-group statistic broadcast back to row grain, not a collapsed summary — then a row-wise comparison flags the above-average employees.",
+      "`groupby(...).transform('mean')` returns a Series aligned to the original index; once `dept_avg_salary` is attached, a column-vs-column comparison produces the boolean flag."
     ],
     "concepts": [
       "GROUPED AGGREGATION",
