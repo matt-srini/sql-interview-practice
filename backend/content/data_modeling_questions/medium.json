@@ -789,8 +789,32 @@
     ]
   },
   {
-    "id": 62030,
+    "id": 62077,
     "order": 31,
+    "title": "Data Vault Constructs: What Hubs, Links, and Satellites Each Store",
+    "difficulty": "medium",
+    "type": "conceptual",
+    "description": "A data architect is modelling three source tables in a Data Vault: customers(customer_id, email, customer_type, signup_date), orders(order_id, customer_id, store_id, order_date, total_amount), and stores(store_id, store_name, region, manager_id). Which statement correctly maps the source data elements to Data Vault constructs?",
+    "options": [
+      "Each business key (customer_id, order_id, store_id) goes in a satellite; descriptive attributes (email, store_name, total_amount) go in hubs; the customer-order-store relationship goes in a link.",
+      "Each business key (customer_id, order_id, store_id) lives in its own hub with a system-generated hash key; descriptive attributes (email, total_amount, region) live in satellites tied to their hub; and the customer-order-store relationship lives in a link.",
+      "All three source tables map to a single hub containing all business keys; both relationships and descriptive attributes go in satellites with foreign keys back to that hub.",
+      "Business keys and descriptive attributes are combined in hubs (one row per entity per version); links store SCD-style historical versions; satellites store only metadata such as load timestamps and record sources."
+    ],
+    "correct_option": 1,
+    "explanation": "Option B is the correct Data Vault construct mapping. A hub holds exactly one business concept\u2019s natural key (e.g., customer_id) plus a system-generated hash surrogate key \u2014 nothing else. Satellites hang off a hub and carry all descriptive, time-varying attributes (email, customer_type, region) versioned by load date and record source. Links represent the relationship between two or more hubs using their hash keys; the customer-order-store triple maps cleanly to a link. Option A inverts hubs and satellites. Option C collapses all business keys into one hub, losing the independent identity of each entity. Option D puts attributes into hubs (violating hub atomicity) and misuses links for versioning (that is a satellite\u2019s job).",
+    "hints": [
+      "Every column in a source table plays one of three roles: uniquely identifying a business entity, describing an attribute of that entity, or recording a relationship between two entities. Classify each column in customers, orders, and stores before reading the options.",
+      "What does a business key like customer_id or order_id uniquely identify? Where should that kind of information live compared to descriptive attributes like email or store_name?"
+    ],
+    "concepts": [
+      "DATA VAULT",
+      "SURROGATE VS NATURAL KEYS"
+    ]
+  },
+  {
+    "id": 62030,
+    "order": 32,
     "title": "Conformed Dimension Extension: Adding a Business-Unit-Specific Attribute",
     "difficulty": "medium",
     "type": "scenario",
@@ -816,7 +840,7 @@
   },
   {
     "id": 62031,
-    "order": 32,
+    "order": 33,
     "title": "Semantic Layer Governance: Certified vs Experimental Metric Lifecycle",
     "difficulty": "medium",
     "type": "conceptual",
@@ -841,7 +865,7 @@
   },
   {
     "id": 62032,
-    "order": 33,
+    "order": 34,
     "title": "SCD Type Selection Under Conflicting Retention and Query Requirements",
     "difficulty": "medium",
     "type": "scenario",
@@ -867,7 +891,7 @@
   },
   {
     "id": 62033,
-    "order": 34,
+    "order": 35,
     "title": "Schema Evolution for a Shared Dimension: Breaking vs Non-Breaking Change Classification",
     "difficulty": "medium",
     "type": "conceptual",
@@ -892,7 +916,7 @@
   },
   {
     "id": 62034,
-    "order": 35,
+    "order": 36,
     "title": "High-Churn SCD: When Type 2 Row Explosion Becomes Impractical",
     "difficulty": "medium",
     "type": "scenario",
@@ -918,7 +942,7 @@
   },
   {
     "id": 62037,
-    "order": 36,
+    "order": 37,
     "title": "Schema from Requirements: Naming the Fact Grain When Stakeholder Briefs Conflict",
     "difficulty": "medium",
     "type": "scenario",
@@ -944,7 +968,7 @@
   },
   {
     "id": 62038,
-    "order": 37,
+    "order": 38,
     "title": "Bridge Tables: Resolving a Many-to-Many Between Orders and Promotions",
     "difficulty": "medium",
     "type": "scenario",
@@ -970,7 +994,7 @@
   },
   {
     "id": 62039,
-    "order": 38,
+    "order": 39,
     "title": "Denormalization Trade-offs: Flattening a Snowflake into a Star for a BI Workload",
     "difficulty": "medium",
     "type": "conceptual",
@@ -995,7 +1019,7 @@
   },
   {
     "id": 62040,
-    "order": 39,
+    "order": 40,
     "title": "Data Vault Basics: Mapping a Kimball Customer Dimension to Vault Constructs",
     "difficulty": "medium",
     "type": "scenario",
@@ -1022,7 +1046,7 @@
   },
   {
     "id": 62041,
-    "order": 40,
+    "order": 41,
     "title": "Additive vs Semi-Additive vs Non-Additive: Classifying Measures by Aggregation Behavior",
     "difficulty": "medium",
     "type": "conceptual",
@@ -1047,7 +1071,7 @@
   },
   {
     "id": 62042,
-    "order": 41,
+    "order": 42,
     "title": "Debug: Inflated Revenue When a Fact Joins a Many-Row Dimension",
     "difficulty": "medium",
     "type": "debug",
@@ -1072,7 +1096,7 @@
   },
   {
     "id": 62043,
-    "order": 42,
+    "order": 43,
     "title": "Schema from Requirements: Designing a Fact Table for a Multi-Dimension Brief",
     "difficulty": "medium",
     "type": "scenario",
@@ -1098,7 +1122,7 @@
   },
   {
     "id": 62044,
-    "order": 43,
+    "order": 44,
     "title": "Normalization vs Star Schema: Choosing the Right Design for a Reporting Data Mart",
     "difficulty": "medium",
     "type": "conceptual",
@@ -1124,7 +1148,7 @@
   },
   {
     "id": 62045,
-    "order": 44,
+    "order": 45,
     "title": "Debug: Revenue Double-Count from a Role-Playing Dimension Join",
     "difficulty": "medium",
     "type": "debug",
@@ -1149,7 +1173,7 @@
   },
   {
     "id": 62046,
-    "order": 45,
+    "order": 46,
     "title": "dbt Modeling Layers: Staging, Intermediate, and Mart Responsibilities for a Kimball Mart",
     "difficulty": "medium",
     "type": "scenario",
@@ -1175,7 +1199,7 @@
   },
   {
     "id": 62047,
-    "order": 46,
+    "order": 47,
     "title": "Grain Selection: Procedure vs Visit Level for a Hospital Analytics Fact",
     "difficulty": "medium",
     "type": "scenario",
@@ -1206,7 +1230,7 @@
   },
   {
     "id": 62048,
-    "order": 47,
+    "order": 48,
     "title": "M1 Follow-up: Tracking Readmissions When the Business Rule Adds a New Event Relationship",
     "difficulty": "medium",
     "type": "scenario",
@@ -1234,7 +1258,7 @@
   },
   {
     "id": 62049,
-    "order": 48,
+    "order": 49,
     "title": "Hierarchies: Mid-Year Product Reclassification in a Year-Spanning Revenue Report",
     "difficulty": "medium",
     "type": "scenario",
@@ -1260,7 +1284,7 @@
   },
   {
     "id": 62050,
-    "order": 49,
+    "order": 50,
     "title": "Surrogate vs Natural Keys: Why Dimensional Models Use Generated Keys Even When Source IDs Are Stable",
     "difficulty": "medium",
     "type": "conceptual",
@@ -1286,7 +1310,7 @@
   },
   {
     "id": 62051,
-    "order": 50,
+    "order": 51,
     "title": "Pre-Aggregated Summary Tables: When They Help and When They Introduce Calculation Errors",
     "difficulty": "medium",
     "type": "scenario",
@@ -1312,7 +1336,7 @@
   },
   {
     "id": 62052,
-    "order": 51,
+    "order": 52,
     "title": "Debug: Orphaned Fact Rows After a Dimension Cleanup Deletes Referenced Rows",
     "difficulty": "medium",
     "type": "debug",
@@ -1338,7 +1362,7 @@
   },
   {
     "id": 62053,
-    "order": 52,
+    "order": 53,
     "title": "Periodic Snapshot Facts: Why Account Balances Cannot Be Summed Across Days",
     "difficulty": "medium",
     "type": "scenario",
@@ -1368,7 +1392,7 @@
   },
   {
     "id": 62054,
-    "order": 53,
+    "order": 54,
     "title": "M2 Follow-up: Computing Quarter-End Balance From a Daily Snapshot When the Business Rule Changes",
     "difficulty": "medium",
     "type": "scenario",
@@ -1396,7 +1420,7 @@
   },
   {
     "id": 62055,
-    "order": 54,
+    "order": 55,
     "title": "Distinct-Count Metrics in Summary Tables: Why They Cannot Be Summed Across Time",
     "difficulty": "medium",
     "type": "scenario",
@@ -1422,7 +1446,7 @@
   },
   {
     "id": 62056,
-    "order": 55,
+    "order": 56,
     "title": "Data Vault Schema Evolution: Adding Attributes from a New Source Without Polluting Existing Satellites",
     "difficulty": "medium",
     "type": "conceptual",
@@ -1447,7 +1471,7 @@
   },
   {
     "id": 62057,
-    "order": 56,
+    "order": 57,
     "title": "Debug: Historical Report Labels Change After a Dimension Attribute Is Overwritten",
     "difficulty": "medium",
     "type": "debug",
@@ -1472,7 +1496,7 @@
   },
   {
     "id": 62058,
-    "order": 57,
+    "order": 58,
     "title": "Multiple Hierarchies: When Finance and Operations Define Product Categories Differently",
     "difficulty": "medium",
     "type": "scenario",
@@ -1498,7 +1522,7 @@
   },
   {
     "id": 62059,
-    "order": 58,
+    "order": 59,
     "title": "Bridge Tables vs Enrollment Facts: Modeling Student-Course Many-to-Many with Revenue",
     "difficulty": "medium",
     "type": "conceptual",
@@ -1527,7 +1551,7 @@
   },
   {
     "id": 62060,
-    "order": 59,
+    "order": 60,
     "title": "SCD Type 2 for Property Status: Supporting Current State, History, and Duration Simultaneously",
     "difficulty": "medium",
     "type": "scenario",
@@ -1558,7 +1582,7 @@
   },
   {
     "id": 62061,
-    "order": 60,
+    "order": 61,
     "title": "M4 Follow-up: Computing Days-on-Market When the Business Rule Requires the Original Listing Date",
     "difficulty": "medium",
     "type": "conceptual",
@@ -1585,7 +1609,7 @@
   },
   {
     "id": 62062,
-    "order": 61,
+    "order": 62,
     "title": "Conformed Dimension Evolution: Coordinating a Breaking Change Across Three Consuming Facts",
     "difficulty": "medium",
     "type": "conceptual",
@@ -1610,7 +1634,7 @@
   },
   {
     "id": 62063,
-    "order": 62,
+    "order": 63,
     "title": "Debug: Revenue Double-Count When a Customer Tier Change Creates Multiple Dimension Rows",
     "difficulty": "medium",
     "type": "debug",
@@ -1635,7 +1659,7 @@
   },
   {
     "id": 62064,
-    "order": 63,
+    "order": 64,
     "title": "Evaluate a request to pre-join all dimensions into a single wide analytics table",
     "difficulty": "medium",
     "type": "scenario",
@@ -1661,7 +1685,7 @@
   },
   {
     "id": 62065,
-    "order": 64,
+    "order": 65,
     "title": "Design a revenue fact when two source systems report at incompatible event granularities",
     "difficulty": "medium",
     "type": "scenario",
@@ -1687,7 +1711,7 @@
   },
   {
     "id": 62066,
-    "order": 65,
+    "order": 66,
     "title": "Conform a customer dimension across Finance (ERP) and Marketing (CRM) source systems",
     "difficulty": "medium",
     "type": "scenario",
@@ -1713,7 +1737,7 @@
   },
   {
     "id": 62067,
-    "order": 66,
+    "order": 67,
     "title": "Assess the maintenance cost of a 120-column wide table for user engagement reporting",
     "difficulty": "medium",
     "type": "scenario",
@@ -1739,7 +1763,7 @@
   },
   {
     "id": 62068,
-    "order": 67,
+    "order": 68,
     "title": "Select the ingestion architecture for four frequently-changing source systems with a full audit requirement",
     "difficulty": "medium",
     "type": "scenario",
@@ -1765,7 +1789,7 @@
   },
   {
     "id": 62069,
-    "order": 68,
+    "order": 69,
     "title": "Identify the correct dbt layer for applying a business classification rule before exposing a dimension to marts",
     "difficulty": "medium",
     "type": "conceptual",
@@ -1790,7 +1814,7 @@
   },
   {
     "id": 62070,
-    "order": 69,
+    "order": 70,
     "title": "Identify the normal form violated by transitive attribute dependencies in a product dimension",
     "difficulty": "medium",
     "type": "conceptual",
@@ -1815,7 +1839,7 @@
   },
   {
     "id": 62071,
-    "order": 70,
+    "order": 71,
     "title": "Place the one-big-table (OBT) pattern correctly within a layered dbt project",
     "difficulty": "medium",
     "type": "conceptual",
@@ -1840,7 +1864,7 @@
   },
   {
     "id": 62072,
-    "order": 71,
+    "order": 72,
     "title": "Compare wide and narrow fact table patterns for sparse event-type data in a columnar store",
     "difficulty": "medium",
     "type": "conceptual",
@@ -1865,7 +1889,7 @@
   },
   {
     "id": 62073,
-    "order": 72,
+    "order": 73,
     "title": "Determine when Third Normal Form normalization applies in analytical versus OLTP modeling",
     "difficulty": "medium",
     "type": "conceptual",
@@ -1890,7 +1914,7 @@
   },
   {
     "id": 62074,
-    "order": 73,
+    "order": 74,
     "title": "Identify when a pre-computed ratio metric in an aggregate table produces incorrect downstream aggregation",
     "difficulty": "medium",
     "type": "conceptual",
@@ -1915,7 +1939,7 @@
   },
   {
     "id": 62075,
-    "order": 74,
+    "order": 75,
     "title": "Diagnose revenue inflation caused by a many-to-many join to a promotions dimension",
     "difficulty": "medium",
     "type": "debug",
@@ -1941,7 +1965,7 @@
   },
   {
     "id": 62076,
-    "order": 75,
+    "order": 76,
     "title": "Debug a quarterly AOV discrepancy caused by arithmetically averaging pre-computed monthly ratio metrics",
     "difficulty": "medium",
     "type": "debug",
