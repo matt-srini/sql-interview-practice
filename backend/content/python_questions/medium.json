@@ -29852,7 +29852,7 @@
     ],
     "public_test_cases": 2,
     "hints": [
-      "Group events by user_id with a defaultdict, sort each group by timestamp, then scan linearly \u2014 when the gap exceeds `timeout`, close the current session.",
+      "The core pattern is group-then-scan: partition records by entity, then process each entity's records as an ordered sequence checking gap conditions between adjacent entries.",
       "The session_id is 0-indexed per user. Track it as a counter that increments each time you open a new session for that user."
     ],
     "concepts": [
@@ -30950,7 +30950,7 @@
     ],
     "public_test_cases": 2,
     "hints": [
-      "Use `Counter` to count frequencies, then sort by `(-count, name)` to get descending frequency with alphabetical tie-breaking.",
+      "Count frequencies using a hash-based aggregator, then rank by frequency descending \u2014 use a two-key sort to break ties between equal-frequency items deterministically.",
       "The return value is the category names (not counts), sorted alphabetically, not by frequency."
     ],
     "concepts": [
@@ -31414,7 +31414,7 @@
     ],
     "public_test_cases": 2,
     "hints": [
-      "Initialise `cur_status = records[0][1]` and `count = 1`. Scan from index 1: if status matches current, increment count; otherwise append `(cur_status, count)` and reset. Don't forget to append the final run after the loop.",
+      "A linear scan suffices: track the current run value and its length, flushing a run to output whenever the value changes. What must happen after the loop ends to avoid dropping the last run?",
       "Edge cases: empty list (return []), single record (return [(status, 1)])."
     ],
     "concepts": [
@@ -31903,8 +31903,8 @@
     ],
     "public_test_cases": 2,
     "hints": [
-      "Use `collections.OrderedDict`. On `get` or `put` of an existing key, call `cache.move_to_end(key)` to mark it most-recently-used. On eviction, call `cache.popitem(last=False)` to remove the least-recently-used entry.",
-      "On `put` of a new key: insert, then check `if len(cache) > capacity: cache.popitem(last=False)`. On `put` of an existing key: `move_to_end` first, then update the value."
+      "Python\u2019s standard library includes an ordered key-value mapping that supports O(1) reordering by key \u2014 removing the need to build a manual linked list for LRU tracking.",
+      "The `put` operation has two sub-cases \u2014 a new key may trigger eviction after insertion, while an existing key requires a recency update before its value is overwritten. Handle them separately."
     ],
     "concepts": [
       "HASH-MAP STATE",
@@ -32677,7 +32677,7 @@
     ],
     "public_test_cases": 2,
     "hints": [
-      "Track `run_start` and `run_len`. When `values[i] >= values[i-1]`, increment `run_len`. On a decrease, check if the run qualifies (>= k), emit it, and reset.",
+      "A single linear scan suffices: track where the current monotone run began and how long it has been, checking after each break whether it qualifies for output.",
       "Don't forget to emit the last run after the loop ends \u2014 if the list ends during a qualifying run, it won't be caught inside the loop."
     ],
     "concepts": [
@@ -36915,7 +36915,7 @@
     ],
     "public_test_cases": 2,
     "hints": [
-      "Keep a running `total = 0`. For each value, add it to `total` and append `total` to the result list.",
+      "Build the output in a single pass: each output element is the cumulative aggregate of all input elements up to and including that position.",
       "This is equivalent to `itertools.accumulate(values)` or NumPy's `cumsum()`."
     ],
     "concepts": [
@@ -37571,7 +37571,7 @@
     ],
     "public_test_cases": 2,
     "hints": [
-      "Use `Counter(stream)` to count, then `sorted(counts.items(), key=lambda x: (-x[1], x[0]))` to rank by descending frequency with alphabetical tie-breaking.",
+      "Count occurrences with a hash-based frequency map, then rank items by frequency descending \u2014 use a secondary sort criterion to break ties between equal-frequency entries.",
       "The output is in rank order (highest frequency first), not alphabetical. `['B','A']` not `['A','B']` when B has higher frequency."
     ],
     "concepts": [
@@ -43046,7 +43046,7 @@
     ],
     "public_test_cases": 2,
     "hints": [
-      "Define `ways(k)` = number of sequences summing to k. Base: `ways(0)=1`, `ways(k<0)=0`. Recurrence: `ways(k) = ways(k-1) + ways(k-2)`. Use `@lru_cache(None)` to avoid redundant computation.",
+      "Express the count of valid sequences recursively: how many sequences of chunk sizes sum exactly to k? Express the answer in terms of smaller sub-problems, identify the base cases, and memoize.",
       "This is a Fibonacci sequence starting with `ways(1)=1, ways(2)=2`. The memoization ensures O(n) time instead of O(2^n) naive recursion."
     ],
     "concepts": [
@@ -47024,7 +47024,7 @@
     ],
     "public_test_cases": 2,
     "hints": [
-      "The bug is `start < merged[-1][1]` \u2014 it should be `start <= merged[-1][1]`. With strict `<`, touching intervals (where `start == merged[-1][1]`) are not merged, but they represent continuous time blocks and should be.",
+      "The overlap check uses a strict inequality \u2014 trace through two intervals that share an endpoint exactly and determine whether the current condition treats them as overlapping or not.",
       "Always use `max(merged[-1][1], end)` when merging \u2014 not just `end`. This handles containment: if `[1,10]` is followed by `[2,5]`, the merged result should be `[1,10]`, not `[1,5]`."
     ],
     "concepts": [

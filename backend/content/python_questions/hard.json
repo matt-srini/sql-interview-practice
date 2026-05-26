@@ -42549,8 +42549,8 @@
     ],
     "public_test_cases": 2,
     "hints": [
-      "The fix over the medium version: sort each user's event list by timestamp before scanning for gaps. Group by user_id first with a defaultdict, then `sorted(by_user[uid])`.",
-      "When you scan for gaps, compare consecutive timestamps in the sorted order — `user_events[i][0] - user_events[i-1][0] > timeout` — not arrival order."
+      "The parent solution has a hidden ordering assumption \u2014 identify which grouping step produces records that may arrive out of chronological order, and where in the pipeline the ordering must be enforced.",
+      "Once the ordering fix is in place, verify that the gap comparison operates on consecutive elements in sorted position rather than insertion position."
     ],
     "concepts": [
       "HASH-MAP STATE",
@@ -42771,8 +42771,8 @@
     ],
     "public_test_cases": 2,
     "hints": [
-      "Bug 1: `range(1, count)` emits `count-1` elements. Change to `range(count)` (or use `[status]*count`).",
-      "Bug 2: add `if count > 0:` before the extend — a zero or negative count should produce no output, not cause an error."
+      "One bug is a classic off-by-one in the repetition step \u2014 trace through decoding a run of length 3 and verify the emitted element count matches.",
+      "A second bug surfaces only on a degenerate encoded value — what should happen when the encoded count is zero or negative, and does the current code handle it?"
     ],
     "concepts": [
       "STRING PATTERN REASONING",
@@ -45881,7 +45881,7 @@
     "difficulty": "hard",
     "mock_only": true,
     "parent_id": 22070,
-    "follow_up_dimension": "scale_pivot",
+    "follow_up_dimension": "performance_pivot",
     "title": "All Unique Pairs Summing to Target — Generator at Scale",
     "description": "The medium pair-sum question returned all pairs for a bounded list. Now the sorted list has **10⁷ integers** and may not fit in memory as a whole output. Reimplement `solve` as a **generator** that yields `(a, b)` tuples one at a time using the same two-pointer logic and duplicate-skip rules. The caller iterates lazily.\n\n```\n# Generator usage:\nresult = list(solve([1,1,2,3,4,5], 6))\n# → [(1,5),(2,4)]\n```",
     "starter_code": "def solve(sorted_vals: list, target: int):\n    # Implement as a generator (use yield, not return a list).\n    pass",
@@ -45958,7 +45958,7 @@
     ],
     "public_test_cases": 2,
     "hints": [
-      "Change `result.append((a, b))` to `yield (a, b)`. Remove the `result = []` and `return result` lines. The two-pointer and duplicate-skip logic stays identical.",
+      "The two-pointer and deduplication logic is unchanged \u2014 only the output mechanism needs to shift from materialising a full collection to emitting each result lazily as it is found.",
       "The test harness calls `list(solve(...))` to materialise the generator, so your function should use `yield` — not `return`. A generator that `return`s a list instead of yielding will fail the generator semantics check."
     ],
     "concepts": [
@@ -47944,7 +47944,7 @@
     "difficulty": "hard",
     "mock_only": true,
     "parent_id": 22072,
-    "follow_up_dimension": "performance_pivot",
+    "follow_up_dimension": "business_rule_pivot",
     "title": "Longest Strictly Increasing Subsequence of Throughput Values",
     "description": "The trend detector found *consecutive* non-decreasing runs. Your interviewer now asks: what is the length of the longest **strictly increasing subsequence** (LIS) — values need not be consecutive, just chosen in order with each value strictly greater than the previous. Solve in O(n log n) (a naive O(n²) DP solution will TLE on the large input).\n\n```\nsolve([3,1,4,1,5,9,2,6])\n# One LIS: [1,4,5,9] or [1,2,6] → length 4\n# → 4\n```",
     "starter_code": "def solve(values: list) -> int:\n    # O(n log n) expected. Hint: patience sorting / binary search on 'tails'.\n    pass",
@@ -48019,7 +48019,7 @@
     ],
     "public_test_cases": 2,
     "hints": [
-      "Maintain a `tails` list. For each value `v`, use `bisect.bisect_left(tails, v)` to find where `v` fits. If it extends beyond `tails`, append; otherwise replace `tails[pos]` with `v`.",
+      "The O(n log n) algorithm maintains a compact auxiliary structure where each position holds the smallest possible tail element for all increasing subsequences of that length \u2014 binary search determines where each new value belongs in this structure.",
       "`tails` does NOT hold an actual subsequence — it holds the smallest possible tail for each subsequence length. Its length is the LIS length."
     ],
     "concepts": [
@@ -54030,7 +54030,7 @@
     ],
     "public_test_cases": 2,
     "hints": [
-      "For each cell `(i,j)`: `prefix[i][j] = matrix[i][j]`. Add `prefix[i-1][j]` (above) and `prefix[i][j-1]` (left), then subtract `prefix[i-1][j-1]` (double-counted top-left corner).",
+      "Each cell in the 2D prefix table aggregates contributions from its left neighbor, its top neighbor, and the original cell value \u2014 but the top-left region gets counted twice by those two neighbors, requiring a correction.",
       "Handle boundary conditions: check `i > 0` before accessing `prefix[i-1][j]`, and `j > 0` before accessing `prefix[i][j-1]`."
     ],
     "concepts": [
@@ -58139,7 +58139,7 @@
     "difficulty": "hard",
     "mock_only": true,
     "parent_id": 22081,
-    "follow_up_dimension": "edge_case_pivot",
+    "follow_up_dimension": "business_rule_pivot",
     "title": "Top-K Categories After Per-Session Deduplication",
     "description": "The earlier top-K question counted raw event frequency. Now the events have a `session_id`: the same category appearing multiple times **within the same session** should count only **once** for that session. Count distinct sessions per category, then return the top-K by that session count (ties alphabetically).\n\n```\nsolve([('s1','A'),('s1','A'),('s2','A'),('s2','B'),('s1','B')], 2)\n# Session dedup: s1→{A,B}, s2→{A,B}. Category counts: A=2 sessions, B=2 sessions.\n# Tie → alphabetical: ['A','B']\n```",
     "starter_code": "def solve(events: list, k: int) -> list:\n    # events: list of (session_id, category) tuples\n    # Your code here\n    pass",
@@ -58829,7 +58829,7 @@
     "difficulty": "hard",
     "mock_only": true,
     "parent_id": 22082,
-    "follow_up_dimension": "data_quality_pivot",
+    "follow_up_dimension": "business_rule_pivot",
     "title": "Minimum Cost Path in Weighted Grid (Dijkstra)",
     "description": "The BFS routing found shortest hops in a binary grid. Now each cell has a **cost** (the cell's integer value, ≥ 0). Find the minimum total cost path from `start` to `end` where the cost is the sum of cell values traversed (including start and end cells). Use Dijkstra since edge weights are non-uniform. Return -1 if unreachable.\n\n```\nsolve([[1,3,1],[1,5,1],[4,2,1]], (0,0), (2,2))\n# Cheapest: (0,0)→(0,1) wrong... try (0,0)1 + (0,1)3 + (0,2)1 + (1,2)1 + (2,2)1 = 7\n# Or: (0,0)1 + (1,0)1 + (2,0)4 + (2,1)2 + (2,2)1 = 9\n# Or: (0,0)1 + (1,0)1 + (1,1)5 + (1,2)1 + (2,2)1 = 9\n# Min: path 1 → cost 7\n```",
     "starter_code": "import heapq\n\ndef solve(grid: list, start: tuple, end: tuple) -> int:\n    # Your code here\n    pass",
@@ -61851,7 +61851,7 @@
     "difficulty": "hard",
     "mock_only": true,
     "parent_id": 22088,
-    "follow_up_dimension": "scale_pivot",
+    "follow_up_dimension": "business_rule_pivot",
     "title": "Largest Rectangle in Histogram",
     "description": "The next-greater-element problem gave you the first taller metric to the right of each reading. Now scale the problem: given a histogram `heights` (each bar has width 1), find the **largest rectangular area** that fits entirely within the histogram. This requires finding, for each bar, how far left and right it can extend before being blocked by a shorter bar — a job for a monotonic stack.\n\n```\nsolve([2,1,5,6,2,3])\n# Largest rectangle: height=5, width=2 (bars at idx 2 and 3) → area 10\n# → 10\n```",
     "starter_code": "def solve(heights: list) -> int:\n    # Your code here\n    pass",
@@ -62925,7 +62925,7 @@
     "difficulty": "hard",
     "mock_only": true,
     "parent_id": 22085,
-    "follow_up_dimension": "scale_pivot",
+    "follow_up_dimension": "business_rule_pivot",
     "title": "Count Distinct Paths in DAG (Memoized DFS)",
     "description": "You used memoized recursion to compute tree depth in a single-parent hierarchy. Now the structure is a **DAG**: each node can have multiple predecessors (e.g., a pipeline step that merges outputs from several upstream stages). Given `adj` (dict of `{node: [neighbor_nodes]}`), a `source` node, and a `target` node, count the number of **distinct paths** from source to target. Use memoized recursion — without it, shared sub-paths are recomputed exponentially.\n\n```\nsolve({'A':['B','C'], 'B':['D'], 'C':['D'], 'D':[]}, 'A', 'D')\n# Paths: A→B→D and A→C→D → 2\n# → 2\n```",
     "starter_code": "def solve(adj: dict, source: str, target: str) -> int:\n    # adj: {node: [neighbor_nodes]}  (directed edges: node → neighbors)\n    # Your code here\n    pass",
@@ -63034,7 +63034,7 @@
     ],
     "public_test_cases": 2,
     "hints": [
-      "Define `dp(node)` = count of paths from `node` to `target`. Base: `dp(target) = 1`. Recursive: `sum(dp(nbr) for nbr in adj[node])`. Use `@lru_cache(None)` — convert lists to tuples first since lru_cache requires hashable args.",
+      "Express path count recursively: the number of paths from any node to the target equals the sum of path counts from each of its successors. Memoize to avoid recomputing sub-paths shared by multiple ancestors.",
       "The memoization is essential: in a DAG with shared sub-paths (e.g., A→B, A→C, B→D, C→D), `dp(D)` is computed once and reused for both B and C. Without memoization, this explodes exponentially in wide 'lattice' DAGs."
     ],
     "concepts": [
@@ -63049,7 +63049,7 @@
     "difficulty": "hard",
     "mock_only": true,
     "parent_id": 22093,
-    "follow_up_dimension": "performance_pivot",
+    "follow_up_dimension": "business_rule_pivot",
     "title": "Minimum Spanning Tree via Kruskal and Union-Find",
     "description": "Cycle detection via DFS is O(V+E) per check — too slow when called for every edge during graph construction. Kruskal's MST algorithm avoids cycles efficiently using Union-Find (path-compressed disjoint sets), which is nearly O(1) per union/find. Given `n` nodes (0-indexed) and `edges` (list of `[u, v, weight]`), return the **total weight** of the minimum spanning tree, or -1 if the graph isn't fully connected.\n\n```\nsolve(4, [[0,1,1],[0,2,4],[1,2,2],[1,3,5],[2,3,1]])\n# MST: edges (0,1,1)+(2,3,1)+(1,2,2) = weight 4\n# → 4\n```",
     "starter_code": "def solve(n: int, edges: list) -> int:\n    # edges: list of [u, v, weight]\n    # Your code here\n    pass",
@@ -64144,8 +64144,8 @@
     ],
     "public_test_cases": 2,
     "hints": [
-      "Implement `find(x)` with path halving: `while parent[x] != x: parent[x] = parent[parent[x]]; x = parent[x]`. Implement `union(x, y)`: find both roots; if same, return False (would create cycle); otherwise merge by rank.",
-      "Sort edges by weight. For each edge `(u, v, w)`: if `union(u, v)` returns True, add `w` to total and increment edge count. Stop when `n-1` edges are used — that's a complete spanning tree."
+      "Union-Find requires two operations: locate the representative of a component (with path compression to keep the tree flat), and merge two components (using rank to avoid degenerate trees). Both must be implemented before Kruskal\u2019s main loop.",
+      "Kruskal's greedy insight: consider edges in ascending weight order, accepting each one only if it does not connect two nodes already in the same component — stop once the graph is fully connected."
     ],
     "concepts": [
       "UNION-FIND & DISJOINT SET",
@@ -64955,7 +64955,7 @@
     "public_test_cases": 2,
     "hints": [
       "Edit distance is a 2D DP problem: dp[i][j] = minimum edits to transform s1[:i] into s2[:j]. Each cell depends on its left, top, and diagonal neighbors — track only the current and previous rows to save space.",
-      "Three operations at each cell: `prev` = substitute (diagonal), `dp[j]` before update = delete from word1 (from row above), `dp[j-1]` = insert into word1 (from left). Save `dp[j]` into `prev` before updating it."
+      "In the space-optimized version you overwrite the row in place \u2014 identify which previously-computed value gets destroyed during an update and where you need to save it before the cell is modified."
     ],
     "concepts": [
       "DYNAMIC PROGRAMMING (2D)",
@@ -74503,8 +74503,8 @@
     ],
     "public_test_cases": 2,
     "hints": [
-      "Sort `nums`. Fix `nums[i]` as the first element. Use two pointers `lo=i+1, hi=len(nums)-1`. Move `lo` right if sum < target, `hi` left if sum > target, record triplet if sum == target.",
-      "Skip duplicates: after finding a triplet, advance `lo` past duplicates (`while lo<hi and nums[lo]==nums[lo+1]: lo+=1`) and `hi` back past duplicates (`while lo<hi and nums[hi]==nums[hi-1]: hi-=1`). Also skip `i` if `nums[i]==nums[i-1]`."
+      "3-Sum reduces to repeated 2-Sum: fix one element as the anchor, then use the two-pointer technique on the remaining sorted subarray to find all pairs that complete the target.",
+      "To avoid outputting duplicate triplets, you need to skip repeated values at all three levels \u2014 the outer anchor, the left pointer, and the right pointer each need a duplicate-skip check."
     ],
     "concepts": [
       "TWO POINTERS",
