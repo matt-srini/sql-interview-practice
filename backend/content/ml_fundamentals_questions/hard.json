@@ -647,7 +647,7 @@
     ],
     "concepts": [
       "MODEL MONITORING",
-      "GRADIENT PATHOLOGY"
+      "TRANSFER LEARNING STRATEGY"
     ]
   },
   {
@@ -703,32 +703,6 @@
     ]
   },
   {
-    "id": 83029,
-    "order": 29,
-    "topic": "ml-fundamentals",
-    "type": "scenario",
-    "difficulty": "hard",
-    "mock_only": true,
-    "title": "Causal vs Predictive Modeling: When the Distinction Matters",
-    "description": "A marketing team wants to identify customers to target with a discount to prevent churn. They train a churn prediction model (AUC=0.88) and plan to target the top 10% of customers by predicted churn probability. A data scientist argues this is the wrong approach. What is the flaw and what should be done instead?",
-    "options": [
-      "The model's AUC is too low \u2014 retrain to achieve 0.95+ before targeting",
-      "Targeting high-predicted-churn customers with discounts conflates prediction with causation: customers who were going to churn anyway (and would have left regardless of treatment) dilute ROI; customers who would have stayed anyway waste discount budget. The correct approach is uplift modeling to estimate the causal effect of the discount on each customer's churn probability",
-      "The approach is correct \u2014 high churn probability customers are exactly the right targets for retention offers",
-      "The flaw is targeting only 10%; expand to 25% to maximize coverage of true churners"
-    ],
-    "correct_option": 1,
-    "explanation": "This is the prediction vs causation distinction in a business context. A churn prediction model identifies *who will churn*, not *who will respond to treatment*. Four customer segments exist: (1) Sure things \u2014 churn regardless of discount (wasted spend); (2) Lost causes \u2014 won't churn regardless (don't need the discount); (3) Persuadables \u2014 churn without discount, stay with it (ideal targets); (4) Do not disturbs \u2014 would stay without discount but might churn due to the intervention itself. A prediction model mixes all four groups; a high churn score is dominated by sure-things (who are churning regardless). Uplift modeling estimates the *incremental* effect of treatment \u2014 the difference in churn probability with vs without the discount \u2014 identifying the Persuadables. This requires experimental data (past A/B tests) and models the causal impact, not just the prediction.",
-    "hints": [
-      "High predicted churn \u2260 high likelihood of being saved by a discount. What if they're going to leave no matter what?",
-      "What experiment would let you distinguish customers who respond to discounts from those who churn regardless?"
-    ],
-    "concepts": [
-      "DATA LEAKAGE DETECTION",
-      "MODEL MONITORING"
-    ]
-  },
-  {
     "id": 83030,
     "order": 30,
     "topic": "ml-fundamentals",
@@ -776,8 +750,8 @@
       "Separate models per demographic group \u2014 does equal accuracy guarantee fair treatment, or does it introduce other legal risks?"
     ],
     "concepts": [
-      "INTERPRETABILITY TRADEOFF",
-      "CLASSIFICATION METRICS"
+      "CLASSIFICATION METRICS",
+      "DEPLOYMENT CONSTRAINTS"
     ]
   },
   {

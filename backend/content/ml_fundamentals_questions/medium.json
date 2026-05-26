@@ -924,8 +924,8 @@
       "What happens to probability calibration when you average 5 independent classifiers vs optimize a joint loss?"
     ],
     "concepts": [
-      "CLASSIFICATION METRICS",
-      "LOSS FUNCTION SELECTION"
+      "LOSS FUNCTION SELECTION",
+      "ENSEMBLE STRATEGY"
     ]
   },
   {
@@ -935,7 +935,7 @@
     "type": "scenario",
     "difficulty": "medium",
     "mock_only": true,
-    "title": "Feature Scaling: When It Matters and When It Doesn't",
+    "title": "Per-Model Sensitivity to Standardization in a Mixed-Algorithm Bake-off",
     "description": "A data scientist scales all features before training. Their colleague argues this was unnecessary. They are testing: (A) logistic regression, (B) random forest, (C) k-nearest neighbors, (D) gradient boosting. For which models is feature scaling necessary for correctness or performance, and for which is it irrelevant?",
     "options": [
       "Scaling is necessary for all four \u2014 unscaled features always degrade model performance",
@@ -1013,19 +1013,19 @@
     "type": "conceptual",
     "difficulty": "medium",
     "mock_only": true,
-    "title": "Why Accuracy Fails for Imbalanced Datasets",
-    "description": "A dataset has 950 negative samples and 50 positive samples (5% positive rate). A naive classifier that predicts 'negative' for every sample achieves 95% accuracy. What metric and threshold would reveal this classifier is useless?",
+    "title": "Exposing a Trivially Useless Classifier: Three Metrics, One Verdict",
+    "description": "A clinical oversight committee is evaluating a screening tool for a rare disease with 0.8% population prevalence. The vendor claims 99.2% accuracy. A skeptical committee member asks three colleagues each to propose a metric that might expose whether the model is doing anything useful. Colleague A proposes F1 score on the positive class. Colleague B proposes AUC-ROC. Colleague C proposes balanced accuracy. Which of the following is true?",
     "options": [
-      "Use F1 score \u2014 a naive all-negative classifier gets F1 = 0.0 because precision and recall on the positive class are both zero",
-      "Use AUC-ROC \u2014 a naive classifier achieves AUC = 0.5, which correctly signals random performance",
-      "Use balanced accuracy \u2014 it averages recall across both classes, giving (1.0 + 0.0) / 2 = 0.5 for the naive classifier",
-      "All three metrics above correctly expose the naive classifier; the choice depends on what is more communicable to stakeholders"
+      "Only F1 score exposes the problem \u2014 AUC and balanced accuracy both give the naive model partial credit",
+      "Only AUC-ROC exposes the problem \u2014 F1 and balanced accuracy are distorted by the extreme class imbalance",
+      "F1 and balanced accuracy expose the problem, but AUC-ROC requires a continuous score rather than a hard prediction and cannot be applied here",
+      "All three metrics expose the naive classifier: F1 = 0.0 (zero recall on the positive class), AUC = 0.5 (random-chance ranking), balanced accuracy = 0.5 (average of 100% negative recall and 0% positive recall) \u2014 the choice depends on what is most communicable to the committee"
     ],
     "correct_option": 3,
-    "explanation": "All three metrics expose the naive classifier, each in a different way. F1 score on the positive class = 0.0 because recall (TP / (TP + FN)) = 0/50 = 0. AUC-ROC for a classifier that never predicts positive has a random-chance ROC curve, giving AUC = 0.5. Balanced accuracy averages per-class recall: (recall_negative + recall_positive) / 2 = (950/950 + 0/50) / 2 = 0.5. The best choice depends on context: F1 is most intuitive for practitioners; AUC-ROC is threshold-agnostic and useful for comparing models; balanced accuracy is easy to explain to non-technical stakeholders. All three are vastly better than raw accuracy for imbalanced problems.",
+    "explanation": "A naive all-negative classifier achieves 99.2% accuracy by predicting 'no disease' for every patient \u2014 correctly classifying 992 of 1000 patients simply because the disease is rare. All three metrics expose this:\n\nF1 score on the positive class is 0.0. Recall = TP/(TP+FN) = 0/8 = 0 (no true positives detected). With no positive predictions, precision is undefined; F1 = 0.0 by convention.\n\nAUC-ROC for a constant predictor that assigns the same score to every patient: the ROC curve collapses to the diagonal, giving AUC = 0.5 \u2014 no better than chance at ranking a positive above a negative.\n\nBalanced accuracy = (recall_negative + recall_positive) / 2 = (992/992 + 0/8) / 2 = (1.0 + 0.0) / 2 = 0.5.\n\nAll three tell the same story. The right choice for the clinical committee depends on communication needs: F1 is most intuitive for ML practitioners, balanced accuracy is easiest to explain to non-technical stakeholders, and AUC-ROC is most useful for comparing models across thresholds.",
     "hints": [
-      "What is precision, recall, and F1 for a classifier that predicts the majority class every time?",
-      "AUC-ROC represents the probability that a random positive outranks a random negative \u2014 what is that for a constant predictor?"
+      "Work through each metric mechanically for a classifier that never predicts positive: what is recall on the positive class? What does that make F1? What is the ROC curve when every patient gets the same score?",
+      "Balanced accuracy treats each class equally regardless of size. With 0% recall on the positive class and 100% recall on the negative class, what does the average come out to?"
     ],
     "concepts": [
       "CLASSIFICATION METRICS",
@@ -1055,7 +1055,7 @@
     ],
     "concepts": [
       "MISSING DATA STRATEGY",
-      "DATA LEAKAGE DETECTION"
+      "CROSS-VALIDATION DESIGN"
     ]
   },
   {
@@ -1117,7 +1117,7 @@
     "type": "scenario",
     "difficulty": "medium",
     "mock_only": true,
-    "title": "PCA Variance Explained and Dimensionality Selection",
+    "title": "Principled PCA Component Selection: Cross-Validation vs the Variance Threshold",
     "description": "You apply PCA to a 200-feature dataset. The explained variance ratios for the first 10 components are: [0.31, 0.18, 0.12, 0.08, 0.06, 0.04, 0.03, 0.02, 0.02, 0.01]. Cumulative: [0.31, 0.49, 0.61, 0.69, 0.75, 0.79, 0.82, 0.84, 0.86, 0.87]. You need to select the number of components for a downstream classifier. Which approach is most principled?",
     "options": [
       "Use 3 components \u2014 the cumulative explained variance reaches 61%, which is sufficient",
@@ -1159,7 +1159,7 @@
     ],
     "concepts": [
       "INTERPRETABILITY TRADEOFF",
-      "MODEL CALIBRATION"
+      "DEPLOYMENT CONSTRAINTS"
     ]
   },
   {
@@ -1185,7 +1185,7 @@
     ],
     "concepts": [
       "DATA LEAKAGE DETECTION",
-      "TRAINING-SERVING SKEW"
+      "DATA SPLITTING STRATEGY"
     ]
   },
   {
