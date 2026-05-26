@@ -128,11 +128,11 @@ Required:
 | Mock m:h split | 45 medium : 59 hard |
 | Chain count | 10 (10 parents + 20 children = 30 members, 29% of mock-only) |
 | Realism path | (ii) — no mock-only realism families; all 24 families are direct-gradeable via MCQ |
-| Load-bearing family | `SAMPLE RATIO MISMATCH` — appears on >25% of medium mock-only questions; anchors the core "broken experiment" diagnosis skill |
+| Highest-anchoring families | None exceed the 50% rule-3 ceiling. Highest mock-only shares: EXPERIMENT DESIGN 21% · CAUSAL INFERENCE 16% · EXPERIMENT DURATION / SEGMENTATION ANALYSIS / STATISTICAL SIGNIFICANCE all 12%. SAMPLE RATIO MISMATCH at 9% of mock-only is the canonical "broken experiment" diagnostic anchor but is not statistically load-bearing. |
 | Registry | 24 families (22 original + 2 added in Phase 2: SEQUENTIAL TESTING, METRIC SENSITIVITY) |
 | Validator gate | Added to `_TAXONOMY_VALIDATED_TRACKS` in `backend/scripts/validate_content.py` |
 
-**Type mix in mock-only (approximate):** ~48% scenario · ~28% debug · ~15% predict_output · ~9% conceptual.
+**Type mix in mock-only:** scenario 75 (72%) · debug 18 (17%) · predict_output 10 (10%) · conceptual 1 (1%). Heavy scenario skew is intentional — operational A/B reasoning grades cleanest as scenario MCQ; debug and predict_output anchor the second-largest reasoning surfaces.
 
 **Phase 2 decision log:**
 - Registry expanded 22→24: SEQUENTIAL TESTING (hard) covers mSPRT / group sequential / alpha spending / optional stopping; METRIC SENSITIVITY (medium + hard) covers structural detectability limits from high-variance or coarsely-defined metrics.
