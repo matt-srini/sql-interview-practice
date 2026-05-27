@@ -25,10 +25,10 @@ const MIXED_MOCK_TRACKS = ['sql', 'python', 'python-data', 'pyspark'];
 const NO_MOCK_BANK_TRACKS = new Set();
 
 const MOCK_ROLES = [
-  { id: 'analyst',            label: 'Data Analyst',       tracks: ['sql', 'statistics', 'python-data', 'python'] },
-  { id: 'engineer',           label: 'Data Engineer',      tracks: ['python', 'sql', 'pyspark', 'data-engineering', 'data-modeling'] },
-  { id: 'analytics_engineer', label: 'Analytics Engineer', tracks: ['sql', 'data-modeling', 'python-data', 'python'] },
-  { id: 'scientist',          label: 'Data Scientist',     tracks: ['ml-fundamentals', 'statistics', 'experimentation', 'python', 'sql'] },
+  { id: 'data_analyst',       label: 'Data Analyst',       tracks: ['sql', 'python-data', 'statistics'] },
+  { id: 'data_engineer',      label: 'Data Engineer',      tracks: ['sql', 'python', 'pyspark', 'data-engineering'] },
+  { id: 'analytics_engineer', label: 'Analytics Engineer', tracks: ['sql', 'data-modeling', 'python-data'] },
+  { id: 'data_scientist',     label: 'Data Scientist',     tracks: ['python', 'python-data', 'statistics', 'ml-fundamentals'] },
 ];
 
 const DIFFICULTIES = ['easy', 'medium', 'hard', 'mixed'];
@@ -115,8 +115,12 @@ export default function MockHub() {
     ? <span className={`shell-pill shell-pill-plan shell-pill-plan-${normalisedPlan}`}>{planLabel}</span>
     : null;
 
-  // Role filter — persisted in localStorage
-  const [selectedRole, setSelectedRole] = useState(() => localStorage.getItem('mock_role') || null);
+  // Role filter — persisted in localStorage. Map legacy IDs to current ones.
+  const [selectedRole, setSelectedRole] = useState(() => {
+    const stored = localStorage.getItem('mock_role');
+    const LEGACY_MAP = { analyst: 'data_analyst', engineer: 'data_engineer', scientist: 'data_scientist' };
+    return LEGACY_MAP[stored] || stored || null;
+  });
 
   // Derive filtered track list from selected role (always append 'mixed')
   const filteredSlugs = selectedRole
@@ -156,23 +160,26 @@ export default function MockHub() {
   const [accessLoading, setAccessLoading] = useState(false);
   const [presetNotice, setPresetNotice] = useState(null);
 
-  const benchmarkBlueprint = getBenchmarkBlueprint(track);
-  const modeCards = getMockModeCards(track);
-  const setupDescriptor = getMockSetupDescriptor(mode, track, numQuestions, timeMinutes);
-  const effectiveQuestionCount = getSessionQuestionCount(mode, track, numQuestions);
-  const effectiveTimeMinutes = getSessionTimeMinutes(mode, track, timeMinutes);
+  const benchmarkBlueprint = getBenchmarkBlueprint(track, track === 'mixed' ? selectedRole : undefined);
+  const modeCards = getMockModeCards(track, rawPlan);
+  const setupDescriptor = getMockSetupDescriptor(mode, track, numQuestions, timeMinutes, selectedRole);
+  const effectiveQuestionCount = getSessionQuestionCount(mode, track, numQuestions, selectedRole);
+  const effectiveTimeMinutes = getSessionTimeMinutes(mode, track, timeMinutes, selectedRole);
   const benchmarkHistory = history.filter((session) => isBenchmarkMockMode(session.mode));
-  const drillHistory = history.filter((session) => !isBenchmarkMockMode(session.mode));
+  const loopHistory = history.filter((session) => session.mode === 'interview_loop');
+  const drillHistory = history.filter((session) => !isBenchmarkMockMode(session.mode) && session.mode !== 'interview_loop');
   const benchmarkAnalytics = analytics?.benchmark_summary ?? null;
   const drillAnalytics = analytics?.drill_summary ?? null;
+  const loopAnalytics = analytics?.loop_summary ?? null;
   const expectationLines = getSessionExpectations(track, difficulty, effectiveQuestionCount);
   const showFirstRunFraming = !historyLoading && history.length === 0;
   const showBenchmarkEmptyFraming = !historyLoading && history.length > 0 && benchmarkHistory.length === 0;
   const showDrillEmptyFraming = !historyLoading && history.length > 0 && drillHistory.length === 0;
 
   useEffect(() => {
-    if (track === 'mixed' && mode === 'benchmark') {
-      setMode('30min');
+    // interview_loop does not support mixed track — fall back to custom
+    if (track === 'mixed' && mode === 'interview_loop') {
+      setMode('custom');
     }
   }, [track, mode]);
 
@@ -183,9 +190,8 @@ export default function MockHub() {
     appliedPresetKeyRef.current = location.key;
 
     const nextTrack = [...TRACK_SLUGS, 'mixed'].includes(preset.track) ? preset.track : 'sql';
-    const nextMode = preset.mode === 'benchmark' && nextTrack === 'mixed'
-      ? '30min'
-      : (preset.mode || '30min');
+    const VALID_MODES = new Set(['benchmark', 'custom', 'interview_loop']);
+    const nextMode = VALID_MODES.has(preset.mode) ? preset.mode : 'benchmark';
     const nextDifficulty = DIFFICULTIES.includes(preset.difficulty) ? preset.difficulty : 'easy';
 
     setMode(nextMode);
@@ -243,16 +249,20 @@ export default function MockHub() {
   useEffect(() => {
     setAccessState(null);
     setAccessLoading(true);
-    api.get('/mock/access', { params: { track } })
+    api.get('/mock/access', { params: { track, mode } })
       .then(r => setAccessState(r.data))
       .catch(() => setAccessState(null))
       .finally(() => setAccessLoading(false));
-  }, [track]);
+  }, [track, mode]);
 
   async function handleStart() {
     const diffAccess = accessState?.access?.[difficulty];
     if (diffAccess && !diffAccess.can_start) {
       setStartError(diffAccess.block_copy || 'Cannot start session with this configuration.');
+      return;
+    }
+    if (track === 'mixed' && !selectedRole) {
+      setStartError('Please select a role for a mixed-track session.');
       return;
     }
     setStarting(true);
@@ -262,6 +272,7 @@ export default function MockHub() {
         mode,
         track,
         difficulty,
+        ...(track === 'mixed' ? { role: selectedRole } : {}),
         ...(mode === 'custom' ? { num_questions: numQuestions, time_minutes: timeMinutes } : {}),
         ...(isElite && focusMode && focusConcepts.length > 0 ? { focus_concepts: focusConcepts } : {}),
       };
@@ -315,7 +326,11 @@ export default function MockHub() {
         };
         return { blocked: false, chip: `${remaining} remaining today` };
       }
-      return { blocked: false, chip: diff === 'easy' ? 'Unlimited' : null };
+      if (a.weekly_benchmark_limit != null && a.weekly_benchmark_used != null) {
+        const remaining = a.weekly_benchmark_limit - a.weekly_benchmark_used;
+        return { blocked: false, chip: remaining > 0 ? `${remaining} free benchmark this week` : null };
+      }
+      return { blocked: false, chip: null };
     }
     const upgradeLabel = a.needs_upgrade ? `${a.needs_upgrade === 'elite' ? 'Elite' : 'Pro'} unlocks this` : null;
     return {
@@ -402,24 +417,39 @@ export default function MockHub() {
                   <button
                     key={card.key}
                     type="button"
-                    className={`mock-mode-card ${mode === card.key ? 'selected' : ''}${card.disabled ? ' mock-mode-card-disabled' : ''}`}
+                    className={[
+                      'mock-mode-card',
+                      mode === card.key ? 'selected' : '',
+                      card.disabled ? 'mock-mode-card-disabled' : '',
+                      card.locked ? 'mock-mode-card-locked' : '',
+                    ].filter(Boolean).join(' ')}
                     onClick={() => {
                       if (card.disabled) return;
                       setMode(card.key);
                       setStartError(null);
                     }}
                     disabled={card.disabled}
+                    title={card.locked ? card.lockedReason : undefined}
                   >
-                    <div className="mock-mode-card-label">{card.label}</div>
+                    <div className="mock-mode-card-label-row">
+                      <span className="mock-mode-card-label">{card.label}</span>
+                      {card.locked && <span className="mock-elite-badge-inline mock-mode-card-badge">Elite</span>}
+                      {!card.locked && card.key === 'custom' && !isPro && !isElite && (
+                        <span className="mock-mode-card-badge mock-mode-card-badge--pro">Pro</span>
+                      )}
+                    </div>
                     <div className="mock-mode-card-sublabel">{card.sublabel}</div>
                     <div className="mock-mode-card-desc">{card.desc}</div>
+                    {card.locked && (
+                      <div className="mock-mode-card-lock-notice">{card.lockedReason}</div>
+                    )}
                   </button>
                 ))}
               </div>
             </section>
 
-            {/* Benchmark blueprint */}
-            {mode === 'benchmark' && benchmarkBlueprint && (
+            {/* Benchmark blueprint — single-track only (mixed shows its blueprint in the role selector) */}
+            {mode === 'benchmark' && benchmarkBlueprint && !isMixedTrack && (
               <section className="mock-hub-section mock-benchmark-blueprint">
                 <div className="mock-benchmark-blueprint-kicker">Benchmark blueprint</div>
                 <div className="mock-benchmark-blueprint-main">
@@ -430,30 +460,33 @@ export default function MockHub() {
               </section>
             )}
 
-            {/* Drill planner */}
+            {/* Drill / Loop planner */}
             {mode !== 'benchmark' && setupDescriptor && (
               <section className="mock-hub-section mock-drill-plan">
                 <div className="mock-drill-plan-main">
-                  {isMixedTrack && (
-                    <div className="mock-drill-plan-alert" role="note">
-                      <span className="mock-drill-plan-alert-pill">Mixed is drill-only</span>
-                      <p className="mock-drill-plan-alert-copy">
-                        Benchmarks stay single-track for cleaner comparison.
-                      </p>
-                    </div>
-                  )}
                   <div className="mock-drill-plan-title-row">
                     <span className="mock-drill-plan-kicker">{setupDescriptor.sectionLabel}</span>
                     <span className="mock-drill-plan-mode">{setupDescriptor.modeLabel}</span>
                   </div>
-                  <div className="mock-drill-plan-chips">
-                    <span className="mock-drill-plan-chip">{effectiveQuestionCount} q</span>
-                    <span className="mock-drill-plan-chip">{effectiveTimeMinutes} min</span>
-                    <span className="mock-drill-plan-chip mock-drill-plan-chip-track">{TRACK_LABELS[track]}</span>
-                    {expectationLines.map((line, index) => (
-                      <span key={index} className="mock-drill-plan-chip mock-drill-plan-chip-shape">{line}</span>
-                    ))}
-                  </div>
+                  {mode !== 'interview_loop' && (
+                    <div className="mock-drill-plan-chips">
+                      {effectiveQuestionCount > 0 && <span className="mock-drill-plan-chip">{effectiveQuestionCount} q</span>}
+                      {effectiveTimeMinutes != null && effectiveTimeMinutes > 0 && (
+                        <span className="mock-drill-plan-chip">{effectiveTimeMinutes} min</span>
+                      )}
+                      <span className="mock-drill-plan-chip mock-drill-plan-chip-track">{TRACK_LABELS[track]}</span>
+                      {expectationLines.map((line, index) => (
+                        <span key={index} className="mock-drill-plan-chip mock-drill-plan-chip-shape">{line}</span>
+                      ))}
+                    </div>
+                  )}
+                  {mode === 'interview_loop' && (
+                    <div className="mock-drill-plan-chips">
+                      <span className="mock-drill-plan-chip">1 chain</span>
+                      <span className="mock-drill-plan-chip">15 min / question</span>
+                      <span className="mock-drill-plan-chip mock-drill-plan-chip-track">{TRACK_LABELS[track]}</span>
+                    </div>
+                  )}
                   <p className="mock-drill-plan-copy">{setupDescriptor.description}</p>
                   {setupDescriptor.detailLines?.length > 0 && (
                     <p className="mock-drill-plan-note">{setupDescriptor.detailLines[0]}</p>
@@ -554,11 +587,37 @@ export default function MockHub() {
               </div>
             </section>
 
-            {/* Mixed track note */}
-            {isMixedTrack && (
-              <div className="mock-track-note">
-                Mixed draws from {MIXED_MOCK_TRACKS.map(s => TRACK_LABELS[s]).join(' · ')}. Pick one track for a benchmark.
-              </div>
+            {/* Mixed track role selector — required for benchmark/custom, not shown for interview_loop */}
+            {isMixedTrack && mode !== 'interview_loop' && (
+              <section className="mock-hub-section mock-mixed-role-section">
+                <div className="mock-hub-config-row">
+                  <span className="mock-hub-config-label">
+                    Role
+                    {mode === 'benchmark' && <span className="mock-hub-config-label-required"> (required)</span>}
+                  </span>
+                  <div className="mock-role-pills">
+                    {MOCK_ROLES.map(r => (
+                      <button
+                        key={r.id}
+                        type="button"
+                        className={`mock-role-pill ${selectedRole === r.id ? 'active' : ''}`}
+                        onClick={() => handleRoleSelect(r.id)}
+                      >
+                        {r.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                {mode === 'benchmark' && !selectedRole && (
+                  <p className="mock-mixed-role-hint">Select a role to see the benchmark blueprint for your track mix.</p>
+                )}
+                {mode === 'benchmark' && selectedRole && benchmarkBlueprint && (
+                  <div className="mock-benchmark-blueprint-main mock-mixed-role-blueprint">
+                    <span className="mock-benchmark-blueprint-shape">{benchmarkBlueprint.summary}</span>
+                    <span className="mock-benchmark-blueprint-time">{benchmarkBlueprint.timeMinutes} min fixed session</span>
+                  </div>
+                )}
+              </section>
             )}
 
             {/* No dedicated mock bank note */}
@@ -668,7 +727,7 @@ export default function MockHub() {
               <span className="mock-rail-kicker">Session brief</span>
 
               {/* Mode badge */}
-              <span className={`mock-rail-mode-badge mock-rail-mode-badge--${mode === 'benchmark' ? 'benchmark' : 'drill'}`}>
+              <span className={`mock-rail-mode-badge mock-rail-mode-badge--${mode === 'benchmark' ? 'benchmark' : mode === 'interview_loop' ? 'loop' : 'drill'}`}>
                 {getMockModeDisplayLabel(mode)}
               </span>
 
@@ -724,9 +783,20 @@ export default function MockHub() {
               <button
                 className="btn btn-primary mock-start-btn"
                 onClick={handleStart}
-                disabled={starting || accessLoading || (accessState && !accessState.access?.[difficulty]?.can_start)}
+                disabled={
+                  starting ||
+                  accessLoading ||
+                  (accessState && !accessState.access?.[difficulty]?.can_start) ||
+                  (isMixedTrack && mode !== 'interview_loop' && !selectedRole)
+                }
               >
-                {starting ? 'Starting…' : mode === 'benchmark' ? 'Start benchmark' : 'Start drill session'}
+                {starting
+                  ? 'Starting…'
+                  : mode === 'benchmark'
+                  ? 'Start benchmark'
+                  : mode === 'interview_loop'
+                  ? 'Start Interview Loop'
+                  : 'Start drill session'}
               </button>
             </div>
           </aside>
@@ -802,9 +872,29 @@ export default function MockHub() {
                 {drillAnalytics && drillAnalytics.total_sessions > 0 && (
                   <div className="mock-analytics-secondary-row">
                     <div className="mock-analytics-secondary-card">
-                      <span className="mock-analytics-secondary-label">Drills</span>
+                      <span className="mock-analytics-secondary-label">Custom drills</span>
                       <span className="mock-analytics-secondary-value">{drillAnalytics.total_sessions} sessions</span>
                       <span className="mock-analytics-secondary-copy">{drillAnalytics.avg_score_pct}% avg score · {drillAnalytics.avg_time_used_pct}% avg time used</span>
+                    </div>
+                  </div>
+                )}
+                {loopAnalytics && loopAnalytics.sessions > 0 && (
+                  <div className="mock-analytics-secondary-row">
+                    <div className="mock-analytics-secondary-card">
+                      <span className="mock-analytics-secondary-label">Interview Loops</span>
+                      <span className="mock-analytics-secondary-value">{loopAnalytics.sessions} completed</span>
+                      {loopAnalytics.per_dimension_performance && Object.keys(loopAnalytics.per_dimension_performance).length > 0 && (
+                        <div className="mock-loop-dimension-breakdown">
+                          {Object.entries(loopAnalytics.per_dimension_performance)
+                            .sort((a, b) => a[1].accuracy_pct - b[1].accuracy_pct)
+                            .map(([dim, stats]) => (
+                              <span key={dim} className="mock-loop-dimension-row">
+                                <span className="mock-loop-dimension-name">{dim}</span>
+                                <span className="mock-loop-dimension-acc">{stats.accuracy_pct}%</span>
+                              </span>
+                            ))}
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}
@@ -986,18 +1076,46 @@ export default function MockHub() {
 
         {!historyLoading && drillHistory.length > 0 && (
           <section className="mock-hub-section mock-hub-history">
-            <h2 className="mock-hub-history-title">Recent drill sessions</h2>
+            <h2 className="mock-hub-history-title">Recent custom drills</h2>
             <table className="mock-history-table">
               <thead>
                 <tr>
-                  <th>Date</th><th>Mode</th><th>Track</th><th>Difficulty</th><th>Score</th><th>Time</th><th></th>
+                  <th>Date</th><th>Track</th><th>Difficulty</th><th>Score</th><th>Time</th><th></th>
                 </tr>
               </thead>
               <tbody>
                 {drillHistory.slice(0, 5).map(s => (
                   <tr key={s.session_id}>
                     <td>{formatDate(s.started_at)}</td>
-                    <td>{getMockModeDisplayLabel(s.mode)}</td>
+                    <td>{TRACK_LABELS[s.track] || s.track}</td>
+                    <td>{s.difficulty && <span className={`badge badge-${s.difficulty}`}>{s.difficulty}</span>}</td>
+                    <td>{s.solved_count}/{s.total_count}</td>
+                    <td>{formatDuration(s.time_limit_s, null)}</td>
+                    <td>
+                      <Link to={`/mock/${s.session_id}`} className="mock-review-link">
+                        {s.status === 'completed' ? 'Review →' : 'Resume →'}
+                      </Link>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </section>
+        )}
+
+        {!historyLoading && loopHistory.length > 0 && (
+          <section className="mock-hub-section mock-hub-history">
+            <h2 className="mock-hub-history-title">Recent Interview Loops</h2>
+            <table className="mock-history-table">
+              <thead>
+                <tr>
+                  <th>Date</th><th>Track</th><th>Difficulty</th><th>Score</th><th>Time</th><th></th>
+                </tr>
+              </thead>
+              <tbody>
+                {loopHistory.slice(0, 5).map(s => (
+                  <tr key={s.session_id}>
+                    <td>{formatDate(s.started_at)}</td>
                     <td>{TRACK_LABELS[s.track] || s.track}</td>
                     <td>{s.difficulty && <span className={`badge badge-${s.difficulty}`}>{s.difficulty}</span>}</td>
                     <td>{s.solved_count}/{s.total_count}</td>

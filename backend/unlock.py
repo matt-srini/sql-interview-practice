@@ -63,15 +63,6 @@ _FREE_HARD_THRESHOLDS_MCQ: list[tuple[int, int]] = [
 
 FREE_HARD_CAP_MCQ = 5
 
-# Daily mock session limits per plan × difficulty (None = unlimited)
-MOCK_DAILY_LIMITS: dict[str, dict[str, int | None]] = {
-    "free":           {"easy": None, "medium": 1,    "hard": None, "mixed": None},
-    "pro":            {"easy": None, "medium": None, "hard": 3,    "mixed": None},
-    "elite":          {"easy": None, "medium": None, "hard": None, "mixed": None},
-    "lifetime_pro":   {"easy": None, "medium": None, "hard": 3,    "mixed": None},
-    "lifetime_elite": {"easy": None, "medium": None, "hard": None, "mixed": None},
-}
-
 # Company-filtered mocks require Elite (or lifetime equivalent)
 MOCK_COMPANY_FILTER_TIERS = {"elite", "lifetime_elite"}
 
@@ -284,95 +275,184 @@ def get_next_questions(
 
 # ── Mock access check ─────────────────────────────────────────────────────────
 
+_PLAN_LOCKED: dict[str, Any] = {
+    "can_start": False,
+    "block_reason": "plan_locked",
+    "block_copy": None,
+    "needs_upgrade": None,
+    "daily_limit": None,
+    "daily_used": None,
+    "weekly_benchmark_limit": None,
+    "weekly_benchmark_used": None,
+}
+
+
+def _plan_locked(copy: str, upgrade: str) -> dict[str, Any]:
+    return {**_PLAN_LOCKED, "block_copy": copy, "needs_upgrade": upgrade}
+
+
 def compute_mock_access(
     plan: str,
     track: str,
     difficulty: str,
-    medium_unlocked: bool,
-    daily_medium_used: int = 0,
-    daily_hard_used: int = 0,
+    mode: str,
+    daily_benchmark_used: int = 0,
+    daily_custom_used: int = 0,
+    weekly_benchmark_used: int = 0,
     company_filter: bool = False,
 ) -> dict[str, Any]:
     """
     Return whether a user can start a mock session with these parameters.
 
+    Mode-based access rules (post-Phase-3):
+      benchmark + free + easy    → 1 per rolling 7 days (weekly cap)
+      benchmark + free + med/hard → plan_locked
+      benchmark + pro             → 3/day
+      benchmark + elite           → unlimited (soft abuse cap only, not checked here)
+      custom + free               → plan_locked
+      custom + pro                → 3/day
+      custom + elite              → unlimited
+      interview_loop + free/pro   → plan_locked
+      interview_loop + elite      → unlimited
+
     Returns a dict with:
       can_start (bool)
-      block_reason (str | None): 'plan_locked' | 'not_unlocked' | 'daily_cap'
+      block_reason (str | None): 'plan_locked' | 'daily_cap' | 'weekly_cap'
       block_copy (str | None): human-readable message for the UI
-      needs_upgrade (str | None): 'pro' | 'elite' — upgrade that would fix it
+      needs_upgrade (str | None): 'pro' | 'elite'
       daily_limit (int | None)
       daily_used (int | None)
+      weekly_benchmark_limit (int | None): only for Free + benchmark
+      weekly_benchmark_used (int | None): only for Free + benchmark
     """
     plan = normalize_plan(plan)
-    try:
-        _track_label = get_track(track).label
-    except ValueError:
-        _track_label = track.upper()
 
     # Company-filtered mocks: Elite only
     if company_filter and plan not in MOCK_COMPANY_FILTER_TIERS:
+        return _plan_locked("Company-filtered mocks are an Elite feature.", "elite")
+
+    # ── interview_loop ────────────────────────────────────────────────────────
+    if mode == "interview_loop":
+        if plan != "elite":
+            return _plan_locked("Interview Loop is an Elite-only feature.", "elite")
         return {
-            "can_start": False,
-            "block_reason": "plan_locked",
-            "block_copy": "Company-filtered mocks are an Elite feature.",
-            "needs_upgrade": "elite",
+            "can_start": True,
+            "block_reason": None,
+            "block_copy": None,
+            "needs_upgrade": None,
             "daily_limit": None,
             "daily_used": None,
+            "weekly_benchmark_limit": None,
+            "weekly_benchmark_used": None,
         }
 
-    # Hard mocks: Free users are plan-locked
-    if difficulty == "hard" and plan == "free":
+    # ── custom ────────────────────────────────────────────────────────────────
+    if mode == "custom":
+        if plan == "free":
+            return _plan_locked(
+                "Custom drills require a Pro or Elite plan. Upgrade to practise on your own schedule.",
+                "pro",
+            )
+        if plan == "pro":
+            daily_limit = 3
+            if daily_custom_used >= daily_limit:
+                return {
+                    "can_start": False,
+                    "block_reason": "daily_cap",
+                    "block_copy": f"Daily limit reached ({daily_limit} custom drills per day). Upgrade to Elite for unlimited.",
+                    "needs_upgrade": "elite",
+                    "daily_limit": daily_limit,
+                    "daily_used": daily_custom_used,
+                    "weekly_benchmark_limit": None,
+                    "weekly_benchmark_used": None,
+                }
+            return {
+                "can_start": True,
+                "block_reason": None,
+                "block_copy": None,
+                "needs_upgrade": None,
+                "daily_limit": daily_limit,
+                "daily_used": daily_custom_used,
+                "weekly_benchmark_limit": None,
+                "weekly_benchmark_used": None,
+            }
+        # elite
         return {
-            "can_start": False,
-            "block_reason": "plan_locked",
-            "block_copy": "Hard mock interviews are a Pro feature.",
-            "needs_upgrade": "pro",
+            "can_start": True,
+            "block_reason": None,
+            "block_copy": None,
+            "needs_upgrade": None,
             "daily_limit": None,
             "daily_used": None,
+            "weekly_benchmark_limit": None,
+            "weekly_benchmark_used": None,
         }
 
-    # Medium mocks: Free users must have medium unlocked in this track first
-    if difficulty == "medium" and plan == "free" and not medium_unlocked:
-        _easy_threshold = (
-            _FREE_MEDIUM_THRESHOLDS_MCQ[-1][0]
-            if _is_mcq_profile(track)
-            else _FREE_MEDIUM_THRESHOLDS_CODE[-1][0]
-        )
+    # ── benchmark ─────────────────────────────────────────────────────────────
+    # (default branch; unknown modes fall through as benchmark-equivalent)
+    if plan == "free":
+        # Free: easy only, 1 per rolling 7 days
+        if difficulty in ("medium", "hard"):
+            return _plan_locked(
+                "Medium and hard benchmarks require a Pro plan.",
+                "pro",
+            )
+        # easy: weekly cap
+        weekly_limit = 1
+        if weekly_benchmark_used >= weekly_limit:
+            return {
+                "can_start": False,
+                "block_reason": "weekly_cap",
+                "block_copy": "You've used your free benchmark this week. Upgrade to Pro for 3 benchmarks/day, or wait until next week.",
+                "needs_upgrade": "pro",
+                "daily_limit": None,
+                "daily_used": None,
+                "weekly_benchmark_limit": weekly_limit,
+                "weekly_benchmark_used": weekly_benchmark_used,
+            }
         return {
-            "can_start": False,
-            "block_reason": "not_unlocked",
-            "block_copy": f"Solve {_easy_threshold} easy {_track_label} questions in practice mode to unlock medium difficulty.",
-            "needs_upgrade": "pro",
+            "can_start": True,
+            "block_reason": None,
+            "block_copy": None,
+            "needs_upgrade": None,
             "daily_limit": None,
             "daily_used": None,
+            "weekly_benchmark_limit": weekly_limit,
+            "weekly_benchmark_used": weekly_benchmark_used,
         }
 
-    # Check daily limits
-    daily_limit = MOCK_DAILY_LIMITS.get(plan, {}).get(difficulty)
-    daily_used = (
-        daily_medium_used if difficulty == "medium"
-        else daily_hard_used if difficulty == "hard"
-        else 0
-    )
-
-    if daily_limit is not None and daily_used >= daily_limit:
-        next_upgrade = "elite" if plan == "pro" else "pro"
-        label = f"{daily_limit} {difficulty} mock{'s' if daily_limit != 1 else ''} per day"
+    if plan == "pro":
+        daily_limit = 3
+        if daily_benchmark_used >= daily_limit:
+            return {
+                "can_start": False,
+                "block_reason": "daily_cap",
+                "block_copy": f"Daily limit reached ({daily_limit} benchmarks per day). Upgrade to Elite for unlimited.",
+                "needs_upgrade": "elite",
+                "daily_limit": daily_limit,
+                "daily_used": daily_benchmark_used,
+                "weekly_benchmark_limit": None,
+                "weekly_benchmark_used": None,
+            }
         return {
-            "can_start": False,
-            "block_reason": "daily_cap",
-            "block_copy": f"Daily limit reached ({label}).",
-            "needs_upgrade": next_upgrade,
+            "can_start": True,
+            "block_reason": None,
+            "block_copy": None,
+            "needs_upgrade": None,
             "daily_limit": daily_limit,
-            "daily_used": daily_used,
+            "daily_used": daily_benchmark_used,
+            "weekly_benchmark_limit": None,
+            "weekly_benchmark_used": None,
         }
 
+    # elite
     return {
         "can_start": True,
         "block_reason": None,
         "block_copy": None,
         "needs_upgrade": None,
-        "daily_limit": daily_limit,
-        "daily_used": daily_used if daily_limit is not None else None,
+        "daily_limit": None,
+        "daily_used": None,
+        "weekly_benchmark_limit": None,
+        "weekly_benchmark_used": None,
     }

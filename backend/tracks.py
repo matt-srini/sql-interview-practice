@@ -509,3 +509,22 @@ def all_slugs() -> list[str]:
 def mixed_mock_slugs() -> list[str]:
     """Track slugs eligible for the 'mixed' mock pool (all currently)."""
     return [t.slug for t in TRACKS if t.in_mixed_mock]
+
+
+# Role → tracks mapping for Mixed mock sessions.
+# Each role defines the pool of tracks drawn from in benchmark and custom drill.
+_ROLE_TRACKS: dict[str, list[str]] = {
+    "data_analyst":        ["sql", "python-data", "statistics"],
+    "data_engineer":       ["sql", "python", "pyspark", "data-engineering"],
+    "analytics_engineer":  ["sql", "data-modeling", "python-data"],
+    "data_scientist":      ["python", "python-data", "statistics", "ml-fundamentals"],
+}
+
+VALID_MOCK_ROLES = set(_ROLE_TRACKS)
+
+
+def role_tracks(role: str) -> list[str]:
+    """Return track slugs for a given role. Raises ValueError for unknown roles."""
+    if role not in _ROLE_TRACKS:
+        raise ValueError(f"Unknown mock role: {role!r}")
+    return _ROLE_TRACKS[role]

@@ -145,7 +145,7 @@ Mock filters by `focus_concepts` (concept families). Paths now declare `patterns
 **Once C1 lands:**
 
 **C2. MockHub URL deep-link parsing**
-[`frontend/src/pages/MockHub.js`](../../frontend/src/pages/MockHub.js) — add `useSearchParams` extraction for `?focus=A,B&track=sql&mode=short_drill&difficulty=medium` alongside the existing `location.state.mockPreset` handler.
+[`frontend/src/pages/MockHub.js`](../../frontend/src/pages/MockHub.js) — add `useSearchParams` extraction for `?focus=A,B&track=sql&mode=custom&difficulty=medium` alongside the existing `location.state.mockPreset` handler.
 
 **C3. "Benchmark this with a focused drill" CTA on path completion**
 [`frontend/src/pages/LearningPath.js:150-159`](../../frontend/src/pages/LearningPath.js#L150) — add a secondary CTA next to "What's next →" in the completion banner. Links to the deep-link URL built from the path's focus mapping (per C1).

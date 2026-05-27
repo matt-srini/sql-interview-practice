@@ -1,7 +1,7 @@
 # Track Phase 2 Orchestration Runbook
 
-**Status:** durable orchestration doc (survives Phase 3 tracker deletion)
-**Audience:** any Opus session picking up Phase 3 of the 2026-05 authoring refactor, or any future Phase 2 round for a new track added post-refactor. **All 9 Phase 2 rounds + both Phase 2.5 cycles (DM re-balance, ML BIAS/FAIRNESS new-family addition) closed 2026-05-26.** The transitional tracker (`docs/phases/2026-05-authoring-refactor.md`) will be archived to `docs/archive/` once Phase 3 ships; this runbook is the durable orchestration handbook and stays authoritative.
+**Status:** durable orchestration doc
+**Audience:** any Opus session running a future Phase 2 round for a new track added post-refactor. **All 9 Phase 2 rounds + both Phase 2.5 cycles (DM re-balance, ML BIAS/FAIRNESS new-family addition) closed 2026-05-26. Phase 3 (Interview Loop + Mixed benchmark + mock consolidation) shipped 2026-05-28.** The transitional tracker has been archived to `docs/archive/2026-05-authoring-refactor.md` as historical record; this runbook is the durable orchestration handbook and stays authoritative.
 
 This is the **orchestration handbook**, not the contract. The contract (rules, philosophy, schemas) lives in the durable docs listed at the bottom. This doc captures the **process patterns** for running a track through Phase 2: how Stage A plans, how Sonnet executes Stage B, how Stage C audits — all the orchestration-level knowledge that doesn't fit in the contract docs and historically lived only in conversation context.
 
@@ -156,7 +156,7 @@ Sonnet executes the H-series as the CLOSING step of Stage B. The H-series is dur
 | H4 | Track-doc Coverage section — add/update with practice + mock + ratio + splits + type mix + chain count + realism path. |
 | H5 | Realism designation — set `MOCK_ONLY_REALISM_FAMILIES["<track>"]` in `backend/concept_families.py`. |
 | H6 | IS-count sync — CLAUDE.md footprint + totals, `docs/content-authoring.md` § Question bank current state, precedent table row. |
-| H7 | Tracker tick — `docs/phases/2026-05-authoring-refactor.md` row + decision log. |
+| H7 | Archive record — record closeout in decision log within `docs/archive/2026-05-authoring-refactor.md`. |
 
 ### 3.5 Procedural rules (always include in handoff)
 
@@ -386,7 +386,7 @@ Outcome (historical reference for future new-family additions):
 
 ---
 
-**🎉 ALL 2026-05 AUTHORING REFACTOR WORK COMPLETE.** Phase 2 + DM Phase 2.5 + BIAS/FAIRNESS Phase 2.5 closed. Phase 3 is the next pickup; once Phase 3 ships, the transitional tracker (`docs/phases/2026-05-authoring-refactor.md`) will be **moved to `docs/archive/`** and will become **non-authoritative historical record**. This runbook stays as the durable orchestration handbook.
+**🎉 ALL 2026-05 AUTHORING REFACTOR WORK COMPLETE.** Phase 2 + DM Phase 2.5 + BIAS/FAIRNESS Phase 2.5 closed 2026-05-26. Phase 3 (Interview Loop + Mixed benchmark + mock consolidation) shipped 2026-05-28. The transitional tracker has been archived to `docs/archive/2026-05-authoring-refactor.md` as non-authoritative historical record. This runbook stays as the durable orchestration handbook.
 
 ---
 
@@ -416,7 +416,7 @@ Where every rule lives. The runbook references; the contract enforces.
 | Validator coverage state + per-family coverage warnings | `backend/scripts/validate_content.py` + `docs/content-authoring.md` § Validator coverage state |
 | Phase 2 closeout doc-hygiene (H1–H7) | `docs/content-authoring.md` § Phase 2 closeout doc-hygiene |
 | Procedural rules (P1, P2) | `docs/content-authoring.md` § Phase 2 closeout doc-hygiene |
-| Transitional execution log (deletes Phase 3) | `docs/phases/2026-05-authoring-refactor.md` |
+| Historical execution log (archived) | `docs/archive/2026-05-authoring-refactor.md` |
 
 ---
 

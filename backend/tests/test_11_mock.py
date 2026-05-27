@@ -20,90 +20,148 @@ _pyspark_wrong = (_pyspark_correct + 1) % 4
 
 
 # ---------------------------------------------------------------------------
-# Unit tests for compute_mock_access (TC-125 to TC-134)
+# Unit tests for compute_mock_access (TC-125 to TC-134 — Phase 3 signatures)
 # ---------------------------------------------------------------------------
 
-def test_tc125_free_easy_can_start():
-    """TC-125: Free user, easy → can_start: True; daily_limit: None."""
-    result = compute_mock_access("free", "sql", "easy", medium_unlocked=False)
+def test_tc125_free_benchmark_easy_can_start():
+    """TC-125: Free + benchmark + easy → can_start: True; weekly_benchmark_limit: 1."""
+    result = compute_mock_access("free", "sql", "easy", mode="benchmark", weekly_benchmark_used=0)
     assert result["can_start"] is True
     assert result["daily_limit"] is None
+    assert result["weekly_benchmark_limit"] == 1
+    assert result["weekly_benchmark_used"] == 0
 
 
-def test_tc126_free_medium_not_unlocked_blocked():
-    """TC-126: Free user, medium not unlocked → block_reason: not_unlocked."""
-    result = compute_mock_access("free", "sql", "medium", medium_unlocked=False)
-    assert result["can_start"] is False
-    assert result["block_reason"] == "not_unlocked"
-    assert result["needs_upgrade"] == "pro"
-
-
-def test_tc127_free_medium_unlocked_can_start():
-    """TC-127: Free user, medium unlocked → can_start: True; daily_limit: 1."""
-    result = compute_mock_access("free", "sql", "medium", medium_unlocked=True, daily_medium_used=0)
-    assert result["can_start"] is True
-    assert result["daily_limit"] == 1
-    assert result["daily_used"] == 0
-
-
-def test_tc128_free_medium_daily_limit_reached():
-    """TC-128: Free user, medium, daily used 1 → block_reason: daily_cap."""
-    result = compute_mock_access("free", "sql", "medium", medium_unlocked=True, daily_medium_used=1)
-    assert result["can_start"] is False
-    assert result["block_reason"] == "daily_cap"
-
-
-def test_tc129_free_hard_plan_locked():
-    """TC-129: Free user, hard → block_reason: plan_locked; needs_upgrade: pro."""
-    result = compute_mock_access("free", "sql", "hard", medium_unlocked=True)
+def test_tc126_free_benchmark_medium_plan_locked():
+    """TC-126: Free + benchmark + medium → plan_locked (medium/hard require Pro)."""
+    result = compute_mock_access("free", "sql", "medium", mode="benchmark")
     assert result["can_start"] is False
     assert result["block_reason"] == "plan_locked"
     assert result["needs_upgrade"] == "pro"
 
 
-def test_tc130_pro_hard_within_daily_limit():
-    """TC-130: Pro user, hard, daily used 2 → can_start: True; daily_limit: 3."""
-    result = compute_mock_access("pro", "sql", "hard", medium_unlocked=True, daily_hard_used=2)
+def test_tc127_free_benchmark_easy_weekly_cap():
+    """TC-127: Free + benchmark + easy + weekly_used=1 → weekly_cap."""
+    result = compute_mock_access("free", "sql", "easy", mode="benchmark", weekly_benchmark_used=1)
+    assert result["can_start"] is False
+    assert result["block_reason"] == "weekly_cap"
+    assert result["weekly_benchmark_limit"] == 1
+    assert result["weekly_benchmark_used"] == 1
+
+
+def test_tc128_free_custom_plan_locked():
+    """TC-128: Free + custom → plan_locked."""
+    result = compute_mock_access("free", "sql", "easy", mode="custom")
+    assert result["can_start"] is False
+    assert result["block_reason"] == "plan_locked"
+    assert result["needs_upgrade"] == "pro"
+
+
+def test_tc129_free_benchmark_hard_plan_locked():
+    """TC-129: Free + benchmark + hard → plan_locked; needs_upgrade: pro."""
+    result = compute_mock_access("free", "sql", "hard", mode="benchmark")
+    assert result["can_start"] is False
+    assert result["block_reason"] == "plan_locked"
+    assert result["needs_upgrade"] == "pro"
+
+
+def test_tc130_pro_benchmark_hard_within_daily_limit():
+    """TC-130: Pro + benchmark + hard + daily_used=2 → can_start: True; daily_limit: 3."""
+    result = compute_mock_access("pro", "sql", "hard", mode="benchmark", daily_benchmark_used=2)
     assert result["can_start"] is True
     assert result["daily_limit"] == 3
     assert result["daily_used"] == 2
 
 
-def test_tc131_pro_hard_daily_limit_reached():
-    """TC-131: Pro user, hard, daily used 3 → block_reason: daily_cap."""
-    result = compute_mock_access("pro", "sql", "hard", medium_unlocked=True, daily_hard_used=3)
+def test_tc131_pro_benchmark_hard_daily_limit_reached():
+    """TC-131: Pro + benchmark + hard + daily_used=3 → daily_cap."""
+    result = compute_mock_access("pro", "sql", "hard", mode="benchmark", daily_benchmark_used=3)
     assert result["can_start"] is False
     assert result["block_reason"] == "daily_cap"
     assert result["needs_upgrade"] == "elite"
 
 
-def test_tc132_elite_hard_unlimited():
-    """TC-132: Elite user, hard → can_start: True; daily_limit: None."""
-    result = compute_mock_access("elite", "sql", "hard", medium_unlocked=True)
+def test_tc132_elite_benchmark_hard_unlimited():
+    """TC-132: Elite + benchmark + hard → can_start: True; daily_limit: None."""
+    result = compute_mock_access("elite", "sql", "hard", mode="benchmark")
     assert result["can_start"] is True
     assert result["daily_limit"] is None
 
 
 def test_tc133_company_filter_non_elite_blocked():
-    """TC-133: Pro user with company_filter → block_reason: plan_locked; needs_upgrade: elite."""
-    result = compute_mock_access("pro", "sql", "easy", medium_unlocked=True, company_filter=True)
+    """TC-133: Pro + company_filter → plan_locked; needs_upgrade: elite."""
+    result = compute_mock_access("pro", "sql", "easy", mode="benchmark", company_filter=True)
     assert result["can_start"] is False
     assert result["block_reason"] == "plan_locked"
     assert result["needs_upgrade"] == "elite"
 
 
 def test_tc134_company_filter_elite_allowed():
-    """TC-134: Elite user with company_filter → can_start: True."""
-    result = compute_mock_access("elite", "sql", "easy", medium_unlocked=True, company_filter=True)
+    """TC-134: Elite + company_filter → can_start: True."""
+    result = compute_mock_access("elite", "sql", "easy", mode="benchmark", company_filter=True)
     assert result["can_start"] is True
+
+
+def test_tc134b_pro_custom_within_daily_limit():
+    """TC-134B: Pro + custom + daily_custom_used=2 → can_start: True; daily_limit: 3."""
+    result = compute_mock_access("pro", "sql", "easy", mode="custom", daily_custom_used=2)
+    assert result["can_start"] is True
+    assert result["daily_limit"] == 3
+    assert result["daily_used"] == 2
+
+
+def test_tc134c_pro_custom_daily_limit_reached():
+    """TC-134C: Pro + custom + daily_custom_used=3 → daily_cap."""
+    result = compute_mock_access("pro", "sql", "easy", mode="custom", daily_custom_used=3)
+    assert result["can_start"] is False
+    assert result["block_reason"] == "daily_cap"
+
+
+def test_tc134d_free_interview_loop_plan_locked():
+    """TC-134D: Free + interview_loop → plan_locked (interview_loop is Elite-only)."""
+    result = compute_mock_access("free", "sql", "easy", mode="interview_loop")
+    assert result["can_start"] is False
+    assert result["block_reason"] == "plan_locked"
+
+
+def test_tc134e_pro_interview_loop_plan_locked():
+    """TC-134E: Pro + interview_loop → plan_locked."""
+    result = compute_mock_access("pro", "sql", "easy", mode="interview_loop")
+    assert result["can_start"] is False
+    assert result["block_reason"] == "plan_locked"
+
+
+def test_tc134f_elite_interview_loop_can_start():
+    """TC-134F: Elite + interview_loop → can_start: True."""
+    result = compute_mock_access("elite", "sql", "easy", mode="interview_loop")
+    assert result["can_start"] is True
+
+
+def test_tc134g_benchmark_and_custom_caps_are_independent():
+    """TC-134G: Pro benchmark cap and custom cap are independent counters."""
+    # Benchmark capped, custom still available
+    bench_capped = compute_mock_access("pro", "sql", "easy", mode="benchmark", daily_benchmark_used=3)
+    custom_ok = compute_mock_access("pro", "sql", "easy", mode="custom", daily_benchmark_used=3, daily_custom_used=0)
+    assert bench_capped["can_start"] is False
+    assert bench_capped["block_reason"] == "daily_cap"
+    assert custom_ok["can_start"] is True
+
+    # Custom capped, benchmark still available
+    custom_capped = compute_mock_access("pro", "sql", "easy", mode="custom", daily_custom_used=3)
+    bench_ok = compute_mock_access("pro", "sql", "easy", mode="benchmark", daily_benchmark_used=0, daily_custom_used=3)
+    assert custom_capped["can_start"] is False
+    assert bench_ok["can_start"] is True
 
 
 # ---------------------------------------------------------------------------
 # HTTP session tests (TC-135 to TC-170)
 # ---------------------------------------------------------------------------
 
-def _start_pyspark_session(client, mode="30min", difficulty="medium", plan="pro", **kwargs):
+def _start_pyspark_session(client, mode="custom", difficulty="medium", plan="pro", **kwargs):
     body = {"mode": mode, "track": "pyspark", "difficulty": difficulty, **kwargs}
+    if mode == "custom":
+        body.setdefault("num_questions", 2)
+        body.setdefault("time_minutes", 30)
     r = client.post("/api/mock/start", json=body)
     return r
 
@@ -117,7 +175,7 @@ def test_tc135_start_session_returns_session_id_questions_time_limit():
     body = r.json()
     assert "session_id" in body
     assert "questions" in body
-    assert len(body["questions"]) == 2  # 30min mode
+    assert len(body["questions"]) == 2  # custom 2-question session
     assert body.get("time_limit_s") == 1800
 
 
@@ -155,15 +213,23 @@ def test_tc136c_statistics_benchmark_uses_mixed_subtype_shape():
     assert r.json()["time_limit_s"] == 2700
 
 
-def test_tc136d_benchmark_mode_rejects_mixed_track():
-    """TC-136D: Benchmark mode is track-specific and rejects mixed-track sessions."""
+def test_tc136d_benchmark_mode_mixed_track_requires_role():
+    """TC-136D: Benchmark + mixed without role → 400; with role → 200."""
     with TestClient(app) as client:
         _make_user(client, plan="elite")
-        r = client.post("/api/mock/start", json={
-            "mode": "benchmark", "track": "mixed", "difficulty": "mixed",
+        # No role → 400
+        r_no_role = client.post("/api/mock/start", json={
+            "mode": "benchmark", "track": "mixed", "difficulty": "easy",
         })
-    assert r.status_code == 400
-    assert "mixed" in r.json().get("error", "").lower() or "mixed" in r.json().get("detail", "").lower()
+        assert r_no_role.status_code == 400
+        assert "role" in r_no_role.json().get("error", "").lower()
+
+        # With valid role → 200
+        r_with_role = client.post("/api/mock/start", json={
+            "mode": "benchmark", "track": "mixed", "difficulty": "easy",
+            "role": "data_analyst",
+        })
+        assert r_with_role.status_code in (200, 201)
 
 
 def test_tc136e_ml_benchmark_includes_debug_and_predict_output_when_available():
@@ -181,11 +247,12 @@ def test_tc136e_ml_benchmark_includes_debug_and_predict_output_when_available():
 
 
 def test_tc136f_non_benchmark_ml_session_is_not_forced_into_benchmark_shape():
-    """TC-136F: Drill sessions on reasoning tracks are not forced into benchmark-only type coverage."""
+    """TC-136F: Custom drill on reasoning track is not forced into benchmark-only type coverage."""
     with TestClient(app) as client:
         _make_user(client, plan="elite")
         r = client.post("/api/mock/start", json={
-            "mode": "30min", "track": "ml-fundamentals", "difficulty": "hard",
+            "mode": "custom", "track": "ml-fundamentals", "difficulty": "hard",
+            "num_questions": 2, "time_minutes": 30,
         })
     assert r.status_code in (200, 201)
     assert len(r.json()["questions"]) == 2
@@ -330,51 +397,30 @@ def test_tc145_elite_user_hard_start_returns_201():
     assert r.status_code in (200, 201)
 
 
-def test_tc146_free_user_second_medium_mock_same_day_blocked():
-    """TC-146: Free user; 1 medium session today already → 2nd blocked (403)."""
-    from pyspark_questions import get_questions_by_difficulty as get_ps_qs
-    pyspark_easy_ids = [q["id"] for q in get_ps_qs()["easy"]]
-
+def test_tc146_free_user_custom_mode_plan_locked():
+    """TC-146: Free user + custom mode → plan_locked (custom requires Pro+)."""
     with TestClient(app) as client:
-        user = _make_user(client, plan="free")
-    # Unlock pyspark medium by solving 12 pyspark easy questions
-    for qid in pyspark_easy_ids[:12]:
-        _insert_progress(user["id"], qid, track="pyspark")
-    # Insert a medium mock session for today
-    conn = _db_conn()
-    try:
-        with conn.cursor() as cur:
-            cur.execute(
-                """INSERT INTO mock_sessions (user_id, mode, track, difficulty, time_limit_s, status)
-                   VALUES (%s::uuid, 'custom', 'pyspark', 'medium', 1800, 'completed')""",
-                (user["id"],),
-            )
-        conn.commit()
-    finally:
-        conn.close()
-
-    with TestClient(app) as client:
-        _make_user(client, plan="free", existing_user=user)
+        _make_user(client, plan="free")
         r = client.post("/api/mock/start", json={
-            "mode": "custom", "track": "pyspark", "difficulty": "medium",
+            "mode": "custom", "track": "pyspark", "difficulty": "easy",
             "num_questions": 1, "time_minutes": 30,
         })
     assert r.status_code == 403
-    assert "daily" in r.json().get("error", "").lower() or "limit" in r.json().get("error", "").lower()
+    assert "pro" in r.json().get("error", "").lower() or "upgrade" in r.json().get("error", "").lower()
 
 
-def test_tc147_pro_user_4th_hard_same_day_blocked():
-    """TC-147: Pro user; 3 hard sessions today → 4th blocked (403)."""
+def test_tc147_pro_user_4th_custom_same_day_blocked():
+    """TC-147: Pro user; 3 custom sessions today → 4th custom blocked (403)."""
     with TestClient(app) as client:
         user = _make_user(client, plan="pro")
-    # Insert 3 hard sessions
+    # Insert 3 custom sessions completed today
     conn = _db_conn()
     try:
         with conn.cursor() as cur:
             for _ in range(3):
                 cur.execute(
                     """INSERT INTO mock_sessions (user_id, mode, track, difficulty, time_limit_s, status)
-                       VALUES (%s::uuid, '30min', 'pyspark', 'hard', 1800, 'completed')""",
+                       VALUES (%s::uuid, 'custom', 'pyspark', 'hard', 1800, 'completed')""",
                     (user["id"],),
                 )
         conn.commit()
@@ -389,18 +435,18 @@ def test_tc147_pro_user_4th_hard_same_day_blocked():
     assert "daily" in detail or "limit" in detail or "elite" in detail
 
 
-def test_tc148_elite_user_4th_hard_same_day_allowed():
-    """TC-148: Elite user; 3 hard sessions today → 4th allowed."""
+def test_tc148_elite_user_4th_custom_same_day_allowed():
+    """TC-148: Elite user; 3+ custom sessions today → 4th still allowed (unlimited)."""
     with TestClient(app) as client:
         user = _make_user(client, plan="elite")
-    # Insert 3 hard sessions
+    # Insert 3 custom sessions
     conn = _db_conn()
     try:
         with conn.cursor() as cur:
             for _ in range(3):
                 cur.execute(
                     """INSERT INTO mock_sessions (user_id, mode, track, difficulty, time_limit_s, status)
-                       VALUES (%s::uuid, '30min', 'pyspark', 'hard', 1800, 'completed')""",
+                       VALUES (%s::uuid, 'custom', 'pyspark', 'hard', 1800, 'completed')""",
                     (user["id"],),
                 )
         conn.commit()
@@ -418,11 +464,11 @@ def test_tc149_non_elite_company_filter_returns_403():
     with TestClient(app) as client:
         _make_user(client, plan="pro")
         r = client.post("/api/mock/start", json={
-            "mode": "30min", "track": "sql", "difficulty": "easy",
+            "mode": "benchmark", "track": "sql", "difficulty": "easy",
             "company_filter": "Meta",
         })
     assert r.status_code == 403
-    assert "elite" in r.json().get("error", "").lower() or "Elite" in r.json().get("error", "")
+    assert "elite" in r.json().get("error", "").lower()
 
 
 def test_tc150_elite_company_filter_creates_session():
@@ -430,7 +476,7 @@ def test_tc150_elite_company_filter_creates_session():
     with TestClient(app) as client:
         _make_user(client, plan="elite")
         r = client.post("/api/mock/start", json={
-            "mode": "30min", "track": "sql", "difficulty": "medium",
+            "mode": "benchmark", "track": "sql", "difficulty": "medium",
             "company_filter": "Meta",
         })
     assert r.status_code in (200, 201)
@@ -441,7 +487,8 @@ def test_tc151_non_elite_focus_concepts_returns_403():
     with TestClient(app) as client:
         _make_user(client, plan="pro")
         r = client.post("/api/mock/start", json={
-            "mode": "30min", "track": "sql", "difficulty": "medium",
+            "mode": "custom", "track": "sql", "difficulty": "medium",
+            "num_questions": 1, "time_minutes": 20,
             "focus_concepts": ["window functions"],
         })
     assert r.status_code == 403
@@ -452,7 +499,8 @@ def test_tc152_elite_more_than_3_focus_concepts_returns_422():
     with TestClient(app) as client:
         _make_user(client, plan="elite")
         r = client.post("/api/mock/start", json={
-            "mode": "30min", "track": "pyspark", "difficulty": "easy",
+            "mode": "custom", "track": "pyspark", "difficulty": "easy",
+            "num_questions": 1, "time_minutes": 20,
             "focus_concepts": ["a", "b", "c", "d"],
         })
     assert r.status_code == 422
@@ -463,7 +511,8 @@ def test_tc153_elite_focus_concepts_creates_session():
     with TestClient(app) as client:
         _make_user(client, plan="elite")
         r = client.post("/api/mock/start", json={
-            "mode": "30min", "track": "pyspark", "difficulty": "easy",
+            "mode": "custom", "track": "pyspark", "difficulty": "easy",
+            "num_questions": 1, "time_minutes": 20,
             "focus_concepts": ["dataframe operations"],
         })
     assert r.status_code in (200, 201)
@@ -652,13 +701,13 @@ def test_tc162_pro_finish_debrief_is_null():
 
 
 def test_tc163_free_finish_debrief_is_null():
-    """TC-163: Free user completes easy session → debrief: null."""
+    """TC-163: Free user completes easy benchmark → debrief: null."""
     with TestClient(app) as client:
         _make_user(client, plan="free")
         r_start = client.post("/api/mock/start", json={
-            "mode": "custom", "track": "pyspark", "difficulty": "easy",
-            "num_questions": 1, "time_minutes": 30,
+            "mode": "benchmark", "track": "pyspark", "difficulty": "easy",
         })
+        assert r_start.status_code in (200, 201), r_start.text
         session_id = r_start.json()["session_id"]
         r_finish = client.post(f"/api/mock/{session_id}/finish")
     assert r_finish.status_code == 200
@@ -737,7 +786,7 @@ def test_tc165b_analytics_separates_benchmark_from_drills():
 
             cur.execute(
                 """INSERT INTO mock_sessions (user_id, mode, track, difficulty, time_limit_s, status, ended_at)
-                   VALUES (%s::uuid, '30min', 'pyspark', 'easy', 1800, 'completed', NOW())
+                   VALUES (%s::uuid, 'custom', 'pyspark', 'easy', 1800, 'completed', NOW())
                    RETURNING id""",
                 (user["id"],),
             )
@@ -759,7 +808,7 @@ def test_tc165b_analytics_separates_benchmark_from_drills():
     assert r.status_code == 200
     body = r.json()
     assert body["total_sessions"] == 2
-    assert body["mode_breakdown"] == {"benchmark": 1, "drill": 1}
+    assert body["mode_breakdown"] == {"benchmark": 1, "custom": 1, "interview_loop": 0, "drill": 1}
     assert body["benchmark_summary"]["total_sessions"] == 1
     assert body["benchmark_summary"]["avg_score_pct"] == 66.7
     assert body["drill_summary"]["total_sessions"] == 1
@@ -964,7 +1013,8 @@ def test_tc172_blank_code_submit_returns_422_and_does_not_consume_question():
     with TestClient(app) as client:
         _make_user(client, plan="pro")
         r_start = client.post("/api/mock/start", json={
-            "mode": "30min", "track": "sql", "difficulty": "medium",
+            "mode": "custom", "track": "sql", "difficulty": "medium",
+            "num_questions": 1, "time_minutes": 30,
         })
         assert r_start.status_code in (200, 201)
         session_id = r_start.json()["session_id"]
@@ -1089,3 +1139,178 @@ def test_tc176_blank_submit_does_not_block_subsequent_real_submit():
         })
         assert r_real.status_code == 200
         assert r_real.json()["correct"] is True
+
+
+# ---------------------------------------------------------------------------
+# Phase 3: Interview Loop tests (TC-177 to TC-184)
+# ---------------------------------------------------------------------------
+
+# ML Fundamentals hard has 8 chains; use these parent IDs for exhaustion tests
+_ML_HARD_CHAIN_PARENTS = [83043, 83047, 83049, 83053, 83055, 83073, 83078, 83082]
+
+
+def test_tc177_interview_loop_elite_start_returns_session_with_chain():
+    """TC-177: Elite + interview_loop + ML hard → session with chain; time = chain_len × 900."""
+    with TestClient(app) as client:
+        _make_user(client, plan="elite")
+        r = client.post("/api/mock/start", json={
+            "mode": "interview_loop",
+            "track": "ml-fundamentals",
+            "difficulty": "hard",
+        })
+    assert r.status_code in (200, 201), r.text
+    body = r.json()
+    assert "session_id" in body
+    questions = body["questions"]
+    assert len(questions) >= 2, "Interview Loop session must have at least parent + 1 follow-up"
+    # Time must be chain_length × 900
+    assert body["time_limit_s"] == len(questions) * 900
+    # Parent: follow_up_dimension is None; children: follow_up_dimension is set
+    assert questions[0].get("follow_up_dimension") is None
+    for child in questions[1:]:
+        assert child.get("follow_up_dimension") is not None, (
+            f"Follow-up question {child['id']} missing follow_up_dimension"
+        )
+
+
+def test_tc178_interview_loop_pro_returns_403():
+    """TC-178: Pro user + interview_loop → 403 (Elite-only)."""
+    with TestClient(app) as client:
+        _make_user(client, plan="pro")
+        r = client.post("/api/mock/start", json={
+            "mode": "interview_loop",
+            "track": "ml-fundamentals",
+            "difficulty": "hard",
+        })
+    assert r.status_code == 403
+    assert "elite" in r.json().get("error", "").lower()
+
+
+def test_tc179_interview_loop_pool_exhaustion_returns_409():
+    """TC-179: All chains consumed → 409 pool_exhausted."""
+    with TestClient(app) as client:
+        user = _make_user(client, plan="elite")
+
+    # Mark all ML hard chain parents as consumed for this user
+    conn = _db_conn()
+    try:
+        with conn.cursor() as cur:
+            for parent_id in _ML_HARD_CHAIN_PARENTS:
+                cur.execute(
+                    """INSERT INTO mock_chain_consumption (user_id, parent_id, session_id)
+                       VALUES (%s::uuid, %s, NULL)
+                       ON CONFLICT (user_id, parent_id) DO NOTHING""",
+                    (user["id"], parent_id),
+                )
+        conn.commit()
+    finally:
+        conn.close()
+
+    with TestClient(app) as client:
+        _make_user(client, plan="elite", existing_user=user)
+        r = client.post("/api/mock/start", json={
+            "mode": "interview_loop",
+            "track": "ml-fundamentals",
+            "difficulty": "hard",
+        })
+    assert r.status_code == 409
+    body = r.json()
+    # Dict details are unpacked into the response body directly (no "detail" wrapper)
+    assert body.get("pool_exhausted") is True or "exhausted" in str(body.get("error", "")).lower()
+
+
+def test_tc180_discard_interview_loop_reclaims_chain():
+    """TC-180: Discard an Interview Loop session within 2 min → chain reclaimed; restart succeeds."""
+    with TestClient(app) as client:
+        _make_user(client, plan="elite")
+        # Start Interview Loop — consumes a chain
+        r1 = client.post("/api/mock/start", json={
+            "mode": "interview_loop",
+            "track": "ml-fundamentals",
+            "difficulty": "hard",
+        })
+        assert r1.status_code in (200, 201), r1.text
+        session_id = r1.json()["session_id"]
+
+        # Discard within 2 min (test environment is fast — always within window)
+        r_discard = client.delete(f"/api/mock/{session_id}")
+        assert r_discard.status_code == 204
+
+        # Start another loop — chain was reclaimed, so same chain is re-eligible
+        r2 = client.post("/api/mock/start", json={
+            "mode": "interview_loop",
+            "track": "ml-fundamentals",
+            "difficulty": "hard",
+        })
+    assert r2.status_code in (200, 201), r2.text
+
+
+def test_tc181_legacy_30min_start_returns_400():
+    """TC-181: POST /api/mock/start with mode='30min' → 400 (legacy modes cannot be started)."""
+    with TestClient(app) as client:
+        _make_user(client, plan="pro")
+        r = client.post("/api/mock/start", json={
+            "mode": "30min", "track": "pyspark", "difficulty": "easy",
+        })
+    assert r.status_code == 400
+    assert "mode" in r.json().get("error", "").lower()
+
+
+def test_tc182_mixed_custom_without_role_returns_400():
+    """TC-182: Custom + mixed track without role → 400."""
+    with TestClient(app) as client:
+        _make_user(client, plan="pro")
+        r_no_role = client.post("/api/mock/start", json={
+            "mode": "custom", "track": "mixed", "difficulty": "easy",
+            "num_questions": 1, "time_minutes": 20,
+        })
+        assert r_no_role.status_code == 400
+        assert "role" in r_no_role.json().get("error", "").lower()
+
+        r_with_role = client.post("/api/mock/start", json={
+            "mode": "custom", "track": "mixed", "difficulty": "easy",
+            "num_questions": 1, "time_minutes": 20,
+            "role": "data_analyst",
+        })
+    assert r_with_role.status_code in (200, 201), r_with_role.text
+
+
+def test_tc183_analytics_includes_loop_summary():
+    """TC-183: Analytics for Elite user with interview_loop session includes loop_summary."""
+    with TestClient(app) as client:
+        user = _make_user(client, plan="elite")
+
+    conn = _db_conn()
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                """INSERT INTO mock_sessions (user_id, mode, track, difficulty, time_limit_s, status, ended_at)
+                   VALUES (%s::uuid, 'interview_loop', 'ml-fundamentals', 'hard', 2700, 'completed', NOW())
+                   RETURNING id""",
+                (user["id"],),
+            )
+            loop_session_id = cur.fetchone()[0]
+            cur.execute(
+                """INSERT INTO mock_session_questions
+                   (session_id, question_id, track, position, is_solved, follow_up_dimension)
+                   VALUES
+                     (%s, 83043, 'ml-fundamentals', 1, true, NULL),
+                     (%s, 83103, 'ml-fundamentals', 2, false, 'data_quality_pivot')""",
+                (loop_session_id, loop_session_id),
+            )
+        conn.commit()
+    finally:
+        conn.close()
+
+    with TestClient(app) as client:
+        _make_user(client, plan="elite", existing_user=user)
+        r = client.get("/api/mock/analytics")
+
+    assert r.status_code == 200
+    body = r.json()
+    assert "loop_summary" in body
+    loop_summary = body["loop_summary"]
+    assert loop_summary["sessions"] == 1
+    assert "per_dimension_performance" in loop_summary
+    perf = loop_summary["per_dimension_performance"]
+    assert "data_quality_pivot" in perf

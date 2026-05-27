@@ -265,7 +265,7 @@ The 4-step verbatim lookup procedure lives in [`.github/agents/question-authorin
 
 ### Phase 2 closeout doc-hygiene (durable — the H-series)
 
-Every track's Phase 2 closure must execute this checklist as the final step of execution. Items live in durable docs; the transitional tracker (`docs/phases/2026-05-authoring-refactor.md`) self-deletes when Phase 3 ships.
+Every track's Phase 2 closure must execute this checklist as the final step of execution. Items live in durable docs; the historical tracker is archived at `docs/archive/2026-05-authoring-refactor.md`.
 
 1. **Orphan remap.** Run the per-track orphan-resolver one-liner. Remediate every orphan tag — either remap to a registered family or propose a registry addition for user approval. Zero orphans required.
 2. **Validator enable.** Add the track slug to `_TAXONOMY_VALIDATED_TRACKS` in `backend/scripts/validate_content.py` with a one-line comment matching the existing pattern (e.g. `# <Track> Phase 2: registry complete (N families), 0 realism families, <em/mm/hm> mock-only validated`). Re-run `validate_content.py` to confirm the now-enforcing checks still pass.
@@ -273,7 +273,7 @@ Every track's Phase 2 closure must execute this checklist as the final step of e
 4. **Track-doc coverage section.** Add (or update) a "Coverage & sizing targets" section to `docs/tracks/<track>.md`: practice count, mock-only count, ratio, difficulty split, type mix, chain count, realism path.
 5. **Realism designation.** Set `MOCK_ONLY_REALISM_FAMILIES["<track>"]` in `backend/concept_families.py` (populated set OR explicit `set()` with design-rationale comment). Must match the track-doc's stated realism path.
 6. **IS-count sync.** Update CLAUDE.md (content footprint table + "Practice totals" + "Mock-only totals"), `docs/content-authoring.md` § Question bank current state, `docs/content-authoring.md` § Power-user runway sizing benchmark precedent table (add the row with locked ratio).
-7. **Tracker tick.** Mark the track row in `docs/phases/2026-05-authoring-refactor.md` and record the closeout in the decision log.
+7. **Archive record.** Record the closeout summary in the decision log within the archived tracker at `docs/archive/2026-05-authoring-refactor.md`.
 
 **P1 — closeout commit naming.** The closeout commit must NOT self-title "audit PASS," "PASS," or any self-graded language. The executor does not audit itself; Stage C declares PASS. Use descriptive titles like `Phase 2 doc-hygiene closeout (orphan remap + validator enable + H-series)`.
 

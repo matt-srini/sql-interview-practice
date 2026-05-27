@@ -177,7 +177,8 @@ CREATE TABLE IF NOT EXISTS mock_sessions (
     ended_at TIMESTAMPTZ,
     time_limit_s INTEGER NOT NULL,
     status TEXT NOT NULL DEFAULT 'active',
-    focus_fallback BOOLEAN NOT NULL DEFAULT FALSE
+    focus_fallback BOOLEAN NOT NULL DEFAULT FALSE,
+    role TEXT
 );
 
 CREATE INDEX IF NOT EXISTS idx_mock_sessions_user_started ON mock_sessions(user_id, started_at DESC);
@@ -192,13 +193,27 @@ CREATE TABLE IF NOT EXISTS mock_session_questions (
     submitted_at TIMESTAMPTZ,
     final_code TEXT,
     time_spent_s INTEGER,
-    is_follow_up BOOLEAN NOT NULL DEFAULT false
+    is_follow_up BOOLEAN NOT NULL DEFAULT false,
+    follow_up_dimension TEXT
 );
 
 CREATE INDEX IF NOT EXISTS idx_mock_session_questions_session ON mock_session_questions(session_id);
 
+CREATE TABLE IF NOT EXISTS mock_chain_consumption (
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    parent_id INTEGER NOT NULL,
+    consumed_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    session_id BIGINT REFERENCES mock_sessions(id) ON DELETE SET NULL,
+    reclaimed BOOLEAN NOT NULL DEFAULT false,
+    PRIMARY KEY (user_id, parent_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_mcc_user_active ON mock_chain_consumption(user_id) WHERE NOT reclaimed;
+
 ALTER TABLE mock_session_questions ADD COLUMN IF NOT EXISTS is_follow_up BOOLEAN NOT NULL DEFAULT false;
+ALTER TABLE mock_session_questions ADD COLUMN IF NOT EXISTS follow_up_dimension TEXT;
 ALTER TABLE mock_sessions ADD COLUMN IF NOT EXISTS focus_fallback BOOLEAN NOT NULL DEFAULT false;
+ALTER TABLE mock_sessions ADD COLUMN IF NOT EXISTS role TEXT;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS razorpay_subscription_id TEXT;
 """
 
@@ -1145,17 +1160,25 @@ async def create_mock_session(
     track: str,
     difficulty: str | None,
     time_limit_s: int,
-    questions: list[dict],  # [{"question_id": int, "track": str, "position": int}]
+    questions: list[dict],  # [{"question_id": int, "track": str, "position": int, "follow_up_dimension": str|None}]
     focus_fallback: bool = False,
+    role: str | None = None,
+    chain_parent_id: int | None = None,
 ) -> dict[str, Any]:
+    """
+    Persist a new mock session.
+
+    For interview_loop sessions, chain_parent_id marks the chain consumed atomically
+    within the same transaction. questions may carry follow_up_dimension for follow-up rows.
+    """
     session_factory = _session_factory_or_raise()
     async with session_factory() as session:
         result = await session.execute(
             text(
                 """
-                INSERT INTO mock_sessions (user_id, mode, track, difficulty, time_limit_s, focus_fallback)
-                VALUES (CAST(:user_id AS UUID), :mode, :track, :difficulty, :time_limit_s, :focus_fallback)
-                RETURNING id, user_id, mode, track, difficulty, started_at, time_limit_s, status, focus_fallback
+                INSERT INTO mock_sessions (user_id, mode, track, difficulty, time_limit_s, focus_fallback, role)
+                VALUES (CAST(:user_id AS UUID), :mode, :track, :difficulty, :time_limit_s, :focus_fallback, :role)
+                RETURNING id, user_id, mode, track, difficulty, started_at, time_limit_s, status, focus_fallback, role
                 """
             ),
             {
@@ -1165,6 +1188,7 @@ async def create_mock_session(
                 "difficulty": difficulty,
                 "time_limit_s": time_limit_s,
                 "focus_fallback": focus_fallback,
+                "role": role,
             },
         )
         session_row = result.mappings().first()
@@ -1173,8 +1197,9 @@ async def create_mock_session(
             await session.execute(
                 text(
                     """
-                    INSERT INTO mock_session_questions (session_id, question_id, track, position)
-                    VALUES (:session_id, :question_id, :track, :position)
+                    INSERT INTO mock_session_questions
+                        (session_id, question_id, track, position, follow_up_dimension)
+                    VALUES (:session_id, :question_id, :track, :position, :follow_up_dimension)
                     """
                 ),
                 {
@@ -1182,7 +1207,22 @@ async def create_mock_session(
                     "question_id": q["question_id"],
                     "track": q["track"],
                     "position": q["position"],
+                    "follow_up_dimension": q.get("follow_up_dimension"),
                 },
+            )
+        # Atomically mark chain consumed for interview_loop sessions
+        if chain_parent_id is not None:
+            await session.execute(
+                text(
+                    """
+                    INSERT INTO mock_chain_consumption (user_id, parent_id, session_id)
+                    VALUES (CAST(:user_id AS UUID), :parent_id, :session_id)
+                    ON CONFLICT (user_id, parent_id) DO UPDATE
+                        SET reclaimed = false, session_id = EXCLUDED.session_id,
+                            consumed_at = now()
+                    """
+                ),
+                {"user_id": user_id, "parent_id": chain_parent_id, "session_id": session_id},
             )
         await session.commit()
         return {
@@ -1194,6 +1234,7 @@ async def create_mock_session(
             "time_limit_s": session_row["time_limit_s"],
             "status": session_row["status"],
             "focus_fallback": bool(session_row["focus_fallback"]),
+            "role": session_row["role"],
         }
 
 
@@ -1206,13 +1247,13 @@ async def get_mock_session(session_id: int, user_id: str) -> dict[str, Any] | No
                 """
                 SELECT
                     ms.id AS session_id,
-                    ms.mode, ms.track, ms.difficulty,
+                    ms.mode, ms.track, ms.difficulty, ms.role,
                     ms.started_at, ms.ended_at, ms.time_limit_s, ms.status,
                     ms.focus_fallback,
                     msq.id AS msq_id,
                     msq.question_id, msq.track AS q_track, msq.position,
                     msq.is_solved, msq.submitted_at, msq.final_code, msq.time_spent_s,
-                    msq.is_follow_up
+                    msq.is_follow_up, msq.follow_up_dimension
                 FROM mock_sessions ms
                 LEFT JOIN mock_session_questions msq ON msq.session_id = ms.id
                 WHERE ms.id = :session_id AND ms.user_id = CAST(:user_id AS UUID)
@@ -1230,6 +1271,7 @@ async def get_mock_session(session_id: int, user_id: str) -> dict[str, Any] | No
             "mode": first["mode"],
             "track": first["track"],
             "difficulty": first["difficulty"],
+            "role": first["role"],
             "started_at": first["started_at"].isoformat() if first["started_at"] else None,
             "ended_at": first["ended_at"].isoformat() if first["ended_at"] else None,
             "time_limit_s": first["time_limit_s"],
@@ -1248,15 +1290,44 @@ async def get_mock_session(session_id: int, user_id: str) -> dict[str, Any] | No
                     "final_code": row["final_code"],
                     "time_spent_s": row["time_spent_s"],
                     "is_follow_up": bool(row.get("is_follow_up", False)),
+                    "follow_up_dimension": row.get("follow_up_dimension"),
                 })
         session_data["questions"] = question_rows
         return session_data
 
 
 async def discard_mock_session(session_id: int, user_id: str) -> bool:
-    """Delete a mock session and its questions. Returns True if deleted, False if not found."""
+    """
+    Delete a mock session and its questions within the 2-minute discard window.
+
+    For interview_loop sessions, also reclaims the chain (deletes the row from
+    mock_chain_consumption, making the chain available again).
+
+    Returns True on success; 404/403 handling is done by the caller.
+    """
     session_factory = _session_factory_or_raise()
     async with session_factory() as session:
+        # Look up mode and first question's ID (parent chain) before deleting
+        mode_result = await session.execute(
+            text(
+                """
+                SELECT ms.mode, msq.question_id AS parent_id
+                FROM mock_sessions ms
+                LEFT JOIN mock_session_questions msq
+                    ON msq.session_id = ms.id AND msq.position = 1
+                WHERE ms.id = :session_id
+                  AND ms.user_id = CAST(:user_id AS UUID)
+                  AND ms.status = 'active'
+                  AND ms.started_at >= now() - interval '2 minutes'
+                LIMIT 1
+                """
+            ),
+            {"session_id": session_id, "user_id": user_id},
+        )
+        mode_row = mode_result.mappings().first()
+        session_mode = mode_row["mode"] if mode_row else None
+        chain_parent_id = mode_row["parent_id"] if mode_row else None
+
         result = await session.execute(
             text(
                 """
@@ -1285,6 +1356,18 @@ async def discard_mock_session(session_id: int, user_id: str) -> bool:
             ),
             {"session_id": session_id, "user_id": user_id},
         )
+        # Reclaim chain for interview_loop sessions
+        if session_mode == "interview_loop" and chain_parent_id is not None:
+            await session.execute(
+                text(
+                    """
+                    DELETE FROM mock_chain_consumption
+                    WHERE user_id = CAST(:user_id AS UUID)
+                      AND parent_id = :parent_id
+                    """
+                ),
+                {"user_id": user_id, "parent_id": chain_parent_id},
+            )
         await session.commit()
         return result.rowcount > 0 or True  # treat as success; 404 handled by caller
 
@@ -1355,11 +1438,11 @@ async def finish_mock_session(session_id: int, user_id: str) -> dict[str, Any] |
                 """
                 SELECT
                     ms.id AS session_id,
-                    ms.mode, ms.track, ms.difficulty,
+                    ms.mode, ms.track, ms.difficulty, ms.role,
                     ms.started_at, ms.ended_at, ms.time_limit_s, ms.status,
                     msq.question_id, msq.track AS q_track, msq.position,
                     msq.is_solved, msq.submitted_at, msq.final_code, msq.time_spent_s,
-                    msq.is_follow_up
+                    msq.is_follow_up, msq.follow_up_dimension
                 FROM mock_sessions ms
                 LEFT JOIN mock_session_questions msq ON msq.session_id = ms.id
                 WHERE ms.id = :session_id AND ms.user_id = CAST(:user_id AS UUID)
@@ -1398,6 +1481,7 @@ async def finish_mock_session(session_id: int, user_id: str) -> dict[str, Any] |
                     "final_code": row["final_code"],
                     "time_spent_s": row["time_spent_s"],
                     "is_follow_up": bool(row.get("is_follow_up", False)),
+                    "follow_up_dimension": row.get("follow_up_dimension"),
                 })
         session_out["questions"] = question_rows
         solved_count = sum(1 for q in question_rows if q["is_solved"])
@@ -1518,7 +1602,7 @@ async def get_mock_history(user_id: str, limit: int = 20) -> list[dict[str, Any]
                 """
                 SELECT
                     ms.id AS session_id,
-                    ms.mode, ms.track, ms.difficulty,
+                    ms.mode, ms.track, ms.difficulty, ms.role,
                     ms.started_at, ms.ended_at, ms.time_limit_s, ms.status,
                     COUNT(msq.id) AS total_count,
                     COUNT(CASE WHEN msq.is_solved THEN 1 END) AS solved_count
@@ -1539,6 +1623,7 @@ async def get_mock_history(user_id: str, limit: int = 20) -> list[dict[str, Any]
                 "mode": row["mode"],
                 "track": row["track"],
                 "difficulty": row["difficulty"],
+                "role": row["role"],
                 "started_at": row["started_at"].isoformat() if row["started_at"] else None,
                 "ended_at": row["ended_at"].isoformat() if row["ended_at"] else None,
                 "time_limit_s": row["time_limit_s"],
@@ -1611,6 +1696,41 @@ async def get_submission_events(user_id: str) -> list[dict[str, Any]]:
                 "question_id": row["question_id"],
                 "is_correct": bool(row["is_correct"]),
                 "submitted_at": row["submitted_at"],
+            }
+            for row in rows
+        ]
+
+
+async def get_loop_question_events(user_id: str) -> list[dict[str, Any]]:
+    """
+    Return Interview Loop question rows with follow_up_dimension and is_solved.
+    Used for per-dimension analytics in the Elite dashboard.
+    Only returns rows from completed interview_loop sessions where follow_up_dimension is set.
+    """
+    session_factory = _session_factory_or_raise()
+    async with session_factory() as session:
+        result = await session.execute(
+            text(
+                """
+                SELECT msq.follow_up_dimension, msq.is_solved,
+                       ms.id AS session_id, ms.status
+                FROM mock_session_questions msq
+                JOIN mock_sessions ms ON ms.id = msq.session_id
+                WHERE ms.user_id = CAST(:user_id AS UUID)
+                  AND ms.mode = 'interview_loop'
+                  AND ms.status = 'completed'
+                  AND msq.follow_up_dimension IS NOT NULL
+                ORDER BY ms.started_at ASC
+                """
+            ),
+            {"user_id": user_id},
+        )
+        rows = result.mappings().all()
+        return [
+            {
+                "follow_up_dimension": row["follow_up_dimension"],
+                "is_solved": bool(row["is_solved"]),
+                "session_id": row["session_id"],
             }
             for row in rows
         ]
@@ -2095,12 +2215,13 @@ async def prune_expired_auth_tokens() -> dict[str, int]:
 
 # ── Path completion state ──────────────────────────────────────────────────────
 
-# ── Daily mock usage ───────────────────────────────────────────────────────────
+# ── Daily / weekly mock usage ──────────────────────────────────────────────────
 
 async def get_daily_mock_usage(user_id: str) -> dict[str, int]:
     """
     Return how many mock sessions the user has started today per difficulty.
     'Today' is calendar-day in the database server timezone (UTC).
+    Kept for backwards-compat with any callers that still use it.
     """
     session_factory = _session_factory_or_raise()
     async with session_factory() as session:
@@ -2124,3 +2245,120 @@ async def get_daily_mock_usage(user_id: str) -> dict[str, int]:
         if row["difficulty"] in usage:
             usage[row["difficulty"]] = int(row["cnt"])
     return usage
+
+
+async def get_daily_benchmark_usage(user_id: str) -> int:
+    """Count benchmark sessions started today (UTC). Used for Pro 3/day cap."""
+    session_factory = _session_factory_or_raise()
+    async with session_factory() as session:
+        result = await session.execute(
+            text(
+                """
+                SELECT COUNT(*) AS cnt
+                FROM mock_sessions
+                WHERE user_id = CAST(:user_id AS UUID)
+                  AND mode = 'benchmark'
+                  AND started_at >= CURRENT_DATE
+                """
+            ),
+            {"user_id": user_id},
+        )
+        row = result.mappings().first()
+    return int(row["cnt"]) if row else 0
+
+
+async def get_daily_custom_usage(user_id: str) -> int:
+    """Count custom sessions started today (UTC). Used for Pro 3/day cap."""
+    session_factory = _session_factory_or_raise()
+    async with session_factory() as session:
+        result = await session.execute(
+            text(
+                """
+                SELECT COUNT(*) AS cnt
+                FROM mock_sessions
+                WHERE user_id = CAST(:user_id AS UUID)
+                  AND mode = 'custom'
+                  AND started_at >= CURRENT_DATE
+                """
+            ),
+            {"user_id": user_id},
+        )
+        row = result.mappings().first()
+    return int(row["cnt"]) if row else 0
+
+
+async def get_weekly_benchmark_usage(user_id: str) -> int:
+    """Count benchmark sessions started in the last 7 rolling days. Used for Free 1/7-day cap."""
+    session_factory = _session_factory_or_raise()
+    async with session_factory() as session:
+        result = await session.execute(
+            text(
+                """
+                SELECT COUNT(*) AS cnt
+                FROM mock_sessions
+                WHERE user_id = CAST(:user_id AS UUID)
+                  AND mode = 'benchmark'
+                  AND started_at >= now() - interval '7 days'
+                """
+            ),
+            {"user_id": user_id},
+        )
+        row = result.mappings().first()
+    return int(row["cnt"]) if row else 0
+
+
+# ── Chain consumption ──────────────────────────────────────────────────────────
+
+async def mark_chain_consumed(user_id: str, parent_id: int, session_id: int) -> None:
+    """Mark a chain as consumed for a user. Idempotent via ON CONFLICT."""
+    session_factory = _session_factory_or_raise()
+    async with session_factory() as session:
+        await session.execute(
+            text(
+                """
+                INSERT INTO mock_chain_consumption (user_id, parent_id, session_id)
+                VALUES (CAST(:user_id AS UUID), :parent_id, :session_id)
+                ON CONFLICT (user_id, parent_id) DO UPDATE
+                    SET reclaimed = false,
+                        session_id = EXCLUDED.session_id,
+                        consumed_at = now()
+                """
+            ),
+            {"user_id": user_id, "parent_id": parent_id, "session_id": session_id},
+        )
+        await session.commit()
+
+
+async def reclaim_chain(user_id: str, parent_id: int) -> None:
+    """Reclaim a chain — delete the consumption record so it can be drawn again."""
+    session_factory = _session_factory_or_raise()
+    async with session_factory() as session:
+        await session.execute(
+            text(
+                """
+                DELETE FROM mock_chain_consumption
+                WHERE user_id = CAST(:user_id AS UUID) AND parent_id = :parent_id
+                """
+            ),
+            {"user_id": user_id, "parent_id": parent_id},
+        )
+        await session.commit()
+
+
+async def get_consumed_chain_parent_ids(user_id: str) -> set[int]:
+    """Return parent_ids of chains consumed by this user (reclaimed=false)."""
+    session_factory = _session_factory_or_raise()
+    async with session_factory() as session:
+        result = await session.execute(
+            text(
+                """
+                SELECT parent_id
+                FROM mock_chain_consumption
+                WHERE user_id = CAST(:user_id AS UUID)
+                  AND NOT reclaimed
+                """
+            ),
+            {"user_id": user_id},
+        )
+        rows = result.mappings().all()
+    return {row["parent_id"] for row in rows}

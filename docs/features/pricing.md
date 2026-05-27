@@ -47,9 +47,9 @@ The entire `#landing-pricing` section is hidden only when `userPlan === 'lifetim
 | Medium questions | Batch-gated by easy solves | ✓ All | ✓ All |
 | Hard questions | Batch-gated (cap: **8** code / **5** PySpark) | ✓ All (no cap) | ✓ All (no cap) |
 | Learning paths | Free paths (`tier=free`) | All | All |
-| **Mock — easy `short_drill`** | Unlimited (fresh-first from practice pool) | Unlimited | Unlimited |
-| **Mock — `benchmark`** | 1 per rolling 7 days, any difficulty | 3 per day | Unlimited |
-| **Mock — medium/hard `short_drill` + `custom_drill`** | Blocked | 3 per day combined | Unlimited |
+| **Mock — easy `benchmark`** | 1 per rolling 7 days | 3 per day | Unlimited |
+| **Mock — `benchmark` (medium/hard)** | Blocked | 3 per day | Unlimited |
+| **Mock — `custom` drill** | Blocked | 3 per day | Unlimited |
 | **Mock-only question pool + follow-up chains** | Blocked | ✓ | ✓ |
 | **Mock — `focus_concepts` filter** | Blocked | Blocked | ✓ |
 | **Mock — Interview Loop mode** | Blocked | Blocked | ✓ |

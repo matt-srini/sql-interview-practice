@@ -55,19 +55,46 @@ export const BENCHMARK_BLUEPRINTS = {
   },
 };
 
+// Mixed-track benchmark blueprints per role (mirrors MIXED_BENCHMARK_CONFIGS on the backend)
+export const MIXED_BENCHMARK_BLUEPRINTS = {
+  data_analyst: {
+    timeMinutes: 55,
+    summary: '4 questions across SQL · Pandas · Statistics',
+    description: 'Role-based benchmark calibrated for analytical workflows.',
+  },
+  data_engineer: {
+    timeMinutes: 55,
+    summary: '4 questions across SQL · Python · PySpark · Data Engineering',
+    description: 'Role-based benchmark covering the full data-engineering tool stack.',
+  },
+  analytics_engineer: {
+    timeMinutes: 55,
+    summary: '4 questions across SQL · Data Modeling · Pandas',
+    description: 'Role-based benchmark for modeling, transformation, and analytical SQL.',
+  },
+  data_scientist: {
+    timeMinutes: 55,
+    summary: '4 questions across Python · Pandas · Statistics · ML Fundamentals',
+    description: 'Role-based benchmark spanning modeling, statistics, and algorithmic implementation.',
+  },
+};
+
 export function supportsBenchmarkMode(track) {
-  return Boolean(track && BENCHMARK_BLUEPRINTS[track]);
+  return track === 'mixed' || Boolean(track && BENCHMARK_BLUEPRINTS[track]);
 }
 
-export function getBenchmarkBlueprint(track) {
+export function getBenchmarkBlueprint(track, role) {
+  if (track === 'mixed') return role ? (MIXED_BENCHMARK_BLUEPRINTS[role] ?? null) : null;
   return BENCHMARK_BLUEPRINTS[track] ?? null;
 }
 
 export function getMockModeDisplayLabel(mode) {
   if (mode === 'benchmark') return 'Benchmark';
-  if (mode === '30min') return 'Sprint drill';
+  if (mode === 'interview_loop') return 'Interview Loop';
   if (mode === 'custom') return 'Custom drill';
   if (mode === '60min') return 'Full (legacy)';
+  // legacy label kept for history rendering
+  if (mode === '30min') return 'Sprint drill';
   return mode;
 }
 
@@ -75,72 +102,118 @@ export function isBenchmarkMockMode(mode) {
   return mode === 'benchmark';
 }
 
-export function getMockModeCards(track) {
-  const benchmark = getBenchmarkBlueprint(track);
+/**
+ * Returns the three mode cards shown in MockHub.
+ * plan is used to derive locked state for plan-gated modes (Custom, Interview Loop).
+ */
+export function getMockModeCards(track, plan = 'free') {
+  const normalised = plan?.replace('lifetime_', '') ?? 'free';
+  const isElite = normalised === 'elite';
+  const isPro = normalised === 'pro' || isElite;
 
-  return [
-    {
-      key: 'benchmark',
-      label: 'Benchmark',
-      sublabel: benchmark ? `${benchmark.timeMinutes} min · ${benchmark.summary}` : 'Single-track only',
-      desc: benchmark ? 'Fixed-shape benchmark session' : 'Benchmark mode is available on single-track mocks only.',
-      disabled: !benchmark,
-    },
-    {
-      key: '30min',
-      label: 'Sprint drill',
-      sublabel: '30 min · 2 questions',
-      desc: 'Short diagnostic session for speed and calibration.',
-      disabled: false,
-    },
-    {
-      key: 'custom',
-      label: 'Custom drill',
-      sublabel: 'You choose',
-      desc: 'Tune time and depth for targeted follow-up practice.',
-      disabled: false,
-    },
-  ];
+  // Benchmark is always available as a card; for mixed track it requires role selection
+  const benchmarkCard = {
+    key: 'benchmark',
+    label: 'Benchmark',
+    sublabel: track === 'mixed'
+      ? '55 min · Role-based mix'
+      : (BENCHMARK_BLUEPRINTS[track]
+          ? `${BENCHMARK_BLUEPRINTS[track].timeMinutes} min · ${BENCHMARK_BLUEPRINTS[track].summary}`
+          : 'Select a track to see blueprint'),
+    desc: track === 'mixed'
+      ? 'Role-based fixed-shape benchmark across your track mix.'
+      : (BENCHMARK_BLUEPRINTS[track]
+          ? 'Fixed-shape benchmark session'
+          : 'Benchmark mode requires a single track.'),
+    disabled: false,
+    locked: false,
+    lockedReason: null,
+  };
+
+  const customCard = {
+    key: 'custom',
+    label: 'Custom drill',
+    sublabel: isPro ? 'You choose' : 'Pro+',
+    desc: 'Tune time and depth for targeted follow-up practice.',
+    disabled: false,
+    locked: !isPro,
+    lockedReason: isPro ? null : 'Custom drills require a Pro or Elite plan.',
+  };
+
+  const loopCard = {
+    key: 'interview_loop',
+    label: 'Interview Loop',
+    sublabel: isElite ? 'Chain of follow-ups' : 'Elite only',
+    desc: 'One iterative chain — the interviewer digs deeper after each answer.',
+    disabled: track === 'mixed',
+    locked: !isElite,
+    lockedReason: isElite ? null : 'Interview Loop requires an Elite plan.',
+  };
+
+  return [benchmarkCard, customCard, loopCard];
 }
 
-export function getSessionQuestionCount(mode, track, customCount) {
-  if (mode === 'benchmark') return getBenchmarkBlueprint(track)?.numQuestions ?? 0;
-  if (mode === '30min') return 2;
+export function getSessionQuestionCount(mode, track, customCount, role) {
+  if (mode === 'benchmark') {
+    if (track === 'mixed') {
+      // All role blueprints have 4 slots
+      return 4;
+    }
+    return getBenchmarkBlueprint(track)?.numQuestions ?? 0;
+  }
   if (mode === '60min') return 3;
   if (mode === 'custom') return customCount;
+  // interview_loop: variable (chain length shown after start)
   return customCount;
 }
 
-export function getSessionTimeMinutes(mode, track, customMinutes) {
-  if (mode === 'benchmark') return getBenchmarkBlueprint(track)?.timeMinutes ?? 0;
-  if (mode === '30min') return 30;
+export function getSessionTimeMinutes(mode, track, customMinutes, role) {
+  if (mode === 'benchmark') {
+    if (track === 'mixed') {
+      return MIXED_BENCHMARK_BLUEPRINTS[role]?.timeMinutes ?? 55;
+    }
+    return getBenchmarkBlueprint(track)?.timeMinutes ?? 0;
+  }
   if (mode === '60min') return 60;
   if (mode === 'custom') return customMinutes;
+  if (mode === 'interview_loop') return null; // determined at session start
   return customMinutes;
 }
 
-export function getMockSessionDescriptor(mode, track) {
+export function getMockSessionDescriptor(mode, track, role) {
   const modeLabel = getMockModeDisplayLabel(mode);
-  const benchmark = getBenchmarkBlueprint(track);
+  const benchmark = getBenchmarkBlueprint(track, role);
 
-  if (mode === 'benchmark' && benchmark) {
-    return {
-      modeLabel,
-      phaseLabel: 'Benchmark session',
-      title: 'Fixed-shape track benchmark',
-      summaryLine: `${benchmark.summary} · ${benchmark.timeMinutes} min fixed session`,
-      description: benchmark.description,
-      isBenchmark: true,
-    };
+  if (mode === 'benchmark') {
+    if (track === 'mixed' && role && benchmark) {
+      return {
+        modeLabel,
+        phaseLabel: 'Benchmark session',
+        title: 'Role-based mixed benchmark',
+        summaryLine: `${benchmark.summary} · ${benchmark.timeMinutes} min fixed session`,
+        description: benchmark.description,
+        isBenchmark: true,
+      };
+    }
+    if (benchmark) {
+      return {
+        modeLabel,
+        phaseLabel: 'Benchmark session',
+        title: 'Fixed-shape track benchmark',
+        summaryLine: `${benchmark.summary} · ${benchmark.timeMinutes} min fixed session`,
+        description: benchmark.description,
+        isBenchmark: true,
+      };
+    }
   }
 
-  if (mode === '30min') {
+  if (mode === 'interview_loop') {
     return {
       modeLabel,
-      phaseLabel: 'Drill session',
-      title: 'Short calibration drill',
-      summaryLine: '2 questions · 30 min cap',
-      description: 'Use sprint drills to pressure-test pace, warm up before a benchmark, or quickly diagnose weak spots.',
+      phaseLabel: 'Interview Loop',
+      title: 'Iterative interview chain',
+      summaryLine: '1 chain · 15 min per question',
+      description: 'Simulates a real interview: the interviewer follows up on your answer, probing deeper with each round.',
       isBenchmark: false,
     };
   }
@@ -167,6 +240,18 @@ export function getMockSessionDescriptor(mode, track) {
     };
   }
 
+  // legacy read-only
+  if (mode === '30min') {
+    return {
+      modeLabel,
+      phaseLabel: 'Legacy drill session',
+      title: 'Legacy sprint drill',
+      summaryLine: '2 questions · 30 min cap',
+      description: 'Older sprint sessions remain reviewable. New sessions use Custom drill instead.',
+      isBenchmark: false,
+    };
+  }
+
   return {
     modeLabel,
     phaseLabel: 'Mock session',
@@ -177,8 +262,8 @@ export function getMockSessionDescriptor(mode, track) {
   };
 }
 
-export function getMockSetupDescriptor(mode, track, customCount, customMinutes) {
-  const descriptor = getMockSessionDescriptor(mode, track);
+export function getMockSetupDescriptor(mode, track, customCount, customMinutes, role) {
+  const descriptor = getMockSessionDescriptor(mode, track, role);
 
   if (mode === 'benchmark') {
     return {
@@ -191,12 +276,15 @@ export function getMockSetupDescriptor(mode, track, customCount, customMinutes) 
     };
   }
 
-  if (mode === '30min') {
+  if (mode === 'interview_loop') {
     return {
       ...descriptor,
-      sectionLabel: 'Drill plan',
-      summaryLine: '2 questions · 30 min cap',
-      detailLines: [],
+      sectionLabel: 'Loop setup',
+      summaryLine: '1 chain · 15 min per question',
+      detailLines: [
+        'The full chain is drawn at session start — you cannot skip follow-ups.',
+        'Chains are consumed once and do not repeat.',
+      ],
     };
   }
 

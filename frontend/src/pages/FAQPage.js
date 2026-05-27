@@ -10,7 +10,7 @@ const FAQ_JSON_LD = [
   {
     "@type": "Question",
     "name": "Is datathink free to use?",
-    "acceptedAnswer": { "@type": "Answer", "text": "Yes. All easy questions across all four tracks — SQL, Python, Pandas, and PySpark — are free, including for visitors without an account. Medium and hard questions unlock progressively as you solve more easy questions. No credit card required." }
+    "acceptedAnswer": { "@type": "Answer", "text": "Yes. All easy questions across all nine tracks are free, including for visitors without an account. Medium and hard questions unlock progressively as you solve more easy questions. No credit card required." }
   },
   {
     "@type": "Question",
@@ -25,27 +25,27 @@ const FAQ_JSON_LD = [
   {
     "@type": "Question",
     "name": "What tracks are available?",
-    "acceptedAnswer": { "@type": "Answer", "text": "Nine tracks: SQL, Python algorithms, Pandas, PySpark, Data Engineering, Data Modeling, Statistics, ML Fundamentals, and Experimentation. Each has easy, medium, and hard tiers. Code tracks (SQL, Python, Pandas) use a live execution environment; the remaining tracks use MCQ, scenario, and predict-output formats." }
+    "acceptedAnswer": { "@type": "Answer", "text": "Nine tracks: SQL, Python algorithms, Pandas, PySpark, Data Engineering, Data Modeling, Statistics, ML Fundamentals, and Experimentation. Each has easy, medium, and hard tiers. Code tracks (SQL, Python, Pandas) use a live execution environment; the remaining tracks use conceptual, scenario, predict-output, and debug formats." }
   },
   {
     "@type": "Question",
     "name": "Which companies' interview questions are covered?",
-    "acceptedAnswer": { "@type": "Answer", "text": "Questions are tagged with companies including Amazon, Meta, Google, Stripe, Netflix, Shopify, LinkedIn, and more across all four tracks. You can filter by company in the practice workspace sidebar." }
+    "acceptedAnswer": { "@type": "Answer", "text": "SQL questions are tagged with companies including Amazon, Meta, Google, Stripe, Netflix, Shopify, LinkedIn, and more. You can filter by company in the SQL practice workspace sidebar." }
   },
   {
     "@type": "Question",
     "name": "How do question unlocks work?",
-    "acceptedAnswer": { "@type": "Answer", "text": "Easy questions are available to everyone from the start. Medium and hard questions unlock as you solve more — the more you practice, the more you unlock. Completing a learning path fast-tracks unlocks for that track. Pro and Elite subscribers get immediate access to all questions." }
+    "acceptedAnswer": { "@type": "Answer", "text": "Easy questions are available to everyone from the start. Medium and hard questions unlock as you solve more — the more you practice, the more you unlock. Pro and Elite subscribers get immediate access to all questions." }
   },
   {
     "@type": "Question",
-    "name": "What are mock interviews?",
-    "acceptedAnswer": { "@type": "Answer", "text": "Mock interviews are timed practice sessions that simulate a real interview. You answer a set of questions under a time limit, then receive a full debrief with scores and concept-level feedback. Free users get one medium-difficulty mock per day; Pro users get three hard-difficulty mocks per day; Elite users have unlimited mocks and focus-mode sessions." }
+    "name": "What are mock sessions?",
+    "acceptedAnswer": { "@type": "Answer", "text": "Mocks are timed sessions in three modes: benchmark (fixed-shape readiness signal), short drill (30 min, 2 questions), and custom drill (1–5 questions, 10–90 min). Free users get unlimited easy short drills and one full benchmark per week. Pro users get three benchmarks per day plus three drills per day across difficulties. Elite users get unlimited sessions plus Interview Loop — chain-driven sessions where each follow-up pivots like a real interviewer." }
   },
   {
     "@type": "Question",
     "name": "What is the difference between Free, Pro, and Elite?",
-    "acceptedAnswer": { "@type": "Answer", "text": "Free gives access to all easy questions and progressive medium/hard unlocks as you practice. Pro unlocks every question immediately and adds mock interviews. Elite includes everything in Pro plus unlimited mocks, focus-mode sessions targeting specific concepts, and personalised readiness scoring. Visit datathink.co for the full pricing comparison." }
+    "acceptedAnswer": { "@type": "Answer", "text": "Free gives access to all easy questions, progressive medium/hard unlocks as you practice, unlimited easy mock drills, and one full benchmark per week. Pro unlocks every question immediately, adds mock-only content with interviewer-style follow-up chains, and provides 3 benchmarks plus 3 drills per day. Elite includes everything in Pro plus Interview Loop mode, focus-mode targeting, per-dimension weak-spot detection, readiness scoring, and unlimited sessions. Visit datathink.co for the full pricing comparison." }
   }
 ];
 
@@ -64,9 +64,9 @@ export default function FAQPage() {
     <div className="auth-page">
       <Helmet>
         <title>Frequently Asked Questions — datathink</title>
-        <meta name="description" content="Common questions about datathink — free access, no-account practice, SQL and Python topics, company coverage, question unlocks, mock interviews, and plan differences." />
+        <meta name="description" content="Common questions about datathink — free access, no-account practice, SQL and Python topics, company coverage, question unlocks, mock sessions, and plan differences." />
         <meta property="og:title" content="Frequently Asked Questions — datathink" />
-        <meta property="og:description" content="Common questions about datathink — free access, no-account practice, SQL and Python topics, company coverage, question unlocks, mock interviews, and plan differences." />
+        <meta property="og:description" content="Common questions about datathink — free access, no-account practice, SQL and Python topics, company coverage, question unlocks, mock sessions, and plan differences." />
         <meta property="og:url" content="https://datathink.co/faq" />
         <link rel="canonical" href="https://datathink.co/faq" />
         <script type="application/ld+json">{JSON.stringify({
@@ -83,7 +83,7 @@ export default function FAQPage() {
             <dl className="faq-list">
               <div className="faq-item">
                 <dt className="faq-q">Is datathink free to use?</dt>
-                <dd className="faq-a">Yes. All easy questions across all four tracks — SQL, Python, Pandas, and PySpark — are free, including for visitors without an account. Medium and hard questions unlock progressively as you solve more easy questions. No credit card required.</dd>
+                <dd className="faq-a">Yes. All easy questions across all nine tracks are free, including for visitors without an account. Medium and hard questions unlock progressively as you solve more easy questions. No credit card required.</dd>
               </div>
               <div className="faq-item">
                 <dt className="faq-q">Can I practice without creating an account?</dt>
@@ -95,15 +95,15 @@ export default function FAQPage() {
               </div>
               <div className="faq-item">
                 <dt className="faq-q">What tracks are available?</dt>
-                <dd className="faq-a">Nine tracks: SQL, Python algorithms, Pandas, PySpark, Data Engineering, Data Modeling, Statistics, ML Fundamentals, and Experimentation. Each has easy, medium, and hard tiers. Code tracks (SQL, Python, Pandas) use a live execution environment; the remaining tracks use MCQ, scenario, and predict-output formats.</dd>
+                <dd className="faq-a">Nine tracks: SQL, Python algorithms, Pandas, PySpark, Data Engineering, Data Modeling, Statistics, ML Fundamentals, and Experimentation. Each has easy, medium, and hard tiers. Code tracks (SQL, Python, Pandas) use a live execution environment; the remaining tracks use conceptual, scenario, predict-output, and debug formats.</dd>
               </div>
               <div className="faq-item">
                 <dt className="faq-q">Which companies' interview questions are covered?</dt>
-                <dd className="faq-a">Questions are tagged with companies including Amazon, Meta, Google, Stripe, Netflix, Shopify, LinkedIn, and more across all four tracks. You can filter by company in the practice workspace sidebar.</dd>
+                <dd className="faq-a">SQL questions are tagged with companies including Amazon, Meta, Google, Stripe, Netflix, Shopify, LinkedIn, and more. You can filter by company in the SQL practice workspace sidebar.</dd>
               </div>
               <div className="faq-item">
                 <dt className="faq-q">How do question unlocks work?</dt>
-                <dd className="faq-a">Easy questions are available to everyone from the start. Medium and hard questions unlock as you solve more — the more you practice, the more you unlock. Completing a <Link to="/learn" className="faq-link">learning path</Link> fast-tracks unlocks for that track. Pro and Elite subscribers get immediate access to all questions.</dd>
+                <dd className="faq-a">Easy questions are available to everyone from the start. Medium and hard questions unlock as you solve more — the more you practice, the more you unlock. Pro and Elite subscribers get immediate access to all questions.</dd>
               </div>
               <div className="faq-item">
                 <dt className="faq-q">What are mock sessions?</dt>

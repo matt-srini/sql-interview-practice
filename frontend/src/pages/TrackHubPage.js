@@ -320,7 +320,7 @@ export default function TrackHubPage() {
                 You've mastered all {mediumTotal} medium questions!
               </p>
               <p className="track-hub-milestone-desc">
-                Hard questions are partially unlocked. Upgrade to Pro for the full hard track and daily mock interviews.
+                Hard questions are partially unlocked. Upgrade to Pro for the full hard track and access to mock-only questions. <Link to="/#landing-pricing" className="track-hub-inline-link">See pricing →</Link>
               </p>
               <div className="track-hub-milestone-actions">
                 <UpgradeButton tier="pro" label="Unlock all hard questions" compact source="hub_milestone_medium_complete" />

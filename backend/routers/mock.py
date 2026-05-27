@@ -29,12 +29,15 @@ from db import (
     discard_mock_session,
     finish_mock_session,
     get_active_mock_session,
-    get_daily_mock_usage,
+    get_consumed_chain_parent_ids,
+    get_daily_benchmark_usage,
+    get_daily_custom_usage,
+    get_loop_question_events,
     get_mock_history,
     get_mock_session,
     get_previously_mocked_ids,
     get_submission_events,
-    inject_follow_up_question,
+    get_weekly_benchmark_usage,
     mark_solved,
     record_submission,
     submit_mock_question,
@@ -44,7 +47,7 @@ from evaluator import evaluate
 from exceptions import BadRequestError
 from python_evaluator import evaluate_python_code, evaluate_python_data_code
 from routers.insights import _CONCEPTS_LOOKUP, build_session_debrief
-from tracks import TRACKS, get_track, mixed_mock_slugs
+from tracks import TRACKS, VALID_MOCK_ROLES, get_track, mixed_mock_slugs, role_tracks
 from unlock import compute_mock_access, compute_unlock_state, normalize_plan
 
 logger = logging.getLogger(__name__)
@@ -53,8 +56,8 @@ router = APIRouter(prefix="/api/mock")
 
 # ── Constants ──────────────────────────────────────────────────────────────────
 
+# Legacy read-only modes — still appear in session history but cannot be started new.
 MODE_CONFIGS: dict[str, dict[str, int]] = {
-    "30min": {"num_questions": 2, "time_limit_s": 1800},
     "60min": {"num_questions": 3, "time_limit_s": 3600},
 }
 
@@ -70,6 +73,27 @@ BENCHMARK_CONFIGS: dict[str, dict[str, int]] = {
     "experimentation": {"num_questions": 6, "time_limit_s": 2400},
 }
 
+# Mixed benchmark blueprints: role → {track: slot_count, ...} + time_limit_s
+# Each role maps to a fixed per-track slot allocation for benchmark sessions.
+MIXED_BENCHMARK_CONFIGS: dict[str, dict] = {
+    "data_analyst": {
+        "slots": {"sql": 2, "python-data": 1, "statistics": 1},
+        "time_limit_s": 3300,  # 55 min
+    },
+    "data_engineer": {
+        "slots": {"sql": 1, "python": 1, "pyspark": 1, "data-engineering": 1},
+        "time_limit_s": 3300,
+    },
+    "analytics_engineer": {
+        "slots": {"sql": 2, "data-modeling": 1, "python-data": 1},
+        "time_limit_s": 3300,
+    },
+    "data_scientist": {
+        "slots": {"python": 1, "python-data": 1, "statistics": 1, "ml-fundamentals": 1},
+        "time_limit_s": 3300,
+    },
+}
+
 VALID_TRACKS = {t.slug for t in TRACKS} | {"mixed"}
 VALID_DIFFICULTIES = {"easy", "medium", "hard", "mixed"}
 
@@ -80,9 +104,10 @@ TRACK_TO_TOPIC: dict[str, str] = {t.slug: t.db_topic for t in TRACKS}
 # ── Request models ─────────────────────────────────────────────────────────────
 
 class MockStartRequest(BaseModel):
-    mode: str           # 'benchmark' | '30min' | '60min' | 'custom'
-    track: str          # 'sql' | 'python' | 'python-data' | 'pyspark' | 'mixed'
+    mode: str           # 'benchmark' | 'custom' | 'interview_loop'
+    track: str          # 'sql' | 'python' | 'python-data' | 'pyspark' | 'mixed' | ...
     difficulty: str     # 'easy' | 'medium' | 'hard' | 'mixed'
+    role: str | None = None            # required when track='mixed'
     num_questions: int | None = None   # custom mode only, 1–5
     time_minutes: int | None = None    # custom mode only, 10–90
     company_filter: str | None = None  # elite-only; e.g. "Meta", "Stripe"
@@ -319,6 +344,7 @@ async def _select_questions(
     user: dict,
     focus_concepts: list[str] | None = None,
     mode: str | None = None,
+    role: str | None = None,
 ) -> tuple[list[dict], bool]:
     """
     Select `num_questions` questions for a mock session with freshness scoring.
@@ -331,14 +357,65 @@ async def _select_questions(
     tagged with those concepts. If fewer matching questions exist than needed, the
     selection falls back to the full pool (focus_fallback=True).
 
+    Mixed track with mode=benchmark: per-track slot allocation per MIXED_BENCHMARK_CONFIGS[role].
+    Mixed track with mode=custom: draws from role_tracks(role) pool combined.
+
     Returns (list[{"question_id", "track", "position"}], focus_fallback_bool).
     """
     user_plan = user.get("plan", "free")
     user_id = user["id"]
 
+    _not_enough = HTTPException(
+        status_code=400,
+        detail=(
+            "Not enough unlocked questions for this configuration. "
+            "Try a lower difficulty or upgrade your plan."
+        ),
+    )
+
+    # ── Mixed benchmark: per-track slot filling ────────────────────────────────
+    if track == "mixed" and mode == "benchmark":
+        blueprint = MIXED_BENCHMARK_CONFIGS[role]  # role validated before this point
+        mocked_ids = await get_previously_mocked_ids(user_id)
+        chosen_raw: list[dict] = []
+        substituted = False
+        slots = blueprint["slots"]
+        ordered_tracks = list(slots.keys())
+
+        for t, slot_count in slots.items():
+            solved = await _get_solved_ids_for_track(user_id, t)
+            t_pool = _pool_for_track(t, difficulty, user_plan, solved)
+            # Exclude already-chosen IDs from this batch
+            used_ids = {int(q["id"]) for q in chosen_raw}
+            t_pool = [q for q in t_pool if int(q["id"]) not in used_ids]
+            selected = _fresh_first_sample(t_pool, slot_count, mocked_ids)
+            if len(selected) < slot_count:
+                # Fallback: substitute from next-deepest track in the role profile
+                substituted = True
+                fallback_tracks = [ft for ft in ordered_tracks if ft != t]
+                for ft in fallback_tracks:
+                    if len(selected) >= slot_count:
+                        break
+                    ft_solved = await _get_solved_ids_for_track(user_id, ft)
+                    ft_pool = _pool_for_track(ft, difficulty, user_plan, ft_solved)
+                    used_ids = {int(q["id"]) for q in chosen_raw} | {int(q["id"]) for q in selected}
+                    ft_pool = [q for q in ft_pool if int(q["id"]) not in used_ids]
+                    needed = slot_count - len(selected)
+                    selected += _fresh_first_sample(ft_pool, needed, mocked_ids)
+            chosen_raw.extend(selected)
+
+        random.shuffle(chosen_raw)
+        selected_list = [
+            {"question_id": int(q["id"]), "track": q["_track"], "position": i + 1}
+            for i, q in enumerate(chosen_raw)
+        ]
+        return selected_list, False
+
+    # ── Mixed custom: draw from role tracks combined pool ──────────────────────
     if track == "mixed":
         pool: list[dict] = []
-        for t in mixed_mock_slugs():
+        source_slugs = role_tracks(role) if role else mixed_mock_slugs()
+        for t in source_slugs:
             solved = await _get_solved_ids_for_track(user_id, t)
             pool.extend(_pool_for_track(t, difficulty, user_plan, solved))
     else:
@@ -351,29 +428,15 @@ async def _select_questions(
     if focus_concepts:
         focus_pool = _match_focus_concepts(pool, focus_concepts, track)
         if len(focus_pool) >= num_questions:
-            # Enough focus-matching questions — restrict pool to them only.
             pool = focus_pool
-            focus_pool = []  # no fallback needed
+            focus_pool = []
         else:
-            # Fewer focus questions than needed — flag the fallback and keep
-            # the full pool so we can fill remaining slots from non-focus.
             focus_fallback = True
 
     # ── Freshness scoring ──────────────────────────────────────────────────────
-    # Prefer questions this user has never seen in any past mock session.
     mocked_ids = await get_previously_mocked_ids(user_id)
 
-    _not_enough = HTTPException(
-        status_code=400,
-        detail=(
-            "Not enough unlocked questions for this configuration. "
-            "Try a lower difficulty or upgrade your plan."
-        ),
-    )
-
     if focus_fallback and focus_pool:
-        # Guarantee ALL focus-matching questions are included in the final set,
-        # then fill remaining slots from the non-focus pool (fresh-first).
         non_focus = [q for q in pool if q not in focus_pool]
         nf_fresh = [q for q in non_focus if int(q["id"]) not in mocked_ids]
         nf_stale = [q for q in non_focus if int(q["id"]) in mocked_ids]
@@ -433,6 +496,77 @@ async def _select_questions(
         for i, q in enumerate(chosen_raw)
     ]
     return selected, focus_fallback
+
+
+async def _select_chain(
+    track: str,
+    difficulty: str,
+    user: dict,
+    focus_concepts: list[str] | None = None,
+) -> tuple[dict, list[dict]]:
+    """
+    Select 1 chain (parent + follow-ups) for an Interview Loop session.
+
+    Returns (parent_dict, [follow_up_dicts...]) with _track injected.
+    Raises 409 pool_exhausted when no eligible chain remains.
+    """
+    user_id = user["id"]
+    catalog = _get_catalog_for_track(track)
+
+    # Get consumed chains for this user
+    consumed_parent_ids = await get_consumed_chain_parent_ids(user_id)
+
+    # Load mock-only questions for this track/difficulty
+    mock_grouped = catalog.get_mock_questions_by_difficulty()
+    if difficulty == "mixed":
+        all_mock = [q for qs in mock_grouped.values() for q in qs]
+    else:
+        all_mock = mock_grouped.get(difficulty, [])
+
+    # Find eligible parents: has follow_ups[] with length >= 1, not consumed
+    parents = [
+        q for q in all_mock
+        if q.get("follow_ups") and len(q.get("follow_ups", [])) >= 1
+        and int(q["id"]) not in consumed_parent_ids
+    ]
+
+    # Focus concept filter (applies to parent only; full chain travels regardless)
+    if focus_concepts and parents:
+        focused = _match_focus_concepts(parents, focus_concepts, track)
+        if focused:
+            parents = focused
+        # If no focused parents match, use all eligible parents (focus doesn't cause pool exhaustion)
+
+    if not parents:
+        raise HTTPException(
+            status_code=409,
+            detail={
+                "pool_exhausted": True,
+                "block_copy": (
+                    "You've completed all available Interview Loop chains for this track and difficulty. "
+                    "Try a different track, or check back when new content is added."
+                ),
+            },
+        )
+
+    # Fresh-first selection
+    mocked_ids = await get_previously_mocked_ids(user_id)
+    fresh_parents = [p for p in parents if int(p["id"]) not in mocked_ids]
+    selected_parent = random.choice(fresh_parents) if fresh_parents else random.choice(parents)
+
+    # Load follow-up question objects in follow_ups[] order
+    follow_up_ids = selected_parent.get("follow_ups", [])
+    follow_ups: list[dict] = []
+    for fuid in follow_up_ids:
+        fu_q = catalog.get_question(int(fuid))
+        if fu_q is None:
+            raise HTTPException(
+                status_code=500,
+                detail=f"Follow-up question {fuid} not found in catalog",
+            )
+        follow_ups.append({**fu_q, "_track": track})
+
+    return {**selected_parent, "_track": track}, follow_ups
 
 
 def _public_question_payload(question: dict, track: str) -> dict:
@@ -761,17 +895,16 @@ def _compute_mock_session_summary(sessions: list[dict]) -> dict[str, Any]:
 def _compute_mock_analytics(
     sessions: list[dict],
     events: list[dict],
+    loop_events: list[dict] | None = None,
 ) -> dict[str, Any]:
     """
     Pure function — compute aggregate analytics from sessions + submission events.
 
-    sessions : list from get_mock_history (session_id, mode, track, difficulty,
-               started_at, ended_at, time_limit_s, status, total_count, solved_count)
-    events   : list from get_submission_events (track, question_id, is_correct,
-               submitted_at)
+    sessions    : list from get_mock_history
+    events      : list from get_submission_events (track, question_id, is_correct)
+    loop_events : list from get_loop_question_events (follow_up_dimension, is_solved)
 
-    Returns overall analytics plus separated benchmark/drill summaries so
-    benchmark performance can be compared like-for-like.
+    Returns overall analytics plus separated benchmark/custom/loop summaries.
     """
     overall = _compute_mock_session_summary(sessions)
     completed = [
@@ -779,11 +912,16 @@ def _compute_mock_analytics(
         if s.get("status") == "completed" and (s.get("total_count") or 0) > 0
     ]
     benchmark_sessions = [s for s in completed if s.get("mode") == "benchmark"]
-    drill_sessions = [s for s in completed if s.get("mode") != "benchmark"]
+    custom_sessions = [s for s in completed if s.get("mode") == "custom"]
+    loop_sessions = [s for s in completed if s.get("mode") == "interview_loop"]
+    drill_sessions = custom_sessions  # alias for backwards compat
 
     mode_breakdown = {
         "benchmark": len(benchmark_sessions),
-        "drill": len(drill_sessions),
+        "custom": len(custom_sessions),
+        "interview_loop": len(loop_sessions),
+        # legacy alias kept for any existing frontend reads
+        "drill": len(custom_sessions),
     }
 
     empty_concepts: dict[str, Any] = {
@@ -791,6 +929,7 @@ def _compute_mock_analytics(
         "mode_breakdown": mode_breakdown,
         "benchmark_summary": _empty_mock_session_summary(),
         "drill_summary": _empty_mock_session_summary(),
+        "loop_summary": {"sessions": 0, "per_dimension_performance": {}},
         "top_concepts": [],
         "weak_concepts": [],
     }
@@ -826,11 +965,35 @@ def _compute_mock_analytics(
         key=lambda x: x["accuracy_pct"],
     )[:3]
 
+    # Loop: per-dimension performance breakdown
+    dim_attempts: dict[str, int] = defaultdict(int)
+    dim_correct: dict[str, int] = defaultdict(int)
+    for ev in (loop_events or []):
+        dim = ev.get("follow_up_dimension")
+        if not dim:
+            continue
+        dim_attempts[dim] += 1
+        if ev.get("is_solved"):
+            dim_correct[dim] += 1
+    per_dimension_performance = {
+        dim: {
+            "attempted": dim_attempts[dim],
+            "correct": dim_correct.get(dim, 0),
+            "accuracy_pct": round(dim_correct.get(dim, 0) / dim_attempts[dim] * 100, 1),
+        }
+        for dim in dim_attempts
+    }
+    loop_summary = {
+        "sessions": len(loop_sessions),
+        "per_dimension_performance": per_dimension_performance,
+    }
+
     return {
         **overall,
         "mode_breakdown": mode_breakdown,
         "benchmark_summary": _compute_mock_session_summary(benchmark_sessions),
         "drill_summary": _compute_mock_session_summary(drill_sessions),
+        "loop_summary": loop_summary,
         "top_concepts": top_concepts,
         "weak_concepts": weak_concepts,
     }
@@ -841,65 +1004,39 @@ def _compute_mock_analytics(
 @router.get("/access")
 async def get_mock_access(
     track: str = "sql",
-    difficulty: str = "medium",
+    mode: str = "benchmark",
     current_user: dict[str, Any] = Depends(get_current_user),
 ) -> dict[str, Any]:
     """
-    Pre-flight check: can this user start a mock session with these parameters?
+    Pre-flight check: can this user start a mock session for a given track + mode?
     Returns access state for each difficulty so the UI can render per-button state.
-    Used by MockHub.js to show predictive gating instead of a post-click error.
     """
     user_plan = current_user.get("plan", "free")
     user_id = current_user["id"]
 
-    # Get daily usage across medium and hard
-    daily_usage = await get_daily_mock_usage(user_id)
+    daily_benchmark_used = await get_daily_benchmark_usage(user_id)
+    daily_custom_used = await get_daily_custom_usage(user_id)
+    weekly_benchmark_used = await get_weekly_benchmark_usage(user_id)
 
-    # For the requested track, check whether medium is unlocked
-    medium_unlocked = False
-    if track != "mixed":
-        try:
-            solved = await _get_solved_ids_for_track(user_id, track)
-            catalog = _get_catalog_for_track(track)
-            grouped = catalog.get_questions_by_difficulty()
-            unlock_state = compute_unlock_state(user_plan, solved, grouped, track=track)
-            medium_unlocked = any(
-                v != "locked" for qid, v in unlock_state.items()
-                if any(int(q["id"]) == qid for q in grouped.get("medium", []))
-            )
-        except Exception:
-            pass
-    else:
-        # Mixed track: medium unlocked if unlocked in any single track
-        for t in mixed_mock_slugs():
-            try:
-                solved = await _get_solved_ids_for_track(user_id, t)
-                catalog = _get_catalog_for_track(t)
-                grouped = catalog.get_questions_by_difficulty()
-                unlock_state = compute_unlock_state(user_plan, solved, grouped, track=t)
-                if any(v != "locked" for qid, v in unlock_state.items()
-                       if any(int(q["id"]) == qid for q in grouped.get("medium", []))):
-                    medium_unlocked = True
-                    break
-            except Exception:
-                pass
-
-    # Build access state for each difficulty
     access: dict[str, Any] = {}
     for diff in ("easy", "medium", "hard", "mixed"):
         access[diff] = compute_mock_access(
             plan=user_plan,
             track=track,
             difficulty=diff,
-            medium_unlocked=medium_unlocked,
-            daily_medium_used=daily_usage.get("medium", 0),
-            daily_hard_used=daily_usage.get("hard", 0),
+            mode=mode,
+            daily_benchmark_used=daily_benchmark_used,
+            daily_custom_used=daily_custom_used,
+            weekly_benchmark_used=weekly_benchmark_used,
         )
 
     return {
         "plan": user_plan,
         "track": track,
-        "daily_usage": daily_usage,
+        "mode": mode,
+        "daily_benchmark_used": daily_benchmark_used,
+        "daily_custom_used": daily_custom_used,
+        "weekly_benchmark_used": weekly_benchmark_used,
         "access": access,
     }
 
@@ -917,13 +1054,15 @@ async def get_analytics(
 ) -> dict[str, Any]:
     """
     Elite-only: return aggregate analytics over the user's last 50 mock sessions.
-    Includes score trends, concept accuracy breakdown, track/difficulty splits.
+    Includes score trends, concept accuracy breakdown, track/difficulty splits,
+    and per-dimension Interview Loop performance.
     """
     if normalize_plan(current_user.get("plan", "free")) != "elite":
         raise HTTPException(status_code=403, detail="Elite plan required")
     sessions = await get_mock_history(current_user["id"], limit=50)
     events = await get_submission_events(current_user["id"])
-    return _compute_mock_analytics(sessions, events)
+    loop_events = await get_loop_question_events(current_user["id"])
+    return _compute_mock_analytics(sessions, events, loop_events)
 
 
 @router.post("/start")
@@ -931,82 +1070,56 @@ async def start_session(
     body: MockStartRequest,
     current_user: dict[str, Any] = Depends(get_current_user),
 ) -> dict[str, Any]:
-    # Validate track and difficulty
+    user_plan = current_user.get("plan", "free")
+    user_id = current_user["id"]
+
+    # ── Basic validation ──────────────────────────────────────────────────────
     if body.track not in VALID_TRACKS:
         raise HTTPException(status_code=400, detail=f"Invalid track. Must be one of: {', '.join(VALID_TRACKS)}")
     if body.difficulty not in VALID_DIFFICULTIES:
         raise HTTPException(status_code=400, detail=f"Invalid difficulty. Must be one of: {', '.join(VALID_DIFFICULTIES)}")
 
-    # Enforce plan/daily-limit access gates (mirrors the /access endpoint — must stay in sync)
-    user_plan = current_user.get("plan", "free")
-    user_id = current_user["id"]
-    daily_usage = await get_daily_mock_usage(user_id)
+    valid_start_modes = {"benchmark", "custom", "interview_loop"} | set(MODE_CONFIGS)
+    if body.mode not in valid_start_modes:
+        raise HTTPException(status_code=400, detail="Invalid mode. Must be 'benchmark', 'custom', or 'interview_loop'.")
 
-    check_track = body.track if body.track != "mixed" else "sql"
-    medium_unlocked = False
+    # Legacy read-only modes cannot be started new
+    if body.mode in MODE_CONFIGS:
+        raise HTTPException(status_code=400, detail=f"Mode '{body.mode}' is read-only legacy and cannot be started.")
+
+    # ── Role validation ───────────────────────────────────────────────────────
     if body.track == "mixed":
-        for t in mixed_mock_slugs():
-            try:
-                solved = await _get_solved_ids_for_track(user_id, t)
-                catalog = _get_catalog_for_track(t)
-                grouped = catalog.get_questions_by_difficulty()
-                unlock_state = compute_unlock_state(user_plan, solved, grouped, track=t)
-                if any(v != "locked" for qid, v in unlock_state.items()
-                       if any(int(q["id"]) == qid for q in grouped.get("medium", []))):
-                    medium_unlocked = True
-                    break
-            except Exception:
-                pass
+        if not body.role:
+            raise HTTPException(status_code=400, detail="role is required when track is 'mixed'.")
+        if body.role not in VALID_MOCK_ROLES:
+            raise HTTPException(status_code=400, detail=f"Invalid role. Must be one of: {', '.join(sorted(VALID_MOCK_ROLES))}")
     else:
-        try:
-            solved = await _get_solved_ids_for_track(user_id, check_track)
-            catalog = _get_catalog_for_track(check_track)
-            grouped = catalog.get_questions_by_difficulty()
-            unlock_state = compute_unlock_state(user_plan, solved, grouped, track=check_track)
-            medium_unlocked = any(
-                v != "locked" for qid, v in unlock_state.items()
-                if any(int(q["id"]) == qid for q in grouped.get("medium", []))
-            )
-        except Exception:
-            pass
+        if body.role is not None:
+            raise HTTPException(status_code=400, detail="role must be omitted (or null) for non-mixed tracks.")
+
+    # ── Interview Loop: Elite only ────────────────────────────────────────────
+    if body.mode == "interview_loop" and normalize_plan(user_plan) != "elite":
+        raise HTTPException(status_code=403, detail="Interview Loop is an Elite-only feature.")
+
+    # ── Access gate (plan + daily/weekly caps) ────────────────────────────────
+    daily_benchmark_used = await get_daily_benchmark_usage(user_id)
+    daily_custom_used = await get_daily_custom_usage(user_id)
+    weekly_benchmark_used = await get_weekly_benchmark_usage(user_id)
 
     access = compute_mock_access(
         plan=user_plan,
-        track=check_track,
+        track=body.track,
         difficulty=body.difficulty,
-        medium_unlocked=medium_unlocked,
-        daily_medium_used=daily_usage.get("medium", 0),
-        daily_hard_used=daily_usage.get("hard", 0),
+        mode=body.mode,
+        daily_benchmark_used=daily_benchmark_used,
+        daily_custom_used=daily_custom_used,
+        weekly_benchmark_used=weekly_benchmark_used,
         company_filter=bool(body.company_filter),
     )
     if not access["can_start"]:
         raise HTTPException(status_code=403, detail=access["block_copy"] or "Access denied.")
 
-    # Derive num_questions and time_limit_s
-    if body.mode == "benchmark":
-        if body.track == "mixed":
-            raise HTTPException(status_code=400, detail="Benchmark mode is not available for mixed track sessions.")
-        benchmark = BENCHMARK_CONFIGS.get(body.track)
-        if benchmark is None:
-            raise HTTPException(status_code=400, detail="Benchmark mode is not configured for this track.")
-        num_questions = benchmark["num_questions"]
-        time_limit_s = benchmark["time_limit_s"]
-    elif body.mode in MODE_CONFIGS:
-        num_questions = MODE_CONFIGS[body.mode]["num_questions"]
-        time_limit_s = MODE_CONFIGS[body.mode]["time_limit_s"]
-    elif body.mode == "custom":
-        nq = body.num_questions
-        tm = body.time_minutes
-        if nq is None or not (1 <= nq <= 5):
-            raise HTTPException(status_code=400, detail="num_questions must be between 1 and 5 for custom mode.")
-        if tm is None or not (10 <= tm <= 90):
-            raise HTTPException(status_code=400, detail="time_minutes must be between 10 and 90 for custom mode.")
-        num_questions = nq
-        time_limit_s = tm * 60
-    else:
-        raise HTTPException(status_code=400, detail="Invalid mode. Must be 'benchmark', '30min', '60min', or 'custom'.")
-
-    # Validate focus_concepts (Elite only, max 3 items)
+    # ── Focus concepts (Elite only, max 3) ────────────────────────────────────
     focus_concepts: list[str] | None = None
     if body.focus_concepts:
         if normalize_plan(user_plan) != "elite":
@@ -1015,7 +1128,7 @@ async def start_session(
             raise HTTPException(status_code=422, detail="focus_concepts must have at most 3 items")
         focus_concepts = [c.upper() for c in body.focus_concepts if c.strip()]
 
-    # Block if user already has an active session
+    # ── Block if active session exists ────────────────────────────────────────
     active = await get_active_mock_session(user_id)
     if active:
         raise HTTPException(
@@ -1030,14 +1143,103 @@ async def start_session(
             },
         )
 
-    # Select questions
-    selected, focus_fallback = await _select_questions(
-        body.track, body.difficulty, num_questions, current_user, focus_concepts, body.mode
+    # ── Interview Loop: chain selection ──────────────────────────────────────
+    if body.mode == "interview_loop":
+        if body.track == "mixed":
+            raise HTTPException(status_code=400, detail="Interview Loop does not support mixed track.")
+
+        parent, follow_ups = await _select_chain(
+            track=body.track,
+            difficulty=body.difficulty,
+            user=current_user,
+            focus_concepts=focus_concepts,
+        )
+        chain_length = 1 + len(follow_ups)
+        time_limit_s = chain_length * 900  # 15 min per question
+
+        # Build questions list: parent at position 1, follow-ups after
+        selected: list[dict] = [
+            {
+                "question_id": int(parent["id"]),
+                "track": body.track,
+                "position": 1,
+                "follow_up_dimension": None,
+            }
+        ]
+        for i, fu in enumerate(follow_ups, start=2):
+            selected.append({
+                "question_id": int(fu["id"]),
+                "track": body.track,
+                "position": i,
+                "follow_up_dimension": fu.get("follow_up_dimension"),
+            })
+
+        # Fetch question details for response
+        all_q_dicts = [parent] + follow_ups
+        question_details: list[dict] = []
+        for pos_idx, (sel, q) in enumerate(zip(selected, all_q_dicts), start=1):
+            question_details.append({
+                **_public_question_payload(q, body.track),
+                "position": sel["position"],
+                "follow_up_dimension": sel.get("follow_up_dimension"),
+                "is_solved": False,
+                "final_code": None,
+                "time_spent_s": None,
+                "is_follow_up": pos_idx > 1,
+            })
+
+        session = await create_mock_session(
+            user_id=user_id,
+            mode=body.mode,
+            track=body.track,
+            difficulty=body.difficulty,
+            time_limit_s=time_limit_s,
+            questions=selected,
+            focus_fallback=False,
+            role=body.role,
+            chain_parent_id=int(parent["id"]),
+        )
+        return {
+            **session,
+            "questions": question_details,
+            "focus_fallback": False,
+        }
+
+    # ── Benchmark: derive num_questions + time_limit_s ────────────────────────
+    if body.mode == "benchmark":
+        if body.track == "mixed":
+            blueprint = MIXED_BENCHMARK_CONFIGS[body.role]  # role validated above
+            num_questions = sum(blueprint["slots"].values())
+            time_limit_s = blueprint["time_limit_s"]
+        else:
+            benchmark = BENCHMARK_CONFIGS.get(body.track)
+            if benchmark is None:
+                raise HTTPException(status_code=400, detail="Benchmark mode is not configured for this track.")
+            num_questions = benchmark["num_questions"]
+            time_limit_s = benchmark["time_limit_s"]
+
+    # ── Custom: user-supplied parameters ─────────────────────────────────────
+    elif body.mode == "custom":
+        nq = body.num_questions
+        tm = body.time_minutes
+        if nq is None or not (1 <= nq <= 5):
+            raise HTTPException(status_code=400, detail="num_questions must be between 1 and 5 for custom mode.")
+        if tm is None or not (10 <= tm <= 90):
+            raise HTTPException(status_code=400, detail="time_minutes must be between 10 and 90 for custom mode.")
+        num_questions = nq
+        time_limit_s = tm * 60
+
+    else:
+        raise HTTPException(status_code=400, detail="Invalid mode.")
+
+    # ── Select questions ──────────────────────────────────────────────────────
+    selected_q, focus_fallback = await _select_questions(
+        body.track, body.difficulty, num_questions, current_user, focus_concepts, body.mode, body.role
     )
 
     # Fetch question details for response
-    question_details: list[dict] = []
-    for sel in selected:
+    question_details = []
+    for sel in selected_q:
         catalog = _get_catalog_for_track(sel["track"])
         q = catalog.get_question(sel["question_id"])
         if q is None:
@@ -1051,15 +1253,16 @@ async def start_session(
             "is_follow_up": False,
         })
 
-    # Persist session
+    # ── Persist session ───────────────────────────────────────────────────────
     session = await create_mock_session(
-        user_id=current_user["id"],
+        user_id=user_id,
         mode=body.mode,
         track=body.track,
         difficulty=body.difficulty,
         time_limit_s=time_limit_s,
-        questions=selected,
+        questions=selected_q,
         focus_fallback=focus_fallback,
+        role=body.role,
     )
 
     return {
@@ -1093,6 +1296,7 @@ async def get_session(
             "final_code": q_row["final_code"],
             "time_spent_s": q_row["time_spent_s"],
             "is_follow_up": q_row.get("is_follow_up", False),
+            "follow_up_dimension": q_row.get("follow_up_dimension"),
         })
 
     return {**session, "questions": enriched_questions}
@@ -1171,29 +1375,8 @@ async def submit_answer(
             code=body.code,
         )
 
-    # Follow-up injection: if this question has a follow_up_id and was answered correctly,
-    # inject the follow-up question after the current position (but never at the last position)
-    follow_up_injected = False
-    follow_up_id = question.get("follow_up_id") if question else None
-    if follow_up_id and accepted:
-        session_questions = session.get("questions", [])
-        current_position = next(
-            (sq["position"] for sq in session_questions if sq["question_id"] == body.question_id),
-            None,
-        )
-        if current_position is not None:
-            max_position = max((sq["position"] for sq in session_questions), default=0)
-            # Only inject if not at the last position — avoid bloating an already-final question
-            if current_position < max_position:
-                await inject_follow_up_question(
-                    session_id=session_id,
-                    follow_up_question_id=follow_up_id,
-                    after_position=current_position,
-                )
-                follow_up_injected = True
-
     # Return lean result — no solutions mid-session
-    return {**result, "follow_up_injected": follow_up_injected}
+    return result
 
 
 @router.post("/{session_id}/finish")
@@ -1220,6 +1403,7 @@ async def finish_session(
             "final_code": q_row["final_code"],
             "time_spent_s": q_row["time_spent_s"],
             "is_follow_up": q_row.get("is_follow_up", False),
+            "follow_up_dimension": q_row.get("follow_up_dimension"),
         })
 
     # Build Elite coaching debrief (template-based, no external AI needed)

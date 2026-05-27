@@ -461,7 +461,7 @@ function HeroSection({ user, dashData, reduced }) {
         <div className="lp-hero-left">
           <p className="lp-eyebrow">For data professionals — and those becoming them</p>
           <h1 className="lp-hero-h1">
-            Develop the reasoning that makes you genuinely effective with data.
+            Develop the reasoning that makes you effective with data.
           </h1>
           <p className="lp-hero-sub">
             Real datasets. Real execution. The kind of thinking that holds up years into the job. If it also makes you exceptional in interviews — and it will — that's a consequence, not the goal.
@@ -589,7 +589,7 @@ function RoleSelectorSection({ dashData }) {
           <p className="lp-section-index">04&ensp;/&ensp;YOUR ROLE</p>
           <h2 className="lp-section-h2">Your role shapes which thinking matters.</h2>
           <p className="lp-section-sub">
-            Seven tracks — here by relevance, not as a grid.
+            Nine tracks — here by relevance, not as a grid.
           </p>
         </Reveal>
 

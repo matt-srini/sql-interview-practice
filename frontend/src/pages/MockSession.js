@@ -112,6 +112,7 @@ export default function MockSession() {
   const [submitNetworkError, setSubmitNetworkError] = useState(null);
 
   const [showFollowUpBanner, setShowFollowUpBanner] = useState(false);
+  const [pivotCard, setPivotCard] = useState(null); // { dimension, targetIndex } — interview_loop pivot
   const [focusFallback, setFocusFallback] = useState(false);
   const [fontSize, setFontSize] = useState(() => {
     try { return parseInt(localStorage.getItem('mock-editor-font-size') || '14', 10); } catch { return 14; }
@@ -311,23 +312,13 @@ export default function MockSession() {
       setSubmitted(prev => ({ ...prev, [q.id]: true }));
       if (r.data.correct) {
         setSolved(prev => ({ ...prev, [q.id]: true }));
-        // If a follow-up was injected, re-fetch the session to get the updated question list
-        if (r.data.follow_up_injected) {
-          try {
-            const sessionResp = await api.get(`/mock/${id}`);
-            const updatedQuestions = sessionResp.data.questions || [];
-            setQuestions(updatedQuestions);
-            // Init codes for any newly injected questions
-            setCodes(prev => {
-              const next = { ...prev };
-              updatedQuestions.forEach(uq => {
-                if (next[uq.id] === undefined) {
-                  next[uq.id] = getInitialCode(uq);
-                }
-              });
-              return next;
-            });
-          } catch (_) { /* session state is still correct, follow-up is just missing */ }
+      }
+      // Interview Loop: show pivot card before advancing to the next chain question
+      if (session?.mode === 'interview_loop') {
+        const nextIndex = activeQ + 1;
+        const nextQ = questions[nextIndex];
+        if (nextQ?.follow_up_dimension) {
+          setPivotCard({ dimension: nextQ.follow_up_dimension, targetIndex: nextIndex });
         }
       }
     } catch (err) {
@@ -1246,6 +1237,27 @@ export default function MockSession() {
       })()}
 
       {/* Early-exit discard prompt */}
+      {/* Interview Loop: pivot card — shown after submitting a non-final chain question */}
+      {pivotCard && (
+        <div className="mock-modal-overlay mock-pivot-overlay">
+          <div className="mock-modal mock-pivot-card">
+            <div className="mock-pivot-card-kicker">Interview Loop · Pivot</div>
+            <h3 className="mock-pivot-card-dimension">{pivotCard.dimension}</h3>
+            <p className="mock-modal-body mock-pivot-card-copy">
+              The interviewer is shifting focus. This follow-up explores a different dimension of the same problem.
+            </p>
+            <div className="mock-modal-actions">
+              <button
+                className="btn btn-primary"
+                onClick={() => { setActiveQ(pivotCard.targetIndex); setPivotCard(null); }}
+              >
+                Continue →
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {showDiscardPrompt && (
         <div className="mock-modal-overlay" onClick={() => setShowDiscardPrompt(false)}>
           <div className="mock-modal" onClick={e => e.stopPropagation()}>
@@ -1253,6 +1265,7 @@ export default function MockSession() {
             <p className="mock-modal-body">
               You're less than a minute in and haven't run or submitted anything yet.
               You can discard this session and it won't appear in your history or affect any stats.
+              {session?.mode === 'interview_loop' && ' This chain will return to your pool.'}
             </p>
             <div className="mock-modal-actions">
               <button className="btn btn-secondary" onClick={() => setShowDiscardPrompt(false)}>
