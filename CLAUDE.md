@@ -75,7 +75,7 @@ The five-perspective pushback in § Standing instructions reads this section as 
   | Practice modality matrix, eval kinds, subtypes | `docs/specs/practice-modality-spec.md` |
   | Platform North Star, role-to-track framing, governance sources | `docs/specs/platform-north-star.md` |
   | Dashboard insights, weak-spot detection, readiness scores | `docs/features/dashboard.md` |
-  | Product overview, tech stack, content footprint, routes summary | This file (`CLAUDE.md`) |
+  | Product overview, tech stack, content footprint | This file (`CLAUDE.md`) |
   | User-facing platform guide | `docs/USERGUIDE.md` |
   | New track onboarding process | `docs/track-onboarding.md` |
 
@@ -101,7 +101,7 @@ The five-perspective pushback in § Standing instructions reads this section as 
 
 - **Always commit after meaningful changes.** End every session of edits with a `git commit` carrying a clear, specific message (not "update files" — something like "add mock interview mode with timer and session summary"). Co-author line: `Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>`.
 
-- **Keep `CLAUDE.md` in sync.** When content footprint, tech stack, routes, or product behaviour changes, update the relevant section below in the same commit.
+- **Keep `CLAUDE.md` in sync.** When content footprint, tech stack, or standing-instruction-relevant product behaviour changes, update the relevant section below in the same commit. Pure reference (routes, endpoints, design tokens, dev commands) lives in `docs/` — update there, not here.
 
 - **Parallelize coding work when possible.** If a coding task can be split safely and subagents are available, offload disjoint slices in parallel. Review and integrate results before finishing.
 
@@ -272,26 +272,7 @@ sql-interview-practice/
 
 ## Frontend routes
 
-```
-/                              → LandingPage (editorial landing — hero, role selector, 7-track index, pricing)
-/auth                          → AuthPage (register / sign in / forgot password / OAuth)
-/auth/reset-password           → ResetPasswordPage (consume reset token, set new password)
-/auth/verify-email             → VerifyEmailPage (consume email verification token)
-/dashboard                     → ProgressDashboard (cross-track progress)
-/mock                          → MockHub (two-column desktop lobby: left config + right sticky session brief; benchmark/drill selection, session brief rail, analytics, history)  [AuthRequired]
-/mock/:id                      → MockSession (active session + inline summary)        [AuthRequired]
-/learn                         → LearningPathsIndex (all paths, grouped by track, topic pills)
-/learn/:topic                  → LearningPathsIndex (filtered to one track)
-/learn/:topic/:slug            → LearningPath (curated path — breadcrumb, progress bar, question list)
-/sample/:topic/:difficulty     → SampleQuestionPage (topic-aware sample mode)
-/sample/:difficulty            → redirect → /sample/sql/:difficulty
-/practice/:topic               → TopicShell (TopicProvider + CatalogProvider + AppShell)
-  /practice/:topic             → TrackHubPage (hub page when no question selected)
-  /practice/:topic/questions/:id → QuestionPage (topic-aware)
-/practice/questions/:id        → redirect → /practice/sql/questions/:id (legacy)
-/practice                      → redirect → /practice/sql
-/questions/:id                 → redirect → /practice/sql/questions/:id (legacy)
-```
+Full route tree: [`docs/frontend.md`](docs/frontend.md) §Route tree.
 
 `:topic` values: `sql` | `python` | `python-data` | `pyspark` | `data-engineering` | `data-modeling` | `statistics` | `ml-fundamentals` | `experimentation`
 
@@ -342,28 +323,12 @@ TOPBAR
 
 ## Design system
 
-Single global stylesheet: `frontend/src/App.css`. No CSS framework, no CSS modules.
+Behavior contracts:
+- **Single global stylesheet** — `frontend/src/App.css`. No CSS framework, no CSS modules, no inline styled-components. New styles go in `App.css`.
+- **Active theme: Forest & Ink.** Two-tone editor (always dark) regardless of page theme.
+- **Track colors are fixed** — not overridden by theme changes. Track color is part of the track's identity.
 
-**Active theme: Forest & Ink.** Full token reference: [`docs/design/color-palette.md`](docs/design/color-palette.md).
-
-**Key tokens:**
-```
---bg-page:         #F5F7F4   (dark: #0D1A10)
---surface-card:    #FFFFFF   (dark: #132218)
---accent:          #166534   (dark: #4ADE80)
---text-strong:     #14291B   (dark: #E8F5E9)
---text-secondary:  #4B6858
---success:         #15803D
---warning:         #C47F17
---danger:          #D94F3D
---radius-lg: 20px  --radius-md: 14px  --radius-sm: 10px
-```
-
-**Logo mark:** two diagonal rounded squares (big bottom-left, small top-right) — thought-bubble motif. SVGs at `frontend/public/branding/`.
-
-**Fonts:** Inter (UI), JetBrains Mono (editor/code), Geist Mono (showcase animation only).
-
-**Track colors are fixed** (not overridden by theme changes) — SQL `#5B6AF0`, Python `#2D9E6B`, Pandas `#C47F17`, PySpark `#D94F3D`, DE `#B9762B`, Data Modeling `#3F8E8C`, Statistics `#7A5AF0`, ML Fundamentals `#E0456A`, Experimentation `#0EA5E9`.
+Token values, full palette, typography, and component specs: [`docs/design/color-palette.md`](docs/design/color-palette.md) (canonical) and [`docs/frontend.md`](docs/frontend.md) §Design system.
 
 ---
 
@@ -426,59 +391,7 @@ Locked MCQ questions return 200 with `locked: true` and no `options` or `correct
 
 ## Key API endpoints
 
-| Method | Path | Purpose |
-|---|---|---|
-| GET | `/health` | Status, Postgres, loaded tables |
-| GET | `/api/catalog` | SQL questions grouped by difficulty with per-user state |
-| GET | `/api/questions/{id}` | SQL question detail (403 if locked, omits solution pre-submit) |
-| POST | `/api/run-query` | Execute SQL, return rows |
-| POST | `/api/submit` | Evaluate SQL, return verdict + solution on correct |
-| GET | `/api/python/catalog` | Python catalog |
-| GET | `/api/python/questions/{id}` | Python question detail |
-| POST | `/api/python/run-code` | Run Python code, return test results + stdout |
-| POST | `/api/python/submit` | Submit Python code |
-| GET | `/api/python-data/catalog` | Pandas catalog |
-| POST | `/api/python-data/run-code` | Run pandas code |
-| POST | `/api/python-data/submit` | Submit pandas code |
-| GET | `/api/pyspark/catalog` | PySpark catalog (`type` + `interaction_mode` on reasoning rows) |
-| POST | `/api/pyspark/submit` | Submit MCQ answer |
-| GET | `/api/statistics/catalog` | Statistics catalog (`type`, `subtype`, and `interaction_mode` per question) |
-| GET | `/api/statistics/questions/{id}` | Statistics question detail (conceptual: options; numerical: starter_code + test_cases) |
-| POST | `/api/statistics/run-code` | Run Python code for numerical statistics questions (400 for conceptual) |
-| POST | `/api/statistics/submit` | Submit answer: `selected_option` for conceptual, `code` for numerical |
-| GET | `/api/dashboard` | Cross-track progress summary |
-| GET | `/api/dashboard/insights` | Coaching insights (speed, accuracy, weak concepts, streak) |
-| GET | `/api/submissions` | Submission history for a question (`track`, `question_id`, `limit` params) |
-| GET | `/api/paths` | All learning paths with per-user `solved_count` |
-| GET | `/api/paths/{slug}` | Path detail with per-question `state` (solved/unlocked/locked) |
-| GET | `/api/mock/access` | Pre-flight access check — params: `track`, `mode`. Returns per-difficulty `can_start`, `block_reason`, `needs_upgrade`, `daily_limit`, `daily_used`, `weekly_benchmark_used` (Free + benchmark) |
-| GET | `/api/mock/history` | Past mock sessions list (last 20) |
-| GET | `/api/mock/analytics` | Elite only: aggregate analytics over last 50 sessions — benchmark/drill/loop summaries, per-dimension Loop breakdown |
-| POST | `/api/mock/start` | Start a mock session `{ mode, track, difficulty, role? (required when track="mixed"), num_questions?, time_minutes?, focus_concepts?, company_filter? }`. `mode="benchmark"` applies track-specific blueprint (or role-based Mixed blueprint). `mode="interview_loop"` draws 1 chain atomically (Elite only). Returns 409 if active session exists. |
-| GET | `/api/mock/{id}` | Session state for reload recovery |
-| POST | `/api/mock/{id}/submit` | Submit answer mid-session → one real submission per question; returns `{ correct }` with no mid-session solution reveal; second submit returns 409 and blank input returns 422 without consuming the slot |
-| POST | `/api/mock/{id}/finish` | End session → full summary with per-question solutions |
-| DELETE | `/api/mock/{id}` | Discard an active session started within 2 minutes (returns 204); 403 if older than 2 min or already completed |
-| GET | `/api/sample/{topic}/{difficulty}` | Next unseen sample (409 when exhausted) |
-| POST | `/api/sample/{topic}/{difficulty}/reset` | Clear seen state |
-| POST | `/api/sample/sql/run-query` | Execute SQL sample query |
-| POST | `/api/sample/{topic}/run-code` | Execute Python/Pandas sample code |
-| POST | `/api/sample/{topic}/submit` | Submit sample answer (no challenge progress impact) |
-| GET | `/api/auth/me` | Current user identity + streak metadata (`streak_days`, `streak_at_risk`) |
-| POST | `/api/auth/register` | Create account, upgrade anonymous session |
-| POST | `/api/auth/login` | Authenticate, merge anonymous progress |
-| POST | `/api/auth/logout` | Delete session |
-| POST | `/api/auth/forgot-password` | Send password reset email (always returns 200 to prevent enumeration) |
-| POST | `/api/auth/reset-password` | Consume reset token, set new password (also marks email verified) |
-| POST | `/api/auth/verify-email` | Consume email verification token, mark account verified |
-| POST | `/api/auth/resend-verification` | Resend verification email to the current signed-in user |
-| POST | `/api/auth/magic-link` | Request one-time magic-link sign-in email (non-enumerating response) |
-| GET | `/api/auth/magic-link/callback` | Consume magic-link token, create session, redirect to frontend |
-| GET | `/api/auth/oauth/{provider}/authorize` | Return OAuth authorization URL (`google` or `github`) |
-| GET | `/api/auth/oauth/{provider}/callback` | OAuth callback — validate+consume state, exchange code, upsert user, set session cookie |
-| POST | `/api/razorpay/create-order` | Create Razorpay Order (lifetime) or Subscription (pro/elite) |
-| POST | `/api/razorpay/verify-payment` | Verify HMAC on client callback, apply plan immediately (idempotent) |
-| POST | `/api/razorpay/webhook` | Verified, idempotent plan update (authoritative source of truth) |
+Full per-router endpoint reference: [`docs/backend.md`](docs/backend.md) §API reference. Mock-specific endpoints are also covered in [`docs/features/mock.md`](docs/features/mock.md); payment endpoints in [`docs/features/pricing.md`](docs/features/pricing.md).
 
 ---
 
@@ -500,55 +413,12 @@ To log in for browser preview, sign in at `/auth` with the email above. The sess
 
 ## Local development
 
-> Full details, node path quirks, and Alembic migration commands: **[`docs/deployment.md`](docs/deployment.md)**
-
-```bash
-# Infrastructure
-docker compose up postgres redis -d
-
-# Backend (from backend/ — virtualenv is at project root)
-cd backend && ../.venv/bin/uvicorn main:app --reload --port 8000
-
-# Frontend
-cd frontend && npm run dev
-
-# Backend tests (from backend/)
-cd backend && ../.venv/bin/python -m pytest tests/ -q
-
-# Alembic migrations (asyncpg driver required)
-cd backend && DATABASE_URL="postgresql+asyncpg://postgres:postgres@localhost:5432/sql_practice" \
-  ../.venv/bin/alembic upgrade head
-```
+Setup, ports, Alembic migration commands, env vars: [`docs/deployment.md`](docs/deployment.md) §Local development.
 
 ---
 
 ## Docs index
 
-| File | What it covers |
-|---|---|
-| `docs/architecture.md` | System design, request lifecycles, data model, execution pipelines, scaling |
-| `docs/backend.md` | All API routes, routers, execution pipeline, identity model |
-| `docs/frontend.md` | Routes, pages, components, design system, data flows |
-| `docs/datasets.md` | All 11 dataset tables — columns, row counts, intentional edge cases |
-| `docs/deployment.md` | Local dev, Docker, production image, env vars, Railway |
-| `docs/content-authoring.md` | Platform philosophy, question counts, concept coverage maps, per-track schemas, authoring rules |
-| `docs/specs/platform-north-star.md` | Canonical product goal, role framing, practice/dashboard/mock relationship, filter policy |
-| `docs/specs/practice-modality-spec.md` | Track modality matrix, practice interaction rules, metadata contract |
-| `docs/specs/mock-benchmark-spec.md` | Benchmark-vs-drill split, mock invariants, analytics contract |
-| `docs/track-onboarding.md` | End-to-end process for adding a new track — spec, backend, frontend, content, paths, docs |
-| `docs/orchestration-runbook.md` | **Phase 2 orchestration handbook** — three-stage process (A planning → B execution → C audit), Stage A/B/C templates, retro-cleanup pattern, current Phase 2 status, pre-identified watch-outs for open tracks. Pickup point for any Opus session running Phase 2 orchestration. |
-| `docs/USERGUIDE.md` | End-user guide to the platform |
-| `docs/features/pricing.md` | Pricing feature reference — plan entitlements, Razorpay flows, CTA states, webhook rules |
-| `docs/features/mock.md` | Mock interview feature reference — plan gates, endpoints, coaching insights, test coverage |
-| `docs/features/dashboard.md` | Dashboard feature reference — plan gates, endpoints, coaching insights, streak logic, caching |
+Canonical docs index: [`docs/README.md`](docs/README.md). It maps every doc to its area of ownership — architecture, specs, features, content/authoring, runbooks. Start there for any task that needs reference material.
 
-**AI question authoring** — one universal agent, per-track knowledge in track docs:
-
-| Purpose | File |
-|---|---|
-| **Universal authoring agent (mandatory entry point for every question, every track, every edit)** | `.github/agents/question-authoring.agent.md` |
-| Per-track philosophy, datasets, ID range, difficulty vocabulary, concept arc, authoring allocation | `docs/tracks/<track>.md` (one file per track in `docs/tracks/`) |
-| Concept-family registry per track + 7 universal follow-up dimensions | `docs/concept-taxonomy.md` |
-| New track onboarding (end-to-end process) | `.github/agents/track-onboarding.agent.md` |
-
-The per-track question-authoring agent files (`sql-question-authoring.agent.md` etc.) were retired in the 2026-05 refactor — their content migrated to `docs/tracks/<track>.md` and to the universal agent. There is now **one** authoring entry point on the platform. Use it.
+For question authoring specifically: the universal agent at [`.github/agents/question-authoring.agent.md`](.github/agents/question-authoring.agent.md) is the mandatory entry point, with per-track knowledge in [`docs/tracks/`](docs/tracks/) and the concept registry in [`docs/concept-taxonomy.md`](docs/concept-taxonomy.md).
