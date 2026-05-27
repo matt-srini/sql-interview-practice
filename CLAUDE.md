@@ -397,16 +397,16 @@ Locked MCQ questions return 200 with `locked: true` and no `options` or `correct
 
 **Learning paths and unlocks:** Paths are curated walks through the practice catalog and **do not unlock questions**. A user who solves a path question gets the same `solved` state and threshold advancement as solving from practice directly. See `docs/content-authoring.md` §Paths for the canonical path model (patterns, roles, validator integrity rules).
 
-**Mock modes (canonical, post-2026-05 refactor):** `benchmark` (fixed-shape track readiness signal), `short_drill` (2 questions, 30 min — fast calibration), `custom_drill` (1–5 Q, 10–90 min — user-tuned to competency). Long-form drill (`60min`, 3-Q) is being retired; `custom_drill` covers that range. Mixed track remains drill-only. Legacy `60min` sessions in history are read-only.
+**Mock modes (canonical, post-Phase-3):** `benchmark` (fixed-shape track readiness signal, or role-based Mixed benchmark), `custom` (1–5 Q, 10–90 min — user-tuned to competency), `interview_loop` (Elite only — chain-driven iterative interviewer dialogue). Legacy `30min` (Sprint drill) and `60min` sessions in history are read-only; they cannot be started new. Mixed track requires role selection (Data Analyst / Data Engineer / Analytics Engineer / Data Scientist) for both benchmark and custom. Single source of truth: `docs/features/mock.md`.
 
-**Elite-only mock features:** `focus_concepts` filter (concept-targeted sessions), Interview Loop mode (chain-driven iterative interviewer dialogue, see `docs/features/mock.md`), deep analytics with readiness scores + study plan, session debrief coaching narrative.
+**Elite-only mock features:** `focus_concepts` filter (available on all three modes), Interview Loop (1 chain per session — parent + all follow-ups atomic, time = 15 min × chain length), deep analytics with per-dimension Loop breakdown, readiness scores + study plan, session debrief coaching narrative.
 
-**Mock chain atomicity:** Parent questions with `follow_ups[]` (mock-only chains) travel as an atomic unit. A user sees the entire chain together exactly once, ever — never split across sessions, never re-shown after consumption. Chain is marked consumed at session start, reclaimable only within the 2-minute discard window. Single source of truth for chain mechanics: `docs/features/mock.md`.
+**Mock chain atomicity:** Chains appear **only** in Interview Loop sessions. Benchmark and custom sessions are standalone-questions only (no dynamic follow-up injection). Parent questions with `follow_ups[]` travel as an atomic unit in Interview Loop — entire chain exactly once, ever, never split. Consumed at session start in `mock_chain_consumption` table; reclaimable within 2-minute discard window. Single source of truth: `docs/features/mock.md`.
 
 **Plan-tier matrix:** Full matrix lives in `docs/features/mock.md` as the canonical source of truth. Summary:
-- **Free** — Unlimited easy `short_drill` (fresh-first from practice pool). 1 `benchmark` per rolling 7 days, any track/difficulty (fresh-first from practice pool). No mock-only content. No chains. No focus. No Loop.
-- **Pro** — Inherits Free. + Unlimited easy `short_drill`, plus combined 3/day cap across medium/hard `short_drill` and any `custom_drill`. + 3 `benchmarks`/day. Mock-only content and chains eligible.
-- **Elite** — Unlimited count (soft backend rate-limit for abuse only, not surfaced in UI). + `focus_concepts`. + Interview Loop. + deep analytics + debrief.
+- **Free** — 1 `benchmark` per rolling 7 days, easy only, any track/Mixed (with role). No `custom`. No `interview_loop`. Practice-pool questions only.
+- **Pro** — 3 `benchmark`/day + 3 `custom`/day (independent counters), any difficulty. Mock-only content pool unlocked. No `interview_loop`.
+- **Elite** — Unlimited (soft abuse cap only). + `focus_concepts`. + `interview_loop`. + deep analytics + debrief.
 
 **Benchmark composition:** PySpark keeps its own format-targeted benchmark template, Statistics benchmarks enforce `1 numerical + 2 conceptual`, and the other reasoning tracks now use track-specific `type` targets during benchmark selection instead of reusing PySpark's format sampler.
 
@@ -453,10 +453,10 @@ Locked MCQ questions return 200 with `locked: true` and no `options` or `correct
 | GET | `/api/submissions` | Submission history for a question (`track`, `question_id`, `limit` params) |
 | GET | `/api/paths` | All learning paths with per-user `solved_count` |
 | GET | `/api/paths/{slug}` | Path detail with per-question `state` (solved/unlocked/locked) |
-| GET | `/api/mock/access` | Pre-flight access check — per-difficulty `can_start`, `block_reason`, `needs_upgrade`, `daily_limit`, `daily_used` |
+| GET | `/api/mock/access` | Pre-flight access check — params: `track`, `mode`. Returns per-difficulty `can_start`, `block_reason`, `needs_upgrade`, `daily_limit`, `daily_used`, `weekly_benchmark_used` (Free + benchmark) |
 | GET | `/api/mock/history` | Past mock sessions list (last 20) |
-| GET | `/api/mock/analytics` | Elite only: aggregate analytics over last 50 sessions with separated benchmark and drill summaries |
-| POST | `/api/mock/start` | Start a mock session `{ mode, track, difficulty, focus_concepts? }` → `{ session_id, questions[], time_limit_s, started_at, focus_fallback }`. `mode="benchmark"` applies a track-specific fixed blueprint and rejects `track="mixed"`; `30min` and `custom` remain drill sessions. Returns 409 if user has an active session (includes `session_id` in error body). |
+| GET | `/api/mock/analytics` | Elite only: aggregate analytics over last 50 sessions — benchmark/drill/loop summaries, per-dimension Loop breakdown |
+| POST | `/api/mock/start` | Start a mock session `{ mode, track, difficulty, role? (required when track="mixed"), num_questions?, time_minutes?, focus_concepts?, company_filter? }`. `mode="benchmark"` applies track-specific blueprint (or role-based Mixed blueprint). `mode="interview_loop"` draws 1 chain atomically (Elite only). Returns 409 if active session exists. |
 | GET | `/api/mock/{id}` | Session state for reload recovery |
 | POST | `/api/mock/{id}/submit` | Submit answer mid-session → one real submission per question; returns `{ correct }` with no mid-session solution reveal; second submit returns 409 and blank input returns 422 without consuming the slot |
 | POST | `/api/mock/{id}/finish` | End session → full summary with per-question solutions |

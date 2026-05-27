@@ -98,20 +98,22 @@ The current Quick / Full / Custom system is an implementation starting point, no
 
 ---
 
-## Chain atomicity contract (2026-05 refactor)
+## Chain atomicity contract (Phase 3)
 
-Cross-reference: full chain mechanics live in [`docs/features/mock.md`](../features/mock.md#follow-up-chain-atomicity-proelite--mock-only-content). The 7 universal `follow_up_dimension` values are defined in [`docs/concept-taxonomy.md`](../concept-taxonomy.md#the-7-universal-follow-up-dimensions-chain-pivots).
+Cross-reference: full chain mechanics live in [`docs/features/mock.md`](../features/mock.md#follow-up-chain-atomicity-interview-loop-only). The 7 universal `follow_up_dimension` values are defined in [`docs/concept-taxonomy.md`](../concept-taxonomy.md#the-7-universal-follow-up-dimensions-chain-pivots).
 
 This section establishes the spec-level invariants the mock subsystem must enforce; the feature doc owns the user-facing contract.
 
+**Chains appear exclusively in Interview Loop sessions.** Benchmark and custom drill sessions contain only standalone questions.
+
 ### Invariants
 
-1. **A parent question + every entry in its `follow_ups[]` array forms one atomic mock unit.** Selection picks the chain as a unit or skips it. Reservation in a session blueprint must be contiguous and adjacent. Splitting a chain across sessions is forbidden.
-2. **Per-user, lifetime, at-most-once exposure.** Once a chain is selected for any session for a user, every member of the chain is consumed for that user across every future mock session — benchmark, short_drill, custom_drill, focus, Interview Loop.
+1. **A parent question + every entry in its `follow_ups[]` array forms one atomic mock unit.** Selection picks the chain as a unit or skips it. Splitting a chain across sessions is forbidden.
+2. **Per-user, lifetime, at-most-once exposure.** Once a chain is selected for any Interview Loop session for a user, every member of the chain is consumed for that user and never reappears.
 3. **Orphan child selection is forbidden.** Catalog load fails if any follow-up question is reachable by the selector without going through its parent.
 4. **Consumption trigger:** `POST /api/mock/start`. Not first submit. Not finish.
-5. **Reclaim window:** 120 seconds from `started_at`. `DELETE /api/mock/:id` within the window returns 204 AND reverts the daily-quota counter AND reclaims every chain marked in that session. After 120 s the chain is locked in regardless of submission state.
-6. **Pool exhaustion:** when no fresh chains / questions remain for the requested track × difficulty × mode for a user, mock returns **409 with `pool_exhausted: true`**. No soft fallback to consumed chains — soft fallback would dilute the readiness signal.
+5. **Reclaim window:** 120 seconds from `started_at`. `DELETE /api/mock/:id` within the window returns 204 AND reverts the quota counter AND reclaims the chain. After 120 s the chain is locked in.
+6. **Pool exhaustion:** when no unconsumed chains remain for the requested track × difficulty for a user, Interview Loop returns **409 with `pool_exhausted: true`**. No soft fallback.
 
 ### Required schema
 
@@ -191,9 +193,10 @@ Mock today (benchmark + drills) measures readiness at a single point. Interview 
 ### Composition rules
 
 - **Eligibility:** Elite only. Free / Pro see "Unlock with Elite" copy on the mode card; cannot start a session.
-- **Content:** Loop is **chain-only**. Eligible parents have `follow_ups[]` of length ≥ 1 (i.e. chain total length ≥ 2). Single-question parents belong to benchmark/drill modes; Loop is for chain content.
-- **Session shape:** 1–3 chains per session. Default 2.
-- **Time:** 15 min × number of chains. Default 30 min for 2 chains.
+- **Content:** Loop is **chain-only**. Eligible parents have `follow_ups[]` of length ≥ 1 (chain total length ≥ 2). Single-question parents belong to benchmark/drill modes.
+- **Session shape:** exactly **1 chain** per session (parent + all follow-ups, 2–4 questions total).
+- **Time:** 15 min × chain length. 2Q → 30 min · 3Q → 45 min · 4Q → 60 min. Computed at session start once the chain is selected.
+- **Track:** any single track. Mixed is not available (chains are single-track by definition).
 - **All benchmark invariants apply:** no correctness reveal mid-session, no solution reveal until finish, submit is final, run is allowed only on executable tracks.
 
 ### Selection logic
@@ -247,8 +250,8 @@ The dimension-level signal feeds the Elite dashboard's "What kinds of interviewe
 
 Spec-level summary. Full plan-tier matrix and rationale live in [`docs/features/mock.md`](../features/mock.md#plan-tier-matrix-canonical-sot).
 
-- **Free** — Mock pool restricted to practice-pool questions (filter: `mock_only != true`). Chains never included (chains all require mock-only access). Mode access: unlimited easy `short_drill` + 1 `benchmark` per rolling 7 days.
-- **Pro** — Mock pool includes practice-pool questions AND mock-only questions including chains. Mode access: easy `short_drill` unlimited; combined 3 drills/day across medium/hard `short_drill` and any `custom_drill`; 3 `benchmark`/day.
-- **Elite** — Same content access as Pro. Mode access soft-capped at 30s burst / 5 hourly / 20 daily (abuse defense, invisible). Adds `focus_concepts` filter and Interview Loop mode.
+- **Free** — Mock pool restricted to practice-pool questions (`mock_only != true`). Chains never eligible (Interview Loop is Elite only). Mode access: 1 `benchmark` per rolling 7 days, easy only. No `custom` mode. No `interview_loop`.
+- **Pro** — Mock pool includes practice questions AND mock-only questions. No chains (Interview Loop is Elite only). Mode access: 3 `benchmark`/day + 3 `custom`/day, any difficulty.
+- **Elite** — Same content access as Pro. Plus Interview Loop (chains), `focus_concepts` filter, deep analytics, debrief. Soft anti-abuse cap only (invisible in UI): 30 s burst / 5/hr / 20/day.
 
-Pool-sourcing is enforced in the selector. UI must reflect plan state visibly (remaining-count chips on MockHub; upgrade modals when gated capability clicked).
+Pool-sourcing is enforced in the backend selector. UI must reflect plan state visibly (remaining-count chips on MockHub; upgrade modals when gated capability clicked).
