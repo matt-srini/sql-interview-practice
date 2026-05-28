@@ -40,12 +40,12 @@ const FAQ_JSON_LD = [
   {
     "@type": "Question",
     "name": "What are mock sessions?",
-    "acceptedAnswer": { "@type": "Answer", "text": "Mocks are timed sessions in three modes: benchmark (fixed-shape readiness signal), short drill (30 min, 2 questions), and custom drill (1–5 questions, 10–90 min). Free users get unlimited easy short drills and one full benchmark per week. Pro users get three benchmarks per day plus three drills per day across difficulties. Elite users get unlimited sessions plus Interview Loop — chain-driven sessions where each follow-up pivots like a real interviewer." }
+    "acceptedAnswer": { "@type": "Answer", "text": "Mocks are timed sessions in three modes: benchmark (fixed-shape readiness signal), custom drill (1–5 questions, 10–90 min), and Interview Loop (Elite-only chain-driven follow-up sessions). Free users get one easy benchmark per rolling 7 days. Pro users get three benchmarks per day plus three custom drills per day across difficulties. Elite users get unlimited sessions plus Interview Loop, focus-mode targeting, readiness analytics, and coaching debriefs." }
   },
   {
     "@type": "Question",
     "name": "What is the difference between Free, Pro, and Elite?",
-    "acceptedAnswer": { "@type": "Answer", "text": "Free gives access to all easy questions, progressive medium/hard unlocks as you practice, unlimited easy mock drills, and one full benchmark per week. Pro unlocks every question immediately, adds mock-only content with interviewer-style follow-up chains, and provides 3 benchmarks plus 3 drills per day. Elite includes everything in Pro plus Interview Loop mode, focus-mode targeting, per-dimension weak-spot detection, readiness scoring, and unlimited sessions. Visit datathink.co for the full pricing comparison." }
+    "acceptedAnswer": { "@type": "Answer", "text": "Free gives access to all easy questions, progressive medium/hard unlocks as you practice, and one easy benchmark per rolling 7 days. Pro unlocks every question immediately, adds the mock-only question pool, and provides 3 benchmarks plus 3 custom drills per day, detailed history, and weakest-concept drill recommendations. Elite includes everything in Pro plus Interview Loop mode, focus-mode targeting, per-dimension weak-spot detection, readiness scoring, study plans, coaching debriefs, and unlimited sessions. Visit datathink.co for the full pricing comparison." }
   }
 ];
 
@@ -107,12 +107,12 @@ export default function FAQPage() {
               </div>
               <div className="faq-item">
                 <dt className="faq-q">What are mock sessions?</dt>
-                <dd className="faq-a">Mocks are timed sessions in three modes: <strong>benchmark</strong> (fixed-shape readiness signal), <strong>short drill</strong> (30 min, 2 questions), and <strong>custom drill</strong> (1–5 questions, 10–90 min). Free users get unlimited easy short drills and one full benchmark per week. Pro users get three benchmarks per day plus three drills per day across difficulties. Elite users get unlimited sessions plus Interview Loop — chain-driven sessions where each follow-up pivots like a real interviewer.</dd>
+                <dd className="faq-a">Mocks are timed sessions in three modes: <strong>benchmark</strong> (fixed-shape readiness signal), <strong>custom drill</strong> (1–5 questions, 10–90 min), and <strong>Interview Loop</strong> (Elite-only chain-driven follow-up sessions). Free users get one easy benchmark per rolling 7 days. Pro users get three benchmarks per day plus three custom drills per day across difficulties. Elite users get unlimited sessions plus Interview Loop, focus-mode targeting, readiness analytics, and coaching debriefs.</dd>
               </div>
               <div className="faq-item">
                 <dt className="faq-q">What is the difference between Free, Pro, and Elite?</dt>
                 <dd className="faq-a">
-                  Free gives access to all easy questions, progressive medium/hard unlocks as you practice, unlimited easy mock drills, and one full benchmark per week. Pro unlocks every question immediately, adds mock-only content with interviewer-style follow-up chains, and provides 3 benchmarks plus 3 drills per day. Elite includes everything in Pro plus Interview Loop mode, focus-mode targeting, per-dimension weak-spot detection, readiness scoring, and unlimited sessions.{' '}
+                  Free gives access to all easy questions, progressive medium/hard unlocks as you practice, and one easy benchmark per rolling 7 days. Pro unlocks every question immediately, adds the mock-only question pool, and provides 3 benchmarks plus 3 custom drills per day, detailed history, and weakest-concept drill recommendations. Elite includes everything in Pro plus Interview Loop mode, focus-mode targeting, per-dimension weak-spot detection, readiness scoring, study plans, coaching debriefs, and unlimited sessions.{' '}
                   {pricingLink}
                 </dd>
               </div>

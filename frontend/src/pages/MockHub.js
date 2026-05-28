@@ -392,11 +392,11 @@ export default function MockHub() {
 
             {/* Hero */}
             <section className="mock-hub-hero">
-              <div className="mock-hub-kicker">Benchmarks and drills</div>
+              <div className="mock-hub-kicker">Benchmarks, drills, and Interview Loop</div>
               <h1 className="mock-hub-title">Interview Practice</h1>
               <div className="mock-hub-subtitle-row">
                 <p className="mock-hub-subtitle">
-                  Use benchmarks for a consistent interview-style check, then drills to work on the gaps you find.
+                  Use benchmarks for a consistent interview-style check, then use custom drills or Interview Loop to work on the gaps you find.
                 </p>
                 <button className="mock-help-btn" onClick={() => setShowHelp(true)} aria-label="How it works">?</button>
               </div>
@@ -1145,9 +1145,9 @@ export default function MockHub() {
         {showDrillEmptyFraming && (
           <section className="mock-hub-section mock-hub-history-empty mock-hub-history-empty--drill">
             <div className="mock-hub-history-empty-kicker">Drill history</div>
-            <h2 className="mock-hub-history-title">No drill sessions yet</h2>
+            <h2 className="mock-hub-history-title">No custom drills yet</h2>
             <p className="mock-hub-history-empty-copy">
-              Use sprint or custom drills after a benchmark when you want extra reps on one weak area without muddying your benchmark baseline.
+              Use custom drills after a benchmark when you want extra reps on one weak area without muddying your benchmark baseline.
             </p>
           </section>
         )}
@@ -1157,7 +1157,7 @@ export default function MockHub() {
             <div className="mock-hub-empty-header">
               <h2 className="mock-hub-history-title">Start with a benchmark, then drill the misses</h2>
               <p className="mock-hub-empty-copy">
-                Benchmarks are for clean calibration. Drills are for warm-ups and targeted follow-up once you know where the session broke down.
+                Benchmarks are for clean calibration. Custom drills help you rehearse weak areas once you know where the session broke down.
               </p>
             </div>
             <div className="mock-hub-empty-grid">
@@ -1170,9 +1170,9 @@ export default function MockHub() {
               </div>
               <div className="mock-hub-empty-card mock-hub-empty-card--drill">
                 <div className="mock-hub-empty-card-kicker">Then drill</div>
-                <h3 className="mock-hub-empty-card-title">Use drills for follow-up reps</h3>
+                <h3 className="mock-hub-empty-card-title">Use custom drills for targeted reps</h3>
                 <p className="mock-hub-empty-card-copy">
-                  Sprint and custom drills are better for rehearsing one weakness, warming up, or pressure-testing a specific concept after a benchmark.
+                  Custom drills are better for rehearsing one weakness, warming up, or pressure-testing a specific concept after a benchmark. Interview Loop is the Elite option when you want the interviewer to keep digging.
                 </p>
               </div>
             </div>
@@ -1190,17 +1190,17 @@ export default function MockHub() {
         <div className="mock-help-overlay" role="dialog" aria-modal="true" aria-labelledby="mock-help-title">
           <div className="mock-help-modal">
             <div className="mock-help-modal-header">
-              <h2 id="mock-help-title">How benchmarks and drills work</h2>
+              <h2 id="mock-help-title">How mock modes work</h2>
               <button className="mock-help-close" onClick={() => setShowHelp(false)} aria-label="Close">✕</button>
             </div>
             <ol className="mock-help-steps">
-              <li>Choose a session type — Benchmark for the fixed-shape track benchmark, Sprint drill for a short calibration round, or Custom drill for targeted follow-up practice.</li>
-              <li>Filter by role to see the tracks most relevant to your interview target, then pick a track and difficulty. Mixed draws from {MIXED_MOCK_TRACKS.map(s => TRACK_LABELS[s]).join(', ')} only.</li>
-              <li>Benchmark mode is track-specific and fixed-shape. Mixed remains drill-only.</li>
+              <li>Choose a session type — Benchmark for the fixed-shape readiness signal, Custom drill for targeted follow-up practice, or Interview Loop for an Elite-only chain where the interviewer keeps pushing deeper.</li>
+              <li>Filter by role to see the tracks most relevant to your interview target, then pick a track and difficulty. Mixed draws from {MIXED_MOCK_TRACKS.map(s => TRACK_LABELS[s]).join(', ')} and uses role-based setup.</li>
+              <li>Benchmark mode is fixed-shape. Mixed benchmarks and custom drills both require role selection, while Interview Loop stays single-track only.</li>
               <li><strong>(Elite)</strong> Enable <strong>Focus mode</strong> to target specific concepts — your session draws from questions tagged with them.</li>
               <li>During the session — a countdown timer runs. Write your answer and <strong>run it as many times as you like</strong> to test. When ready, <strong>submit once — each question is one shot</strong>. You can keep editing after submitting but your score for that question is locked.</li>
               <li>No solutions are revealed mid-session.</li>
-              <li>After finishing — you'll see your score, time used, and <strong>(Elite)</strong> a coaching debrief with concept weak-spots and a priority action.</li>
+              <li>After finishing — you'll see your score and solutions, plus <strong>(Elite)</strong> a coaching debrief with concept weak-spots and a priority action.</li>
               <li><strong>(Elite)</strong> Check your <strong>Mock analytics</strong> panel to track score trends and concept performance across all sessions.</li>
             </ol>
           </div>

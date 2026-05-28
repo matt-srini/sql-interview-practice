@@ -118,10 +118,10 @@ describe('MockHub history framing', () => {
     renderHub();
 
     await waitFor(() => {
-      expect(screen.getByText('Use benchmarks for a consistent interview-style check, then drills to work on the gaps you find.')).toBeInTheDocument();
+      expect(screen.getByText('Use benchmarks for a consistent interview-style check, then use custom drills or Interview Loop to work on the gaps you find.')).toBeInTheDocument();
       expect(screen.getByText('Start with a benchmark, then drill the misses')).toBeInTheDocument();
       expect(screen.getByText('Use benchmarks for comparability')).toBeInTheDocument();
-      expect(screen.getByText('Use drills for follow-up reps')).toBeInTheDocument();
+      expect(screen.getByText('Use custom drills for targeted reps')).toBeInTheDocument();
     });
   });
 
@@ -169,7 +169,7 @@ describe('MockHub history framing', () => {
 
     await waitFor(() => {
       expect(screen.getByText('Recent benchmark sessions')).toBeInTheDocument();
-      expect(screen.getByText('No drill sessions yet')).toBeInTheDocument();
+      expect(screen.getByText('No custom drills yet')).toBeInTheDocument();
       expect(screen.queryByText('Start with a benchmark, then drill the misses')).not.toBeInTheDocument();
     });
   });
@@ -196,16 +196,16 @@ describe('MockHub mixed-track framing', () => {
     renderHub();
 
     await waitFor(() => {
-      expect(screen.getByText('Use benchmarks for a consistent interview-style check, then drills to work on the gaps you find.')).toBeInTheDocument();
+      expect(screen.getByText('Use benchmarks for a consistent interview-style check, then use custom drills or Interview Loop to work on the gaps you find.')).toBeInTheDocument();
       expect(screen.getByRole('button', { name: 'How it works' })).toBeInTheDocument();
     });
 
-    const subtitle = screen.getByText('Use benchmarks for a consistent interview-style check, then drills to work on the gaps you find.');
+    const subtitle = screen.getByText('Use benchmarks for a consistent interview-style check, then use custom drills or Interview Loop to work on the gaps you find.');
     const helpButton = screen.getByRole('button', { name: 'How it works' });
     expect(subtitle.parentElement).not.toBe(helpButton.parentElement?.closest('p'));
     fireEvent.click(helpButton);
     await waitFor(() => {
-      expect(screen.getByText('How benchmarks and drills work')).toBeInTheDocument();
+      expect(screen.getByText('How mock modes work')).toBeInTheDocument();
     });
   });
 });

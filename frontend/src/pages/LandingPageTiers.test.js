@@ -143,11 +143,12 @@ describe('LandingPage', () => {
       expect(screen.getByRole('heading', { level: 1 }).textContent).toMatch(/reason/i);
     });
 
-    it('shows "Start thinking" CTA link', async () => {
+    it('shows a no-login free sample CTA link', async () => {
       renderWithPlan(null);
       await waitFor(() => {
-        const links = screen.getAllByRole('link', { name: /start thinking/i });
+        const links = screen.getAllByRole('link', { name: /try a free sample/i });
         expect(links.length).toBeGreaterThanOrEqual(1);
+        expect(links.some((link) => link.getAttribute('href') === '/sample/sql/easy')).toBe(true);
       });
     });
   });
@@ -278,10 +279,10 @@ describe('LandingPage', () => {
   // ── Pricing section ───────────────────────────────────────────────────────
 
   describe('Pricing display', () => {
-    it('shows "Straightforward pricing." heading for anonymous users', async () => {
+    it('shows "Practice free. Prepare seriously." heading for anonymous users', async () => {
       renderWithPlan(null);
       await waitFor(() => {
-        expect(screen.getByText('Straightforward pricing.')).toBeInTheDocument();
+        expect(screen.getByText('Practice free. Prepare seriously.')).toBeInTheDocument();
       });
     });
 
@@ -316,14 +317,14 @@ describe('LandingPage', () => {
     it('hides the pricing section for lifetime_elite users', async () => {
       renderWithPlan('lifetime_elite');
       await waitFor(() => {
-        expect(screen.queryByText('Straightforward pricing.')).not.toBeInTheDocument();
+        expect(screen.queryByText('Practice free. Prepare seriously.')).not.toBeInTheDocument();
       });
     });
 
     it('shows pricing for pro users (so they can see Elite upgrade)', async () => {
       renderWithPlan('pro');
       await waitFor(() => {
-        expect(screen.getByText('Straightforward pricing.')).toBeInTheDocument();
+        expect(screen.getByText('Practice free. Prepare seriously.')).toBeInTheDocument();
       });
     });
   });

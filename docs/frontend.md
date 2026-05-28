@@ -47,7 +47,7 @@ Editorial 8-section layout (Phase E redesign). All sections use the `lp-*` CSS n
 
 **Sections:**
 
-1. **Hero** — Logged-out: 2-col grid with eyebrow, large headline, copy, CTAs ("Start thinking →" / "Find your track ↓"), and `HeroIDE` component (character-by-character SQL typing animation, result rows stream in ~55ms/row). Logged-in: 3-card strip (Resume / Dashboard / Mock) using `.lp-li-card`.
+1. **Hero** — Logged-out: 2-col grid with interview-urgent eyebrow copy, a large headline tying interview readiness to durable on-the-job reasoning, CTAs ("Try a free sample →" / "Find your role ↓"), and `HeroIDE` component (character-by-character SQL typing animation, result rows stream in ~55ms/row). Logged-in: 3-card strip (Resume / Dashboard / Mock) using `.lp-li-card`.
 2. **Thesis** — 3-column editorial with mono index numbers: "Recognition ≠ reasoning" · "Depth, not breadth" · "Real engines".
 3. **Wrong / Right** — 2-col diff table; right column rows stagger in on intersection.
 4. **Role Selector** — `role="tablist"` with 4 tabs (Data Analyst · Data Engineer · Analytics Engineer · Data Scientist). Each panel shows an ordered list of relevant tracks as cards (left 3px border in track color via inline style). Coming-soon tracks display a `lp-badge-soon` badge and no CTA link. Arrow-key keyboard navigation.
@@ -59,7 +59,7 @@ Editorial 8-section layout (Phase E redesign). All sections use the `lp-*` CSS n
 **Key internals:**
 - `useInView(ref, margin)` — thin IntersectionObserver hook returning boolean
 - `useCountUp(target, duration, trigger)` — rAF count-up with ease-out-cubic curve
-- `HeroIDE({ reduced })` — state machine: `typing → running → streaming → done`; respects `prefers-reduced-motion`. Cycles through all tracks using the hardcoded `IDE_TRACKS` array (one entry per track with a demo question/code snippet). **`IDE_TRACKS` is NOT derived from `trackRegistry.js`** — adding a new track requires a new entry here manually.
+- `HeroIDE({ reduced })` — state machine: `typing → running → streaming → done`; respects `prefers-reduced-motion`. Cycles through all tracks using the hardcoded `IDE_TRACKS` array (one entry per track with a high-signal practitioner scenario). **`IDE_TRACKS` is NOT derived from `trackRegistry.js`** — adding a new track requires a new entry here manually.
 - `Reveal({ children, delay, className })` — wrapper adding `lp-reveal` + `is-visible` on intersection
 - `ROLES` config defines the 4 role tab entries with ordered `tracks[]` slugs and role tagline — also hardcoded, must be updated when a new track is added
 - `trackRegistry.js`: `TRACK_SLUGS` (active non-comingSoon tracks, for routing/catalog/mock) and `ALL_TRACK_SLUGS` (all tracks including coming-soon, for landing tracks index and proof strip count)
@@ -522,14 +522,14 @@ Standalone page using the shared `<Topbar active="mock" />`. Does not use `AppSh
 
 **Layout:** Two-column desktop lobby (`1fr 292px` CSS grid, 1060px max-width). Left column: hero → mode cards (3) → track-specific benchmark blueprint or dedicated drill planner → config pills (track + difficulty). Right rail (sticky at top 72px): session brief card showing active mode badge, track, difficulty, question count, time limit, access state, and the anchored start button. Below the lobby: Elite analytics panel → split recent benchmark/drill history tables with first-run and partial-history benchmark/drill guidance. Collapses to single-column below 900px.
 
-- MockHub hero now frames `/mock` as a baseline-then-improvement workflow in plain language (`benchmark` first, `drills` second), with the help button rendered as a separate adjacent control rather than inline punctuation.
+- MockHub hero now frames `/mock` as a baseline-then-improvement workflow in plain language (`benchmark` first, `custom` drills second, `Interview Loop` for Elite depth), with the help button rendered as a separate adjacent control rather than inline punctuation.
 - The Data Engineer role filter now includes Data Modeling, matching the canonical role mapping used elsewhere in the product.
 - Benchmark is now the default starting mode on single-track sessions and is presented as the fixed-shape, serious mock.
-- Sprint drill (`30min`) and Custom drill are the flexible follow-up modes.
+- Custom drill is the live flexible follow-up mode. Legacy `30min` sessions remain reviewable in history only.
 - Drill modes now render a dedicated planner card with the session shape, purpose, and inline custom controls so drills read as a separate setup surface instead of just alternate mode cards.
-- Mixed track is drill-only; when users switch to Mixed, MockHub automatically exits benchmark mode and explains why both below the config card and inside the main drill-plan card so the restriction is visible in the primary setup surface.
+- Mixed track supports role-based benchmark and custom drill setup; role selection is required before start, while Interview Loop remains single-track only.
 - Elite analytics now use `benchmark_summary` as the comparable primary view and surface drill performance in a smaller secondary card.
-- History rows format stored mode values into human labels (`Benchmark`, `Sprint drill`, `Custom drill`, `Full (legacy)`) so older sessions stay legible without preserving the old setup framing, and the tables are split into `Recent benchmark sessions` and `Recent drill sessions`.
+- History rows format stored mode values into human labels (`Benchmark`, `Sprint drill`, `Custom drill`, `Full (legacy)`) so older sessions stay legible without preserving the old setup framing, and the tables are split into `Recent benchmark sessions` and `Recent custom drills`.
 - When no history exists, MockHub now teaches the benchmark-then-drill workflow explicitly instead of collapsing to a single generic empty state.
 - When only one side of history exists, MockHub now renders targeted guidance (`No benchmark sessions yet` or `No drill sessions yet`) so users understand what the missing session type is for.
 

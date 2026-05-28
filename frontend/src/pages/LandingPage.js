@@ -588,7 +588,7 @@ function RoleSelectorSection({ dashData }) {
           <p className="lp-section-index">04&ensp;/&ensp;YOUR ROLE</p>
           <h2 className="lp-section-h2">Your role shapes which thinking matters.</h2>
           <p className="lp-section-sub">
-            Nine tracks — here by relevance, not as a grid.
+            Pick your role and see where to focus first.
           </p>
         </Reveal>
 
@@ -685,7 +685,7 @@ function ProofStripSection() {
     { num: trackCount, label: 'tracks' },
     { num: `${qCount}+`, label: 'engineered questions' },
     { text: 'real DuckDB execution' },
-    { text: 'live Python sandbox' },
+    { text: 'timed benchmarks + weak-area coaching' },
     { text: 'exclusive mock question bank' },
   ];
 
@@ -805,7 +805,7 @@ function PricingSection({ userPlan, currency }) {
       <div className="lp-inner">
         <Reveal>
           <p className="lp-section-index">07&ensp;/&ensp;PRICING</p>
-          <h2 className="lp-section-h2">Straightforward pricing.</h2>
+          <h2 className="lp-section-h2">Practice free. Prepare seriously.</h2>
         </Reveal>
         <div className="landing-tier-grid">
 
@@ -1053,8 +1053,8 @@ export default function LandingPage() {
                 <div className="lp-paths-header">
                   <div>
                     <p className="lp-section-index">+&ensp;LEARNING PATHS</p>
-                    <h2 className="lp-section-h2">Guided progressions.</h2>
-                    <p className="lp-section-sub">Curated question sequences that drill a concept deeply. Same practice questions, focused into a sequence — so you build the pattern, not just tick boxes.</p>
+                    <h2 className="lp-section-h2">Drill one pattern until it sticks.</h2>
+                    <p className="lp-section-sub">Curated sequences that take a single concept deep — window functions, sessionization, star schema design, A/B power analysis. Build the pattern until it's automatic; your benchmark score will follow.</p>
                   </div>
                   <button className="landing-paths-shuffle" onClick={shufflePaths} aria-label="Shuffle learning paths">
                     ⇄ Shuffle

@@ -297,8 +297,8 @@ TOPBAR
   "datathink"                    [Practice ▾] [Mock] [Dashboard] [name · Sign out] or [Sign in]
 
 01 · HERO  (all users)
-  Logged-out: 2-col grid — left: eyebrow + h1 + copy + CTAs ("Start thinking →" / "Find your track ↓")
-              right: HeroIDE — character-by-character SQL typing animation, then cycles through all tracks via hardcoded IDE_TRACKS array (one demo MCQ/code frame per track; NOT derived from trackRegistry.js)
+  Logged-out: 2-col grid — left: interview-urgent eyebrow + h1 + copy + CTAs ("Try a free sample →" / "Find your role ↓")
+              right: HeroIDE — character-by-character SQL typing animation, then cycles through all tracks via hardcoded IDE_TRACKS array (high-signal practitioner scenarios per track; NOT derived from trackRegistry.js)
   Logged-in:  3-card strip (Resume · Dashboard · Mock) with accent-border hover
 
 02 · THESIS  (all users)
