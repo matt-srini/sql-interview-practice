@@ -1204,7 +1204,7 @@
     "id": 12028,
     "order": 28,
     "title": "Departments above their region average headcount",
-    "description": "Return department_id, department_name, region, and employee_count for departments whose employee_count is strictly greater than the average department employee_count within the same region. Include departments with zero employees when calculating each region average. Order by region ascending, then employee_count descending, then department_id ascending.",
+    "description": "Return department_id, department_name, region, and employee_count for departments whose employee count exceeds the company-wide average department headcount. Include departments with zero employees in both the main count and the average calculation. Order by employee_count descending, then department_id ascending.",
     "difficulty": "medium",
     "schema": {
       "departments": [
@@ -1221,19 +1221,18 @@
       "departments.csv",
       "employees.csv"
     ],
-    "expected_query": "SELECT d.department_id, d.department_name, d.region, COUNT(e.employee_id) AS employee_count\nFROM departments d\nLEFT JOIN employees e ON d.department_id = e.department_id\nGROUP BY d.department_id, d.department_name, d.region\nHAVING COUNT(e.employee_id) > (\n  SELECT AVG(region_department_count)\n  FROM (\n    SELECT COUNT(e2.employee_id) AS region_department_count\n    FROM departments d2\n    LEFT JOIN employees e2 ON d2.department_id = e2.department_id\n    WHERE d2.region = d.region\n    GROUP BY d2.department_id\n  ) region_counts\n)\nORDER BY d.region ASC, employee_count DESC, d.department_id ASC",
-    "solution_query": "SELECT d.department_id, d.department_name, d.region, COUNT(e.employee_id) AS employee_count\nFROM departments d\nLEFT JOIN employees e ON d.department_id = e.department_id\nGROUP BY d.department_id, d.department_name, d.region\nHAVING COUNT(e.employee_id) > (\n  SELECT AVG(region_department_count)\n  FROM (\n    SELECT COUNT(e2.employee_id) AS region_department_count\n    FROM departments d2\n    LEFT JOIN employees e2 ON d2.department_id = e2.department_id\n    WHERE d2.region = d.region\n    GROUP BY d2.department_id\n  ) region_counts\n)\nORDER BY d.region ASC, employee_count DESC, d.department_id ASC;",
-    "explanation": "The outer query computes one employee_count per department, including departments with zero employees because of the LEFT JOIN. The correlated subquery then calculates the average department headcount for the current outer region by building a region-specific list of department counts and averaging them. Including zero-employee departments in that inner grouped set matters because the description explicitly says they must affect the regional average. The HAVING comparison happens after the outer department count has been computed, which is why this is a nested aggregation subquery pattern.",
+    "expected_query": "SELECT d.department_id, d.department_name, d.region, COUNT(e.employee_id) AS employee_count\nFROM departments d\nLEFT JOIN employees e ON d.department_id = e.department_id\nGROUP BY d.department_id, d.department_name, d.region\nHAVING COUNT(e.employee_id) > (\n    SELECT AVG(dept_count)\n    FROM (\n        SELECT COUNT(e2.employee_id) AS dept_count\n        FROM departments d2\n        LEFT JOIN employees e2 ON d2.department_id = e2.department_id\n        GROUP BY d2.department_id\n    ) dept_counts\n)\nORDER BY employee_count DESC, d.department_id ASC",
+    "solution_query": "SELECT d.department_id, d.department_name, d.region, COUNT(e.employee_id) AS employee_count\nFROM departments d\nLEFT JOIN employees e ON d.department_id = e.department_id\nGROUP BY d.department_id, d.department_name, d.region\nHAVING COUNT(e.employee_id) > (\n    SELECT AVG(dept_count)\n    FROM (\n        SELECT COUNT(e2.employee_id) AS dept_count\n        FROM departments d2\n        LEFT JOIN employees e2 ON d2.department_id = e2.department_id\n        GROUP BY d2.department_id\n    ) dept_counts\n)\nORDER BY employee_count DESC, d.department_id ASC;",
+    "explanation": "The outer query produces one employee_count per department via LEFT JOIN + GROUP BY, with zero-employee departments contributing a count of 0. The HAVING clause filters to departments that exceed the company-wide average. That average is a scalar subquery: the inner query runs its own LEFT JOIN + GROUP BY to get one dept_count per department, then wraps it in AVG. Because the subquery contains no reference to the outer query's rows, it is non-correlated — computed once and compared against every outer row.",
     "hints": [
       "Bring together the sources that hold the required attributes, then summarize at the business grain named in the prompt.",
-      "The comparison target is not a single global average; it changes with the outer row's region.",
-      "Make sure zero-employee departments still participate in the regional average calculation."
+      "The HAVING threshold is not a literal value — compute it as a scalar subquery that aggregates across all departments and returns a single average.",
+      "Make sure zero-employee departments are included in the average — the LEFT JOIN in both the outer query and the inner subquery ensures they contribute a count of 0."
     ],
     "concepts": [
-      "ROW-LEVEL SELF-COMPARISON",
       "OPTIONAL ENTITY PRESERVATION",
       "POST-AGGREGATION FILTERING",
-      "CORRELATED SUBQUERY"
+      "SCALAR SUBQUERY COMPARISON"
     ],
     "companies": [
       "Google",
@@ -2373,7 +2372,7 @@
     "expected_query": "SELECT DISTINCT event_name,\n       ARRAY_TO_STRING(\n         LIST_TRANSFORM(\n           STRING_SPLIT(REGEXP_REPLACE(event_name, '_', ' ', 'g'), ' '),\n           w -> UPPER(SUBSTR(w, 1, 1)) || LOWER(SUBSTR(w, 2))\n         ),\n         ' '\n       ) AS display_name\nFROM events\nORDER BY event_name",
     "solution_query": "SELECT DISTINCT event_name,\n       ARRAY_TO_STRING(\n         LIST_TRANSFORM(\n           STRING_SPLIT(REGEXP_REPLACE(event_name, '_', ' ', 'g'), ' '),\n           w -> UPPER(SUBSTR(w, 1, 1)) || LOWER(SUBSTR(w, 2))\n         ),\n         ' '\n       ) AS display_name\nFROM events\nORDER BY event_name;",
     "hints": [
-      "REGEXP_REPLACE(string, pattern, replacement, flags) with flag 'g' replaces every match, not just the first.",
+      "The first transformation step is making the string space-separated — think about which operation handles a specific character substitution throughout the whole string, not just the first occurrence.",
       "Title-casing without `INITCAP` (DuckDB does not implement it): split the phrase into words, transform each word so its first letter is uppercased and the rest lowercased, then join with spaces. `STRING_SPLIT`, `LIST_TRANSFORM`, and `ARRAY_TO_STRING` are the DuckDB pieces you need."
     ],
     "explanation": "REGEXP_REPLACE(str, '_', ' ', 'g') replaces every underscore globally (the 'g' flag) so the snake_case identifier becomes space-separated words. DuckDB does not ship `INITCAP`, so the title-case step is built manually: `STRING_SPLIT` turns the phrase into a list of words, `LIST_TRANSFORM` rebuilds each word as `UPPER(first letter) || LOWER(rest)`, and `ARRAY_TO_STRING` joins them back with spaces. This pipeline — regex → split → per-word transform → join — is the portable substitute for `INITCAP` in dashboards and reports."
@@ -2419,7 +2418,7 @@
     "expected_query": "SELECT c.category_name,\n       STRING_AGG(p.product_name, ', ' ORDER BY p.product_name) AS product_list\nFROM categories c\nJOIN products p ON c.category_id = p.category_id\nWHERE p.is_active = true\nGROUP BY c.category_name\nORDER BY c.category_name",
     "solution_query": "SELECT c.category_name,\n       STRING_AGG(p.product_name, ', ' ORDER BY p.product_name) AS product_list\nFROM categories c\nJOIN products p ON c.category_id = p.category_id\nWHERE p.is_active = true\nGROUP BY c.category_name\nORDER BY c.category_name;",
     "hints": [
-      "STRING_AGG(value, separator) collapses multiple rows into one delimited string within a group.",
+      "When you need a single output row per group that gathers multiple values from different rows into one joined string, think about which aggregate function is designed for string collapsing rather than counting or summing.",
       "STRING_AGG accepts an ORDER BY clause inside the function call — ORDER BY inside the aggregate controls the order of the concatenated values, not the output row order."
     ],
     "explanation": "STRING_AGG(expr, sep ORDER BY sort_expr) concatenates values within each group in the specified order. The ORDER BY inside the function is evaluated before aggregation and is independent of the query's outer ORDER BY. This is distinct from GROUP_CONCAT (MySQL) which uses a different syntax. ARRAY_AGG is a related function that produces an array instead of a flat string — use ARRAY_AGG when downstream processing needs to index or iterate individual elements."
@@ -2498,7 +2497,7 @@
     "expected_query": "SELECT event_id, event_name, event_time,\n       event_time AT TIME ZONE 'UTC' AT TIME ZONE 'America/Los_Angeles' AS event_time_pt\nFROM events\nORDER BY event_time\nLIMIT 20",
     "solution_query": "SELECT event_id, event_name, event_time,\n       event_time AT TIME ZONE 'UTC' AT TIME ZONE 'America/Los_Angeles' AS event_time_pt\nFROM events\nORDER BY event_time\nLIMIT 20;",
     "hints": [
-      "AT TIME ZONE applied twice converts a naive timestamp: the first application declares the source timezone; the second specifies the target.",
+      "A timestamp stored without timezone context needs to be given a 'home zone' before it can be expressed in another zone — think about how to chain two timezone declarations in a single expression.",
       "Use an IANA timezone name like 'America/Los_Angeles' rather than a fixed offset — it handles daylight saving transitions automatically."
     ],
     "explanation": "event_time AT TIME ZONE 'UTC' marks the TIMESTAMP as UTC-aware (TIMESTAMPTZ). The second AT TIME ZONE 'America/Los_Angeles' then converts it to Pacific time. Using IANA names instead of offsets like '-08:00' means the conversion auto-adjusts for daylight saving. This two-step pattern is standard when event data is stored in UTC (as it should be) but business reports require local time. Note: the result type is TIMESTAMPTZ, which may render differently depending on the client session timezone."
@@ -2752,7 +2751,7 @@
     "expected_query": "WITH RECURSIVE month_spine AS (\n    SELECT DATE '2023-01-01' AS month_start\n    UNION ALL\n    SELECT (month_start + INTERVAL '1 month')::DATE\n    FROM month_spine\n    WHERE month_start < DATE '2025-12-01'\n)\nSELECT s.month_start,\n       COUNT(o.order_date) AS order_count\nFROM month_spine s\nLEFT JOIN orders o\n    ON DATE_TRUNC('month', o.order_date)::DATE = s.month_start\nGROUP BY s.month_start\nORDER BY s.month_start",
     "solution_query": "WITH RECURSIVE month_spine AS (\n    SELECT DATE '2023-01-01' AS month_start\n    UNION ALL\n    SELECT (month_start + INTERVAL '1 month')::DATE\n    FROM month_spine\n    WHERE month_start < DATE '2025-12-01'\n)\nSELECT s.month_start,\n       COUNT(o.order_date) AS order_count\nFROM month_spine s\nLEFT JOIN orders o\n    ON DATE_TRUNC('month', o.order_date)::DATE = s.month_start\nGROUP BY s.month_start\nORDER BY s.month_start;",
     "hints": [
-      "A recursive CTE has two parts: an anchor (the starting row) and a recursive member that references the CTE name itself — separated by UNION ALL.",
+      "A recursive CTE builds its result iteratively — start with the seed row for the first month, then define how each subsequent row is derived from the previous one, and include a condition that stops the iteration before it overshoots the end date.",
       "The WHERE clause in the recursive member is the termination condition — when it evaluates to false, recursion stops."
     ],
     "explanation": "WITH RECURSIVE declares a recursive CTE. The anchor produces the first row (2023-01-01). The recursive member unions with new rows derived from the previous iteration — adding one month each time. Casting to ::DATE normalizes the INTERVAL result back to DATE. The WHERE month_start < DATE '2025-12-01' prevents infinite recursion by stopping before generating 2026-01. Date spines are critical in analytics: joining fact tables to a complete calendar ensures time-series charts show gaps instead of silently skipping months with no events."
@@ -2789,13 +2788,13 @@
       "order_by"
     ],
     "enforce_concepts": true,
-    "expected_query": "WITH keyed AS (\n    SELECT user_id,\n           CONCAT(country, ':', plan_tier, ':', user_id::TEXT) AS composite_key\n    FROM users\n)\nSELECT user_id, composite_key,\n       SPLIT_PART(composite_key, ':', 1) AS extracted_country,\n       SPLIT_PART(composite_key, ':', 2) AS extracted_tier,\n       SPLIT_PART(composite_key, ':', 3)::INT AS extracted_id\nFROM keyed\nORDER BY user_id",
-    "solution_query": "WITH keyed AS (\n    SELECT user_id,\n           CONCAT(country, ':', plan_tier, ':', user_id::TEXT) AS composite_key\n    FROM users\n)\nSELECT user_id, composite_key,\n       SPLIT_PART(composite_key, ':', 1) AS extracted_country,\n       SPLIT_PART(composite_key, ':', 2) AS extracted_tier,\n       SPLIT_PART(composite_key, ':', 3)::INT AS extracted_id\nFROM keyed\nORDER BY user_id;",
+    "expected_query": "WITH keyed AS (\n    SELECT user_id,\n           country || ':' || plan_tier || ':' || user_id::TEXT AS composite_key\n    FROM users\n)\nSELECT user_id, composite_key,\n       SPLIT_PART(composite_key, ':', 1) AS extracted_country,\n       SPLIT_PART(composite_key, ':', 2) AS extracted_tier,\n       SPLIT_PART(composite_key, ':', 3)::INT AS extracted_id\nFROM keyed\nORDER BY user_id",
+    "solution_query": "WITH keyed AS (\n    SELECT user_id,\n           country || ':' || plan_tier || ':' || user_id::TEXT AS composite_key\n    FROM users\n)\nSELECT user_id, composite_key,\n       SPLIT_PART(composite_key, ':', 1) AS extracted_country,\n       SPLIT_PART(composite_key, ':', 2) AS extracted_tier,\n       SPLIT_PART(composite_key, ':', 3)::INT AS extracted_id\nFROM keyed\nORDER BY user_id;",
     "hints": [
       "Build the composite key in a CTE so you can reference it by alias in the outer SELECT instead of repeating the expression.",
       "SPLIT_PART(string, delimiter, n) returns the nth segment (1-indexed) — parse each position with a separate call."
     ],
-    "explanation": "SPLIT_PART(string, delimiter, n) extracts the nth segment after splitting on the delimiter. Using a CTE avoids repeating the CONCAT expression for each SPLIT_PART call. Casting the third segment to INT with ::INT validates that the user_id portion is numeric. This build-then-parse pattern is common in pipeline debugging: you construct the key as it would be built upstream, then parse it as a downstream consumer would, to verify both directions are consistent."
+    "explanation": "SPLIT_PART(string, delimiter, n) extracts the nth segment after splitting on the delimiter. Using a CTE builds the composite key once with `||` concatenation so the outer SELECT can reference it by alias in each SPLIT_PART call, avoiding repetition. Casting the third segment to INT with ::INT validates that the user_id portion is numeric. This build-then-parse pattern is common in pipeline debugging: you construct the key as it would be built upstream, then parse it as a downstream consumer would, to verify both directions are consistent."
   },
   {
     "id": 12065,
