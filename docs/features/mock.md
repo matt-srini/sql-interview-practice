@@ -75,15 +75,15 @@ For **custom drill**, the role defines the pool of tracks to draw from. The user
 
 | Track | Dedicated mock bank? | Notes |
 |---|---|---|
-| SQL | ✅ | 38 mock-only questions |
-| Python | ✅ | 20 mock-only questions |
-| Pandas | ✅ | 26 mock-only questions |
-| PySpark | ✅ | 21 mock-only questions |
-| ML Fundamentals | ✅ | 25 mock-only questions |
-| Experimentation | ✅ | 25 mock-only questions |
-| Statistics | ✅ | 8 mock-only questions |
-| Data Modeling | ✅ | 96 mock-only questions |
-| Data Engineering | ✅ | Expanding |
+| SQL | ✅ | 165 mock-only questions |
+| Python | ✅ | 103 mock-only questions |
+| Pandas | ✅ | 114 mock-only questions |
+| PySpark | ✅ | 150 mock-only questions |
+| ML Fundamentals | ✅ | 143 mock-only questions |
+| Experimentation | ✅ | 104 mock-only questions |
+| Statistics | ✅ | 116 mock-only questions |
+| Data Modeling | ✅ | 97 mock-only questions |
+| Data Engineering | ✅ | 110 mock-only questions |
 
 Sessions for tracks without sufficient mock-only content draw from practice questions. Mixed sessions pool from all role-associated tracks.
 

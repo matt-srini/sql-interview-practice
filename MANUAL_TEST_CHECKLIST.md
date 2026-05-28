@@ -48,49 +48,49 @@
 
 ### SQL (`/practice/sql`)
 - Track hub shows progress bars (easy/medium/hard), next unlocked question, concept preview, paths
-- Sidebar shows 3 collapsible groups: Easy (37), Medium (45), Hard (30) — total 112
+- Sidebar shows 3 collapsible groups: Easy (37), Medium (50), Hard (31) — total 118
 - First question unlocked; locked questions dimmed and not clickable
 - Run Query → results table (capped at 200 rows, 3 s timeout)
 - Submit → verdict, compare grid, hints; solution + quality analysis revealed on correct
 - Solving Easy #1 → Easy #2 becomes `Next`; sidebar refreshes
 
 ### Python (`/practice/python`)
-- Sidebar: Easy (39), Medium (32), Hard (24) — total 95
+- Sidebar: Easy (33), Medium (29), Hard (17) — total 79
 - Editor initialized with `starter_code`
 - Run Code → TestCasePanel (public test cases) + PrintOutputPanel (stdout)
 - Submit → public + hidden test results; `solution_code` revealed on correct
 
 ### Pandas (`/practice/python-data`)
-- Sidebar: Easy (27), Medium (36), Hard (23) — total 86
+- Sidebar: Easy (28), Medium (40), Hard (24) — total 92
 - VariablesPanel shows available DataFrames with schema
 - Run Code → DataFrame output table + PrintOutputPanel
 - Submit → DataFrame comparison (your output vs expected)
 
 ### PySpark (`/practice/pyspark`)
-- Sidebar: Easy (41), Medium (39), Hard (26) — total 106
+- Sidebar: Easy (41), Medium (45), Hard (42) — total 128
 - MCQPanel shows radio options; no Run button; question-form badges (MCQ / predict-output / debug / scenario)
 - Submit → highlights correct/wrong option + reveals explanation
 
 ### Data Engineering (`/practice/data-engineering`)
-- Sidebar: Easy (30), Medium (33), Hard (23) — total 86
+- Sidebar: Easy (30), Medium (35), Hard (26) — total 91
 - MCQ / scenario / debug formats; no code execution
 - Locked MCQ shows stem but hides options; submitting locked returns 403
 
 ### Data Modeling (`/practice/data-modeling`)
-- Sidebar: Easy (25), Medium (28), Hard (23) — total 76
+- Sidebar: Easy (25), Medium (31), Hard (25) — total 81
 - MCQ / scenario formats; no code execution
 
 ### Statistics (`/practice/statistics`)
-- Sidebar: Easy (31), Medium (41), Hard (25) — total 97
+- Sidebar: Easy (31), Medium (43), Hard (26) — total 100
 - **Dual-subtype**: conceptual questions → MCQ panel; numerical questions → Python code editor + test harness
 - `Run Code` appears only for numerical subtype; MCQ-only for conceptual
 
 ### ML Fundamentals (`/practice/ml-fundamentals`)
-- Sidebar: Easy (30), Medium (35), Hard (25) — total 90
+- Sidebar: Easy (30), Medium (40), Hard (30) — total 100
 - MCQ / scenario / predict-output / debug formats
 
 ### Experimentation (`/practice/experimentation`)
-- Sidebar: Easy (30), Medium (30), Hard (20) — total 80
+- Sidebar: Easy (30), Medium (33), Hard (24) — total 87
 - MCQ / scenario / predict-output / debug formats
 
 ---
@@ -158,12 +158,11 @@
 
 ### Setup (MockHub)
 - Two-column desktop layout: left config, right sticky session brief + Start CTA
-- Mode cards: Benchmark (fixed-shape), Sprint drill (30 min, 2 questions), Custom drill (user-set)
-- Benchmark rejects Mixed track; drill modes allow Mixed (SQL + Python + Pandas + PySpark)
-- Track selector + difficulty buttons show live access state (remaining daily sessions or upgrade CTAs)
+- Mode cards: Benchmark (fixed-shape), Custom (user-set 1–5 Q, 10–90 min), Interview Loop (Elite only, chain-driven)
+- Mixed track requires role selection (Data Analyst / Data Engineer / Analytics Engineer / Data Scientist) for both benchmark and custom; Interview Loop is not available on Mixed
+- Track selector + difficulty buttons show live access state (remaining daily/weekly sessions or upgrade CTAs)
 - Pre-flight: `GET /api/mock/access?track=<track>` called on every track change
-- **(Elite only)** Company filter dropdown when SQL track selected
-- **(Elite only)** Focus mode concept multi-select (1–3 concepts)
+- **(Elite only)** Focus concepts multi-select (`focus_concepts`) — available on all three modes; UI shown to all but locked for non-Elite
 
 ### Session (`/mock/:id`)
 - Countdown timer, colour-coded: normal → amber (<10 min) → red (<3 min); browser tab title updates
@@ -184,19 +183,19 @@
 - Share result: native share sheet or clipboard fallback
 
 ### Plan gates
-- Free: unlimited easy mocks, 1 medium/day (requires medium unlocked in practice first)
-- Pro: all difficulties, 3 hard/day
-- Elite: unlimited, focus mode, company filter, debrief, mock history analytics
+- Free: 1 `benchmark` per rolling 7 days (easy only, practice-pool); no `custom`; no `interview_loop`
+- Pro: 3 `benchmark`/day + 3 `custom`/day (independent counters), any difficulty; mock-only pool unlocked; no `interview_loop`
+- Elite: unlimited (soft cap), `focus_concepts`, `interview_loop`, session debrief, deep mock history analytics
 
 ### History
-- Last 20 sessions split into Benchmark and Drill sections
-- Mode labels normalized: Benchmark · Sprint drill · Custom drill · Full (legacy)
+- Last 20 sessions split into Benchmark, Interview Loop, and Drill (legacy) sections
+- Mode labels normalized: Benchmark · Custom · Interview Loop · legacy 30min/60min (read-only)
 
 ---
 
 ## Learning paths (`/learn`)
 
-- Index shows all 42 paths grouped by track; topic pills filter by track
+- Index shows all 46 paths grouped by track; topic pills filter by track
 - `/learn/:topic/:slug` shows path with breadcrumb, progress bar, and question list
 - Completing a track's Starter path → all medium unlocked immediately
 - Completing the Intermediate path → full free-tier hard cap unlocked

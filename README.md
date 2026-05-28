@@ -4,13 +4,13 @@ A data interview practice platform covering nine tracks. Users write SQL or Pyth
 
 ## Current State
 
-- **828 practice questions** across 9 tracks with plan-gated unlock rules and persistent progress
-- **165 mock-only questions** (Pro/Elite) across all tracks, never shown in the practice catalog
+- **876 practice questions** across 9 tracks with plan-gated unlock rules and persistent progress
+- **1,102 mock-only questions** (Pro/Elite) across all tracks, never shown in the practice catalog
 - **36 sample questions** across SQL, Python, Pandas, and PySpark — no login required, no progress impact. Data Engineering, Data Modeling, Statistics, ML Fundamentals, and Experimentation samples are auto-sliced from the first 3 practice questions per difficulty.
 - Challenge mode with persistent progress, bookmarks, draft autosave, hints, concept tags, and unlock logic
 - Sample mode that is anonymous-friendly (no login required)
-- Mock interviews: `benchmark` (fixed-shape track benchmark) and drill modes (`30min`, `custom`, `mixed`) with plan-based limits and post-session analysis
-- Learning paths with free and Pro-gated track-specific curricula (42 paths total)
+- Mock interviews: `benchmark` (fixed-shape track readiness signal, or role-based Mixed benchmark), `custom` (1–5 questions, 10–90 min), and `interview_loop` (Elite-only chain-driven dialogue) with plan-based limits and post-session analysis. Legacy `30min`/`60min` sessions are read-only history.
+- Learning paths with free and Pro-gated track-specific curricula (46 paths total)
 - Semantic concept tags, progressive hints, and company tags (SQL) surfaced in the practice UI
 - Dashboard with coaching insights, streak tracking, weakest-concept signals, and (Elite) readiness scores + study plan
 - Three subscription tiers (Free / Pro / Elite) via Razorpay
@@ -19,16 +19,16 @@ A data interview practice platform covering nine tracks. Users write SQL or Pyth
 
 | Track | Easy | Medium | Hard | Practice total | Mock-only (Pro/Elite) |
 |---|---|---|---|---|---|
-| SQL | 37 | 47 | 31 | **115** | 162 (0 easy, 73 med, 89 hard) |
-| Python | 33 | 29 | 17 | **79** | 100 (0 easy, 50 med, 50 hard) |
-| Pandas | 28 | 40 | 24 | **92** | 110 (0 easy, 50 med, 60 hard) |
+| SQL | 37 | 50 | 31 | **118** | 165 (0 easy, 62 med, 103 hard) |
+| Python | 33 | 29 | 17 | **79** | 103 (0 easy, 50 med, 53 hard) |
+| Pandas | 28 | 40 | 24 | **92** | 114 (0 easy, 51 med, 63 hard) |
 | PySpark | 41 | 45 | 42 | **128** | 150 (0 easy, 75 med, 75 hard) |
-| Data Engineering | 30 | 35 | 26 | **91** | 14 (0 easy, 6 med, 8 hard) |
-| Data Modeling | 25 | 28 | 23 | **76** | 13 (0 easy, 6 med, 7 hard) |
-| Statistics | 31 | 41 | 25 | **97** | 8 |
-| ML Fundamentals | 30 | 38 | 28 | **96** | 25 |
-| Experimentation | 30 | 32 | 22 | **84** | 25 |
-| **Total** | **285** | **335** | **238** | **858** | **607** |
+| Data Engineering | 30 | 35 | 26 | **91** | 110 (0 easy, 34 med, 76 hard) |
+| Data Modeling | 25 | 31 | 25 | **81** | 97 (0 easy, 46 med, 51 hard) |
+| Statistics | 31 | 43 | 26 | **100** | 116 (0 easy, 66 med, 50 hard) |
+| ML Fundamentals | 30 | 40 | 30 | **100** | 143 (0 easy, 59 med, 84 hard) |
+| Experimentation | 30 | 33 | 24 | **87** | 104 (0 easy, 45 med, 59 hard) |
+| **Total** | **285** | **346** | **245** | **876** | **1,102** |
 
 Mock-only questions share the same TXNNN ID scheme, allocated at the top of each difficulty range. They never appear in the practice catalog.
 
@@ -105,9 +105,9 @@ sql-interview-practice/
 
 | Plan | Access |
 |---|---|
-| Free | All easy questions, batch-gated medium and hard (thresholds below), 1 medium mock/day, free learning paths |
-| Pro | Full practice catalog, all learning paths, 3 hard mocks/day, benchmark + drill mock modes |
-| Elite | Full catalog, unlimited mocks, focus mode, mock analytics, readiness scores, study plan |
+| Free | All easy questions, batch-gated medium and hard (thresholds below), 1 `benchmark` per rolling 7 days (easy only, practice-pool questions), free learning paths |
+| Pro | Full practice catalog, all learning paths, 3 `benchmark`/day + 3 `custom`/day (independent counters, any difficulty), mock-only content pool unlocked |
+| Elite | Full catalog, unlimited mocks (soft abuse cap), `focus_concepts` filter, `interview_loop` mode, deep mock analytics, readiness scores, study plan, session debrief |
 
 `lifetime_pro` and `lifetime_elite` normalize to their base plans for access checks.
 
@@ -123,10 +123,12 @@ sql-interview-practice/
 
 **Learning path shortcuts:** Completing a track's Starter path → all medium unlocked. Completing the Intermediate path → full free-tier hard cap unlocked.
 
-### Mock modes
+### Mock modes (post-Phase-3)
 
-- **Benchmark** — fixed-shape track benchmark; not available for Mixed. Track-specific question blueprints (e.g. Statistics enforces 1 numerical + 2 conceptual).
-- **Drill (30min / custom / mixed)** — flexible drill sessions; Mixed selects across all eligible tracks.
+- **Benchmark** — fixed-shape track readiness signal, or role-based Mixed benchmark (Mixed requires role selection: Data Analyst / Data Engineer / Analytics Engineer / Data Scientist). Track-specific blueprints (e.g. Statistics enforces 1 numerical + 2 conceptual).
+- **Custom** — user-tuned: 1–5 questions, 10–90 min. Mixed custom also requires role selection (defines the track pool).
+- **Interview Loop** — Elite only. One chain per session (parent + all follow-ups, atomic); iterative interviewer dialogue. Not available on Mixed (chains are single-track).
+- Legacy `30min` (Sprint drill) and `60min` sessions in history are read-only; they cannot be started new.
 
 ### Evaluation and safety
 

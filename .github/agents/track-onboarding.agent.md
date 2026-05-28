@@ -103,10 +103,12 @@ Generate in this exact order:
 
 For each question, you must:
 
-**Apply the platform philosophy test first:**
-> *Would a senior data interviewer at Meta, Google, Stripe, or Amazon ask this in a 45-minute screen?*
+**Apply the platform philosophy test first** (primary, per `docs/content-authoring.md` § The one test every question must pass):
+> *Does this question build the kind of reasoning a practicing data professional would still rely on years into the role?*
+>
+> Secondary (grounding only): *and would the same reasoning earn the offer in a real interview screen?*
 
-If the answer is no, redesign the question.
+Reasoning depth is the product — not syntax recall, trivia, or concept-stacking. The old "would a FAANG interviewer ask this in a 45-min screen" framing is **retired as the primary test** (it survives only as the secondary grounding check). If the primary answer is no, redesign the question.
 
 **Follow the difficulty standards strictly:**
 - Easy: single concept, one unambiguous answer, forces reasoning not recall

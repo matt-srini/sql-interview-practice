@@ -46,7 +46,7 @@ Registered in `backend/main.py`:
 | `routers/insights.py` | `/api/dashboard` | Coaching insights: per-track speed/accuracy, weakest concepts, streak |
 | `routers/paths.py` | `/api/paths` | Learning path catalog and path detail with per-question state |
 | `routers/mock.py` | `/api/mock` | Mock interview sessions (start, submit, finish, history) |
-| `routers/spa.py` | — | Static assets + SPA fallback; `_build_seo_meta()` injects per-route title/description/canonical for all known routes including ~122 easy question pages |
+| `routers/spa.py` | — | Static assets + SPA fallback; `_build_seo_meta()` injects per-route title/description/canonical for all known routes including ~139 easy question pages (the four executable tracks SQL/Python/Pandas/PySpark; the five reasoning tracks are not currently SEO-prerendered) |
 
 ---
 
@@ -366,10 +366,12 @@ Files: `db.py`, `progress.py`, `unlock.py`
 
 **Learning paths and unlocks:** Paths do **not** influence unlock state. `compute_unlock_state` is threshold-only. A user solving a question via the path UI gets the same `solved` mark and the same threshold-counter advancement as solving from practice directly. See [`docs/content-authoring.md`](./content-authoring.md) §Paths for the canonical model.
 
-**Mock daily limits** (enforced in `compute_mock_access`):
-- Free: 1 medium mock/day, unlimited easy; **hard mocks are plan-locked** (Pro required)
-- Pro: 3 hard mocks/day, unlimited easy and medium
-- Elite: unlimited
+**Mock limits** (post-Phase-3; enforced via `get_daily_benchmark_usage` / `get_daily_custom_usage` / `get_weekly_benchmark_usage`). Modes: `benchmark`, `custom`, `interview_loop`. Single source of truth: [`docs/features/mock.md`](./features/mock.md).
+- Free: 1 `benchmark` per rolling 7 days (easy only, practice-pool questions). No `custom`. No `interview_loop`.
+- Pro: 3 `benchmark`/day + 3 `custom`/day (independent counters), any difficulty. Mock-only content pool unlocked. No `interview_loop`.
+- Elite: unlimited (soft abuse cap only). + `focus_concepts` filter. + `interview_loop`. + deep analytics + debrief.
+
+Legacy `30min`/`60min` sessions in history are read-only and cannot be started new.
 
 Solved questions remain solved permanently regardless of plan changes.
 
@@ -422,11 +424,13 @@ Prefix: `/api/mock`
 
 **`POST /start`**
 ```json
-{ "mode": "benchmark|30min|60min|custom", "track": "sql|python|python-data|pyspark|mixed",
+{ "mode": "benchmark|custom|interview_loop", "track": "sql|python|python-data|pyspark|data-engineering|data-modeling|statistics|ml-fundamentals|experimentation|mixed",
   "difficulty": "easy|medium|hard|mixed",
+  "role": "data_analyst|data_engineer|analytics_engineer|data_scientist",  // required when track="mixed", else null
   "num_questions": 2,   // custom only, 1-5
   "time_minutes": 30    // custom only, 10-90
 }
+// Legacy modes 30min/60min are read-only history; not accepted for new sessions.
 ```
 
 `benchmark` ignores `num_questions` and `time_minutes`; the router applies a fixed blueprint by track:
@@ -469,7 +473,7 @@ mock_session_questions (id BIGSERIAL, session_id BIGINT→mock_sessions, questio
 - PySpark benchmark sessions use a six-slot format template so the benchmark stays code-adjacent rather than collapsing into generic MCQ sampling.
 
 - Questions are randomly sampled from the user's unlocked pool (via `compute_unlock_state`).
-- `mixed` track: pools questions from all 4 catalogs.
+- `mixed` track: **role-based** — requires a `role` (data_analyst / data_engineer / analytics_engineer / data_scientist). For `benchmark`, the role maps to a fixed per-track slot blueprint; for `custom`, the role defines the track pool drawn fresh-first. See [`docs/features/mock.md`](./features/mock.md) § Mixed Benchmark Blueprints for the canonical role→track mapping. (The legacy `mixed_mock_slugs()` / `in_mixed_mock` flag — the 4 executable tracks — predates the role-based blueprint and is no longer the mixed-pool source of truth.)
 - `mixed` difficulty: samples across easy/medium/hard.
 - Returns 400 if the pool has fewer questions than requested.
 

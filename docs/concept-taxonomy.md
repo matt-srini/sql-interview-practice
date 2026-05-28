@@ -281,39 +281,39 @@ A real human with a different agenda enters the picture. The technical answer do
 **Match patterns:** `RESULT ORDERING`, `COLUMN PROJECTION`, `DETERMINISTIC RESULT`, `OUTPUT SCHEMA`, `ORDER-FIRST`
 **Example existing tags:** DETERMINISTIC RESULT ORDERING (24), COLUMN PROJECTION (14), OUTPUT SCHEMA SHAPING, DEDUPLICATED RESULT SHAPING
 
-#### `METRIC INTERPRETATION & DENOMINATOR CHOICE` ⚡ *new family — real-world gap*
+#### `METRIC INTERPRETATION & DENOMINATOR CHOICE`
 **What it tests:** picking the right metric definition under ambiguous business framing, choosing the right denominator for rates/ratios, recognising when "active user" or "revenue" or "session" has multiple defensible definitions.
 **Typical question shape:** Mock-only ambiguity-pivot follow-ups; questions where the description deliberately leaves the metric definition open and the answer hinges on what the candidate picks and why.
 **Member tags (canonical):** `ACTIVE-USER DEFINITION`, `REVENUE BASIS CHOICE`, `DENOMINATOR SELECTION`, `RATE BASE NORMALIZATION`, `AMBIGUOUS METRIC`
 **Why this is new:** the existing bank had this implicit (questions about "active users" or "revenue including/excluding refunds") but never tagged the *reasoning* as a family. **Phase 2 (SQL) status: mock-only realism lens** — appears only on `mock_only: true` SQL questions, always co-occurring with ≥1 practice-grounded family. Other tracks: treat as a practice-curriculum target until covered.
 
-#### `DATA QUALITY SKEPTICISM` ⚡ *new family — real-world gap*
+#### `DATA QUALITY SKEPTICISM`
 **What it tests:** noticing duplicates that shouldn't be there, finding orphan records, recognising suspicious NULLs, validating row counts against source-of-truth, anti-join reconciliation as a debugging tool.
 **Typical question shape:** Debug-SQL questions; scenario questions where the data is dirty by design and the candidate must catch and address it before answering.
 **Member tags (canonical):** `DUPLICATE DETECTION`, `ORPHAN RECORD CHECK`, `ROW COUNT RECONCILIATION`, `NULL ANOMALY INSPECTION`, `DATA QUALITY GATE`
 **Why this is new:** present implicitly via DEBUG SQL questions and dirty-data scenarios, but never surfaced as a coherent reasoning family. Real practitioners spend 30–50% of their time on data quality; this family must be teachable.
 
-#### `DOUBLE-COUNTING DETECTION` ⚡ *new family — real-world gap*
+#### `DOUBLE-COUNTING DETECTION`
 **What it tests:** spotting fan-out from one-to-many joins, recognising inflated metrics from joining facts to facts, choosing aggregation grain to prevent multiplication.
 **Typical question shape:** Mock-only debug or scenario questions where a query "looks right" but returns inflated numbers because of a join mistake.
 **Member tags (canonical):** `FAN-OUT DETECTION`, `JOIN MULTIPLICATION`, `GRAIN MISMATCH`, `INFLATED METRIC DEBUG`
 **Why this is new:** the bank has `MULTI-TABLE ENTITY LINKING` (14) which tests *correct* joins. This new family targets the *failure mode* where joins inflate results. DM has `DOUBLE-COUNTING` (1) and `FAN-OUT` (1) tags surfacing this idea; SQL should have a parallel family.
 
-#### `METRIC RECONCILIATION` ⚡ *new family — real-world gap*
+#### `METRIC RECONCILIATION`
 **What it tests:** validating a computed metric against an independent source of truth — does my number match what finance / the source system / the prior pipeline reports? Reconciliation queries, cross-system checks, audit patterns, mismatch investigation.
 **Typical question shape:** "These two queries should produce the same total but they differ by N rows / N dollars — find why." Often anchors a debug or scenario question.
 **Match patterns:** `RECONCILIATION`, `AUDIT`, `CROSS-SOURCE VALIDATION`, `MISMATCH INVESTIGATION`, `SOURCE OF TRUTH`
 **Member tags (canonical):** `METRIC RECONCILIATION`, `CROSS-SOURCE RECONCILIATION`, `MISMATCH AUDIT`, `ROW-COUNT RECONCILIATION` (distinct from data-quality use of the same term — here the lens is *the metric*, not *the data*)
 **Why this is new:** distinct from `DATA QUALITY SKEPTICISM` — that family is about the *data* being dirty; this family is about the *computed metric* being verified against independent truth. Every senior analyst runs reconciliation queries weekly; the bank tested this only implicitly.
 
-#### `OUTPUT SANITY VALIDATION` ⚡ *new family — real-world gap*
+#### `OUTPUT SANITY VALIDATION`
 **What it tests:** self-checking your own analytical output before declaring done — row count plausibility, NULL-coverage sanity, distribution-shape spot-check, "does this number even make sense given the input?"
 **Typical question shape:** Mock-only scenarios where the candidate must defend why their answer is right (or, in debug variants, why an apparently-correct-looking answer is wrong because it failed a sanity check).
 **Match patterns:** `SANITY`, `OUTPUT VALIDATION`, `ROW COUNT CHECK`, `OUTPUT SANITY`, `PLAUSIBILITY CHECK`
 **Member tags (canonical):** `OUTPUT SANITY VALIDATION`, `RESULT PLAUSIBILITY CHECK`, `ROW COUNT SANITY`, `NULL COVERAGE SANITY`
 **Why this is new:** sanity-checking your own work is the discipline that separates senior practitioners from junior ones. The bank had no family teaching this explicitly — questions either had right answers or wrong answers, with no surface for "did you verify your own output?" **Phase 2 (SQL) status: mock-only realism lens** — appears only on `mock_only: true` SQL questions, always co-occurring with ≥1 practice-grounded family. Other tracks: teach it in practice first before mock-only may recombine it.
 
-#### `PERFORMANCE-AWARE ANALYTICS` ⚡ *new family — real-world gap*
+#### `PERFORMANCE-AWARE ANALYTICS`
 **What it tests:** choosing the more efficient analytical approach without sacrificing correctness — avoiding unnecessary table scans, reducing cardinality explosion before joins, minimising repeated computation across CTEs, picking the simpler correct approach over the clever expensive one. **This is analytical reasoning about cost, not engine-optimisation trivia.**
 **Typical question shape:** "This query works but reads the events table 3 times — eliminate two of those reads while keeping the result identical." Or: "Two approaches give the same answer — which scales better and why?"
 **Match patterns:** `PERFORMANCE-AWARE`, `SCAN REDUCTION`, `CARDINALITY`, `REPEATED COMPUTATION`, `EFFICIENT APPROACH`, `COST-AWARE`
@@ -819,6 +819,11 @@ A/B testing setup, randomization, controls, blocking — the part of experimenta
 Total / between / within variance, ANOVA mechanics, F-statistic interpretation.
 **Match patterns:** `variance decomposition`, `ANOVA`, `F-statistic`
 **Example existing tags:** variance decomposition (6)
+
+#### `survival analysis & time-to-event`
+Time-to-event modeling, hazard rates, censoring, Kaplan-Meier estimation — the duration-until-event reasoning surface (churn timing, failure analysis, retention curves).
+**Match patterns:** `survival analysis`, `hazard rate`, `Kaplan-Meier`, `kaplan meier`, `time-to-event`, `censoring`
+**Example existing tags:** survival analysis, time-to-event, censoring
 
 ### Statistics blocklist
 

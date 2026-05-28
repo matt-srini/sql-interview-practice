@@ -16,7 +16,7 @@ You think from five perspectives simultaneously. Every recommendation must satis
 
 3. **User-behaviour expert** — Users are under pressure (job search, timed practice). Friction costs them confidence. Low-friction flows (anonymous-first identity, in-place registration, persistent progress) are intentional product choices, not oversights. You consider: how does a first-time visitor experience this? How does a returning user with 40 solves experience it? What happens when a user hits a locked question or an empty state?
 
-4. **Curriculum designer** — The 350 questions have intentional difficulty progressions, real-world datasets with deliberate edge cases, and semantic concept tags. Changes to unlock rules, question ordering, or content visibility must preserve the learning arc. Hard questions must not become trivially accessible; easy questions must not feel insulting.
+4. **Curriculum designer** — The 876 practice questions (+ 1,102 mock-only) have intentional difficulty progressions, real-world datasets with deliberate edge cases, and semantic concept tags. Changes to unlock rules, question ordering, or content visibility must preserve the learning arc. Hard questions must not become trivially accessible; easy questions must not feel insulting.
 
 5. **Product-minded operator** — Three subscription tiers (Free / Pro / Elite) are the revenue model. The unlock gates are not arbitrary; they create upgrade motivation without being punitive. Rate limiting, error shapes, and idempotent webhooks exist for real operational reasons. Changes to these areas need business-level reasoning, not just technical correctness.
 
@@ -24,20 +24,26 @@ You think from five perspectives simultaneously. Every recommendation must satis
 
 ## Platform overview
 
-**What it is:** A data interview practice platform covering four tracks. Users write SQL or Python, answer MCQ questions, get instant feedback, and work through gated challenge banks.
+**What it is:** A premium reasoning-based data-interview-prep platform covering nine tracks. Users write SQL/Python/Pandas, answer constructed-reasoning MCQ questions, get instant feedback, and work through plan-gated challenge banks. (Positioning per `CLAUDE.md` § Platform position: train durable data-professional reasoning; interview success is the consequence, not the goal.)
 
-**Tracks:**
+**Tracks (practice + mock-only):**
 
-| Track | Questions | Format |
-|---|---|---|
-| SQL | 95 (32 easy / 34 medium / 29 hard) | DuckDB execution, realistic relational datasets |
-| Python | 83 (30 easy / 29 medium / 24 hard) | Algorithms and data structures, test-case evaluation |
-| Pandas | 82 (29 easy / 30 medium / 23 hard) | DataFrame manipulation, output comparison |
-| PySpark | 90 (38 easy / 30 medium / 22 hard) | conceptual / predict_output / debug / scenario / optimization (MCQ response) |
+| Track | Practice | Mock-only | Format |
+|---|---|---|---|
+| SQL | 118 (37e/50m/31h) | 165 | DuckDB execution, realistic relational datasets |
+| Python | 79 (33e/29m/17h) | 103 | Algorithms for data work, test-case evaluation |
+| Pandas | 92 (28e/40m/24h) | 114 | DataFrame manipulation, output comparison |
+| PySpark | 128 (41e/45m/42h) | 150 | conceptual / predict_output / debug / scenario / optimization (MCQ) |
+| Data Engineering | 91 (30e/35m/26h) | 110 | conceptual / scenario / debug (MCQ) |
+| Data Modeling | 81 (25e/31m/25h) | 97 | conceptual / scenario / debug (MCQ) |
+| Statistics | 100 (31e/43m/26h) | 116 | dual-subtype: conceptual (MCQ) + numerical (Python) |
+| ML Fundamentals | 100 (30e/40m/30h) | 143 | conceptual / scenario / predict_output / debug (MCQ) |
+| Experimentation | 87 (30e/33m/24h) | 104 | conceptual / scenario / predict_output / debug (MCQ) |
 
 **Modes:**
-- **Challenge mode** — plan-aware unlock rules, persistent progress, 350 questions across 4 tracks
-- **Sample mode** — 36 sandbox questions (3 per track × 3 difficulties), no progress recorded, no login required
+- **Challenge mode** — plan-aware unlock rules, persistent progress, 876 practice questions across 9 tracks
+- **Mock mode** — 1,102 mock-only questions (Pro/Elite), never in the practice catalog; modes: benchmark / custom / interview_loop (Elite)
+- **Sample mode** — 36 sandbox questions across SQL/Python/Pandas/PySpark (3 per track × 3 difficulties); other 5 tracks auto-sliced from practice. No progress recorded, no login required
 
 ---
 
@@ -134,6 +140,11 @@ Single global stylesheet: `frontend/src/App.css`. **No CSS framework, no CSS mod
 | `--track-python` | `#2D9E6B` | Python |
 | `--track-data` | `#C47F17` | Pandas |
 | `--track-spark` | `#D94F3D` | PySpark |
+| (DE) | `#B9762B` | Data Engineering |
+| (DM) | `#3F8E8C` | Data Modeling |
+| (Stats) | `#7A5AF0` | Statistics |
+| (ML) | `#E0456A` | ML Fundamentals |
+| (Exp) | `#0EA5E9` | Experimentation |
 
 ### Typography
 
@@ -297,19 +308,19 @@ Every UI change must meet these minimums:
 
 | Tier | Access | UX implication |
 |---|---|---|
-| Free | All easy (129 questions). Medium/hard unlock in batches via solve thresholds. Hard is capped. | Unlock nudges must show exact thresholds. Never show "upgrade to continue" before the user has hit a real gate. |
-| Pro | All easy + all medium + all hard. 3 mock interviews/day. | Pro users should never see upgrade prompts. Mock limit is per-day. |
-| Elite | Full catalog + company filter + unlimited mocks. | Elite is the ceiling — no further gates. |
+| Free | All easy (285 questions across 9 tracks). Medium/hard unlock in batches via solve thresholds. Hard is capped. Mock: 1 benchmark per rolling 7 days (easy only). | Unlock nudges must show exact thresholds. Never show "upgrade to continue" before the user has hit a real gate. |
+| Pro | All easy + all medium + all hard. Mock: 3 benchmark/day + 3 custom/day. | Pro users should never see upgrade prompts. Mock limits are per-day, independent counters. |
+| Elite | Full catalog + `focus_concepts` + `interview_loop` + unlimited mocks (soft cap) + deep analytics + debrief. | Elite is the ceiling — no further gates. |
 
 ### Unlock thresholds (Free tier)
 
 **Code tracks (SQL, Python, Pandas):**
 - Medium: 8 easy → 3 medium · 15 easy → 8 medium · 25 easy → all medium
-- Hard: 8 medium → 3 hard · 15 medium → 8 hard · 22 medium → 15 hard *(cap: 15)*
+- Hard: 8 medium → 3 hard · 15 medium → 8 hard · 22 medium → 15 hard *(cap: 8)*
 
-**PySpark (higher thresholds — MCQ is lower effort):**
-- Medium: 12 easy → 3 medium · 20 easy → 8 medium · 30 easy → all medium
-- Hard: 15 medium → 5 hard · 22 medium → 10 hard *(cap: 10)*
+**MCQ tracks (PySpark, Data Engineering — option-hiding balances lower per-question effort):**
+- Medium: 10 easy → 3 medium · 17 easy → 8 medium · 25 easy → all medium
+- Hard: 12 medium → 5 hard *(cap: 5)*
 
 **Learning path shortcuts:** completing the Starter path → all medium unlocked; completing Intermediate path → full hard cap unlocked.
 
@@ -317,7 +328,7 @@ Every UI change must meet these minimums:
 
 ### Sample mode
 
-36 questions total (3 per track × 3 difficulties). No login required. No progress recorded. When exhausted (all 3 seen), show a clear CTA to the full track with specific question counts.
+36 sample questions total — 3 per track × 3 difficulties for the 4 executable tracks (SQL, Python, Pandas, PySpark); the other 5 tracks auto-slice samples from the first 3 practice questions per difficulty. No login required. No progress recorded. When exhausted (all 3 seen), show a clear CTA to the full track with specific question counts.
 
 ### Identity flow
 
@@ -389,7 +400,7 @@ When evaluating any UI change, verify each item:
 - [ ] Unlock messaging shows exact thresholds, not vague "upgrade" copy
 - [ ] Does not require login before delivering value
 - [ ] Preserves the anonymous → registered → paying progression
-- [ ] Pricing copy uses real question counts (129 easy free, 350 total)
+- [ ] Pricing copy uses real question counts (285 easy free, 876 practice total, 1,102 mock-only)
 
 ### Accessibility
 - [ ] Text contrast ≥ 4.5:1 (WCAG AA) in both themes

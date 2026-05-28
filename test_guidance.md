@@ -1,8 +1,8 @@
 # Test Guidance — datathink platform
 
-> **Purpose:** Spec-derived test plan. Every testable claim in the product spec maps to at least
-> one test case here. Use this document to write fresh test suites from scratch — do not treat
-> existing test files as canonical; this document is.
+> ⚠️ **STALE — DO NOT TREAT AS CANONICAL. Needs regeneration before use.** This document was written for an earlier **4-track / 22-path** era of the platform (SQL, Python, Pandas, PySpark only). The platform now has **9 tracks, 876 practice + 1,102 mock-only questions, and 46 learning paths**, plus Phase-3 mock modes (`benchmark` / `custom` / `interview_loop`) and role-based Mixed benchmarks. The vast majority of TC cases below (counts like "all 4 tracks", "22 paths", per-track expectations, the legacy `30min`/`60min` mock model) are **out of date**. Ground truth lives in `CLAUDE.md`, `docs/backend.md`, `docs/features/mock.md`, and the per-track docs. **Regenerate this test plan from the current spec before authoring any test suite from it** — do not write tests against the stale numbers below.
+>
+> **Original purpose (historical):** Spec-derived test plan mapping each testable spec claim to ≥1 test case. The "this document is canonical" claim below applied to the 4-track era and is **no longer valid**.
 >
 > **Scope:** Backend API tests (pytest + httpx TestClient). Frontend Playwright tests are
 > addressed separately. Unit tests for pure functions (unlock, insights, debrief) are included

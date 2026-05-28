@@ -173,7 +173,7 @@ All queries share a single DuckDB connection via a thread-pool executor. At curr
 
 **Lockout policy:** Repeated failed sign-in attempts are tracked in PostgreSQL (`failed_login_attempts`, `login_locked_until`). After `LOGIN_LOCKOUT_MAX_ATTEMPTS`, the account is temporarily locked for `LOGIN_LOCKOUT_WINDOW_MINUTES`.
 
-**Session token:** HttpOnly cookie with `SameSite=Strict` (and `secure` in production by default), server-side session lifecycle managed in `sessions` table.
+**Session token:** HttpOnly cookie with `SameSite=Lax` (and `secure` in production by default), server-side session lifecycle managed in `sessions` table. (The separate non-HttpOnly CSRF cookie uses `SameSite=Strict`.)
 
 **CSRF model:** In production, mutating `/api/*` requests that present a session cookie must include an `Origin` matching configured app origins. This blocks cross-site request forgery for cookie-authenticated writes.
 
@@ -305,9 +305,9 @@ All files that previously hardcoded track lists — `unlock.py`, `routers/mock.p
 
 **SQL questions:** JSON files in `backend/content/questions/` — `easy.json`, `medium.json`, `hard.json`. Loaded and validated at startup by `questions.py`. Schema validated against committed CSV column headers.
 
-**Python / Pandas / PySpark questions:** Same pattern in `backend/content/python_questions/`, `python_data_questions/`, `pyspark_questions/`. Each directory has a `schemas.json` that defines ID ranges and required fields.
+**Other tracks' questions:** Same pattern in the per-track content dirs — `python_questions/`, `python_data_questions/`, `pyspark_questions/`, `data_engineering_questions/`, `data_modeling_questions/`, `statistics_questions/`, `ml_fundamentals_questions/`, `experimentation_questions/`. Each directory has a `schemas.json` that defines ID ranges and required fields.
 
-**Sample questions:** SQL samples are hardcoded in `backend/sample_questions.py` with fixed 3-digit IDs (111–113 easy, 121–123 medium, 131–133 hard). Non-SQL tracks (Python, Pandas, PySpark) have no separate sample files — `get_topic_sample_pool()` serves the first 3 practice questions per difficulty by `order`. Sample IDs never overlap with challenge IDs.
+**Sample questions:** SQL samples are hardcoded in `backend/sample_questions.py` with fixed 3-digit IDs (111–113 easy, 121–123 medium, 131–133 hard). All non-SQL tracks (Python, Pandas, PySpark, Data Engineering, Data Modeling, Statistics, ML Fundamentals, Experimentation) have no separate sample files — `get_topic_sample_pool()` serves the first 3 practice questions per difficulty by `order`. Sample IDs never overlap with challenge IDs.
 
 **ID ranges** (authoritative source: each track's `schemas.json`):
 | Track | Easy | Medium | Hard |
