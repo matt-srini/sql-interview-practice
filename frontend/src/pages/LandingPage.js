@@ -458,12 +458,12 @@ function HeroSection({ user, dashData, reduced }) {
     <section className="lp-section lp-hero">
       <div className="lp-inner lp-hero-inner">
         <div className="lp-hero-left">
-          <p className="lp-eyebrow">Interview soon? Build reasoning — not pattern recognition.</p>
+          <p className="lp-eyebrow">For data professionals — and those becoming one.</p>
           <h1 className="lp-hero-h1">
-            Get interview-ready by building reasoning that still matters on the job.
+            Develop the reasoning that makes you genuinely effective with data.
           </h1>
           <p className="lp-hero-sub">
-            Pick your role, work through SQL, Python, and reasoning problems on real engines, then benchmark your weak spots. Interview performance now — better judgment long after.
+            Nine tracks: SQL, Python, ML, statistics, data engineering, and more. Real execution on real engines. The kind of thinking that holds up years into the job — and if it also makes you exceptional in interviews, that's a consequence, not the goal.
           </p>
           <div className="lp-hero-actions">
             <Link className="btn btn-primary" to="/sample/sql/easy">Try a free sample →</Link>
@@ -499,7 +499,7 @@ function ThesisSection() {
     {
       index: '02',
       title: 'Execution, not explanation',
-      copy: 'Your SQL hits a real DuckDB engine. Your Python runs in an isolated sandbox. You see actual output — rows, errors, mismatch details — not a simulated pass/fail.',
+      copy: 'SQL runs against a real DuckDB engine. Python executes in an isolated sandbox. For reasoning tracks — ML, statistics, data engineering — real scenarios test your judgment, not pattern recall.',
     },
     {
       index: '03',
