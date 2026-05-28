@@ -6,45 +6,40 @@
 
 ## ⚠️ Pending production DB migrations
 
-> **This section is maintained by the team.** Every time a new Alembic migration ships, add it here. Clear the entry only after the migration has been manually confirmed as applied on the live production database. The prod DB is **never** updated automatically — `ENV=production` disables auto-migrate at startup. Forgetting this step will break the live site.
+> **The production DB is never updated automatically.** `ENV=production` disables auto-migrate at startup. Every Alembic migration that ships in a commit **must be applied manually to Railway Postgres before that commit's features will work on the live site.** The agent that authors the migration is responsible for running it immediately — not as a follow-up, not "later". Prod is the real product.
 
 ### How to apply on production
 
+The production DATABASE_URL is in `backend/.env` (line 4, commented out). Uncomment it temporarily, or pass inline:
+
 ```bash
-# From the backend/ directory, using the Railway production DATABASE_URL:
-DATABASE_URL="postgresql+asyncpg://<user>:<pass>@<host>/<db>" \
+cd backend
+DATABASE_URL="postgresql+asyncpg://postgres:oSLmxqaswbDKweFoZbiPoTTLlkiwDnWg@shuttle.proxy.rlwy.net:39347/railway" \
   ../.venv/bin/alembic upgrade head
+
+# Confirm — must print the latest revision ID followed by (head):
+DATABASE_URL="postgresql+asyncpg://postgres:oSLmxqaswbDKweFoZbiPoTTLlkiwDnWg@shuttle.proxy.rlwy.net:39347/railway" \
+  ../.venv/bin/alembic current
 ```
 
-Confirm with: `../.venv/bin/alembic current` — it must print `20260528_000003 (head)`.
+After confirming, move the entries below from "Currently pending" to "Already applied."
 
 ---
 
-### Currently pending (must be applied to production before the live site is correct)
+### Currently pending
 
-| Revision | Description | Shipped in commit | SQL equivalent |
-|---|---|---|---|
-| `20260528_000001` | Add `role TEXT` column to `mock_sessions` (nullable) | `132bed1` | `ALTER TABLE mock_sessions ADD COLUMN IF NOT EXISTS role TEXT;` |
-| `20260528_000002` | Add `follow_up_dimension TEXT` column to `mock_session_questions` (nullable) | `132bed1` | `ALTER TABLE mock_session_questions ADD COLUMN IF NOT EXISTS follow_up_dimension TEXT;` |
-| `20260528_000003` | Create `mock_chain_consumption` table + partial index `idx_mcc_user_active` | `132bed1` | See migration file `backend/alembic/versions/20260528_000003_create_mock_chain_consumption.py` |
-
-**Impact if skipped:**
-- Interview Loop sessions will crash on insert (missing columns / missing table).
-- Mixed benchmark with a `role` will fail to persist the role field.
-- The `/api/mock/start` endpoint will return 500 for any Interview Loop or Mixed session.
-- All other mock modes (benchmark, custom) and the rest of the app are unaffected.
-
-**Safe to apply with zero downtime** — all three are additive-only (ADD COLUMN nullable, CREATE TABLE). No existing rows or queries are touched.
+_Nothing. Production is at head (`20260528_000003`)._
 
 ---
 
 ### Already applied to production
 
-_(Move entries here once confirmed applied.)_
-
 | Revision | Description | Applied date |
 |---|---|---|
 | ≤ `20260511_000001` | All prior migrations | Before 2026-05-28 |
+| `20260528_000001` | Add `role TEXT` column to `mock_sessions` | 2026-05-28 |
+| `20260528_000002` | Add `follow_up_dimension TEXT` column to `mock_session_questions` | 2026-05-28 |
+| `20260528_000003` | Create `mock_chain_consumption` table + index | 2026-05-28 |
 
 ---
 
