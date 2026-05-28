@@ -484,3 +484,15 @@ New component: `frontend/src/components/BadgeCard.js`
 
 **Internal question management**
 Recommendation: GitHub/CI workflow for now (zero additional infrastructure), revisit `/admin` when question volume demands it.
+
+---
+
+## Content — Track Authoring Gaps
+
+**ML Fundamentals: `SUPERVISED VS UNSUPERVISED` mock-only floor gap**
+
+The validator currently warns: *"family 'SUPERVISED VS UNSUPERVISED' has only 3 mock-only questions (rule 2 — mock-only floor is 4)"*
+
+Root cause: the medium audit (2026-05-28) corrected 3 mock-only questions (Q82057, Q82095, Q82099) that had this tag erroneously attached — they were pure clustering/dimensionality-reduction questions with no paradigm-selection angle. Removing the wrong tags exposed a pre-existing gap that had been hidden. The 3 remaining valid instances are Q82055 (supervised vs unsupervised for segmentation), Q82056 (pseudo-labeling in semi-supervised learning), and Q83065 (label propagation — hard tier).
+
+Fix: author one new medium mock-only question targeting `SUPERVISED VS UNSUPERVISED` as a primary or clear secondary concept. Good candidates: a scenario where a practitioner must choose between supervised classification and unsupervised clustering given a partially-labelled dataset, or a self-supervised pre-training decision for a low-label NLP task. Must recombine concepts already in the medium practice bank and must not clone Q82055 or Q82056.
