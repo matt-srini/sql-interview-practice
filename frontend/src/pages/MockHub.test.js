@@ -143,7 +143,8 @@ describe('MockHub history framing', () => {
     renderHub();
 
     await waitFor(() => {
-      expect(screen.getByText('Recent drill sessions')).toBeInTheDocument();
+      // Phase 3: heading renamed from "Recent drill sessions" to "Recent custom drills"
+      expect(screen.getByText('Recent custom drills')).toBeInTheDocument();
       expect(screen.getByText('No benchmark sessions yet')).toBeInTheDocument();
       expect(screen.queryByText('Start with a benchmark, then drill the misses')).not.toBeInTheDocument();
     });
@@ -175,7 +176,8 @@ describe('MockHub history framing', () => {
 });
 
 describe('MockHub mixed-track framing', () => {
-  it('surfaces a drill-only note in the main plan area for mixed track', async () => {
+  it('shows role selector for mixed track in benchmark mode (Phase 3: role-based benchmark)', async () => {
+    // Phase 3 replaced "Mixed is drill-only" with a role-selection flow for mixed benchmark
     renderHub({
       mockPreset: {
         mode: 'benchmark',
@@ -185,9 +187,8 @@ describe('MockHub mixed-track framing', () => {
     });
 
     await waitFor(() => {
-      expect(screen.getByText('Mixed is drill-only')).toBeInTheDocument();
-      expect(screen.getByText('Benchmarks stay single-track for cleaner comparison.')).toBeInTheDocument();
-      expect(screen.getByText('Mixed draws from SQL · Python · Pandas · PySpark. Pick one track for a benchmark.')).toBeInTheDocument();
+      // Hint shown before a role is selected (unique to mixed benchmark role-selector section)
+      expect(screen.getByText('Select a role to see the benchmark blueprint for your track mix.')).toBeInTheDocument();
     });
   });
 

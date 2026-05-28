@@ -309,6 +309,17 @@ export function getMockSetupDescriptor(mode, track, customCount, customMinutes, 
     };
   }
 
+  if (mode === '30min') {
+    return {
+      ...descriptor,
+      sectionLabel: 'Drill plan',
+      summaryLine: '2 questions · 30 min cap',
+      detailLines: [
+        'Legacy sprint sessions remain reviewable. New sessions use Custom drill instead.',
+      ],
+    };
+  }
+
   return {
     ...descriptor,
     sectionLabel: 'Session setup',

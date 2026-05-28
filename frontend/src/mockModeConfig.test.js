@@ -14,13 +14,16 @@ import {
 describe('mockModeConfig', () => {
   it('exposes benchmark blueprints for supported tracks', () => {
     expect(getBenchmarkBlueprint('sql')).toMatchObject({ numQuestions: 3, timeMinutes: 60 });
-    expect(supportsBenchmarkMode('mixed')).toBe(false);
+    // mixed track supports role-based benchmark (Phase 3)
+    expect(supportsBenchmarkMode('mixed')).toBe(true);
   });
 
-  it('builds mode cards with benchmark disabled for mixed track', () => {
+  it('builds mode cards with benchmark enabled for mixed track (Phase 3: role-based)', () => {
     const cards = getMockModeCards('mixed');
-    expect(cards[0]).toMatchObject({ key: 'benchmark', disabled: true });
-    expect(cards[1]).toMatchObject({ key: '30min', label: 'Sprint drill' });
+    // Phase 3: mixed benchmark is supported via role selection — not disabled at the card level
+    expect(cards[0]).toMatchObject({ key: 'benchmark', disabled: false });
+    // Phase 3: 30min replaced by custom drill
+    expect(cards[1]).toMatchObject({ key: 'custom', label: 'Custom drill' });
   });
 
   it('returns display labels and session shape values for benchmark mode', () => {
