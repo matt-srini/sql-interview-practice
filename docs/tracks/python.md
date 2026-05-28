@@ -36,7 +36,7 @@ No global mutable state. No I/O (no `print` in the function body). Determinism r
 | Medium | 22001–22999 | `backend/content/python_questions/medium.json` |
 | Hard | 23001–23999 | `backend/content/python_questions/hard.json` |
 
-Samples in `backend/content/python_questions/sample/` use `2XS` 3-digit IDs.
+Samples are auto-sliced from the first 3 practice questions per difficulty by `order` — no separate sample files or IDs exist. See `docs/content-authoring.md` §Non-SQL sample behavior.
 
 ## Difficulty vocabulary
 

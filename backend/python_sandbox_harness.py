@@ -62,8 +62,22 @@ def _run_algorithm(user_code: str, test_cases: list) -> dict:
         sys.stdout = stdout_capture
         try:
             actual = solve_fn(*args)
-            # Guard against enormous return values
+            # Guard against enormous return values.
+            # Exception: when the expected output is a matching-size list/tuple (e.g.
+            # a generator-spec hidden test), allow the comparison — the 512 MB memory
+            # limit and CPU timeout are the real safety bounds in that case.
             if isinstance(actual, (list, tuple)) and len(actual) > _MAX_RESULT_ITEMS:
+                if isinstance(expected, (list, tuple)) and len(expected) == len(actual):
+                    passed = _compare(actual, expected)
+                    results.append({
+                        "input": f"<{len(args)} arg(s)>",
+                        "expected": f"<{len(expected):,} items>",
+                        "actual": f"<{len(actual):,} items>",
+                        "passed": passed,
+                        "stdout": stdout_capture.getvalue(),
+                        "error": None,
+                    })
+                    continue
                 raise ValueError(f"Result has {len(actual):,} items — limit is {_MAX_RESULT_ITEMS:,}")
             passed = _compare(actual, expected)
             results.append({
@@ -90,20 +104,43 @@ def _run_algorithm(user_code: str, test_cases: list) -> dict:
     return {"error": None, "results": results, "print_output": print_output}
 
 
+def _normalize(value):
+    """Normalize containers and dict-key types to compensate for JSON serialization limits.
+
+    JSON loses two Python type distinctions that matter for grading:
+    - Tuples serialize to arrays, indistinguishable from lists.
+    - Dict keys are always strings, even when authored as integers.
+    Applied recursively so nested structures are handled correctly.
+    """
+    if isinstance(value, (list, tuple)):
+        return [_normalize(v) for v in value]
+    if isinstance(value, dict):
+        normalized = {}
+        for k, v in value.items():
+            if isinstance(k, str):
+                try:
+                    k = int(k)
+                except ValueError:
+                    pass
+            normalized[k] = _normalize(v)
+        return normalized
+    return value
+
+
 def _compare(actual, expected) -> bool:
     if isinstance(expected, float) or isinstance(actual, float):
         try:
             return abs(float(actual) - float(expected)) < 1e-6
         except (TypeError, ValueError):
             return False
-    # Sort lists for unordered comparison only if expected is also a list
-    # and doesn't seem to represent an ordered sequence (heuristic: compare sorted)
-    if isinstance(actual, list) and isinstance(expected, list):
+    actual_n = _normalize(actual)
+    expected_n = _normalize(expected)
+    if isinstance(actual_n, list) and isinstance(expected_n, list):
         try:
-            return sorted(actual) == sorted(expected) or actual == expected
+            return sorted(actual_n) == sorted(expected_n) or actual_n == expected_n
         except TypeError:
-            return actual == expected
-    return actual == expected
+            return actual_n == expected_n
+    return actual_n == expected_n
 
 
 def _run_data(user_code: str, dataframes_spec: dict, csv_dir: str) -> dict:
