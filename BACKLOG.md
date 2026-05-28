@@ -413,6 +413,14 @@ Single shared DuckDB cursor is a concurrency bottleneck.
 
 ## Phase 3 — Workspace
 
+**Post-correct SQL style analyser (Phase 1)**
+- After a correct SQL answer, inspect the user's query text for non-idiomatic DuckDB patterns and surface a soft "consider this instead" note alongside the existing Solution Analysis panel.
+- Scope: global regex list covering the functions explicitly prohibited in `docs/tracks/sql.md` — `CONCAT(`, `DATEDIFF(`, `JULIANDAY(`, `SELECT *`. No per-question config in Phase 1.
+- Backend: add `_inspect_style(user_query: str) -> list[str]` in `evaluator.py`; append result as `style_idiom_hints: list[str]` to the existing `/api/questions/{id}/submit` response (non-breaking — new optional field).
+- Frontend: render `style_idiom_hints` in the Solution Analysis section of `QuestionPage.js` with amber styling; only shown on correct solves; dismissed on next attempt.
+- Phase 2 (when data warrants): add per-question `style_hints_config` array to the question JSON schema so authors can surface context-sensitive tips (e.g. DATE_TRUNC vs STRFTIME depending on what the question expects).
+- Effort: ~4–6 hours (Phase 1 only).
+
 **Monaco SQL autocomplete**
 - Register table names + column names from `question.schema` as completions in `CodeEditor.js`
 - `monaco.languages.registerCompletionItemProvider('sql', ...)` — trigger on `.` after alias → columns; trigger on whitespace → table names
