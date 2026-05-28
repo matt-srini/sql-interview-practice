@@ -11918,7 +11918,8 @@ select {
   gap: 48px;
   align-items: center;
 }
-.lp-hero-left { max-width: 500px; }
+.lp-hero-left { min-width: 0; max-width: 500px; }
+.lp-hero-right { min-width: 0; }
 .lp-hero-h1 {
   font-size: clamp(2rem, 4vw, 3rem);
   font-weight: 800;

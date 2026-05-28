@@ -45,45 +45,45 @@ const IDE_TRACKS = [
     slug: 'sql',
     label: 'SQL',
     color: '#5B6AF0',
-    fname: 'dept_ranking.sql',
+    fname: 'buyer_rate.sql',
     badge: 'SQL · DuckDB',
-    code: `WITH ranked AS (\n  SELECT name, dept, salary,\n    RANK() OVER (\n      PARTITION BY dept ORDER BY salary DESC\n    ) AS rnk\n  FROM employees\n)\nSELECT name, dept, salary\nFROM ranked WHERE rnk = 1;`,
+    code: `WITH daily_orders AS (\n  SELECT\n    DATE_TRUNC('day', order_date) AS day,\n    COUNT(DISTINCT CASE WHEN status = 'completed' THEN user_id END) AS buyers,\n    COUNT(DISTINCT user_id) AS checkout_users\n  FROM orders\n  GROUP BY 1\n)\nSELECT\n  day,\n  ROUND(100.0 * buyers / NULLIF(checkout_users, 0), 1) AS buyer_rate\nFROM daily_orders\nORDER BY day DESC\nLIMIT 4;`,
     type: 'table',
-    cols: ['name', 'dept', 'salary'],
+    cols: ['day', 'buyer_rate'],
     rows: [
-      ['Sarah K.',  'Engineering', '$145,200'],
-      ['Jordan T.', 'Product',     '$131,800'],
-      ['Priya N.',  'Analytics',   '$119,500'],
-      ['Alex M.',   'Design',      '$108,300'],
+      ['2026-05-27', '18.4%'],
+      ['2026-05-26', '17.9%'],
+      ['2026-05-25', '19.2%'],
+      ['2026-05-24', '18.1%'],
     ],
   },
   {
     slug: 'python',
     label: 'Python',
     color: '#2D9E6B',
-    fname: 'two_sum.py',
+    fname: 'sessionize_events.py',
     badge: 'Python · Sandbox',
-    code: `def two_sum(nums, target):\n    seen = {}\n    for i, n in enumerate(nums):\n        comp = target - n\n        if comp in seen:\n            return [seen[comp], i]\n        seen[n] = i`,
+    code: `def solve(events, gap_minutes=30):\n    sessions = 1\n    for prev, event in zip(events, events[1:]):\n        if event['ts'] - prev['ts'] > gap_minutes * 60:\n            sessions += 1\n    return sessions`,
     type: 'tests',
     tests: [
-      { label: 'test_basic',       passed: true, ms: '0.2' },
-      { label: 'test_no_match',    passed: true, ms: '0.1' },
-      { label: 'test_large_array', passed: true, ms: '1.4' },
+      { label: 'test_30_min_gap',      passed: true, ms: '0.3' },
+      { label: 'test_cross_midnight',  passed: true, ms: '0.4' },
+      { label: 'test_sparse_activity', passed: true, ms: '1.1' },
     ],
   },
   {
     slug: 'python-data',
     label: 'Pandas',
     color: '#C47F17',
-    fname: 'top_revenue.py',
+    fname: 'channel_revenue.py',
     badge: 'Pandas · Sandbox',
-    code: `def solve(orders):\n    return (\n        orders\n        .groupby('customer_id')['revenue']\n        .sum()\n        .nlargest(3)\n        .reset_index()\n    )`,
+    code: `def solve(orders):\n    completed = orders[orders['status'] == 'completed'].copy()\n    return (\n        completed.groupby('acquisition_channel', as_index=False)['net_amount']\n        .sum()\n        .sort_values('net_amount', ascending=False)\n    )`,
     type: 'table',
-    cols: ['customer_id', 'revenue'],
+    cols: ['acquisition_channel', 'net_amount'],
     rows: [
-      ['C_042', '$48,200'],
-      ['C_017', '$39,750'],
-      ['C_088', '$31,100'],
+      ['organic', '$84,200'],
+      ['paid_search', '$61,480'],
+      ['partner', '$43,900'],
     ],
   },
   {
@@ -94,69 +94,69 @@ const IDE_TRACKS = [
     badge: 'PySpark · Reasoning',
     code: null,
     type: 'conceptual',
-    question: 'Which PySpark operation triggers immediate execution?',
-    options: ['filter()', 'map()', 'collect()', 'groupBy()'],
+    question: 'A Spark job is bottlenecked on shuffle after a large join, then groupBy. What should you test first?',
+    options: ['Increase executor memory', 'Broadcast the raw events table', 'Pre-aggregate before the join', 'Coalesce to one partition'],
     correct: 2,
   },
   {
     slug: 'data-engineering',
     label: 'Data Eng',
     color: '#B9762B',
-    fname: 'isolation.md',
+    fname: 'pipeline_reliability.md',
     badge: 'Data Eng · Reasoning',
     code: null,
     type: 'conceptual',
-    question: 'Which isolation level prevents phantom reads?',
-    options: ['Read Committed', 'Repeatable Read', 'Serializable', 'Read Uncommitted'],
-    correct: 2,
+    question: 'A daily warehouse load reruns after upstream lag and duplicates yesterday\'s rows. What is missing?',
+    options: ['A higher retry limit', 'An idempotent merge keyed by business grain', 'More worker nodes', 'Another cron trigger'],
+    correct: 1,
   },
   {
     slug: 'data-modeling',
     label: 'Modeling',
     color: '#3F8E8C',
-    fname: 'star_schema.md',
+    fname: 'fact_grain.md',
     badge: 'Modeling · Reasoning',
     code: null,
     type: 'conceptual',
-    question: 'In a star schema, fact tables primarily store...',
-    options: ['Dimension attributes', 'Business metrics', 'Entity relationships', 'Lookup values'],
+    question: 'You need daily revenue by customer segment, but orders contain many items and promotions. What do you define first?',
+    options: ['The warehouse tool', 'The fact table grain', 'The dashboard refresh time', 'The semantic layer name'],
     correct: 1,
   },
   {
     slug: 'statistics',
     label: 'Statistics',
     color: '#7A5AF0',
-    fname: 'ab_test.md',
+    fname: 'metric_read.md',
     badge: 'Statistics · Reasoning',
     code: null,
     type: 'conceptual',
-    question: 'p = 0.023 at α = 0.05. What is the correct conclusion?',
-    options: ['Fail to reject H₀', 'Reject H₀', 'Inconclusive result', 'Accept the null'],
-    correct: 1,
+    question: 'Treatment conversion is higher, but treatment users were exposed far less often than control. What do you check first?',
+    options: ['Whether the randomization or denominator is broken', 'Whether p is below 0.05', 'Whether to winsorize the metric', 'Whether to increase chart smoothing'],
+    correct: 0,
   },
   {
     slug: 'ml-fundamentals',
     label: 'ML',
     color: '#E0456A',
-    fname: 'model_selection.md',
+    fname: 'production_gap.md',
     badge: 'ML · Reasoning',
     code: null,
     type: 'conceptual',
-    question: 'Your model hits 97% accuracy but completely misses the fraud class. What is the most likely root cause?',
-    options: ['Learning rate too high', 'Class imbalance', 'Model underfitting', 'Feature collinearity'],
-    correct: 1,
+    question: 'Offline AUC is 0.96, but production drops to 0.61 right after launch. What do you suspect first?',
+    options: ['Training-serving skew or leakage', 'Too few trees', 'Batch size too small', 'Learning rate too low'],
+    correct: 0,
   },
   {
     slug: 'experimentation',
     label: 'Experiment',
     color: '#0EA5E9',
-    fname: 'ab_design.md',
+    fname: 'novelty_effect.md',
     badge: 'Experiment · Reasoning',
     code: null,
     type: 'conceptual',
-    question: 'You peek at day 3 of a 7-day A/B test and p = 0.04. You stop early. What is the actual risk?',
-    options: ['None — p < 0.05 is always safe', 'Type I error rate is inflated above 5%', 'Statistical power decreases', 'The effect size is overstated by the sample split'],
-    correct: 1,
+    question: 'Week 1 shows +5% clicks, week 3 is flat, and the treatment changes a homepage habit. What pattern fits best?',
+    options: ['Novelty effect', 'Perfect randomization', 'Lower variance only', 'Guaranteed long-term lift'],
+    correct: 0,
   },
 ];
 
@@ -459,15 +459,15 @@ function HeroSection({ user, dashData, reduced }) {
     <section className="lp-section lp-hero">
       <div className="lp-inner lp-hero-inner">
         <div className="lp-hero-left">
-          <p className="lp-eyebrow">For data professionals — and those becoming them</p>
+          <p className="lp-eyebrow">Interview soon? Build reasoning — not pattern recognition.</p>
           <h1 className="lp-hero-h1">
-            Develop the reasoning that makes you effective with data.
+            Get interview-ready by building reasoning that still matters on the job.
           </h1>
           <p className="lp-hero-sub">
-            Real datasets. Real execution. The kind of thinking that holds up years into the job. If it also makes you exceptional in interviews — and it will — that's a consequence, not the goal.
+            Pick your role, work through SQL, Python, and reasoning problems on real engines, then benchmark your weak spots. Interview performance now — better judgment long after.
           </p>
           <div className="lp-hero-actions">
-            <Link className="btn btn-primary" to="/auth">Start thinking →</Link>
+            <Link className="btn btn-primary" to="/sample/sql/easy">Try a free sample →</Link>
             <button
               type="button"
               className="btn btn-secondary"
@@ -477,7 +477,7 @@ function HeroSection({ user, dashData, reduced }) {
                 el.scrollIntoView({ behavior: 'smooth', block: 'start' });
               }}
             >
-              Find your track ↓
+              Find your role ↓
             </button>
           </div>
         </div>
@@ -823,8 +823,7 @@ function PricingSection({ userPlan, currency }) {
               <li>2-step progressive hints — mental model first, technique second</li>
               <li>Official solutions with explanation after hints</li>
               <li>SQL query quality analysis on correct answers</li>
-              <li>Unlimited easy short drills</li>
-              <li>1 full benchmark mock per week — any track, any difficulty</li>
+              <li>1 easy benchmark per rolling 7 days</li>
               <li>Streak tracking</li>
             </ul>
             <div className="landing-tier-cta">
@@ -846,10 +845,9 @@ function PricingSection({ userPlan, currency }) {
             <ul className="landing-tier-list">
               <li>Everything in Free — no hard cap on practice</li>
               <li>All {ACTIVE_Q || '…'} questions, every medium + hard</li>
-              <li>3 benchmark mocks per day · 3 drills per day (short + custom combined)</li>
+              <li>3 benchmark mocks per day · 3 custom drills per day</li>
               <li>Exclusive mock-only question bank — questions reserved for mock sessions, never shown in practice</li>
-              <li>Follow-up chains — interviewer-style pivots within mock sessions</li>
-              <li>Post-mock debrief — per-question solutions and concept breakdown</li>
+              <li>Detailed mock history, per-question solutions, and concept breakdowns</li>
               <li>Weakest concept analysis + drill recommendations</li>
               <li>All learning paths</li>
             </ul>
@@ -921,7 +919,7 @@ function CloserSection() {
         <p className="lp-closer-line">
           Stop recognizing. Start reasoning.
         </p>
-        <Link className="btn btn-primary" to="/auth">Start thinking →</Link>
+        <Link className="btn btn-primary" to="/sample/sql/easy">Try a free sample →</Link>
       </div>
     </section>
   );
