@@ -65,6 +65,7 @@ The five-perspective pushback in § Standing instructions reads this section as 
   | Pages, components, routes, design tokens, frontend behaviour | `docs/frontend.md` |
   | Dataset schema, row counts, edge cases | `docs/datasets.md` |
   | Env vars, Docker, Railway, deployment, secrets | `docs/deployment.md` |
+  | **Pending production DB migrations (canonical runbook)** | `docs/deployment.md` § Pending production DB migrations |
   | Question authoring schema + cross-track contract | `docs/content-authoring.md` |
   | Per-track question philosophy, modality, datasets, concept arc, authoring allocation | `docs/tracks/<track>.md` |
   | Concept-family registry (per-track) + follow-up dimension taxonomy | `docs/concept-taxonomy.md` |
@@ -80,6 +81,8 @@ The five-perspective pushback in § Standing instructions reads this section as 
   | New track onboarding process | `docs/track-onboarding.md` |
 
   When in doubt: update more docs, not fewer. Cross-link aggressively. Every doc should link back to its SoT siblings.
+
+- **Every new Alembic migration MUST be registered in `docs/deployment.md` § Pending production DB migrations — in the same commit.** The production database is NEVER updated automatically (`ENV=production` disables auto-migrate at startup). The only way the prod DB gets updated is a manual `alembic upgrade head` run by a human against the Railway Postgres URL. If the pending-migrations table is not updated, that manual step will be missed and the live site will break. When adding a migration: (1) add a row to the "Currently pending" table with revision ID, description, ship commit, and safe SQL equivalent; (2) note the blast radius if skipped. When confirmed applied on prod: move the row to "Already applied." Never skip this — prod is the real product.
 
 - **Never author or modify a question without the authoring agent.** Every new question, every edit to an existing question, MUST go through `.github/agents/question-authoring.agent.md`. Direct edits to question JSON files bypass the taxonomy contract, the difficulty arc, the hint guardrails, the concept-family registry, and the verification checklist — and have historically been the single largest source of content drift on this platform. If you are tempted to edit a question file by hand, stop and invoke the agent instead. This rule has no exceptions.
 
