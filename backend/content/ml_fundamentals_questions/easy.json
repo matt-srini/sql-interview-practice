@@ -21,7 +21,7 @@
     ],
     "concepts": [
       "SUPERVISED VS UNSUPERVISED",
-      "DATA SPLITTING STRATEGY"
+      "CLUSTERING EVALUATION"
     ]
   },
   {
@@ -221,7 +221,7 @@
     ],
     "concepts": [
       "FEATURE SCALING NECESSITY",
-      "DATA SPLITTING STRATEGY"
+      "GRADIENT DESCENT BEHAVIOR"
     ]
   },
   {
@@ -296,7 +296,7 @@
     ],
     "concepts": [
       "CLASSIFICATION METRICS",
-      "MODEL CALIBRATION"
+      "OVERFITTING DIAGNOSIS"
     ]
   },
   {
@@ -370,7 +370,7 @@
       "The key question is whether they rank features differently — not whether they produce the same numbers."
     ],
     "concepts": [
-      "SUPERVISED VS UNSUPERVISED",
+      "HYPERPARAMETER SENSITIVITY",
       "FEATURE IMPORTANCE INTERPRETATION"
     ]
   },
@@ -495,7 +495,7 @@
       "Model parameters live inside the trained model and are used at prediction time. Hyperparameters govern the training process and are no longer needed once training is done."
     ],
     "concepts": [
-      "SUPERVISED VS UNSUPERVISED",
+      "REGULARIZATION EFFECT",
       "HYPERPARAMETER SENSITIVITY"
     ]
   },
@@ -556,7 +556,7 @@
     "type": "conceptual",
     "difficulty": "easy",
     "title": "Regression Metrics: MSE vs MAE",
-    "description": "Two models predict apartment rental prices. Model A has MAE = $180 and MSE = 180,000. Model B has MAE = $220 and MSE = 38,000. A product manager cares about the typical error a user experiences when the model's estimate differs from the actual rent. Which model does the product manager prefer, and why?",
+    "description": "Two models predict apartment rental prices. Model A has MAE = $180 and MSE = 180,000. Model B has MAE = $220 and MSE = 52,000. A product manager cares about the typical error a user experiences when the model's estimate differs from the actual rent. Which model does the product manager prefer, and why?",
     "options": [
       "Model A — it has lower MAE, meaning the typical error experienced by users is smaller",
       "Model B — it has lower MSE, meaning it avoids large individual errors that would be noticed by users",
@@ -645,7 +645,7 @@
       "The model's knowledge is encoded in the values that were adjusted by the optimiser during training to minimise the loss."
     ],
     "concepts": [
-      "SUPERVISED VS UNSUPERVISED",
+      "NEURAL NETWORK DESIGN",
       "HYPERPARAMETER SENSITIVITY"
     ]
   },
@@ -671,7 +671,7 @@
     ],
     "concepts": [
       "FEATURE SCALING NECESSITY",
-      "GRADIENT DESCENT BEHAVIOR"
+      "HYPERPARAMETER SENSITIVITY"
     ]
   },
   {
