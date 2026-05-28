@@ -148,7 +148,8 @@ This platform runs DuckDB — generic SQL is **not** acceptable.
 
 | Operation | Use | Do **not** use |
 |---|---|---|
-| Date bucketing | `STRFTIME('%Y-%m', order_date)` | `DATE_TRUNC` |
+| Date bucketing (string output) | `STRFTIME('%Y-%m', order_date)` | `DATE_TRUNC` for string-format results |
+| Date bucketing (DATE-type output) | `DATE_TRUNC('month', order_date)` | `STRFTIME` when you need a proper DATE for downstream date arithmetic |
 | Date arithmetic | `order_date::DATE + INTERVAL 7 DAY` | `DATE(x, '+7 days')` |
 | Date diff | `julian(date2) - julian(date1)` | `JULIANDAY`, `DATEDIFF` |
 | NULL-last ordering | `ORDER BY col ASC NULLS LAST` | (engine-specific equivalents) |

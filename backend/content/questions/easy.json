@@ -287,7 +287,7 @@
     "id": 11010,
     "order": 10,
     "title": "Support tickets by issue type",
-    "description": "Return each issue_type and the count of support tickets with that type as ticket_count, but only include issue types with more than one ticket. Order by ticket_count descending.",
+    "description": "Return each issue_type and the count of support tickets with that type as ticket_count. Order by ticket_count descending.",
     "difficulty": "easy",
     "schema": {
       "support_tickets": [
@@ -298,17 +298,16 @@
     "dataset_files": [
       "support_tickets.csv"
     ],
-    "expected_query": "SELECT issue_type, COUNT(ticket_id) AS ticket_count\nFROM support_tickets\nGROUP BY issue_type\nHAVING COUNT(ticket_id) > 1\nORDER BY ticket_count DESC",
-    "solution_query": "SELECT issue_type, COUNT(ticket_id) AS ticket_count\nFROM support_tickets\nGROUP BY issue_type\nHAVING COUNT(ticket_id) > 1\nORDER BY ticket_count DESC;",
-    "explanation": "GROUP BY issue_type creates one aggregate group per issue type, and COUNT(ticket_id) measures how many tickets fall into each group. HAVING COUNT(ticket_id) > 1 then filters those aggregated groups after the counts have been calculated. This is different from WHERE, which filters individual rows before aggregation happens. ORDER BY ticket_count DESC shows the larger issue categories first.",
+    "expected_query": "SELECT issue_type, COUNT(ticket_id) AS ticket_count\nFROM support_tickets\nGROUP BY issue_type\nORDER BY ticket_count DESC",
+    "solution_query": "SELECT issue_type, COUNT(ticket_id) AS ticket_count\nFROM support_tickets\nGROUP BY issue_type\nORDER BY ticket_count DESC;",
+    "explanation": "GROUP BY issue_type creates one aggregate group per issue type, and COUNT(ticket_id) measures how many tickets fall into each group. ORDER BY ticket_count DESC shows the most common issue categories first. This is the standard distribution query for understanding the breakdown of a categorical support column.",
     "hints": [
-      "Reduce the data to the requested segment first, then keep only the segments that clear the summary threshold.",
-      "The threshold here applies to each group's total, not to individual rows — think about where in the query a group-level condition belongs versus a row-level one."
+      "Collapse the data to the business grain named in the result before you calculate the summary values.",
+      "Once you have a count per group, the sort order should put the most frequent category at the top — think about which direction achieves that."
     ],
     "concepts": [
       "GROUPED AGGREGATION",
-      "ROW COUNT AGGREGATION",
-      "POST-AGGREGATION FILTERING"
+      "ROW COUNT AGGREGATION"
     ],
     "companies": [
       "Zendesk",
@@ -1098,7 +1097,7 @@
     "enforce_concepts": true,
     "explanation": "A CTE (Common Table Expression) defined with `WITH name AS (...)` creates a named temporary result set that lives only for the duration of the query. The CTE is defined first, then referenced in the main SELECT just like a table. CTEs make complex queries readable by naming intermediate steps — they are fundamental to writing maintainable SQL at any level. Here the CTE computes monthly counts, and the outer query retrieves and sorts them.",
     "hints": [
-      "A CTE lets you name an intermediate result and read from it like a table — compute the per-month counts inside `WITH monthly_signups AS (...)`, then SELECT from `monthly_signups` in the outer query.",
+      "A CTE creates a named intermediate result set that acts like a temporary table — define the aggregation logic once inside the CTE, then select and sort from it in the outer query without repeating the expression.",
       "Reference the CTE name in the outer SELECT like a table; grouping by the extracted date part and ordering by it ensures chronological output."
     ],
     "concepts": [
@@ -1265,13 +1264,13 @@
       "order_by"
     ],
     "enforce_concepts": true,
-    "expected_query": "SELECT e.employee_id, e.employee_name,\n       CONCAT(e.employee_name, ' (', COALESCE(d.department_name, 'Unknown'), ')') AS label\nFROM employees e\nLEFT JOIN departments d ON e.department_id = d.department_id\nORDER BY e.employee_id",
-    "solution_query": "SELECT e.employee_id, e.employee_name,\n       CONCAT(e.employee_name, ' (', COALESCE(d.department_name, 'Unknown'), ')') AS label\nFROM employees e\nLEFT JOIN departments d ON e.department_id = d.department_id\nORDER BY e.employee_id;",
+    "expected_query": "SELECT e.employee_id, e.employee_name,\n       e.employee_name || ' (' || COALESCE(d.department_name, 'Unknown') || ')' AS label\nFROM employees e\nLEFT JOIN departments d ON e.department_id = d.department_id\nORDER BY e.employee_id",
+    "solution_query": "SELECT e.employee_id, e.employee_name,\n       e.employee_name || ' (' || COALESCE(d.department_name, 'Unknown') || ')' AS label\nFROM employees e\nLEFT JOIN departments d ON e.department_id = d.department_id\nORDER BY e.employee_id;",
     "hints": [
       "When your query must include every row from the primary table — even when no corresponding row exists in the other table — what SQL operation achieves this, and what value fills the columns that have no match?",
-      "COALESCE returns the first non-NULL argument — use it to substitute a fallback string before it reaches CONCAT."
+      "COALESCE returns the first non-NULL argument — use it to substitute a fallback string for the nullable column before it reaches the `||` concatenation."
     ],
-    "explanation": "CONCAT() joins strings left to right; each literal like ' (' must be a separate argument. COALESCE(d.department_name, 'Unknown') substitutes 'Unknown' when the LEFT JOIN finds no department, preventing the label from being corrupted by NULL. Using the `||` operator instead of CONCAT in many databases would propagate NULL silently, so COALESCE is the portable, defensive pattern. This construct is common in display-layer queries and reporting pipelines."
+    "explanation": "The `||` operator is DuckDB's idiomatic string concatenation — it chains operands left to right and propagates NULL if any operand is NULL. That NULL-propagation is exactly why COALESCE(d.department_name, 'Unknown') is essential: the LEFT JOIN produces NULL for department_name when no department row matches, and wrapping it in COALESCE converts that NULL to 'Unknown' before the concatenation runs. This pattern — LEFT JOIN + COALESCE in a string expression — is common in display-layer queries and reporting pipelines."
   },
   {
     "id": 11036,
@@ -1308,7 +1307,7 @@
     "expected_query": "SELECT user_id, name, signup_date,\n       (CURRENT_DATE - signup_date)::INT AS days_since_signup\nFROM users\nWHERE is_active = true\nORDER BY days_since_signup DESC",
     "solution_query": "SELECT user_id, name, signup_date,\n       (CURRENT_DATE - signup_date)::INT AS days_since_signup\nFROM users\nWHERE is_active = true\nORDER BY days_since_signup DESC;",
     "hints": [
-      "Subtracting a date from CURRENT_DATE gives an interval or integer depending on the database — cast to INT to get a plain day count.",
+      "Think about what SQL reference point represents 'today', and what arithmetic operation captures the gap between that point and a historical date column.",
       "Filter to active users before computing the metric."
     ],
     "explanation": "CURRENT_DATE returns today's date as a DATE value. Subtracting two DATE values in DuckDB yields an interval; casting with ::INT gives a plain day count. This pattern — age = CURRENT_DATE − date_column — appears everywhere: churn models, SLA monitors, cohort analyses, and subscription expiry checks. Results will differ each day you run the query, which is expected behavior for a live tenure column."
