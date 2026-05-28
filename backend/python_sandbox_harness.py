@@ -12,6 +12,7 @@ import json
 import sys
 import traceback
 import io
+import types
 
 try:
     import resource
@@ -62,6 +63,8 @@ def _run_algorithm(user_code: str, test_cases: list) -> dict:
         sys.stdout = stdout_capture
         try:
             actual = solve_fn(*args)
+            if isinstance(actual, types.GeneratorType):
+                actual = list(actual)
             # Guard against enormous return values.
             # Exception: when the expected output is a matching-size list/tuple (e.g.
             # a generator-spec hidden test), allow the comparison — the 512 MB memory
