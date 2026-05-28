@@ -76,7 +76,7 @@ Models order headers.
 | order_date | |
 | status | |
 | gross_amount | |
-| discount_amount | |
+| discount_amount | nullable (some orders have no discount recorded) |
 | net_amount | |
 | payment_status | |
 
@@ -200,7 +200,7 @@ Models employee records.
 | employee_id | |
 | employee_name | |
 | email | |
-| salary | intentional ties for ranking exercises |
+| salary | nullable (some employees have no recorded salary); intentional ties for ranking exercises |
 | department_id | FK → departments |
 | hire_date | |
 | country | |
@@ -222,6 +222,8 @@ The generator deliberately produces these conditions to support interview-style 
 - Null emails (users)
 - Null product launch dates
 - Null `resolution_hours` for unresolved tickets
+- Null `salary` for some employees — for fillna/mean-imputation questions
+- Null `discount_amount` for some orders — for combined isna/zero-check questions
 - Salary ties in employees
 - Mixed payment statuses
 - Small payment amount mismatches for reconciliation questions

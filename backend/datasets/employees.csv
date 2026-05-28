@@ -9,7 +9,7 @@ employee_id,employee_name,email,salary,department_id,hire_date,country
 8,Employee 8,employee8@company.com,114056.23,8,2023-11-19,IN
 9,Employee 9,employee9@company.com,123581.73,8,2025-07-18,US
 10,Employee 10,employee10@company.com,141940.33,8,2022-03-15,SG
-11,Employee 11,employee11@company.com,184093.68,1,2022-02-25,US
+11,Employee 11,employee11@company.com,,1,2022-02-25,US
 12,Employee 12,employee12@company.com,78254.92,1,2023-11-30,UK
 13,Employee 13,employee13@company.com,164263.95,9,2023-10-24,US
 14,Employee 14,employee14@company.com,68595.89,8,2021-12-08,DE
@@ -24,7 +24,7 @@ employee_id,employee_name,email,salary,department_id,hire_date,country
 23,Employee 23,employee23@company.com,149057.26,6,2023-12-03,AU
 24,Employee 24,employee24@company.com,151843.28,7,2024-04-29,CA
 25,Employee 25,employee25@company.com,110000.0,6,2021-09-28,DE
-26,Employee 26,employee26@company.com,132148.02,1,2025-06-24,AU
+26,Employee 26,employee26@company.com,,1,2025-06-24,AU
 27,Employee 27,employee27@company.com,169616.68,1,2024-02-05,BR
 28,Employee 28,employee28@company.com,54685.24,1,2021-06-14,UK
 29,Employee 29,employee29@company.com,89732.25,10,2022-04-05,DE
@@ -37,7 +37,7 @@ employee_id,employee_name,email,salary,department_id,hire_date,country
 36,Employee 36,employee36@company.com,78126.11,7,2022-05-25,FR
 37,Employee 37,employee37@company.com,160536.11,10,2022-11-10,FR
 38,Employee 38,employee38@company.com,162464.71,10,2020-11-19,UK
-39,Employee 39,employee39@company.com,98903.07,2,2022-12-16,US
+39,Employee 39,employee39@company.com,,2,2022-12-16,US
 40,Employee 40,employee40@company.com,157060.47,4,2021-03-01,UK
 41,Employee 41,employee41@company.com,65338.93,8,2021-08-03,US
 42,Employee 42,employee42@company.com,56654.7,4,2021-09-13,NL
@@ -51,7 +51,7 @@ employee_id,employee_name,email,salary,department_id,hire_date,country
 50,Employee 50,employee50@company.com,110000.0,1,2023-05-15,IN
 51,Employee 51,employee51@company.com,178107.77,6,2021-07-13,DE
 52,Employee 52,employee52@company.com,50405.12,6,2023-12-06,NL
-53,Employee 53,employee53@company.com,62107.52,9,2021-02-11,US
+53,Employee 53,employee53@company.com,,9,2021-02-11,US
 54,Employee 54,employee54@company.com,129844.76,8,2022-08-24,FR
 55,Employee 55,employee55@company.com,182611.69,8,2022-06-25,AU
 56,Employee 56,employee56@company.com,148194.39,10,2025-11-14,US
@@ -66,7 +66,7 @@ employee_id,employee_name,email,salary,department_id,hire_date,country
 65,Employee 65,employee65@company.com,116531.01,2,2020-04-14,IN
 66,Employee 66,employee66@company.com,172935.7,1,2023-05-28,US
 67,Employee 67,employee67@company.com,55413.9,8,2023-03-14,US
-68,Employee 68,employee68@company.com,166733.48,1,2019-12-28,UK
+68,Employee 68,employee68@company.com,,1,2019-12-28,UK
 69,Employee 69,employee69@company.com,108323.8,8,2023-02-15,US
 70,Employee 70,employee70@company.com,135034.49,7,2022-07-18,DE
 71,Employee 71,employee71@company.com,82060.34,7,2024-07-31,FR
@@ -79,7 +79,7 @@ employee_id,employee_name,email,salary,department_id,hire_date,country
 78,Employee 78,employee78@company.com,178567.12,4,2022-08-09,IN
 79,Employee 79,employee79@company.com,104541.12,4,2025-06-19,IN
 80,Employee 80,employee80@company.com,96434.27,9,2023-04-09,IN
-81,Employee 81,employee81@company.com,139430.68,10,2024-08-31,BR
+81,Employee 81,employee81@company.com,,10,2024-08-31,BR
 82,Employee 82,employee82@company.com,126106.52,2,2020-09-24,IN
 83,Employee 83,employee83@company.com,121900.18,6,2020-05-01,SG
 84,Employee 84,employee84@company.com,113166.78,6,2025-03-11,US
@@ -94,7 +94,7 @@ employee_id,employee_name,email,salary,department_id,hire_date,country
 93,Employee 93,employee93@company.com,135406.09,9,2023-03-15,IN
 94,Employee 94,employee94@company.com,119076.85,9,2023-08-13,CA
 95,Employee 95,employee95@company.com,80941.06,2,2022-02-21,CA
-96,Employee 96,employee96@company.com,50815.04,2,2025-01-17,US
+96,Employee 96,employee96@company.com,,2,2025-01-17,US
 97,Employee 97,employee97@company.com,52090.42,7,2024-08-14,US
 98,Employee 98,employee98@company.com,180196.8,4,2019-11-20,CA
 99,Employee 99,employee99@company.com,142973.25,10,2025-04-05,IN
@@ -108,7 +108,7 @@ employee_id,employee_name,email,salary,department_id,hire_date,country
 107,Employee 107,employee107@company.com,111981.78,8,2022-05-02,US
 108,Employee 108,employee108@company.com,50814.43,8,2022-01-28,CA
 109,Employee 109,employee109@company.com,98340.9,8,2023-03-29,SG
-110,Employee 110,employee110@company.com,146109.88,7,2024-12-26,US
+110,Employee 110,employee110@company.com,,7,2024-12-26,US
 111,Employee 111,employee111@company.com,51023.42,7,2019-09-29,SG
 112,Employee 112,employee112@company.com,76348.08,8,2021-01-25,CA
 113,Employee 113,employee113@company.com,151256.82,2,2019-12-13,SG
@@ -123,7 +123,7 @@ employee_id,employee_name,email,salary,department_id,hire_date,country
 122,Employee 122,employee122@company.com,84816.58,8,2025-09-06,UK
 123,Employee 123,employee123@company.com,170890.52,1,2023-01-31,BR
 124,Employee 124,employee124@company.com,187450.38,1,2023-05-18,AU
-125,Employee 125,employee125@company.com,110000.0,8,2025-02-10,US
+125,Employee 125,employee125@company.com,,8,2025-02-10,US
 126,Employee 126,employee126@company.com,109955.28,8,2023-05-16,CA
 127,Employee 127,employee127@company.com,52829.65,4,2023-06-01,UK
 128,Employee 128,employee128@company.com,56186.72,9,2025-10-30,US
@@ -136,7 +136,7 @@ employee_id,employee_name,email,salary,department_id,hire_date,country
 135,Employee 135,employee135@company.com,57412.95,9,2023-08-01,FR
 136,Employee 136,employee136@company.com,57833.0,7,2021-02-22,BR
 137,Employee 137,employee137@company.com,88329.86,4,2023-03-06,US
-138,Employee 138,employee138@company.com,138069.22,1,2025-03-22,SG
+138,Employee 138,employee138@company.com,,1,2025-03-22,SG
 139,Employee 139,employee139@company.com,164579.69,1,2020-10-14,UK
 140,Employee 140,employee140@company.com,57904.17,9,2024-02-11,US
 141,Employee 141,employee141@company.com,158167.72,1,2021-03-30,IN
@@ -150,7 +150,7 @@ employee_id,employee_name,email,salary,department_id,hire_date,country
 149,Employee 149,employee149@company.com,175551.62,7,2021-09-04,DE
 150,Employee 150,employee150@company.com,110000.0,10,2024-09-18,SG
 151,Employee 151,employee151@company.com,149340.62,4,2021-02-16,FR
-152,Employee 152,employee152@company.com,91965.08,6,2025-10-17,NL
+152,Employee 152,employee152@company.com,,6,2025-10-17,NL
 153,Employee 153,employee153@company.com,110310.38,1,2022-04-29,CA
 154,Employee 154,employee154@company.com,102700.99,1,2025-01-28,CA
 155,Employee 155,employee155@company.com,175123.12,1,2025-11-03,DE
@@ -165,7 +165,7 @@ employee_id,employee_name,email,salary,department_id,hire_date,country
 164,Employee 164,employee164@company.com,135675.83,8,2025-02-16,IN
 165,Employee 165,employee165@company.com,184178.09,6,2023-10-01,AU
 166,Employee 166,employee166@company.com,122488.38,2,2024-10-27,BR
-167,Employee 167,employee167@company.com,186564.52,8,2022-05-25,IN
+167,Employee 167,employee167@company.com,,8,2022-05-25,IN
 168,Employee 168,employee168@company.com,178020.98,4,2023-03-01,CA
 169,Employee 169,employee169@company.com,162428.14,6,2021-10-10,SG
 170,Employee 170,employee170@company.com,150845.15,8,2025-11-06,DE

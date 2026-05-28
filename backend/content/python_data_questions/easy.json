@@ -63,7 +63,7 @@
     "explanation": "`groupby('status').size()` counts rows per group. Using `as_index=False` keeps `status` as a column rather than the index. `.rename(columns={'size': 'count'})` gives the count column its required name. Finally, sorting by `count` descending puts the most common statuses first.",
     "hints": [
       "Reduce the frame to the requested grain and count how many records fall into each bucket.",
-      "The result of `.groupby().size()` has the groupby key as the index by default \u2014 decide whether you want it as a column instead."
+      "The result of `.groupby().size()` has the groupby key as the index by default — decide whether you want it as a column instead."
     ],
     "concepts": [
       "GROUPED AGGREGATION",
@@ -110,7 +110,7 @@
     "topic": "python_data",
     "difficulty": "easy",
     "title": "Extract Email Domain",
-    "description": "You have a DataFrame `df_users` loaded from the users dataset.\n\n**Columns:** `user_id`, `name`, `email`, `signup_date`, `country`, `is_active`\n\nSome rows have null `email`. First drop those rows, then add a new column `email_domain` that contains the domain part of the email address (everything after the `@` symbol \u2014 e.g. `'gmail.com'` from `'user@gmail.com'`). Return the full DataFrame with the new column.",
+    "description": "You have a DataFrame `df_users` loaded from the users dataset.\n\n**Columns:** `user_id`, `name`, `email`, `signup_date`, `country`, `is_active`\n\nSome rows have null `email`. First drop those rows, then add a new column `email_domain` that contains the domain part of the email address (everything after the `@` symbol — e.g. `'gmail.com'` from `'user@gmail.com'`). Return the full DataFrame with the new column.",
     "dataframes": {
       "df_users": "users.csv"
     },
@@ -179,33 +179,32 @@
     "order": 6,
     "topic": "python_data",
     "difficulty": "easy",
-    "title": "Remove Duplicate Products",
-    "description": "You have a DataFrame `df_products` loaded from the products dataset.\n\n**Columns:** `product_id`, `product_name`, `category_id`, `brand`, `price`, `launch_date`, `is_active`\n\nRemove duplicate rows based on `product_id` (keep the first occurrence). Return the deduplicated DataFrame sorted by `product_id` ascending.",
+    "title": "First Event Type per User",
+    "description": "You have a DataFrame `df_events` loaded from the events dataset.\n\n**Columns:** `event_id`, `session_id`, `user_id`, `event_time`, `event_name`, `product_id`\n\nUsers often perform the same event type (e.g. `view_product`) multiple times across sessions. Return the **first occurrence** of each event type per user — one row per `(user_id, event_name)` pair using the earliest `event_time`. Output columns: `user_id`, `event_name`, `event_time`. Sort by `user_id` ascending, then `event_name` ascending.",
     "dataframes": {
-      "df_products": "products.csv"
+      "df_events": "events.csv"
     },
     "schema": {
-      "df_products": [
-        "product_id",
-        "product_name",
-        "category_id",
-        "brand",
-        "price",
-        "launch_date",
-        "is_active"
+      "df_events": [
+        "event_id",
+        "session_id",
+        "user_id",
+        "event_time",
+        "event_name",
+        "product_id"
       ]
     },
-    "starter_code": "import pandas as pd\n\ndef solve(df_products):\n    # Remove duplicate product_id rows (keep first), return sorted by product_id\n    pass",
-    "expected_code": "import pandas as pd\n\ndef solve(df_products):\n    return df_products.drop_duplicates(subset=['product_id'], keep='first').sort_values('product_id').reset_index(drop=True)",
-    "solution_code": "import pandas as pd\n\ndef solve(df_products):\n    return df_products.drop_duplicates(subset=['product_id'], keep='first').sort_values('product_id').reset_index(drop=True)",
-    "explanation": "`.drop_duplicates(subset=['product_id'], keep='first')` scans the DataFrame and removes any row whose `product_id` has already appeared, retaining the first occurrence. Without `subset`, pandas would compare all columns simultaneously \u2014 specifying the key column(s) is more precise.",
+    "starter_code": "import pandas as pd\n\ndef solve(df_events):\n    # Return first occurrence of each event type per user\n    # Columns: user_id, event_name, event_time — sorted by user_id, then event_name\n    pass",
+    "expected_code": "import pandas as pd\n\ndef solve(df_events):\n    df = df_events.copy()\n    df['event_time'] = pd.to_datetime(df['event_time'])\n    result = (\n        df.sort_values('event_time')\n        .drop_duplicates(subset=['user_id', 'event_name'], keep='first')\n        [['user_id', 'event_name', 'event_time']]\n        .sort_values(['user_id', 'event_name'])\n        .reset_index(drop=True)\n    )\n    return result",
+    "solution_code": "import pandas as pd\n\ndef solve(df_events):\n    df = df_events.copy()\n    df['event_time'] = pd.to_datetime(df['event_time'])\n    result = (\n        df.sort_values('event_time')\n        .drop_duplicates(subset=['user_id', 'event_name'], keep='first')\n        [['user_id', 'event_name', 'event_time']]\n        .sort_values(['user_id', 'event_name'])\n        .reset_index(drop=True)\n    )\n    return result",
+    "explanation": "`.sort_values('event_time')` puts events in chronological order so the first occurrence has the smallest timestamp. `.drop_duplicates(subset=['user_id', 'event_name'], keep='first')` then retains only the first row for each unique `(user_id, event_name)` pair — every later repeat is discarded. Specifying a multi-column `subset` is the common real-world case: uniqueness on a *combination* of keys, not a single column.",
     "hints": [
-      "Define what makes two rows equivalent, then keep one representative for each repeated entity.",
-      "The default `keep='first'` retains the first occurrence of each duplicate"
+      "Define what makes two rows equivalent — here it is the combination of user and event type — then keep one representative row for each pair.",
+      "Sort by the timestamp before deduplicating so that `keep='first'` selects the chronologically earliest event, not an arbitrary one."
     ],
     "concepts": [
       "DEDUPLICATION LOGIC",
-      "OUTPUT SHAPE & ORDERING"
+      "DATETIME OPERATIONS"
     ]
   },
   {
@@ -262,7 +261,7 @@
         "line_amount"
       ]
     },
-    "starter_code": "import pandas as pd\n\ndef solve(df_order_items):\n    # Return top 5 products by total quantity ordered\n    # Columns: product_id, total_quantity \u2014 sorted by total_quantity descending\n    pass",
+    "starter_code": "import pandas as pd\n\ndef solve(df_order_items):\n    # Return top 5 products by total quantity ordered\n    # Columns: product_id, total_quantity — sorted by total_quantity descending\n    pass",
     "expected_code": "import pandas as pd\n\ndef solve(df_order_items):\n    result = df_order_items.groupby('product_id', as_index=False)['quantity'].sum().rename(columns={'quantity': 'total_quantity'})\n    return result.sort_values('total_quantity', ascending=False).head(5).reset_index(drop=True)",
     "solution_code": "import pandas as pd\n\ndef solve(df_order_items):\n    result = df_order_items.groupby('product_id', as_index=False)['quantity'].sum().rename(columns={'quantity': 'total_quantity'})\n    return result.sort_values('total_quantity', ascending=False).head(5).reset_index(drop=True)",
     "explanation": "`groupby('product_id')['quantity'].sum()` totals up the ordered quantity per product. After renaming the aggregated column to `total_quantity`, sorting descending and calling `.head(5)` limits the result to the five best-selling products.",
@@ -297,7 +296,7 @@
         "country"
       ]
     },
-    "starter_code": "import pandas as pd\n\ndef solve(df_employees):\n    # Return employees with salary > 60000\n    # Columns: employee_id, employee_name, salary \u2014 sorted by salary descending\n    pass",
+    "starter_code": "import pandas as pd\n\ndef solve(df_employees):\n    # Return employees with salary > 60000\n    # Columns: employee_id, employee_name, salary — sorted by salary descending\n    pass",
     "expected_code": "import pandas as pd\n\ndef solve(df_employees):\n    result = df_employees[df_employees['salary'] > 60000][['employee_id', 'employee_name', 'salary']]\n    return result.sort_values('salary', ascending=False).reset_index(drop=True)",
     "solution_code": "import pandas as pd\n\ndef solve(df_employees):\n    result = df_employees[df_employees['salary'] > 60000][['employee_id', 'employee_name', 'salary']]\n    return result.sort_values('salary', ascending=False).reset_index(drop=True)",
     "explanation": "Boolean indexing filters to rows where `salary > 60000`. Column selection with `[['employee_id', 'employee_name', 'salary']]` trims to the required columns. Sorting by `salary` descending shows the highest earners first.",
@@ -406,10 +405,10 @@
     "starter_code": "import pandas as pd\n\ndef solve(df_orders):\n    # Return each user's most recent order: user_id, order_id, order_date\n    # Hint: use groupby + idxmax on order_date\n    pass",
     "expected_code": "import pandas as pd\n\ndef solve(df_orders):\n    df = df_orders.copy()\n    df['order_date'] = pd.to_datetime(df['order_date'])\n    idx = df.groupby('user_id')['order_date'].idxmax()\n    result = df.loc[idx, ['user_id', 'order_id', 'order_date']]\n    return result.sort_values('user_id').reset_index(drop=True)",
     "solution_code": "import pandas as pd\n\ndef solve(df_orders):\n    df = df_orders.copy()\n    df['order_date'] = pd.to_datetime(df['order_date'])\n    idx = df.groupby('user_id')['order_date'].idxmax()\n    result = df.loc[idx, ['user_id', 'order_id', 'order_date']]\n    return result.sort_values('user_id').reset_index(drop=True)",
-    "explanation": "`groupby('user_id')['order_date'].idxmax()` returns the index label of the row with the maximum `order_date` for each user. `df.loc[idx]` then selects those rows from the original DataFrame, giving one row per user \u2014 the most recent order.",
+    "explanation": "`groupby('user_id')['order_date'].idxmax()` returns the index label of the row with the maximum `order_date` for each user. `df.loc[idx]` then selects those rows from the original DataFrame, giving one row per user — the most recent order.",
     "hints": [
       "Within each user's orders, the answer is the row carrying the latest date — one row per user.",
-      "`groupby(...)['order_date'].idxmax()` gives you the index of the latest order per user; feed it to `df.loc[...]` to pull those rows."
+      "Find the row-level index of the maximum-date row per user, then use label-based selection on the original DataFrame to retrieve those rows."
     ],
     "concepts": [
       "GROUPED AGGREGATION",
@@ -522,8 +521,8 @@
     "order": 16,
     "topic": "python_data",
     "difficulty": "easy",
-    "title": "Orders with Zero or Null Net Amount",
-    "description": "You have a DataFrame `df_orders` loaded from the orders dataset.\n\n**Columns:** `order_id`, `user_id`, `order_date`, `status`, `gross_amount`, `net_amount`\n\nReturn orders where `net_amount` is null or equal to zero. Output columns: `order_id`, `user_id`, `order_date`, `net_amount`. Sort by `order_id` ascending.",
+    "title": "Orders with Missing or Zero Discount",
+    "description": "You have a DataFrame `df_orders` loaded from the orders dataset.\n\n**Columns:** `order_id`, `user_id`, `order_date`, `status`, `gross_amount`, `discount_amount`, `net_amount`, `payment_status`\n\nReturn orders where `discount_amount` is null or equal to zero (orders with no discount recorded). Output columns: `order_id`, `user_id`, `order_date`, `discount_amount`. Sort by `order_id` ascending.",
     "dataframes": {
       "df_orders": "orders.csv"
     },
@@ -539,13 +538,13 @@
         "payment_status"
       ]
     },
-    "starter_code": "import pandas as pd\n\ndef solve(df_orders):\n    # Return orders where net_amount is null or zero\n    # Columns: order_id, user_id, order_date, net_amount \u2014 sorted by order_id\n    pass",
-    "expected_code": "import pandas as pd\n\ndef solve(df_orders):\n    mask = df_orders['net_amount'].isna() | (df_orders['net_amount'] == 0)\n    result = df_orders[mask][['order_id', 'user_id', 'order_date', 'net_amount']]\n    return result.sort_values('order_id').reset_index(drop=True)",
-    "solution_code": "import pandas as pd\n\ndef solve(df_orders):\n    mask = df_orders['net_amount'].isna() | (df_orders['net_amount'] == 0)\n    result = df_orders[mask][['order_id', 'user_id', 'order_date', 'net_amount']]\n    return result.sort_values('order_id').reset_index(drop=True)",
-    "explanation": "`.isna()` produces a boolean Series that is True for null values. The `|` operator combines it with a zero-value check using OR logic. Wrapping in parentheses ensures correct operator precedence. The resulting mask filters rows that meet either condition.",
+    "starter_code": "import pandas as pd\n\ndef solve(df_orders):\n    # Return orders where discount_amount is null or zero\n    # Columns: order_id, user_id, order_date, discount_amount — sorted by order_id\n    pass",
+    "expected_code": "import pandas as pd\n\ndef solve(df_orders):\n    mask = df_orders['discount_amount'].isna() | (df_orders['discount_amount'] == 0)\n    result = df_orders[mask][['order_id', 'user_id', 'order_date', 'discount_amount']]\n    return result.sort_values('order_id').reset_index(drop=True)",
+    "solution_code": "import pandas as pd\n\ndef solve(df_orders):\n    mask = df_orders['discount_amount'].isna() | (df_orders['discount_amount'] == 0)\n    result = df_orders[mask][['order_id', 'user_id', 'order_date', 'discount_amount']]\n    return result.sort_values('order_id').reset_index(drop=True)",
+    "explanation": "`.isna()` produces a boolean Series that is True for null values. The `|` operator combines it with a zero-value check using OR logic. Wrapping in parentheses ensures correct operator precedence. The resulting mask filters rows that meet either condition — here: orders with no discount amount recorded.",
     "hints": [
       "Build a boolean condition that catches rows where the column is absent and rows where it equals zero, then combine them.",
-      "Null detection and zero detection are separate checks \u2014 use the OR operator to match either condition."
+      "Null detection and zero detection are separate checks — use the OR operator to match either condition."
     ],
     "concepts": [
       "BOOLEAN INDEXING & FILTERING",
@@ -609,13 +608,13 @@
         "is_active"
       ]
     },
-    "starter_code": "import pandas as pd\n\ndef solve(df_users):\n    # Return users who signed up after 2022-12-31\n    # Columns: user_id, name, email, signup_date \u2014 sorted by signup_date ascending\n    pass",
+    "starter_code": "import pandas as pd\n\ndef solve(df_users):\n    # Return users who signed up after 2022-12-31\n    # Columns: user_id, name, email, signup_date — sorted by signup_date ascending\n    pass",
     "expected_code": "import pandas as pd\n\ndef solve(df_users):\n    df = df_users.copy()\n    df['signup_date'] = pd.to_datetime(df['signup_date'])\n    result = df[df['signup_date'] > '2022-12-31'][['user_id', 'name', 'email', 'signup_date']]\n    return result.sort_values('signup_date').reset_index(drop=True)",
     "solution_code": "import pandas as pd\n\ndef solve(df_users):\n    df = df_users.copy()\n    df['signup_date'] = pd.to_datetime(df['signup_date'])\n    result = df[df['signup_date'] > '2022-12-31'][['user_id', 'name', 'email', 'signup_date']]\n    return result.sort_values('signup_date').reset_index(drop=True)",
     "explanation": "After parsing `signup_date` with `pd.to_datetime()`, pandas allows direct string comparisons like `> '2022-12-31'` because it auto-converts the string to a Timestamp for comparison. This is concise and readable.",
     "hints": [
       "Normalize the date values into a true time representation before extracting calendar pieces or measuring intervals.",
-      "You can compare a datetime column directly to a date string: `df['signup_date'] > '2022-12-31'`"
+      "Once the column is datetime, comparison operators work directly against a date string — pandas handles the string-to-timestamp conversion automatically."
     ],
     "concepts": [
       "DATETIME OPERATIONS",
@@ -647,10 +646,10 @@
     "starter_code": "import pandas as pd\n\ndef solve(df_users):\n    # Compute days_since_signup and bin into tenure_group\n    pass",
     "expected_code": "import pandas as pd\n\ndef solve(df_users):\n    df = df_users.copy()\n    df['signup_date'] = pd.to_datetime(df['signup_date'])\n    ref = pd.to_datetime('2025-01-01')\n    df['days_since_signup'] = (ref - df['signup_date']).dt.days\n    df['tenure_group'] = pd.cut(\n        df['days_since_signup'],\n        bins=[0, 90, 365, 730, float('inf')],\n        labels=['new', 'recent', 'established', 'veteran']\n    )\n    return df[['user_id', 'plan_tier', 'days_since_signup', 'tenure_group']].sort_values('user_id').reset_index(drop=True)",
     "solution_code": "import pandas as pd\n\ndef solve(df_users):\n    df = df_users.copy()\n    df['signup_date'] = pd.to_datetime(df['signup_date'])\n    ref = pd.to_datetime('2025-01-01')\n    df['days_since_signup'] = (ref - df['signup_date']).dt.days\n    df['tenure_group'] = pd.cut(\n        df['days_since_signup'],\n        bins=[0, 90, 365, 730, float('inf')],\n        labels=['new', 'recent', 'established', 'veteran']\n    )\n    return df[['user_id', 'plan_tier', 'days_since_signup', 'tenure_group']].sort_values('user_id').reset_index(drop=True)",
-    "explanation": "Subtracting two datetime Series returns a Timedelta Series; `.dt.days` extracts the integer day count. `pd.cut()` bins a numeric Series into labeled intervals \u2014 `bins` defines the bin edges (left-exclusive by default), `labels` names each bin. The result is a Categorical Series. This is the standard pattern for converting continuous metrics into discrete segments for cohort analysis.",
+    "explanation": "Subtracting two datetime Series returns a Timedelta Series; `.dt.days` extracts the integer day count. `pd.cut()` bins a numeric Series into labeled intervals — `bins` defines the bin edges (left-exclusive by default), `labels` names each bin. The result is a Categorical Series. This is the standard pattern for converting continuous metrics into discrete segments for cohort analysis.",
     "hints": [
       "Normalize the date values into a true time representation before extracting calendar pieces or measuring intervals.",
-      "`pd.cut(series, bins=[...], labels=[...])` assigns each value to a named bin \u2014 bin edges define the boundaries"
+      "`pd.cut(series, bins=[...], labels=[...])` assigns each value to a named bin — bin edges define the boundaries"
     ],
     "concepts": [
       "CATEGORICAL & BINNING",
@@ -716,7 +715,7 @@
     "starter_code": "import pandas as pd\n\ndef solve(df_support_tickets):\n    # Filter tickets where issue_type contains 'billing' (case-insensitive)\n    pass",
     "expected_code": "import pandas as pd\n\ndef solve(df_support_tickets):\n    mask = df_support_tickets['issue_type'].str.contains('billing', case=False, na=False)\n    result = df_support_tickets[mask][['ticket_id', 'user_id', 'issue_type', 'status', 'priority']]\n    return result.sort_values('ticket_id').reset_index(drop=True)",
     "solution_code": "import pandas as pd\n\ndef solve(df_support_tickets):\n    mask = df_support_tickets['issue_type'].str.contains('billing', case=False, na=False)\n    result = df_support_tickets[mask][['ticket_id', 'user_id', 'issue_type', 'status', 'priority']]\n    return result.sort_values('ticket_id').reset_index(drop=True)",
-    "explanation": "`str.contains(pattern, case=False)` does a case-insensitive substring search, returning a boolean Series. `na=False` ensures NaN values map to False instead of NaN (which would fail boolean indexing). This is the pandas equivalent of SQL `WHERE LOWER(issue_type) LIKE '%billing%'` and is vectorized \u2014 no loops needed.",
+    "explanation": "`str.contains(pattern, case=False)` does a case-insensitive substring search, returning a boolean Series. `na=False` ensures NaN values map to False instead of NaN (which would fail boolean indexing). This is the pandas equivalent of SQL `WHERE LOWER(issue_type) LIKE '%billing%'` and is vectorized — no loops needed.",
     "hints": [
       "Apply the same text parsing or matching rule to the whole column instead of looping row by row.",
       "Set `na=False` so that any NaN in issue_type is treated as non-matching rather than raising an error"
@@ -751,10 +750,10 @@
     "starter_code": "import pandas as pd\n\ndef solve(df_orders):\n    # Extract year from order_date, aggregate per year\n    pass",
     "expected_code": "import pandas as pd\n\ndef solve(df_orders):\n    df = df_orders.copy()\n    df['order_date'] = pd.to_datetime(df['order_date'])\n    df['year'] = df['order_date'].dt.year\n    result = df.groupby('year', as_index=False).agg(\n        total_revenue=('net_amount', 'sum'),\n        order_count=('order_id', 'count')\n    )\n    result['total_revenue'] = result['total_revenue'].round(2)\n    return result.sort_values('year').reset_index(drop=True)",
     "solution_code": "import pandas as pd\n\ndef solve(df_orders):\n    df = df_orders.copy()\n    df['order_date'] = pd.to_datetime(df['order_date'])\n    df['year'] = df['order_date'].dt.year\n    result = df.groupby('year', as_index=False).agg(\n        total_revenue=('net_amount', 'sum'),\n        order_count=('order_id', 'count')\n    )\n    result['total_revenue'] = result['total_revenue'].round(2)\n    return result.sort_values('year').reset_index(drop=True)",
-    "explanation": "`pd.to_datetime()` converts the string column to datetime. `.dt.year` extracts the integer year. The named aggregation syntax `agg(col_name=('source_col', 'func'))` produces cleanly named output columns in a single call \u2014 cleaner than chaining `.rename()` after plain `.agg()`. This is the preferred modern pattern since pandas 0.25.",
+    "explanation": "`pd.to_datetime()` converts the string column to datetime. `.dt.year` extracts the integer year. The named aggregation syntax `agg(col_name=('source_col', 'func'))` produces cleanly named output columns in a single call — cleaner than chaining `.rename()` after plain `.agg()`. This is the preferred modern pattern since pandas 0.25.",
     "hints": [
       "Normalize the date values into a true time representation before extracting calendar pieces or measuring intervals.",
-      "Named aggregation syntax: `groupby(...).agg(new_name=('source_col', 'func'))` produces named output columns directly"
+      "Named aggregation in `.agg()` lets you define both the aggregation function and the output column name in a single call, without a separate `.rename()` step."
     ],
     "concepts": [
       "DATETIME OPERATIONS",
@@ -783,10 +782,10 @@
         "payment_status"
       ]
     },
-    "starter_code": "import pandas as pd\n\ndef solve(df_orders):\n    # Add needs_review column using .loc \u2014 True where payment_status == 'failed'\n    pass",
+    "starter_code": "import pandas as pd\n\ndef solve(df_orders):\n    # Add needs_review column using .loc — True where payment_status == 'failed'\n    pass",
     "expected_code": "import pandas as pd\n\ndef solve(df_orders):\n    df = df_orders.copy()\n    df['needs_review'] = False\n    df.loc[df['payment_status'] == 'failed', 'needs_review'] = True\n    return df.sort_values('order_id').reset_index(drop=True)",
     "solution_code": "import pandas as pd\n\ndef solve(df_orders):\n    df = df_orders.copy()\n    df['needs_review'] = False\n    df.loc[df['payment_status'] == 'failed', 'needs_review'] = True\n    return df.sort_values('order_id').reset_index(drop=True)",
-    "explanation": "Always call `.copy()` before mutating a slice to avoid `SettingWithCopyWarning`. Initialise `needs_review` to `False` for all rows, then use `.loc[mask, col] = value` to flip it to `True` for matching rows. Chained indexing like `df[mask]['col'] = val` silently modifies a copy \u2014 `.loc` is the correct, safe way to set values on a filtered subset.",
+    "explanation": "Always call `.copy()` before mutating a slice to avoid `SettingWithCopyWarning`. Initialise `needs_review` to `False` for all rows, then use `.loc[mask, col] = value` to flip it to `True` for matching rows. Chained indexing like `df[mask]['col'] = val` silently modifies a copy — `.loc` is the correct, safe way to set values on a filtered subset.",
     "hints": [
       "Conditional assignment means: work on a frame you own, then write the new value only into the rows that match your condition.",
       "`.loc[boolean_mask, 'column_name'] = value` is the safe pattern for conditional assignment."
@@ -816,10 +815,10 @@
         "product_id"
       ]
     },
-    "starter_code": "import pandas as pd\n\ndef solve(df_events):\n    # Drop rows where product_id is null \u2014 use subset to avoid dropping rows with other nulls\n    pass",
+    "starter_code": "import pandas as pd\n\ndef solve(df_events):\n    # Drop rows where product_id is null — use subset to avoid dropping rows with other nulls\n    pass",
     "expected_code": "import pandas as pd\n\ndef solve(df_events):\n    result = df_events.dropna(subset=['product_id'])\n    return result[['event_id', 'user_id', 'event_name', 'product_id']].sort_values('event_id').reset_index(drop=True)",
     "solution_code": "import pandas as pd\n\ndef solve(df_events):\n    result = df_events.dropna(subset=['product_id'])\n    return result[['event_id', 'user_id', 'event_name', 'product_id']].sort_values('event_id').reset_index(drop=True)",
-    "explanation": "`.dropna()` with no arguments removes any row with at least one null across all columns \u2014 too broad. `.dropna(subset=['product_id'])` removes only rows where `product_id` is null, leaving all other null values in place. This is the precise tool for column-specific null filtering.",
+    "explanation": "`.dropna()` with no arguments removes any row with at least one null across all columns — too broad. `.dropna(subset=['product_id'])` removes only rows where `product_id` is null, leaving all other null values in place. This is the precise tool for column-specific null filtering.",
     "hints": [
       "Which rows have a null value in a *specific* column? Think about how you'd target a single column instead of dropping any row with any null.",
       "After filtering, select only the required columns and sort by `event_id`."
@@ -835,34 +834,33 @@
     "order": 25,
     "topic": "python_data",
     "difficulty": "easy",
-    "title": "Forward-Fill Missing Emails",
-    "description": "You have a DataFrame `df_users` loaded from the users dataset.\n\n**Columns:** `user_id`, `name`, `email`, `signup_date`, `country`, `acquisition_channel`, `plan_tier`, `is_active`\n\nSome users have a null `email`. Sort the DataFrame by `user_id`, then forward-fill the `email` column so that each null is replaced by the nearest preceding non-null email. Return columns `user_id`, `name`, `email`, sorted by `user_id`.",
+    "title": "Forward-Fill Missing Resolution Hours",
+    "description": "You have a DataFrame `df_support_tickets` loaded from the support_tickets dataset.\n\n**Columns:** `ticket_id`, `user_id`, `created_at`, `issue_type`, `priority`, `status`, `resolution_hours`\n\nOpen or pending tickets have a null `resolution_hours`. Sort the DataFrame by `created_at`, then forward-fill `resolution_hours` so each null is replaced by the most recently seen non-null value. Return columns `ticket_id`, `user_id`, `created_at`, `resolution_hours`, sorted by `created_at`.",
     "dataframes": {
-      "df_users": "users.csv"
+      "df_support_tickets": "support_tickets.csv"
     },
     "schema": {
-      "df_users": [
+      "df_support_tickets": [
+        "ticket_id",
         "user_id",
-        "name",
-        "email",
-        "signup_date",
-        "country",
-        "acquisition_channel",
-        "plan_tier",
-        "is_active"
+        "created_at",
+        "issue_type",
+        "priority",
+        "status",
+        "resolution_hours"
       ]
     },
-    "starter_code": "import pandas as pd\n\ndef solve(df_users):\n    # Sort by user_id, forward-fill the email column\n    pass",
-    "expected_code": "import pandas as pd\n\ndef solve(df_users):\n    df = df_users.copy().sort_values('user_id')\n    df['email'] = df['email'].ffill()\n    return df[['user_id', 'name', 'email']].reset_index(drop=True)",
-    "solution_code": "import pandas as pd\n\ndef solve(df_users):\n    df = df_users.copy().sort_values('user_id')\n    df['email'] = df['email'].ffill()\n    return df[['user_id', 'name', 'email']].reset_index(drop=True)",
-    "explanation": "`.ffill()` (forward fill) propagates the last observed non-null value downward through the column in row order. Sorting by `user_id` first ensures the fill direction follows user ID order rather than the arbitrary original DataFrame order. `.bfill()` does the reverse.",
+    "starter_code": "import pandas as pd\n\ndef solve(df_support_tickets):\n    # Sort by created_at, forward-fill resolution_hours\n    pass",
+    "expected_code": "import pandas as pd\n\ndef solve(df_support_tickets):\n    df = df_support_tickets.copy()\n    df['created_at'] = pd.to_datetime(df['created_at'])\n    df = df.sort_values('created_at')\n    df['resolution_hours'] = df['resolution_hours'].ffill()\n    return df[['ticket_id', 'user_id', 'created_at', 'resolution_hours']].reset_index(drop=True)",
+    "solution_code": "import pandas as pd\n\ndef solve(df_support_tickets):\n    df = df_support_tickets.copy()\n    df['created_at'] = pd.to_datetime(df['created_at'])\n    df = df.sort_values('created_at')\n    df['resolution_hours'] = df['resolution_hours'].ffill()\n    return df[['ticket_id', 'user_id', 'created_at', 'resolution_hours']].reset_index(drop=True)",
+    "explanation": "`.ffill()` (forward fill) replaces each null with the last observed non-null value in the column, scanning downward in row order. Sorting by `created_at` first ensures the fill travels in chronological order — each null gets the most recently resolved ticket's hours as its estimate. `.bfill()` does the reverse: fills from below.",
     "hints": [
-      "Sort before filling so the propagation travels in `user_id` order.",
+      "Sort before filling so the propagation travels in the direction the data is ordered — here, chronological.",
       "`.ffill()` replaces each null with the last non-null value seen above it in the column."
     ],
     "concepts": [
       "MISSING VALUE STRATEGY",
-      "COLUMN SELECTION & PROJECTION"
+      "DATETIME OPERATIONS"
     ]
   },
   {
@@ -885,12 +883,12 @@
         "product_id"
       ]
     },
-    "starter_code": "import pandas as pd\n\ndef solve(df_events):\n    # Count events per product_id \u2014 include the null group\n    pass",
+    "starter_code": "import pandas as pd\n\ndef solve(df_events):\n    # Count events per product_id — include the null group\n    pass",
     "expected_code": "import pandas as pd\n\ndef solve(df_events):\n    result = (\n        df_events\n        .groupby('product_id', dropna=False, as_index=False)\n        .size()\n        .rename(columns={'size': 'event_count'})\n    )\n    return result.sort_values('event_count', ascending=False).reset_index(drop=True)",
     "solution_code": "import pandas as pd\n\ndef solve(df_events):\n    result = (\n        df_events\n        .groupby('product_id', dropna=False, as_index=False)\n        .size()\n        .rename(columns={'size': 'event_count'})\n    )\n    return result.sort_values('event_count', ascending=False).reset_index(drop=True)",
-    "explanation": "By default `groupby` silently drops NaN keys. Passing `dropna=False` keeps null keys as a separate group \u2014 the same behaviour as SQL `GROUP BY` which includes NULL rows. `as_index=False` returns `product_id` as a regular column instead of the index, keeping the output as a flat DataFrame.",
+    "explanation": "By default `groupby` silently drops NaN keys. Passing `dropna=False` keeps null keys as a separate group — the same behaviour as SQL `GROUP BY` which includes NULL rows. `as_index=False` returns `product_id` as a regular column instead of the index, keeping the output as a flat DataFrame.",
     "hints": [
-      "What happens to rows where the *grouping key* itself is null \u2014 are they silently dropped or kept? Check whether your aggregation includes or excludes null keys by default.",
+      "What happens to rows where the *grouping key* itself is null — are they silently dropped or kept? Check whether your aggregation includes or excludes null keys by default.",
       "`as_index=False` keeps the group key as a regular column rather than promoting it to the index."
     ],
     "concepts": [
@@ -920,7 +918,7 @@
         "payment_status"
       ]
     },
-    "starter_code": "import pandas as pd\n\ndef solve(df_orders):\n    # Average net_amount per status \u2014 use as_index=False and named aggregation\n    pass",
+    "starter_code": "import pandas as pd\n\ndef solve(df_orders):\n    # Average net_amount per status — use as_index=False and named aggregation\n    pass",
     "expected_code": "import pandas as pd\n\ndef solve(df_orders):\n    result = df_orders.groupby('status', as_index=False).agg(\n        avg_net_amount=('net_amount', 'mean')\n    )\n    result['avg_net_amount'] = result['avg_net_amount'].round(2)\n    return result.sort_values('status').reset_index(drop=True)",
     "solution_code": "import pandas as pd\n\ndef solve(df_orders):\n    result = df_orders.groupby('status', as_index=False).agg(\n        avg_net_amount=('net_amount', 'mean')\n    )\n    result['avg_net_amount'] = result['avg_net_amount'].round(2)\n    return result.sort_values('status').reset_index(drop=True)",
     "explanation": "`groupby('status', as_index=False)` keeps `status` as a regular column in the output. Named aggregation syntax `agg(output_col=('source_col', 'func'))` names the result column directly, avoiding a separate `.rename()` call. This is the modern pandas pattern for clean, readable groupby aggregations since pandas 0.25.",
@@ -959,7 +957,7 @@
     "explanation": "`.str.split('_')` splits each value into a list on underscores; `.str[0]` takes the first element. This normalises `paid_search` and `paid_social` into the same `paid` group in one vectorized call. The groupby + named aggregation counts sessions per group; descending sort surfaces the largest channel first.",
     "hints": [
       "The traffic_source values follow a pattern: a prefix word, then a separator, then optional detail. Which string accessor lets you split on a separator and pick the first part?",
-      "A named aggregation \u2014 `agg(session_count=('session_id', 'count'))` \u2014 gives the output column its final name in one step."
+      "A named aggregation — `agg(session_count=('session_id', 'count'))` — gives the output column its final name in one step."
     ],
     "concepts": [
       "COLUMN SELECTION & PROJECTION",
