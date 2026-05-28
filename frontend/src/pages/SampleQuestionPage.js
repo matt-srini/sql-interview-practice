@@ -268,12 +268,16 @@ export default function SampleQuestionPage() {
           <div className="topbar-inner sample-page-topbar">
             <div className="sample-topbar-left">
               <Link className="sample-home-link brand-wordmark" to="/">
-                <div className="brand-lockup" aria-hidden="true">
-                  {isDark ? (
-                      <img src="/branding/lockup-bar-reverse-no-bg.svg" alt="datathink" className="brand-lockup-img" height="72" />
-                  ) : (
-                      <img src="/branding/lockup-bar-no-bg.svg" alt="datathink" className="brand-lockup-img" height="72" />
-                  )}
+                <div className="brand-lockup">
+                  <img
+                    src={isDark ? '/branding/mark-reverse-no-bg.svg' : '/branding/mark-no-bg.svg'}
+                    alt=""
+                    aria-hidden="true"
+                    className="brand-mark-img"
+                  />
+                  <span className="brand-wordmark-text" aria-hidden="true">
+                    <span className="brand-data">data</span><span className="brand-think">think</span>
+                  </span>
                 </div>
               </Link>
             </div>
@@ -403,12 +407,16 @@ export default function SampleQuestionPage() {
         <div className="topbar-inner sample-page-topbar">
           <div className="sample-topbar-left">
             <Link className="sample-home-link brand-wordmark" to="/">
-              <div className="brand-lockup" aria-hidden="true">
-                {isDark ? (
-                  <img src="/branding/lockup-bar-reverse-no-bg.svg" alt="datathink" className="brand-lockup-img" height="72" />
-                ) : (
-                  <img src="/branding/lockup-bar-no-bg.svg" alt="datathink" className="brand-lockup-img" height="72" />
-                )}
+              <div className="brand-lockup">
+                <img
+                  src={isDark ? '/branding/mark-reverse-no-bg.svg' : '/branding/mark-no-bg.svg'}
+                  alt=""
+                  aria-hidden="true"
+                  className="brand-mark-img"
+                />
+                <span className="brand-wordmark-text" aria-hidden="true">
+                  <span className="brand-data">data</span><span className="brand-think">think</span>
+                </span>
               </div>
             </Link>
           </div>
