@@ -396,7 +396,7 @@
       "When \u03c3(z) \u2248 1, what is \u03c3(z) \u00d7 (1 - \u03c3(z))? This is the gradient of the sigmoid \u2014 how does it affect weight updates?"
     ],
     "concepts": [
-      "BOOSTING MECHANICS",
+      "LOSS FUNCTION SELECTION",
       "GRADIENT DESCENT BEHAVIOR"
     ]
   },
@@ -465,7 +465,7 @@
       "Configuration A will always overfit because the high learning rate prevents the model from finding the global minimum of the loss"
     ],
     "correct_option": 1,
-    "explanation": "While n_estimators \u00d7 learning_rate \u2248 30 in both configurations (100 \u00d7 0.3 = 30 and 500 \u00d7 0.05 = 25), the models are not mathematically equivalent \u2014 they just tend to reach similar total effect. Configuration B (more trees, smaller step) generally generalises better for several reasons:\n\n1. Smaller steps with early stopping: with 500 trees and a small learning rate, you can use early stopping on a validation set to stop at the optimal point before overfitting. With 100 trees, early stopping has fewer opportunities to find the sweet spot.\n\n2. Smoother function: 500 small corrections produce a smoother learned function than 100 large corrections. The smaller learning rate acts as shrinkage regularisation.\n\n3. Ensemble diversity: more trees, each correcting only a small fraction of the residual, creates a more diverse ensemble.\n\nOption A is wrong: while Config A is faster, 'no loss in quality' is incorrect. Config B's lower learning rate is a form of regularisation and generally produces slightly better generalisation.\n\nOption C is wrong: they are not mathematically equivalent even though n \u00d7 lr is similar. The path taken (step sizes, which residuals are corrected at each step) differs. The claim of 'identical models' is incorrect.\n\nOption D is wrong: a high learning rate does not prevent finding a minimum \u2014 it may overshoot, but gradient boosting is not gradient descent in the same sense as neural networks. Config A can achieve good validation performance; it just has fewer opportunities for fine-grained early stopping.",
+    "explanation": "While n_estimators \u00d7 learning_rate is similar across configurations (100 \u00d7 0.3 = 30 and 500 \u00d7 0.05 = 25), the models are not mathematically equivalent \u2014 they just tend to reach similar total effect. Configuration B (more trees, smaller step) generally generalises better for several reasons:\n\n1. Smaller steps with early stopping: with 500 trees and a small learning rate, you can use early stopping on a validation set to stop at the optimal point before overfitting. With 100 trees, early stopping has fewer opportunities to find the sweet spot.\n\n2. Smoother function: 500 small corrections produce a smoother learned function than 100 large corrections. The smaller learning rate acts as shrinkage regularisation.\n\n3. Ensemble diversity: more trees, each correcting only a small fraction of the residual, creates a more diverse ensemble.\n\nOption A is wrong: while Config A is faster, 'no loss in quality' is incorrect. Config B's lower learning rate is a form of regularisation and generally produces slightly better generalisation.\n\nOption C is wrong: they are not mathematically equivalent even though n \u00d7 lr is similar. The path taken (step sizes, which residuals are corrected at each step) differs. The claim of 'identical models' is incorrect.\n\nOption D is wrong: a high learning rate does not prevent finding a minimum \u2014 it may overshoot, but gradient boosting is not gradient descent in the same sense as neural networks. Config A can achieve good validation performance; it just has fewer opportunities for fine-grained early stopping.",
     "hints": [
       "Think of each tree as a step toward the minimum. Would you prefer 100 large steps or 500 small steps? Which gives you more control over where you stop?",
       "The learning rate in gradient boosting acts like a shrinkage factor on each tree's contribution. Why might many small corrections generalise better than few large corrections?"
@@ -597,7 +597,7 @@
     ],
     "concepts": [
       "MISSING DATA STRATEGY",
-      "DATA LEAKAGE DETECTION"
+      "DATA SPLITTING STRATEGY"
     ]
   },
   {
@@ -622,7 +622,7 @@
     ],
     "concepts": [
       "MISSING DATA STRATEGY",
-      "DATA LEAKAGE DETECTION"
+      "DATA SPLITTING STRATEGY"
     ]
   },
   {
@@ -772,7 +772,7 @@
     ],
     "concepts": [
       "CLUSTERING EVALUATION",
-      "SUPERVISED VS UNSUPERVISED"
+      "HYPERPARAMETER SENSITIVITY"
     ]
   },
   {
@@ -988,7 +988,7 @@
     "difficulty": "medium",
     "mock_only": true,
     "title": "Interpreting Confusion Matrix for Business Decisions",
-    "description": "A binary classifier for loan default prediction produces this confusion matrix on 10,000 test cases:\n\n- True Negative (predicted no default, actual no default): 7,200\n- False Positive (predicted default, actual no default): 800\n- False Negative (predicted no default, actual default): 400\n- True Positive (predicted default, actual default): 600\n\nThe bank loses $5,000 per false negative and spends $200 per false positive in review costs. What is the total cost of errors and which error type should the bank prioritize reducing?",
+    "description": "A binary classifier for loan default prediction produces this confusion matrix on 9,000 test cases:\n\n- True Negative (predicted no default, actual no default): 7,200\n- False Positive (predicted default, actual no default): 800\n- False Negative (predicted no default, actual default): 400\n- True Positive (predicted default, actual default): 600\n\nThe bank loses $5,000 per false negative and spends $200 per false positive in review costs. What is the total cost of errors and which error type should the bank prioritize reducing?",
     "options": [
       "Total cost: $2,160,000; prioritize reducing false negatives because each costs 25x more than a false positive",
       "Total cost: $2,160,000; prioritize reducing false positives because there are twice as many of them",
@@ -1055,7 +1055,7 @@
     ],
     "concepts": [
       "MISSING DATA STRATEGY",
-      "CROSS-VALIDATION DESIGN"
+      "DATA SPLITTING STRATEGY"
     ]
   },
   {
@@ -1247,7 +1247,7 @@
     "type": "debug",
     "difficulty": "medium",
     "title": "Feature Selection Before Train/Test Split: Implicit Test Target Leakage",
-    "code_snippet": "import pandas as pd\nfrom sklearn.ensemble import RandomForestClassifier\nfrom sklearn.model_selection import train_test_split\n\ndf = pd.read_csv('customers.csv')  # 50,000 rows, 120 features, target='churned'\n\n# Step 1: Select top 20 features correlated with the target\ncorrelations = df.drop('churned', axis=1).corrwith(df['churned']).abs()\ntop_features = correlations.nlargest(20).index.tolist()\ndf_selected = df[top_features + ['churned']]\n\n# Step 2: Train/test split AFTER feature selection\nX_train, X_test, y_train, y_test = train_test_split(\n    df_selected.drop('churned', axis=1),\n    df_selected['churned'], test_size=0.2, random_state=42\n)\n\nmodel = RandomForestClassifier(n_estimators=100, random_state=42)\nmodel.fit(X_train, y_train)\nprint(model.score(X_test, y_test))  # Reports AUC 0.91",
+    "scenario_context": "import pandas as pd\nfrom sklearn.ensemble import RandomForestClassifier\nfrom sklearn.model_selection import train_test_split\n\ndf = pd.read_csv('customers.csv')  # 50,000 rows, 120 features, target='churned'\n\n# Step 1: Select top 20 features correlated with the target\ncorrelations = df.drop('churned', axis=1).corrwith(df['churned']).abs()\ntop_features = correlations.nlargest(20).index.tolist()\ndf_selected = df[top_features + ['churned']]\n\n# Step 2: Train/test split AFTER feature selection\nX_train, X_test, y_train, y_test = train_test_split(\n    df_selected.drop('churned', axis=1),\n    df_selected['churned'], test_size=0.2, random_state=42\n)\n\nmodel = RandomForestClassifier(n_estimators=100, random_state=42)\nmodel.fit(X_train, y_train)\nprint(model.score(X_test, y_test))  # Reports AUC 0.91",
     "description": "The model reports test AUC 0.91, but production AUC is 0.78. What is the root cause of the 0.13-point evaluation gap?",
     "options": [
       "Feature selection using corrwith on all 50,000 rows incorporates the churn labels of the 10,000 test rows when ranking features; the selected 20 features are biased toward those that happen to correlate with the test set's specific churn pattern, giving the model an indirect advantage on test evaluation that disappears in production; the correct pipeline is: (1) split first, (2) compute correlations on the 40,000 training rows only, (3) apply the training-derived feature list to filter the test set",
@@ -1443,8 +1443,8 @@
       "When you increase k to 4 and re-run k-means, do only cluster C's assignments change, or does the entire clustering re-optimize?"
     ],
     "concepts": [
-      "SUPERVISED VS UNSUPERVISED",
-      "CLUSTERING EVALUATION"
+      "CLUSTERING EVALUATION",
+      "HYPERPARAMETER SENSITIVITY"
     ]
   },
   {
@@ -1652,7 +1652,7 @@
     ],
     "concepts": [
       "FEATURE SELECTION STRATEGY",
-      "CROSS-VALIDATION DESIGN"
+      "REGULARIZATION EFFECT"
     ]
   },
   {
@@ -1990,7 +1990,7 @@
     ],
     "concepts": [
       "MISSING DATA STRATEGY",
-      "CROSS-VALIDATION DESIGN"
+      "DATA SPLITTING STRATEGY"
     ]
   },
   {
@@ -2172,7 +2172,7 @@
     ],
     "concepts": [
       "FEATURE IMPORTANCE INTERPRETATION",
-      "MODEL CALIBRATION"
+      "INTERPRETABILITY TRADEOFF"
     ]
   },
   {
@@ -2328,7 +2328,7 @@
     ],
     "concepts": [
       "CLUSTERING EVALUATION",
-      "SUPERVISED VS UNSUPERVISED"
+      "HYPERPARAMETER SENSITIVITY"
     ]
   },
   {
@@ -2432,7 +2432,7 @@
     ],
     "concepts": [
       "DIMENSIONALITY REDUCTION",
-      "SUPERVISED VS UNSUPERVISED"
+      "CLUSTERING EVALUATION"
     ]
   },
   {
@@ -2510,7 +2510,7 @@
     ],
     "concepts": [
       "DATA LEAKAGE DETECTION",
-      "MISSING DATA STRATEGY"
+      "DATA SPLITTING STRATEGY"
     ]
   },
   {
