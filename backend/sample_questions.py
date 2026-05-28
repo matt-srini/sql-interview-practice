@@ -249,18 +249,18 @@ SAMPLE_QUESTIONS: list[dict[str, Any]] = [
         schema=merge_schema(ORDERS_SCHEMA),
         dataset_files=["orders.csv"],
         expected_query=(
-            "SELECT DATE_TRUNC('month', CAST(order_date AS DATE)) AS month, SUM(net_amount) AS revenue "
+            "SELECT strftime(CAST(order_date AS DATE), '%Y-%m') AS month, SUM(net_amount) AS revenue "
             "FROM orders "
             "GROUP BY 1 "
             "ORDER BY 1"
         ),
         solution_query=(
-            "SELECT DATE_TRUNC('month', CAST(order_date AS DATE)) AS month, SUM(net_amount) AS revenue\n"
+            "SELECT strftime(CAST(order_date AS DATE), '%Y-%m') AS month, SUM(net_amount) AS revenue\n"
             "FROM orders\n"
             "GROUP BY 1\n"
             "ORDER BY 1;"
         ),
-        explanation="Bucket by month using DATE_TRUNC, then aggregate net_amount per bucket.",
+        explanation="Bucket by month using strftime with format '%Y-%m', then aggregate net_amount per bucket.",
     ),
     q(
         id=131,

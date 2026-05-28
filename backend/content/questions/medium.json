@@ -1527,7 +1527,6 @@
     "id": 12035,
     "order": 35,
     "mock_only": true,
-    "follow_up_id": 12050,
     "title": "Revenue and reach by acquisition channel",
     "description": "For each user acquisition channel, compute the total net revenue from 'completed' orders and the count of distinct users who placed at least one 'completed' order. Return `acquisition_channel`, `total_revenue` (rounded to 2 decimal places), and `user_count`, ordered by `total_revenue` descending.",
     "difficulty": "medium",
@@ -1652,7 +1651,6 @@
     "id": 12038,
     "order": 38,
     "mock_only": true,
-    "follow_up_id": 12051,
     "title": "Above-average spenders",
     "description": "Identify users whose total net amount from 'completed' orders exceeds the average total spend across all users who placed at least one 'completed' order. Return `user_id`, `name`, `country`, and `total_spend` (rounded to 2 decimal places), ordered by `total_spend` descending.",
     "difficulty": "medium",
@@ -1811,7 +1809,6 @@
     "id": 12042,
     "order": 42,
     "mock_only": true,
-    "follow_up_id": 13121,
     "title": "Category revenue share",
     "description": "For each product category, compute the total line revenue and its percentage share of total revenue across all categories. Return `category_name`, `total_revenue` (rounded to 2 decimal places), and `revenue_pct` (rounded to 1 decimal place), ordered by `total_revenue` descending.",
     "difficulty": "medium",
@@ -1858,7 +1855,6 @@
     "order": 43,
     "mock_only": true,
     "type": "reverse",
-    "follow_up_id": 13122,
     "title": "Write the query — payment method revenue summary",
     "description": "Write a SQL query that produces the result table shown below. The result summarises completed (`paid`) payments: for each payment method, return the count of paid transactions and the total amount collected, ordered by total amount descending.",
     "difficulty": "medium",
@@ -1881,8 +1877,8 @@
       },
       {
         "payment_method": "paypal",
-        "payment_count": 708,
-        "total_amount": 1422593.68
+        "payment_count": 709,
+        "total_amount": 1423093.68
       },
       {
         "payment_method": "bank_transfer",
@@ -2140,7 +2136,7 @@
       "users.csv",
       "orders.csv"
     ],
-    "debug_error": "Binder Error: column \"plan_tier\" must appear in the GROUP BY clause or must be part of an aggregate function.\nEither add it to the GROUP BY list, or use \"ANY_VALUE(plan_tier)\" if the exact value is not important.\n\nLINE 1: SELECT u.country, u.plan_tier, SUM(o.net_amount) AS total_revenue\n                          ^",
+    "debug_error": "Binder Error: column \"plan_tier\" must appear in the GROUP BY clause or must be part of an aggregate function.\nEither add it to the GROUP BY list, or use \"ANY_VALUE(plan_tier)\" if the exact value of \"plan_tier\" is not important.\n\nLINE 1: SELECT u.country, u.plan_tier, SUM(o.net_amount) AS total_revenue\n                          ^",
     "starter_query": "SELECT u.country, u.plan_tier, SUM(o.net_amount) AS total_revenue\nFROM users u\nJOIN orders o ON u.user_id = o.user_id\nWHERE o.status = 'completed'\nGROUP BY u.country\nORDER BY total_revenue DESC",
     "expected_query": "SELECT u.country, u.plan_tier, ROUND(SUM(o.net_amount),2) AS total_revenue\nFROM users u\nJOIN orders o ON u.user_id = o.user_id\nWHERE o.status = 'completed'\nGROUP BY u.country, u.plan_tier\nORDER BY total_revenue DESC",
     "solution_query": "SELECT u.country, u.plan_tier,\n       ROUND(SUM(o.net_amount), 2) AS total_revenue\nFROM users u\nJOIN orders o ON u.user_id = o.user_id\nWHERE o.status = 'completed'\nGROUP BY u.country, u.plan_tier\nORDER BY total_revenue DESC;",
@@ -3940,23 +3936,22 @@
       "orders.csv",
       "users.csv"
     ],
-    "expected_query": "WITH segment_revenue AS (\n    SELECT u.country, u.plan_tier,\n           COUNT(DISTINCT o.order_id) AS total_orders,\n           ROUND(SUM(o.net_amount), 2) AS revenue\n    FROM users u\n    JOIN orders o ON u.user_id = o.user_id\n    WHERE o.status = 'completed'\n    GROUP BY u.country, u.plan_tier\n    HAVING COUNT(DISTINCT o.order_id) >= 5\n)\nSELECT country, plan_tier, total_orders, revenue,\n       ROUND(AVG(revenue) OVER (), 2) AS avg_segment_revenue\nFROM segment_revenue\nWHERE revenue > (SELECT AVG(revenue) FROM segment_revenue)\nORDER BY revenue DESC",
-    "solution_query": "WITH segment_revenue AS (\n    SELECT u.country, u.plan_tier,\n           COUNT(DISTINCT o.order_id) AS total_orders,\n           ROUND(SUM(o.net_amount), 2) AS revenue\n    FROM users u\n    JOIN orders o ON u.user_id = o.user_id\n    WHERE o.status = 'completed'\n    GROUP BY u.country, u.plan_tier\n    HAVING COUNT(DISTINCT o.order_id) >= 5\n)\nSELECT country, plan_tier, total_orders, revenue,\n       ROUND(AVG(revenue) OVER (), 2) AS avg_segment_revenue\nFROM segment_revenue\nWHERE revenue > (SELECT AVG(revenue) FROM segment_revenue)\nORDER BY revenue DESC;",
+    "expected_query": "WITH segment_revenue AS (\n    SELECT u.country, u.plan_tier,\n           COUNT(DISTINCT o.order_id) AS total_orders,\n           ROUND(SUM(o.net_amount), 2) AS revenue\n    FROM users u\n    JOIN orders o ON u.user_id = o.user_id\n    WHERE o.status = 'completed'\n    GROUP BY u.country, u.plan_tier\n    HAVING COUNT(DISTINCT o.order_id) >= 5\n)\nSELECT country, plan_tier, total_orders, revenue,\n       (SELECT ROUND(AVG(revenue), 2) FROM segment_revenue) AS avg_segment_revenue\nFROM segment_revenue\nWHERE revenue > (SELECT AVG(revenue) FROM segment_revenue)\nORDER BY revenue DESC",
+    "solution_query": "WITH segment_revenue AS (\n    SELECT u.country, u.plan_tier,\n           COUNT(DISTINCT o.order_id) AS total_orders,\n           ROUND(SUM(o.net_amount), 2) AS revenue\n    FROM users u\n    JOIN orders o ON u.user_id = o.user_id\n    WHERE o.status = 'completed'\n    GROUP BY u.country, u.plan_tier\n    HAVING COUNT(DISTINCT o.order_id) >= 5\n)\nSELECT country, plan_tier, total_orders, revenue,\n       (SELECT ROUND(AVG(revenue), 2) FROM segment_revenue) AS avg_segment_revenue\nFROM segment_revenue\nWHERE revenue > (SELECT AVG(revenue) FROM segment_revenue)\nORDER BY revenue DESC;",
     "required_concepts": [
       "cte",
       "subquery",
-      "window_function",
       "aggregate"
     ],
     "enforce_concepts": true,
-    "explanation": "The CTE captures the parent query's result. The outer query filters to above-average segments using a scalar subquery. AVG(revenue) OVER () (no partition, no order) attaches the grand average to every row — making it visible in the output alongside each segment's own revenue. Showing the benchmark in the output lets analysts validate the cutoff without running a second query.",
+    "explanation": "The CTE captures all qualifying segments (≥5 orders). The outer query filters to above-average segments using a scalar subquery against the CTE. A second scalar subquery in the SELECT list re-queries the same CTE to compute the global average and attach it to every output row — making it visible in the output alongside each segment's own revenue. Showing the benchmark in the output lets analysts validate the cutoff without running a second query.",
     "hints": [
       "To keep only above-average segments, compute the overall average first — then compare each aggregated group to that scalar value to decide which ones make the cut.",
-      "AVG(revenue) OVER () with no window spec computes the overall average and attaches it to every output row — useful for showing the benchmark."
+      "To show the benchmark value in every output row, compute the global average as a scalar subquery in the SELECT list."
     ],
     "concepts": [
       "SUBQUERY PATTERNS",
-      "WINDOW FUNCTIONS",
+      "SCALAR SUBQUERY COMPARISON",
       "METRIC RECONCILIATION"
     ],
     "companies": []
@@ -4548,7 +4543,7 @@
     "mock_only": true,
     "framing": "scenario",
     "title": "Category revenue share per month",
-    "description": "A merchandising analyst wants to track how each category's share of monthly revenue shifts over time. For each month and category, return month, category_name, revenue, and revenue_share_pct (percentage of that month's total revenue, rounded to 1 decimal). Order by month, revenue_share_pct descending.",
+    "description": "A merchandising analyst wants to track how each category's share of monthly revenue shifts over time. For each month and category, return month, category_name, revenue, and revenue_share_pct (percentage of that month's total revenue, rounded to 1 decimal). Order by month ASC, revenue_share_pct DESC, category_name ASC.",
     "difficulty": "medium",
     "schema": {
       "order_items": [
@@ -4576,22 +4571,21 @@
       "products.csv",
       "categories.csv"
     ],
-    "expected_query": "WITH monthly_category_rev AS (\n  SELECT\n    strftime(CAST(o.order_date AS DATE), '%Y-%m') AS month,\n    c.category_name,\n    SUM(oi.line_amount) AS revenue\n  FROM order_items oi\n  JOIN orders o ON oi.order_id = o.order_id\n  JOIN products p ON oi.product_id = p.product_id\n  JOIN categories c ON p.category_id = c.category_id\n  WHERE o.status = 'completed'\n  GROUP BY month, c.category_name\n)\nSELECT\n  month,\n  category_name,\n  ROUND(revenue, 2) AS revenue,\n  ROUND(100.0 * revenue / SUM(revenue) OVER (PARTITION BY month), 1) AS revenue_share_pct\nFROM monthly_category_rev\nORDER BY month, revenue_share_pct DESC",
-    "solution_query": "WITH monthly_category_rev AS (\n  SELECT\n    strftime(CAST(o.order_date AS DATE), '%Y-%m') AS month,\n    c.category_name,\n    SUM(oi.line_amount) AS revenue\n  FROM order_items oi\n  JOIN orders o ON oi.order_id = o.order_id\n  JOIN products p ON oi.product_id = p.product_id\n  JOIN categories c ON p.category_id = c.category_id\n  WHERE o.status = 'completed'\n  GROUP BY month, c.category_name\n)\nSELECT\n  month,\n  category_name,\n  ROUND(revenue, 2) AS revenue,\n  ROUND(100.0 * revenue / SUM(revenue) OVER (PARTITION BY month), 1) AS revenue_share_pct\nFROM monthly_category_rev\nORDER BY month, revenue_share_pct DESC",
+    "expected_query": "WITH monthly_category_rev AS (\n  SELECT\n    strftime(CAST(o.order_date AS DATE), '%Y-%m') AS month,\n    c.category_name,\n    SUM(oi.line_amount) AS revenue\n  FROM order_items oi\n  JOIN orders o ON oi.order_id = o.order_id\n  JOIN products p ON oi.product_id = p.product_id\n  JOIN categories c ON p.category_id = c.category_id\n  WHERE o.status = 'completed'\n  GROUP BY month, c.category_name\n),\nmonthly_totals AS (\n  SELECT month, SUM(revenue) AS total_monthly_revenue\n  FROM monthly_category_rev\n  GROUP BY month\n)\nSELECT\n  m.month,\n  m.category_name,\n  ROUND(m.revenue, 2) AS revenue,\n  ROUND(100.0 * m.revenue / t.total_monthly_revenue, 1) AS revenue_share_pct\nFROM monthly_category_rev m\nJOIN monthly_totals t ON m.month = t.month\nORDER BY m.month, revenue_share_pct DESC, m.category_name ASC",
+    "solution_query": "WITH monthly_category_rev AS (\n  SELECT\n    strftime(CAST(o.order_date AS DATE), '%Y-%m') AS month,\n    c.category_name,\n    SUM(oi.line_amount) AS revenue\n  FROM order_items oi\n  JOIN orders o ON oi.order_id = o.order_id\n  JOIN products p ON oi.product_id = p.product_id\n  JOIN categories c ON p.category_id = c.category_id\n  WHERE o.status = 'completed'\n  GROUP BY month, c.category_name\n),\nmonthly_totals AS (\n  SELECT month, SUM(revenue) AS total_monthly_revenue\n  FROM monthly_category_rev\n  GROUP BY month\n)\nSELECT\n  m.month,\n  m.category_name,\n  ROUND(m.revenue, 2) AS revenue,\n  ROUND(100.0 * m.revenue / t.total_monthly_revenue, 1) AS revenue_share_pct\nFROM monthly_category_rev m\nJOIN monthly_totals t ON m.month = t.month\nORDER BY m.month, revenue_share_pct DESC, m.category_name ASC",
     "required_concepts": [
       "cte",
-      "window_function",
       "grouped_agg",
       "multi_join"
     ],
     "enforce_concepts": true,
-    "explanation": "SUM(revenue) OVER (PARTITION BY month) computes each month's total revenue without collapsing rows — this is the window function share pattern. Dividing each category's revenue by the monthly total gives the revenue share.",
+    "explanation": "The first CTE aggregates revenue by (month, category). The second CTE sums those category revenues to get each month's total. The outer query joins the two CTEs on month and divides the category revenue by the monthly total to get the share percentage.",
     "hints": [
       "Aggregate revenue per (month, category) in a CTE.",
-      "Use SUM(revenue) OVER (PARTITION BY month) to compute the month total, then divide the category revenue by it."
+      "Compute each month's total revenue in a second CTE, then join back to the first CTE and divide."
     ],
     "concepts": [
-      "WINDOW FUNCTIONS",
+      "MULTI-CTE PIPELINE",
       "METRIC INTERPRETATION & DENOMINATOR CHOICE",
       "GROUPED AGGREGATION"
     ],
@@ -4601,31 +4595,31 @@
     "id": 12115,
     "order": 115,
     "mock_only": true,
-    "title": "Acquisition channel NULL share — dimension completeness check",
-    "description": "Before segmenting revenue by acquisition channel, a senior analyst asks you to quantify how many user records have NULL in `acquisition_channel`. Write a query that returns two rows — one for records with a known channel and one for records where the channel is NULL — showing the user count and percentage of the total for each (rounded to 1 decimal). Order by user count descending.",
+    "title": "Email NULL share — dimension completeness check",
+    "description": "Before running an email campaign, a marketing analyst wants to quantify how many user records are missing an `email` address. Write a query that returns two rows — one for records with a known email and one for records where email is NULL — showing the user count and percentage of the total for each (rounded to 1 decimal). Order by user count descending.",
     "difficulty": "medium",
     "schema": {
       "users": [
         "user_id",
-        "acquisition_channel"
+        "email"
       ]
     },
     "dataset_files": [
       "users.csv"
     ],
-    "expected_query": "WITH base AS (\n    SELECT\n        CASE WHEN acquisition_channel IS NULL THEN 'unknown' ELSE 'known' END AS channel_status,\n        COUNT(*) AS user_count\n    FROM users\n    GROUP BY 1\n)\nSELECT channel_status,\n       user_count,\n       ROUND(100.0 * user_count / SUM(user_count) OVER (), 1) AS pct_of_total\nFROM base\nORDER BY user_count DESC",
-    "solution_query": "WITH base AS (\n    SELECT\n        CASE WHEN acquisition_channel IS NULL THEN 'unknown' ELSE 'known' END AS channel_status,\n        COUNT(*) AS user_count\n    FROM users\n    GROUP BY 1\n)\nSELECT channel_status,\n       user_count,\n       ROUND(100.0 * user_count / SUM(user_count) OVER (), 1) AS pct_of_total\nFROM base\nORDER BY user_count DESC;",
+    "expected_query": "WITH base AS (\n    SELECT\n        CASE WHEN email IS NULL THEN 'unknown' ELSE 'known' END AS email_status,\n        COUNT(*) AS user_count\n    FROM users\n    GROUP BY 1\n)\nSELECT email_status,\n       user_count,\n       ROUND(100.0 * user_count / (SELECT SUM(user_count) FROM base), 1) AS pct_of_total\nFROM base\nORDER BY user_count DESC",
+    "solution_query": "WITH base AS (\n    SELECT\n        CASE WHEN email IS NULL THEN 'unknown' ELSE 'known' END AS email_status,\n        COUNT(*) AS user_count\n    FROM users\n    GROUP BY 1\n)\nSELECT email_status,\n       user_count,\n       ROUND(100.0 * user_count / (SELECT SUM(user_count) FROM base), 1) AS pct_of_total\nFROM base\nORDER BY user_count DESC;",
     "required_concepts": [
       "cte",
       "case_when",
       "aggregate",
-      "window"
+      "subquery"
     ],
     "enforce_concepts": true,
-    "explanation": "A CTE groups users by whether acquisition_channel is NULL or not. The outer query uses a window function over the aggregated rows to compute each group's share of the total without a self-join. If all users have a known channel the query returns one row; if any are NULL both rows appear. Running this before a channel-segmentation report reveals whether the NULL share is large enough to distort results.",
+    "explanation": "A CTE groups users by whether email is NULL or not. The outer query uses a scalar subquery against the same CTE to compute the total user count as a denominator. Dividing each group's count by the total and multiplying by 100 gives the percentage share. Running this before an email campaign reveals what fraction of users would be unreachable.",
     "hints": [
-      "Classify each user by whether the channel field is NULL or populated, then count each group separately.",
-      "To express each group as a percentage of all users, you need the total count as a denominator — a window expression computed over the aggregated result provides it in a single pass."
+      "Classify each user by whether the email field is NULL or populated, then count each group separately.",
+      "To express each group as a percentage of all users, compute the total count as a scalar subquery denominator."
     ],
     "concepts": [
       "CONDITIONAL AGGREGATION",
