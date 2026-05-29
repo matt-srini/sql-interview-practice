@@ -79,6 +79,8 @@ Reasoning depth — not syntax recall, not trivia, not concept-stacking — is t
 - Redundant coverage: 3+ questions testing the same pattern with cosmetic differences.
 - Artificial difficulty from stacking 6+ unrelated requirements.
 - (MCQ tracks) Distractors no competent practitioner would pick, or questions with multiple correct answers depending on version / assumptions.
+- (MCQ tracks) Two options with identical observable outputs but different explanations — e.g., two options that would produce the same schema string, the same printed value, or the same error type. Distinct wrong options must be wrong for distinct, independently observable reasons.
+- (`predict_output` / `debug`) Disjunctive or version-gated correct answers — "null values appear **or** a runtime exception is thrown" is not a prediction; it is a hedge. If the behavior is version-dependent, either pin the version in the stem or reframe as `conceptual` / `debug` (ask for diagnosis and fix, not runtime prediction).
 - Mechanic-name tags as `concepts` values (per-track blocklists in [`docs/concept-taxonomy.md`](./concept-taxonomy.md)).
 
 ### Framing authority (per-track)
@@ -215,6 +217,7 @@ Hints guide thinking toward the approach without revealing it.
 
 | Track | Forbidden first-hint patterns |
 |---|---|
+| PySpark | naming the relationship class directly ("two method names do the same thing"), naming the SQL analogy that is the answer ("SQL UNION is positional"), stating "X never raises an error" when the question asks what happens (eliminates all error options in one step) |
 | Data Engineering | `idempoten*`, `watermark*`, `exactly-once` |
 | Statistics | `p-value`, `null hypothesis`, `central limit theorem` |
 | ML Fundamentals | `bias-variance`, `overfitting`, `data leakage` |

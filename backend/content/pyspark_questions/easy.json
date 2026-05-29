@@ -30,21 +30,21 @@
     "id": 41002,
     "order": 2,
     "topic": "pyspark",
-    "type": "conceptual",
+    "type": "predict_output",
     "difficulty": "easy",
-    "title": "Lazy Evaluation in Spark",
-    "description": "PySpark uses **lazy evaluation** to optimize query execution. Which statement **best describes** what lazy evaluation means in Spark?",
-    "code_snippet": null,
+    "title": "Lazy Evaluation: When Does the AnalysisException Fire?",
+    "description": "A new engineer writes the following code expecting an immediate error at line 2 — `'amout'` is a typo and the column does not exist in the CSV. Predict which line actually raises the `AnalysisException`.",
+    "code_snippet": "df = spark.read.csv('/data/orders.csv', header=True)\nstep1 = df.filter(df['amout'] > 100)  # typo: 'amout'\nstep2 = step1.select('user_id')\nresult = step2.count()",
     "options": [
-      "Spark caches all intermediate DataFrames in memory automatically to avoid recomputation",
-      "Spark builds a logical execution plan as transformations are defined, and only executes it when an action is called",
-      "Spark evaluates each transformation immediately but delays writing results to disk",
-      "Spark delays reading data from disk until the DataFrame is printed"
+      "Line 2 — filter() validates column names immediately when called and raises AnalysisException if 'amout' is not in the schema",
+      "Line 4 — count() is the first action; Spark's analysis phase runs at that point and detects that 'amout' does not exist",
+      "No exception is raised — PySpark treats unknown column references as null at runtime",
+      "Line 1 — spark.read.csv inspects the file headers immediately and raises AnalysisException when the DataFrame is created"
     ],
     "correct_option": 1,
-    "explanation": "Lazy evaluation means Spark records each transformation as a step in a **logical plan (DAG)** but does not execute any computation until an action (such as `.count()`, `.collect()`, or `.write`) is called. At that point, Spark optimises the full plan using the Catalyst optimizer and only then executes it. This allows Spark to combine and reorder operations for efficiency.",
+    "explanation": "`filter()`, `select()`, and all other **transformations** are lazy — they add a step to the logical plan without executing it or validating column names against the schema. Only when `.count()` (an **action**) is called does Spark's Catalyst analysis phase run, which resolves every column reference. At that point `'amout'` is found to be absent and `AnalysisException` fires. Option A is wrong — `filter()` is lazy and does not validate column names at call time. Option C is wrong — unresolved column references always raise `AnalysisException` during analysis; they are never silently null. Option D is wrong — `spark.read.csv` creates a DataFrame using the CSV's own header names as its schema; `df['amout']` is a syntactically valid Column reference at Python level even if the name doesn't match.",
     "hints": [
-      "Distinguish between defining more work in the plan and crossing the line into actual execution."
+      "Transformations are lazy — they build the plan without running it. When does Spark first inspect the plan for correctness?"
     ],
     "concepts": [
       "lazy evaluation",
@@ -92,13 +92,13 @@
     "description": "A Spark application runs with a **Driver** process and one or more **Executor** processes distributed across the cluster.\n\nWhat is the primary responsibility of the **Driver**?",
     "code_snippet": null,
     "options": [
-      "The Driver stores all data in memory and serves it to executors on demand",
+      "The Driver executes the first stage of each job locally to validate the execution plan before distributing remaining stages to executors",
       "The Driver runs user code, constructs the DAG of stages and tasks, and coordinates their execution across executors",
-      "The Driver executes all shuffle operations so executors only handle map-side work",
+      "The Driver handles all shuffle I/O — it reads map-side outputs from executors and redistributes them to the correct reduce partitions",
       "The Driver is responsible for reading and writing data to HDFS or object storage"
     ],
     "correct_option": 1,
-    "explanation": "The **Driver** is the JVM process that runs your `main()` / Python script. It constructs the logical and physical execution plans, divides work into **stages** and **tasks**, and schedules those tasks on executors via the cluster manager. **Executors** do the actual data processing. The Driver does not store distributed data or handle I/O itself — those responsibilities belong to the executors.",
+    "explanation": "The **Driver** is the JVM process that runs your `main()` / Python script. It constructs the logical and physical execution plans, divides work into **stages** and **tasks**, and schedules those tasks on executors via the cluster manager. **Executors** do the actual data processing. Option A is wrong — the Driver never executes data-processing stages itself; it only schedules tasks on executors. Option C is wrong — shuffle I/O is handled by the executors writing and reading shuffle files; the Driver only orchestrates the stage boundary. Option D is wrong — data I/O is performed by executor tasks, not the Driver process.",
     "hints": [
       "Think of the Driver as the coordinator or orchestrator — it plans the work. Executors are the workers that execute it."
     ],
@@ -155,8 +155,7 @@
     "correct_option": 1,
     "explanation": "PySpark DataFrames are immutable and do not implement Python's `__setitem__` protocol. Attempting `df['col'] = expr` raises a `TypeError` at the Python level — the assignment is rejected before Spark processes anything. This is a common pandas migration trap: pandas DataFrames support `__setitem__`, PySpark DataFrames do not. The correct pattern is `df = df.withColumn('discounted_price', df['price'] * 0.9)`, which returns a **new** DataFrame (note the reassignment). Option A is wrong — no in-place mutation is possible. Option C is wrong — a TypeError is raised, not silently swallowed. Option D describes a different bug (forgetting to capture the return value of withColumn) but the actual error here fires before reaching withColumn.",
     "hints": [
-      "pandas allows df['col'] = expr; PySpark DataFrames deliberately do not — what Python protocol is missing that would allow this?",
-      "The fix always involves capturing the return value: df = df.withColumn(...)"
+      "pandas allows df['col'] = expr; PySpark DataFrames deliberately do not — what Python protocol is missing that would allow this?"
     ],
     "concepts": [
       "EXECUTION MODEL REASONING",
@@ -288,18 +287,18 @@
     "type": "conceptual",
     "difficulty": "easy",
     "title": "What is a Spark Partition?",
-    "description": "A distributed Spark DataFrame is physically divided into **partitions** — chunks of data that can be processed in parallel across executors.\n\nWhen reading a **256 MB CSV file** with default Spark settings (128 MB HDFS block size), approximately how many partitions will the resulting DataFrame have?",
+    "description": "A distributed Spark DataFrame is physically divided into **partitions** — chunks of data that can be processed in parallel across executors.\n\nYou read a **512 MB CSV file** from HDFS with default Spark configuration. Approximately how many initial partitions will the resulting DataFrame have?",
     "code_snippet": null,
     "options": [
-      "1 — Spark always reads a single file into a single partition",
-      "2 — roughly one partition per 128 MB block, so 256 MB yields ~2 partitions",
-      "256 — one partition per megabyte",
-      "One partition per row in the file"
+      "200 — spark.sql.shuffle.partitions defaults to 200, which also governs how many partitions Spark creates when reading files",
+      "4 — Spark's default HDFS block size is 128 MB; a 512 MB file spans ~4 blocks, producing ~4 initial partitions",
+      "512 — Spark creates one partition per megabyte by default to maximise parallelism",
+      "1 — Spark consolidates each CSV file into a single partition on read and only splits it during explicit repartition() calls"
     ],
     "correct_option": 1,
-    "explanation": "By default, Spark creates one partition per HDFS block (128 MB). A 256 MB file spans approximately **2 blocks**, so the resulting DataFrame will have roughly **2 partitions**. Option A is wrong because Spark splits large files to enable parallelism. Option C confuses megabytes with partitions — a 256 MB file would produce ~2 partitions, not 256. Option D would be catastrophic for performance and is never true.",
+    "explanation": "By default, Spark creates one partition per HDFS block (128 MB). A **512 MB file** spans approximately **4 blocks**, so the resulting DataFrame will have roughly **4 partitions**. Option A is wrong — `spark.sql.shuffle.partitions` (default 200) controls the number of partitions after a shuffle, not the number of partitions created when reading a file. Option C confuses megabytes with partitions — a 512 MB file produces ~4 partitions, not 512. Option D is wrong — Spark does split large files across partitions to enable parallel reads; a file is only treated as a single partition if it is smaller than one block.",
     "hints": [
-      "Think about how Spark relates partitions to the underlying storage block size"
+      "spark.sql.shuffle.partitions (default 200) controls shuffle output — a different setting governs how many chunks Spark creates when reading a file"
     ],
     "concepts": [
       "partitions",
@@ -353,7 +352,7 @@
     "correct_option": 0,
     "explanation": "In PySpark, `DataFrame.orderBy` and `DataFrame.sort` are **aliases** for the same operation — they accept the same arguments and produce identical results. Both perform a global sort (requiring a shuffle). Option B describes a real distinction in some systems but is not true in PySpark. Option C is false — both methods accept `asc()` and `desc()` column specifications. Option D is also false — both methods accept strings, Column objects, or a mix.",
     "hints": [
-      "Check the PySpark API — sometimes two method names do exactly the same thing"
+      "Both methods accept strings, Column objects, and asc()/desc() modifiers — does that leave any room for a meaningful behavioral difference between them?"
     ],
     "concepts": [
       "SHUFFLE REASONING",
@@ -432,8 +431,7 @@
     "correct_option": 1,
     "explanation": "`getOrCreate()` returns the **existing active SparkSession** if one already exists in the JVM — it does not create a new one. This means `spark2` and `spark1` are the same object (`spark1 is spark2` is `True`). The `.appName('JobB')` builder call is silently ignored because the session already exists. The app name remains `'JobA'`. This behavior is why `getOrCreate` is safe to call multiple times in shared or library code — it never creates a duplicate session. Option A is wrong — only one SparkSession can be active per JVM. Option C is wrong — the second builder config is not merged. Option D is wrong — there is only one session.",
     "hints": [
-      "getOrCreate is an idempotent factory: it 'gets' when one exists, 'creates' only when none does",
-      "Configuration on the builder only takes effect when a new session is actually created, not on subsequent getOrCreate calls"
+      "getOrCreate is an idempotent factory: it 'gets' when one exists, 'creates' only when none does"
     ],
     "concepts": [
       "SparkSession singleton",
@@ -542,8 +540,7 @@
     "correct_option": 2,
     "explanation": "Spark's `.cast()` uses **silent null-on-failure semantics**: rows whose values cannot be converted to the target type become `null` instead of raising an error. Here `'123'` and `'456'` cast cleanly to integers 123 and 456; `'abc'` cannot be parsed as an integer, so it becomes `null`. This is intentional — Spark handles large, potentially dirty datasets and prefers null over job failure for invalid values. Option A is wrong — `cast` is not validated during plan analysis. Option B is wrong — no executor-level exception is raised; the null is produced silently. Option D is wrong — Spark never coerces to 0; only `null` is used for failed casts.",
     "hints": [
-      "Spark's cast is lenient by design: it never raises an error for a single bad row — ask what value appears instead",
-      "Compare this to database type coercion: SQL also produces NULL (not an error) for an invalid CAST on most engines"
+      "For each row independently, ask: does this value have a valid representation in the target type? What does Spark do when it doesn't?"
     ],
     "concepts": [
       "SCHEMA & TYPE HANDLING",
@@ -569,7 +566,7 @@
     "correct_option": 0,
     "explanation": "`DataFrame.union()` in PySpark is **positional** — the first column of `df2` is merged with the first column of `df1`, the second with the second, and so on, regardless of column names. This mirrors SQL's `UNION ALL` behavior. If you want name-based alignment (safer when column order differs), use `df1.unionByName(df2)` instead. Options B, C, and D all describe behaviors that don't apply to `union()` — using it when column names or order differ is a common source of subtle data bugs.",
     "hints": [
-      "Think about how SQL UNION works — does it match by column name or by position?"
+      "Consider what would happen to your data if you unioned two DataFrames whose columns are in different orders — would the values silently end up in the wrong columns? What does that imply about how matching works?"
     ],
     "concepts": [
       "unionByName",
@@ -618,10 +615,10 @@
       "max_score: integer (nullable = true) — Spark marks all added columns nullable by default",
       "max_score: long (nullable = false) — Python int literals are promoted to LongType",
       "max_score: integer (nullable = false) — lit() columns are non-nullable because the constant can never be null",
-      "max_score: integer (nullable = true) — literals might be null if F.lit(None) is later chained"
+      "max_score: long (nullable = true) — Python int literals are widened to LongType and all added columns are marked nullable by default"
     ],
     "correct_option": 2,
-    "explanation": "`F.lit(100)` creates a Column backed by a non-null constant. Spark infers the type as `IntegerType` (Python `int` maps to `IntegerType` inside `lit`, unlike arithmetic on LongType columns) and marks the column `nullable = false` because a constant literal can never produce a null value at runtime. Option A is wrong — `lit` columns are explicitly non-nullable. Option B is wrong — `lit(100)` produces `IntegerType`, not `LongType` (contrast with `F.count('*')` which always produces `LongType`). Option D is wrong — `nullable = false` is determined at plan time from the constant; chaining is a separate operation.",
+    "explanation": "`F.lit(100)` creates a Column backed by a non-null constant. Spark infers the type as `IntegerType` (Python `int` maps to `IntegerType` inside `lit`, unlike arithmetic results or aggregates which often produce `LongType`) and marks the column `nullable = false` because a constant literal can never produce a null value at runtime. Option A is wrong — `lit` columns are explicitly non-nullable because the constant itself guarantees a value. Option B is wrong — `lit(100)` produces `IntegerType`, not `LongType` (contrast with `F.count('*')` which always produces `LongType`). Option D is wrong on both axes: `lit(100)` is `IntegerType` (not `LongType`) and is `nullable = false` (not `nullable = true`).",
     "hints": [
       "A constant can never be null — does Spark reflect that in the schema, or does it always mark columns nullable?",
       "int literals in lit() map to IntegerType; contrast with count() aggregates which always produce LongType"
@@ -678,7 +675,7 @@
     "correct_option": 1,
     "explanation": "`df.printSchema()` is a **side-effect method** — it writes a human-readable schema tree to stdout and returns `None`. Assigning the return value to `schema_str` gives you `None`, so `type(schema_str)` is `NoneType`. To capture the schema programmatically: `df.schema` returns a `StructType` object (option A), and `df.dtypes` returns a list of `(name, typeString)` tuples. These are the right tools when you need the schema for code that branches on column types. Option C would apply to methods that return a string representation. Option D has no equivalent in PySpark's schema API.",
     "hints": [
-      "Methods whose name starts with 'print' typically write to stdout and return None — just like Python's built-in print()",
+      "Some methods write their output to the console as a side-effect rather than returning it — consider what that implies about the return value",
       "If you need the schema as a Python object, use df.schema (StructType) or df.dtypes (list of tuples)"
     ],
     "concepts": [
@@ -730,12 +727,12 @@
     "code_snippet": null,
     "options": [
       "The optimized physical execution plan, including operators like FileScan, Filter, and Exchange",
-      "The Python source code of your transformation chain",
+      "A row-by-row trace of how Spark processes sample data through each operator to verify correctness",
       "Only the SQL translation of your query",
       "Row count estimates for each operator in the plan"
     ],
     "correct_option": 0,
-    "explanation": "`df.explain()` prints Spark's **physical execution plan** — the actual operators Spark will run, such as `FileScan`, `Filter`, `HashAggregate`, or `Exchange` (shuffle). This is useful for debugging performance: you can see whether a filter is pushed down to the scan, how joins are implemented, and where shuffles occur. Option B is wrong — explain shows a query plan, not Python source code. Option C is partly true (you can see a logical plan), but the default output is the physical plan with concrete operators. Option D is wrong — row counts are not shown by default (use `explain(\"cost\")` or Spark UI for statistics).",
+    "explanation": "`df.explain()` prints Spark's **physical execution plan** — the actual operators Spark will run, such as `FileScan`, `Filter`, `HashAggregate`, or `Exchange` (shuffle). This is useful for debugging performance: you can see whether a filter is pushed down to the scan, how joins are implemented, and where shuffles occur. Option B is wrong — `explain()` shows a plan of operators, not a data trace; no rows are processed or sampled when you call it. Option C is partly true (you can see a logical plan with `explain(\"extended\")`), but the default output is the physical plan. Option D is wrong — row counts are not shown by default (use `explain(\"cost\")` or Spark UI for statistics).",
     "hints": [
       "explain() reveals the query plan Spark will execute — look for keywords like 'physical plan' and operator names"
     ],
@@ -947,18 +944,18 @@
     "type": "debug",
     "difficulty": "easy",
     "title": "Debug: UDF return type mismatch",
-    "description": "A UDF is registered with `IntegerType()` but returns a Python string:\n\nWhat happens when `result.show()` is called?",
+    "description": "A UDF is registered with `IntegerType()` but the Python function returns `str(len(name))` — a string. What is the correct diagnosis and fix?",
     "code_snippet": "from pyspark.sql.functions import udf\nfrom pyspark.sql.types import IntegerType\n\n@udf(returnType=IntegerType())\ndef name_length(name):\n    return str(len(name))  # returns string!\n\nresult = df.withColumn('length', name_length('name'))\nresult.show()",
     "options": [
-      "The output shows string lengths: '5', '3'",
-      "Spark automatically casts the string to int; output is correct: 5, 3",
-      "Null values appear or a runtime exception is thrown — the UDF returns str but declared IntegerType",
-      "A compile-time AnalysisException is raised when the @udf decorator is applied"
+      "The `@udf` decorator validates the return type at decoration time; change `returnType=IntegerType()` to `returnType=StringType()` to match what the function returns",
+      "Spark automatically coerces the Python string return value to int using the declared `returnType` — no fix is needed",
+      "The UDF's `returnType` is a contract with Spark's JVM serializer; returning `str` when `IntegerType` is declared bypasses safe conversion and produces nulls or serialization errors — fix by returning `len(name)` (a Python `int`) instead of `str(len(name))`",
+      "Python UDFs cannot be registered with scalar types like `IntegerType()`; wrap the return in a single-element list and use `ArrayType(IntegerType())` instead"
     ],
     "correct_option": 2,
-    "explanation": "When a UDF returns a type that doesn't match its declared `returnType`, Spark does not cast automatically. Depending on Spark version, you may see null values silently inserted or a runtime exception. The fix is `return len(name)` (an int). Option A is wrong — IntegerType stores integers, not strings. Option B is wrong — Spark doesn't auto-cast UDF return values. Option D is wrong — type validation happens at execution, not decoration time.",
+    "explanation": "PySpark's UDF serializer passes Python return values across the JVM boundary using the declared `returnType` as the serialization contract. When the Python function returns a type that doesn't match, the serializer cannot safely convert it — the result is typically null values or a serialization error. The fix is straightforward: return a Python `int` (`return len(name)`) not a Python `str`. Option A is wrong — the `@udf` decorator does not validate return types at decoration time; the mismatch surfaces at execution. Changing the annotation to `StringType()` would silence the error but produce the wrong column type, not fix the bug. Option B is wrong — Spark does not auto-coerce UDF return values; the serializer trusts the declared type contract. Option D is wrong — scalar types like `IntegerType()` are fully valid as UDF `returnType` declarations.",
     "hints": [
-      "A UDF's `returnType` is a contract with Spark's serializer — if the Python function returns the wrong type, Spark cannot safely convert it"
+      "A UDF's `returnType` is a serialization contract between Python and the JVM — if the Python function returns the wrong type, what happens at the boundary?"
     ],
     "concepts": [
       "UDF",
@@ -1023,35 +1020,6 @@
       "partition pruning",
       "filter coalescence",
       "logical plan"
-    ],
-    "interaction_mode": "code_adjacent_reasoning"
-  },
-  {
-    "id": 41038,
-    "order": 38,
-    "topic": "pyspark",
-    "type": "conceptual",
-    "difficulty": "easy",
-    "title": "Narrow vs wide transformations",
-    "description": "Which of the following operations triggers a **shuffle** (data movement across the network between executors)?",
-    "code_snippet": null,
-    "options": [
-      "df.filter(df['status'] == 'active')",
-      "df.select('name', 'department', 'salary')",
-      "df.groupBy('department').agg({'salary': 'sum'})",
-      "df.withColumn('tax', df['salary'] * 0.2)"
-    ],
-    "correct_option": 2,
-    "explanation": "`groupBy().agg()` is a wide transformation — all rows with the same key must be co-located on one executor before aggregation, requiring a shuffle. `filter`, `select`, and `withColumn` are narrow transformations — each output partition depends only on its input partition, no data movement. Wide transformations create stage boundaries and are the primary source of latency in most Spark jobs.",
-    "hints": [
-      "A shuffle occurs when a row's destination partition depends on its value — which operation requires all same-key rows to be together?"
-    ],
-    "concepts": [
-      "narrow vs wide transformations",
-      "shuffle",
-      "WIDE-AGGREGATION SHUFFLE",
-      "stage boundary",
-      "performance"
     ],
     "interaction_mode": "code_adjacent_reasoning"
   },

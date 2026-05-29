@@ -33,13 +33,15 @@ Question subtypes:
 | Medium | 42001–42999 | `backend/content/pyspark_questions/medium.json` |
 | Hard | 43001–43999 | `backend/content/pyspark_questions/hard.json` |
 
-Samples in `backend/content/pyspark_questions/sample/` use `4XS` 3-digit IDs.
+**PySpark has no separate sample file or sample IDs.** Samples are served at runtime by `backend/sample_questions.py::get_topic_sample_pool()`, which slices the first 3 practice questions by `order` from the live catalog (same as Data Engineering, Data Modeling, Statistics, ML Fundamentals, Experimentation). Do not author dedicated sample questions and do not create a `sample/` directory for this track.
 
 ## Difficulty vocabulary
 
 | Tier | Reasoning depth | Subtypes | Topics |
 |---|---|---|---|
 | **Easy** | Single concept, one unambiguous correct answer. Mental execution tracing. | `predict_output` or `debug` preferred; `conceptual` only if scenario-anchored | Transformation-vs-action, narrow-vs-wide, basic schema, `collect()` driver implications, common `AnalysisException` patterns |
+
+> **Sample surface note:** Because the sample pool is the first 3 easy practice questions by `order`, the three lowest-`order` easy questions are the track's shopfront for anonymous users. At least one of those three must be `predict_output` or `debug` — three consecutive definitional `conceptual` questions misrepresent the track as definition-recall and fail to demonstrate the code-adjacent reasoning that differentiates it.
 | **Medium** | Trade-off reasoning. Two approaches both plausible but differ in meaningful ways. | All subtypes | Partitioning, shuffle triggers, `repartition` vs `coalesce`, broadcast join conditions, PySpark window-function API and frames (`rowsBetween` / ROWS vs RANGE), `explode` and `collect_list`/`pivot`, Delta Lake MERGE / schema evolution / time travel, Structured Streaming output modes |
 | **Hard** | Multi-factor trade-off under production constraints. **All 4 distractors plausible** to a candidate who partially understands. | All subtypes | AQE (partition coalescing, broadcast conversion, skew-join), dynamic partition pruning, salting, pandas UDF memory model, Z-ordering vs partitioning, watermark behaviour with late data, speculative execution |
 
@@ -114,6 +116,9 @@ These are the durable *targets* (what the bank ought to look like). For live cou
 - **Pure-`conceptual` recall at easy tier** — "what is a transformation?" Reject. Use `predict_output` or `debug` to make the candidate reason.
 - **Hard questions with one obvious right answer** — if a competent practitioner picks it immediately, the question isn't hard.
 - **Questions answerable from a single line of the official docs** — googleable; not the test.
+- **Duplicate narrow/wide or shuffle-trigger classification questions** — the bank had two near-identical questions (filter/select/groupBy/withColumn options, same correct answer position) at easy. One was retired. Any future question testing "which of these is a wide transformation / triggers a shuffle?" must use a clearly different scenario or a predict_output framing (e.g. predict partition count after operation X) rather than the same four-operation menu.
+- **Easy distractors that are immediately eliminable** — all four MCQ options must require thought. If a competent practitioner can rule out any distractor in under 5 seconds (e.g. "The Driver stores all data in memory"), replace it with a plausible wrong position — one that uses real Spark terminology but draws the wrong conclusion about which component is responsible. The hard-question rule (all 4 distractors plausible) does not apply at easy, but "obviously nonsensical" distractors do not belong at any tier.
+- **Disjunctive or version-dependent answers in predict_output / debug questions** — "null values appear OR a runtime exception is thrown" is not a predict_output answer; it is a hedge. If behavior genuinely varies by Spark version, either pin the version in the stem or convert the question to `conceptual` / `debug` framing that asks for diagnosis and fix rather than runtime prediction.
 
 ## JSON schema
 
@@ -156,6 +161,13 @@ Required:
 - 1–2 hints typical at easy/medium, 2–3 at hard.
 - First hint must **not** name the correct option's key concept verbatim.
 - Hints should narrow the option space by elimination, not point at the answer.
+- **Common leak patterns to avoid at easy:**
+  - Naming the relationship category ("sometimes two method names do exactly the same thing" → directly yields the alias answer)
+  - Naming the analogy that is the answer ("think about how SQL UNION works — positional or by name?" → immediately resolves union() direction)
+  - Saying "X never raises an error" when the question is asking what happens (eliminates all error-based options in one step)
+  - Naming the return value of a side-effect method ("returns None") when the question asks what type is returned
+- **For MCQ-specific hints:** guide through an *elimination path* ("which of these options requires a shuffle? start by identifying what data movement each would need") rather than through the answer category. A hint that names the reasoning class of the correct answer is still a leak even if it doesn't name the answer word-for-word.
+- **Fix-hints do not belong on predict_output questions.** Telling the candidate how to *fix* the code collapses the guessing space about *what happens* — the presence of a fix implies the current code is broken, and the fix direction often reveals which specific failure mode occurs.
 
 ## Verification before commit
 
