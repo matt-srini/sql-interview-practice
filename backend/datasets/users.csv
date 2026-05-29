@@ -7,7 +7,7 @@ user_id,name,email,signup_date,country,acquisition_channel,plan_tier,is_active
 6,User 6,,2023-06-14,IN,referral,free,False
 7,User 7,user7@example.com,2024-02-11,IN,paid_search,free,False
 8,User 8,user8@example.com,2023-05-07,BR,paid_social,free,True
-9,User 9,user9@example.com,2025-02-15,BR,paid_search,free,True
+9,User 9,user9@example.com,2025-02-15,BR,,free,True
 10,User 10,user10@example.com,2023-04-21,NL,organic,free,False
 11,User 11,user11@example.com,2024-02-17,UK,partner,basic,False
 12,User 12,user12@example.com,2024-03-21,US,paid_social,pro,True
@@ -39,7 +39,7 @@ user_id,name,email,signup_date,country,acquisition_channel,plan_tier,is_active
 38,User 38,user38@example.com,2023-05-06,FR,partner,enterprise,True
 39,User 39,user39@example.com,2024-03-28,US,paid_search,pro,False
 40,User 40,user40@example.com,2022-10-27,IN,paid_social,basic,False
-41,User 41,user41@example.com,2022-11-26,DE,direct,free,False
+41,User 41,user41@example.com,2022-11-26,DE,,free,False
 42,User 42,user42@example.com,2024-02-22,US,paid_social,free,True
 43,User 43,user43@example.com,2022-09-21,SG,direct,pro,True
 44,User 44,user44@example.com,2022-11-04,US,organic,free,False
@@ -74,7 +74,7 @@ user_id,name,email,signup_date,country,acquisition_channel,plan_tier,is_active
 73,User 73,user73@example.com,2022-12-24,BR,direct,pro,False
 74,User 74,user74@example.com,2023-12-06,DE,paid_search,free,True
 75,User 75,user75@example.com,2025-01-17,SG,direct,free,True
-76,User 76,user76@example.com,2024-05-30,NL,paid_social,free,True
+76,User 76,user76@example.com,2024-05-30,NL,,free,True
 77,User 77,user77@example.com,2022-07-25,FR,paid_search,basic,True
 78,User 78,user78@example.com,2023-02-25,CA,organic,pro,True
 79,User 79,user79@example.com,2023-10-06,AU,paid_search,free,True
@@ -109,7 +109,7 @@ user_id,name,email,signup_date,country,acquisition_channel,plan_tier,is_active
 108,User 108,user108@example.com,2023-10-16,US,organic,free,True
 109,User 109,user109@example.com,2022-12-20,US,organic,basic,False
 110,User 110,user110@example.com,2023-11-29,IN,paid_search,free,True
-111,User 111,user111@example.com,2022-11-11,US,paid_social,basic,True
+111,User 111,user111@example.com,2022-11-11,US,,basic,True
 112,User 112,user112@example.com,2025-08-11,UK,organic,free,True
 113,User 113,user113@example.com,2024-11-02,FR,organic,free,True
 114,User 114,user114@example.com,2022-07-15,SG,organic,free,True
@@ -144,7 +144,7 @@ user_id,name,email,signup_date,country,acquisition_channel,plan_tier,is_active
 143,User 143,user143@example.com,2024-04-03,DE,paid_social,free,True
 144,User 144,user144@example.com,2023-04-28,AU,referral,basic,True
 145,User 145,user145@example.com,2025-10-30,IN,direct,free,True
-146,User 146,user146@example.com,2025-03-31,AU,paid_search,free,True
+146,User 146,user146@example.com,2025-03-31,AU,,free,True
 147,User 147,user147@example.com,2024-10-05,FR,referral,pro,False
 148,User 148,user148@example.com,2023-01-20,AU,paid_search,pro,True
 149,User 149,user149@example.com,2024-07-29,US,paid_search,pro,True
@@ -179,7 +179,7 @@ user_id,name,email,signup_date,country,acquisition_channel,plan_tier,is_active
 178,User 178,user178@example.com,2025-06-18,DE,referral,free,True
 179,User 179,user179@example.com,2024-04-30,US,paid_search,basic,True
 180,User 180,user180@example.com,2025-02-23,US,direct,free,True
-181,User 181,user181@example.com,2023-08-03,US,referral,free,True
+181,User 181,user181@example.com,2023-08-03,US,,free,True
 182,User 182,user182@example.com,2022-07-27,CA,organic,pro,True
 183,User 183,user183@example.com,2024-07-24,NL,referral,basic,True
 184,User 184,user184@example.com,2023-08-14,SG,direct,free,True
@@ -214,7 +214,7 @@ user_id,name,email,signup_date,country,acquisition_channel,plan_tier,is_active
 213,User 213,user213@example.com,2024-02-18,US,organic,free,False
 214,User 214,user214@example.com,2023-07-01,US,organic,free,True
 215,User 215,user215@example.com,2022-10-20,IN,paid_search,free,True
-216,User 216,user216@example.com,2025-02-05,SG,organic,free,True
+216,User 216,user216@example.com,2025-02-05,SG,,free,True
 217,User 217,user217@example.com,2025-03-12,IN,paid_search,free,True
 218,User 218,user218@example.com,2024-09-05,CA,paid_social,free,True
 219,User 219,user219@example.com,2023-03-06,UK,partner,free,False
@@ -249,7 +249,7 @@ user_id,name,email,signup_date,country,acquisition_channel,plan_tier,is_active
 248,User 248,user248@example.com,2023-01-17,UK,organic,free,True
 249,User 249,user249@example.com,2025-02-18,US,paid_search,free,True
 250,User 250,user250@example.com,2024-03-17,IN,organic,free,True
-251,User 251,user251@example.com,2024-06-13,US,paid_social,free,True
+251,User 251,user251@example.com,2024-06-13,US,,free,True
 252,User 252,user252@example.com,2023-09-21,SG,paid_search,free,True
 253,User 253,user253@example.com,2025-09-26,NL,organic,free,False
 254,User 254,user254@example.com,2025-01-14,US,direct,basic,True
@@ -284,7 +284,7 @@ user_id,name,email,signup_date,country,acquisition_channel,plan_tier,is_active
 283,User 283,user283@example.com,2025-02-13,SG,paid_social,pro,True
 284,User 284,user284@example.com,2025-11-04,US,organic,free,True
 285,User 285,user285@example.com,2024-02-09,DE,organic,free,True
-286,User 286,user286@example.com,2025-10-08,UK,paid_search,free,True
+286,User 286,user286@example.com,2025-10-08,UK,,free,True
 287,User 287,user287@example.com,2022-11-19,AU,partner,basic,False
 288,User 288,user288@example.com,2023-11-05,CA,direct,basic,True
 289,User 289,user289@example.com,2023-12-16,BR,referral,pro,True
@@ -319,7 +319,7 @@ user_id,name,email,signup_date,country,acquisition_channel,plan_tier,is_active
 318,User 318,user318@example.com,2025-06-28,US,paid_search,free,True
 319,User 319,user319@example.com,2023-08-31,US,paid_social,free,True
 320,User 320,user320@example.com,2024-05-13,UK,direct,free,False
-321,User 321,user321@example.com,2024-03-15,US,paid_search,free,True
+321,User 321,user321@example.com,2024-03-15,US,,free,True
 322,User 322,user322@example.com,2022-11-27,CA,paid_social,basic,True
 323,User 323,user323@example.com,2022-12-07,CA,paid_social,basic,True
 324,User 324,user324@example.com,2025-11-27,UK,partner,pro,False
@@ -359,7 +359,7 @@ user_id,name,email,signup_date,country,acquisition_channel,plan_tier,is_active
 358,User 358,user358@example.com,2023-09-15,UK,direct,free,False
 359,User 359,user359@example.com,2022-12-04,BR,paid_search,free,True
 360,User 360,user360@example.com,2022-09-11,DE,organic,pro,True
-361,User 361,user361@example.com,2022-09-12,CA,organic,free,True
+361,User 361,user361@example.com,2022-09-12,CA,,free,True
 362,User 362,user362@example.com,2024-09-12,IN,referral,free,True
 363,User 363,user363@example.com,2023-07-01,FR,direct,free,True
 364,User 364,user364@example.com,2022-11-24,SG,partner,free,True
@@ -399,7 +399,7 @@ user_id,name,email,signup_date,country,acquisition_channel,plan_tier,is_active
 398,User 398,user398@example.com,2025-07-16,BR,organic,free,False
 399,User 399,user399@example.com,2023-07-07,UK,partner,free,False
 400,User 400,user400@example.com,2025-10-26,BR,paid_search,free,False
-401,User 401,user401@example.com,2022-08-27,US,organic,enterprise,True
+401,User 401,user401@example.com,2022-08-27,US,,enterprise,True
 402,User 402,user402@example.com,2024-08-20,NL,paid_social,basic,True
 403,User 403,user403@example.com,2023-12-08,CA,organic,free,True
 404,User 404,user404@example.com,2024-06-18,IN,organic,pro,True
@@ -439,7 +439,7 @@ user_id,name,email,signup_date,country,acquisition_channel,plan_tier,is_active
 438,User 438,user438@example.com,2025-05-02,CA,paid_social,free,True
 439,User 439,user439@example.com,2024-08-05,US,organic,free,True
 440,User 440,user440@example.com,2025-01-14,US,paid_social,basic,True
-441,User 441,user441@example.com,2023-10-08,US,organic,free,True
+441,User 441,user441@example.com,2023-10-08,US,,free,True
 442,User 442,user442@example.com,2025-10-29,US,partner,basic,True
 443,User 443,user443@example.com,2025-10-23,UK,organic,basic,True
 444,User 444,user444@example.com,2025-09-07,IN,paid_social,basic,True
@@ -479,7 +479,7 @@ user_id,name,email,signup_date,country,acquisition_channel,plan_tier,is_active
 478,User 478,user478@example.com,2023-07-12,US,paid_search,pro,True
 479,User 479,user479@example.com,2025-10-28,CA,organic,basic,True
 480,User 480,user480@example.com,2023-03-27,US,paid_search,basic,True
-481,User 481,,2022-12-13,SG,organic,basic,True
+481,User 481,,2022-12-13,SG,,basic,True
 482,User 482,,2024-08-29,US,paid_search,pro,True
 483,User 483,user483@example.com,2025-12-05,US,organic,free,True
 484,User 484,user484@example.com,2025-06-18,UK,paid_social,pro,True
@@ -539,7 +539,7 @@ user_id,name,email,signup_date,country,acquisition_channel,plan_tier,is_active
 538,User 538,user538@example.com,2023-04-10,US,direct,free,False
 539,User 539,user539@example.com,2025-12-07,US,partner,free,False
 540,User 540,user540@example.com,2025-03-26,US,paid_search,free,True
-541,User 541,user541@example.com,2025-06-12,US,referral,basic,True
+541,User 541,user541@example.com,2025-06-12,US,,basic,True
 542,User 542,user542@example.com,2023-09-13,US,paid_social,basic,True
 543,User 543,user543@example.com,2023-06-06,DE,direct,basic,True
 544,User 544,,2022-08-25,IN,direct,pro,True
