@@ -2600,7 +2600,8 @@
     "concepts": [
       "METRIC INTERPRETATION & DENOMINATOR CHOICE",
       "BOOLEAN INDEXING & FILTERING"
-    ]
+    ],
+    "solution_code": "import pandas as pd\n\ndef solve(df_orders):\n    completed = df_orders[df_orders['status'] == 'completed'].copy()\n    completed['order_date'] = pd.to_datetime(completed['order_date'])\n    ref_date = completed['order_date'].max()\n    cutoff = ref_date - pd.Timedelta(days=90)\n\n    ever_active = set(completed['user_id'].unique())\n    recent = set(completed[completed['order_date'] > cutoff]['user_id'].unique())\n    churned = ever_active - recent\n\n    total = len(ever_active)\n    churn_count = len(churned)\n    return pd.DataFrame({\n        'total_ever_active': [total],\n        'churned_count': [churn_count],\n        'churn_rate': [round(churn_count / total, 4)]\n    })\n"
   },
   {
     "id": 33062,
@@ -2632,7 +2633,8 @@
     "concepts": [
       "METRIC INTERPRETATION & DENOMINATOR CHOICE",
       "GROUPED AGGREGATION"
-    ]
+    ],
+    "solution_code": "import pandas as pd\n\ndef solve(df_orders):\n    completed = df_orders[df_orders['status'] == 'completed'].copy()\n    per_user = completed.groupby('user_id', as_index=False).agg(\n        user_total=('net_amount', 'sum'),\n        user_orders=('order_id', 'count')\n    )\n    per_user['user_aov'] = per_user['user_total'] / per_user['user_orders']\n    fleet_aov = round(per_user['user_aov'].mean(), 4)\n    order_weighted = round(completed['net_amount'].sum() / len(completed), 4)\n    return pd.DataFrame({\n        'fleet_aov': [fleet_aov],\n        'order_weighted_aov': [order_weighted]\n    })\n"
   },
   {
     "id": 33063,
@@ -2665,7 +2667,8 @@
     "concepts": [
       "METRIC INTERPRETATION & DENOMINATOR CHOICE",
       "DATA QUALITY SKEPTICISM"
-    ]
+    ],
+    "solution_code": "import pandas as pd\n\ndef solve(df_tickets):\n    total = len(df_tickets)\n    resolved_or_closed = df_tickets['status'].isin(['resolved', 'closed']).sum()\n    naive_rate = round(resolved_or_closed / total, 4)\n\n    actionable = df_tickets[df_tickets['status'] != 'closed']\n    actionable_rate = round((actionable['status'] == 'resolved').sum() / len(actionable), 4)\n\n    summary = pd.DataFrame({'naive_rate': [naive_rate], 'actionable_rate': [actionable_rate]})\n\n    non_closed = df_tickets[df_tickets['status'] != 'closed']\n    priority_df = (\n        non_closed.groupby('priority', as_index=False)\n        .agg(\n            non_closed_count=('ticket_id', 'count'),\n            resolved_count=('status', lambda x: (x == 'resolved').sum())\n        )\n    )\n    priority_df['priority_rate'] = (priority_df['resolved_count'] / priority_df['non_closed_count']).round(4)\n    priority_df = priority_df.sort_values('priority').reset_index(drop=True)\n\n    return summary, priority_df\n"
   },
   {
     "id": 33064,
@@ -2697,7 +2700,8 @@
     "concepts": [
       "PERFORMANCE-AWARE ANALYTICS",
       "RANKING & TOP-N PER GROUP"
-    ]
+    ],
+    "solution_code": "import pandas as pd\n\ndef solve(df_orders):\n    completed = df_orders[df_orders['status'] == 'completed']\n    per_user = (\n        completed.groupby('user_id', as_index=False)['order_id']\n        .count()\n        .rename(columns={'order_id': 'total_orders'})\n    )\n    top10 = per_user.nlargest(10, 'total_orders', keep='all')\n    return (\n        top10.sort_values(['total_orders', 'user_id'], ascending=[False, True])\n        .head(10)\n        .reset_index(drop=True)\n    )\n"
   },
   {
     "id": 33065,
@@ -2729,7 +2733,8 @@
     "concepts": [
       "PERFORMANCE-AWARE ANALYTICS",
       "GROUPED AGGREGATION"
-    ]
+    ],
+    "solution_code": "import pandas as pd\n\ndef solve(df_orders):\n    completed = df_orders[df_orders['status'] == 'completed']\n    result = (\n        completed.groupby('region', as_index=False)\n        .agg(\n            total_revenue=('net_amount', 'sum'),\n            order_count=('order_id', 'count'),\n            avg_discount=('discount_amount', 'mean')\n        )\n    )\n    result['total_revenue'] = result['total_revenue'].round(2)\n    result['avg_discount'] = result['avg_discount'].round(4)\n    return result.sort_values('region').reset_index(drop=True)\n"
   },
   {
     "id": 33066,
@@ -2760,7 +2765,8 @@
     "concepts": [
       "PERFORMANCE-AWARE ANALYTICS",
       "DATETIME OPERATIONS"
-    ]
+    ],
+    "solution_code": "import pandas as pd\n\ndef solve(df_emp):\n    df = df_emp.copy()\n    df['hire_date'] = pd.to_datetime(df['hire_date'])\n    ref_date = df['hire_date'].max()\n    days = (ref_date - df['hire_date']).dt.days\n    df['years_tenure'] = (days / 365.25).astype(int)\n    df['is_veteran'] = df['years_tenure'] > 3\n    return (\n        df[['employee_id', 'employee_name', 'hire_date', 'years_tenure', 'is_veteran']]\n        .sort_values(['years_tenure', 'employee_id'], ascending=[False, True])\n        .reset_index(drop=True)\n    )\n"
   },
   {
     "id": 33067,
@@ -2792,7 +2798,8 @@
     "concepts": [
       "GROUPBY TRANSFORM",
       "GROUPED AGGREGATION"
-    ]
+    ],
+    "solution_code": "import pandas as pd\n\ndef solve(df_orders):\n    completed = df_orders[df_orders['status'] == 'completed'].copy()\n    completed['region_total'] = completed.groupby('region')['net_amount'].transform('sum')\n    completed['pct_of_region'] = (completed['net_amount'] / completed['region_total']).round(4)\n    return (\n        completed[['order_id', 'user_id', 'region', 'net_amount', 'pct_of_region']]\n        .sort_values(['region', 'pct_of_region', 'order_id'], ascending=[True, False, True])\n        .reset_index(drop=True)\n    )\n"
   },
   {
     "id": 33068,
@@ -2829,7 +2836,8 @@
     "concepts": [
       "GROUPBY TRANSFORM",
       "MULTI-DATAFRAME ENTITY LINKING"
-    ]
+    ],
+    "solution_code": "import pandas as pd\n\ndef solve(df_emp, df_dept):\n    merged = df_emp.merge(df_dept[['department_id', 'department_name']], on='department_id')\n    merged['dept_mean_salary'] = merged.groupby('department_name')['salary'].transform('mean').round(2)\n    merged['salary_deviation'] = (merged['salary'] - merged['dept_mean_salary']).round(2)\n    merged['abs_dev'] = merged['salary_deviation'].abs()\n    return (\n        merged[['employee_id', 'employee_name', 'department_name', 'salary', 'dept_mean_salary', 'salary_deviation', 'abs_dev']]\n        .sort_values(['abs_dev', 'employee_id'], ascending=[False, True])\n        .drop(columns='abs_dev')\n        .reset_index(drop=True)\n    )\n"
   },
   {
     "id": 33069,
@@ -2861,7 +2869,8 @@
     "concepts": [
       "GROUPBY TRANSFORM",
       "BOOLEAN INDEXING & FILTERING"
-    ]
+    ],
+    "solution_code": "import pandas as pd\n\ndef solve(df_orders):\n    completed = df_orders[df_orders['status'] == 'completed'].copy()\n    completed['user_median'] = completed.groupby('user_id')['net_amount'].transform('median').round(2)\n    completed['above_personal_median'] = completed['net_amount'] > completed['user_median']\n    return (\n        completed[['order_id', 'user_id', 'net_amount', 'user_median', 'above_personal_median']]\n        .sort_values(['user_id', 'net_amount'], ascending=[True, False])\n        .reset_index(drop=True)\n    )\n"
   },
   {
     "id": 33070,
@@ -2902,7 +2911,8 @@
     "concepts": [
       "DOUBLE-COUNTING DETECTION",
       "MULTI-DATAFRAME ENTITY LINKING"
-    ]
+    ],
+    "solution_code": "import pandas as pd\n\ndef solve(df_orders, df_payments):\n    order_rev = round(df_orders[df_orders['status'] == 'completed']['net_amount'].sum(), 2)\n    pay_rev = round(df_payments[df_payments['status'] == 'completed']['amount'].sum(), 2)\n    return pd.DataFrame({\n        'order_revenue': [order_rev],\n        'payment_revenue': [pay_rev],\n        'discrepancy': [round(order_rev - pay_rev, 2)]\n    })\n"
   },
   {
     "id": 33071,
@@ -2945,7 +2955,8 @@
     "concepts": [
       "DOUBLE-COUNTING DETECTION",
       "MULTI-DATAFRAME ENTITY LINKING"
-    ]
+    ],
+    "solution_code": "import pandas as pd\n\ndef solve(df_items, df_products, df_cats):\n    with_cat = (\n        df_items\n        .merge(df_products[['product_id', 'category_id']], on='product_id')\n        .merge(df_cats[['category_id', 'category_name']], on='category_id')\n    )\n    result = (\n        with_cat.groupby('category_name', as_index=False)['line_amount']\n        .sum()\n        .rename(columns={'line_amount': 'total_revenue'})\n    )\n    result['total_revenue'] = result['total_revenue'].round(2)\n    return result.sort_values('total_revenue', ascending=False).reset_index(drop=True)\n"
   },
   {
     "id": 33072,
@@ -2986,7 +2997,8 @@
     "concepts": [
       "DOUBLE-COUNTING DETECTION",
       "MULTI-DATAFRAME ENTITY LINKING"
-    ]
+    ],
+    "solution_code": "import pandas as pd\n\ndef solve(df_orders, df_payments):\n    completed = df_orders[df_orders['status'] == 'completed']\n    order_stats = (\n        completed.groupby('user_id', as_index=False)\n        .agg(order_revenue=('net_amount', 'sum'), order_count=('order_id', 'count'))\n    )\n    order_stats['order_revenue'] = order_stats['order_revenue'].round(2)\n\n    pay_per_user = (\n        df_payments.merge(df_orders[['order_id', 'user_id']], on='order_id')\n        .groupby('user_id', as_index=False)['payment_id']\n        .nunique()\n        .rename(columns={'payment_id': 'payment_attempts'})\n    )\n\n    result = order_stats.merge(pay_per_user, on='user_id', how='left')\n    result['payment_attempts'] = result['payment_attempts'].fillna(0).astype(int)\n    return result.sort_values(['order_revenue', 'user_id'], ascending=[False, True]).reset_index(drop=True)\n"
   },
   {
     "id": 33073,
@@ -3018,7 +3030,8 @@
     "concepts": [
       "METHOD CHAINING & PIPELINE STYLE",
       "DATETIME OPERATIONS"
-    ]
+    ],
+    "solution_code": "import pandas as pd\n\ndef solve(df_orders):\n    return (\n        df_orders\n        .loc[df_orders['status'] == 'completed']\n        .assign(month=lambda x: pd.to_datetime(x['order_date']).dt.to_period('M').astype(str))\n        .groupby('month', as_index=False)\n        .agg(order_count=('order_id', 'count'), total_revenue=('net_amount', 'sum'))\n        .assign(total_revenue=lambda x: x['total_revenue'].round(2))\n        .sort_values('month')\n        .reset_index(drop=True)\n    )\n"
   },
   {
     "id": 33074,
@@ -3050,7 +3063,8 @@
     "concepts": [
       "METHOD CHAINING & PIPELINE STYLE",
       "CATEGORICAL & BINNING"
-    ]
+    ],
+    "solution_code": "import pandas as pd\n\ndef solve(df_tickets):\n    ref_date = pd.to_datetime(df_tickets['created_at']).max()\n    priority_weight = {'critical': 4, 'high': 3, 'medium': 2, 'low': 1}\n    return (\n        df_tickets\n        .loc[df_tickets['status'].isin(['open', 'in_progress'])]\n        .assign(\n            days_open=lambda x: (ref_date - pd.to_datetime(x['created_at'])).dt.days,\n            priority_w=lambda x: x['priority'].map(priority_weight),\n            urgency_score=lambda x: x['days_open'] * x['priority_w']\n        )\n        [['ticket_id', 'priority', 'status', 'days_open', 'urgency_score']]\n        .sort_values('urgency_score', ascending=False)\n        .reset_index(drop=True)\n    )\n"
   },
   {
     "id": 33075,
@@ -3082,7 +3096,8 @@
     "concepts": [
       "COLUMN SELECTION & PROJECTION",
       "GROUPED AGGREGATION"
-    ]
+    ],
+    "solution_code": "import pandas as pd\n\ndef solve(df_orders):\n    completed = df_orders[df_orders['status'] == 'completed'].copy()\n    completed['order_date'] = pd.to_datetime(completed['order_date'])\n    ref_date = completed['order_date'].max()\n    result = (\n        completed.groupby('user_id', as_index=False)\n        .agg(\n            last_order=('order_date', 'max'),\n            order_frequency=('order_id', 'count'),\n            avg_order_size=('net_amount', 'mean')\n        )\n    )\n    result['recency_days'] = (ref_date - result['last_order']).dt.days\n    result['avg_order_size'] = result['avg_order_size'].round(2)\n    return (\n        result[['user_id', 'recency_days', 'order_frequency', 'avg_order_size']]\n        .sort_values(['recency_days', 'user_id'])\n        .reset_index(drop=True)\n    )\n"
   },
   {
     "id": 33076,
@@ -3125,7 +3140,8 @@
     "concepts": [
       "COLUMN SELECTION & PROJECTION",
       "MULTI-DATAFRAME ENTITY LINKING"
-    ]
+    ],
+    "solution_code": "import pandas as pd\n\ndef solve(df_items, df_products, df_cats):\n    result = (\n        df_items[['order_item_id', 'order_id', 'product_id', 'quantity', 'line_amount']]\n        .merge(df_products[['product_id', 'product_name', 'category_id', 'price']], on='product_id')\n        .merge(df_cats[['category_id', 'category_name']], on='category_id')\n    )\n    result['line_margin'] = (result['line_amount'] - result['quantity'] * result['price']).round(2)\n    return (\n        result[['order_item_id', 'order_id', 'product_name', 'category_name', 'line_amount', 'line_margin']]\n        .sort_values(['line_margin', 'order_item_id'])\n        .reset_index(drop=True)\n    )\n"
   },
   {
     "id": 33077,
@@ -3157,7 +3173,8 @@
     "concepts": [
       "DEBUG PANDAS",
       "BOOLEAN INDEXING & FILTERING"
-    ]
+    ],
+    "solution_code": "import pandas as pd\n\ndef solve(df_orders):\n    df = df_orders.copy()\n    df['high_value'] = (df['status'] == 'completed') & (df['net_amount'] > 200)\n    completed = df[df['status'] == 'completed']\n    return (\n        completed[['order_id', 'status', 'net_amount', 'high_value']]\n        .sort_values('order_id')\n        .reset_index(drop=True)\n    )\n"
   },
   {
     "id": 33078,
@@ -3194,7 +3211,8 @@
     "concepts": [
       "DEBUG PANDAS",
       "MULTI-DATAFRAME ENTITY LINKING"
-    ]
+    ],
+    "solution_code": "import pandas as pd\n\ndef solve(df_emp, df_dept):\n    result = (\n        df_emp.groupby('department_id', as_index=False)\n        .agg(avg_salary=('salary', 'mean'), emp_count=('employee_id', 'count'))\n    )\n    result['avg_salary'] = result['avg_salary'].round(2)\n    result = result.merge(df_dept[['department_id', 'department_name']], on='department_id')\n    return (\n        result[['department_name', 'avg_salary', 'emp_count']]\n        .sort_values(['emp_count', 'department_name'], ascending=[False, True])\n        .reset_index(drop=True)\n    )\n"
   },
   {
     "id": 33079,
@@ -3226,7 +3244,8 @@
     "concepts": [
       "DEBUG PANDAS",
       "CATEGORICAL & BINNING"
-    ]
+    ],
+    "solution_code": "import pandas as pd\n\ndef solve(df_tickets):\n    ref_date = pd.to_datetime(df_tickets['created_at']).max()\n    df = df_tickets.copy()\n    df['priority'] = pd.Categorical(\n        df['priority'],\n        categories=['low', 'medium', 'high', 'critical'],\n        ordered=True\n    )\n    critical = df[df['priority'] == 'critical'].copy()\n    critical['priority'] = critical['priority'].cat.remove_unused_categories()\n    critical['days_open'] = (ref_date - pd.to_datetime(critical['created_at'])).dt.days\n    return (\n        critical[['ticket_id', 'priority', 'status', 'days_open']]\n        .sort_values('days_open', ascending=False)\n        .reset_index(drop=True)\n    )\n"
   },
   {
     "id": 33080,
@@ -3257,7 +3276,8 @@
     "concepts": [
       "DEDUPLICATION LOGIC",
       "DATETIME OPERATIONS"
-    ]
+    ],
+    "solution_code": "import pandas as pd\n\ndef solve(df_payments):\n    df = df_payments.copy()\n    df['payment_date'] = pd.to_datetime(df['payment_date'])\n    df = df.sort_values(['order_id', 'payment_date', 'payment_id'], ascending=[True, False, False])\n    deduped = df.drop_duplicates(subset='order_id', keep='first')\n    return (\n        deduped[['payment_id', 'order_id', 'payment_method', 'amount', 'status', 'payment_date']]\n        .sort_values('order_id')\n        .reset_index(drop=True)\n    )\n"
   },
   {
     "id": 33081,
@@ -3286,7 +3306,8 @@
     "concepts": [
       "DEDUPLICATION LOGIC",
       "WINDOW & ROLLING OPERATIONS"
-    ]
+    ],
+    "solution_code": "import pandas as pd\n\ndef solve(df_events):\n    df = df_events.copy()\n    df['timestamp'] = pd.to_datetime(df['timestamp'])\n    df = df.sort_values(['session_id', 'event_name', 'timestamp', 'event_id'])\n    deduped = df.drop_duplicates(subset=['session_id', 'event_name'], keep='first')\n    session_start = (\n        deduped.groupby('session_id')['timestamp']\n        .min()\n        .rename('session_start')\n    )\n    deduped = deduped.join(session_start, on='session_id')\n    deduped['time_to_first_event_s'] = (\n        (deduped['timestamp'] - deduped['session_start']).dt.total_seconds().astype(int)\n    )\n    return (\n        deduped[['session_id', 'event_name', 'event_id', 'timestamp', 'time_to_first_event_s']]\n        .sort_values(['session_id', 'timestamp'])\n        .reset_index(drop=True)\n    )\n"
   },
   {
     "id": 33082,
@@ -3327,7 +3348,8 @@
     "concepts": [
       "DEDUPLICATION LOGIC",
       "MULTI-DATAFRAME ENTITY LINKING"
-    ]
+    ],
+    "solution_code": "import pandas as pd\n\ndef solve(df_users, df_orders):\n    completed = df_orders[df_orders['status'] == 'completed'].copy()\n    completed['order_date'] = pd.to_datetime(completed['order_date'])\n    completed = completed.sort_values(['user_id', 'order_date', 'order_id'], ascending=[True, False, False])\n    latest = completed.drop_duplicates(subset='user_id', keep='first')\n    latest = latest[['user_id', 'order_id', 'order_date', 'net_amount']].rename(\n        columns={'order_id': 'last_order_id', 'order_date': 'last_order_date', 'net_amount': 'last_order_amount'}\n    )\n    result = df_users[['user_id', 'city', 'acquisition_channel']].merge(latest, on='user_id', how='left')\n    return result.sort_values('user_id').reset_index(drop=True)\n"
   },
   {
     "id": 33083,
@@ -3365,7 +3387,8 @@
     "concepts": [
       "OUTPUT SANITY VALIDATION",
       "MULTI-DATAFRAME ENTITY LINKING"
-    ]
+    ],
+    "solution_code": "import pandas as pd\n\ndef solve(df_items, df_products):\n    merged = df_items.merge(df_products[['product_id', 'product_name']], on='product_id', how='inner')\n    orphan_count = df_items[~df_items['product_id'].isin(df_products['product_id'])].shape[0]\n    checks = [\n        {'check_name': 'no_null_product_name', 'passed': bool(merged['product_name'].isna().sum() == 0)},\n        {'check_name': 'no_orphan_products', 'passed': bool(orphan_count == 0)},\n        {'check_name': 'no_row_loss', 'passed': bool(len(merged) == len(df_items))},\n    ]\n    return pd.DataFrame(checks).sort_values('check_name').reset_index(drop=True)\n"
   },
   {
     "id": 33084,
@@ -3397,7 +3420,8 @@
     "concepts": [
       "OUTPUT SANITY VALIDATION",
       "GROUPED AGGREGATION"
-    ]
+    ],
+    "solution_code": "import pandas as pd\n\ndef solve(df_orders):\n    completed = df_orders[df_orders['status'] == 'completed']\n    by_region = (\n        completed.groupby('region', as_index=False)['net_amount']\n        .sum()\n        .rename(columns={'net_amount': 'total_revenue'})\n    )\n    expected_total = completed['net_amount'].sum()\n    actual_total = by_region['total_revenue'].sum()\n    checks = [\n        {'check_name': 'expected_region_count', 'passed': bool(len(by_region) == 4)},\n        {'check_name': 'no_null_revenue', 'passed': bool(by_region['total_revenue'].isna().sum() == 0)},\n        {'check_name': 'revenue_sum_matches', 'passed': bool(abs(actual_total - expected_total) < 0.01)},\n    ]\n    return pd.DataFrame(checks).sort_values('check_name').reset_index(drop=True)\n"
   },
   {
     "id": 33085,
@@ -3430,7 +3454,8 @@
       "METHOD CHAINING & PIPELINE STYLE",
       "WINDOW & ROLLING OPERATIONS"
     ],
-    "mock_only": true
+    "mock_only": true,
+    "solution_code": "import pandas as pd\n\ndef solve(df_orders):\n    return (\n        df_orders\n        .loc[df_orders['status'] == 'completed']\n        .assign(month=lambda x: pd.to_datetime(x['order_date']).dt.to_period('M').astype(str))\n        .groupby('month', as_index=False)\n        .agg(monthly_revenue=('net_amount', 'sum'))\n        .sort_values('month')\n        .assign(\n            rolling_mean=lambda x: x['monthly_revenue'].rolling(3, min_periods=1).mean().round(2),\n            rolling_std=lambda x: x['monthly_revenue'].rolling(3, min_periods=1).std().fillna(0).round(2),\n        )\n        .assign(is_anomaly=lambda x: x['monthly_revenue'] > x['rolling_mean'] + 2 * x['rolling_std'])\n        .reset_index(drop=True)\n    )"
   },
   {
     "id": 33086,
@@ -3461,7 +3486,8 @@
       "OUTPUT SHAPE & ORDERING",
       "RESHAPING & PIVOT"
     ],
-    "mock_only": true
+    "mock_only": true,
+    "solution_code": "import pandas as pd\n\ndef solve(df_payments):\n    df = df_payments.copy()\n    df['month'] = (\n        pd.to_datetime(df['payment_date'])\n        .dt.to_period('M')\n        .astype(str)\n        .str.replace('-', '_', regex=False)\n    )\n    pivot = (\n        df.groupby(['payment_method', 'month'])['amount']\n        .sum()\n        .unstack(fill_value=0.0)\n    )\n    pivot.columns = ['total_' + c for c in pivot.columns]\n    return (\n        pivot.reset_index()\n        .sort_values('payment_method')\n        .reset_index(drop=True)\n    )"
   },
   {
     "id": 33087,
@@ -3494,6 +3520,7 @@
       "MEMORY & VECTORIZATION REASONING",
       "BOOLEAN INDEXING & FILTERING"
     ],
-    "mock_only": true
+    "mock_only": true,
+    "solution_code": "import pandas as pd\nimport numpy as np\n\ndef solve(df_orders):\n    df = df_orders.copy()\n    df['discount_rate'] = (df['discount_amount'] / df['gross_amount']).round(3).astype('float32')\n    df['revenue_tier'] = pd.Categorical(\n        np.select(\n            [df['net_amount'] >= 200, df['net_amount'] >= 50],\n            ['premium', 'standard'],\n            default='basic'\n        ),\n        categories=['basic', 'standard', 'premium'],\n        ordered=True\n    )\n    return (\n        df[['order_id', 'net_amount', 'discount_rate', 'revenue_tier']]\n        .sort_values('order_id')\n        .reset_index(drop=True)\n    )"
   }
 ]
