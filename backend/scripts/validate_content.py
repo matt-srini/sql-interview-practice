@@ -614,8 +614,6 @@ def _validate_solution_code_presence() -> None:
     errors: list[str] = []
 
     for track, file_path in _iter_question_files():
-        if track not in CODE_EXECUTION_TRACKS:
-            continue
         difficulty = file_path.stem
         if difficulty == "easy":
             continue  # no mock_only at easy (enforced by chain integrity validator)
@@ -625,6 +623,11 @@ def _validate_solution_code_presence() -> None:
 
         for q in questions:
             if not q.get("mock_only", False):
+                continue
+            # statistics: only numerical subtype has expected_code / solution_code
+            if track == "statistics" and q.get("subtype") != "numerical":
+                continue
+            if track not in CODE_EXECUTION_TRACKS and track != "statistics":
                 continue
             qid = q.get("id", "<unknown>")
             title = q.get("title", "<untitled>")
