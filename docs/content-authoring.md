@@ -263,6 +263,8 @@ The 4-step verbatim lookup procedure lives in [`.github/agents/question-authorin
 
 **Closure rule.** A track joins `_TAXONOMY_VALIDATED_TRACKS` as the final durable-doc step of its Phase 2 closeout (see § Phase 2 closeout doc-hygiene below). Inclusion gates on: (a) registry fully populated for the Phase 2 scope, (b) zero orphans across all questions, (c) realism designation set in `MOCK_ONLY_REALISM_FAMILIES`.
 
+**solution_code presence guard** (`_validate_solution_code_presence` — NOT gated on `_TAXONOMY_VALIDATED_TRACKS`). Enforced unconditionally for all medium/hard mock-only questions in: `python-data` (all mock-only), `python` (all mock-only), and `statistics` (numerical subtype only — conceptual questions use `explanation` instead). Raises on any mock-only question missing a non-empty `solution_code`. Added 2026-05-29 after a 25-question Pandas backfill revealed the field was unguarded at authoring time.
+
 ### Phase 2 closeout doc-hygiene (durable — the H-series)
 
 Every track's Phase 2 closure must execute this checklist as the final step of execution. Items live in durable docs; the historical tracker is archived at `docs/archive/2026-05-authoring-refactor.md`.
