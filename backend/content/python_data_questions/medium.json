@@ -574,7 +574,7 @@
     "solution_code": "import pandas as pd\n\ndef solve(df_sessions):\n    device_counts = df_sessions.groupby('user_id')['device_type'].nunique()\n    multi_device = device_counts[device_counts > 1].reset_index()\n    result = multi_device.rename(columns={'device_type': 'device_count'})[['user_id', 'device_count']]\n    return result.sort_values('user_id').reset_index(drop=True)",
     "explanation": "`groupby('user_id')['device_type'].nunique()` counts the number of distinct device types per user. Filtering with `> 1` keeps only users who accessed from more than one device type. `.reset_index()` converts the Series to a DataFrame with `user_id` as a column, and `.rename()` gives the count column a descriptive name.",
     "hints": [
-      "Count how many distinct device types each user has used — `nunique()` within a groupby is the right tool.",
+      "For each user, determine how many different device types appear in their session history — then keep only users whose device variety is greater than one.",
       "Filter for `> 1`, then `.reset_index()` to get a DataFrame with `user_id` as a column, then rename the aggregated column."
     ],
     "concepts": [
@@ -3389,7 +3389,7 @@
     "starter_code": "import pandas as pd\n\ndef solve(df_sessions):\n    # Extract month from session_start, then count sessions per device_type and month\n    pass",
     "expected_code": "import pandas as pd\n\ndef solve(df_sessions):\n    df = df_sessions.copy()\n    df['session_start'] = pd.to_datetime(df['session_start'])\n    df['month'] = df['session_start'].dt.to_period('M').astype(str)\n    result = (\n        df.groupby(['device_type', 'month'], as_index=False)\n        .agg(session_count=('session_id', 'count'))\n        .sort_values(['device_type', 'month'])\n        .reset_index(drop=True)\n    )\n    return result\n",
     "hints": [
-      "Convert session_start to datetime before extracting the month — the raw string column cannot be parsed by `.dt` accessors.",
+      "To group sessions by calendar month, you first need to extract the month from the timestamp — but that is only possible once the column is in a proper datetime type, not a raw string.",
       "`.dt.to_period('M')` returns a Period object representing the calendar month; call `.astype(str)` to get a YYYY-MM string for readability."
     ],
     "concepts": [
