@@ -33,6 +33,8 @@ Required output discipline:
 - **Always** end with `.reset_index(drop=True)` unless the index *is* the result.
 - Column names and order must match the expected output exactly.
 - Determinism: explicit `.sort_values(...)` whenever a meaningful order is implied.
+- **Datetime output discipline:** Questions must **not** return `datetime64` columns. The sandbox serializer calls `result.to_dict(orient="records")` followed by `json.dumps(...)`, which cannot serialize `pandas.Timestamp` objects and will raise at runtime. Any date/time column in the output **must** be cast to a string before returning — use `.dt.strftime('%Y-%m-%d')` for dates, `.dt.strftime('%Y-%m-%dT%H:%M:%S')` for timestamps, or `.astype(str)` when an ISO format is acceptable. Update the description's column spec to declare the string format (e.g. "as string YYYY-MM-DD") so candidates know what type is expected.
+- **Row count ceiling:** Questions must not return more than **10,000 rows**. The harness (`python_sandbox_harness.py` `_MAX_RESULT_ITEMS`) rejects results that exceed this limit. When working with large datasets (events.csv ≈ 45 k rows, order_items.csv ≈ 12 k rows), verify the result row count is under the cap before committing. If a join or explode naturally blows up the count, redesign the output to aggregate (e.g. per-group summary instead of all rows) or limit explicitly (e.g. "return top N by metric X").
 
 ## ID range (TXNNN scheme)
 
@@ -143,6 +145,8 @@ These are the durable *targets* (what the bank ought to look like). For live cou
 - **MultiIndex for the sake of MultiIndex** — only when the index *is* the structure being computed (e.g. wide pivot output).
 - **Questions that test exact method-signature memorization** — "what's the keyword for X" is not a reasoning test.
 - **Stale dtype expectations** — if your expected output assumes `int64` and pandas gives `Int64`, fix the expected, not the candidate.
+- **Returning datetime columns** — returning a `datetime64` column in the result causes the sandbox serializer to crash with a `TypeError`. Always convert to string via `.dt.strftime(...)` before the final `return`.
+- **Uncapped large-dataset outputs** — returning all rows from a join over order_items (≈12 k rows) or events (≈45 k rows) will exceed the 10,000-row harness cap. Verify result row count on the committed datasets before authoring; aggregate or cap the output if needed.
 
 ## JSON schema
 
@@ -180,16 +184,28 @@ Required:
 ## Verification before commit
 
 ```bash
-# 1. Reference solution produces the documented expected output
+# 1. Reference solution produces the documented expected output AND passes the full sandbox path
 cd backend && ../.venv/bin/python -c "
 import pandas as pd, json
-q = json.load(open('content/python_data_questions/medium.json'))[INDEX]
-# load each CSV in q['dataset_files']
+q = json.load(open('content/python_data_questions/hard.json'))[INDEX]
+# load each CSV listed in q['dataframes']
 orders = pd.read_csv('datasets/orders.csv')
-exec(q['expected_code'])
-result = solve(orders)
-print(result.head())
+ns = {}
+exec(q['expected_code'], ns)
+result = ns['solve'](df_orders=orders)
+
+# ---- Check 1: shape and dtypes ----
+print(result.shape)
 print(result.dtypes)
+
+# ---- Check 2: serialization path (exactly what the sandbox does) ----
+records = result.to_dict(orient='records')
+json.dumps(records)  # raises if any datetime64/Timestamp column slipped through
+print('Serialization: OK')
+
+# ---- Check 3: row count ceiling ----
+assert len(result) <= 10000, f'FAIL: {len(result)} rows exceeds 10 000-row harness cap'
+print(f'Row count: {len(result)} OK')
 "
 
 # 2. solution_code produces identical results to expected_code
