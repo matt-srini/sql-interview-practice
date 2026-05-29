@@ -603,6 +603,46 @@ def _validate_per_family_coverage() -> None:
             print(f"  - {w}", file=sys.stderr)
 
 
+def _validate_solution_code_presence() -> None:
+    """Flag mock_only questions in code-execution tracks that are missing solution_code.
+
+    solution_code is the Elite post-session debrief teaching artifact. Its absence
+    causes a silent quality gap — no runtime error, just a degraded Elite experience.
+    Required on all medium/hard mock_only questions in the python-data and python tracks.
+    """
+    CODE_EXECUTION_TRACKS = frozenset({"python-data", "python"})
+    errors: list[str] = []
+
+    for track, file_path in _iter_question_files():
+        if track not in CODE_EXECUTION_TRACKS:
+            continue
+        difficulty = file_path.stem
+        if difficulty == "easy":
+            continue  # no mock_only at easy (enforced by chain integrity validator)
+
+        with file_path.open("r", encoding="utf-8") as handle:
+            questions = json.load(handle)
+
+        for q in questions:
+            if not q.get("mock_only", False):
+                continue
+            qid = q.get("id", "<unknown>")
+            title = q.get("title", "<untitled>")
+            sc = q.get("solution_code")
+            if not (isinstance(sc, str) and sc.strip()):
+                errors.append(
+                    f"{track} {qid} {title}: mock_only question missing solution_code"
+                    f" (Elite debrief artifact — required on all medium/hard mock-only)"
+                )
+
+    if errors:
+        joined = "\n".join(f"- {item}" for item in errors[:200])
+        remaining = max(0, len(errors) - 200)
+        if remaining:
+            joined += f"\n- ... and {remaining} more"
+        raise ValueError(f"solution_code presence validation failed:\n{joined}")
+
+
 _DIFFICULTY_ORDER = {"easy": 0, "medium": 1, "hard": 2}
 
 
@@ -957,6 +997,7 @@ def main() -> None:
     _validate_statistics_subtypes()
     _validate_mcq_scenario_questions()
     _validate_mock_fields()
+    _validate_solution_code_presence()
 
     print("Content validation passed")
 
