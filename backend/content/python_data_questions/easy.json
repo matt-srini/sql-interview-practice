@@ -386,7 +386,7 @@
     "topic": "python_data",
     "difficulty": "easy",
     "title": "Latest Order per User",
-    "description": "You have a DataFrame `df_orders` loaded from the orders dataset.\n\n**Columns:** `order_id`, `user_id`, `order_date`, `status`, `gross_amount`, `net_amount`\n\nReturn each user's most recent order. Output columns: `user_id`, `order_id`, `order_date`. Use `groupby` + `idxmax` to find the row with the latest `order_date` per user. Sort by `user_id` ascending.",
+    "description": "You have a DataFrame `df_orders` loaded from the orders dataset.\n\n**Columns:** `order_id`, `user_id`, `order_date`, `status`, `gross_amount`, `net_amount`\n\nReturn each user's most recent order. Output columns: `user_id`, `order_id`, `order_date`. Sort by `user_id` ascending.",
     "dataframes": {
       "df_orders": "orders.csv"
     },
@@ -402,7 +402,7 @@
         "payment_status"
       ]
     },
-    "starter_code": "import pandas as pd\n\ndef solve(df_orders):\n    # Return each user's most recent order: user_id, order_id, order_date\n    # Hint: use groupby + idxmax on order_date\n    pass",
+    "starter_code": "import pandas as pd\n\ndef solve(df_orders):\n    # Return each user's most recent order: user_id, order_id, order_date\n    pass",
     "expected_code": "import pandas as pd\n\ndef solve(df_orders):\n    df = df_orders.copy()\n    df['order_date'] = pd.to_datetime(df['order_date'])\n    idx = df.groupby('user_id')['order_date'].idxmax()\n    result = df.loc[idx, ['user_id', 'order_id', 'order_date']]\n    return result.sort_values('user_id').reset_index(drop=True)",
     "solution_code": "import pandas as pd\n\ndef solve(df_orders):\n    df = df_orders.copy()\n    df['order_date'] = pd.to_datetime(df['order_date'])\n    idx = df.groupby('user_id')['order_date'].idxmax()\n    result = df.loc[idx, ['user_id', 'order_id', 'order_date']]\n    return result.sort_values('user_id').reset_index(drop=True)",
     "explanation": "`groupby('user_id')['order_date'].idxmax()` returns the index label of the row with the maximum `order_date` for each user. `df.loc[idx]` then selects those rows from the original DataFrame, giving one row per user — the most recent order.",
