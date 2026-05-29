@@ -625,7 +625,7 @@
     "starter_code": "import pandas as pd\nimport numpy as np\n\ndef solve(df_employees):\n    # Compute tenure and band for each employee relative to 2026-04-01\n    pass",
     "expected_code": "import pandas as pd\nimport numpy as np\n\ndef solve(df_employees):\n    df = df_employees.copy()\n    reference_date = pd.Timestamp('2026-04-01')\n    df['hire_date'] = pd.to_datetime(df['hire_date'])\n    df['tenure_days'] = (reference_date - df['hire_date']).dt.days\n    df['tenure_years'] = (df['tenure_days'] / 365.25).round(1)\n    df['tenure_band'] = np.select(\n        [df['tenure_years'] < 2, df['tenure_years'] <= 5],\n        ['junior', 'mid'],\n        default='senior'\n    )\n    df['hire_date'] = df['hire_date'].dt.strftime('%Y-%m-%d')\n    return df[['employee_id', 'employee_name', 'hire_date', 'tenure_days', 'tenure_years', 'tenure_band']].sort_values('tenure_days', ascending=False).reset_index(drop=True)",
     "solution_code": "import pandas as pd\nimport numpy as np\n\ndef solve(df_employees):\n    df = df_employees.copy()\n    reference_date = pd.Timestamp('2026-04-01')\n    df['hire_date'] = pd.to_datetime(df['hire_date'])\n    df['tenure_days'] = (reference_date - df['hire_date']).dt.days\n    df['tenure_years'] = (df['tenure_days'] / 365.25).round(1)\n    df['tenure_band'] = np.select(\n        [df['tenure_years'] < 2, df['tenure_years'] <= 5],\n        ['junior', 'mid'],\n        default='senior'\n    )\n    df['hire_date'] = df['hire_date'].dt.strftime('%Y-%m-%d')\n    return df[['employee_id', 'employee_name', 'hire_date', 'tenure_days', 'tenure_years', 'tenure_band']].sort_values('tenure_days', ascending=False).reset_index(drop=True)",
-    "explanation": "Subtracting two datetime Series gives a Timedelta; `.dt.days` extracts the integer day count. Dividing by 365.25 accounts for leap years. A helper function applied with `.apply()` maps the continuous year value to a categorical band. Finally, `strftime` converts the datetime back to a clean string.",
+    "explanation": "Subtracting two datetime Series gives a Timedelta; `.dt.days` extracts the integer day count. Dividing by 365.25 accounts for leap years. `np.select` evaluates a list of boolean condition arrays in priority order and assigns the first matching label to each row — this replaces a row-wise `apply` call with a single vectorised pass over the column. Finally, `strftime` converts the datetime back to a clean string.",
     "hints": [
       "Normalize the date values into a true time representation before extracting calendar pieces or measuring intervals.",
       "Multi-branch categorical assignment over a column can be expressed as a set of boolean arrays evaluated in priority order — the first matching condition wins. No row-wise Python function call is needed."
@@ -2654,10 +2654,10 @@
       "df_tickets": [
         "ticket_id",
         "user_id",
+        "created_at",
         "issue_type",
         "priority",
         "status",
-        "created_at",
         "resolution_hours"
       ]
     },
@@ -2913,10 +2913,10 @@
       "df_payments": [
         "payment_id",
         "order_id",
+        "payment_date",
         "payment_method",
         "amount",
-        "status",
-        "payment_date"
+        "status"
       ]
     },
     "starter_code": "import pandas as pd\n\ndef solve(df_orders, df_payments):\n    pass",
@@ -3004,10 +3004,10 @@
       "df_payments": [
         "payment_id",
         "order_id",
+        "payment_date",
         "payment_method",
         "amount",
-        "status",
-        "payment_date"
+        "status"
       ]
     },
     "starter_code": "import pandas as pd\n\ndef solve(df_orders, df_payments):\n    pass",
@@ -3258,10 +3258,10 @@
       "df_tickets": [
         "ticket_id",
         "user_id",
+        "created_at",
         "issue_type",
         "priority",
         "status",
-        "created_at",
         "resolution_hours"
       ]
     },
@@ -3293,10 +3293,10 @@
       "df_payments": [
         "payment_id",
         "order_id",
+        "payment_date",
         "payment_method",
         "amount",
-        "status",
-        "payment_date"
+        "status"
       ]
     },
     "starter_code": "import pandas as pd\n\ndef solve(df_payments):\n    pass",

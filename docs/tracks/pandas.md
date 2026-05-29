@@ -29,6 +29,8 @@ def solve(orders: pd.DataFrame, users: pd.DataFrame) -> pd.DataFrame:
 
 DataFrames are loaded from the same 11-table business schema as the SQL track (see [`docs/datasets.md`](../datasets.md)). Schemas are validated against committed CSV headers at catalog load.
 
+**Schema field ordering:** The `schema` column list for each DataFrame must follow the **exact CSV header order** — not a subset, not a reordering. Users read the schema panel top-to-bottom as a `df.info()` analogue; wrong column position causes confusion even when no column is missing. Verify with `head -1 datasets/<file>.csv` and match the list exactly.
+
 Required output discipline:
 - **Always** end with `.reset_index(drop=True)` unless the index *is* the result.
 - Column names and order must match the expected output exactly.
@@ -147,6 +149,8 @@ These are the durable *targets* (what the bank ought to look like). For live cou
 - **Stale dtype expectations** — if your expected output assumes `int64` and pandas gives `Int64`, fix the expected, not the candidate.
 - **Returning datetime columns** — returning a `datetime64` column in the result causes the sandbox serializer to crash with a `TypeError`. Always convert to string via `.dt.strftime(...)` before the final `return`.
 - **Uncapped large-dataset outputs** — returning all rows from a join over order_items (≈12 k rows) or events (≈45 k rows) will exceed the 10,000-row harness cap. Verify result row count on the committed datasets before authoring; aggregate or cap the output if needed.
+- **Schema column order drift** — declaring the `schema` columns in a different order than the CSV header (e.g. `created_at` after `issue_type` when the CSV puts it second). The schema panel is read top-to-bottom; wrong order is misleading even if no column is absent. Always verify against `head -1 datasets/<file>.csv`.
+- **Stale explanation after code change** — updating `expected_code` without updating `explanation`. The explanation must describe the live code path; leaving a reference to `.apply()` after switching to `np.select`, for example, creates a visible contradiction for any user who reads both.
 
 ## JSON schema
 
@@ -211,9 +215,25 @@ print(f'Row count: {len(result)} OK')
 # 2. solution_code produces identical results to expected_code
 # (normalize_dataframe() + DataFrame.equals() — same normalization the runtime grader uses)
 
-# 3. Full content validation
+# 3. Schema column order matches CSV header order exactly
+# (membership checks alone are insufficient — order matters for the schema panel)
+python3 -c "
+import json, csv
+q = json.load(open('content/python_data_questions/hard.json'))[INDEX]
+for df_name, csv_file in q.get('dataframes', {}).items():
+    with open(f'datasets/{csv_file}') as f:
+        csv_cols = next(csv.reader(f))
+    declared = q['schema'].get(df_name, [])
+    assert declared == csv_cols, f'{df_name}: declared {declared} != CSV {csv_cols}'
+print('Schema order: OK')
+"
+
+# 4. explanation is consistent with expected_code — read both and confirm no contradiction
+# (e.g. explanation must not reference .apply() if expected_code uses np.select)
+
+# 5. Full content validation
 python scripts/validate_content.py
 
-# 4. Pandas evaluator tests
+# 6. Pandas evaluator tests
 cd backend && ../.venv/bin/python -m pytest tests/test_python_evaluator.py -q -k pandas
 ```
