@@ -3423,7 +3423,7 @@
     "difficulty": "hard",
     "mock_only": true,
     "order": 74,
-    "description": "Express the following as a single chained expression: (1) filter to open and in_progress tickets; (2) add days_open column (days since created_at relative to max created_at in full dataset); (3) add urgency_score = days_open × (4 if critical, 3 if high, 2 if medium, 1 if low); (4) select ticket_id, priority, status, days_open, urgency_score; (5) sort by urgency_score descending. Return that result.",
+    "description": "Express the following as a single chained expression: (1) filter to open and in_progress tickets; (2) add days_open column (days since created_at relative to max created_at in full dataset); (3) add urgency_score = days_open × (4 if urgent, 3 if high, 2 if medium, 1 if low); (4) select ticket_id, priority, status, days_open, urgency_score; (5) sort by urgency_score descending. Return that result.",
     "dataframes": {
       "df_tickets": "support_tickets.csv"
     },
@@ -3439,7 +3439,7 @@
       ]
     },
     "starter_code": "import pandas as pd\n\ndef solve(df_tickets):\n    pass",
-    "expected_code": "import pandas as pd\n\ndef solve(df_tickets):\n    ref_date = pd.to_datetime(df_tickets['created_at']).max()\n    priority_weight = {'critical': 4, 'high': 3, 'medium': 2, 'low': 1}\n    return (\n        df_tickets\n        .loc[df_tickets['status'].isin(['open', 'in_progress'])]\n        .assign(\n            days_open=lambda x: (ref_date - pd.to_datetime(x['created_at'])).dt.days,\n            priority_w=lambda x: x['priority'].map(priority_weight),\n            urgency_score=lambda x: x['days_open'] * x['priority_w']\n        )\n        [['ticket_id', 'priority', 'status', 'days_open', 'urgency_score']]\n        .sort_values('urgency_score', ascending=False)\n        .reset_index(drop=True)\n    )\n",
+    "expected_code": "import pandas as pd\n\ndef solve(df_tickets):\n    ref_date = pd.to_datetime(df_tickets['created_at']).max()\n    priority_weight = {'urgent': 4, 'high': 3, 'medium': 2, 'low': 1}\n    return (\n        df_tickets\n        .loc[df_tickets['status'].isin(['open', 'in_progress'])]\n        .assign(\n            days_open=lambda x: (ref_date - pd.to_datetime(x['created_at'])).dt.days,\n            priority_w=lambda x: x['priority'].map(priority_weight),\n            urgency_score=lambda x: x['days_open'] * x['priority_w']\n        )\n        [['ticket_id', 'priority', 'status', 'days_open', 'urgency_score']]\n        .sort_values('urgency_score', ascending=False)\n        .reset_index(drop=True)\n    )\n",
     "hints": [
       "Compute the reference date outside the chain since it depends on the full dataset, not just the filtered subset — pre-computing it once avoids recomputing it inside a lambda.",
       "Multiple assign() calls can reference columns created by a preceding assign() in the same chain — build derived columns incrementally within a single assign block."
@@ -3448,7 +3448,7 @@
       "METHOD CHAINING & PIPELINE STYLE",
       "CATEGORICAL & BINNING"
     ],
-    "solution_code": "import pandas as pd\n\ndef solve(df_tickets):\n    ref_date = pd.to_datetime(df_tickets['created_at']).max()\n    priority_weight = {'critical': 4, 'high': 3, 'medium': 2, 'low': 1}\n    return (\n        df_tickets\n        .loc[df_tickets['status'].isin(['open', 'in_progress'])]\n        .assign(\n            days_open=lambda x: (ref_date - pd.to_datetime(x['created_at'])).dt.days,\n            priority_w=lambda x: x['priority'].map(priority_weight),\n            urgency_score=lambda x: x['days_open'] * x['priority_w']\n        )\n        [['ticket_id', 'priority', 'status', 'days_open', 'urgency_score']]\n        .sort_values('urgency_score', ascending=False)\n        .reset_index(drop=True)\n    )\n"
+    "solution_code": "import pandas as pd\n\ndef solve(df_tickets):\n    ref_date = pd.to_datetime(df_tickets['created_at']).max()\n    priority_weight = {'urgent': 4, 'high': 3, 'medium': 2, 'low': 1}\n    return (\n        df_tickets\n        .loc[df_tickets['status'].isin(['open', 'in_progress'])]\n        .assign(\n            days_open=lambda x: (ref_date - pd.to_datetime(x['created_at'])).dt.days,\n            priority_w=lambda x: x['priority'].map(priority_weight),\n            urgency_score=lambda x: x['days_open'] * x['priority_w']\n        )\n        [['ticket_id', 'priority', 'status', 'days_open', 'urgency_score']]\n        .sort_values('urgency_score', ascending=False)\n        .reset_index(drop=True)\n    )\n"
   },
   {
     "id": 33075,
