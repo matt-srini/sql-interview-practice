@@ -3347,7 +3347,7 @@
     "expected_code": "import pandas as pd\n\ndef solve(df_events):\n    df = df_events.sort_values(['session_id', 'event_name', 'event_id'])\n    deduped = df.drop_duplicates(subset=['session_id', 'event_name'], keep='first')\n    pair_max = deduped.groupby(['session_id', 'event_name']).size().max()\n    checks = [\n        {'check_name': 'no_duplicate_pairs', 'passed': bool(pair_max == 1)},\n        {'check_name': 'no_missing_event_ids', 'passed': bool(deduped['event_id'].isna().sum() == 0)},\n    ]\n    return pd.DataFrame(checks)\n",
     "hints": [
       "After deduplication, the maximum group size across all key combinations should be exactly 1 — if it is greater, the deduplication did not fully succeed.",
-      "Uniqueness is only half the check — verify that no source row was silently dropped by comparing the distinct key count before and after deduplication."
+      "The second assertion checks data integrity in the deduped result itself — verify that no record lost its primary identifier by checking for nulls in that column after deduplication."
     ],
     "concepts": [
       "OUTPUT SANITY VALIDATION",
@@ -3381,7 +3381,7 @@
     "expected_code": "import pandas as pd\n\ndef solve(df_orders):\n    completed = df_orders[df_orders['status'] == 'completed'].copy()\n    completed['order_date'] = pd.to_datetime(completed['order_date'])\n    completed['day_of_week'] = completed['order_date'].dt.dayofweek\n    result = (\n        completed.groupby('day_of_week', as_index=False)\n        .agg(\n            order_count=('order_id', 'count'),\n            total_revenue=('net_amount', 'sum')\n        )\n    )\n    result['total_revenue'] = result['total_revenue'].round(2)\n    return result.sort_values('day_of_week').reset_index(drop=True)\n",
     "hints": [
       "Convert the date string to a datetime type before extracting temporal components — the day-of-week extraction is a property of the datetime accessor.",
-      "After extracting the integer day-of-week value, you need a mapping from integer to weekday name — choose between a manual lookup, a pandas accessor, or an ordered categorical to control the presentation order in the output."
+      "Once you have the integer day field on every row, the rest is a standard two-metric groupby — one metric counts rows per day, the other sums a revenue column."
     ],
     "concepts": [
       "DATETIME OPERATIONS",
