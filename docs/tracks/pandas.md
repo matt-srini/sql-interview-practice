@@ -13,9 +13,10 @@ A data analyst or scientist who *thinks in pandas* writes meaningfully different
 **Executable problem-solving.** Subprocess-sandboxed Python execution with the candidate's function called against pre-loaded DataFrames. 5-second timeout. 512 MB RLIMIT_AS. Output DataFrame compared to expected via `normalize_dataframe()` (from `evaluator.py`) followed by `DataFrame.equals()`. Normalization steps applied to both candidate and expected output before comparison:
 1. Column names lowercased
 2. Columns sorted alphabetically
-3. All values cast to string
-4. Rows sorted lexicographically
-5. Index reset to `RangeIndex`
+3. Float columns rounded to 5 decimal places (eliminates floating-point arithmetic noise)
+4. All values cast to canonical string — NULL variants become `"NULL"`, whole-number floats become their integer string (`5.0` → `"5"`); as a consequence, **dtype differences are not visible to the grader**
+5. Rows sorted lexicographically (unless the question explicitly tests ORDER BY output, in which case row order is preserved as-is)
+6. Index reset to `RangeIndex`
 
 ## Schema essentials (function shape + datasets)
 
@@ -92,11 +93,11 @@ Two existing families renamed to align with SQL: `DEDUPLICATION & DISTINCT COUNT
 
 | Family | Class | Rationale |
 |---|---|---|
-| `MEMORY & VECTORIZATION REASONING` | **practice-grounded** | Gradable via `assert_frame_equal` (dtype mismatches caught); anchored by 33021, 32049, 33038. |
+| `MEMORY & VECTORIZATION REASONING` | **practice-grounded** | Gradable when a naive `apply(lambda)` approach returns wrong values or crashes — output correctness is verifiable. **Caveat:** the grader normalizes all values to strings (step 4 above), so dtype-only changes (e.g. `.astype('category')`) are invisible; questions must be framed around vectorized output correctness, not dtype proof. Anchored by 33021, 32049, 33038. |
 | `DATA QUALITY SKEPTICISM` | **practice-grounded** | Debug-format questions grade cleanly (merge fan-out, grain mismatch); anchored by 32050. |
 | `DOUBLE-COUNTING DETECTION` | **practice-grounded** | "Why does this merge inflate my user count?" is a gradable debugging exercise; anchored by 32051. |
 | `METRIC INTERPRETATION & DENOMINATOR CHOICE` | **mock-only realism** | Choice of denominator is a judgment call, not a scorable output diff. Co-tag rule enforced. |
-| `OUTPUT SANITY VALIDATION` | **mock-only realism** | Self-checking inside a solve function is not graded by `assert_frame_equal`. Co-tag rule enforced. |
+| `OUTPUT SANITY VALIDATION` | **mock-only realism** | Self-checking code inside a `solve()` function (shape assertions, null checks, plausibility guards) is invisible to the grader — only the returned DataFrame is compared via `normalize_dataframe()` + `DataFrame.equals()`. Co-tag rule enforced. |
 | `PERFORMANCE-AWARE ANALYTICS` | **mock-only realism** | "Should you filter before joining?" is analytical-cost reasoning — not a scorable output. Co-tag rule enforced. |
 
 Blocklist rejects method-name tags (`groupby`, `merge`, `pivot_table`, `apply`). Describe the *reasoning*.
@@ -122,7 +123,7 @@ These are the durable *targets* (what the bank ought to look like). For live cou
 
 - **Practice: lean (~85–95 questions, ~⅓ easy / ~⅖ medium / ~¼ hard).** Roughly one teaching arc per family per applicable tier. Grow only to (a) ground a new gradable family or (b) fix a genuine arc break. Do **not** pad practice for volume — that fights the curriculum philosophy. The hard tier is intentionally smaller: multi-step pipelines are sparse by design.
 - **Mock-only: ~110, medium + hard only, ~50:60 m:h skew.** That ratio (1:1.2) mirrors the SQL track. The inventory multiple over practice is ~1.2×; a healthy band is 1.0×–1.5×. Easy is practice-only — never. **~⅓ of mock questions should be chain members** (parents + follow-ups feeding Interview Loop).
-- **Realism vs. practice-grounded split.** `MEMORY & VECTORIZATION REASONING` is practice-grounded and Pandas-native — gradable via `assert_frame_equal` dtype mismatches, anchored by real practice questions. The three mock-only realism families (`METRIC INTERPRETATION & DENOMINATOR CHOICE`, `OUTPUT SANITY VALIDATION`, `PERFORMANCE-AWARE ANALYTICS`) must **co-occur with ≥ 1 practice-grounded family** on every question that uses them.
+- **Realism vs. practice-grounded split.** `MEMORY & VECTORIZATION REASONING` is practice-grounded and Pandas-native — gradable when vectorized correctness is the measurable signal (a broken `apply(lambda)` returns wrong values or crashes; the grader catches that). Note: dtype-only changes are erased by the string normalization in step 4 and are not visible to the grader. The three mock-only realism families (`METRIC INTERPRETATION & DENOMINATOR CHOICE`, `OUTPUT SANITY VALIDATION`, `PERFORMANCE-AWARE ANALYTICS`) must **co-occur with ≥ 1 practice-grounded family** on every question that uses them.
 - **Quality risk: SQL-in-Python clones.** Any question whose reference solution is idiomatic SQL transliterated into pandas (`groupby + merge + rename` where a single `pivot_table` would do) must be dropped, not padded. The track's purpose is teaching pandas as a tool with its own grammar; volume built on SQL-shaped problems actively harms the curriculum.
 
 ### Load-bearing family exception: GROUPED AGGREGATION
@@ -192,7 +193,7 @@ print(result.dtypes)
 "
 
 # 2. solution_code produces identical results to expected_code
-# (pd.testing.assert_frame_equal under the hood)
+# (normalize_dataframe() + DataFrame.equals() — same normalization the runtime grader uses)
 
 # 3. Full content validation
 python scripts/validate_content.py
