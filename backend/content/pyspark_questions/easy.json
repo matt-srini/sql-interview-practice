@@ -58,21 +58,21 @@
     "id": 41003,
     "order": 3,
     "topic": "pyspark",
-    "type": "conceptual",
+    "type": "predict_output",
     "difficulty": "easy",
-    "title": "RDD vs DataFrame",
-    "description": "PySpark provides both the low-level **RDD** (Resilient Distributed Dataset) API and the higher-level **DataFrame** API.\n\nWhich statement about DataFrames is correct?",
-    "code_snippet": null,
+    "title": "RDD vs DataFrame: optimizer impact",
+    "description": "A team compares two ways to filter and project the same data:\n\n```python\n# Path A — RDD\nresult_a = (\n    sc.parallelize([1, 2, 3, 4, 5])\n      .filter(lambda x: x > 2)\n      .map(lambda x: x * 2)\n      .collect()\n)\n\n# Path B — DataFrame\ndf = spark.createDataFrame([(1,), (2,), (3,), (4,), (5,)], [\"val\"])\nresult_b = (\n    df.filter(df.val > 2)\n      .select(df.val * 2)\n      .collect()\n)\n```\n\nWhich statement about these two paths is correct?",
+    "code_snippet": "# Path A — RDD\nresult_a = (\n    sc.parallelize([1, 2, 3, 4, 5])\n      .filter(lambda x: x > 2)\n      .map(lambda x: x * 2)\n      .collect()\n)\n\n# Path B — DataFrame\ndf = spark.createDataFrame([(1,), (2,), (3,), (4,), (5,)], [\"val\"])\nresult_b = (\n    df.filter(df.val > 2)\n      .select(df.val * 2)\n      .collect()\n)",
     "options": [
-      "DataFrames are lower-level than RDDs and give more control over physical execution",
-      "DataFrames are untyped and cannot benefit from schema information",
-      "DataFrames are higher-level than RDDs and benefit from the Catalyst query optimizer and Tungsten execution engine",
-      "DataFrames cannot be converted back to RDDs once created"
+      "Path B's filter and select can be optimised before execution — predicate pushdown and projection pruning are applied automatically; Path A executes the lambda chain exactly as written with no equivalent optimisation pass",
+      "Both paths go through Spark's query optimizer — DataFrames add schema checking but the underlying optimisation is identical for both",
+      "Path A is faster for this input because lambda functions avoid the schema-validation overhead that DataFrames incur",
+      "Both paths produce different results — DataFrame.select runs a separate scan from the filter while RDD operations are fused at the operator level"
     ],
-    "correct_option": 2,
-    "explanation": "DataFrames are a **higher-level abstraction** built on top of RDDs. They carry schema information (column names and types) and pass through Spark's **Catalyst optimizer**, which generates an optimised physical execution plan. RDDs give you more control but lack these automatic optimisations. You can always call `.rdd` on a DataFrame to go back to the RDD level if needed.",
+    "correct_option": 0,
+    "explanation": "DataFrame operations pass through the **Catalyst optimizer**, which rewrites the logical plan before execution — pushing filters closer to the data source (predicate pushdown), eliminating unread columns (projection pushdown), and selecting efficient physical operators. The RDD lambda chain runs exactly as written: `filter`, then `map`, with no optimizer pass in between. This automatic optimization is the primary reason DataFrames are the recommended API for most Spark workloads.",
     "hints": [
-      "One API carries schema information and can be automatically optimised before execution; the other operates on untyped objects and requires the developer to express every transformation without optimizer assistance."
+      "Consider what happens between the time you write the operations and the time Spark actually executes them — does an optimisation pass run on both the lambda chain and the DataFrame chain?"
     ],
     "concepts": [
       "RDD vs DataFrame",
@@ -1027,26 +1027,26 @@
     "id": 41039,
     "order": 39,
     "topic": "pyspark",
-    "type": "conceptual",
+    "type": "debug",
     "difficulty": "easy",
-    "title": "F.expr() — SQL expressions in the DataFrame API",
-    "description": "A developer writes the following transformation:\n\n```python\nfrom pyspark.sql import functions as F\n\nresult = df.withColumn(\n    \"label\",\n    F.expr(\"CASE WHEN amount > 100 THEN 'high' ELSE 'low' END\")\n)\n```\n\nWhat does `F.expr()` enable that native Column API methods (like `F.when()`) do not?",
-    "code_snippet": "from pyspark.sql import functions as F\n\nresult = df.withColumn(\n    \"label\",\n    F.expr(\"CASE WHEN amount > 100 THEN 'high' ELSE 'low' END\")\n)",
+    "title": "F.expr(): SQL scope vs Python scope",
+    "description": "A developer runs the following code:\n\n```python\nfrom pyspark.sql import functions as F\n\ndf = spark.createDataFrame([(\"Alice\", 100), (\"Bob\", 200)], [\"name\", \"revenue\"])\nthreshold = 150\nresult = df.filter(F.expr(\"revenue > threshold\"))\nresult.show()\n```\n\nWhat happens when `result.show()` is called?",
+    "code_snippet": "from pyspark.sql import functions as F\n\ndf = spark.createDataFrame([(\"Alice\", 100), (\"Bob\", 200)], [\"name\", \"revenue\"])\nthreshold = 150\nresult = df.filter(F.expr(\"revenue > threshold\"))\nresult.show()",
     "options": [
-      "Write arbitrary SQL string expressions — any valid Spark SQL fragment can be embedded in a DataFrame transformation without switching to spark.sql()",
-      "Execute DML statements (INSERT, UPDATE, DELETE) directly against a DataFrame without going through a temp view",
-      "Reference Python variables by name inside the SQL string without explicitly passing them as parameters",
-      "Access and modify the Spark logical execution plan from within the DataFrame transformation API"
+      "Raises AnalysisException — F.expr() compiles the string as Spark SQL; the Python variable `threshold` is not in scope inside the SQL string and is treated as an unknown column name",
+      "Displays only the row where revenue > 150 — F.expr() resolves unquoted names against the Python calling scope before compiling the SQL expression",
+      "Displays an empty DataFrame — F.expr() treats the unresolved name `threshold` as a string literal that no revenue value can exceed",
+      "Raises NameError — F.expr() calls Python's eval() internally, which fails because `threshold` is a local variable not accessible from within the expression"
     ],
     "correct_option": 0,
-    "explanation": "`F.expr()` parses a SQL string into a Column expression, allowing any valid Spark SQL fragment — CASE/WHEN, string functions, date arithmetic, window specs — to be used wherever a Column is expected. This is useful for complex expressions that would be verbose in the method-chaining API and for dynamically generated SQL fragments. `F.expr()` does not enable DML, cannot reference Python scope variables by name (only SQL column names), and does not expose the execution plan. It is purely a Column factory.",
+    "explanation": "`F.expr()` compiles the string using Spark's SQL parser — it has no access to Python variables in scope. When the parser sees `threshold`, it treats it as a **column reference**, not a Python variable. Since no column named `threshold` exists in the DataFrame, Spark raises `AnalysisException: cannot resolve 'threshold'`. To use a Python value, either interpolate it into the string (`F.expr(f\"revenue > {threshold}\")`) or use the native column API (`df.filter(df.revenue > threshold)`).",
     "hints": [
-      "F.expr() returns a Column object — what kind of SQL constructs can you put inside the string argument?"
+      "F.expr() hands the string to Spark SQL's parser. When the parser sees 'threshold', does it look up Python variables — or does it look for a column with that name?"
     ],
     "concepts": [
       "F.expr",
-      "SQL expressions",
-      "DataFrame API"
+      "SQL expression",
+      "AnalysisException"
     ],
     "interaction_mode": "code_adjacent_reasoning"
   },

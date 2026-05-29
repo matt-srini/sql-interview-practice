@@ -1376,6 +1376,10 @@ async def submit_answer(
         )
 
     # Return lean result — no solutions mid-session
+    # Benchmark/Interview Loop + MCQ: also suppress correctness signal per spec invariant
+    # "No correctness reveal mid-session" (mock-benchmark-spec.md § Benchmark invariants)
+    if session.get("mode") in ("benchmark", "interview_loop") and get_track(body.track).eval_kind == "mcq":
+        result = {k: v for k, v in result.items() if k != "correct"}
     return result
 
 

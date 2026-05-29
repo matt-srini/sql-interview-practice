@@ -29,6 +29,20 @@ That means the mock experience must prioritize:
 - Session composition should follow track blueprints, not one universal question count
 - Custom configurable sessions belong to drill mode, not the benchmark contract
 
+### Mid-session submit response contract
+
+The `POST /{session_id}/submit` endpoint must return a **lean result** during benchmark and Interview Loop sessions. Lean means:
+
+| What | Mid-session | At finish (`/finish`) |
+|---|---|---|
+| `correct` (boolean) | **Omitted** for MCQ tracks | Present on every question |
+| `explanation` | Always omitted | Present on every question |
+| `correct_option` | Always omitted | Present on MCQ questions |
+| `solution_code` | Always omitted | Present on code-execution questions |
+| `error` / `feedback` | Present (execution diagnostics only) | Present |
+
+For MCQ tracks (`eval_kind == "mcq"`), the `correct` field must be stripped from the mid-session response for any session with `mode` in `{"benchmark", "interview_loop"}`. The frontend must not use the presence or absence of `correct` to indicate correctness to the user until the session finishes. Buttons and dots should reflect **submitted** state only, not solved/unsolved state, for these session modes.
+
 ## Benchmark vs drill
 
 | Mode | Purpose | Mid-session feedback | Composition |

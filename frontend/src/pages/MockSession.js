@@ -362,8 +362,9 @@ export default function MockSession() {
 
   function goToFirstIncomplete() {
     setShowExitConfirm(false);
-    const firstFlagged = questions.findIndex(q => flagged[q.id] && !solved[q.id]);
-    const firstUnsolved = questions.findIndex(q => !solved[q.id]);
+    // Use !submitted (not !solved): in mock mode submit is final, so "incomplete" = not yet attempted
+    const firstFlagged = questions.findIndex(q => flagged[q.id] && !submitted[q.id]);
+    const firstUnsolved = questions.findIndex(q => !submitted[q.id]);
     const target = firstFlagged !== -1 ? firstFlagged : firstUnsolved;
     if (target !== -1) setActiveQ(target);
   }
@@ -742,6 +743,8 @@ export default function MockSession() {
   // ── Active session ─────────────────────────────────────────────────────────
   const q = currentQuestion;
   const meta = q ? TRACK_META[q.track] : null;
+  // Benchmark and Interview Loop suppress mid-session correctness reveal (spec invariant)
+  const isBenchmarkMode = session?.mode === 'benchmark' || session?.mode === 'interview_loop';
   const currentResult = q ? results[q.id] : null;
   const currentRunResult = q ? runResults[q.id] : null;
   const allSubmitted = questions.length > 0 && questions.every(qx => submitted[qx.id]);
@@ -777,7 +780,7 @@ export default function MockSession() {
                 {question.is_follow_up && (
                   <span className="mock-follow-up-badge" title="Interviewer follow-up">↩</span>
                 )}
-                <span className={`mock-q-dot ${solved[question.id] ? 'solved' : flagged[question.id] ? 'flagged' : 'unsolved'}`} />
+                <span className={`mock-q-dot ${(solved[question.id] || (isBenchmarkMode && submitted[question.id])) ? 'solved' : flagged[question.id] ? 'flagged' : 'unsolved'}`} />
               </button>
             ))}
           </div>
@@ -1140,7 +1143,7 @@ export default function MockSession() {
                     onClick={handleSubmit}
                     disabled={submitting || submitted[q.id] || mcqSelections[q.id] === undefined}
                   >
-                    {submitting ? 'Checking…' : solved[q.id] ? '✓ Solved' : submitted[q.id] ? '✗ Submitted' : 'Submit'}
+                    {submitting ? 'Checking…' : solved[q.id] ? '✓ Solved' : submitted[q.id] ? (isBenchmarkMode ? '✓ Submitted' : '✗ Submitted') : 'Submit'}
                   </button>
                 </div>
               </div>
