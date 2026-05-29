@@ -287,18 +287,18 @@
     "type": "conceptual",
     "difficulty": "easy",
     "title": "What is a Spark Partition?",
-    "description": "A distributed Spark DataFrame is physically divided into **partitions** — chunks of data that can be processed in parallel across executors.\n\nYou read a **512 MB CSV file** from HDFS with default Spark configuration. Approximately how many initial partitions will the resulting DataFrame have?",
+    "description": "A distributed Spark DataFrame is physically divided into **partitions** — chunks of data that can be processed in parallel across executors.\n\nYou read a **512 MB CSV file** from HDFS. Spark uses a **128 MB** input split size for this file. Approximately how many initial partitions will the resulting DataFrame have?",
     "code_snippet": null,
     "options": [
       "200 — spark.sql.shuffle.partitions defaults to 200, which also governs how many partitions Spark creates when reading files",
-      "4 — Spark's default HDFS block size is 128 MB; a 512 MB file spans ~4 blocks, producing ~4 initial partitions",
+      "4 — the file spans ~4 input splits of 128 MB each, producing ~4 initial partitions",
       "512 — Spark creates one partition per megabyte by default to maximise parallelism",
       "1 — Spark consolidates each CSV file into a single partition on read and only splits it during explicit repartition() calls"
     ],
     "correct_option": 1,
-    "explanation": "By default, Spark creates one partition per HDFS block (128 MB). A **512 MB file** spans approximately **4 blocks**, so the resulting DataFrame will have roughly **4 partitions**. Option A is wrong — `spark.sql.shuffle.partitions` (default 200) controls the number of partitions after a shuffle, not the number of partitions created when reading a file. Option C confuses megabytes with partitions — a 512 MB file produces ~4 partitions, not 512. Option D is wrong — Spark does split large files across partitions to enable parallel reads; a file is only treated as a single partition if it is smaller than one block.",
+    "explanation": "Spark splits input files into chunks based on the configured input split size. With a 128 MB split size and a 512 MB file, the file spans approximately **4 splits**, producing roughly **4 partitions** that can be processed in parallel across executors. Option A is wrong — `spark.sql.shuffle.partitions` (default 200) controls the number of partitions after a shuffle, not the number created when reading a file. Option C confuses megabytes with partitions — a 512 MB file with 128 MB splits produces ~4 partitions, not 512. Option D is wrong — Spark does split large files to enable parallel reads; a file is treated as a single partition only if it is smaller than one split.",
     "hints": [
-      "spark.sql.shuffle.partitions (default 200) controls shuffle output — a different setting governs how many chunks Spark creates when reading a file"
+      "spark.sql.shuffle.partitions (default 200) controls shuffle output — a different setting governs how many chunks Spark creates when reading a file. With the split size given in the stem, how many splits does 512 MB produce?"
     ],
     "concepts": [
       "partitions",
@@ -352,7 +352,7 @@
     "correct_option": 0,
     "explanation": "`DataFrame.sort` and `DataFrame.orderBy` are **aliases** — they are the same operation and accept identical arguments (strings, Column objects, or `asc()`/`desc()` modifiers). Both perform a global sort requiring a shuffle. The `collect()` calls return the same list in the same order, so the comparison is `True`. Option B describes a distinction that exists in some systems but not PySpark. Options C and D are false — both methods accept plain strings and neither introduces non-determinism.",
     "hints": [
-      "Both methods accept the same argument types and both trigger a global sort requiring a shuffle. If the inputs and the mechanism are identical, what does the output comparison return?"
+      "Think about what would make two sort operations return different collected results — would a difference in sort scope (local vs. global) or a difference in accepted argument types do it? Check whether either distinction applies to sort and orderBy."
     ],
     "concepts": [
       "SHUFFLE REASONING",

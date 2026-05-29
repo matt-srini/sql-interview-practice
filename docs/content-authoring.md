@@ -83,7 +83,7 @@ Reasoning depth — not syntax recall, not trivia, not concept-stacking — is t
 - (`predict_output` / `debug`) Disjunctive or version-gated correct answers — "null values appear **or** a runtime exception is thrown" is not a prediction; it is a hedge. If the behavior is version-dependent, either pin the version in the stem or reframe as `conceptual` / `debug` (ask for diagnosis and fix, not runtime prediction). **A question is version-gated even if its explanation states the outcome with confidence.** For every `predict_output` and `debug` question, independently verify the correct answer holds in the **default configuration of the current stable release** — a confident explanation is not evidence of version-independence.
 - Mechanic-name tags as `concepts` values (per-track blocklists in [`docs/concept-taxonomy.md`](./concept-taxonomy.md)).
 - **Backward-pass rule.** When a new Reject-on-sight rule is established in response to a found issue, immediately audit every existing question of the same type for the same failure mode. Do not close the audit until the backward pass is complete. A rule that prevents future violations while leaving existing ones in place is not durable.
-- **Independent difficulty-vocabulary sweep.** When auditing a difficulty band, apply the track doc's difficulty vocabulary rule (e.g. "pure-recall conceptual is rejected at easy — use predict_output or debug") to **every question in that band independently** — do not rely solely on the incoming finding ID list. A question that was not flagged by the audit source is still a violation if it fails the track doc rule. The sweep is not complete until every question has been checked, not just those named.
+- **Independent quality sweep.** When auditing a difficulty band, apply **all** track doc quality rules — difficulty vocabulary (e.g. "pure-recall conceptual is rejected at easy"), the anti-patterns list, and hint discipline — to **every question in that band independently**. Do not rely solely on the incoming finding ID list. A question that was not flagged by the audit source is still a violation if it fails any track doc rule. The sweep is not complete until every question has been checked against every rule, not just those named.
 
 ### Framing authority (per-track)
 
@@ -228,6 +228,8 @@ Hints guide thinking toward the approach without revealing it.
 Anti-patterns: H1 reading like the first line of the solution; pasting code / method chains / clause text; H2 naming every required op in order; (MCQ) restating the correct option instead of hinting through elimination.
 
 **Interrogative framing does not neutralize a leak.** The test is terminological: **does H1 contain any specific term, concept name, or API name that appears in or directly resolves the correct answer?** A hint phrased as a question ("which X benefits from Y?") is still a leak if Y is the decisive term in the correct answer. Apply this test word-by-word to H1 before committing.
+
+**Premise disclosure is also a leak.** Do not state the decisive premise as a given in H1, even framed as a question. If H1 reads "if X is the case, what follows?" and X is the only fact the candidate needs to answer the question, H1 is a leak regardless of whether X is a verbatim term from the answer. Apply this test structurally: can a candidate read H1 and infer the answer without reading any option? If yes, rewrite.
 
 ---
 
