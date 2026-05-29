@@ -3,21 +3,21 @@
     "id": 41001,
     "order": 1,
     "topic": "pyspark",
-    "type": "conceptual",
+    "type": "predict_output",
     "difficulty": "easy",
-    "title": "Transformations vs Actions",
-    "description": "In PySpark, operations on DataFrames are divided into **transformations** (lazy — they define a new computation but don't execute it) and **actions** (eager — they trigger execution and return a result).\n\nWhich of the following operations **triggers actual execution** of the Spark job?",
-    "code_snippet": null,
+    "title": "Transformations vs Actions: return types",
+    "description": "A developer runs the following code:\n\n```python\ndf = spark.createDataFrame([(1,), (2,), (3,)], [\"val\"])\nx = df.filter(df.val > 1)\ny = df.count()\nprint(type(x).__name__, type(y).__name__)\n```\n\nWhat does the `print` statement output?",
+    "code_snippet": "df = spark.createDataFrame([(1,), (2,), (3,)], [\"val\"])\nx = df.filter(df.val > 1)\ny = df.count()\nprint(type(x).__name__, type(y).__name__)",
     "options": [
-      "df.filter(df['age'] > 30)",
-      "df.count()",
-      "df.select('name', 'age')",
-      "df.withColumn('bonus', df['salary'] * 0.1)"
+      "DataFrame int",
+      "DataFrame DataFrame",
+      "RDD int",
+      "NoneType int"
     ],
-    "correct_option": 1,
-    "explanation": "`df.count()` is an **action** — it forces Spark to execute the entire computation graph and return a Python integer. The other three (`filter`, `select`, `withColumn`) are **transformations**: they return a new DataFrame representing a deferred computation that is only evaluated when an action is called.",
+    "correct_option": 0,
+    "explanation": "`df.filter()` is a **transformation** — it returns a new `DataFrame` representing a deferred computation. No Spark job runs at that line. `df.count()` is an **action** — it triggers execution of the full computation graph and returns a Python `int`. The `type().__name__` calls therefore print `DataFrame` and `int` respectively.",
     "hints": [
-      "Ask yourself: which operation returns a concrete value (number, list, or writes data) rather than another DataFrame?"
+      "One of these operations returns a concrete Python value; the other returns a new DataFrame representing a plan that hasn't executed yet. Which is which?"
     ],
     "concepts": [
       "transformations vs actions",
@@ -72,7 +72,7 @@
     "correct_option": 2,
     "explanation": "DataFrames are a **higher-level abstraction** built on top of RDDs. They carry schema information (column names and types) and pass through Spark's **Catalyst optimizer**, which generates an optimised physical execution plan. RDDs give you more control but lack these automatic optimisations. You can always call `.rdd` on a DataFrame to go back to the RDD level if needed.",
     "hints": [
-      "Which API does Spark recommend for most workloads in modern versions, and which benefits from the Catalyst and Tungsten optimisers?"
+      "One API carries schema information and can be automatically optimised before execution; the other operates on untyped objects and requires the developer to express every transformation without optimizer assistance."
     ],
     "concepts": [
       "RDD vs DataFrame",
@@ -338,21 +338,21 @@
     "id": 41013,
     "order": 13,
     "topic": "pyspark",
-    "type": "conceptual",
+    "type": "predict_output",
     "difficulty": "easy",
-    "title": "orderBy vs sort",
-    "description": "A colleague tells you to use `df.orderBy('revenue')` instead of `df.sort('revenue')` for correctness. You check the PySpark documentation.\n\nWhat is the actual difference between `df.orderBy('col')` and `df.sort('col')`?",
-    "code_snippet": null,
+    "title": "orderBy vs sort: output comparison",
+    "description": "A developer runs the following code:\n\n```python\ndf = spark.createDataFrame([(3,), (1,), (2,)], [\"val\"])\na = df.sort(\"val\")\nb = df.orderBy(\"val\")\nprint(a.collect() == b.collect())\n```\n\nWhat does this code print?",
+    "code_snippet": "df = spark.createDataFrame([(3,), (1,), (2,)], [\"val\"])\na = df.sort(\"val\")\nb = df.orderBy(\"val\")\nprint(a.collect() == b.collect())",
     "options": [
-      "They are aliases — `orderBy` and `sort` have identical behavior in PySpark",
-      "`orderBy` performs a global sort across all partitions; `sort` only sorts within each partition",
-      "`sort` only supports ascending order; `orderBy` supports both ascending and descending",
-      "`orderBy` requires a `Column` object as input; `sort` accepts plain strings"
+      "True",
+      "False — sort only sorts within each partition; orderBy performs a global sort across the cluster",
+      "False — orderBy requires a Column object as input; passing a plain string raises a TypeError",
+      "False — orderBy introduces a non-deterministic tiebreaker that sort does not, producing different orderings for tied values"
     ],
     "correct_option": 0,
-    "explanation": "In PySpark, `DataFrame.orderBy` and `DataFrame.sort` are **aliases** for the same operation — they accept the same arguments and produce identical results. Both perform a global sort (requiring a shuffle). Option B describes a real distinction in some systems but is not true in PySpark. Option C is false — both methods accept `asc()` and `desc()` column specifications. Option D is also false — both methods accept strings, Column objects, or a mix.",
+    "explanation": "`DataFrame.sort` and `DataFrame.orderBy` are **aliases** — they are the same operation and accept identical arguments (strings, Column objects, or `asc()`/`desc()` modifiers). Both perform a global sort requiring a shuffle. The `collect()` calls return the same list in the same order, so the comparison is `True`. Option B describes a distinction that exists in some systems but not PySpark. Options C and D are false — both methods accept plain strings and neither introduces non-determinism.",
     "hints": [
-      "Both methods accept strings, Column objects, and asc()/desc() modifiers — does that leave any room for a meaningful behavioral difference between them?"
+      "Both methods accept the same argument types and both trigger a global sort requiring a shuffle. If the inputs and the mechanism are identical, what does the output comparison return?"
     ],
     "concepts": [
       "SHUFFLE REASONING",
@@ -445,21 +445,21 @@
     "id": 41017,
     "order": 17,
     "topic": "pyspark",
-    "type": "conceptual",
+    "type": "debug",
     "difficulty": "easy",
-    "title": "Write Mode: overwrite",
-    "description": "You run the following code, and the directory `/output/data` already contains Parquet files from a previous run:\n\n```python\ndf.write.mode(\"overwrite\").parquet(\"/output/data\")\n```\n\nWhat happens to the existing data?",
-    "code_snippet": null,
+    "title": "Write Mode: unintended append",
+    "description": "A pipeline is supposed to replace yesterday's snapshot with today's data. After running it, the engineer notices the output directory contains **both** yesterday's and today's Parquet files.\n\n```python\ndf_today = compute_daily_snapshot()\ndf_today.write.mode(\"append\").parquet(\"/snapshots/daily\")\n```\n\nWhat is the bug?",
+    "code_snippet": "df_today = compute_daily_snapshot()\ndf_today.write.mode(\"append\").parquet(\"/snapshots/daily\")",
     "options": [
-      "The existing directory is deleted and entirely replaced with the newly written data",
-      "New Parquet files are appended alongside the existing files",
-      "An AnalysisException is thrown because the path already exists",
-      "The write is silently skipped — existing data is preserved"
+      "mode(\"append\") was used instead of mode(\"overwrite\") — append adds new files alongside existing ones; overwrite deletes the entire directory first",
+      "compute_daily_snapshot() is returning a cached version of yesterday's data instead of recomputing",
+      "Parquet files cannot be replaced in place — the directory must be deleted manually before writing",
+      "mode(\"ignore\") should be used — it skips the write if the path exists and keeps only the latest version"
     ],
     "correct_option": 0,
-    "explanation": "Write mode `\"overwrite\"` deletes the **entire target directory** and replaces it with the new output. This is destructive — all previous files in `/output/data` are removed. Option B describes `mode(\"append\")`. Option C describes the default behavior (`mode(\"error\")` or `mode(\"errorifexists\")`), which throws if the path already exists. Option D describes `mode(\"ignore\")`, which leaves existing data untouched and skips the write.",
+    "explanation": "`mode(\"append\")` adds new files alongside existing ones — it never deletes previous output. To replace a directory entirely, `mode(\"overwrite\")` is required: it **deletes the entire target directory** before writing the new data. The four write modes are: `error` (default — fails if path exists), `append` (adds files), `overwrite` (replaces directory), and `ignore` (skips write if path exists). `mode(\"overwrite\")` is the standard pattern for idempotent snapshot pipelines.",
     "hints": [
-      "Think about what 'overwrite' literally means — and remember there are four write modes: error, append, overwrite, ignore"
+      "There are four write modes: error, append, overwrite, ignore. Which one deletes the existing directory before writing — and which one was actually used here?"
     ],
     "concepts": [
       "FILE FORMATS & READERS",
@@ -1054,27 +1054,25 @@
     "id": 41040,
     "order": 40,
     "topic": "pyspark",
-    "type": "conceptual",
+    "type": "predict_output",
     "difficulty": "easy",
-    "title": "Cross join: explicit opt-in required",
-    "description": "A developer writes:\n\n```python\nresult = df_customers.join(df_products)\n```\n\nNo join condition is specified. What happens?",
-    "code_snippet": "result = df_customers.join(df_products)",
+    "title": "Cross join: Cartesian product size",
+    "description": "A developer runs the following code:\n\n```python\ndf_products = spark.createDataFrame([(1,), (2,), (3,)], [\"product_id\"])\ndf_regions = spark.createDataFrame([(\"North\",), (\"South\",)], [\"region\"])\nresult = df_products.crossJoin(df_regions)\nprint(result.count())\n```\n\nWhat does `result.count()` return?",
+    "code_snippet": "df_products = spark.createDataFrame([(1,), (2,), (3,)], [\"product_id\"])\ndf_regions = spark.createDataFrame([(\"North\",), (\"South\",)], [\"region\"])\nresult = df_products.crossJoin(df_regions)\nprint(result.count())",
     "options": [
-      "Spark raises an AnalysisException — a join condition is required; use .crossJoin() to explicitly request a Cartesian product",
-      "Spark performs an implicit inner join on all columns with matching names, behaving like pandas merge()",
-      "Spark silently performs a cross join (Cartesian product) and logs a warning at the INFO level",
-      "Spark defers evaluation until an action is triggered, then infers the join key from overlapping column names at runtime"
+      "5 — crossJoin matches each row from df_products with the corresponding row in df_regions by position",
+      "3 — crossJoin returns only the rows from the left DataFrame with a new column appended from the right",
+      "6 — crossJoin produces a Cartesian product: every product_id is paired with every region",
+      "Raises AnalysisException — crossJoin requires a matching column to serve as the implicit join key"
     ],
-    "correct_option": 0,
-    "explanation": "PySpark requires that `.join()` is always called with an explicit condition. If no condition is provided, Spark raises an `AnalysisException: Join condition is missing`. To produce a Cartesian product, you must call `.crossJoin()` explicitly — this is a safety design choice, since accidental cross joins on large tables can produce billions of rows and exhaust cluster memory. Unlike pandas `.merge()`, PySpark does not infer join keys from overlapping column names.",
+    "correct_option": 2,
+    "explanation": "`crossJoin` produces a **Cartesian product** — every row from the left DataFrame is paired with every row from the right, with no filtering condition. With 3 products and 2 regions, the result contains 3 × 2 = **6 rows**. This is the explicit, intentional API for generating all combinations. Spark provides `.crossJoin()` as the required call when you genuinely want every pairing, making the expensive operation opt-in rather than accidental.",
     "hints": [
-      "PySpark is designed to make accidentally expensive operations hard to trigger. What would a join with no condition produce, and why is that dangerous enough to require an explicit call?"
+      "crossJoin pairs every row on the left with every row on the right — no filtering, no matching. How many total pairings does that produce for two DataFrames of size M and N?"
     ],
     "concepts": [
-      "join",
-      "cross join",
-      "Cartesian product",
-      "AnalysisException"
+      "JOIN STRATEGY SELECTION",
+      "Cartesian product"
     ],
     "interaction_mode": "code_adjacent_reasoning"
   },
@@ -1082,21 +1080,21 @@
     "id": 41041,
     "order": 41,
     "topic": "pyspark",
-    "type": "conceptual",
+    "type": "debug",
     "difficulty": "easy",
     "title": "DataFrame vs Dataset[T]: Python type safety",
-    "description": "Which of the following statements about PySpark's type system in Python is correct?",
-    "code_snippet": null,
+    "description": "A developer migrating from Scala adds this comment during a Python PySpark code review:\n\n```python\n# TODO: rewrite as Dataset[Row] for better type safety\ndf = spark.read.parquet(\"/data/events\")\nfiltered = df.filter(df.event_type == \"click\")\n```\n\nWhich response is correct?",
+    "code_snippet": "# TODO: rewrite as Dataset[Row] for better type safety\ndf = spark.read.parquet(\"/data/events\")\nfiltered = df.filter(df.event_type == \"click\")",
     "options": [
-      "Python PySpark only has dynamically-typed DataFrames; the strongly-typed Dataset[T] API exists only in Scala and Java",
-      "Python PySpark supports Dataset[T] through type annotations on function signatures when using Python 3.10 or later",
-      "PySpark DataFrames are strongly typed at runtime — applying a transformation to the wrong column type raises a TypeError immediately",
-      "Python PySpark DataFrames are backed by pandas DataFrames internally when pandas is installed"
+      "The comment is incorrect — Python PySpark has no Dataset[T] API; df is already a DataFrame (the Python equivalent of Dataset[Row]), and Python cannot enforce JVM compile-time type constraints",
+      "The comment is valid — call df.as_(Row) in Python to convert a DataFrame to a typed Dataset[Row]",
+      "The comment is achievable — add Python type annotations to the filter expression to enforce column types at analysis time",
+      "The comment is partially valid — PySpark 3.4+ supports Dataset[Row] in Python via the pyspark.sql.types module"
     ],
     "correct_option": 0,
-    "explanation": "PySpark's Dataset[T] API — where T is a user-defined Scala/Java class and type errors are caught at compile time — is available only in Scala and Java. In Python, PySpark only has DataFrames (equivalent to `Dataset[Row]`), which are dynamically typed: schema information is available at runtime via `.schema`, but Python type annotations have no effect on Spark's type checking. Type errors in Python PySpark surface at runtime (when the DAG is executed), not at definition time. DataFrames are not backed by pandas; they are distributed across executor JVMs and must be explicitly collected with `.toPandas()` to produce a local pandas DataFrame.",
+    "explanation": "PySpark's `Dataset[T]` API — where `T` is a user-defined class and type errors surface before execution — is available only in **Scala and Java**. Python PySpark has only `DataFrame`, which is already the equivalent of `Dataset[Row]`: it carries a runtime schema but applies no pre-execution type constraints. Python type annotations have no effect on Spark's type system. Type errors in Python PySpark surface at runtime when the DAG executes, not before. There is no `df.as_()` method or `Dataset[Row]` class in the Python API.",
     "hints": [
-      "Dataset[T] requires a compile-time type parameter (T) bound to a class. Which languages support compile-time generics the way Spark's Dataset API requires?"
+      "The Dataset[T] API catches type mismatches before the job runs. What does Python PySpark lack that would make that kind of pre-execution checking possible?"
     ],
     "concepts": [
       "Dataset vs DataFrame",

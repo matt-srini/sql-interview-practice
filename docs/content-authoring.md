@@ -80,8 +80,9 @@ Reasoning depth — not syntax recall, not trivia, not concept-stacking — is t
 - Artificial difficulty from stacking 6+ unrelated requirements.
 - (MCQ tracks) Distractors no competent practitioner would pick, or questions with multiple correct answers depending on version / assumptions.
 - (MCQ tracks) Two options with identical observable outputs but different explanations — e.g., two options that would produce the same schema string, the same printed value, or the same error type. Distinct wrong options must be wrong for distinct, independently observable reasons.
-- (`predict_output` / `debug`) Disjunctive or version-gated correct answers — "null values appear **or** a runtime exception is thrown" is not a prediction; it is a hedge. If the behavior is version-dependent, either pin the version in the stem or reframe as `conceptual` / `debug` (ask for diagnosis and fix, not runtime prediction).
+- (`predict_output` / `debug`) Disjunctive or version-gated correct answers — "null values appear **or** a runtime exception is thrown" is not a prediction; it is a hedge. If the behavior is version-dependent, either pin the version in the stem or reframe as `conceptual` / `debug` (ask for diagnosis and fix, not runtime prediction). **A question is version-gated even if its explanation states the outcome with confidence.** For every `predict_output` and `debug` question, independently verify the correct answer holds in the **default configuration of the current stable release** — a confident explanation is not evidence of version-independence.
 - Mechanic-name tags as `concepts` values (per-track blocklists in [`docs/concept-taxonomy.md`](./concept-taxonomy.md)).
+- **Backward-pass rule.** When a new Reject-on-sight rule is established in response to a found issue, immediately audit every existing question of the same type for the same failure mode. Do not close the audit until the backward pass is complete. A rule that prevents future violations while leaving existing ones in place is not durable.
 
 ### Framing authority (per-track)
 
@@ -217,13 +218,15 @@ Hints guide thinking toward the approach without revealing it.
 
 | Track | Forbidden first-hint patterns |
 |---|---|
-| PySpark | naming the relationship class directly ("two method names do the same thing"), naming the SQL analogy that is the answer ("SQL UNION is positional"), stating "X never raises an error" when the question asks what happens (eliminates all error options in one step) |
+| PySpark | naming the relationship class directly ("two method names do the same thing"), naming the SQL analogy that is the answer ("SQL UNION is positional"), stating "X never raises an error" when the question asks what happens (eliminates all error options in one step), naming the decisive concept in interrogative form ("which X benefits from Y?" where Y appears verbatim in the correct answer) |
 | Data Engineering | `idempoten*`, `watermark*`, `exactly-once` |
 | Statistics | `p-value`, `null hypothesis`, `central limit theorem` |
 | ML Fundamentals | `bias-variance`, `overfitting`, `data leakage` |
 | Experimentation | `cuped`, `sample ratio mismatch`, `switchback` |
 
 Anti-patterns: H1 reading like the first line of the solution; pasting code / method chains / clause text; H2 naming every required op in order; (MCQ) restating the correct option instead of hinting through elimination.
+
+**Interrogative framing does not neutralize a leak.** The test is terminological: **does H1 contain any specific term, concept name, or API name that appears in or directly resolves the correct answer?** A hint phrased as a question ("which X benefits from Y?") is still a leak if Y is the decisive term in the correct answer. Apply this test word-by-word to H1 before committing.
 
 ---
 
