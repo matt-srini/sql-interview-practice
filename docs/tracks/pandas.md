@@ -10,7 +10,12 @@ A data analyst or scientist who *thinks in pandas* writes meaningfully different
 
 ## Modality
 
-**Executable problem-solving.** Subprocess-sandboxed Python execution with the candidate's function called against pre-loaded DataFrames. 5-second timeout. 512 MB RLIMIT_AS. Output DataFrame compared to expected via `pd.testing.assert_frame_equal` (shape + dtypes + values + ordering).
+**Executable problem-solving.** Subprocess-sandboxed Python execution with the candidate's function called against pre-loaded DataFrames. 5-second timeout. 512 MB RLIMIT_AS. Output DataFrame compared to expected via `normalize_dataframe()` (from `evaluator.py`) followed by `DataFrame.equals()`. Normalization steps applied to both candidate and expected output before comparison:
+1. Column names lowercased
+2. Columns sorted alphabetically
+3. All values cast to string
+4. Rows sorted lexicographically
+5. Index reset to `RangeIndex`
 
 ## Schema essentials (function shape + datasets)
 
@@ -38,7 +43,7 @@ Required output discipline:
 | Medium | 32001–32999 | `backend/content/python_data_questions/medium.json` |
 | Hard | 33001–33999 | `backend/content/python_data_questions/hard.json` |
 
-Samples in `backend/content/python_data_questions/sample/` use `3XS` 3-digit IDs.
+Samples are not stored separately. `sample_questions.py` slices the first 3 questions per difficulty by `order` field directly from the live practice catalog (e.g. `medium.json`). Sample IDs are regular practice IDs (e.g. 32001, 32002, 32003 for medium). There is no `sample/` subdirectory and no `3XS` IDs for Pandas.
 
 ## Difficulty vocabulary
 

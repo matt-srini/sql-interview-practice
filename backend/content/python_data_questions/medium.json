@@ -554,8 +554,8 @@
     "order": 15,
     "topic": "python_data",
     "difficulty": "medium",
-    "title": "Users with Sessions from Multiple Countries",
-    "description": "You have a DataFrame `df_sessions` loaded from the sessions dataset.\n\n**Columns:** `session_id`, `user_id`, `session_start`, `device_type`, `traffic_source`, `country`\n\nFind users who have sessions from **more than one distinct country**. Return a DataFrame with a single column `user_id`, sorted ascending.",
+    "title": "Users with Sessions from Multiple Device Types",
+    "description": "You have a DataFrame `df_sessions` loaded from the sessions dataset.\n\n**Columns:** `session_id`, `user_id`, `session_start`, `device_type`, `traffic_source`, `country`\n\nFind users who have sessions from **more than one distinct device type** (e.g., a user who has both desktop and mobile sessions). Return a DataFrame with columns `user_id` and `device_count` (the number of distinct device types used), sorted by `user_id` ascending.",
     "dataframes": {
       "df_sessions": "sessions.csv"
     },
@@ -569,13 +569,13 @@
         "country"
       ]
     },
-    "starter_code": "import pandas as pd\n\ndef solve(df_sessions):\n    # Find user_ids that appear in sessions from more than 1 distinct country\n    # Return DataFrame with column: user_id, sorted ascending\n    pass",
-    "expected_code": "import pandas as pd\n\ndef solve(df_sessions):\n    country_counts = df_sessions.groupby('user_id')['country'].nunique()\n    multi_country_users = country_counts[country_counts > 1].reset_index()\n    result = multi_country_users[['user_id']].sort_values('user_id').reset_index(drop=True)\n    return result",
-    "solution_code": "import pandas as pd\n\ndef solve(df_sessions):\n    country_counts = df_sessions.groupby('user_id')['country'].nunique()\n    multi_country_users = country_counts[country_counts > 1].reset_index()\n    result = multi_country_users[['user_id']].sort_values('user_id').reset_index(drop=True)\n    return result",
-    "explanation": "`groupby('user_id')['country'].nunique()` counts distinct country values per user. Filtering with `> 1` keeps users with sessions from multiple countries. `.reset_index()` converts the Series back to a DataFrame with `user_id` as a column.",
+    "starter_code": "import pandas as pd\n\ndef solve(df_sessions):\n    # Find user_ids that have sessions from more than 1 distinct device_type\n    # Return DataFrame with columns: user_id, device_count, sorted by user_id ascending\n    pass",
+    "expected_code": "import pandas as pd\n\ndef solve(df_sessions):\n    device_counts = df_sessions.groupby('user_id')['device_type'].nunique()\n    multi_device = device_counts[device_counts > 1].reset_index()\n    result = multi_device.rename(columns={'device_type': 'device_count'})[['user_id', 'device_count']]\n    return result.sort_values('user_id').reset_index(drop=True)",
+    "solution_code": "import pandas as pd\n\ndef solve(df_sessions):\n    device_counts = df_sessions.groupby('user_id')['device_type'].nunique()\n    multi_device = device_counts[device_counts > 1].reset_index()\n    result = multi_device.rename(columns={'device_type': 'device_count'})[['user_id', 'device_count']]\n    return result.sort_values('user_id').reset_index(drop=True)",
+    "explanation": "`groupby('user_id')['device_type'].nunique()` counts the number of distinct device types per user. Filtering with `> 1` keeps only users who accessed from more than one device type. `.reset_index()` converts the Series to a DataFrame with `user_id` as a column, and `.rename()` gives the count column a descriptive name.",
     "hints": [
-      "Reduce the frame to the requested grain and count how many records fall into each bucket.",
-      "Filter for `> 1`, then `.reset_index()` to get a DataFrame with `user_id` as a column"
+      "Count how many distinct device types each user has used — `nunique()` within a groupby is the right tool.",
+      "Filter for `> 1`, then `.reset_index()` to get a DataFrame with `user_id` as a column, then rename the aggregated column."
     ],
     "concepts": [
       "GROUPED AGGREGATION",
@@ -884,7 +884,7 @@
     "explanation": "`.dt.dayofweek` returns integers 0 (Monday) through 6 (Sunday). Grouping on this integer and using named aggregation computes both total and average revenue per day. Mapping the integer to a name string using a lookup list adds the human-readable `day_name` column.",
     "hints": [
       "Normalize the date values into a true time representation before extracting calendar pieces or measuring intervals.",
-      "Map the integer to a name with a list and `.map(lambda d: day_names[d])` after aggregating"
+      "After you have integer day-of-week values, a Series can be mapped to a lookup structure that converts integers to weekday names — choose the right pandas mapping tool."
     ],
     "concepts": [
       "DATETIME OPERATIONS",
@@ -1055,7 +1055,7 @@
     "topic": "python_data",
     "difficulty": "medium",
     "title": "Salary rank and percentile by department",
-    "description": "You have two DataFrames: `df_employees` and `df_departments`.\n\n**df_employees columns:** `employee_id`, `employee_name`, `salary`, `department_id`\n**df_departments columns:** `department_id`, `department_name`, `region`\n\n1. Inner join on `department_id`.\n2. Within each `department_name`, compute:\n   - `salary_rank`: rank of salary descending (dense rank, 1 = highest)\n   - `salary_pct`: percentile rank using `rank(pct=True)` ascending (0–1 range, rounded to 2 dp)\n3. Return `employee_name`, `department_name`, `salary`, `salary_rank`, `salary_pct`. Sort by `department_name`, `salary_rank`.",
+    "description": "You have two DataFrames: `df_employees` and `df_departments`.\n\n**df_employees columns:** `employee_id`, `employee_name`, `salary`, `department_id` (salary is nullable — some rows have no salary recorded)\n**df_departments columns:** `department_id`, `department_name`, `region`\n\n1. Exclude employees with no recorded salary.\n2. Inner join on `department_id`.\n3. Within each `department_name`, compute:\n   - `salary_rank`: rank of salary descending (dense rank, 1 = highest)\n   - `salary_pct`: percentile rank using `rank(pct=True)` ascending (0–1 range, rounded to 2 dp)\n4. Return `employee_name`, `department_name`, `salary`, `salary_rank`, `salary_pct`. Sort by `department_name`, `salary_rank`.",
     "dataframes": {
       "df_employees": "employees.csv",
       "df_departments": "departments.csv"
@@ -1076,17 +1076,19 @@
         "region"
       ]
     },
-    "starter_code": "import pandas as pd\n\ndef solve(df_employees, df_departments):\n    # Rank and percentile within each department\n    pass",
-    "expected_code": "import pandas as pd\n\ndef solve(df_employees, df_departments):\n    df = df_employees.merge(df_departments[['department_id', 'department_name']], on='department_id', how='inner')\n    df['salary_rank'] = df.groupby('department_name')['salary'].rank(method='dense', ascending=False).astype(int)\n    df['salary_pct'] = df.groupby('department_name')['salary'].rank(pct=True).round(2)\n    result = df[['employee_name', 'department_name', 'salary', 'salary_rank', 'salary_pct']]\n    return result.sort_values(['department_name', 'salary_rank']).reset_index(drop=True)",
-    "solution_code": "import pandas as pd\n\ndef solve(df_employees, df_departments):\n    df = df_employees.merge(df_departments[['department_id', 'department_name']], on='department_id', how='inner')\n    df['salary_rank'] = df.groupby('department_name')['salary'].rank(method='dense', ascending=False).astype(int)\n    df['salary_pct'] = df.groupby('department_name')['salary'].rank(pct=True).round(2)\n    result = df[['employee_name', 'department_name', 'salary', 'salary_rank', 'salary_pct']]\n    return result.sort_values(['department_name', 'salary_rank']).reset_index(drop=True)",
-    "explanation": "`groupby(...).rank()` applies a ranking function within each group and broadcasts the rank back to the original row positions (like SQL's RANK() OVER (PARTITION BY...)). `method='dense'` means tied values share the same rank with no gaps (1,2,2,3 not 1,2,2,4). `ascending=False` ranks highest salary as 1. `rank(pct=True)` normalizes ranks to 0–1. Both calls return the rank as a float Series aligned to the original index — no merge needed.",
+    "starter_code": "import pandas as pd\n\ndef solve(df_employees, df_departments):\n    # Exclude employees with no recorded salary, then rank within each department\n    pass",
+    "expected_code": "import pandas as pd\n\ndef solve(df_employees, df_departments):\n    df = df_employees.dropna(subset=['salary'])\n    df = df.merge(df_departments[['department_id', 'department_name']], on='department_id', how='inner')\n    df['salary_rank'] = df.groupby('department_name')['salary'].rank(method='dense', ascending=False).astype(int)\n    df['salary_pct'] = df.groupby('department_name')['salary'].rank(pct=True).round(2)\n    result = df[['employee_name', 'department_name', 'salary', 'salary_rank', 'salary_pct']]\n    return result.sort_values(['department_name', 'salary_rank']).reset_index(drop=True)",
+    "solution_code": "import pandas as pd\n\ndef solve(df_employees, df_departments):\n    df = df_employees.dropna(subset=['salary'])\n    df = df.merge(df_departments[['department_id', 'department_name']], on='department_id', how='inner')\n    df['salary_rank'] = df.groupby('department_name')['salary'].rank(method='dense', ascending=False).astype(int)\n    df['salary_pct'] = df.groupby('department_name')['salary'].rank(pct=True).round(2)\n    result = df[['employee_name', 'department_name', 'salary', 'salary_rank', 'salary_pct']]\n    return result.sort_values(['department_name', 'salary_rank']).reset_index(drop=True)",
+    "explanation": "`dropna(subset=['salary'])` removes the 12 employees with no salary recorded before ranking — null values would cause `.astype(int)` to crash. `groupby(...).rank()` applies a ranking function within each group and broadcasts the rank back to the original row positions (like SQL's RANK() OVER (PARTITION BY...)). `method='dense'` means tied values share the same rank with no gaps (1,2,2,3 not 1,2,2,4). `ascending=False` ranks highest salary as 1. `rank(pct=True)` normalizes ranks to 0–1. Both calls return the rank as a float Series aligned to the original index — no merge needed.",
     "hints": [
+      "Some employees have no salary recorded — these rows must be excluded before ranking to avoid a crash on `.astype(int)`.",
       "Bring the related attributes into one aligned table before you filter, compare, or aggregate.",
       "`rank(pct=True)` produces a value in (0, 1] representing the row's fractional rank within its group"
     ],
     "concepts": [
       "RANKING & TOP-N PER GROUP",
-      "MULTI-DATAFRAME ENTITY LINKING"
+      "MULTI-DATAFRAME ENTITY LINKING",
+      "MISSING VALUE STRATEGY"
     ]
   },
   {
@@ -1158,12 +1160,13 @@
       ]
     },
     "starter_code": "import pandas as pd\n\ndef solve(df_orders, df_users):\n    # Compute retention rate: users with 2+ completed orders vs 1\n    pass",
-    "expected_code": "import pandas as pd\n\ndef solve(df_orders, df_users):\n    completed = df_orders[df_orders['status'] == 'completed']\n    user_counts = completed.groupby('user_id').size().reset_index(name='order_count')\n    user_counts = user_counts.merge(df_users[['user_id', 'country']], on='user_id', how='left')\n    \n    def agg_retention(g):\n        single = (g['order_count'] == 1).sum()\n        retained = (g['order_count'] >= 2).sum()\n        total = single + retained\n        rate = round(retained / total, 2) if total > 0 else 0.0\n        return pd.Series({'single_order_users': single, 'retained_users': retained, 'retention_rate': rate})\n    \n    result = user_counts.groupby('country').apply(agg_retention).reset_index()\n    result['single_order_users'] = result['single_order_users'].astype(int)\n    result['retained_users'] = result['retained_users'].astype(int)\n    return result.sort_values('retention_rate', ascending=False).reset_index(drop=True)",
-    "solution_code": "import pandas as pd\n\ndef solve(df_orders, df_users):\n    completed = df_orders[df_orders['status'] == 'completed']\n    user_counts = completed.groupby('user_id').size().reset_index(name='order_count')\n    user_counts = user_counts.merge(df_users[['user_id', 'country']], on='user_id', how='left')\n    \n    def agg_retention(g):\n        single = (g['order_count'] == 1).sum()\n        retained = (g['order_count'] >= 2).sum()\n        total = single + retained\n        rate = round(retained / total, 2) if total > 0 else 0.0\n        return pd.Series({'single_order_users': single, 'retained_users': retained, 'retention_rate': rate})\n    \n    result = user_counts.groupby('country').apply(agg_retention).reset_index()\n    result['single_order_users'] = result['single_order_users'].astype(int)\n    result['retained_users'] = result['retained_users'].astype(int)\n    return result.sort_values('retention_rate', ascending=False).reset_index(drop=True)",
+    "expected_code": "import pandas as pd\n\ndef solve(df_orders, df_users):\n    completed = df_orders[df_orders['status'] == 'completed']\n    user_counts = (\n        completed.groupby('user_id')\n        .agg(order_count=('order_id', 'count'))\n        .reset_index()\n    )\n    user_counts = user_counts.merge(df_users[['user_id', 'country']], on='user_id', how='left')\n    user_counts['is_retained'] = user_counts['order_count'] >= 2\n    result = (\n        user_counts.groupby('country')\n        .agg(\n            retained_users=('is_retained', 'sum'),\n            total_users=('user_id', 'count')\n        )\n        .reset_index()\n    )\n    result['single_order_users'] = (result['total_users'] - result['retained_users']).astype(int)\n    result['retained_users'] = result['retained_users'].astype(int)\n    result['retention_rate'] = (result['retained_users'] / result['total_users']).round(2)\n    result = result[['country', 'single_order_users', 'retained_users', 'retention_rate']]\n    return result.sort_values('retention_rate', ascending=False).reset_index(drop=True)",
+    "solution_code": "import pandas as pd\n\ndef solve(df_orders, df_users):\n    completed = df_orders[df_orders['status'] == 'completed']\n    user_counts = (\n        completed.groupby('user_id')\n        .agg(order_count=('order_id', 'count'))\n        .reset_index()\n    )\n    user_counts = user_counts.merge(df_users[['user_id', 'country']], on='user_id', how='left')\n    user_counts['is_retained'] = user_counts['order_count'] >= 2\n    result = (\n        user_counts.groupby('country')\n        .agg(\n            retained_users=('is_retained', 'sum'),\n            total_users=('user_id', 'count')\n        )\n        .reset_index()\n    )\n    result['single_order_users'] = (result['total_users'] - result['retained_users']).astype(int)\n    result['retained_users'] = result['retained_users'].astype(int)\n    result['retention_rate'] = (result['retained_users'] / result['total_users']).round(2)\n    result = result[['country', 'single_order_users', 'retained_users', 'retention_rate']]\n    return result.sort_values('retention_rate', ascending=False).reset_index(drop=True)",
     "explanation": "First, aggregate to one row per user (their completed order count). Then join to get country. The `apply()` with a custom function computes multi-metric aggregations per country that are hard to express with `.agg()` alone — here, conditional counts and a derived ratio. Returning a `pd.Series` from the applied function produces named columns in the output. This pattern (groupby + apply with custom aggregation) is powerful but slower than vectorized `.agg()` — use it when the aggregation logic is too complex for named aggregation.",
     "hints": [
-      "Aggregate to per-user order counts first, then join countries, then group by country",
-      "Use `groupby('country').apply(custom_func)` when the aggregation requires multiple dependent computations — return a pd.Series with named fields"
+      "Aggregate to per-user order count first, then derive a boolean column flagging users with two or more orders before grouping by country.",
+      "Named aggregation with groupby().agg() handles both the retained-user sum and the total-user count in one step — no custom function needed.",
+      "Compute single_order_users and retention_rate as derived columns after the aggregation, then select and sort the final columns."
     ],
     "concepts": [
       "METHOD CHAINING & PIPELINE STYLE",
@@ -1251,8 +1254,8 @@
       ]
     },
     "starter_code": "import pandas as pd\n\ndef solve(df_orders, df_users):\n    # Filter completed orders, join to users, aggregate by channel\n    pass",
-    "expected_code": "import pandas as pd\n\ndef solve(df_orders, df_users):\n    completed = df_orders[df_orders['status'] == 'completed']\n    merged = completed.merge(df_users[['user_id', 'acquisition_channel']], on='user_id')\n    result = (\n        merged.groupby('acquisition_channel')\n        .agg(total_revenue=('net_amount', 'sum'), user_count=('user_id', 'nunique'))\n        .reset_index()\n        .assign(total_revenue=lambda x: x['total_revenue'].round(2))\n        .sort_values('total_revenue', ascending=False)\n    )\n    return result",
-    "solution_code": "import pandas as pd\n\ndef solve(df_orders, df_users):\n    completed = df_orders[df_orders['status'] == 'completed']\n    merged = completed.merge(df_users[['user_id', 'acquisition_channel']], on='user_id')\n    result = (\n        merged.groupby('acquisition_channel')\n        .agg(total_revenue=('net_amount', 'sum'), user_count=('user_id', 'nunique'))\n        .reset_index()\n        .assign(total_revenue=lambda x: x['total_revenue'].round(2))\n        .sort_values('total_revenue', ascending=False)\n    )\n    return result",
+    "expected_code": "import pandas as pd\n\ndef solve(df_orders, df_users):\n    completed = df_orders[df_orders['status'] == 'completed']\n    merged = completed.merge(df_users[['user_id', 'acquisition_channel']], on='user_id')\n    result = (\n        merged.groupby('acquisition_channel')\n        .agg(total_revenue=('net_amount', 'sum'), user_count=('user_id', 'nunique'))\n        .reset_index()\n        .assign(total_revenue=lambda x: x['total_revenue'].round(2))\n        .sort_values('total_revenue', ascending=False)\n        .reset_index(drop=True)\n    )\n    return result",
+    "solution_code": "import pandas as pd\n\ndef solve(df_orders, df_users):\n    completed = df_orders[df_orders['status'] == 'completed']\n    merged = completed.merge(df_users[['user_id', 'acquisition_channel']], on='user_id')\n    result = (\n        merged.groupby('acquisition_channel')\n        .agg(total_revenue=('net_amount', 'sum'), user_count=('user_id', 'nunique'))\n        .reset_index()\n        .assign(total_revenue=lambda x: x['total_revenue'].round(2))\n        .sort_values('total_revenue', ascending=False)\n        .reset_index(drop=True)\n    )\n    return result",
     "explanation": "Filter to completed orders first before joining — this avoids inflating revenue with pending or cancelled orders. The `agg` named-aggregation syntax `agg(col=('source_col', 'func'))` is cleaner and self-documenting. `nunique` on user_id counts distinct buyers — using `count` would over-count users with multiple orders.",
     "hints": [
       "Filter to completed orders before combining with user data.",
@@ -1295,8 +1298,8 @@
       ]
     },
     "starter_code": "import pandas as pd\n\ndef solve(df_order_items, df_products):\n    # Join to get product names, then aggregate by product\n    pass",
-    "expected_code": "import pandas as pd\n\ndef solve(df_order_items, df_products):\n    merged = df_order_items.merge(df_products[['product_id', 'product_name']], on='product_id')\n    result = (\n        merged.groupby('product_name')\n        .agg(order_frequency=('order_id', 'nunique'), total_revenue=('line_amount', 'sum'))\n        .reset_index()\n        .assign(total_revenue=lambda x: x['total_revenue'].round(2))\n        .sort_values('order_frequency', ascending=False)\n        .head(10)\n    )\n    return result",
-    "solution_code": "import pandas as pd\n\ndef solve(df_order_items, df_products):\n    merged = df_order_items.merge(df_products[['product_id', 'product_name']], on='product_id')\n    result = (\n        merged.groupby('product_name')\n        .agg(order_frequency=('order_id', 'nunique'), total_revenue=('line_amount', 'sum'))\n        .reset_index()\n        .assign(total_revenue=lambda x: x['total_revenue'].round(2))\n        .sort_values('order_frequency', ascending=False)\n        .head(10)\n    )\n    return result",
+    "expected_code": "import pandas as pd\n\ndef solve(df_order_items, df_products):\n    merged = df_order_items.merge(df_products[['product_id', 'product_name']], on='product_id')\n    result = (\n        merged.groupby('product_name')\n        .agg(order_frequency=('order_id', 'nunique'), total_revenue=('line_amount', 'sum'))\n        .reset_index()\n        .assign(total_revenue=lambda x: x['total_revenue'].round(2))\n        .sort_values('order_frequency', ascending=False)\n        .head(10)\n        .reset_index(drop=True)\n    )\n    return result",
+    "solution_code": "import pandas as pd\n\ndef solve(df_order_items, df_products):\n    merged = df_order_items.merge(df_products[['product_id', 'product_name']], on='product_id')\n    result = (\n        merged.groupby('product_name')\n        .agg(order_frequency=('order_id', 'nunique'), total_revenue=('line_amount', 'sum'))\n        .reset_index()\n        .assign(total_revenue=lambda x: x['total_revenue'].round(2))\n        .sort_values('order_frequency', ascending=False)\n        .head(10)\n        .reset_index(drop=True)\n    )\n    return result",
     "explanation": "`nunique` on order_id counts the number of distinct orders — a product appearing twice in one order should contribute 1 to frequency, not 2. `head(10)` after `sort_values` trims to the top 10. Only the product_name and product_id columns are needed from df_products, so slicing to those columns before merging reduces overhead.",
     "hints": [
       "Order frequency counts distinct orders, not individual line item rows — one product in the same order multiple times should count once.",
@@ -1330,8 +1333,8 @@
       ]
     },
     "starter_code": "import pandas as pd\n\ndef solve(df_payments):\n    # Aggregate paid and failed counts per method, then compute rate\n    pass",
-    "expected_code": "import pandas as pd\n\ndef solve(df_payments):\n    result = (\n        df_payments.groupby('payment_method')\n        .agg(\n            paid_count=('status', lambda x: (x == 'paid').sum()),\n            failed_count=('status', lambda x: (x == 'failed').sum()),\n            total=('status', 'count')\n        )\n        .reset_index()\n        .assign(failure_rate_pct=lambda x: (x['failed_count'] * 100.0 / x['total']).round(1))\n        .drop(columns='total')\n        .sort_values('failure_rate_pct', ascending=False)\n    )\n    return result",
-    "solution_code": "import pandas as pd\n\ndef solve(df_payments):\n    result = (\n        df_payments.groupby('payment_method')\n        .agg(\n            paid_count=('status', lambda x: (x == 'paid').sum()),\n            failed_count=('status', lambda x: (x == 'failed').sum()),\n            total=('status', 'count')\n        )\n        .reset_index()\n        .assign(failure_rate_pct=lambda x: (x['failed_count'] * 100.0 / x['total']).round(1))\n        .drop(columns='total')\n        .sort_values('failure_rate_pct', ascending=False)\n    )\n    return result",
+    "expected_code": "import pandas as pd\n\ndef solve(df_payments):\n    result = (\n        df_payments.groupby('payment_method')\n        .agg(\n            paid_count=('status', lambda x: (x == 'paid').sum()),\n            failed_count=('status', lambda x: (x == 'failed').sum()),\n            total=('status', 'count')\n        )\n        .reset_index()\n        .assign(failure_rate_pct=lambda x: (x['failed_count'] * 100.0 / x['total']).round(1))\n        .drop(columns='total')\n        .sort_values('failure_rate_pct', ascending=False)\n        .reset_index(drop=True)\n    )\n    return result",
+    "solution_code": "import pandas as pd\n\ndef solve(df_payments):\n    result = (\n        df_payments.groupby('payment_method')\n        .agg(\n            paid_count=('status', lambda x: (x == 'paid').sum()),\n            failed_count=('status', lambda x: (x == 'failed').sum()),\n            total=('status', 'count')\n        )\n        .reset_index()\n        .assign(failure_rate_pct=lambda x: (x['failed_count'] * 100.0 / x['total']).round(1))\n        .drop(columns='total')\n        .sort_values('failure_rate_pct', ascending=False)\n        .reset_index(drop=True)\n    )\n    return result",
     "explanation": "Lambda aggregation `lambda x: (x == 'paid').sum()` counts matching rows for each group in one pass. The intermediate `total` column is needed for the rate calculation and then dropped before returning. Multiplying by `100.0` (not `100`) ensures float division.",
     "hints": [
       "Compute conditional counts for each status using lambda functions inside `agg`.",
@@ -1377,8 +1380,8 @@
       ]
     },
     "starter_code": "import pandas as pd\n\ndef solve(df_orders, df_users):\n    # Compute per-user total spend, then filter to above-average users\n    pass",
-    "expected_code": "import pandas as pd\n\ndef solve(df_orders, df_users):\n    completed = df_orders[df_orders['status'] == 'completed']\n    user_spend = (\n        completed.merge(df_users[['user_id', 'name', 'country']], on='user_id')\n        .groupby(['user_id', 'name', 'country'])['net_amount'].sum()\n        .reset_index(name='total_spend')\n        .assign(total_spend=lambda x: x['total_spend'].round(2))\n    )\n    avg_spend = user_spend['total_spend'].mean()\n    result = user_spend[user_spend['total_spend'] > avg_spend].sort_values('total_spend', ascending=False)\n    return result",
-    "solution_code": "import pandas as pd\n\ndef solve(df_orders, df_users):\n    completed = df_orders[df_orders['status'] == 'completed']\n    user_spend = (\n        completed.merge(df_users[['user_id', 'name', 'country']], on='user_id')\n        .groupby(['user_id', 'name', 'country'])['net_amount'].sum()\n        .reset_index(name='total_spend')\n        .assign(total_spend=lambda x: x['total_spend'].round(2))\n    )\n    avg_spend = user_spend['total_spend'].mean()\n    result = user_spend[user_spend['total_spend'] > avg_spend].sort_values('total_spend', ascending=False)\n    return result",
+    "expected_code": "import pandas as pd\n\ndef solve(df_orders, df_users):\n    completed = df_orders[df_orders['status'] == 'completed']\n    user_spend = (\n        completed.merge(df_users[['user_id', 'name', 'country']], on='user_id')\n        .groupby(['user_id', 'name', 'country'])['net_amount'].sum()\n        .reset_index(name='total_spend')\n        .assign(total_spend=lambda x: x['total_spend'].round(2))\n    )\n    avg_spend = user_spend['total_spend'].mean()\n    result = user_spend[user_spend['total_spend'] > avg_spend].sort_values('total_spend', ascending=False).reset_index(drop=True)\n    return result",
+    "solution_code": "import pandas as pd\n\ndef solve(df_orders, df_users):\n    completed = df_orders[df_orders['status'] == 'completed']\n    user_spend = (\n        completed.merge(df_users[['user_id', 'name', 'country']], on='user_id')\n        .groupby(['user_id', 'name', 'country'])['net_amount'].sum()\n        .reset_index(name='total_spend')\n        .assign(total_spend=lambda x: x['total_spend'].round(2))\n    )\n    avg_spend = user_spend['total_spend'].mean()\n    result = user_spend[user_spend['total_spend'] > avg_spend].sort_values('total_spend', ascending=False).reset_index(drop=True)\n    return result",
     "explanation": "Two steps: first compute total spend per user; then filter to those above the average of that same series. The average is computed after the per-user aggregation — not from the raw row-level data — so multi-order users don't inflate the average.",
     "hints": [
       "Aggregate to per-user total spend first, then compare each user's total against the mean of all users' totals.",
@@ -1470,8 +1473,8 @@
       ]
     },
     "starter_code": "import pandas as pd\n\ndef solve(df_order_items, df_products, df_categories):\n    # Three-way join, then compute revenue and percentage share per category\n    pass",
-    "expected_code": "import pandas as pd\n\ndef solve(df_order_items, df_products, df_categories):\n    merged = (\n        df_order_items[['product_id', 'line_amount']]\n        .merge(df_products[['product_id', 'category_id']], on='product_id')\n        .merge(df_categories[['category_id', 'category_name']], on='category_id')\n    )\n    result = (\n        merged.groupby('category_name')['line_amount'].sum()\n        .reset_index(name='total_revenue')\n        .assign(total_revenue=lambda x: x['total_revenue'].round(2))\n    )\n    grand_total = result['total_revenue'].sum()\n    result['revenue_pct'] = (result['total_revenue'] / grand_total * 100).round(1)\n    result = result.sort_values('total_revenue', ascending=False)\n    return result",
-    "solution_code": "import pandas as pd\n\ndef solve(df_order_items, df_products, df_categories):\n    merged = (\n        df_order_items[['product_id', 'line_amount']]\n        .merge(df_products[['product_id', 'category_id']], on='product_id')\n        .merge(df_categories[['category_id', 'category_name']], on='category_id')\n    )\n    result = (\n        merged.groupby('category_name')['line_amount'].sum()\n        .reset_index(name='total_revenue')\n        .assign(total_revenue=lambda x: x['total_revenue'].round(2))\n    )\n    grand_total = result['total_revenue'].sum()\n    result['revenue_pct'] = (result['total_revenue'] / grand_total * 100).round(1)\n    result = result.sort_values('total_revenue', ascending=False)\n    return result",
+    "expected_code": "import pandas as pd\n\ndef solve(df_order_items, df_products, df_categories):\n    merged = (\n        df_order_items[['product_id', 'line_amount']]\n        .merge(df_products[['product_id', 'category_id']], on='product_id')\n        .merge(df_categories[['category_id', 'category_name']], on='category_id')\n    )\n    result = (\n        merged.groupby('category_name')['line_amount'].sum()\n        .reset_index(name='total_revenue')\n        .assign(total_revenue=lambda x: x['total_revenue'].round(2))\n    )\n    grand_total = result['total_revenue'].sum()\n    result['revenue_pct'] = (result['total_revenue'] / grand_total * 100).round(1)\n    result = result.sort_values('total_revenue', ascending=False).reset_index(drop=True)\n    return result",
+    "solution_code": "import pandas as pd\n\ndef solve(df_order_items, df_products, df_categories):\n    merged = (\n        df_order_items[['product_id', 'line_amount']]\n        .merge(df_products[['product_id', 'category_id']], on='product_id')\n        .merge(df_categories[['category_id', 'category_name']], on='category_id')\n    )\n    result = (\n        merged.groupby('category_name')['line_amount'].sum()\n        .reset_index(name='total_revenue')\n        .assign(total_revenue=lambda x: x['total_revenue'].round(2))\n    )\n    grand_total = result['total_revenue'].sum()\n    result['revenue_pct'] = (result['total_revenue'] / grand_total * 100).round(1)\n    result = result.sort_values('total_revenue', ascending=False).reset_index(drop=True)\n    return result",
     "explanation": "Chain two merges to link order_items → products → categories. After aggregating per-category revenue, compute the grand total from the aggregated series and use it as the denominator for the percentage. Slicing to only needed columns before each merge keeps the intermediate DataFrames lean.",
     "hints": [
       "Chain two joins: order_items to products, then products to categories.",
@@ -1504,8 +1507,8 @@
       ]
     },
     "starter_code": "import pandas as pd\n\ndef solve(df_sessions):\n    # Aggregate session and user counts per device type, then compute ratio\n    pass",
-    "expected_code": "import pandas as pd\n\ndef solve(df_sessions):\n    result = (\n        df_sessions.groupby('device_type')\n        .agg(session_count=('session_id', 'count'), user_count=('user_id', 'nunique'))\n        .reset_index()\n        .assign(sessions_per_user=lambda x: (x['session_count'] / x['user_count']).round(1))\n        .sort_values('session_count', ascending=False)\n    )\n    return result",
-    "solution_code": "import pandas as pd\n\ndef solve(df_sessions):\n    result = (\n        df_sessions.groupby('device_type')\n        .agg(session_count=('session_id', 'count'), user_count=('user_id', 'nunique'))\n        .reset_index()\n        .assign(sessions_per_user=lambda x: (x['session_count'] / x['user_count']).round(1))\n        .sort_values('session_count', ascending=False)\n    )\n    return result",
+    "expected_code": "import pandas as pd\n\ndef solve(df_sessions):\n    result = (\n        df_sessions.groupby('device_type')\n        .agg(session_count=('session_id', 'count'), user_count=('user_id', 'nunique'))\n        .reset_index()\n        .assign(sessions_per_user=lambda x: (x['session_count'] / x['user_count']).round(1))\n        .sort_values('session_count', ascending=False)\n        .reset_index(drop=True)\n    )\n    return result",
+    "solution_code": "import pandas as pd\n\ndef solve(df_sessions):\n    result = (\n        df_sessions.groupby('device_type')\n        .agg(session_count=('session_id', 'count'), user_count=('user_id', 'nunique'))\n        .reset_index()\n        .assign(sessions_per_user=lambda x: (x['session_count'] / x['user_count']).round(1))\n        .sort_values('session_count', ascending=False)\n        .reset_index(drop=True)\n    )\n    return result",
     "explanation": "`count` on session_id counts all rows per device type. `nunique` on user_id counts distinct users. The sessions_per_user ratio is computed via `assign` from the two aggregated columns — this runs after `reset_index` so both are accessible as DataFrame columns.",
     "hints": [
       "The ratio `sessions_per_user` can be computed inside `assign` after both counts are available as columns.",
@@ -1553,8 +1556,8 @@
     },
     "debug_error": "KeyError: 'channel'",
     "starter_code": "import pandas as pd\n\ndef solve(df_orders, df_users):\n    completed = df_orders[df_orders['status'] == 'completed']\n    merged = completed.merge(df_users[['user_id', 'acquisition_channel']], on='user_id')\n    result = (\n        merged.groupby('channel')\n        .agg(total_revenue=('net_amount', 'sum'), user_count=('user_id', 'nunique'))\n        .reset_index()\n        .assign(total_revenue=lambda x: x['total_revenue'].round(2))\n        .sort_values('total_revenue', ascending=False)\n    )\n    return result",
-    "expected_code": "import pandas as pd\n\ndef solve(df_orders, df_users):\n    completed = df_orders[df_orders['status'] == 'completed']\n    merged = completed.merge(df_users[['user_id', 'acquisition_channel']], on='user_id')\n    result = (\n        merged.groupby('acquisition_channel')\n        .agg(total_revenue=('net_amount', 'sum'), user_count=('user_id', 'nunique'))\n        .reset_index()\n        .assign(total_revenue=lambda x: x['total_revenue'].round(2))\n        .sort_values('total_revenue', ascending=False)\n    )\n    return result",
-    "solution_code": "import pandas as pd\n\ndef solve(df_orders, df_users):\n    completed = df_orders[df_orders['status'] == 'completed']\n    merged = completed.merge(df_users[['user_id', 'acquisition_channel']], on='user_id')\n    result = (\n        merged.groupby('acquisition_channel')\n        .agg(total_revenue=('net_amount', 'sum'), user_count=('user_id', 'nunique'))\n        .reset_index()\n        .assign(total_revenue=lambda x: x['total_revenue'].round(2))\n        .sort_values('total_revenue', ascending=False)\n    )\n    return result",
+    "expected_code": "import pandas as pd\n\ndef solve(df_orders, df_users):\n    completed = df_orders[df_orders['status'] == 'completed']\n    merged = completed.merge(df_users[['user_id', 'acquisition_channel']], on='user_id')\n    result = (\n        merged.groupby('acquisition_channel')\n        .agg(total_revenue=('net_amount', 'sum'), user_count=('user_id', 'nunique'))\n        .reset_index()\n        .assign(total_revenue=lambda x: x['total_revenue'].round(2))\n        .sort_values('total_revenue', ascending=False)\n        .reset_index(drop=True)\n    )\n    return result",
+    "solution_code": "import pandas as pd\n\ndef solve(df_orders, df_users):\n    completed = df_orders[df_orders['status'] == 'completed']\n    merged = completed.merge(df_users[['user_id', 'acquisition_channel']], on='user_id')\n    result = (\n        merged.groupby('acquisition_channel')\n        .agg(total_revenue=('net_amount', 'sum'), user_count=('user_id', 'nunique'))\n        .reset_index()\n        .assign(total_revenue=lambda x: x['total_revenue'].round(2))\n        .sort_values('total_revenue', ascending=False)\n        .reset_index(drop=True)\n    )\n    return result",
     "explanation": "The column is named `acquisition_channel` (as merged from df_users), but `groupby('channel')` references a column called `channel` — which doesn't exist. Fix: replace `'channel'` with `'acquisition_channel'`. This is one of the most common pandas bugs: referencing a column by a shortened or misremembered name.",
     "hints": [
       "Check the exact column names in the merged DataFrame — the error tells you the column doesn't exist.",
@@ -1590,8 +1593,8 @@
     },
     "debug_error": "KeyError: 'Column not found: resolution_hour'",
     "starter_code": "import pandas as pd\n\ndef solve(df_support):\n    result = (\n        df_support[df_support['status'] == 'resolved']\n        .groupby('priority')['resolution_hour']\n        .agg(ticket_count='count', avg_resolution_hours='mean')\n        .reset_index()\n        .assign(avg_resolution_hours=lambda x: x['avg_resolution_hours'].round(1))\n        .sort_values('avg_resolution_hours', ascending=False)\n    )\n    return result",
-    "expected_code": "import pandas as pd\n\ndef solve(df_support):\n    result = (\n        df_support[df_support['status'] == 'resolved']\n        .groupby('priority')['resolution_hours']\n        .agg(ticket_count='count', avg_resolution_hours='mean')\n        .reset_index()\n        .assign(avg_resolution_hours=lambda x: x['avg_resolution_hours'].round(1))\n        .sort_values('avg_resolution_hours', ascending=False)\n    )\n    return result",
-    "solution_code": "import pandas as pd\n\ndef solve(df_support):\n    result = (\n        df_support[df_support['status'] == 'resolved']\n        .groupby('priority')['resolution_hours']\n        .agg(ticket_count='count', avg_resolution_hours='mean')\n        .reset_index()\n        .assign(avg_resolution_hours=lambda x: x['avg_resolution_hours'].round(1))\n        .sort_values('avg_resolution_hours', ascending=False)\n    )\n    return result",
+    "expected_code": "import pandas as pd\n\ndef solve(df_support):\n    result = (\n        df_support[df_support['status'] == 'resolved']\n        .groupby('priority')['resolution_hours']\n        .agg(ticket_count='count', avg_resolution_hours='mean')\n        .reset_index()\n        .assign(avg_resolution_hours=lambda x: x['avg_resolution_hours'].round(1))\n        .sort_values('avg_resolution_hours', ascending=False)\n        .reset_index(drop=True)\n    )\n    return result",
+    "solution_code": "import pandas as pd\n\ndef solve(df_support):\n    result = (\n        df_support[df_support['status'] == 'resolved']\n        .groupby('priority')['resolution_hours']\n        .agg(ticket_count='count', avg_resolution_hours='mean')\n        .reset_index()\n        .assign(avg_resolution_hours=lambda x: x['avg_resolution_hours'].round(1))\n        .sort_values('avg_resolution_hours', ascending=False)\n        .reset_index(drop=True)\n    )\n    return result",
     "explanation": "The column is named `resolution_hours` (plural) but the code references `resolution_hour` (singular). Pandas raises a KeyError when the column selector `['resolution_hour']` does not match any column. Fix: change `'resolution_hour'` to `'resolution_hours'`.",
     "hints": [
       "The error says the column isn't found — compare the name in the code against the actual DataFrame schema.",
@@ -1640,8 +1643,8 @@
     },
     "debug_error": "AttributeError: 'DataFrame' object has no attribute 'sort_by'",
     "starter_code": "import pandas as pd\n\ndef solve(df_orders, df_users):\n    completed = df_orders[df_orders['status'] == 'completed']\n    user_spend = (\n        completed.merge(df_users[['user_id', 'name']], on='user_id')\n        .groupby(['user_id', 'name'])['net_amount'].sum()\n        .reset_index(name='total_spend')\n        .assign(total_spend=lambda x: x['total_spend'].round(2))\n    )\n    return user_spend.sort_by('total_spend', ascending=False).head(10)",
-    "expected_code": "import pandas as pd\n\ndef solve(df_orders, df_users):\n    completed = df_orders[df_orders['status'] == 'completed']\n    user_spend = (\n        completed.merge(df_users[['user_id', 'name']], on='user_id')\n        .groupby(['user_id', 'name'])['net_amount'].sum()\n        .reset_index(name='total_spend')\n        .assign(total_spend=lambda x: x['total_spend'].round(2))\n    )\n    return user_spend.sort_values('total_spend', ascending=False).head(10)",
-    "solution_code": "import pandas as pd\n\ndef solve(df_orders, df_users):\n    completed = df_orders[df_orders['status'] == 'completed']\n    user_spend = (\n        completed.merge(df_users[['user_id', 'name']], on='user_id')\n        .groupby(['user_id', 'name'])['net_amount'].sum()\n        .reset_index(name='total_spend')\n        .assign(total_spend=lambda x: x['total_spend'].round(2))\n    )\n    return user_spend.sort_values('total_spend', ascending=False).head(10)",
+    "expected_code": "import pandas as pd\n\ndef solve(df_orders, df_users):\n    completed = df_orders[df_orders['status'] == 'completed']\n    user_spend = (\n        completed.merge(df_users[['user_id', 'name']], on='user_id')\n        .groupby(['user_id', 'name'])['net_amount'].sum()\n        .reset_index(name='total_spend')\n        .assign(total_spend=lambda x: x['total_spend'].round(2))\n    )\n    return user_spend.sort_values('total_spend', ascending=False).head(10).reset_index(drop=True)",
+    "solution_code": "import pandas as pd\n\ndef solve(df_orders, df_users):\n    completed = df_orders[df_orders['status'] == 'completed']\n    user_spend = (\n        completed.merge(df_users[['user_id', 'name']], on='user_id')\n        .groupby(['user_id', 'name'])['net_amount'].sum()\n        .reset_index(name='total_spend')\n        .assign(total_spend=lambda x: x['total_spend'].round(2))\n    )\n    return user_spend.sort_values('total_spend', ascending=False).head(10).reset_index(drop=True)",
     "explanation": "Pandas DataFrames use `.sort_values()`, not `.sort_by()`. The method `sort_by` doesn't exist — it's a common mistake for developers coming from other languages (SQL's ORDER BY, PySpark's `.orderBy()`). Fix: replace `sort_by` with `sort_values`.",
     "hints": [
       "The error says the DataFrame has no attribute 'sort_by' — check the correct pandas method name for sorting.",
@@ -2342,7 +2345,7 @@
     "title": "Unresolved Ticket Age with Null Resolution Date",
     "difficulty": "medium",
     "mock_only": true,
-    "description": "The support_tickets table has a resolved_at column that is null for tickets still open or in progress. For all tickets that are NOT resolved or closed, compute how many days they have been open. Use the maximum created_at date in the dataset as the reference date. Return ticket_id, priority, status, and days_open, sorted by days_open descending.",
+    "description": "The support_tickets table tracks open and in-progress tickets that have not yet been resolved. For all tickets that are NOT resolved or closed (status is 'open' or 'in_progress'), compute how many days they have been open. Use the maximum created_at date in the dataset as the reference date. Return ticket_id, priority, status, and days_open, sorted by days_open descending.",
     "dataframes": {
       "df_tickets": "support_tickets.csv"
     },
@@ -2350,11 +2353,11 @@
       "df_tickets": [
         "ticket_id",
         "user_id",
+        "created_at",
         "issue_type",
         "priority",
         "status",
-        "created_at",
-        "resolved_at"
+        "resolution_hours"
       ]
     },
     "starter_code": "import pandas as pd\n\ndef solve(df_tickets):\n    pass",
@@ -2382,11 +2385,13 @@
     "schema": {
       "df_users": [
         "user_id",
-        "age",
-        "acquisition_channel",
-        "city",
+        "name",
+        "email",
+        "signup_date",
         "country",
-        "signup_date"
+        "acquisition_channel",
+        "plan_tier",
+        "is_active"
       ]
     },
     "starter_code": "import pandas as pd\n\ndef solve(df_users):\n    pass",
@@ -2446,10 +2451,11 @@
       "df_emp": [
         "employee_id",
         "employee_name",
-        "department_id",
+        "email",
         "salary",
+        "department_id",
         "hire_date",
-        "region"
+        "country"
       ],
       "df_dept": [
         "department_id",
@@ -2471,42 +2477,59 @@
   },
   {
     "id": 32063,
-    "title": "Order Completion Rate by Region",
+    "title": "Order Completion Rate by Country",
     "difficulty": "medium",
     "mock_only": true,
-    "description": "Compute the completion rate for orders in each region. The completion rate is defined as the number of completed orders divided by the total number of orders in that region (including cancelled, pending, and returned orders). Return region, total_orders, completed_orders, and completion_rate (rounded to 4 decimal places), sorted by completion_rate descending.",
+    "description": "Compute the order completion rate for each country. Join orders to users on `user_id` to get the user's country. The completion rate is defined as the number of orders with `status = 'completed'` divided by the total number of orders for that country (including cancelled orders). Return `country`, `total_orders`, `completed_orders`, and `completion_rate` (rounded to 4 decimal places), sorted by `completion_rate` descending.",
     "dataframes": {
-      "df_orders": "orders.csv"
+      "df_orders": "orders.csv",
+      "df_users": "users.csv"
     },
     "schema": {
       "df_orders": [
         "order_id",
         "user_id",
+        "order_date",
         "status",
-        "net_amount",
+        "gross_amount",
         "discount_amount",
-        "region",
-        "order_date"
+        "net_amount",
+        "payment_status"
+      ],
+      "df_users": [
+        "user_id",
+        "name",
+        "email",
+        "signup_date",
+        "country",
+        "acquisition_channel",
+        "plan_tier",
+        "is_active"
       ]
     },
-    "starter_code": "import pandas as pd\n\ndef solve(df_orders):\n    pass",
-    "expected_code": "import pandas as pd\n\ndef solve(df_orders):\n    result = (\n        df_orders.groupby('region', as_index=False)\n        .agg(\n            total_orders=('order_id', 'count'),\n            completed_orders=('status', lambda x: (x == 'completed').sum())\n        )\n    )\n    result['completion_rate'] = (result['completed_orders'] / result['total_orders']).round(4)\n    return result.sort_values('completion_rate', ascending=False).reset_index(drop=True)\n",
+    "starter_code": "import pandas as pd\n\ndef solve(df_orders, df_users):\n    # Join orders to users, then compute completion rate per country\n    pass",
+    "expected_code": "import pandas as pd\n\ndef solve(df_orders, df_users):\n    df = df_orders.merge(df_users[['user_id', 'country']], on='user_id', how='inner')\n    result = (\n        df.groupby('country', as_index=False)\n        .agg(\n            total_orders=('order_id', 'count'),\n            completed_orders=('status', lambda x: (x == 'completed').sum())\n        )\n    )\n    result['completion_rate'] = (result['completed_orders'] / result['total_orders']).round(4)\n    return result.sort_values('completion_rate', ascending=False).reset_index(drop=True)\n",
     "hints": [
-      "The denominator must include ALL orders in the region — cancellations and pending orders are still orders, not exclusions.",
+      "The country dimension lives in the users table, not on orders — you need to bring it in via a join before grouping.",
+      "The denominator must include ALL orders for that country — cancellations and pending orders are still orders, not exclusions.",
       "Both the total count and a conditional count can be computed in a single aggregation by using a lambda for the status comparison."
     ],
     "concepts": [
       "METRIC INTERPRETATION & DENOMINATOR CHOICE",
+      "MULTI-DATAFRAME ENTITY LINKING",
       "GROUPED AGGREGATION"
     ],
-    "order": 63
+    "order": 63,
+    "topic": "python_data",
+    "solution_code": "import pandas as pd\n\ndef solve(df_orders, df_users):\n    df = df_orders.merge(df_users[['user_id', 'country']], on='user_id', how='inner')\n    result = (\n        df.groupby('country', as_index=False)\n        .agg(\n            total_orders=('order_id', 'count'),\n            completed_orders=('status', lambda x: (x == 'completed').sum())\n        )\n    )\n    result['completion_rate'] = (result['completed_orders'] / result['total_orders']).round(4)\n    return result.sort_values('completion_rate', ascending=False).reset_index(drop=True)\n",
+    "explanation": "Merging on `user_id` attaches each order's country from the users table. `groupby('country')` then partitions orders by country. Within `agg()`, a plain `'count'` gives total orders and a lambda `(x == 'completed').sum()` counts only the completed ones. Dividing gives the completion rate — the denominator intentionally includes all order statuses so cancelled orders are not hidden."
   },
   {
     "id": 32064,
     "title": "Payment Success Rate at the Order Level",
     "difficulty": "medium",
     "mock_only": true,
-    "description": "The payments table has multiple rows per order in some cases (retries, split payments). A payment_success_rate should be measured at the order level: what fraction of orders have at least one payment with status 'completed'? Return a single-row DataFrame with columns total_orders, orders_with_successful_payment, and payment_success_rate (rounded to 4 decimal places).",
+    "description": "The payments table has multiple rows per order in some cases (retries, split payments). A `payment_success_rate` should be measured at the order level: what fraction of orders have at least one payment with `status = 'paid'`? Return a single-row DataFrame with columns `total_orders`, `orders_with_successful_payment`, and `payment_success_rate` (rounded to 4 decimal places).",
     "dataframes": {
       "df_payments": "payments.csv"
     },
@@ -2514,23 +2537,26 @@
       "df_payments": [
         "payment_id",
         "order_id",
+        "payment_date",
         "payment_method",
         "amount",
-        "status",
-        "payment_date"
+        "status"
       ]
     },
     "starter_code": "import pandas as pd\n\ndef solve(df_payments):\n    pass",
-    "expected_code": "import pandas as pd\n\ndef solve(df_payments):\n    total_orders = df_payments['order_id'].nunique()\n    orders_with_success = (\n        df_payments[df_payments['status'] == 'completed']['order_id']\n        .nunique()\n    )\n    rate = round(orders_with_success / total_orders, 4)\n    return pd.DataFrame({\n        'total_orders': [total_orders],\n        'orders_with_successful_payment': [orders_with_success],\n        'payment_success_rate': [rate]\n    })\n",
+    "expected_code": "import pandas as pd\n\ndef solve(df_payments):\n    total_orders = df_payments['order_id'].nunique()\n    orders_with_success = (\n        df_payments[df_payments['status'] == 'paid']['order_id']\n        .nunique()\n    )\n    rate = round(orders_with_success / total_orders, 4)\n    return pd.DataFrame({\n        'total_orders': [total_orders],\n        'orders_with_successful_payment': [orders_with_success],\n        'payment_success_rate': [rate]\n    })\n",
     "hints": [
-      "Counting payment rows with status='completed' is not the same as counting orders that have at least one successful payment — one order may have multiple payment attempts.",
+      "Counting payment rows with status='paid' is not the same as counting orders that have at least one successful payment — one order may have multiple payment attempts.",
       "To measure at the order level, count distinct order IDs — once for all orders, once for orders that have at least one successful payment."
     ],
     "concepts": [
       "METRIC INTERPRETATION & DENOMINATOR CHOICE",
       "DOUBLE-COUNTING DETECTION"
     ],
-    "order": 64
+    "order": 64,
+    "topic": "python_data",
+    "solution_code": "import pandas as pd\n\ndef solve(df_payments):\n    total_orders = df_payments['order_id'].nunique()\n    orders_with_success = (\n        df_payments[df_payments['status'] == 'paid']['order_id']\n        .nunique()\n    )\n    rate = round(orders_with_success / total_orders, 4)\n    return pd.DataFrame({\n        'total_orders': [total_orders],\n        'orders_with_successful_payment': [orders_with_success],\n        'payment_success_rate': [rate]\n    })\n",
+    "explanation": "`df_payments['order_id'].nunique()` counts every distinct order in the payments table. Filtering to `status == 'paid'` first and then calling `.nunique()` on `order_id` counts only orders that have at least one paid payment — avoiding double-counting orders with multiple payment rows. Dividing gives the fraction of orders that were ultimately paid."
   },
   {
     "id": 32065,
@@ -2546,15 +2572,18 @@
       "df_events": [
         "event_id",
         "session_id",
+        "user_id",
+        "event_time",
         "event_name",
-        "timestamp"
+        "product_id"
       ],
       "df_sessions": [
         "session_id",
         "user_id",
+        "session_start",
         "device_type",
-        "start_time",
-        "end_time"
+        "traffic_source",
+        "country"
       ]
     },
     "starter_code": "import pandas as pd\n\ndef solve(df_events, df_sessions):\n    pass",
@@ -2574,7 +2603,7 @@
     "title": "Total Revenue Without Double-Counting Multi-Payment Orders",
     "difficulty": "medium",
     "mock_only": true,
-    "description": "Some orders have multiple payment rows in the payments table (partial payments, retries). To compute true revenue at the order level, use net_amount from the orders table directly — do NOT sum payment amounts. Compute total revenue by region for completed orders. Return region and total_revenue (sum of net_amount, rounded to 2 decimal places), sorted by total_revenue descending.",
+    "description": "Some orders have multiple payment rows in the payments table (partial payments, retries). To compute true revenue at the order level, use `net_amount` from the orders table directly — do NOT sum payment amounts. Compute total revenue by `payment_status` for all orders. Return `payment_status` and `total_revenue` (sum of `net_amount`, rounded to 2 decimal places), sorted by `total_revenue` descending.\n\n**Why this matters:** joining orders to payments and summing `amount` inflates revenue because each order row is duplicated for each payment row. Using `orders.net_amount` directly — one row per order — avoids the fan-out.",
     "dataframes": {
       "df_orders": "orders.csv"
     },
@@ -2582,24 +2611,28 @@
       "df_orders": [
         "order_id",
         "user_id",
+        "order_date",
         "status",
-        "net_amount",
+        "gross_amount",
         "discount_amount",
-        "region",
-        "order_date"
+        "net_amount",
+        "payment_status"
       ]
     },
     "starter_code": "import pandas as pd\n\ndef solve(df_orders):\n    pass",
-    "expected_code": "import pandas as pd\n\ndef solve(df_orders):\n    completed = df_orders[df_orders['status'] == 'completed']\n    result = (\n        completed.groupby('region', as_index=False)['net_amount']\n        .sum()\n        .rename(columns={'net_amount': 'total_revenue'})\n    )\n    result['total_revenue'] = result['total_revenue'].round(2)\n    return result.sort_values('total_revenue', ascending=False).reset_index(drop=True)\n",
+    "expected_code": "import pandas as pd\n\ndef solve(df_orders):\n    result = (\n        df_orders.groupby('payment_status', as_index=False)['net_amount']\n        .sum()\n        .rename(columns={'net_amount': 'total_revenue'})\n    )\n    result['total_revenue'] = result['total_revenue'].round(2)\n    return result.sort_values('total_revenue', ascending=False).reset_index(drop=True)\n",
     "hints": [
       "Revenue should be measured once per order — the orders table has exactly one row per order, whereas the payments table can have several.",
-      "Filter to completed orders before aggregating to exclude cancelled or returned order values."
+      "The orders table carries a payment_status column that already reflects the payment outcome for each order — no join to payments is needed."
     ],
     "concepts": [
       "DOUBLE-COUNTING DETECTION",
       "GROUPED AGGREGATION"
     ],
-    "order": 66
+    "order": 66,
+    "topic": "python_data",
+    "solution_code": "import pandas as pd\n\ndef solve(df_orders):\n    result = (\n        df_orders.groupby('payment_status', as_index=False)['net_amount']\n        .sum()\n        .rename(columns={'net_amount': 'total_revenue'})\n    )\n    result['total_revenue'] = result['total_revenue'].round(2)\n    return result.sort_values('total_revenue', ascending=False).reset_index(drop=True)\n",
+    "explanation": "Grouping directly on `orders.payment_status` and summing `net_amount` gives correct revenue with no fan-out risk — each order contributes its `net_amount` exactly once. Joining to the payments table and summing `payments.amount` would inflate totals because one order may have multiple payment rows (retries, partial payments), causing the order's revenue to be counted multiple times."
   },
   {
     "id": 32067,
@@ -2637,7 +2670,7 @@
     "title": "Active Users vs Event Count by Device Type",
     "difficulty": "medium",
     "mock_only": true,
-    "description": "A report asks for 'the number of active users per device type'. Counting events per device_type is wrong — each user may have multiple sessions, each with multiple events. The correct measure is distinct users. Join events to sessions to get user_id and device_type, then compute both active_users (distinct user_id) and total_events per device_type. Return device_type, active_users, and total_events, sorted by active_users descending.",
+    "description": "A report asks for 'the number of active users per device type'. Counting events per `device_type` is wrong — each user may have multiple sessions, each with multiple events. The correct measure is distinct users. Join events to sessions on `session_id` to get `device_type`, then compute both `active_users` (distinct `user_id`) and `total_events` per `device_type`. Return `device_type`, `active_users`, and `total_events`, sorted by `active_users` descending.",
     "dataframes": {
       "df_events": "events.csv",
       "df_sessions": "sessions.csv"
@@ -2646,28 +2679,36 @@
       "df_events": [
         "event_id",
         "session_id",
+        "user_id",
+        "event_time",
         "event_name",
-        "timestamp"
+        "product_id"
       ],
       "df_sessions": [
         "session_id",
         "user_id",
+        "session_start",
         "device_type",
-        "start_time",
-        "end_time"
+        "traffic_source",
+        "country"
       ]
     },
     "starter_code": "import pandas as pd\n\ndef solve(df_events, df_sessions):\n    pass",
-    "expected_code": "import pandas as pd\n\ndef solve(df_events, df_sessions):\n    merged = df_events.merge(df_sessions[['session_id', 'user_id', 'device_type']], on='session_id')\n    result = (\n        merged.groupby('device_type', as_index=False)\n        .agg(\n            active_users=('user_id', 'nunique'),\n            total_events=('event_id', 'count')\n        )\n        .sort_values('active_users', ascending=False)\n        .reset_index(drop=True)\n    )\n    return result\n",
+    "expected_code": "import pandas as pd\n\ndef solve(df_events, df_sessions):\n    merged = df_events.merge(df_sessions[['session_id', 'device_type']], on='session_id')\n    result = (\n        merged.groupby('device_type', as_index=False)\n        .agg(\n            active_users=('user_id', 'nunique'),\n            total_events=('event_id', 'count')\n        )\n        .sort_values('active_users', ascending=False)\n        .reset_index(drop=True)\n    )\n    return result\n",
     "hints": [
       "Event count and user count are different things — one user can generate dozens of events across multiple sessions.",
-      "To count users, use distinct counting on user_id after bringing in that dimension from the sessions table."
+      "The device_type dimension lives in sessions, not events — join on session_id to bring it in.",
+      "To count users, use distinct counting on user_id after bringing in the device_type dimension."
     ],
     "concepts": [
       "DOUBLE-COUNTING DETECTION",
-      "MULTI-DATAFRAME ENTITY LINKING"
+      "MULTI-DATAFRAME ENTITY LINKING",
+      "GROUPED AGGREGATION"
     ],
-    "order": 68
+    "order": 68,
+    "topic": "python_data",
+    "solution_code": "import pandas as pd\n\ndef solve(df_events, df_sessions):\n    merged = df_events.merge(df_sessions[['session_id', 'device_type']], on='session_id')\n    result = (\n        merged.groupby('device_type', as_index=False)\n        .agg(\n            active_users=('user_id', 'nunique'),\n            total_events=('event_id', 'count')\n        )\n        .sort_values('active_users', ascending=False)\n        .reset_index(drop=True)\n    )\n    return result\n",
+    "explanation": "Joining on `session_id` attaches `device_type` to every event row. The subsequent `groupby('device_type').agg()` computes two metrics simultaneously: `nunique` on `user_id` counts each distinct user only once per device type regardless of how many events they generated, while `count` on `event_id` gives the raw event volume. Showing both side-by-side illustrates the difference between user reach and engagement volume."
   },
   {
     "id": 32069,
@@ -2683,15 +2724,18 @@
       "df_events": [
         "event_id",
         "session_id",
+        "user_id",
+        "event_time",
         "event_name",
-        "timestamp"
+        "product_id"
       ],
       "df_sessions": [
         "session_id",
         "user_id",
+        "session_start",
         "device_type",
-        "start_time",
-        "end_time"
+        "traffic_source",
+        "country"
       ]
     },
     "starter_code": "import pandas as pd\n\ndef solve(df_events, df_sessions):\n    pass",
@@ -2719,11 +2763,12 @@
       "df_orders": [
         "order_id",
         "user_id",
+        "order_date",
         "status",
-        "net_amount",
+        "gross_amount",
         "discount_amount",
-        "region",
-        "order_date"
+        "net_amount",
+        "payment_status"
       ]
     },
     "starter_code": "import pandas as pd\n\ndef solve(df_orders):\n    pass",
@@ -2751,11 +2796,11 @@
       "df_tickets": [
         "ticket_id",
         "user_id",
+        "created_at",
         "issue_type",
         "priority",
         "status",
-        "created_at",
-        "resolved_at"
+        "resolution_hours"
       ]
     },
     "starter_code": "import pandas as pd\n\ndef solve(df_tickets):\n    pass",
@@ -2783,11 +2828,12 @@
       "df_orders": [
         "order_id",
         "user_id",
+        "order_date",
         "status",
-        "net_amount",
+        "gross_amount",
         "discount_amount",
-        "region",
-        "order_date"
+        "net_amount",
+        "payment_status"
       ]
     },
     "starter_code": "import pandas as pd\n\ndef solve(df_orders):\n    pass",
@@ -2815,11 +2861,12 @@
       "df_orders": [
         "order_id",
         "user_id",
+        "order_date",
         "status",
-        "net_amount",
+        "gross_amount",
         "discount_amount",
-        "region",
-        "order_date"
+        "net_amount",
+        "payment_status"
       ]
     },
     "starter_code": "import pandas as pd\n\ndef solve(df_orders):\n    pass",
@@ -2839,7 +2886,7 @@
     "title": "Time Between Consecutive Events in a Session",
     "difficulty": "medium",
     "mock_only": true,
-    "description": "For each event, compute the time elapsed (in seconds) since the previous event in the same session. Events within a session should be ordered by timestamp. The first event in each session has a gap of 0 seconds. Return session_id, event_id, event_name, timestamp, and seconds_since_prev (integer), sorted by session_id then timestamp.",
+    "description": "For each event, compute the time elapsed (in seconds) since the previous event in the same session. Events within a session should be ordered by `event_time`. The first event in each session has a gap of 0 seconds. Return `session_id`, `event_id`, `event_name`, `event_time`, and `seconds_since_prev` (integer), sorted by `session_id` then `event_time`.",
     "dataframes": {
       "df_events": "events.csv"
     },
@@ -2847,21 +2894,26 @@
       "df_events": [
         "event_id",
         "session_id",
+        "user_id",
+        "event_time",
         "event_name",
-        "timestamp"
+        "product_id"
       ]
     },
     "starter_code": "import pandas as pd\n\ndef solve(df_events):\n    pass",
-    "expected_code": "import pandas as pd\n\ndef solve(df_events):\n    df = df_events.copy()\n    df['timestamp'] = pd.to_datetime(df['timestamp'])\n    df = df.sort_values(['session_id', 'timestamp'])\n    df['prev_ts'] = df.groupby('session_id')['timestamp'].shift(1)\n    df['seconds_since_prev'] = (\n        (df['timestamp'] - df['prev_ts']).dt.total_seconds()\n        .fillna(0).astype(int)\n    )\n    return (\n        df[['session_id', 'event_id', 'event_name', 'timestamp', 'seconds_since_prev']]\n        .reset_index(drop=True)\n    )\n",
+    "expected_code": "import pandas as pd\n\ndef solve(df_events):\n    df = df_events.copy()\n    df['event_time'] = pd.to_datetime(df['event_time'])\n    df = df.sort_values(['session_id', 'event_time'])\n    df['prev_ts'] = df.groupby('session_id')['event_time'].shift(1)\n    df['seconds_since_prev'] = (\n        (df['event_time'] - df['prev_ts']).dt.total_seconds()\n        .fillna(0).astype(int)\n    )\n    return (\n        df[['session_id', 'event_id', 'event_name', 'event_time', 'seconds_since_prev']]\n        .reset_index(drop=True)\n    )\n",
     "hints": [
-      "Within each session, you need the timestamp from the previous row — that is a within-group lag operation.",
-      "The first event in each session has no predecessor, so the lagged timestamp will be null — fill that gap with 0 seconds elapsed."
+      "Within each session, you need the event_time from the previous row — that is a within-group lag operation.",
+      "The first event in each session has no predecessor, so the lagged event_time will be null — fill that gap with 0 seconds elapsed."
     ],
     "concepts": [
       "WINDOW & ROLLING OPERATIONS",
       "DATETIME OPERATIONS"
     ],
-    "order": 74
+    "order": 74,
+    "topic": "python_data",
+    "solution_code": "import pandas as pd\n\ndef solve(df_events):\n    df = df_events.copy()\n    df['event_time'] = pd.to_datetime(df['event_time'])\n    df = df.sort_values(['session_id', 'event_time'])\n    df['prev_ts'] = df.groupby('session_id')['event_time'].shift(1)\n    df['seconds_since_prev'] = (\n        (df['event_time'] - df['prev_ts']).dt.total_seconds()\n        .fillna(0).astype(int)\n    )\n    return (\n        df[['session_id', 'event_id', 'event_name', 'event_time', 'seconds_since_prev']]\n        .reset_index(drop=True)\n    )\n",
+    "explanation": "Sorting by `['session_id', 'event_time']` ensures events are in chronological order within each session. `groupby('session_id')['event_time'].shift(1)` lags the timestamp by one row within each group, giving the previous event's time. Subtracting and calling `.dt.total_seconds()` gives the gap in seconds as a float; `.fillna(0)` handles the first event in each session (no predecessor), and `.astype(int)` converts to whole seconds."
   },
   {
     "id": 32075,
@@ -2876,11 +2928,12 @@
       "df_orders": [
         "order_id",
         "user_id",
+        "order_date",
         "status",
-        "net_amount",
+        "gross_amount",
         "discount_amount",
-        "region",
-        "order_date"
+        "net_amount",
+        "payment_status"
       ]
     },
     "starter_code": "import pandas as pd\n\ndef solve(df_orders):\n    pass",
@@ -2900,22 +2953,24 @@
     "title": "Acquisition Channel as Business-Priority Ordered Categorical",
     "difficulty": "medium",
     "mock_only": true,
-    "description": "The users table has an acquisition_channel column. Define a business-priority ordering: 'referral' > 'organic' > 'paid_social' > 'email' > 'direct'. Convert the acquisition_channel column to an ordered Categorical using this sequence. Return the full users table with columns user_id, acquisition_channel, and city, sorted by acquisition_channel ascending (using the categorical order, so referral comes first), then user_id ascending.",
+    "description": "The users table has an `acquisition_channel` column with values: `referral`, `organic`, `paid_social`, `paid_search`, `partner`, `direct`. Define a business-priority ordering: `referral` > `organic` > `paid_social` > `paid_search` > `partner` > `direct`. Convert the `acquisition_channel` column to an ordered Categorical using this sequence. Return `user_id`, `acquisition_channel`, and `country`, sorted by `acquisition_channel` ascending (using the categorical order, so `referral` comes first), then `user_id` ascending.",
     "dataframes": {
       "df_users": "users.csv"
     },
     "schema": {
       "df_users": [
         "user_id",
-        "age",
-        "acquisition_channel",
-        "city",
+        "name",
+        "email",
+        "signup_date",
         "country",
-        "signup_date"
+        "acquisition_channel",
+        "plan_tier",
+        "is_active"
       ]
     },
     "starter_code": "import pandas as pd\n\ndef solve(df_users):\n    pass",
-    "expected_code": "import pandas as pd\n\ndef solve(df_users):\n    channel_order = ['referral', 'organic', 'paid_social', 'email', 'direct']\n    df = df_users.copy()\n    df['acquisition_channel'] = pd.Categorical(\n        df['acquisition_channel'],\n        categories=channel_order,\n        ordered=True\n    )\n    return (\n        df[['user_id', 'acquisition_channel', 'city']]\n        .sort_values(['acquisition_channel', 'user_id'])\n        .reset_index(drop=True)\n    )\n",
+    "expected_code": "import pandas as pd\n\ndef solve(df_users):\n    channel_order = ['referral', 'organic', 'paid_social', 'paid_search', 'partner', 'direct']\n    df = df_users.copy()\n    df['acquisition_channel'] = pd.Categorical(\n        df['acquisition_channel'],\n        categories=channel_order,\n        ordered=True\n    )\n    return (\n        df[['user_id', 'acquisition_channel', 'country']]\n        .sort_values(['acquisition_channel', 'user_id'])\n        .reset_index(drop=True)\n    )\n",
     "hints": [
       "An ordered categorical encodes the relative ranking of categories so that sorting uses that ranking rather than alphabetical order.",
       "Passing the categories list in the desired sort order (highest priority first) means ascending sort will put the highest-priority channel at the top."
@@ -2924,7 +2979,10 @@
       "CATEGORICAL & BINNING",
       "OUTPUT SHAPE & ORDERING"
     ],
-    "order": 76
+    "order": 76,
+    "topic": "python_data",
+    "solution_code": "import pandas as pd\n\ndef solve(df_users):\n    channel_order = ['referral', 'organic', 'paid_social', 'paid_search', 'partner', 'direct']\n    df = df_users.copy()\n    df['acquisition_channel'] = pd.Categorical(\n        df['acquisition_channel'],\n        categories=channel_order,\n        ordered=True\n    )\n    return (\n        df[['user_id', 'acquisition_channel', 'country']]\n        .sort_values(['acquisition_channel', 'user_id'])\n        .reset_index(drop=True)\n    )\n",
+    "explanation": "`pd.Categorical(..., categories=channel_order, ordered=True)` assigns a business-defined rank to each channel value. Once the column is typed as an ordered categorical, `sort_values` uses that rank rather than lexicographic order — so `referral` (index 0 in the category list) sorts before `direct` (index 5), even though alphabetically `direct` would come first."
   },
   {
     "id": 32077,
@@ -2940,10 +2998,11 @@
       "df_emp": [
         "employee_id",
         "employee_name",
-        "department_id",
+        "email",
         "salary",
+        "department_id",
         "hire_date",
-        "region"
+        "country"
       ],
       "df_dept": [
         "department_id",
@@ -2965,35 +3024,52 @@
   },
   {
     "id": 32078,
-    "title": "Highest Value Completed Order per Region",
+    "title": "Highest Value Completed Order per Country",
     "difficulty": "medium",
     "mock_only": true,
-    "description": "For each region, find the single completed order with the highest net_amount. If there is a tie, choose the one with the lower order_id. Return region, order_id, user_id, and net_amount, sorted by region ascending.",
+    "description": "For each country, find the single completed order with the highest `net_amount`. Join orders to users on `user_id` to get the country dimension. If there is a tie, choose the one with the lower `order_id`. Return `country`, `order_id`, `user_id`, and `net_amount`, sorted by `country` ascending.",
     "dataframes": {
-      "df_orders": "orders.csv"
+      "df_orders": "orders.csv",
+      "df_users": "users.csv"
     },
     "schema": {
       "df_orders": [
         "order_id",
         "user_id",
+        "order_date",
         "status",
-        "net_amount",
+        "gross_amount",
         "discount_amount",
-        "region",
-        "order_date"
+        "net_amount",
+        "payment_status"
+      ],
+      "df_users": [
+        "user_id",
+        "name",
+        "email",
+        "signup_date",
+        "country",
+        "acquisition_channel",
+        "plan_tier",
+        "is_active"
       ]
     },
-    "starter_code": "import pandas as pd\n\ndef solve(df_orders):\n    pass",
-    "expected_code": "import pandas as pd\n\ndef solve(df_orders):\n    completed = df_orders[df_orders['status'] == 'completed'].copy()\n    completed = completed.sort_values(\n        ['region', 'net_amount', 'order_id'],\n        ascending=[True, False, True]\n    )\n    top1 = completed.groupby('region').head(1)\n    return (\n        top1[['region', 'order_id', 'user_id', 'net_amount']]\n        .sort_values('region')\n        .reset_index(drop=True)\n    )\n",
+    "starter_code": "import pandas as pd\n\ndef solve(df_orders, df_users):\n    # Join to get country, then find the top completed order per country\n    pass",
+    "expected_code": "import pandas as pd\n\ndef solve(df_orders, df_users):\n    completed = df_orders[df_orders['status'] == 'completed'].merge(\n        df_users[['user_id', 'country']], on='user_id', how='inner'\n    ).copy()\n    completed = completed.sort_values(\n        ['country', 'net_amount', 'order_id'],\n        ascending=[True, False, True]\n    )\n    top1 = completed.groupby('country').head(1)\n    return (\n        top1[['country', 'order_id', 'user_id', 'net_amount']]\n        .sort_values('country')\n        .reset_index(drop=True)\n    )\n",
     "hints": [
+      "The country dimension lives in the users table — join orders to users on user_id before grouping.",
       "The reliable way to get the single top row per group is to sort by all relevant columns first, then take the first row within each group.",
       "Include the tiebreaker column (order_id ascending) in the sort before slicing so ties are resolved deterministically."
     ],
     "concepts": [
       "RANKING & TOP-N PER GROUP",
+      "MULTI-DATAFRAME ENTITY LINKING",
       "BOOLEAN INDEXING & FILTERING"
     ],
-    "order": 78
+    "order": 78,
+    "topic": "python_data",
+    "solution_code": "import pandas as pd\n\ndef solve(df_orders, df_users):\n    completed = df_orders[df_orders['status'] == 'completed'].merge(\n        df_users[['user_id', 'country']], on='user_id', how='inner'\n    ).copy()\n    completed = completed.sort_values(\n        ['country', 'net_amount', 'order_id'],\n        ascending=[True, False, True]\n    )\n    top1 = completed.groupby('country').head(1)\n    return (\n        top1[['country', 'order_id', 'user_id', 'net_amount']]\n        .sort_values('country')\n        .reset_index(drop=True)\n    )\n",
+    "explanation": "Filtering to `status == 'completed'` first reduces the working set. Merging on `user_id` brings in `country` from users. Sorting by `['country', 'net_amount', 'order_id']` with `ascending=[True, False, True]` puts the highest-revenue row first within each country, with ties broken by the lower `order_id`. `groupby('country').head(1)` then extracts that first row per group."
   },
   {
     "id": 32079,
@@ -3008,8 +3084,10 @@
       "df_events": [
         "event_id",
         "session_id",
+        "user_id",
+        "event_time",
         "event_name",
-        "timestamp"
+        "product_id"
       ]
     },
     "starter_code": "import pandas as pd\n\ndef solve(df_events):\n    pass",
@@ -3037,11 +3115,11 @@
       "df_tickets": [
         "ticket_id",
         "user_id",
+        "created_at",
         "issue_type",
         "priority",
         "status",
-        "created_at",
-        "resolved_at"
+        "resolution_hours"
       ]
     },
     "starter_code": "import pandas as pd\n\ndef solve(df_tickets):\n    pass",
@@ -3069,11 +3147,12 @@
       "df_orders": [
         "order_id",
         "user_id",
+        "order_date",
         "status",
-        "net_amount",
+        "gross_amount",
         "discount_amount",
-        "region",
-        "order_date"
+        "net_amount",
+        "payment_status"
       ]
     },
     "starter_code": "import pandas as pd\nimport numpy as np\n\ndef solve(df_orders):\n    pass",
@@ -3132,8 +3211,10 @@
       "df_events": [
         "event_id",
         "session_id",
+        "user_id",
+        "event_time",
         "event_name",
-        "timestamp"
+        "product_id"
       ]
     },
     "starter_code": "import pandas as pd\n\ndef solve(df_events):\n    pass",
@@ -3161,10 +3242,11 @@
       "df_emp": [
         "employee_id",
         "employee_name",
-        "department_id",
+        "email",
         "salary",
+        "department_id",
         "hire_date",
-        "region"
+        "country"
       ]
     },
     "starter_code": "import pandas as pd\n\ndef solve(df_emp):\n    pass",
@@ -3201,11 +3283,12 @@
       "df_orders": [
         "order_id",
         "user_id",
+        "order_date",
         "status",
-        "net_amount",
+        "gross_amount",
         "discount_amount",
-        "region",
-        "order_date"
+        "net_amount",
+        "payment_status"
       ]
     },
     "starter_code": "import pandas as pd\n\ndef solve(df_items, df_orders):\n    pass",
@@ -3233,8 +3316,10 @@
       "df_events": [
         "event_id",
         "session_id",
+        "user_id",
+        "event_time",
         "event_name",
-        "timestamp"
+        "product_id"
       ]
     },
     "starter_code": "import pandas as pd\n\ndef solve(df_events):\n    pass",
@@ -3262,11 +3347,12 @@
       "df_orders": [
         "order_id",
         "user_id",
+        "order_date",
         "status",
-        "net_amount",
+        "gross_amount",
         "discount_amount",
-        "region",
-        "order_date"
+        "net_amount",
+        "payment_status"
       ]
     },
     "starter_code": "import pandas as pd\n\ndef solve(df_orders):\n    pass",
@@ -3283,10 +3369,10 @@
   },
   {
     "id": 32088,
-    "title": "Average Session Duration by Device Type",
+    "title": "Session Count by Device Type and Month",
     "difficulty": "medium",
     "mock_only": true,
-    "description": "Compute average session duration in minutes, grouped by device_type. Session duration = end_time − start_time in minutes. Exclude sessions where end_time is null (sessions still in progress). Return device_type and avg_duration_minutes (rounded to 2 decimal places), sorted by avg_duration_minutes descending.",
+    "description": "Using the sessions dataset, count the number of sessions per `device_type` and calendar month. Extract the month from `session_start` (format: `YYYY-MM`). Return `device_type`, `month`, and `session_count`, sorted by `device_type` ascending then `month` ascending.",
     "dataframes": {
       "df_sessions": "sessions.csv"
     },
@@ -3294,22 +3380,26 @@
       "df_sessions": [
         "session_id",
         "user_id",
+        "session_start",
         "device_type",
-        "start_time",
-        "end_time"
+        "traffic_source",
+        "country"
       ]
     },
-    "starter_code": "import pandas as pd\n\ndef solve(df_sessions):\n    pass",
-    "expected_code": "import pandas as pd\n\ndef solve(df_sessions):\n    df = df_sessions.dropna(subset=['end_time']).copy()\n    df['start_time'] = pd.to_datetime(df['start_time'])\n    df['end_time'] = pd.to_datetime(df['end_time'])\n    df['duration_minutes'] = (df['end_time'] - df['start_time']).dt.total_seconds() / 60\n    result = (\n        df.groupby('device_type', as_index=False)['duration_minutes']\n        .mean()\n        .rename(columns={'duration_minutes': 'avg_duration_minutes'})\n    )\n    result['avg_duration_minutes'] = result['avg_duration_minutes'].round(2)\n    return result.sort_values('avg_duration_minutes', ascending=False).reset_index(drop=True)\n",
+    "starter_code": "import pandas as pd\n\ndef solve(df_sessions):\n    # Extract month from session_start, then count sessions per device_type and month\n    pass",
+    "expected_code": "import pandas as pd\n\ndef solve(df_sessions):\n    df = df_sessions.copy()\n    df['session_start'] = pd.to_datetime(df['session_start'])\n    df['month'] = df['session_start'].dt.to_period('M').astype(str)\n    result = (\n        df.groupby(['device_type', 'month'], as_index=False)\n        .agg(session_count=('session_id', 'count'))\n        .sort_values(['device_type', 'month'])\n        .reset_index(drop=True)\n    )\n    return result\n",
     "hints": [
-      "Both start and end timestamps must be converted to datetime type before subtraction — subtracting string columns will not produce a time difference.",
-      "Null end_time signals an active or incomplete session — exclude those rows before computing duration to avoid propagating nulls into the aggregation."
+      "Convert session_start to datetime before extracting the month — the raw string column cannot be parsed by `.dt` accessors.",
+      "`.dt.to_period('M')` returns a Period object representing the calendar month; call `.astype(str)` to get a YYYY-MM string for readability."
     ],
     "concepts": [
       "DATETIME OPERATIONS",
-      "MISSING VALUE STRATEGY"
+      "GROUPED AGGREGATION"
     ],
-    "order": 88
+    "order": 88,
+    "topic": "python_data",
+    "solution_code": "import pandas as pd\n\ndef solve(df_sessions):\n    df = df_sessions.copy()\n    df['session_start'] = pd.to_datetime(df['session_start'])\n    df['month'] = df['session_start'].dt.to_period('M').astype(str)\n    result = (\n        df.groupby(['device_type', 'month'], as_index=False)\n        .agg(session_count=('session_id', 'count'))\n        .sort_values(['device_type', 'month'])\n        .reset_index(drop=True)\n    )\n    return result\n",
+    "explanation": "`pd.to_datetime()` parses the session_start strings into Timestamp objects, enabling `.dt` accessor methods. `.dt.to_period('M')` truncates each timestamp to its calendar month (e.g. 2023-01), and `.astype(str)` converts it to a sortable string. Grouping by both `device_type` and `month` produces a time-series breakdown of session volume across device categories."
   },
   {
     "id": 32089,
@@ -3355,10 +3445,11 @@
       "df_emp": [
         "employee_id",
         "employee_name",
-        "department_id",
+        "email",
         "salary",
+        "department_id",
         "hire_date",
-        "region"
+        "country"
       ]
     },
     "starter_code": "import pandas as pd\n\ndef solve(df_emp):\n    pass",
