@@ -460,10 +460,10 @@ function HeroSection({ user, dashData, reduced }) {
         <div className="lp-hero-left">
           <p className="lp-eyebrow">For data professionals — and those becoming one.</p>
           <h1 className="lp-hero-h1">
-            Develop the reasoning that makes you genuinely effective with data.
+            Develop the reasoning that makes you effective with data.
           </h1>
           <p className="lp-hero-sub">
-            Nine tracks: SQL, Python, ML, statistics, data engineering, and more. Real execution on real engines. The kind of thinking that holds up years into the job — and if it also makes you exceptional in interviews, that's a consequence, not the goal.
+            SQL, Python, ML, statistics, data engineering, and more — nine tracks on real engines. The thinking that holds up years into the job. Interview success is a consequence, not the goal.
           </p>
           <div className="lp-hero-actions">
             <Link className="btn btn-primary" to="/sample/sql/easy">Try a free sample →</Link>
