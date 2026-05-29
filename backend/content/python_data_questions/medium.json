@@ -2470,7 +2470,7 @@
     "starter_code": "import pandas as pd\n\ndef solve(df_emp, df_dept):\n    pass",
     "expected_code": "import pandas as pd\n\ndef solve(df_emp, df_dept):\n    merged = df_emp.merge(df_dept[['department_id', 'department_name']], on='department_id', how='left')\n    merged['department_name'] = merged['department_name'].fillna('Unassigned')\n    return (\n        merged[['employee_name', 'department_name', 'salary']]\n        .sort_values(['department_name', 'employee_name'])\n        .reset_index(drop=True)\n    )\n",
     "hints": [
-      "A left merge on department_id keeps every employee row — the right table (departments) contributes department_name where a match exists.",
+      "Join each employee record to its department name, keeping every employee in the output regardless of whether their department exists in the lookup table.",
       "Even though all employees in this dataset have a matching department, wrapping the join with fillna('Unassigned') is the defensive production pattern: it handles orphan rows gracefully without changing correct rows."
     ],
     "concepts": [
@@ -2849,7 +2849,7 @@
     "starter_code": "import pandas as pd\n\ndef solve(df_orders):\n    pass",
     "expected_code": "import pandas as pd\n\ndef solve(df_orders):\n    completed = df_orders[df_orders['status'] == 'completed'].copy()\n    completed['order_date'] = pd.to_datetime(completed['order_date']).dt.date\n    daily = (\n        completed.groupby('order_date', as_index=False)['net_amount']\n        .sum()\n        .rename(columns={'net_amount': 'daily_revenue'})\n        .sort_values('order_date')\n    )\n    daily['rolling_7d_revenue'] = daily['daily_revenue'].rolling(7, min_periods=1).sum().round(2)\n    return daily[['order_date', 'daily_revenue', 'rolling_7d_revenue']].reset_index(drop=True)\n",
     "hints": [
-      "order_date is stored as a full timestamp — you must truncate to the date component before grouping, otherwise each individual timestamp becomes its own row and the rolling window no longer spans calendar days.",
+      "Timestamps with a time component create too fine a grain for daily aggregation — reduce each timestamp to just its calendar date before grouping so all orders on the same day collapse into a single aggregate row.",
       "Once the data is grouped by date and sorted, a sliding window function applied to the daily revenue column gives you a running N-day total."
     ],
     "concepts": [
