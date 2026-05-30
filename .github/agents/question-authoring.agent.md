@@ -274,6 +274,8 @@ Track-specific runtime checks live in each track doc's "Verification before comm
 - [ ] Difficulty matches reasoning depth, not concept count
 - [ ] Description unambiguous — output columns, filters, ordering, assumptions all stated; exactly one defensible answer
 - [ ] `expected_*` correct + deterministic; `solution_*` produces identical results; (MCQ) `correct_option` 0-indexed, explanation refutes every distractor
+- [ ] (MCQ) Explanation's worked examples and mathematical derivations produce the same answer as the keyed option — not just refute distractors. If working through the explanation reaches a different value or outcome than the key, the key is wrong. Check this explicitly: read the explanation's conclusion, then check it matches `correct_option`.
+- [ ] All specific values in the stem (dates, row counts, column names, thresholds, partition values) are internally consistent with the stated scenario and the learning objective — e.g. two "independent date partitions" must have genuinely different date values; a "512 MB file" must be compatible with the stated split size arithmetic.
 - [ ] No invented columns / tables; schema matches CSV headers; DuckDB syntax (SQL); pandas-idiomatic (Pandas)
 - [ ] Hints follow the ladder; first hint does not leak the answer term
 - [ ] Concept tags map to registered families per track; none blocklisted; 2–4 tags
