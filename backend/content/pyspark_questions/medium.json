@@ -65,19 +65,19 @@
     "type": "predict_output",
     "difficulty": "medium",
     "title": "How Many Output Partitions After groupBy?",
-    "description": "A developer runs the following code on a cluster with default Spark configuration:\n\n```python\ndf = spark.read.parquet('/data/events')  # read produces 400 partitions\nresult = df.groupBy('event_type').agg(F.count('*').alias('cnt'))\nprint(result.rdd.getNumPartitions())\n```\n\nWhat does `getNumPartitions()` print?",
+    "description": "A developer runs the following code on a cluster where `spark.sql.shuffle.partitions` is set to **200**:\n\n```python\ndf = spark.read.parquet('/data/events')  # read produces 400 partitions\nresult = df.groupBy('event_type').agg(F.count('*').alias('cnt'))\nprint(result.rdd.getNumPartitions())\n```\n\nWhat does `getNumPartitions()` print?",
     "code_snippet": "df = spark.read.parquet('/data/events')  # read produces 400 partitions\nresult = df.groupBy('event_type').agg(F.count('*').alias('cnt'))\nprint(result.rdd.getNumPartitions())",
     "options": [
       "400 — groupBy preserves the input partition count; the output has the same number of partitions as the input",
-      "200 — groupBy triggers a shuffle; the output partition count is governed by spark.sql.shuffle.partitions, which defaults to 200",
+      "200 — groupBy triggers a shuffle; the output partition count is governed by spark.sql.shuffle.partitions (set to 200), not the input partition count",
       "1 — groupBy reduces all rows to a minimal set of group keys and collapses the output into a single partition",
-      "same as spark.default.parallelism — shuffle output inherits the cluster's default parallelism setting, not spark.sql.shuffle.partitions"
+      "same as spark.default.parallelism — shuffle output inherits the cluster-level default parallelism setting, not spark.sql.shuffle.partitions"
     ],
     "correct_option": 1,
-    "explanation": "`groupBy().agg()` is a **wide transformation** that triggers a shuffle — all rows with the same key must be co-located on one executor before aggregation. After the shuffle, the output partition count is controlled by `spark.sql.shuffle.partitions`, which defaults to **200**. The 400 input partitions are irrelevant to the output count; the shuffle resets the partition count to the configured value.\n\nOption A is wrong — groupBy does not inherit the input partition count; the shuffle resets it.\nOption C is wrong — groupBy does not collapse to 1 partition; it distributes across shuffle.partitions.\nOption D is wrong — `spark.default.parallelism` governs RDD operations; DataFrame shuffles use `spark.sql.shuffle.partitions`.",
+    "explanation": "`groupBy().agg()` is a **wide transformation** that triggers a shuffle — all rows with the same key must be co-located on one executor before aggregation. After the shuffle, the output partition count is controlled by `spark.sql.shuffle.partitions` (set to **200** in this cluster). The 400 input partitions are irrelevant; the shuffle resets the partition count to the configured value.\n\nOption A is wrong — groupBy does not inherit the input partition count; the shuffle resets it.\nOption C is wrong — groupBy produces one partition per group key (up to the shuffle.partitions limit), not 1.\nOption D is wrong — `spark.default.parallelism` governs RDD operations; DataFrame shuffles use `spark.sql.shuffle.partitions`.",
     "hints": [
-      "groupBy requires all rows with the same key on the same partition — that requires a shuffle. After a shuffle, what Spark configuration controls how many output partitions are created?",
-      "There are two partition-count settings in Spark: one for RDD operations and one for DataFrame SQL shuffles. Which one applies here, and what is its default?"
+      "groupBy requires all rows with the same key on the same partition — that requires a shuffle. After a shuffle, which Spark configuration controls how many output partitions are created?",
+      "There are two partition-count settings in Spark: one for RDD operations and one for DataFrame SQL shuffles. Which one applies here, and what value is it set to in this cluster?"
     ],
     "concepts": [
       "SHUFFLE REASONING",
@@ -1750,24 +1750,24 @@
     "difficulty": "medium",
     "mock_only": true,
     "title": "Debug: AnalysisException After Joining Two Tables with a Shared Column Name",
-    "description": "After joining `orders` and `line_items`, the engineer writes `result.select('order_id', 'product', 'revenue')`. They get:\n\n```\nAnalysisException: Resolved attribute(s) order_id missing from ...\n```\n\nBoth DataFrames have an `order_id` column. The join was written as:\n\n```python\nresult = orders.join(line_items, orders.order_id == line_items.order_id)\n```\n\nWhat is wrong?",
+    "description": "After joining `orders` and `line_items`, the engineer writes:\n\n```python\nresult.select(orders.order_id, 'product', 'revenue')\n```\n\nThey get:\n\n```\nAnalysisException: Resolved attribute(s) order_id missing from ...\n```\n\nBoth DataFrames have an `order_id` column. The join was written as:\n\n```python\nresult = orders.join(line_items, orders.order_id == line_items.order_id)\n```\n\nWhat is wrong?",
     "options": [
-      "The Column expression form retains two separate `order_id` columns in the result — one from each side — making `select('order_id')` ambiguous; fix with `result.drop(line_items.order_id)` or switch to the string form `on='order_id'`",
+      "The Column expression join retains two separate `order_id` columns in the result; using `orders.order_id` (a Column reference bound to the original orders plan) in the select breaks attribute lineage — Spark cannot find that specific attribute ID in the joined plan; fix with `result.drop(line_items.order_id)` or switch to `on='order_id'`",
       "Nothing is wrong with the join; the AnalysisException is caused by selecting 'revenue' which exists only in line_items, not in orders",
       "The Column expression join automatically coalesces same-named columns into one; the AnalysisException means 'product' does not exist in either DataFrame",
       "Without `how=`, Spark defaults to a cross join instead of an inner join, producing a result where column-level predicates cannot be resolved"
     ],
     "correct_option": 0,
-    "explanation": "When the join condition uses a Column expression (`orders.order_id == line_items.order_id`), Spark retains **two** `order_id` columns in the output — one from each side — both named `order_id`. A subsequent `select('order_id')` is ambiguous: Spark cannot determine which copy to use and raises `AnalysisException: Resolved attribute(s) order_id missing`.\n\nThe fix options are:\n- Drop one copy: `result.drop(line_items.order_id).select('order_id', ...)`\n- Use the string form `on='order_id'`, which coalesces both sides into a single `order_id` column with no ambiguity.\n\nOption B is wrong — 'revenue' exists in line_items and would be present after the join; the error is about `order_id`.\nOption C is wrong — Column expression form does NOT auto-coalesce; that is the string form's behaviour.\nOption D is wrong — without `how=`, the default is `inner`, not cross.",
+    "explanation": "The Column expression join (`orders.order_id == line_items.order_id`) retains **two** separate `order_id` attributes in the result — one from each side, each with its own internal attribute ID. When the engineer then passes `orders.order_id` (a `Column` object tied to the original `orders` plan) into a select on the post-join result, Spark's analyzer looks for that exact attribute ID but cannot find it in the joined plan's lineage — raising `AnalysisException: Resolved attribute(s) order_id missing from ...`.\n\nThe fix options are:\n- Drop one copy: `result.drop(line_items.order_id).select(orders.order_id, ...)`\n- Use a string reference on the cleaned result: `result.drop(line_items.order_id).select('order_id', ...)`\n- Use the string form `on='order_id'` in the join, which coalesces both sides into a single `order_id` column.\n\nOption B is wrong — 'revenue' is present in line_items and will be in the joined result.\nOption C is wrong — Column expression form does NOT auto-coalesce; that is the string form's behaviour.\nOption D is wrong — without `how=`, the default join is `inner`, not cross.",
     "hints": [
-      "There are two ways to specify a PySpark join condition: a string column name and a Column expression (e.g. `df1.col == df2.col`). How do they differ in the number of same-named columns retained in the output?",
-      "Which join form produces a single merged column, and which retains two independent copies with the same name?"
+      "After a Column expression join, there are two `order_id` attributes in the result — each with a different internal ID. When you pass `orders.order_id` (bound to the original DataFrame) into a select on the joined result, which attribute ID does Spark look for?",
+      "Which join form coalesces same-named columns into a single attribute, and which retains two independent copies?"
     ],
     "concepts": [
       "SCHEMA & TYPE HANDLING",
       "DEBUG SPARK ERRORS"
     ],
-    "code_snippet": "result = orders.join(line_items, orders.order_id == line_items.order_id)"
+    "code_snippet": "result = orders.join(line_items, orders.order_id == line_items.order_id)\nresult.select(orders.order_id, 'product', 'revenue')"
   },
   {
     "id": 42062,
