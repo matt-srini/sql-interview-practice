@@ -207,13 +207,13 @@ def _pyspark_format_targets(difficulty: str, num_questions: int) -> list[str]:
     Target format slot sequence for PySpark sessions.
     Based on actual pool distribution:
       easy:   predict_output(19), conceptual(14), debug(7)
-      medium: conceptual(25), scenario(9), debug(6), predict_output(1), optimization(2) [practice only]
+      medium: predict_output(32), conceptual(31), debug(27), scenario(14), optimization(16) [practice + mock-only combined]
       hard:   conceptual(20), scenario(4), predict_output(2) [practice only]
       mixed:  all of the above combined
     """
     targets: dict[str, list[str]] = {
         "easy":   ["predict_output", "conceptual", "predict_output", "debug", "predict_output", "conceptual"],
-        "medium": ["conceptual", "scenario", "debug", "predict_output", "conceptual", "optimization"],
+        "medium": ["predict_output", "debug", "predict_output", "debug", "conceptual", "scenario"],
         "hard":   ["conceptual", "scenario", "predict_output", "conceptual", "scenario", "conceptual"],
         "mixed":  ["conceptual", "scenario", "predict_output", "debug", "conceptual", "scenario"],
     }
