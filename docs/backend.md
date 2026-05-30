@@ -98,15 +98,17 @@ Also available without `/api` prefix at `/catalog`.
 | GET | `/api/questions` | Lightweight question list |
 | GET | `/api/questions/{id}` | Full question detail. 404 if not found. 403 if locked. Omits `solution_query`, `expected_query`, and `explanation` before submission. |
 | POST | `/api/run-query` | `{ query, question_id }` → `{ columns, rows, row_limit }`. Rejects locked questions. |
-| POST | `/api/submit` | `{ query, question_id, duration_ms? }` → verdict + result comparison + solution material on acceptance. Marks question solved on correct submission. |
+| POST | `/api/submit` | `{ query, question_id, duration_ms? }` → structured verdict always. Marks question solved on correct submission. |
 
 Submit response fields:
 - `correct` — final acceptance flag (drives progression)
 - `is_result_correct` — whether result sets match
 - `structure_correct` — structural approach check
 - `feedback` — list of adjustment hints
-- `user_result`, `expected_result` — both result sets
-- `solution_query`, `explanation` — revealed after submission
+- `user_result`, `expected_result` — both result sets (absent when query fails to execute)
+- `solution_query`, `explanation` — always included so hint/solution flow works even on syntax errors
+
+**Run vs Submit contract (SQL):** `run-query` returns a raw error (400) on parse/guard failures — it is a safe drafting tool. `submit` never returns 400; SQL parse or guard errors are wrapped into a structured `{ correct: false, feedback: [error_message], solution_query, explanation }` response so the frontend can always proceed to the verdict → hint stepper → solution reveal flow. A user stuck on syntax is never left in a dead end.
 
 Also available without `/api` prefix.
 
