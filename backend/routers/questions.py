@@ -100,11 +100,16 @@ async def submit_answer(
         current_user["id"], "sql", int(body.question_id)
     )
 
+    syntax_error_msg: str | None = None
     try:
         result = evaluate(body.query, question["expected_query"], question)
         accepted = bool(result.get("correct")) and bool(result.get("structure_correct", True))
     except (BadRequestError, ValueError) as exc:
-        # Parse/guard errors still count as a failed attempt for weak-area tracking
+        syntax_error_msg = str(exc)
+        result = None
+        accepted = False
+
+    if syntax_error_msg is not None:
         await record_submission(
             user_id=current_user["id"],
             track="sql",
@@ -113,7 +118,14 @@ async def submit_answer(
             code=body.query,
             duration_ms=body.duration_ms,
         )
-        raise HTTPException(status_code=400, detail=str(exc)) from exc
+        return {
+            "correct": False,
+            "is_result_correct": False,
+            "structure_correct": False,
+            "feedback": [syntax_error_msg],
+            "solution_query": question["solution_query"],
+            "explanation": question["explanation"],
+        }
 
     # Detect identical repeated wrong attempt
     if not accepted and prev_submission and (prev_submission.get("code") or "").strip() == body.query.strip():
