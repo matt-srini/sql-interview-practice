@@ -44,8 +44,7 @@
     ],
     "concepts": [
       "DIMENSIONAL MODELING",
-      "NORMALIZATION",
-      "DIMENSION DESIGN"
+      "NORMALIZATION"
     ]
   },
   {
@@ -93,8 +92,7 @@
       "First Normal Form requires each cell to hold exactly one value — atomic and indivisible."
     ],
     "concepts": [
-      "NORMALIZATION",
-      "DIMENSION DESIGN"
+      "NORMALIZATION"
     ]
   },
   {
@@ -236,7 +234,6 @@
     ],
     "concepts": [
       "SURROGATE VS NATURAL KEYS",
-      "DIMENSION DESIGN",
       "REFERENTIAL INTEGRITY"
     ]
   },
@@ -260,8 +257,7 @@
       "If a natural key is already stable and unique, adding a system-generated key creates overhead without solving a real problem."
     ],
     "concepts": [
-      "SURROGATE VS NATURAL KEYS",
-      "DIMENSION DESIGN"
+      "SURROGATE VS NATURAL KEYS"
     ]
   },
   {
@@ -284,8 +280,7 @@
       "Surrogate keys are assigned by the warehouse, so they are always unique within the warehouse regardless of source system values."
     ],
     "concepts": [
-      "SURROGATE VS NATURAL KEYS",
-      "DIMENSIONAL MODELING"
+      "SURROGATE VS NATURAL KEYS"
     ]
   },
   {
@@ -308,8 +303,7 @@
       "The simplest strategy overwrites the existing value directly — no new rows, no extra columns."
     ],
     "concepts": [
-      "SCD STRUCTURE",
-      "DIMENSION DESIGN"
+      "SCD STRUCTURE"
     ]
   },
   {
@@ -358,8 +352,7 @@
     ],
     "concepts": [
       "SCD STRUCTURE",
-      "DIMENSION DESIGN",
-      "DIMENSIONAL MODELING"
+      "DIMENSION DESIGN"
     ]
   },
   {
@@ -408,7 +401,7 @@
     "concepts": [
       "GRAIN DEFINITION",
       "FACT TABLE DESIGN",
-      "AGGREGATE & SUMMARY DESIGN"
+      "DOUBLE-COUNTING & FAN-OUT"
     ]
   },
   {
@@ -479,9 +472,8 @@
       "The 'O' in both stands for Online, but the 'T' (Transactional) vs 'A' (Analytical) captures the fundamental difference in workload."
     ],
     "concepts": [
-      "DENORMALIZATION TRADEOFF",
       "DIMENSIONAL MODELING",
-      "NORMALIZATION"
+      "DENORMALIZATION TRADEOFF"
     ]
   },
   {
