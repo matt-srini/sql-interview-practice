@@ -35,8 +35,8 @@
       "Filter on both the order status and the payment status."
     ],
     "concepts": [
-      "REQUIRED ENTITY MATCHING",
-      "CONDITIONAL ROW FILTERING"
+      "MULTI-TABLE ENTITY LINKING",
+      "PRE-AGGREGATION FILTERING"
     ],
     "complexity_hint": "O(n) scan with early filter pushdown. The two WHERE conditions reduce the result before sorting.",
     "companies": [
@@ -78,9 +78,9 @@
       "Use DISTINCT because the same product may appear in more than one refunded order."
     ],
     "concepts": [
-      "REQUIRED ENTITY MATCHING",
-      "DEDUPLICATED RESULT SHAPING",
-      "CONDITIONAL ROW FILTERING"
+      "MULTI-TABLE ENTITY LINKING",
+      "DEDUPLICATION LOGIC",
+      "PRE-AGGREGATION FILTERING"
     ],
     "companies": [
       "Amazon",
@@ -116,8 +116,8 @@
       "After the join, look for NULL on a column from the employees table."
     ],
     "concepts": [
-      "OPTIONAL ENTITY PRESERVATION",
-      "CONDITIONAL ROW FILTERING"
+      "MULTI-TABLE ENTITY LINKING",
+      "PRE-AGGREGATION FILTERING"
     ],
     "complexity_hint": "LEFT JOIN anti-pattern: keep rows from the left table that have no match on the right. Can also be written with NOT IN or NOT EXISTS — LEFT JOIN + IS NULL is typically most performant.",
     "alternative_solution": {
@@ -164,9 +164,8 @@
       "Filter first, then group by country and sum the payment amount."
     ],
     "concepts": [
-      "REQUIRED ENTITY MATCHING",
-      "GROUPED AGGREGATION",
-      "VALUE AGGREGATION"
+      "MULTI-TABLE ENTITY LINKING",
+      "GROUPED AGGREGATION"
     ],
     "complexity_hint": "O(n log n) due to GROUP BY sort. Filtering with WHERE before aggregation is the key to keeping this efficient.",
     "companies": [
@@ -209,9 +208,8 @@
       "Use HAVING, not WHERE, to keep only groups whose average net_amount is above 600."
     ],
     "concepts": [
-      "REQUIRED ENTITY MATCHING",
+      "MULTI-TABLE ENTITY LINKING",
       "GROUPED AGGREGATION",
-      "AVERAGE-BASED BENCHMARKING",
       "POST-AGGREGATION FILTERING"
     ],
     "companies": [
@@ -257,9 +255,9 @@
       "Use HAVING after GROUP BY to keep only users whose distinct payment method count is greater than 1."
     ],
     "concepts": [
-      "REQUIRED ENTITY MATCHING",
+      "MULTI-TABLE ENTITY LINKING",
       "GROUPED AGGREGATION",
-      "DISTINCT PAYMENT-METHOD COUNTING",
+      "DEDUPLICATION LOGIC",
       "POST-AGGREGATION FILTERING"
     ],
     "companies": [
@@ -296,9 +294,8 @@
       "Because the filter is on an aggregate, use HAVING rather than WHERE."
     ],
     "concepts": [
-      "CONDITIONAL ROW FILTERING",
+      "PRE-AGGREGATION FILTERING",
       "GROUPED AGGREGATION",
-      "AVERAGE-BASED BENCHMARKING",
       "POST-AGGREGATION FILTERING"
     ],
     "companies": [
@@ -329,9 +326,8 @@
       "Group by the same CASE expression you use in the SELECT list."
     ],
     "concepts": [
-      "RULE-BASED CLASSIFICATION",
-      "GROUPED AGGREGATION",
-      "ROW COUNT AGGREGATION"
+      "CONDITIONAL LOGIC & CASE",
+      "GROUPED AGGREGATION"
     ],
     "companies": [
       "Amazon",
@@ -367,10 +363,9 @@
       "Use CASE WHEN to create the salary_band, then group by both region and that derived band."
     ],
     "concepts": [
-      "RULE-BASED CLASSIFICATION",
-      "REQUIRED ENTITY MATCHING",
-      "GROUPED AGGREGATION",
-      "ROW COUNT AGGREGATION"
+      "CONDITIONAL LOGIC & CASE",
+      "MULTI-TABLE ENTITY LINKING",
+      "GROUPED AGGREGATION"
     ],
     "companies": [
       "Google",
@@ -414,9 +409,9 @@
       "The outer query should filter users based on whether their user_id appears in that inner result set."
     ],
     "concepts": [
-      "NESTED FILTER LOGIC",
-      "REQUIRED ENTITY MATCHING",
-      "CONDITIONAL ROW FILTERING"
+      "SUBQUERY PATTERNS",
+      "MULTI-TABLE ENTITY LINKING",
+      "PRE-AGGREGATION FILTERING"
     ],
     "companies": [
       "Stripe",
@@ -466,7 +461,7 @@
     ],
     "concepts": [
       "MULTI-TABLE ENTITY LINKING",
-      "DISTINCT ENTITY COUNTING",
+      "DEDUPLICATION LOGIC",
       "GROUPED AGGREGATION"
     ],
     "companies": [
@@ -517,8 +512,7 @@
     ],
     "concepts": [
       "MULTI-TABLE ENTITY LINKING",
-      "DISTINCT ENTITY COUNTING",
-      "VALUE AGGREGATION",
+      "DEDUPLICATION LOGIC",
       "GROUPED AGGREGATION"
     ],
     "companies": [
@@ -569,7 +563,7 @@
     ],
     "concepts": [
       "MULTI-TABLE ENTITY LINKING",
-      "DISTINCT ENTITY COUNTING",
+      "DEDUPLICATION LOGIC",
       "GROUPED AGGREGATION"
     ],
     "companies": [
@@ -614,9 +608,9 @@
       "Join departments only to display the department name."
     ],
     "concepts": [
-      "ROW-LEVEL SELF-COMPARISON",
+      "SELF-COMPARISON & RECURSION",
       "MULTI-TABLE ENTITY LINKING",
-      "CORRELATED SUBQUERY"
+      "SUBQUERY PATTERNS"
     ],
     "companies": [
       "Google",
@@ -660,11 +654,9 @@
       "Apply the signup-date filter in the outer query."
     ],
     "concepts": [
-      "ANTI-JOIN PATTERN",
-      "NESTED FILTER LOGIC",
-      "CONDITIONAL ROW FILTERING",
-      "CORRELATED SUBQUERY",
-      "EXISTS PATTERN"
+      "MULTI-TABLE ENTITY LINKING",
+      "SUBQUERY PATTERNS",
+      "PRE-AGGREGATION FILTERING"
     ],
     "companies": [
       "Meta",
@@ -713,7 +705,7 @@
       "Use HAVING because you are comparing an aggregate result."
     ],
     "concepts": [
-      "NESTED FILTER LOGIC",
+      "SUBQUERY PATTERNS",
       "POST-AGGREGATION FILTERING",
       "MULTI-TABLE ENTITY LINKING"
     ],
@@ -757,10 +749,9 @@
       "Apply the minimum-total-orders rule with HAVING."
     ],
     "concepts": [
-      "CONDITIONAL AGGREGATION",
+      "GROUPED AGGREGATION",
       "MULTI-TABLE ENTITY LINKING",
-      "POST-AGGREGATION FILTERING",
-      "GROUPED AGGREGATION"
+      "POST-AGGREGATION FILTERING"
     ],
     "companies": [
       "Amazon",
@@ -797,7 +788,6 @@
       "The minimum-ticket requirement belongs after grouping."
     ],
     "concepts": [
-      "CONDITIONAL AGGREGATION",
       "GROUPED AGGREGATION",
       "POST-AGGREGATION FILTERING"
     ],
@@ -846,9 +836,8 @@
     ],
     "concepts": [
       "MULTI-TABLE ENTITY LINKING",
-      "CONDITIONAL ROW FILTERING",
-      "POST-AGGREGATION FILTERING",
-      "AVERAGE-BASED BENCHMARKING"
+      "PRE-AGGREGATION FILTERING",
+      "POST-AGGREGATION FILTERING"
     ],
     "companies": [
       "Amazon",
@@ -902,10 +891,10 @@
     ],
     "concepts": [
       "MULTI-TABLE ENTITY LINKING",
-      "CONDITIONAL ROW FILTERING",
+      "PRE-AGGREGATION FILTERING",
       "POST-AGGREGATION FILTERING",
-      "DISTINCT ENTITY COUNTING",
-      "VALUE AGGREGATION"
+      "DEDUPLICATION LOGIC",
+      "GROUPED AGGREGATION"
     ],
     "companies": [
       "Amazon",
@@ -942,7 +931,7 @@
       "Use HAVING after grouping to keep only zero-hire departments."
     ],
     "concepts": [
-      "OPTIONAL ENTITY PRESERVATION",
+      "MULTI-TABLE ENTITY LINKING",
       "GROUPED AGGREGATION",
       "POST-AGGREGATION FILTERING"
     ],
@@ -982,7 +971,7 @@
       "Putting `o.order_date >= '2024-01-01'` in the WHERE clause silently turns a LEFT JOIN into an INNER join (NULL fails the comparison and drops the row); keep the date filter in the ON clause so unmatched users survive."
     ],
     "concepts": [
-      "OPTIONAL ENTITY PRESERVATION",
+      "MULTI-TABLE ENTITY LINKING",
       "GROUPED AGGREGATION",
       "POST-AGGREGATION FILTERING"
     ],
@@ -1023,7 +1012,7 @@
       "Group by the order columns before applying the zero-match condition."
     ],
     "concepts": [
-      "OPTIONAL ENTITY PRESERVATION",
+      "MULTI-TABLE ENTITY LINKING",
       "GROUPED AGGREGATION",
       "POST-AGGREGATION FILTERING"
     ],
@@ -1066,7 +1055,7 @@
       "MULTI-TABLE ENTITY LINKING",
       "GROUPED AGGREGATION",
       "POST-AGGREGATION FILTERING",
-      "RULE-BASED CLASSIFICATION"
+      "CONDITIONAL LOGIC & CASE"
     ],
     "companies": [
       "Amazon"
@@ -1106,7 +1095,7 @@
       "MULTI-TABLE ENTITY LINKING",
       "GROUPED AGGREGATION",
       "POST-AGGREGATION FILTERING",
-      "RULE-BASED CLASSIFICATION"
+      "CONDITIONAL LOGIC & CASE"
     ],
     "companies": [
       "Amazon",
@@ -1147,7 +1136,7 @@
       "MULTI-TABLE ENTITY LINKING",
       "GROUPED AGGREGATION",
       "POST-AGGREGATION FILTERING",
-      "RULE-BASED CLASSIFICATION"
+      "CONDITIONAL LOGIC & CASE"
     ],
     "companies": [
       "Google",
@@ -1190,10 +1179,8 @@
       "Keep only products for which that evidence does not exist."
     ],
     "concepts": [
-      "ANTI-JOIN PATTERN",
-      "NESTED FILTER LOGIC",
       "MULTI-TABLE ENTITY LINKING",
-      "EXISTS PATTERN"
+      "SUBQUERY PATTERNS"
     ],
     "companies": [
       "Amazon",
@@ -1230,9 +1217,9 @@
       "Make sure zero-employee departments are included in the average — the LEFT JOIN in both the outer query and the inner subquery ensures they contribute a count of 0."
     ],
     "concepts": [
-      "OPTIONAL ENTITY PRESERVATION",
+      "MULTI-TABLE ENTITY LINKING",
       "POST-AGGREGATION FILTERING",
-      "SCALAR SUBQUERY COMPARISON"
+      "SUBQUERY PATTERNS"
     ],
     "companies": [
       "Google",
@@ -1281,11 +1268,9 @@
       "Use HAVING for the minimum refund-count requirement."
     ],
     "concepts": [
-      "ANTI-JOIN PATTERN",
-      "NESTED FILTER LOGIC",
       "MULTI-TABLE ENTITY LINKING",
-      "POST-AGGREGATION FILTERING",
-      "CORRELATED SUBQUERY"
+      "SUBQUERY PATTERNS",
+      "POST-AGGREGATION FILTERING"
     ],
     "companies": [
       "Amazon",
@@ -1333,7 +1318,7 @@
       "MULTI-TABLE ENTITY LINKING",
       "GROUPED AGGREGATION",
       "POST-AGGREGATION FILTERING",
-      "RULE-BASED CLASSIFICATION"
+      "CONDITIONAL LOGIC & CASE"
     ],
     "companies": [
       "Stripe"
@@ -1370,9 +1355,8 @@
       "LAG(col) OVER (ORDER BY quarter) gives you the previous row's value — subtract it from the current row to get the change"
     ],
     "concepts": [
-      "PERIOD-OVER-PERIOD COMPARISON",
-      "LAG WINDOW FUNCTION",
-      "QUARTER DERIVATION",
+      "TIME-SERIES BUCKETING & ARITHMETIC",
+      "WINDOW FUNCTIONS",
       "CTE PIPELINE"
     ],
     "companies": [
@@ -1417,8 +1401,8 @@
       "Use COALESCE(o.order_id, p.order_id) to get a non-null order_id regardless of which side matched"
     ],
     "concepts": [
-      "FULL OUTER JOIN RECONCILIATION",
-      "COALESCE NULL BRIDGING",
+      "MULTI-TABLE ENTITY LINKING",
+      "NULL HANDLING & COALESCE",
       "METRIC RECONCILIATION"
     ],
     "companies": [
@@ -1463,9 +1447,9 @@
       "COUNT(e.employee_id) counts non-null values — returns 0 for departments with no employees, unlike COUNT(*)"
     ],
     "concepts": [
-      "LEFT JOIN DIRECTION",
-      "ZERO-COUNT PRESERVATION",
-      "COUNT NON-NULL vs COUNT STAR"
+      "MULTI-TABLE ENTITY LINKING",
+      "NULL HANDLING & COALESCE",
+      "GROUPED AGGREGATION"
     ],
     "companies": [
       "Google",
@@ -1512,9 +1496,9 @@
       "HAVING filters on the result of the aggregation — WHERE SUM(...) > 5000 is a syntax error"
     ],
     "concepts": [
-      "PRE VS POST AGGREGATION FILTERING",
-      "MULTI-COLUMN SEGMENT AGGREGATION",
-      "POST-AGGREGATION FILTER"
+      "PRE-AGGREGATION FILTERING",
+      "GROUPED AGGREGATION",
+      "POST-AGGREGATION FILTERING"
     ],
     "companies": [
       "Amazon",
@@ -1560,9 +1544,8 @@
       "COUNT(DISTINCT user_id) — not COUNT(order_id) — gives the number of unique buyers per channel."
     ],
     "concepts": [
-      "ACQUISITION CHANNEL ANALYSIS",
-      "DISTINCT COUNT",
-      "REVENUE AGGREGATION"
+      "GROUPED AGGREGATION",
+      "DEDUPLICATION LOGIC"
     ],
     "companies": []
   },
@@ -1598,9 +1581,8 @@
       "ORDER BY the computed alias to rank priorities by average delay."
     ],
     "concepts": [
-      "CONDITIONAL FILTERING",
-      "AVERAGE AGGREGATION",
-      "SUPPORT SLA ANALYSIS"
+      "PRE-AGGREGATION FILTERING",
+      "GROUPED AGGREGATION"
     ],
     "companies": []
   },
@@ -1641,7 +1623,7 @@
       "Use LIMIT after ORDER BY to get only the top 10."
     ],
     "concepts": [
-      "DISTINCT COUNT",
+      "DEDUPLICATION LOGIC",
       "MULTI-TABLE ENTITY LINKING",
       "GROUPED AGGREGATION"
     ],
@@ -1685,8 +1667,8 @@
       "The subquery AVG(total_spend) references the CTE — define the CTE first, then use it in the subquery."
     ],
     "concepts": [
-      "SUBQUERY FILTER",
-      "CTE REUSE"
+      "SUBQUERY PATTERNS",
+      "CTE PIPELINE"
     ],
     "companies": []
   },
@@ -1726,9 +1708,7 @@
       "MIN and MAX return exact column values and don't need ROUND. Only AVG needs rounding."
     ],
     "concepts": [
-      "SALARY ANALYSIS",
-      "MULTI-AGGREGATE GROUP BY",
-      "HR ANALYTICS"
+      "GROUPED AGGREGATION"
     ],
     "companies": []
   },
@@ -1797,9 +1777,8 @@
       "Multiply by 1.0 before dividing to prevent integer truncation."
     ],
     "concepts": [
-      "SESSION ANALYSIS",
-      "DISTINCT COUNT",
-      "ENGAGEMENT METRICS"
+      "GROUPED AGGREGATION",
+      "DEDUPLICATION LOGIC"
     ],
     "companies": []
   },
@@ -1843,8 +1822,8 @@
       "CROSS JOIN with the single-row total CTE makes grand_total available in every result row."
     ],
     "concepts": [
-      "CROSS JOIN WITH SCALAR",
-      "MULTI-CTE PATTERN"
+      "SUBQUERY PATTERNS",
+      "CTE PIPELINE"
     ],
     "companies": []
   },
@@ -1903,8 +1882,8 @@
       "Read the result column names carefully — they tell you what to compute and what alias to give each output column."
     ],
     "concepts": [
-      "PAYMENTS AGGREGATION",
-      "FILTERED GROUP BY"
+      "GROUPED AGGREGATION",
+      "PRE-AGGREGATION FILTERING"
     ],
     "companies": []
   },
@@ -1973,7 +1952,7 @@
       "The result has only 5 rows — LIMIT 5 after ORDER BY."
     ],
     "concepts": [
-      "HR HEADCOUNT ANALYSIS",
+      "GROUPED AGGREGATION",
       "MULTI-TABLE ENTITY LINKING"
     ],
     "companies": []
@@ -2044,8 +2023,8 @@
       "The result has 5 rows — LIMIT 5 after ORDER BY revenue DESC."
     ],
     "concepts": [
-      "GEO REVENUE ANALYSIS",
-      "DISTINCT COUNT"
+      "GROUPED AGGREGATION",
+      "DEDUPLICATION LOGIC"
     ],
     "companies": []
   },
@@ -2104,8 +2083,7 @@
       "Read the column names in the result table — they tell you both what to compute and the alias to use."
     ],
     "concepts": [
-      "SUPPORT TICKET ANALYSIS",
-      "AVG AGGREGATION"
+      "GROUPED AGGREGATION"
     ],
     "companies": []
   },
@@ -2149,8 +2127,7 @@
       "The error message tells you exactly which column is missing."
     ],
     "concepts": [
-      "GROUP BY RULES",
-      "MULTI-COLUMN GROUP BY"
+      "GROUPED AGGREGATION"
     ],
     "companies": []
   },
@@ -2194,8 +2171,8 @@
       "If you aliased the table as `e`, every reference must use `e.`, not `emp.` or the full table name."
     ],
     "concepts": [
-      "TABLE ALIASES",
-      "WHERE CLAUSE"
+      "SUBQUERY PATTERNS",
+      "PRE-AGGREGATION FILTERING"
     ],
     "companies": []
   },
@@ -2239,8 +2216,8 @@
       "The error message shows 'Candidate bindings: acquisition_channel' — use that exact name."
     ],
     "concepts": [
-      "CTE COLUMN REFERENCES",
-      "ALIASING RULES"
+      "CTE PIPELINE",
+      "SUBQUERY PATTERNS"
     ],
     "companies": []
   },
@@ -2283,9 +2260,9 @@
       "HAVING filters on aggregate results — WHERE can't reference SUM(net_amount)."
     ],
     "concepts": [
-      "DATE TRUNCATION",
-      "HAVING VS WHERE",
-      "MULTI-DIMENSION AGGREGATION"
+      "TIME-SERIES BUCKETING & ARITHMETIC",
+      "POST-AGGREGATION FILTERING",
+      "GROUPED AGGREGATION"
     ],
     "companies": []
   },
@@ -2327,10 +2304,9 @@
       "CROSS JOIN the single-row percentile CTE to make p80 available in the WHERE filter."
     ],
     "concepts": [
-      "PERCENTILE FUNCTION",
-      "LOYALTY TIERING",
-      "CASE WHEN LADDER",
-      "ORDERED-SET AGGREGATE"
+      "WINDOW FUNCTIONS",
+      "CONDITIONAL LOGIC & CASE",
+      "GROUPED AGGREGATION"
     ],
     "companies": []
   },
@@ -2354,9 +2330,7 @@
       "Meta"
     ],
     "concepts": [
-      "REGEX REPLACEMENT",
-      "TEXT NORMALIZATION",
-      "INITCAP TITLE CASE"
+      "STRING PARSING & PATTERN MATCHING"
     ],
     "required_concepts": [
       "string_functions",
@@ -2398,9 +2372,8 @@
       "Stripe"
     ],
     "concepts": [
-      "STRING AGGREGATION",
-      "GROUPED STRING LIST",
-      "ORDER BY WITHIN AGGREGATE"
+      "GROUPED AGGREGATION",
+      "STRING PARSING & PATTERN MATCHING"
     ],
     "required_concepts": [
       "string_functions",
@@ -2439,9 +2412,7 @@
       "LinkedIn"
     ],
     "concepts": [
-      "DATE ARITHMETIC",
-      "INTERVAL ADDITION",
-      "SUBSCRIPTION EXPIRY"
+      "TIME-SERIES BUCKETING & ARITHMETIC"
     ],
     "required_concepts": [
       "date_functions",
@@ -2478,9 +2449,7 @@
       "LinkedIn"
     ],
     "concepts": [
-      "TIMEZONE HANDLING",
-      "AT TIME ZONE",
-      "UTC CONVERSION"
+      "TIME-SERIES BUCKETING & ARITHMETIC"
     ],
     "required_concepts": [
       "date_functions",
@@ -2520,9 +2489,8 @@
       "Google"
     ],
     "concepts": [
-      "UNION SET OPERATION",
-      "DEDUPLICATION",
-      "SET CONSOLIDATION"
+      "SET OPERATIONS & COMPARISON",
+      "DEDUPLICATION LOGIC"
     ],
     "required_concepts": [
       "set_operations",
@@ -2561,9 +2529,7 @@
       "Google"
     ],
     "concepts": [
-      "INTERSECT SET OPERATION",
-      "SHARED SET MEMBERSHIP",
-      "JOIN EQUIVALENCE"
+      "SET OPERATIONS & COMPARISON"
     ],
     "required_concepts": [
       "set_operations",
@@ -2602,9 +2568,8 @@
       "Stripe"
     ],
     "concepts": [
-      "EXCEPT SET OPERATION",
-      "SET DIFFERENCE",
-      "NULL-SAFE ANTI-JOIN"
+      "SET OPERATIONS & COMPARISON",
+      "MULTI-TABLE ENTITY LINKING"
     ],
     "required_concepts": [
       "set_operations",
@@ -2656,9 +2621,7 @@
       "Stripe"
     ],
     "concepts": [
-      "ROLLUP SUBTOTALS",
-      "HIERARCHICAL AGGREGATION",
-      "GRAND TOTAL"
+      "GROUPED AGGREGATION"
     ],
     "required_concepts": [
       "group_by",
@@ -2695,9 +2658,7 @@
       "LinkedIn"
     ],
     "concepts": [
-      "AGGREGATE FILTER",
-      "CONDITIONAL AGGREGATION",
-      "FILTER CLAUSE"
+      "GROUPED AGGREGATION"
     ],
     "required_concepts": [
       "group_by",
@@ -2733,9 +2694,8 @@
       "Stripe"
     ],
     "concepts": [
-      "RECURSIVE CTE",
-      "DATE SPINE",
-      "SEQUENCE GENERATION"
+      "CTE PIPELINE",
+      "TIME-SERIES BUCKETING & ARITHMETIC"
     ],
     "required_concepts": [
       "cte",
@@ -2772,9 +2732,8 @@
       "GitHub"
     ],
     "concepts": [
-      "DELIMITED STRING PARSING",
-      "SPLIT_PART",
-      "COMPOSITE KEY DESIGN"
+      "STRING PARSING & PATTERN MATCHING",
+      "RESULT SHAPING & ORDERING"
     ],
     "required_concepts": [
       "cte",
@@ -3949,7 +3908,6 @@
     ],
     "concepts": [
       "SUBQUERY PATTERNS",
-      "SCALAR SUBQUERY COMPARISON",
       "METRIC RECONCILIATION"
     ],
     "companies": []
@@ -4004,7 +3962,7 @@
     "concepts": [
       "DEDUPLICATION LOGIC",
       "GROUPED AGGREGATION",
-      "MULTI-TABLE JOINS"
+      "MULTI-TABLE ENTITY LINKING"
     ],
     "companies": []
   },
@@ -4084,7 +4042,7 @@
       "Ensure you use 100.0 in the division to avoid integer truncation."
     ],
     "concepts": [
-      "CONDITIONAL LOGIC & CASE WHEN",
+      "CONDITIONAL LOGIC & CASE",
       "GROUPED AGGREGATION"
     ],
     "companies": []
@@ -4121,7 +4079,7 @@
       "Group by both plan_tier and the derived domain, then use HAVING to filter small groups."
     ],
     "concepts": [
-      "STRING PARSING & MANIPULATION",
+      "STRING PARSING & PATTERN MATCHING",
       "GROUPED AGGREGATION"
     ],
     "companies": []
@@ -4240,7 +4198,7 @@
       "The scalar subquery inside HAVING is evaluated once and compared against each group's aggregate."
     ],
     "concepts": [
-      "SELF-COMPARISON PATTERNS",
+      "SELF-COMPARISON & RECURSION",
       "GROUPED AGGREGATION"
     ],
     "companies": []
@@ -4323,7 +4281,7 @@
     "concepts": [
       "GROUPED AGGREGATION",
       "MULTI-TABLE ENTITY LINKING",
-      "DISTINCT ENTITY COUNTING"
+      "DEDUPLICATION LOGIC"
     ],
     "companies": []
   },
@@ -4410,9 +4368,9 @@
       "JOIN order_items to orders to filter on completed status, then aggregate."
     ],
     "concepts": [
-      "CONDITIONAL LOGIC & CASE WHEN",
+      "CONDITIONAL LOGIC & CASE",
       "GROUPED AGGREGATION",
-      "MULTI-TABLE JOINS"
+      "MULTI-TABLE ENTITY LINKING"
     ],
     "companies": []
   },
@@ -4530,7 +4488,7 @@
     ],
     "concepts": [
       "POST-AGGREGATION FILTERING",
-      "CONDITIONAL LOGIC & CASE WHEN",
+      "CONDITIONAL LOGIC & CASE",
       "DATA QUALITY SKEPTICISM"
     ],
     "companies": []
@@ -4583,7 +4541,7 @@
       "Compute each month's total revenue in a second CTE, then join back to the first CTE and divide."
     ],
     "concepts": [
-      "MULTI-CTE PIPELINE",
+      "CTE PIPELINE",
       "METRIC INTERPRETATION & DENOMINATOR CHOICE",
       "GROUPED AGGREGATION"
     ],
@@ -4620,7 +4578,7 @@
       "To express each group as a percentage of all users, compute the total count as a scalar subquery denominator."
     ],
     "concepts": [
-      "CONDITIONAL AGGREGATION",
+      "GROUPED AGGREGATION",
       "OUTPUT SANITY VALIDATION"
     ],
     "companies": []
@@ -4658,9 +4616,8 @@
       "Combine the date spine with actual revenue data in a way that preserves all 12 months — months with no matching revenue should appear with a NULL total, not disappear."
     ],
     "concepts": [
-      "ROW COUNT SANITY",
-      "DATE TRUNC & CALENDAR BUCKETING",
-      "OUTPUT SANITY VALIDATION"
+      "OUTPUT SANITY VALIDATION",
+      "TIME-SERIES BUCKETING & ARITHMETIC"
     ],
     "companies": []
   },
@@ -4734,9 +4691,8 @@
       "A conditional expression inside an aggregation can separate subsets of rows without requiring separate queries or intermediate result sets."
     ],
     "concepts": [
-      "REPEATED COMPUTATION ELIMINATION",
-      "CONDITIONAL AGGREGATION",
-      "PERFORMANCE-AWARE ANALYTICS"
+      "PERFORMANCE-AWARE ANALYTICS",
+      "GROUPED AGGREGATION"
     ],
     "companies": []
   },
@@ -4782,9 +4738,8 @@
       "After aggregating item rows to one row per order, each order has a single revenue figure that can be matched to a user and summed by channel without deduplication overhead."
     ],
     "concepts": [
-      "CARDINALITY REDUCTION",
-      "MULTI-TABLE ENTITY LINKING",
-      "PERFORMANCE-AWARE ANALYTICS"
+      "PERFORMANCE-AWARE ANALYTICS",
+      "MULTI-TABLE ENTITY LINKING"
     ],
     "companies": []
   },
@@ -4826,9 +4781,8 @@
       "Once you have user revenue computed in a single pass, bring it alongside the user rows by matching on user_id — active users with no orders should appear with a NULL total rather than disappear."
     ],
     "concepts": [
-      "REPEATED COMPUTATION ELIMINATION",
-      "SUBQUERY & CORRELATED LOOKUP",
-      "PERFORMANCE-AWARE ANALYTICS"
+      "PERFORMANCE-AWARE ANALYTICS",
+      "SUBQUERY PATTERNS"
     ],
     "companies": []
   },

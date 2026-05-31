@@ -25,8 +25,8 @@
       "String comparisons are case-sensitive — match the exact value in the data"
     ],
     "concepts": [
-      "CONDITIONAL ROW FILTERING",
-      "DETERMINISTIC RESULT ORDERING"
+      "PRE-AGGREGATION FILTERING",
+      "RESULT SHAPING & ORDERING"
     ],
     "companies": [
       "Amazon",
@@ -58,8 +58,8 @@
       "String values in WHERE clauses must be wrapped in single quotes"
     ],
     "concepts": [
-      "CONDITIONAL ROW FILTERING",
-      "DETERMINISTIC RESULT ORDERING"
+      "PRE-AGGREGATION FILTERING",
+      "RESULT SHAPING & ORDERING"
     ],
     "companies": [
       "Meta",
@@ -90,8 +90,8 @@
       "Descending order on a numeric column surfaces the largest values first — here the direction follows naturally from 'high salary'."
     ],
     "concepts": [
-      "NUMERIC COMPARISON FILTER",
-      "DESCENDING RESULT ORDERING"
+      "PRE-AGGREGATION FILTERING",
+      "RESULT SHAPING & ORDERING"
     ],
     "companies": [
       "Google",
@@ -122,8 +122,8 @@
       "Date columns sort chronologically — ASC means earliest first"
     ],
     "concepts": [
-      "NULL AWARENESS",
-      "ASCENDING RESULT ORDERING"
+      "NULL HANDLING & COALESCE",
+      "RESULT SHAPING & ORDERING"
     ],
     "companies": [
       "Google",
@@ -152,8 +152,8 @@
       "No GROUP BY is needed when aggregating the entire table into a single result"
     ],
     "concepts": [
-      "COLUMN PROJECTION",
-      "ROW COUNT AGGREGATION"
+      "RESULT SHAPING & ORDERING",
+      "GROUPED AGGREGATION"
     ],
     "companies": [
       "Amazon",
@@ -182,8 +182,8 @@
       "`MAX()` returns the largest value in a column."
     ],
     "concepts": [
-      "COLUMN PROJECTION",
-      "EXTREMUM IDENTIFICATION"
+      "RESULT SHAPING & ORDERING",
+      "GROUPED AGGREGATION"
     ],
     "companies": [
       "Amazon",
@@ -213,8 +213,8 @@
       "MIN() returns the smallest value in a column"
     ],
     "concepts": [
-      "LOWEST-VALUE IDENTIFICATION",
-      "CONDITIONAL ROW FILTERING"
+      "GROUPED AGGREGATION",
+      "PRE-AGGREGATION FILTERING"
     ],
     "companies": [
       "Zendesk",
@@ -244,8 +244,7 @@
       "Once you have a count per group, the sort order should put the most frequent category at the top — think about which direction achieves that."
     ],
     "concepts": [
-      "GROUPED AGGREGATION",
-      "ROW COUNT AGGREGATION"
+      "GROUPED AGGREGATION"
     ],
     "companies": [
       "Amazon",
@@ -275,8 +274,7 @@
       "SUM(net_amount) totals spending per group"
     ],
     "concepts": [
-      "GROUPED AGGREGATION",
-      "VALUE AGGREGATION"
+      "GROUPED AGGREGATION"
     ],
     "companies": [
       "Amazon",
@@ -306,8 +304,7 @@
       "Once you have a count per group, the sort order should put the most frequent category at the top — think about which direction achieves that."
     ],
     "concepts": [
-      "GROUPED AGGREGATION",
-      "ROW COUNT AGGREGATION"
+      "GROUPED AGGREGATION"
     ],
     "companies": [
       "Zendesk",
@@ -342,8 +339,7 @@
       "COUNT(o.order_id) returns 0 for users with no orders because NULL values are not counted by COUNT"
     ],
     "concepts": [
-      "OPTIONAL ENTITY PRESERVATION",
-      "ROW COUNT AGGREGATION",
+      "MULTI-TABLE ENTITY LINKING",
       "GROUPED AGGREGATION"
     ],
     "companies": [
@@ -381,8 +377,8 @@
       "When pulling columns from two tables, the query needs a way to distinguish which table each column comes from — short labels for each table prevent ambiguity."
     ],
     "concepts": [
-      "REQUIRED ENTITY MATCHING",
-      "DETERMINISTIC RESULT ORDERING"
+      "MULTI-TABLE ENTITY LINKING",
+      "RESULT SHAPING & ORDERING"
     ],
     "companies": [
       "Google",
@@ -413,8 +409,7 @@
       "BETWEEN is equivalent to >= lower AND <= upper"
     ],
     "concepts": [
-      "CONDITIONAL ROW FILTERING",
-      "RANGE FILTERING"
+      "PRE-AGGREGATION FILTERING"
     ],
     "companies": [
       "Amazon",
@@ -445,8 +440,8 @@
       "Compare signup_date to date string literals in 'YYYY-MM-DD' format"
     ],
     "concepts": [
-      "CONDITIONAL ROW FILTERING",
-      "DATE-BASED FILTERING"
+      "PRE-AGGREGATION FILTERING",
+      "TIME-SERIES BUCKETING & ARITHMETIC"
     ],
     "companies": [
       "Meta",
@@ -477,8 +472,7 @@
       "Put the allowed country codes inside parentheses after IN"
     ],
     "concepts": [
-      "CONDITIONAL ROW FILTERING",
-      "SET MEMBERSHIP FILTERING"
+      "PRE-AGGREGATION FILTERING"
     ],
     "tags": [
       "easy",
@@ -515,8 +509,7 @@
       "After identifying the qualifying rows, look at what ordering the problem specifies for the final output."
     ],
     "concepts": [
-      "CONDITIONAL ROW FILTERING",
-      "SET MEMBERSHIP FILTERING"
+      "PRE-AGGREGATION FILTERING"
     ],
     "tags": [
       "easy",
@@ -552,8 +545,8 @@
       "Filter event_name with LIKE before selecting the event columns"
     ],
     "concepts": [
-      "CONDITIONAL ROW FILTERING",
-      "PATTERN-BASED FILTERING"
+      "PRE-AGGREGATION FILTERING",
+      "STRING PARSING & PATTERN MATCHING"
     ],
     "tags": [
       "easy",
@@ -591,7 +584,6 @@
       "Both status columns belong in the result because both are part of the business rule"
     ],
     "concepts": [
-      "CONDITIONAL ROW FILTERING",
       "PRE-AGGREGATION FILTERING"
     ],
     "tags": [
@@ -630,8 +622,6 @@
       "Wrap the OR conditions in parentheses so they stay grouped together"
     ],
     "concepts": [
-      "CONDITIONAL ROW FILTERING",
-      "MULTI-CONDITION FILTERING",
       "PRE-AGGREGATION FILTERING"
     ],
     "tags": [
@@ -670,8 +660,8 @@
       "Missing values can't be matched with `=` — use the dedicated NULL-comparison operator."
     ],
     "concepts": [
-      "CONDITIONAL ROW FILTERING",
-      "NULL STATE FILTERING"
+      "PRE-AGGREGATION FILTERING",
+      "NULL HANDLING & COALESCE"
     ],
     "tags": [
       "easy",
@@ -708,8 +698,7 @@
       "To exclude rows where a column has no value, use the dedicated NOT-NULL test rather than `<> NULL`."
     ],
     "concepts": [
-      "CONDITIONAL ROW FILTERING",
-      "KNOWN-VALUE FILTERING"
+      "PRE-AGGREGATION FILTERING"
     ],
     "tags": [
       "easy",
@@ -790,8 +779,8 @@
     ],
     "concepts": [
       "PRE-AGGREGATION FILTERING",
-      "MULTI-COLUMN ORDERING",
-      "GROUP SIZE COMPARISON"
+      "RESULT SHAPING & ORDERING",
+      "POST-AGGREGATION FILTERING"
     ],
     "companies": [
       "Meta",
@@ -828,9 +817,8 @@
       "COALESCE returns its first non-NULL argument, so COALESCE(discount_amount, 0) returns 0 when discount is missing"
     ],
     "concepts": [
-      "NULL-SAFE ARITHMETIC",
-      "COALESCE DEFAULT SUBSTITUTION",
-      "DERIVED FIELD CREATION"
+      "NULL HANDLING & COALESCE",
+      "RESULT SHAPING & ORDERING"
     ],
     "companies": [
       "Stripe",
@@ -867,9 +855,8 @@
       "A date truncated to year-month format works as both a grouping key and a sort key — string comparison order aligns with chronological order for this format."
     ],
     "concepts": [
-      "DATE BUCKET GROUPING",
-      "TIME-SERIES AGGREGATION",
-      "STRFTIME FORMATTING"
+      "TIME-SERIES BUCKETING & ARITHMETIC",
+      "GROUPED AGGREGATION"
     ],
     "companies": [
       "Meta",
@@ -908,9 +895,8 @@
       "Bounding a date column to a range can be done with `BETWEEN` or a pair of half-open comparisons; pick whichever makes the inclusivity explicit."
     ],
     "concepts": [
-      "HALF-OPEN DATE INTERVAL",
-      "RANGE FILTERING",
-      "DATE COMPARISON"
+      "TIME-SERIES BUCKETING & ARITHMETIC",
+      "PRE-AGGREGATION FILTERING"
     ],
     "companies": [
       "Amazon",
@@ -948,8 +934,7 @@
       "IN is equivalent to country = 'US' OR country = 'UK' but more readable; ORDER BY makes results deterministic"
     ],
     "concepts": [
-      "IN CLAUSE FILTERING",
-      "SET MEMBERSHIP TEST"
+      "PRE-AGGREGATION FILTERING"
     ],
     "companies": [
       "Google",
@@ -982,9 +967,7 @@
       "No GROUP BY is needed when aggregating over the entire table"
     ],
     "concepts": [
-      "MULTI-METRIC SUMMARIZATION",
-      "TABLE-WIDE SUMMARY",
-      "SCALAR AGGREGATION"
+      "GROUPED AGGREGATION"
     ],
     "companies": [
       "Amazon",
@@ -1020,9 +1003,9 @@
       "Sorting by the aggregate count descending puts the most populous group at the top, which is the natural reading order when ranking groups by size."
     ],
     "concepts": [
-      "CATEGORICAL SEGMENTATION",
-      "GROUP SIZE COMPARISON",
-      "DISTRIBUTION ANALYSIS"
+      "CONDITIONAL LOGIC & CASE",
+      "POST-AGGREGATION FILTERING",
+      "GROUPED AGGREGATION"
     ],
     "companies": [
       "Stripe",
@@ -1061,9 +1044,8 @@
       "When a column can be NULL, a numeric comparison silently fails for NULL rows — think about what separate condition handles NULLs explicitly."
     ],
     "concepts": [
-      "NULL CHECK COMBINED WITH COMPARISON",
-      "COMBINED AND CONDITIONS",
-      "OPTIONAL FIELD FILTERING"
+      "NULL HANDLING & COALESCE",
+      "PRE-AGGREGATION FILTERING"
     ],
     "companies": [
       "Amazon",
@@ -1100,9 +1082,8 @@
       "Reference the CTE name in the outer SELECT like a table; grouping by the extracted date part and ordering by it ensures chronological output."
     ],
     "concepts": [
-      "STAGED QUERY DECOMPOSITION",
-      "TIME-BUCKETED SIGNUP TREND",
-      "MONTHLY ENTITY COUNTING"
+      "CTE PIPELINE",
+      "TIME-SERIES BUCKETING & ARITHMETIC"
     ],
     "companies": [
       "Meta",
@@ -1140,9 +1121,8 @@
       "When grouping by two columns, each unique combination produces one output row — ordering by both keeps the most important dimension as the primary sort axis."
     ],
     "concepts": [
-      "MULTI-COLUMN GROUPING",
-      "CROSS-DIMENSIONAL AGGREGATION",
-      "LONG-FORMAT CROSS-TAB"
+      "GROUPED AGGREGATION",
+      "RESULT SHAPING & ORDERING"
     ],
     "companies": [
       "Zendesk",
@@ -1170,9 +1150,7 @@
       "Shopify"
     ],
     "concepts": [
-      "STRING TRIMMING",
-      "CASE-INSENSITIVE NORMALIZATION",
-      "CHANNEL STANDARDIZATION"
+      "STRING PARSING & PATTERN MATCHING"
     ],
     "required_concepts": [
       "string_functions",
@@ -1209,9 +1187,7 @@
       "LinkedIn"
     ],
     "concepts": [
-      "SUBSTRING EXTRACTION",
-      "SPLIT_PART",
-      "EMAIL PARSING"
+      "STRING PARSING & PATTERN MATCHING"
     ],
     "required_concepts": [
       "string_functions",
@@ -1253,9 +1229,8 @@
       "Salesforce"
     ],
     "concepts": [
-      "STRING CONCATENATION",
-      "NULL HANDLING IN CONCAT",
-      "EMPLOYEE LABELING"
+      "STRING PARSING & PATTERN MATCHING",
+      "NULL HANDLING & COALESCE"
     ],
     "required_concepts": [
       "string_functions",
@@ -1294,9 +1269,7 @@
       "LinkedIn"
     ],
     "concepts": [
-      "CURRENT DATE",
-      "DATE ARITHMETIC",
-      "TENURE CALCULATION"
+      "TIME-SERIES BUCKETING & ARITHMETIC"
     ],
     "required_concepts": [
       "date_functions",
@@ -1331,9 +1304,8 @@
       "Meta"
     ],
     "concepts": [
-      "DATE TRUNCATION",
-      "MONTHLY TREND",
-      "GROUPED DATE AGGREGATION"
+      "TIME-SERIES BUCKETING & ARITHMETIC",
+      "GROUPED AGGREGATION"
     ],
     "required_concepts": [
       "date_functions",

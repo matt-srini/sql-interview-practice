@@ -19,9 +19,8 @@
       "P(fair|data) = P(data|fair)×P(fair) / [P(data|fair)×P(fair) + P(data|biased)×P(biased)]."
     ],
     "concepts": [
-      "Bayesian inference",
-      "Bayes' theorem",
-      "posterior probability"
+      "bayesian inference",
+      "probability & combinatorics"
     ],
     "order": 1,
     "difficulty": "hard"
@@ -45,8 +44,7 @@
       "Simpson's paradox arises when a lurking variable (severity) creates different group compositions that reverse a trend."
     ],
     "concepts": [
-      "Simpson's paradox",
-      "confounding variables",
+      "correlation, regression & causality",
       "descriptive statistics"
     ],
     "order": 2,
@@ -72,9 +70,8 @@
       "For Bernoulli trials, maximize the log-likelihood by setting its derivative to zero."
     ],
     "concepts": [
-      "MLE",
-      "Bernoulli distribution",
-      "parameter estimation"
+      "confidence intervals & estimation",
+      "distributions"
     ],
     "order": 3,
     "difficulty": "hard"
@@ -98,9 +95,7 @@
       "Think about how repeated resampling from your own data mimics the process of repeatedly sampling from the population."
     ],
     "concepts": [
-      "bootstrap",
-      "resampling",
-      "confidence intervals"
+      "confidence intervals & estimation"
     ],
     "order": 4,
     "difficulty": "hard"
@@ -128,9 +123,7 @@
       "Use linear interpolation between adjacent sorted values to compute fractional percentiles."
     ],
     "concepts": [
-      "bootstrap",
-      "confidence intervals",
-      "resampling"
+      "confidence intervals & estimation"
     ],
     "order": 5,
     "difficulty": "hard"
@@ -154,8 +147,8 @@
       "Think of R² as 1 minus the fraction of variance that the model leaves unexplained."
     ],
     "concepts": [
-      "regression",
-      "variance decomposition"
+      "correlation, regression & causality",
+      "variance decomposition & ANOVA"
     ],
     "order": 6,
     "difficulty": "hard"
@@ -180,8 +173,8 @@
       "SS_residual = Σ(y_i − ŷ_i)²; SS_total = Σ(y_i − ȳ)²."
     ],
     "concepts": [
-      "regression",
-      "variance decomposition"
+      "correlation, regression & causality",
+      "variance decomposition & ANOVA"
     ],
     "order": 7,
     "difficulty": "hard"
@@ -205,8 +198,8 @@
       "Overfitting = excellent training performance + poor test performance = low bias + high variance."
     ],
     "concepts": [
-      "variance decomposition",
-      "regression"
+      "variance decomposition & ANOVA",
+      "correlation, regression & causality"
     ],
     "order": 8,
     "difficulty": "hard"
@@ -231,9 +224,8 @@
       "χ² = Σ (O_i − E_i)² / E_i over all categories."
     ],
     "concepts": [
-      "chi-squared tests",
-      "hypothesis testing",
-      "goodness of fit"
+      "distributions",
+      "hypothesis testing"
     ],
     "order": 9,
     "difficulty": "hard"
@@ -257,9 +249,9 @@
       "FWER = 1 − (1−α)^m where m is the number of tests, assuming independence."
     ],
     "concepts": [
-      "multiple comparisons",
+      "multiple testing & correction",
       "hypothesis testing",
-      "Type I error"
+      "errors & power"
     ],
     "order": 10,
     "difficulty": "hard"
@@ -284,8 +276,7 @@
       "d = |μ₁ − μ₂| / σ_pooled."
     ],
     "concepts": [
-      "statistical power",
-      "effect size",
+      "errors & power",
       "hypothesis testing"
     ],
     "order": 11,
@@ -310,8 +301,7 @@
       "ANOVA's F-test is a ratio of variance explained by group membership to unexplained within-group variance."
     ],
     "concepts": [
-      "ANOVA",
-      "variance decomposition",
+      "variance decomposition & ANOVA",
       "hypothesis testing"
     ],
     "order": 12,
@@ -337,9 +327,8 @@
       "Compute the sample mean first, then take its reciprocal."
     ],
     "concepts": [
-      "MLE",
-      "exponential distribution",
-      "parameter estimation"
+      "confidence intervals & estimation",
+      "distributions"
     ],
     "order": 13,
     "difficulty": "hard"
@@ -363,9 +352,8 @@
       "Think about whether knowing a component has lasted 100 hours changes your expectation of how much longer it will last."
     ],
     "concepts": [
-      "survival analysis",
-      "exponential distribution",
-      "hazard rate"
+      "survival analysis & time-to-event",
+      "distributions"
     ],
     "order": 14,
     "difficulty": "hard"
@@ -390,9 +378,8 @@
       "At each event time: multiply current S by (1 − d/n) where d is deaths and n is the risk set size."
     ],
     "concepts": [
-      "survival analysis",
-      "Kaplan-Meier",
-      "probability"
+      "survival analysis & time-to-event",
+      "probability & combinatorics"
     ],
     "order": 15,
     "difficulty": "hard"
@@ -420,8 +407,7 @@
       "For the normal, the first moment gives the mean estimate; the second central moment gives the variance estimate."
     ],
     "concepts": [
-      "method of moments",
-      "parameter estimation",
+      "confidence intervals & estimation",
       "distributions"
     ],
     "order": 16,
@@ -447,9 +433,8 @@
       "F = MS_Between / MS_Within; a large F suggests group means differ more than expected by chance."
     ],
     "concepts": [
-      "ANOVA",
-      "hypothesis testing",
-      "variance decomposition"
+      "variance decomposition & ANOVA",
+      "hypothesis testing"
     ],
     "order": 17,
     "difficulty": "hard"
@@ -473,9 +458,8 @@
       "Lower bias does not automatically mean lower total error if variance increases enough to compensate."
     ],
     "concepts": [
-      "bias-variance tradeoff",
-      "regression",
-      "model selection"
+      "correlation, regression & causality",
+      "bayesian inference"
     ],
     "order": 18,
     "difficulty": "hard"
@@ -499,9 +483,9 @@
       "Rejecting H₀ of independence means the data provide evidence of an association, not causation."
     ],
     "concepts": [
-      "chi-squared tests",
+      "distributions",
       "hypothesis testing",
-      "independence"
+      "probability & combinatorics"
     ],
     "order": 19,
     "difficulty": "hard"
@@ -525,9 +509,8 @@
       "Posterior parameters: α' = α + successes, β' = β + failures. Posterior mean = α'/(α'+β')."
     ],
     "concepts": [
-      "Bayesian inference",
-      "conjugate priors",
-      "Beta distribution"
+      "bayesian inference",
+      "distributions"
     ],
     "order": 20,
     "difficulty": "hard"
@@ -552,9 +535,8 @@
       "Beta conjugate update: α' = α + successes, β' = β + failures."
     ],
     "concepts": [
-      "Bayesian inference",
-      "conjugate priors",
-      "Beta distribution"
+      "bayesian inference",
+      "distributions"
     ],
     "order": 21,
     "difficulty": "hard"
@@ -578,10 +560,8 @@
       "Stricter thresholds reduce false positives but also reduce true positives."
     ],
     "concepts": [
-      "multiple comparisons",
-      "Bonferroni correction",
-      "statistical power",
-      "Type II error"
+      "multiple testing & correction",
+      "errors & power"
     ],
     "order": 22,
     "difficulty": "hard"
@@ -606,9 +586,8 @@
       "Var(aX + bY) = a²Var(X) + b²Var(Y) when X and Y are independent."
     ],
     "concepts": [
-      "variance decomposition",
-      "linear combinations",
-      "probability"
+      "variance decomposition & ANOVA",
+      "probability & combinatorics"
     ],
     "order": 23,
     "difficulty": "hard"
@@ -632,10 +611,8 @@
       "When the statistic is complex or the distribution is non-normal, resampling methods like bootstrap are the flexible alternative."
     ],
     "concepts": [
-      "bootstrap",
-      "confidence intervals",
-      "resampling",
-      "non-parametric methods"
+      "confidence intervals & estimation",
+      "hypothesis testing"
     ],
     "order": 24,
     "difficulty": "hard"
@@ -661,11 +638,9 @@
       "√(2p(1−p)/n) is the standard error of the difference between two proportions when both groups have the same n and the same null-hypothesis rate p."
     ],
     "concepts": [
-      "minimum detectable effect",
-      "statistical power",
-      "sample size",
-      "A/B testing",
-      "effect sizes"
+      "errors & power",
+      "sampling & central limit theorem",
+      "experimental design (within stats)"
     ],
     "order": 25,
     "difficulty": "hard",
@@ -692,11 +667,7 @@
       "The grand pre-experiment mean X_pre_grand is the same for both groups — it centres the covariate. Each group's pre-experiment deviation from this mean drives its adjustment."
     ],
     "concepts": [
-      "CUPED",
-      "variance reduction",
-      "A/B testing",
-      "pre-experiment covariate",
-      "experiment design"
+      "experimental design (within stats)"
     ],
     "order": 26,
     "difficulty": "hard",
@@ -721,9 +692,9 @@
       "MCAR and MAR can both be handled with standard imputation. MNAR requires sensitivity analysis or external data because the missingness pattern is baked into the missing values."
     ],
     "concepts": [
-      "selection bias",
-      "sampling",
-      "statistical artefacts"
+      "correlation, regression & causality",
+      "sampling & central limit theorem",
+      "confidence intervals & estimation"
     ],
     "order": 27,
     "difficulty": "hard"
@@ -748,11 +719,7 @@
       "Think about who makes it through screening: to pass without strong system design, you need exceptional coding skills. Does this create a within-group negative correlation even if the two skills are independent in the population?"
     ],
     "concepts": [
-      "collider bias",
-      "causal DAG",
-      "selection bias",
-      "causal inference",
-      "Berkson's bias"
+      "correlation, regression & causality"
     ],
     "order": 28,
     "difficulty": "hard",
@@ -781,10 +748,8 @@
       "The test you need compares two independent non-normal groups by ranking all observations together and asking whether one group's ranks tend to be higher — it requires only that the distributions are continuous and the observations are independent."
     ],
     "concepts": [
-      "non-parametric tests",
       "hypothesis testing",
-      "normality assumption",
-      "test selection"
+      "distributions"
     ],
     "order": 29,
     "difficulty": "hard"
@@ -809,10 +774,7 @@
       "Exponentiate the coefficient to convert from the log-odds scale to the odds scale. Then ask: is an odds ratio the same thing as a probability ratio?"
     ],
     "concepts": [
-      "logistic regression",
-      "odds ratio",
-      "coefficient interpretation",
-      "log-odds"
+      "correlation, regression & causality"
     ],
     "order": 30,
     "difficulty": "hard"
@@ -837,10 +799,7 @@
       "A fan shape that widens as fitted values increase has one canonical name in regression diagnostics. Which assumption requires the spread of residuals to be constant — not growing — across all levels of the fitted value?"
     ],
     "concepts": [
-      "residual diagnostics",
-      "heteroscedasticity",
-      "linear regression",
-      "model assumptions"
+      "correlation, regression & causality"
     ],
     "order": 31,
     "difficulty": "hard"
@@ -865,11 +824,7 @@
       "For estimating the total causal effect of X on Y: close backdoor paths by adjusting for confounders; leave mediating paths open by not adjusting for mediators; never condition on colliders — it opens paths rather than closing them."
     ],
     "concepts": [
-      "causal DAG",
-      "confounding",
-      "mediation",
-      "collider bias",
-      "causal inference"
+      "correlation, regression & causality"
     ],
     "order": 32,
     "difficulty": "hard",
@@ -896,9 +851,7 @@
       "Six of eight past similar experiments showed positive lifts between 5–15%. Which option actually incorporates this historical base rate into the analysis rather than declaring it irrelevant?"
     ],
     "concepts": [
-      "Bayesian inference",
-      "prior information",
-      "decision making under uncertainty"
+      "bayesian inference"
     ],
     "order": 33,
     "difficulty": "hard"
@@ -925,9 +878,8 @@
       "The CUPED residual variance is Var(Y)(1 − R²) where R² is from regressing Y on X_pre. Trace through what a high R² implies for the SE of your treatment effect estimate."
     ],
     "concepts": [
-      "variance reduction",
-      "CUPED",
-      "confidence intervals"
+      "experimental design (within stats)",
+      "confidence intervals & estimation"
     ]
   },
   {
@@ -953,9 +905,7 @@
       "For a 2×2 table: once you fix the row and column totals, how many cells are free? For k categories with pre-specified proportions, how many counts are free? This determines the degrees of freedom."
     ],
     "concepts": [
-      "goodness of fit",
-      "hypothesis testing",
-      "test selection"
+      "hypothesis testing"
     ]
   },
   {
@@ -982,8 +932,7 @@
     ],
     "concepts": [
       "hypothesis testing",
-      "null hypothesis",
-      "Bayesian inference"
+      "bayesian inference"
     ]
   },
   {
@@ -1050,7 +999,7 @@
     ],
     "concepts": [
       "hypothesis testing",
-      "standard error"
+      "sampling & central limit theorem"
     ]
   },
   {
@@ -1125,7 +1074,7 @@
     ],
     "concepts": [
       "hypothesis testing",
-      "standard error"
+      "sampling & central limit theorem"
     ]
   },
   {
@@ -1204,8 +1153,8 @@
     ],
     "concepts": [
       "hypothesis testing",
-      "proportions",
-      "standard error"
+      "probability & combinatorics",
+      "sampling & central limit theorem"
     ]
   },
   {
@@ -1233,10 +1182,7 @@
       "Think about what assumption is required for observational regression to yield a causal estimate, and whether that assumption can ever be verified from the data alone."
     ],
     "concepts": [
-      "confounding",
-      "causal inference",
-      "observational",
-      "causal DAG"
+      "correlation, regression & causality"
     ]
   },
   {
@@ -1262,11 +1208,7 @@
       "Think about what 'bookmarking in week 1 → retention' means. Why might a user bookmark something? Does the reason matter for whether it predicts retention?"
     ],
     "concepts": [
-      "mediation",
-      "causal inference",
-      "causal DAG",
-      "regression",
-      "confounding"
+      "correlation, regression & causality"
     ]
   },
   {
@@ -1292,11 +1234,8 @@
       "If mobile and desktop effects are roughly equal in magnitude but opposite in sign, what would you expect the overall experiment result to look like?"
     ],
     "concepts": [
-      "experimental design",
-      "multiple testing",
-      "a/b testing",
-      "experiment interpretation",
-      "heterogeneous treatment effects"
+      "experimental design (within stats)",
+      "multiple testing & correction"
     ]
   },
   {
@@ -1322,11 +1261,8 @@
       "If rush hour creates correlated outcomes across three consecutive 1-hour windows, do standard t-test variance formulas correctly account for that dependency?"
     ],
     "concepts": [
-      "experimental design",
-      "a/b testing",
-      "within-subject design",
-      "experiment design",
-      "causal inference"
+      "experimental design (within stats)",
+      "correlation, regression & causality"
     ]
   },
   {
@@ -1394,11 +1330,9 @@
       "`math.ceil` rounds up because you cannot have a fractional user — you always need at least n, never fewer."
     ],
     "concepts": [
-      "sample size",
-      "experiment design",
-      "a/b testing",
-      "statistical power",
-      "minimum detectable effect"
+      "sampling & central limit theorem",
+      "experimental design (within stats)",
+      "errors & power"
     ]
   },
   {
@@ -1424,10 +1358,7 @@
       "Look up or recall the Jeffreys strength-of-evidence scale. Where does BF = 1.66 fall on that scale?"
     ],
     "concepts": [
-      "bayesian inference",
-      "bayes factor",
-      "model selection",
-      "prior information"
+      "bayesian inference"
     ]
   },
   {
@@ -1454,9 +1385,7 @@
     ],
     "concepts": [
       "bayesian inference",
-      "decision making under uncertainty",
-      "posterior",
-      "expected value"
+      "probability & combinatorics"
     ]
   },
   {
@@ -1534,8 +1463,7 @@
     "concepts": [
       "bayesian inference",
       "distributions",
-      "experimental design",
-      "posterior"
+      "experimental design (within stats)"
     ]
   },
   {
@@ -1562,10 +1490,7 @@
     ],
     "concepts": [
       "confidence intervals & estimation",
-      "MLE",
-      "maximum likelihood",
-      "distributions",
-      "sufficient statistics"
+      "distributions"
     ]
   },
   {
@@ -1592,10 +1517,8 @@
     ],
     "concepts": [
       "confidence intervals & estimation",
-      "regression",
-      "experimental design",
-      "frequentist inference",
-      "noise and signal"
+      "correlation, regression & causality",
+      "experimental design (within stats)"
     ]
   },
   {
@@ -1679,8 +1602,7 @@
     "concepts": [
       "confidence intervals & estimation",
       "distributions",
-      "sampling & central limit theorem",
-      "frequentist inference"
+      "sampling & central limit theorem"
     ]
   },
   {
@@ -1783,10 +1705,7 @@
     ],
     "concepts": [
       "confidence intervals & estimation",
-      "MLE",
-      "maximum likelihood",
-      "distributions",
-      "method of moments"
+      "distributions"
     ]
   },
   {
@@ -1813,10 +1732,7 @@
     ],
     "concepts": [
       "errors & power",
-      "effect size",
-      "power analysis",
-      "experiment design",
-      "minimum detectable effect"
+      "experimental design (within stats)"
     ]
   },
   {
@@ -1887,11 +1803,7 @@
       "Power = Φ(δ / SE_alt − z_α). δ is the non-inferiority margin (how far from the inferiority boundary you're trying to show you are)."
     ],
     "concepts": [
-      "errors & power",
-      "power analysis",
-      "statistical power",
-      "effect size",
-      "minimum detectable effect"
+      "errors & power"
     ]
   },
   {
@@ -1917,11 +1829,7 @@
       "Consider the conditional distribution: E[Δ̂ | |Δ̂| > threshold]. Is this equal to the true Δ, or is it biased in a specific direction?"
     ],
     "concepts": [
-      "errors & power",
-      "type i",
-      "effect size",
-      "minimum detectable effect",
-      "power analysis"
+      "errors & power"
     ]
   },
   {
@@ -1947,10 +1855,7 @@
       "Think about a user who appears in all three segments. How many times is that user counted in |A| + |B| + |C|? How many times in the pairwise subtractions? Net count after those steps, and what correction is needed?"
     ],
     "concepts": [
-      "combinatorics",
-      "probability",
-      "set theory",
-      "inclusion-exclusion"
+      "probability & combinatorics"
     ]
   },
   {
@@ -2021,9 +1926,7 @@
       "P(positive | no disease) = 1 - specificity (false positive rate). Then apply Bayes' theorem."
     ],
     "concepts": [
-      "conditional probability",
-      "probability",
-      "bayes",
+      "probability & combinatorics",
       "bayesian inference"
     ]
   },
@@ -2050,10 +1953,7 @@
       "If 70% of users are organic (with 45% retention) and 30% paid (20% retention), what is the weighted average retention? Compare to (45% + 20%) / 2."
     ],
     "concepts": [
-      "probability",
-      "conditional probability",
-      "expected value",
-      "proportions"
+      "probability & combinatorics"
     ]
   },
   {
@@ -2124,10 +2024,8 @@
       "P(X = i) = C(n,i) × pⁱ × (1−p)^(n−i). This is one term of the binomial PMF."
     ],
     "concepts": [
-      "probability",
-      "combinatorics",
-      "distributions",
-      "expected value"
+      "probability & combinatorics",
+      "distributions"
     ]
   },
   {
@@ -2154,10 +2052,7 @@
     ],
     "concepts": [
       "distributions",
-      "normal",
-      "heavy tails",
-      "skewness",
-      "kurtosis"
+      "descriptive statistics"
     ]
   },
   {
@@ -2184,8 +2079,7 @@
     ],
     "concepts": [
       "distributions",
-      "normal",
-      "statistical artefacts",
+      "confidence intervals & estimation",
       "descriptive statistics"
     ]
   },
@@ -2253,8 +2147,7 @@
     ],
     "concepts": [
       "distributions",
-      "poisson",
-      "probability"
+      "probability & combinatorics"
     ]
   },
   {
@@ -2281,10 +2174,7 @@
     ],
     "concepts": [
       "distributions",
-      "poisson",
-      "bernoulli",
-      "binomial",
-      "probability"
+      "probability & combinatorics"
     ]
   },
   {
@@ -2312,8 +2202,7 @@
     "concepts": [
       "sampling & central limit theorem",
       "distributions",
-      "standard error",
-      "heavy tails"
+      "descriptive statistics"
     ]
   },
   {
@@ -2340,9 +2229,7 @@
     ],
     "concepts": [
       "sampling & central limit theorem",
-      "standard error",
-      "experiment design",
-      "law of large numbers"
+      "experimental design (within stats)"
     ]
   },
   {
@@ -2463,9 +2350,7 @@
     ],
     "concepts": [
       "sampling & central limit theorem",
-      "bootstrap",
-      "resampling",
-      "standard error"
+      "confidence intervals & estimation"
     ]
   },
   {
@@ -2492,9 +2377,8 @@
     ],
     "concepts": [
       "sampling & central limit theorem",
-      "selection bias",
-      "statistical artefacts",
-      "standard error"
+      "correlation, regression & causality",
+      "confidence intervals & estimation"
     ]
   },
   {
@@ -2521,9 +2405,7 @@
     ],
     "concepts": [
       "multiple testing & correction",
-      "bonferroni",
-      "errors & power",
-      "effect size"
+      "errors & power"
     ]
   },
   {
@@ -2550,8 +2432,6 @@
     ],
     "concepts": [
       "multiple testing & correction",
-      "bonferroni",
-      "type i",
       "errors & power"
     ]
   },
@@ -2624,8 +2504,7 @@
     ],
     "concepts": [
       "multiple testing & correction",
-      "bonferroni",
-      "sample size",
+      "sampling & central limit theorem",
       "errors & power"
     ]
   },
@@ -2654,8 +2533,7 @@
     "concepts": [
       "multiple testing & correction",
       "hypothesis testing",
-      "errors & power",
-      "significance level"
+      "errors & power"
     ]
   },
   {
@@ -2769,8 +2647,7 @@
       "Skewness uses m₂^(3/2) as the denominator; excess kurtosis uses m₂² and then subtracts 3."
     ],
     "concepts": [
-      "descriptive statistics",
-      "skewness"
+      "descriptive statistics"
     ]
   },
   {
@@ -2796,8 +2673,8 @@
       "With N = 1000, even a tiny true difference between version means will produce a very small p-value. What does η² tell you that the p-value does not?"
     ],
     "concepts": [
-      "anova",
-      "effect size"
+      "variance decomposition & ANOVA",
+      "errors & power"
     ]
   },
   {
@@ -2899,8 +2776,7 @@
       "η² = SS_between / SS_total where SS_total = SS_between + SS_within — the same decomposition as R² in regression."
     ],
     "concepts": [
-      "anova",
-      "sum of squares"
+      "variance decomposition & ANOVA"
     ]
   },
   {
@@ -3057,8 +2933,7 @@
       "Track S multiplicatively from 1.0. Return the current t as soon as S drops to or below 0.5. If the loop ends without S hitting 0.5, return -1.0."
     ],
     "concepts": [
-      "survival analysis & time-to-event",
-      "Kaplan-Meier"
+      "survival analysis & time-to-event"
     ]
   }
 ]

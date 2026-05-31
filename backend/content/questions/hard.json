@@ -28,8 +28,7 @@
       "Then use a window SUM over the aggregated result to get the grand total for the percentage calculation."
     ],
     "concepts": [
-      "PROPORTIONAL CONTRIBUTION ANALYSIS",
-      "POST-AGGREGATION WINDOWING"
+      "WINDOW FUNCTIONS"
     ],
     "complexity_hint": "Two-stage pattern: aggregate first (subquery), then apply a window function on the aggregated rows. The window SUM(...) OVER () computes the grand total without collapsing rows.",
     "alternative_solution": {
@@ -72,9 +71,7 @@
       "Use ROW_NUMBER() with PARTITION BY acquisition_channel and include every tie-breaker in the window ORDER BY."
     ],
     "concepts": [
-      "PARTITIONED WINNER SELECTION",
-      "DETERMINISTIC TIE-BREAKING",
-      "CHANNEL-LEVEL LEADERBOARD"
+      "RANKING & TOP-N PER GROUP"
     ],
     "companies": [
       "Meta",
@@ -107,8 +104,7 @@
       "After you have the running total, keep only rows where the threshold is reached now but had not been reached before this row."
     ],
     "concepts": [
-      "RUNNING TOTAL THRESHOLD DETECTION",
-      "FIRST THRESHOLD-CROSSING ROW"
+      "RUNNING TOTAL & MOVING WINDOW"
     ],
     "complexity_hint": "O(n) window scan per user partition. The two-condition filter (current >= 1000 AND current - net_amount < 1000) precisely isolates the first threshold-crossing row without a self-join.",
     "companies": [
@@ -141,8 +137,7 @@
       "After you have monthly totals, use a window AVG partitioned by user_id to compute each user's monthly baseline."
     ],
     "concepts": [
-      "PERSONAL BASELINE COMPARISON",
-      "POST-AGGREGATION WINDOWING"
+      "WINDOW FUNCTIONS"
     ],
     "complexity_hint": "Double-nested subquery: the inner subquery aggregates by month, the outer window computes each user's monthly average on top of those aggregates. This pattern can be rewritten with two CTEs for readability.",
     "companies": [
@@ -185,10 +180,7 @@
       "Then use a correlated NOT EXISTS to check whether a later purchase exists for that same user-product pair."
     ],
     "concepts": [
-      "BEHAVIORAL EXCLUSION",
-      "FIRST-TO-LATER EVENT COMPARISON",
-      "CORRELATED SUBQUERY",
-      "EXISTS PATTERN"
+      "SUBQUERY PATTERNS"
     ],
     "companies": [
       "Amazon",
@@ -224,9 +216,8 @@
       "Deduplicate to one row per user and month offset before counting retained users."
     ],
     "concepts": [
-      "COHORT ANALYSIS",
-      "RETENTION BY MONTH OFFSET",
-      "DEDUPLICATED USER COUNTING"
+      "COHORT RETENTION",
+      "DEDUPLICATION LOGIC"
     ],
     "companies": [
       "Meta",
@@ -258,9 +249,7 @@
       "Once you can mark the first event of each session with a flag, think about how a running aggregation can turn those flags into stable, contiguous identifiers."
     ],
     "concepts": [
-      "SESSIONIZATION",
-      "INACTIVITY GAP DETECTION",
-      "DERIVED GROUP IDENTIFIERS"
+      "SESSIONIZATION"
     ],
     "companies": [
       "Meta",
@@ -301,9 +290,8 @@
       "After deriving ordered stage timestamps, roll those journeys up to one stage flag per user before aggregating by acquisition_channel."
     ],
     "concepts": [
-      "FUNNEL ORDER ENFORCEMENT",
-      "USER-PRODUCT JOURNEY MODELING",
-      "CHANNEL-LEVEL DROP-OFF"
+      "FUNNEL ANALYSIS",
+      "SESSIONIZATION"
     ],
     "companies": [
       "Meta",
@@ -344,9 +332,7 @@
       "To include the threshold-crossing row, compare the cumulative total before the current product to 80% of the grand total."
     ],
     "concepts": [
-      "CUMULATIVE CONTRIBUTION (PARETO)",
-      "RUNNING SHARE THRESHOLD",
-      "THRESHOLD-CROSSING INCLUSION"
+      "RUNNING TOTAL & MOVING WINDOW"
     ],
     "companies": [
       "Amazon"
@@ -377,9 +363,8 @@
       "Apply the decreasing-sequence filter only after the lagged columns have been computed in a subquery."
     ],
     "concepts": [
-      "SEQUENTIAL EVENT PATTERN",
-      "ROW-TO-ROW COMPARISON",
-      "ANOMALY DETECTION"
+      "SESSIONIZATION",
+      "SELF-COMPARISON & RECURSION"
     ],
     "companies": [
       "Stripe",
@@ -417,8 +402,8 @@
       "Once you know the first order that crosses 500, use conditional aggregation to compute before-versus-after averages on the same joined set."
     ],
     "concepts": [
-      "RUNNING TOTAL THRESHOLD DETECTION",
-      "BEFORE-AND-AFTER COMPARISON"
+      "RUNNING TOTAL & MOVING WINDOW",
+      "TIME-SERIES BUCKETING & ARITHMETIC"
     ],
     "companies": [
       "Amazon"
@@ -454,9 +439,9 @@
       "After assigning a rank within each month, use LAG on the ranked result partitioned by acquisition_channel to compare months."
     ],
     "concepts": [
-      "PARTITIONED RANK FILTERING",
-      "TIME-WINDOW COMPARISON",
-      "PERIOD-OVER-PERIOD IMPROVEMENT"
+      "RANKING & TOP-N PER GROUP",
+      "WINDOW FUNCTIONS",
+      "TIME-SERIES BUCKETING & ARITHMETIC"
     ],
     "companies": [
       "Meta",
@@ -500,8 +485,8 @@
       "Use separate CASE expressions inside SUM to count each outcome bucket and to sum revenue only for the paid bucket."
     ],
     "concepts": [
-      "LATEST STATE DERIVATION",
-      "PRECEDENCE-BASED CLASSIFICATION"
+      "RANKING & TOP-N PER GROUP",
+      "CONDITIONAL LOGIC & CASE"
     ],
     "companies": [
       "Stripe",
@@ -535,8 +520,8 @@
       "Filter to qualifying recovery rows first, then aggregate that reduced set by the paid row's payment_method."
     ],
     "concepts": [
-      "STATE TRANSITION DETECTION",
-      "RECOVERY WINDOW ANALYSIS"
+      "SESSIONIZATION",
+      "WINDOW FUNCTIONS"
     ],
     "companies": [
       "Stripe"
@@ -572,9 +557,9 @@
       "After identifying candidate comeback events, join back to events to count how much activity occurs in the next 7 days."
     ],
     "concepts": [
-      "STATE TRANSITION DETECTION",
-      "REACTIVATION DETECTION",
-      "FORWARD WINDOW QUALIFICATION"
+      "SESSIONIZATION",
+      "COHORT RETENTION",
+      "WINDOW FUNCTIONS"
     ],
     "companies": [
       "Meta",
@@ -617,9 +602,9 @@
       "Apply the top-20% revenue and below-75th-percentile-volatility filters only after the product-level metrics have been computed."
     ],
     "concepts": [
-      "MULTI-STAGE METRIC FILTERING",
-      "PARTITIONED RANK FILTERING",
-      "RECENCY COMPARISON"
+      "CTE PIPELINE",
+      "RANKING & TOP-N PER GROUP",
+      "TIME-SERIES BUCKETING & ARITHMETIC"
     ],
     "companies": [
       "Amazon"
@@ -656,9 +641,9 @@
       "After you keep the earliest qualifying return per user, use conditional aggregation over 30-day windows before and after that date."
     ],
     "concepts": [
-      "STATE TRANSITION DETECTION",
-      "BEFORE-AND-AFTER COMPARISON",
-      "TIME-WINDOW COMPARISON"
+      "SESSIONIZATION",
+      "TIME-SERIES BUCKETING & ARITHMETIC",
+      "WINDOW FUNCTIONS"
     ],
     "companies": [
       "Amazon",
@@ -706,9 +691,8 @@
       "Use ROW_NUMBER with category_id as a tie-breaker so each user-quarter has exactly one top category."
     ],
     "concepts": [
-      "CATEGORY PREFERENCE SHIFT",
-      "PARTITIONED RANK FILTERING",
-      "TIME-SLICE COMPARISON"
+      "RANKING & TOP-N PER GROUP",
+      "TIME-SERIES BUCKETING & ARITHMETIC"
     ],
     "companies": [
       "Amazon"
@@ -750,8 +734,8 @@
       "Apply the precedence rules in a CASE expression only after all order-level payment evidence has been collected."
     ],
     "concepts": [
-      "LATEST STATE DERIVATION",
-      "PRECEDENCE-BASED CLASSIFICATION",
+      "RANKING & TOP-N PER GROUP",
+      "CONDITIONAL LOGIC & CASE",
       "DATA QUALITY SKEPTICISM"
     ],
     "companies": [
@@ -789,9 +773,8 @@
       "After you know each user's peak month, join back to the monthly revenue rows and use conditional averages for the before-peak and after-peak periods."
     ],
     "concepts": [
-      "PEAK PERIOD IDENTIFICATION",
-      "BEFORE-AND-AFTER COMPARISON",
-      "POST-PEAK DECLINE ANALYSIS"
+      "WINDOW FUNCTIONS",
+      "TIME-SERIES BUCKETING & ARITHMETIC"
     ],
     "companies": [
       "Amazon",
@@ -848,10 +831,8 @@
       "Use NOT EXISTS for the exclusion rule so a single disqualifying purchase in Category 2 removes the user."
     ],
     "concepts": [
-      "BEHAVIORAL SET DIFFERENCE",
-      "CROSS-SOURCE MEMBERSHIP TESTS",
-      "CORRELATED SUBQUERY",
-      "EXISTS PATTERN"
+      "SUBQUERY PATTERNS",
+      "SET OPERATIONS & COMPARISON"
     ],
     "companies": [
       "Amazon",
@@ -888,9 +869,9 @@
       "Use the latest order_date in the whole orders table as the shared reference date for both the 60-day and 30-day rules."
     ],
     "concepts": [
-      "PRIORITY-BASED SEGMENTATION",
-      "LATEST-DATE REFERENCE LOGIC",
-      "CONDITIONAL SEGMENT AGGREGATION"
+      "CONDITIONAL LOGIC & CASE",
+      "TIME-SERIES BUCKETING & ARITHMETIC",
+      "GROUPED AGGREGATION"
     ],
     "companies": [
       "Meta",
@@ -928,9 +909,8 @@
       "Use a LEFT JOIN so orders with no payments remain visible and can be tested for NULL."
     ],
     "concepts": [
-      "CONTRADICTION DETECTION",
-      "LATEST STATE DERIVATION",
-      "MISSING-EVIDENCE HANDLING"
+      "DATA QUALITY SKEPTICISM",
+      "RANKING & TOP-N PER GROUP"
     ],
     "companies": [
       "Stripe"
@@ -971,9 +951,7 @@
       "In the self-join, define exactly what it means for one product to outrank another using both revenue and product_id."
     ],
     "concepts": [
-      "MANUAL TOP-N RANKING",
-      "SELF-COMPARISON RANK EMULATION",
-      "DETERMINISTIC TIE-BREAKING"
+      "RANKING & TOP-N PER GROUP"
     ],
     "companies": [
       "Amazon"
@@ -1005,11 +983,8 @@
       "Use nested EXISTS so the purchase check is evaluated relative to a qualifying add_to_cart event, not just relative to the original view."
     ],
     "concepts": [
-      "SEQUENTIAL EVENT PATTERN",
-      "TIME-BOUNDED CHAIN VALIDATION",
-      "USER-PRODUCT JOURNEY MODELING",
-      "CORRELATED SUBQUERY",
-      "EXISTS PATTERN"
+      "SESSIONIZATION",
+      "SUBQUERY PATTERNS"
     ],
     "companies": [
       "Meta",
@@ -1054,9 +1029,9 @@
       "Resolve conflicts using the 7-day rule before aggregating."
     ],
     "concepts": [
-      "CROSS-GRAIN WINDOWING",
-      "ATTRIBUTION CONFLICT RESOLUTION",
-      "TEMPORAL JOIN LOGIC"
+      "WINDOW FUNCTIONS",
+      "DATA QUALITY SKEPTICISM",
+      "TIME-SERIES BUCKETING & ARITHMETIC"
     ],
     "companies": [
       "Meta",
@@ -1106,10 +1081,9 @@
       "You cannot reference a SELECT alias in WHERE — either repeat the expression or wrap in a second CTE"
     ],
     "concepts": [
-      "CONDITIONAL FLAG AGGREGATION",
-      "COMPOSITE SCORING FORMULA",
+      "GROUPED AGGREGATION",
       "CTE PIPELINE",
-      "EVENT-LEVEL TO SESSION-LEVEL AGGREGATION"
+      "SESSIONIZATION"
     ],
     "companies": [
       "Meta",
@@ -1148,9 +1122,7 @@
       "You cannot reference window function aliases in WHERE — use a CTE to compute both, then filter in the outer query"
     ],
     "concepts": [
-      "ROWS vs RANGE FRAME SEMANTICS",
-      "TIE HANDLING IN WINDOW FUNCTIONS",
-      "WINDOW FRAME DIVERGENCE DETECTION"
+      "WINDOW FUNCTIONS"
     ],
     "companies": [
       "Google",
@@ -1198,10 +1170,9 @@
       "LEFT JOIN the first_qualifying CTE back to all signups — users with no qualifying order will have NULL on the right side, which maps to converted=0"
     ],
     "concepts": [
-      "CONVERSION FUNNEL ANALYSIS",
-      "DATE-RANGE JOIN CONDITION",
-      "MULTI-CTE PIPELINE",
-      "LEFT JOIN FOR OPTIONAL MATCH"
+      "FUNNEL ANALYSIS",
+      "MULTI-TABLE ENTITY LINKING",
+      "CTE PIPELINE"
     ],
     "companies": [
       "Meta",
@@ -1247,7 +1218,7 @@
     ],
     "concepts": [
       "GROUPED AGGREGATION",
-      "HAVING THRESHOLD"
+      "POST-AGGREGATION FILTERING"
     ],
     "companies": []
   },
@@ -1289,9 +1260,9 @@
       "GROUP BY user_id and name together to keep the name column accessible."
     ],
     "concepts": [
-      "HAVING ON COUNT",
-      "JOIN AGGREGATE",
-      "SUPPORT ANALYSIS"
+      "POST-AGGREGATION FILTERING",
+      "MULTI-TABLE ENTITY LINKING",
+      "GROUPED AGGREGATION"
     ],
     "companies": []
   },
@@ -1339,9 +1310,8 @@
       "Filter the CTE output (WHERE revenue_rank <= 3) in the outer query — you can't filter on a window function alias in the same SELECT."
     ],
     "concepts": [
-      "WINDOW RANK WITH PARTITION",
-      "TOP-N PER GROUP",
-      "CTE FILTER"
+      "RANKING & TOP-N PER GROUP",
+      "CTE PIPELINE"
     ],
     "companies": []
   },
@@ -1383,9 +1353,8 @@
       "HAVING COUNT(*) >= 10 restricts to departments large enough for percentiles to be meaningful."
     ],
     "concepts": [
-      "PERCENTILE_CONT",
-      "ORDERED-SET AGGREGATE",
-      "SALARY DISTRIBUTION"
+      "WINDOW FUNCTIONS",
+      "GROUPED AGGREGATION"
     ],
     "companies": []
   },
@@ -1423,8 +1392,8 @@
       "SUM(SUM(...)) OVER (...): the outer SUM accumulates the aggregated monthly values produced by the inner SUM."
     ],
     "concepts": [
-      "RUNNING TOTAL",
-      "NESTED AGGREGATION IN WINDOW"
+      "RUNNING TOTAL & MOVING WINDOW",
+      "WINDOW FUNCTIONS"
     ],
     "companies": []
   },
@@ -1469,9 +1438,9 @@
       "LEFT JOIN the converted CTE so non-converting users still appear in the denominator."
     ],
     "concepts": [
-      "CONVERSION FUNNEL",
-      "DATE-RANGE JOIN",
-      "MULTI-DIMENSION COHORT"
+      "FUNNEL ANALYSIS",
+      "MULTI-TABLE ENTITY LINKING",
+      "COHORT RETENTION"
     ],
     "companies": []
   },
@@ -1517,8 +1486,8 @@
       "SUM(total_revenue) OVER (PARTITION BY category_id ORDER BY revenue_rank) computes the cumulative revenue as you move down each category's ranking."
     ],
     "concepts": [
-      "MULTI-CTE PIPELINE",
-      "WINDOW RUNNING TOTAL"
+      "CTE PIPELINE",
+      "RUNNING TOTAL & MOVING WINDOW"
     ],
     "companies": []
   },
@@ -1597,8 +1566,7 @@
       "Bound the time filter to the full reporting range stated in the prompt — don't infer the bound from the rows shown in the preview."
     ],
     "concepts": [
-      "MONTHLY TREND",
-      "DATE EXTRACTION"
+      "TIME-SERIES BUCKETING & ARITHMETIC"
     ],
     "companies": []
   },
@@ -1678,8 +1646,8 @@
       "COUNT(DISTINCT CASE WHEN ...) counts unique converted users — without DISTINCT a multi-order user would be over-counted."
     ],
     "concepts": [
-      "ACQUISITION FUNNEL",
-      "LEFT JOIN AGGREGATE"
+      "FUNNEL ANALYSIS",
+      "MULTI-TABLE ENTITY LINKING"
     ],
     "companies": []
   },
@@ -1777,8 +1745,7 @@
       "Filter on revenue_rank <= 2 in the outer WHERE after defining the CTE."
     ],
     "concepts": [
-      "WINDOW RANK WITH PARTITION",
-      "TOP-N PER GROUP"
+      "RANKING & TOP-N PER GROUP"
     ],
     "companies": []
   },
@@ -1858,8 +1825,8 @@
       "The result has 5 rows — LIMIT 5 after ORDER BY avg_salary DESC."
     ],
     "concepts": [
-      "HAVING THRESHOLD",
-      "SALARY BAND ANALYSIS"
+      "POST-AGGREGATION FILTERING",
+      "GROUPED AGGREGATION"
     ],
     "companies": []
   },
@@ -1897,8 +1864,8 @@
       "Window function PARTITION BY references must use exact column names from the source table."
     ],
     "concepts": [
-      "WINDOW FUNCTION PARTITION",
-      "COLUMN NAME ERRORS"
+      "WINDOW FUNCTIONS",
+      "RESULT SHAPING & ORDERING"
     ],
     "companies": []
   },
@@ -1940,8 +1907,8 @@
       "The error shows 'Candidate bindings: avg_sal' — that's the correct name to use in the RANK() OVER clause."
     ],
     "concepts": [
-      "CTE COLUMN CONSISTENCY",
-      "WINDOW RANK"
+      "CTE PIPELINE",
+      "RANKING & TOP-N PER GROUP"
     ],
     "companies": []
   },
@@ -2037,9 +2004,7 @@
       "Stripe"
     ],
     "concepts": [
-      "GROUPING SETS",
-      "CUSTOM AGGREGATION COMBINATIONS",
-      "MULTI-DIMENSIONAL SUMMARY"
+      "GROUPED AGGREGATION"
     ],
     "required_concepts": [
       "group_by",
@@ -2088,9 +2053,7 @@
       "Databricks"
     ],
     "concepts": [
-      "ARRAY AGGREGATION",
-      "ARRAY_AGG",
-      "ORDERED NESTED STRUCTURES"
+      "GROUPED AGGREGATION"
     ],
     "required_concepts": [
       "join",
@@ -2128,9 +2091,9 @@
       "Meta"
     ],
     "concepts": [
-      "RECURSIVE CTE",
-      "CALENDAR SPINE",
-      "GAP DETECTION"
+      "CTE PIPELINE",
+      "TIME-SERIES BUCKETING & ARITHMETIC",
+      "SESSIONIZATION"
     ],
     "required_concepts": [
       "cte",
@@ -2180,9 +2143,8 @@
       "LinkedIn"
     ],
     "concepts": [
-      "LATERAL JOIN",
-      "TOP-N PER GROUP",
-      "CORRELATED FROM CLAUSE"
+      "SUBQUERY PATTERNS",
+      "RANKING & TOP-N PER GROUP"
     ],
     "required_concepts": [
       "join",
@@ -2222,9 +2184,8 @@
       "LinkedIn"
     ],
     "concepts": [
-      "QUALIFY",
-      "WINDOW FILTER",
-      "LATEST-ROW DEDUPLICATION"
+      "RANKING & TOP-N PER GROUP",
+      "WINDOW FUNCTIONS"
     ],
     "required_concepts": [
       "window_functions",
@@ -2261,9 +2222,8 @@
       "Meta"
     ],
     "concepts": [
-      "CALENDAR SPINE",
-      "GENERATE_SERIES",
-      "DAILY REVENUE GAPS"
+      "TIME-SERIES BUCKETING & ARITHMETIC",
+      "SESSIONIZATION"
     ],
     "required_concepts": [
       "cte",
@@ -4197,7 +4157,7 @@
       "Post-filter on session_count >= 5 in the outer query after computing user-level stats."
     ],
     "concepts": [
-      "SESSIONIZATION & EVENT RECONSTRUCTION",
+      "SESSIONIZATION",
       "CTE PIPELINE",
       "GROUPED AGGREGATION"
     ],
@@ -4238,7 +4198,7 @@
       "CAST(order_date AS DATE) + 30 adds 30 days to a date in DuckDB."
     ],
     "concepts": [
-      "COHORT RETENTION ANALYSIS",
+      "COHORT RETENTION",
       "CTE PIPELINE",
       "TIME-SERIES BUCKETING & ARITHMETIC"
     ],
@@ -4281,7 +4241,7 @@
     "concepts": [
       "FUNNEL ANALYSIS",
       "CTE PIPELINE",
-      "CONDITIONAL LOGIC & CASE WHEN"
+      "CONDITIONAL LOGIC & CASE"
     ],
     "companies": []
   },
@@ -4330,8 +4290,8 @@
       "Wrap the LAG() denominator in NULLIF(..., 0) to guard against division by zero in the first month."
     ],
     "concepts": [
-      "SELF-COMPARISON PATTERNS",
-      "WINDOW FUNCTIONS & FRAMES",
+      "SELF-COMPARISON & RECURSION",
+      "WINDOW FUNCTIONS",
       "TIME-SERIES BUCKETING & ARITHMETIC"
     ],
     "companies": []
@@ -4424,7 +4384,7 @@
     ],
     "concepts": [
       "DEDUPLICATION LOGIC",
-      "WINDOW FUNCTIONS & FRAMES",
+      "WINDOW FUNCTIONS",
       "TIME-SERIES BUCKETING & ARITHMETIC"
     ],
     "companies": []
@@ -4472,8 +4432,8 @@
       "The cutoff condition is (cumulative_rev - revenue) < 0.80 * total_rev — this includes the last product that tips the running total past 80%."
     ],
     "concepts": [
-      "RUNNING TOTAL & CUMULATIVE METRICS",
-      "WINDOW FUNCTIONS & FRAMES",
+      "RUNNING TOTAL & MOVING WINDOW",
+      "WINDOW FUNCTIONS",
       "POST-AGGREGATION FILTERING"
     ],
     "companies": []
@@ -4572,8 +4532,8 @@
       "The lowest earner in each department gets percentile 0; the highest gets 100."
     ],
     "concepts": [
-      "WINDOW FUNCTIONS & FRAMES",
-      "RANKING & TOP-N",
+      "WINDOW FUNCTIONS",
+      "RANKING & TOP-N PER GROUP",
       "GROUPED AGGREGATION"
     ],
     "companies": []
@@ -4618,7 +4578,7 @@
       "When median > mean the distribution is negatively skewed — a few very low values pull the average down."
     ],
     "concepts": [
-      "SELF-COMPARISON PATTERNS",
+      "SELF-COMPARISON & RECURSION",
       "CTE PIPELINE",
       "DATA QUALITY SKEPTICISM"
     ],
@@ -4663,8 +4623,8 @@
       "CASE WHEN tu.user_id IS NOT NULL THEN 'With ...' handles the NULL resulting from no match."
     ],
     "concepts": [
-      "CONDITIONAL LOGIC & CASE WHEN",
-      "MULTI-TABLE JOINS",
+      "CONDITIONAL LOGIC & CASE",
+      "MULTI-TABLE ENTITY LINKING",
       "METRIC INTERPRETATION & DENOMINATOR CHOICE"
     ],
     "companies": []
@@ -4703,8 +4663,8 @@
       "Use MAX(event_time) as the anchor to avoid hardcoding a date."
     ],
     "concepts": [
-      "SELF-COMPARISON PATTERNS",
-      "WINDOW FUNCTIONS & FRAMES",
+      "SELF-COMPARISON & RECURSION",
+      "WINDOW FUNCTIONS",
       "TIME-SERIES BUCKETING & ARITHMETIC"
     ],
     "companies": []
@@ -4752,8 +4712,8 @@
       "Filter WHERE buyer_rank <= 5 — if two products are tied at rank 5, both are included."
     ],
     "concepts": [
-      "RANKING & TOP-N",
-      "WINDOW FUNCTIONS & FRAMES",
+      "RANKING & TOP-N PER GROUP",
+      "WINDOW FUNCTIONS",
       "DEDUPLICATION LOGIC"
     ],
     "companies": []
@@ -4933,7 +4893,7 @@
       "SUM(COUNT(*)) OVER () gives the grand total after grouping — divide each bucket count by this for the percentage."
     ],
     "concepts": [
-      "CONDITIONAL LOGIC & CASE WHEN",
+      "CONDITIONAL LOGIC & CASE",
       "WINDOW FUNCTIONS",
       "GROUPED AGGREGATION"
     ],
@@ -5107,7 +5067,7 @@
       "Aggregate at segment level in the outer query — not at the order level, to avoid weighting by order volume."
     ],
     "concepts": [
-      "CONDITIONAL LOGIC & CASE WHEN",
+      "CONDITIONAL LOGIC & CASE",
       "GROUPED AGGREGATION",
       "DEDUPLICATION LOGIC"
     ],
@@ -5199,7 +5159,7 @@
       "ORDER BY CASE priority WHEN 'urgent' THEN 1 ... END to sort by business severity rather than alphabetically."
     ],
     "concepts": [
-      "CONDITIONAL LOGIC & CASE WHEN",
+      "CONDITIONAL LOGIC & CASE",
       "GROUPED AGGREGATION",
       "RESULT SHAPING & ORDERING"
     ],
@@ -5241,7 +5201,7 @@
     "concepts": [
       "SELF-COMPARISON & RECURSION",
       "CTE PIPELINE",
-      "CONDITIONAL LOGIC & CASE WHEN"
+      "CONDITIONAL LOGIC & CASE"
     ],
     "companies": []
   },
@@ -5290,7 +5250,7 @@
     ],
     "concepts": [
       "MULTI-TABLE ENTITY LINKING",
-      "CONDITIONAL LOGIC & CASE WHEN",
+      "CONDITIONAL LOGIC & CASE",
       "GROUPED AGGREGATION"
     ],
     "companies": []
@@ -5331,9 +5291,8 @@
       "Once you have the cutoff, classifying each user is a date comparison — then count each group and express each as a share of the total cohort."
     ],
     "concepts": [
-      "RESULT PLAUSIBILITY CHECK",
-      "ACQUISITION FUNNEL & COHORT ANALYSIS",
-      "OUTPUT SANITY VALIDATION"
+      "OUTPUT SANITY VALIDATION",
+      "COHORT RETENTION"
     ],
     "companies": []
   },
@@ -5414,7 +5373,6 @@
     ],
     "concepts": [
       "MULTI-TABLE ENTITY LINKING",
-      "ROW COUNT SANITY",
       "OUTPUT SANITY VALIDATION"
     ],
     "companies": []
@@ -5456,9 +5414,8 @@
       "When two aggregations share the same source, the same filter, and the same grouping dimension, merging them into one CTE eliminates one full pass over the source data and removes a downstream combination step."
     ],
     "concepts": [
-      "REPEATED COMPUTATION ELIMINATION",
-      "CTE PIPELINE",
-      "PERFORMANCE-AWARE ANALYTICS"
+      "PERFORMANCE-AWARE ANALYTICS",
+      "CTE PIPELINE"
     ],
     "companies": []
   },
@@ -5498,9 +5455,8 @@
       "After isolating the relevant event rows, deduplicate by session so each session appears at most once before combining with session attributes."
     ],
     "concepts": [
-      "CARDINALITY REDUCTION",
-      "MULTI-TABLE ENTITY LINKING",
-      "PERFORMANCE-AWARE ANALYTICS"
+      "PERFORMANCE-AWARE ANALYTICS",
+      "MULTI-TABLE ENTITY LINKING"
     ],
     "companies": []
   },
@@ -5542,9 +5498,8 @@
       "Once spend is aggregated per user, applying a sort and a row limit inside that aggregation step stops you from materialising results you will never use."
     ],
     "concepts": [
-      "EFFICIENT ALTERNATIVE",
-      "RANKING & TOP-N PER GROUP",
-      "PERFORMANCE-AWARE ANALYTICS"
+      "PERFORMANCE-AWARE ANALYTICS",
+      "RANKING & TOP-N PER GROUP"
     ],
     "companies": []
   },
@@ -5589,8 +5544,8 @@
       "MAX(...) OVER () with no PARTITION BY returns the maximum across all result rows — use it to compute the gap to the top."
     ],
     "concepts": [
-      "WINDOW RANK",
-      "GLOBAL WINDOW MAX"
+      "RANKING & TOP-N PER GROUP",
+      "WINDOW FUNCTIONS"
     ],
     "companies": []
   },
@@ -5631,8 +5586,8 @@
       "Use a scalar subquery to compute the company-wide average salary inside CASE WHEN."
     ],
     "concepts": [
-      "WINDOW RANK ON AGGREGATES",
-      "SCALAR SUBQUERY IN CASE"
+      "RANKING & TOP-N PER GROUP",
+      "SUBQUERY PATTERNS"
     ],
     "companies": []
   },
@@ -5851,8 +5806,8 @@
       "Wrap in a CTE, then filter WHERE rn = 1 in the outer query."
     ],
     "concepts": [
-      "WINDOW FUNCTIONS & FRAMES",
-      "RANKING & TOP-N"
+      "WINDOW FUNCTIONS",
+      "RANKING & TOP-N PER GROUP"
     ],
     "companies": []
   },
@@ -5901,8 +5856,8 @@
       "Filter WHERE rn = 1 in the outer query to get one winner per category."
     ],
     "concepts": [
-      "WINDOW FUNCTIONS & FRAMES",
-      "RANKING & TOP-N",
+      "WINDOW FUNCTIONS",
+      "RANKING & TOP-N PER GROUP",
       "GROUPED AGGREGATION"
     ],
     "companies": []
@@ -5952,8 +5907,8 @@
       "Filter `WHERE rank <= 3` in the outer query to keep only the top 3 per brand."
     ],
     "concepts": [
-      "RANKING & TOP-N",
-      "WINDOW FUNCTIONS & FRAMES",
+      "RANKING & TOP-N PER GROUP",
+      "WINDOW FUNCTIONS",
       "GROUPED AGGREGATION"
     ],
     "companies": []
@@ -6090,9 +6045,9 @@
       "Compute per-modifier totals in a CTE first; then apply SUM(completed_revenue) OVER () in the outer SELECT to divide each row by the grand total without a self-join."
     ],
     "concepts": [
-      "CHANNEL STANDARDIZATION",
+      "STRING PARSING & PATTERN MATCHING",
       "CTE PIPELINE",
-      "PROPORTIONAL CONTRIBUTION ANALYSIS"
+      "WINDOW FUNCTIONS"
     ],
     "companies": [
       "Meta",
