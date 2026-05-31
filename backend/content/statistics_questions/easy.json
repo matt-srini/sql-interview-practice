@@ -136,7 +136,7 @@
     "concepts": [
       "descriptive statistics"
     ],
-    "order": 3,
+    "order": 4,
     "difficulty": "easy",
     "solution_code": "def solve(data: list[float]) -> float:\n    data = sorted(data)\n    n = len(data)\n    mid = n // 2\n    if n % 2 == 1:\n        return float(data[mid])\n    return (data[mid - 1] + data[mid]) / 2",
     "public_test_cases": 1
@@ -162,7 +162,7 @@
     "concepts": [
       "descriptive statistics"
     ],
-    "order": 4,
+    "order": 3,
     "difficulty": "easy"
   },
   {
