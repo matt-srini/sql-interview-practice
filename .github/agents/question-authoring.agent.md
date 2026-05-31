@@ -171,9 +171,9 @@ Anti-patterns: H1 reading like the first line of the solution; pasting code / me
 This is procedure, not principle. Follow it for every question.
 
 1. Open [`docs/concept-taxonomy.md`](../../docs/concept-taxonomy.md) to the **current track's family registry section**. Not the track you authored last week. The track you are authoring now.
-2. For each candidate tag string you intend to use, verify it appears verbatim either:
-   - **(a)** in a family's `members` list, OR
-   - **(b)** as a substring matching one of that family's documented `match_patterns`.
+2. For each concept you intend to tag, identify the **canonical family name** — the header name in the registry table (left-hand column). That canonical name is the value you write in the `concepts` array.
+   - **(a)** If your draft tag string appears verbatim as a family header name, use it directly.
+   - **(b)** If your draft tag is a sub-pattern or alias (e.g. `BACKWARD COMPATIBILITY`, `PIPELINE RESILIENCE`, `CLOUD COST MODELING`, `STREAMING ARCHITECTURE`, `KAFKA CONSUMER LAG`, `GDPR COMPLIANCE`, `INGESTION LAYER`) look up which family's `match_patterns` it resolves to, then use **that family's header name** as the tag — never the sub-pattern itself. Sub-patterns exist for resolution and analytics, not as tag values. Writing a sub-pattern as a tag is a content error even if the validator accepts it (resolution ≠ authoring permission).
 3. If a candidate string passes neither (a) nor (b), do one of:
    - Rewrite the tag to a registered family member, OR
    - Stop and **propose a registry addition in your hand-back summary**. A registry change is a durable-contract change and requires user approval per the P2 rule — never self-apply mid-execution.

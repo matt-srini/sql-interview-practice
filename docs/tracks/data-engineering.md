@@ -110,6 +110,8 @@ Full registry: [`docs/concept-taxonomy.md` → Data Engineering section](../conc
 - **MCQ that's actually a checklist** — if the right answer is "all of the above," the question is testing memorisation, not reasoning.
 - **Questions about a config flag's default value** — same as PySpark; not the test.
 - **Scenarios that don't read like real incidents** — "imagine you have a pipeline" is weaker than "your overnight pipeline ran at 3:14 AM, started failing at 4:02 AM, the on-call sees this in logs..."
+- **Schema registry compatibility claimed as a generated-code guard** — FULL/BACKWARD compatibility validates field numbers and types at wire-format level only. A Protobuf field rename that keeps the same field number passes FULL wire-compatibility even though it breaks consumers whose generated class now exposes a different attribute name. The correct structural fix for that failure class is consumer contract testing gated in the producer's publishing pipeline — not a schema registry rule. Separately, FULL is non-transitive: a consumer reading all historical schema versions needs FULL_TRANSITIVE, not FULL alone.
+- **Wrong Kafka partition numbering** — Partition IDs are sequential integers starting at 0. Expanding a topic from 3 to 5 partitions adds partitions 3 and 4; original partitions stay 0, 1, 2. Any scenario implying a non-sequential original set (e.g., "partitions 0, 1, 3 were consumed before the expansion") is impossible. Verify partition numbers before publishing.
 
 ## JSON schema
 
