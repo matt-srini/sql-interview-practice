@@ -60,6 +60,15 @@ export default function SampleQuestionPage() {
     [topic, difficulty, question]
   );
 
+  // For mixed-subtype tracks (Statistics), derive render mode from the loaded question's subtype.
+  // For all other tracks use the static track-level hasMCQ flag.
+  const renderMode = useMemo(() => {
+    if (meta.mixedSubtype) {
+      return question?.subtype === 'numerical' ? 'code' : 'mcq';
+    }
+    return meta.hasMCQ ? 'mcq' : 'code';
+  }, [meta.mixedSubtype, meta.hasMCQ, question?.subtype]);
+
   // Refs for Monaco keyboard shortcuts
   const handleRunRef = useRef(null);
   const handleSubmitRef = useRef(null);
@@ -90,7 +99,8 @@ export default function SampleQuestionPage() {
         const nextQuestion = res.data;
         setQuestion(nextQuestion);
         setSampleMeta(nextQuestion.sample ?? null);
-        if (!meta.hasMCQ) {
+        const isCodeMode = meta.mixedSubtype ? nextQuestion.subtype === 'numerical' : !meta.hasMCQ;
+        if (isCodeMode) {
           const baseCode = meta.language === 'python' && nextQuestion.starter_code ? nextQuestion.starter_code : defaultCode;
           const localDraftKey = `sample-draft:${topic}:${difficulty}:${nextQuestion.id}`;
           let nextCode = baseCode;
@@ -115,7 +125,7 @@ export default function SampleQuestionPage() {
   }, [defaultCode, difficulty, meta.language, meta.hasMCQ, sampleBasePath, reloadToken, topic]);
 
   useEffect(() => {
-    if (meta.hasMCQ || !question || !draftKey || !draftHydratedRef.current) return undefined;
+    if (renderMode !== 'code' || !question || !draftKey || !draftHydratedRef.current) return undefined;
     if (draftSaveTimerRef.current) clearTimeout(draftSaveTimerRef.current);
     setDraftSaveState('saving');
     draftSaveTimerRef.current = setTimeout(() => {
@@ -130,7 +140,7 @@ export default function SampleQuestionPage() {
     return () => {
       if (draftSaveTimerRef.current) clearTimeout(draftSaveTimerRef.current);
     };
-  }, [code, draftKey, meta.hasMCQ, question]);
+  }, [code, draftKey, renderMode, question]);
 
   useEffect(() => () => {
     if (draftSaveTimerRef.current) clearTimeout(draftSaveTimerRef.current);
@@ -204,7 +214,7 @@ export default function SampleQuestionPage() {
     setShowSolution(false);
     try {
       let payload;
-      if (meta.hasMCQ) {
+      if (renderMode === 'mcq') {
         payload = { selected_option: selectedOption, question_id: Number(question.id) };
       } else if (meta.language === 'python') {
         payload = { code, question_id: Number(question.id) };
@@ -252,7 +262,7 @@ export default function SampleQuestionPage() {
   }
 
   function clearDraft() {
-    if (meta.hasMCQ || !question || !draftKey) return;
+    if (renderMode !== 'code' || !question || !draftKey) return;
     const resetCode = meta.language === 'python' && question?.starter_code ? question.starter_code : defaultCode;
     try {
       localStorage.removeItem(draftKey);
@@ -367,12 +377,12 @@ export default function SampleQuestionPage() {
   const shouldShowFeedback = submitResult?.feedback?.length > 0
     && !(submitResult.correct && (submitResult.structure_correct ?? true));
   const showSolutionToggle = Boolean(submitResult?.solution_query || submitResult?.solution_code);
-  const editorTitle = meta.hasMCQ
+  const editorTitle = renderMode === 'mcq'
     ? 'Code preview'
     : meta.language === 'python'
       ? 'Python editor'
       : 'SQL editor';
-  const editorNote = meta.hasMCQ
+  const editorNote = renderMode === 'mcq'
     ? 'Read-only'
     : meta.language === 'python'
       ? 'Sandboxed execution'
@@ -525,7 +535,7 @@ export default function SampleQuestionPage() {
           </aside>
 
           <section className="right-panel">
-            {meta.hasMCQ ? (
+            {renderMode === 'mcq' ? (
               <div className="card">
                 <div className="section-heading">
                   <h3>Choose the correct answer</h3>
@@ -688,6 +698,16 @@ export default function SampleQuestionPage() {
             )}
 
             {topic === 'python' && submitResult && (
+              <>
+                <TestCasePanel
+                  results={pythonSubmitResults}
+                  hiddenSummary={submitResult.hidden_summary ?? null}
+                />
+                <PrintOutputPanel output={submitResult.stdout ?? ''} />
+              </>
+            )}
+
+            {topic === 'statistics' && renderMode === 'code' && submitResult && (
               <>
                 <TestCasePanel
                   results={pythonSubmitResults}
