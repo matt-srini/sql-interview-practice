@@ -2,21 +2,22 @@
   {
     "id": 51001,
     "order": 1,
-    "title": "ETL vs ELT: Where Does Transformation Happen?",
+    "title": "ETL vs ELT: Two Pipeline Designs Compared",
     "difficulty": "easy",
-    "type": "conceptual",
-    "description": "In an ETL pipeline, where does data transformation occur relative to loading into the target system?",
+    "type": "scenario",
+    "scenario_context": "Your team is rebuilding a daily customer-events pipeline that lands data in Snowflake. Engineer A proposes loading raw events into a separate staging server, transforming them there (deduping, enriching, joining to reference data), then writing the cleaned output to Snowflake. Engineer B proposes loading raw events directly into Snowflake first, then running the same transformations inside Snowflake using SQL.",
+    "description": "Which statement correctly maps these two designs to the ETL and ELT patterns?",
     "options": [
-      "Transformation happens before loading \u2014 data is cleaned and shaped outside the target system",
-      "Transformation happens after loading \u2014 raw data lands first, then is transformed inside the target",
-      "Transformation happens simultaneously with extraction, before any data moves",
-      "Transformation is optional and can be skipped entirely in modern cloud architectures"
+      "Engineer A's design is ETL (transform happens before loading to the target); Engineer B's design is ELT (transform happens after loading, inside the target)",
+      "Engineer A's design is ELT (transform happens before loading); Engineer B's design is ETL (transform happens inside the warehouse)",
+      "Both designs are ETL \u2014 the only difference is where the staging server physically lives",
+      "Both designs are ELT \u2014 modern cloud warehouses always transform after loading, regardless of pipeline design"
     ],
     "correct_option": 0,
-    "explanation": "ETL (Extract, Transform, Load) transforms data in an intermediate processing layer before it reaches the target. ELT reverses this: raw data is loaded first, then transformed inside the target system (typically a cloud data warehouse). Option B describes ELT, not ETL. Option C is incorrect \u2014 extraction and transformation are distinct steps. Option D is wrong: all pipelines require some transformation to be useful.",
+    "explanation": "ETL transforms data *before* it reaches the target system (Engineer A's staging-server design); ELT loads raw data first and transforms it *inside* the target (Engineer B's in-warehouse design). The choice has real operational consequences: ELT shifts compute cost to Snowflake and depends on the warehouse having elastic compute to handle transformations at scale; ETL keeps the warehouse lean but couples pipeline reliability to a separate transformation server. (Option B) reverses the mapping. (Option C and D) collapse the distinction; the location of transformation relative to the load step is the entire point of the acronym order.",
     "hints": [
-      "Think about the order the three letters appear in the acronym and what each letter represents as a distinct step.",
-      "In ETL, the 'T' comes before the 'L' \u2014 data is shaped externally before it enters the warehouse."
+      "For each engineer's design, trace where the heavy lifting (deduping, enriching, joining) actually executes \u2014 before the data lands in the warehouse, or after it's already inside.",
+      "The order of the letters in each acronym reflects the order of the operations: figure out which letter the in-warehouse transformation step corresponds to."
     ],
     "concepts": [
       "ETL VS ELT",
@@ -146,21 +147,21 @@
   {
     "id": 51007,
     "order": 7,
-    "title": "DAG-Based Orchestration: What Is a DAG?",
+    "title": "DAG Orchestration: Why Cycles Are Rejected",
     "difficulty": "easy",
     "type": "conceptual",
-    "description": "In data pipeline orchestration, what does the term DAG stand for, and why is the acyclic property important?",
+    "description": "A data engineer defines a new pipeline in an orchestrator (Airflow, Dagster, Prefect) as task A \u2192 task B \u2192 task C, and then adds an edge from task C back to task A so the work \"can loop until it's done.\" The orchestrator rejects the pipeline definition at registration time. Which answer best explains the operational reason for the rejection?",
     "options": [
-      "Directed Acyclic Graph \u2014 acyclic means there are no cycles, so tasks have a clear execution order without infinite loops",
-      "Data Aggregation Grid \u2014 acyclic means each task aggregates data exactly once with no repeat processing",
-      "Distributed Async Gateway \u2014 acyclic means tasks run in parallel without waiting for each other",
-      "Dynamic Action Graph \u2014 acyclic means the graph structure is rebuilt from scratch on every scheduled run"
+      "The edge from C back to A creates a cycle: every task in the loop is waiting for an upstream task that itself depends on something downstream, so the orchestrator has no valid starting point and no topological execution order exists",
+      "The orchestrator only rejects the pipeline if the cycle contains more than three tasks; shorter cycles are silently allowed and capped by a default retry limit",
+      "The cycle is allowed by the graph engine, but the orchestrator refuses to register pipelines that produce non-deterministic task order at runtime",
+      "The rejection happens because A, B, and C use different execution operators; cycles are accepted when all tasks in the loop share the same operator type"
     ],
     "correct_option": 0,
-    "explanation": "A DAG (Directed Acyclic Graph) is a graph where edges have direction (task A must complete before task B) and there are no cycles (no path leads back to an earlier node). This guarantees a topological execution order exists, meaning every task can eventually complete. Cycles would create deadlocks or infinite loops. Options B, C, and D are fabricated definitions.",
+    "explanation": "Adding C \u2192 A creates a dependency cycle: A waits for C (via the new edge), C waits for B, and B waits for A \u2014 every task in the loop has an upstream dependency that itself depends on something downstream. The orchestrator cannot produce a topological order (a linear sequence in which every task's dependencies appear before it), so it has no valid task to start with. This is exactly the property the \"acyclic\" in DAG enforces, and it is why Airflow, Dagster, and Prefect reject cyclic pipeline definitions at registration time. (Option B) Cycle length is irrelevant \u2014 even a 2-task cycle has no valid start. (Option C) Non-determinism isn't the issue; the issue is that no execution order exists at all. (Option D) Operator type has nothing to do with graph structure; uniform operators don't dissolve a dependency cycle.",
     "hints": [
-      "Break down the acronym: what do 'directed' and 'acyclic' each mean in graph theory, and why would a cycle be a problem for scheduling?",
-      "If a task depended on itself through a chain of other tasks, the scheduler could never determine a safe starting point."
+      "Picture each task as a worker who refuses to start until its listed upstream task has finished. What happens when the chain of \"waiting for...\" eventually loops back to a task that is itself waiting on someone in the loop?",
+      "Orchestrators need to pick a first task to run. What property of the graph guarantees that such a first task always exists?"
     ],
     "concepts": [
       "ORCHESTRATION",
@@ -441,18 +442,18 @@
     "options": [
       "A data lake stores raw data in its native format (schema-on-read); a warehouse enforces a schema on write before data is stored",
       "A data lake only stores structured relational data; a warehouse stores unstructured files like logs and images",
-      "A data lake requires a paid license for each data consumer; a warehouse allows unlimited free queries",
-      "A data lake processes all queries using in-memory computation; a warehouse spills to disk for large queries"
+      "A data lake fully replaces a data warehouse — organizations migrating to a lake decommission the warehouse because the lake serves all the same query workloads identically",
+      "A data lake infers and enforces a schema automatically at write time, while a warehouse leaves the data unstructured until query time"
     ],
     "correct_option": 0,
-    "explanation": "The defining distinction is schema-on-read vs schema-on-write. A data lake accepts data in any format (JSON, CSV, Parquet, images, logs) and applies structure only when a query is executed. A warehouse requires data to conform to a defined schema before storage. This makes lakes more flexible but requires more query-time parsing. Options B, C, and D are all factually incorrect descriptions of these systems.",
+    "explanation": "The defining distinction is schema-on-read vs schema-on-write. A data lake accepts data in any format (JSON, CSV, Parquet, images, logs) and applies structure only when a query reads the data. A warehouse requires data to conform to a defined schema before storage. This makes lakes more flexible to ingest into but pushes the cost of structure onto the analyst at query time. (Option B) inverts what each system stores — lakes are the system that handles unstructured/semi-structured data; warehouses are the structured-only system. (Option C) is a common strategic misconception: lakes complement warehouses (the lakehouse pattern combines them) but do not replace them — warehouses still win on low-latency SQL analytics and governance. (Option D) inverts the schema-enforcement axis: lakes do *not* enforce a schema at write time; warehouses do.",
     "hints": [
-      "Think about when the structure of the data is enforced: at the moment of writing, or at the moment of reading.",
-      "One system accepts files of any type immediately; the other requires data to match a predefined table structure before it can be stored."
+      "One side of the choice imposes structure when data is written; the other defers structure until data is read. Which side does each system pick?",
+      "Think about which side of the pipeline pays the cost of imposing structure: the team writing the data, or the analyst reading it?"
     ],
     "concepts": [
       "STORAGE ARCHITECTURE",
-      "DATA QUALITY"
+      "DATA CONTRACT"
     ]
   },
   {
@@ -554,25 +555,25 @@
   {
     "id": 51024,
     "order": 24,
-    "title": "Data Quality: Null Checks",
+    "title": "Data Quality: Where to Place a Null Check",
     "difficulty": "easy",
     "type": "conceptual",
-    "description": "A pipeline loads customer records into a warehouse. The `customer_id` column should never be NULL. Where in the pipeline is the best place to add a null check assertion?",
+    "description": "Your pipeline ingests customer records from a third-party SaaS API (which your team does not own and cannot modify) and loads them into a warehouse. The `customer_id` field should never be NULL, but the API has occasionally sent records with missing IDs. Where in *your* pipeline is the best place to add a null-check assertion?",
     "options": [
       "Immediately after ingestion, before the data reaches downstream transformation or serving layers",
       "In the serving layer, just before users query the data, to catch any nulls that slipped through",
-      "In the source system, by adding a NOT NULL constraint to the source database table",
+      "In a weekly batch quality dashboard that reviews the previous week's loaded records",
       "At the end of the pipeline after all transformations, to check the final output only"
     ],
     "correct_option": 0,
-    "explanation": "Data quality checks should be applied as early as possible \u2014 ideally right after ingestion. Catching nulls early prevents bad data from propagating into transformations that may silently produce incorrect results (e.g., joins on NULL keys match nothing). Option B (serving layer) catches problems too late \u2014 downstream logic has already run on bad data. Option C addresses the source but doesn't protect against ingestion issues. Option D (final output only) misses errors introduced mid-pipeline.",
+    "explanation": "Data quality checks should run as early as possible \u2014 right after ingestion. Catching nulls at the entry point prevents bad data from propagating into transformations that may silently produce incorrect results (joins on NULL keys match nothing, aggregations skip records, downstream tables fail constraints). Because the source is a third-party API you cannot modify, the earliest place *you control* is immediately after ingestion. (Option B) The serving layer catches problems too late \u2014 every downstream step has already run on bad data. (Option C) A weekly batch dashboard is an after-the-fact audit, not a guard; by the time it surfaces a problem, a week of decisions have already been made on bad data. (Option D) Final-output checks miss errors introduced mid-pipeline and still don't prevent damage to intermediate tables.",
     "hints": [
-      "Think about how far bad data can travel if a check is placed late in the pipeline versus early.",
-      "A problem caught at the entry point affects only the first step; the same problem caught at the exit has already corrupted everything in between."
+      "Think about how far bad data can travel between the point where it enters your pipeline and the point where you first notice it.",
+      "A check that runs once a week tells you what already happened; a check at the entry point prevents the problem from spreading at all."
     ],
     "concepts": [
       "DATA QUALITY",
-      "SCHEMA EVOLUTION"
+      "LINEAGE & OBSERVABILITY"
     ]
   },
   {
@@ -602,25 +603,25 @@
   {
     "id": 51026,
     "order": 26,
-    "title": "Schema Evolution: Backward Compatibility",
+    "title": "Schema Evolution: Full Compatibility",
     "difficulty": "easy",
     "type": "conceptual",
-    "description": "A producer adds a new optional column `promo_code VARCHAR` to an event schema. Older consumers that were written before this column existed continue reading events. What type of compatibility does this change require?",
+    "description": "A producer adds a new optional column `promo_code VARCHAR` (defaulting to NULL) to an event schema. After deployment, older consumers (written before `promo_code` existed) continue reading newly produced events without errors, AND newer consumers can still read older events written before the column was added. What schema-compatibility category describes this change?",
     "options": [
-      "Backward compatibility \u2014 older consumers can read data written by the new producer schema by ignoring unknown fields",
-      "Forward compatibility \u2014 newer consumers can read data written by the old producer that lacks the new field",
-      "Full compatibility \u2014 both new and old schemas can read each other's data in both directions simultaneously",
-      "Breaking compatibility \u2014 adding a new column always requires all consumers to be updated before deployment"
+      "Backward compatibility only \u2014 newer consumers can read older data (substituting the default for the missing field), but older consumers cannot read the new data",
+      "Forward compatibility only \u2014 older consumers can read newer data (ignoring the unknown field), but newer consumers cannot read older data",
+      "Full compatibility \u2014 both backward and forward compatibility hold, so any pair of producer/consumer versions can interoperate",
+      "No compatibility \u2014 adding any new column requires coordinated upgrades of all consumers before deployment"
     ],
-    "correct_option": 0,
-    "explanation": "Backward compatibility means old code (consumers) can read new data (produced with the updated schema). Adding an optional field satisfies backward compatibility because older readers simply ignore the unknown `promo_code` column. Forward compatibility (Option B) is the reverse: new readers handling old data that lacks the new field. Full compatibility (Option C) requires both simultaneously. Option D is wrong \u2014 adding optional fields is specifically designed to be non-breaking.",
+    "correct_option": 2,
+    "explanation": "Adding an optional column with a default value satisfies BOTH directions of schema evolution \u2014 the textbook example of full compatibility. In standard schema-registry terminology (Confluent / Avro / Protobuf): BACKWARD compatibility means a newer consumer can read older data (here, new consumers reading data that lacks `promo_code` substitute the default NULL). FORWARD compatibility means an older consumer can read newer data (here, old consumers reading new events simply ignore the unknown `promo_code` column). When both directions work, the change is fully compatible. Options A and B are each wrong because only one direction is true \u2014 in this scenario both directions hold. Option D is wrong because non-breaking schema changes like optional-default fields specifically exist to avoid coordinated upgrades.",
     "hints": [
-      "Think about which direction the compatibility flows: is the old reader compatible with new data, or is the new reader compatible with old data?",
-      "An optional column with a default value of NULL is the classic example of a non-breaking schema change."
+      "There are two version-pair questions to check: can a newer consumer read older data, and can an older consumer read newer data? Walk through each one for an optional default-valued field.",
+      "In schema-registry terminology, backward and forward are defined by the consumer's perspective \u2014 think about which term applies when *both* directions interoperate cleanly."
     ],
     "concepts": [
       "SCHEMA EVOLUTION",
-      "DATA QUALITY"
+      "DATA CONTRACT"
     ]
   },
   {
