@@ -140,5 +140,5 @@ Required:
 
 ```bash
 python scripts/validate_content.py
-cd backend && ../.venv/bin/python -m pytest tests/test_api.py -q -k data_modeling
+cd backend && ../.venv/bin/python -m pytest tests/test_20_data_modeling.py -q
 ```
