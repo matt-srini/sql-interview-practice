@@ -135,6 +135,25 @@ async def _get_solved_ids_for_track(user_id: str, track: str) -> set[int]:
     return await get_solved_ids(user_id, topic)
 
 
+def _is_chain_question(q: dict) -> bool:
+    """
+    Return True if a question is part of a chain (parent or child).
+
+    Chain parents have a non-empty follow_ups[] list.
+    Chain children have a follow_up_parent or follow_up_dimension field set.
+
+    Chain questions must only appear in interview_loop sessions via _select_chain().
+    They are excluded from benchmark and custom pools to avoid standalone use.
+    """
+    if q.get("follow_ups"):
+        return True
+    if q.get("follow_up_parent") is not None:
+        return True
+    if q.get("follow_up_dimension") is not None:
+        return True
+    return False
+
+
 def _pool_for_track(
     track: str,
     difficulty: str,
@@ -153,6 +172,10 @@ def _pool_for_track(
 
     Mock-only questions bypass the unlock gate entirely — they are always included
     for Pro/Elite users and are never shown in the practice catalog.
+
+    Chain questions (parents with follow_ups[] or children with follow_up_parent /
+    follow_up_dimension) are excluded from this pool. They are reserved exclusively
+    for interview_loop sessions via _select_chain().
     """
     effective_plan = normalize_plan(user_plan)
     include_mock_only = effective_plan in ("pro", "elite") and difficulty != "easy"
@@ -163,22 +186,23 @@ def _pool_for_track(
 
     pool: list[dict] = []
 
-    # Standard practice questions — filtered to unlocked/solved state
+    # Standard practice questions — filtered to unlocked/solved state, chains excluded
     for diff, qs in grouped.items():
         if difficulty != "mixed" and diff != difficulty:
             continue
         for q in qs:
-            if unlock_state.get(int(q["id"]), "locked") != "locked":
+            if unlock_state.get(int(q["id"]), "locked") != "locked" and not _is_chain_question(q):
                 pool.append({**q, "_track": track, "_mock_only": False})
 
-    # Mock-only questions — bypass unlock gate entirely
+    # Mock-only questions — bypass unlock gate entirely, chains excluded
     if include_mock_only:
         mock_grouped = catalog.get_mock_questions_by_difficulty()
         for diff, qs in mock_grouped.items():
             if difficulty != "mixed" and diff != difficulty:
                 continue
             for q in qs:
-                pool.append({**q, "_track": track, "_mock_only": True})
+                if not _is_chain_question(q):
+                    pool.append({**q, "_track": track, "_mock_only": True})
 
     return pool
 
