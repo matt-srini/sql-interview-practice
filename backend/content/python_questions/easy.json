@@ -11,73 +11,14 @@
     "solution_code": "def solve(nums, target):\n    seen = {}\n    for i, n in enumerate(nums):\n        complement = target - n\n        if complement in seen:\n            return [seen[complement], i]\n        seen[n] = i\n    return []",
     "explanation": "Use a hash map to store each number and its index as you iterate. For each number, check if its complement (target - number) is already in the map. This gives O(n) time vs O(n²) for the naive nested loop approach.",
     "test_cases": [
-      {
-        "input": [
-          [
-            2,
-            7,
-            11,
-            15
-          ],
-          9
-        ],
-        "expected": [
-          0,
-          1
-        ]
-      },
-      {
-        "input": [
-          [
-            3,
-            2,
-            4
-          ],
-          6
-        ],
-        "expected": [
-          1,
-          2
-        ]
-      },
-      {
-        "input": [
-          [
-            3,
-            3
-          ],
-          6
-        ],
-        "expected": [
-          0,
-          1
-        ]
-      },
-      {
-        "input": [
-          [
-            1,
-            5,
-            3,
-            7
-          ],
-          8
-        ],
-        "expected": [
-          1,
-          2
-        ]
-      }
+      {"input": [[2, 7, 11, 15], 9], "expected": [0, 1]},
+      {"input": [[3, 2, 4], 6], "expected": [1, 2]},
+      {"input": [[3, 3], 6], "expected": [0, 1]},
+      {"input": [[1, 5, 3, 7], 8], "expected": [1, 2]}
     ],
     "public_test_cases": 2,
-    "hints": [
-      "This is a one-pass membership problem — for each value, the answer is already determined by what has appeared before it; you don't need to scan the rest of the list.",
-      "A hash map lets you record each value and its index as you go; for each new value, compute the complement (target minus value) and check whether it's already in the map."
-    ],
-    "concepts": [
-      "HASH-MAP STATE",
-      "INDEXED SEQUENCE REASONING"
-    ]
+    "hints": ["This is a one-pass membership problem — for each value, the answer is already determined by what has appeared before it; you don't need to scan the rest of the list.", "A hash map lets you record each value and its index as you go; for each new value, compute the complement (target minus value) and check whether it's already in the map."],
+    "concepts": ["HASH-MAP STATE", "INDEXED SEQUENCE REASONING"]
   },
   {
     "id": 21002,
@@ -91,46 +32,15 @@
     "solution_code": "def solve(s):\n    cleaned = ''.join(c.lower() for c in s if c.isalnum())\n    return cleaned == cleaned[::-1]",
     "explanation": "Clean the string by filtering to alphanumeric characters and lowercasing, then compare it to its reverse using slicing `[::-1]`.",
     "test_cases": [
-      {
-        "input": [
-          "racecar"
-        ],
-        "expected": true
-      },
-      {
-        "input": [
-          "hello"
-        ],
-        "expected": false
-      },
-      {
-        "input": [
-          "A man a plan a canal Panama"
-        ],
-        "expected": true
-      },
-      {
-        "input": [
-          "Was it a car or a cat I saw"
-        ],
-        "expected": true
-      },
-      {
-        "input": [
-          "not a palindrome"
-        ],
-        "expected": false
-      }
+      {"input": ["racecar"], "expected": true},
+      {"input": ["hello"], "expected": false},
+      {"input": ["A man a plan a canal Panama"], "expected": true},
+      {"input": ["Was it a car or a cat I saw"], "expected": true},
+      {"input": ["not a palindrome"], "expected": false}
     ],
     "public_test_cases": 2,
-    "hints": [
-      "Strip non-alphanumeric characters and normalise case before comparing — the palindrome property only applies to the meaningful characters.",
-      "After cleaning the string, compare it to its reverse — a string that reads the same both ways is a palindrome."
-    ],
-    "concepts": [
-      "STRING PATTERN REASONING",
-      "TWO POINTERS"
-    ]
+    "hints": ["Strip non-alphanumeric characters and normalise case before comparing — the palindrome property only applies to the meaningful characters.", "After cleaning the string, compare it to its reverse — a string that reads the same both ways is a palindrome."],
+    "concepts": ["STRING PATTERN REASONING", "TWO POINTERS"]
   },
   {
     "id": 21003,
@@ -144,68 +54,14 @@
     "solution_code": "def solve(n):\n    result = []\n    for i in range(1, n + 1):\n        if i % 15 == 0:\n            result.append('DataEnd')\n        elif i % 3 == 0:\n            result.append('Batch')\n        elif i % 5 == 0:\n            result.append('Checkpoint')\n        else:\n            result.append(str(i))\n    return result",
     "explanation": "Check divisibility by 15 first (both 3 and 5), then 3, then 5, then fall back to the string of the number. Order matters: DataEnd must come before Batch and Checkpoint.",
     "test_cases": [
-      {
-        "input": [
-          5
-        ],
-        "expected": [
-          "1",
-          "2",
-          "Batch",
-          "4",
-          "Checkpoint"
-        ]
-      },
-      {
-        "input": [
-          1
-        ],
-        "expected": [
-          "1"
-        ]
-      },
-      {
-        "input": [
-          15
-        ],
-        "expected": [
-          "1",
-          "2",
-          "Batch",
-          "4",
-          "Checkpoint",
-          "Batch",
-          "7",
-          "8",
-          "Batch",
-          "Checkpoint",
-          "11",
-          "Batch",
-          "13",
-          "14",
-          "DataEnd"
-        ]
-      },
-      {
-        "input": [
-          3
-        ],
-        "expected": [
-          "1",
-          "2",
-          "Batch"
-        ]
-      }
+      {"input": [5], "expected": ["1", "2", "Batch", "4", "Checkpoint"]},
+      {"input": [1], "expected": ["1"]},
+      {"input": [15], "expected": ["1", "2", "Batch", "4", "Checkpoint", "Batch", "7", "8", "Batch", "Checkpoint", "11", "Batch", "13", "14", "DataEnd"]},
+      {"input": [3], "expected": ["1", "2", "Batch"]}
     ],
     "public_test_cases": 2,
-    "hints": [
-      "The combined condition (divisible by both) must be checked before either individual condition, otherwise the individual checks will match first.",
-      "Build the output list by iterating through each ID from 1 to n and applying the labeling rules in the correct priority order."
-    ],
-    "concepts": [
-      "MODULAR ARITHMETIC & NUMBER THEORY",
-      "LIST & COLLECTION TRANSFORMATION"
-    ]
+    "hints": ["The combined condition (divisible by both) must be checked before either individual condition, otherwise the individual checks will match first.", "Build the output list by iterating through each ID from 1 to n and applying the labeling rules in the correct priority order."],
+    "concepts": ["MODULAR ARITHMETIC & NUMBER THEORY", "LIST & COLLECTION TRANSFORMATION"]
   },
   {
     "id": 21004,
@@ -219,46 +75,15 @@
     "solution_code": "def solve(s):\n    return sum(1 for c in s if c.lower() in 'aeiou')",
     "explanation": "Iterate over each character, convert to lowercase, and check if it's in the vowel set. Using `sum` with a generator expression is concise and efficient.",
     "test_cases": [
-      {
-        "input": [
-          "hello"
-        ],
-        "expected": 2
-      },
-      {
-        "input": [
-          "Python"
-        ],
-        "expected": 1
-      },
-      {
-        "input": [
-          "aeiou AEIOU"
-        ],
-        "expected": 10
-      },
-      {
-        "input": [
-          "rhythm"
-        ],
-        "expected": 0
-      },
-      {
-        "input": [
-          ""
-        ],
-        "expected": 0
-      }
+      {"input": ["hello"], "expected": 2},
+      {"input": ["Python"], "expected": 1},
+      {"input": ["aeiou AEIOU"], "expected": 10},
+      {"input": ["rhythm"], "expected": 0},
+      {"input": [""], "expected": 0}
     ],
     "public_test_cases": 2,
-    "hints": [
-      "Normalise the case first so uppercase and lowercase vowels are treated the same before you scan.",
-      "Iterate through each character and check whether it belongs to the set of vowel characters, incrementing a counter when it does."
-    ],
-    "concepts": [
-      "STRING PATTERN REASONING",
-      "INDEXED SEQUENCE REASONING"
-    ]
+    "hints": ["Normalise the case first so uppercase and lowercase vowels are treated the same before you scan.", "Iterate through each character and check whether it belongs to the set of vowel characters, incrementing a counter when it does."],
+    "concepts": ["STRING PATTERN REASONING", "INDEXED SEQUENCE REASONING"]
   },
   {
     "id": 21006,
@@ -272,51 +97,15 @@
     "solution_code": "def solve(s, t):\n    clean = lambda x: sorted(x.lower().replace(' ', ''))\n    return clean(s) == clean(t)",
     "explanation": "Sort the characters of both strings (after lowercasing and removing spaces). Two strings are anagrams if and only if their sorted character lists are identical. Alternatively, compare character frequency counts.",
     "test_cases": [
-      {
-        "input": [
-          "listen",
-          "silent"
-        ],
-        "expected": true
-      },
-      {
-        "input": [
-          "triangle",
-          "integral"
-        ],
-        "expected": true
-      },
-      {
-        "input": [
-          "hello",
-          "world"
-        ],
-        "expected": false
-      },
-      {
-        "input": [
-          "Astronomer",
-          "Moon starer"
-        ],
-        "expected": true
-      },
-      {
-        "input": [
-          "abc",
-          "ab"
-        ],
-        "expected": false
-      }
+      {"input": ["listen", "silent"], "expected": true},
+      {"input": ["triangle", "integral"], "expected": true},
+      {"input": ["hello", "world"], "expected": false},
+      {"input": ["Astronomer", "Moon starer"], "expected": true},
+      {"input": ["abc", "ab"], "expected": false}
     ],
     "public_test_cases": 2,
-    "hints": [
-      "Two strings made of identical characters look the same when you count each character's frequency — or when you sort the characters and compare.",
-      "Strip whitespace and normalise case before comparing so that formatting differences don't affect the result."
-    ],
-    "concepts": [
-      "HASH-MAP STATE",
-      "STRING PATTERN REASONING"
-    ]
+    "hints": ["Two strings made of identical characters look the same when you count each character's frequency — or when you sort the characters and compare.", "Strip whitespace and normalise case before comparing so that formatting differences don't affect the result."],
+    "concepts": ["HASH-MAP STATE", "STRING PATTERN REASONING"]
   },
   {
     "id": 21007,
@@ -330,88 +119,15 @@
     "solution_code": "def solve(nums):\n    seen = set()\n    result = []\n    for n in nums:\n        if n not in seen:\n            seen.add(n)\n            result.append(n)\n    return result",
     "explanation": "Use a set to track seen values in O(1) per lookup, building the result list as you go. This preserves insertion order (unlike converting directly to a set).",
     "test_cases": [
-      {
-        "input": [
-          [
-            1,
-            2,
-            2,
-            3,
-            1
-          ]
-        ],
-        "expected": [
-          1,
-          2,
-          3
-        ]
-      },
-      {
-        "input": [
-          [
-            4,
-            4,
-            4
-          ]
-        ],
-        "expected": [
-          4
-        ]
-      },
-      {
-        "input": [
-          [
-            1,
-            2,
-            3
-          ]
-        ],
-        "expected": [
-          1,
-          2,
-          3
-        ]
-      },
-      {
-        "input": [
-          []
-        ],
-        "expected": []
-      },
-      {
-        "input": [
-          [
-            3,
-            1,
-            4,
-            1,
-            5,
-            9,
-            2,
-            6,
-            5
-          ]
-        ],
-        "expected": [
-          3,
-          1,
-          4,
-          5,
-          9,
-          2,
-          6
-        ]
-      }
+      {"input": [[1, 2, 2, 3, 1]], "expected": [1, 2, 3]},
+      {"input": [[4, 4, 4]], "expected": [4]},
+      {"input": [[1, 2, 3]], "expected": [1, 2, 3]},
+      {"input": [[]], "expected": []},
+      {"input": [[3, 1, 4, 1, 5, 9, 2, 6, 5]], "expected": [3, 1, 4, 5, 9, 2, 6]}
     ],
     "public_test_cases": 2,
-    "hints": [
-      "You need a way to check in constant time whether a value has already been added — so that the first occurrence is kept and later repeats are skipped.",
-      "Iterate through the list and only add an element to the result if it has not been seen before."
-    ],
-    "concepts": [
-      "HASH-MAP STATE",
-      "LIST & COLLECTION TRANSFORMATION"
-    ]
+    "hints": ["You need a way to check in constant time whether a value has already been added — so that the first occurrence is kept and later repeats are skipped.", "Iterate through the list and only add an element to the result if it has not been seen before."],
+    "concepts": ["HASH-MAP STATE", "LIST & COLLECTION TRANSFORMATION"]
   },
   {
     "id": 21008,
@@ -425,59 +141,14 @@
     "solution_code": "def solve(nums):\n    current_max = nums[0]\n    for n in nums[1:]:\n        if n > current_max:\n            current_max = n\n    return current_max",
     "explanation": "Initialize the maximum with the first element, then scan through the rest updating it whenever you find a larger value. This linear scan is O(n) — the minimum complexity needed since you must check every element.",
     "test_cases": [
-      {
-        "input": [
-          [
-            3,
-            1,
-            4,
-            1,
-            5,
-            9,
-            2,
-            6
-          ]
-        ],
-        "expected": 9
-      },
-      {
-        "input": [
-          [
-            -5,
-            -1,
-            -3
-          ]
-        ],
-        "expected": -1
-      },
-      {
-        "input": [
-          [
-            42
-          ]
-        ],
-        "expected": 42
-      },
-      {
-        "input": [
-          [
-            0,
-            0,
-            0
-          ]
-        ],
-        "expected": 0
-      }
+      {"input": [[3, 1, 4, 1, 5, 9, 2, 6]], "expected": 9},
+      {"input": [[-5, -1, -3]], "expected": -1},
+      {"input": [[42]], "expected": 42},
+      {"input": [[0, 0, 0]], "expected": 0}
     ],
     "public_test_cases": 2,
-    "hints": [
-      "Start by assuming the first element is the current maximum, then scan the rest of the list looking for anything larger.",
-      "Update your running maximum each time you encounter a value that exceeds it."
-    ],
-    "concepts": [
-      "INDEXED SEQUENCE REASONING",
-      "GREEDY CHOICE"
-    ]
+    "hints": ["Start by assuming the first element is the current maximum, then scan the rest of the list looking for anything larger.", "Update your running maximum each time you encounter a value that exceeds it."],
+    "concepts": ["INDEXED SEQUENCE REASONING", "GREEDY CHOICE"]
   },
   {
     "id": 21011,
@@ -491,52 +162,16 @@
     "solution_code": "def solve(s):\n    stack = []\n    mapping = {')': '(', '}': '{', ']': '['}\n    for char in s:\n        if char in mapping:\n            top = stack.pop() if stack else '#'\n            if mapping[char] != top:\n                return False\n        else:\n            stack.append(char)\n    return not stack",
     "explanation": "Use a stack to track unmatched opening brackets. When you encounter a closing bracket, pop from the stack and verify it matches the corresponding opener using a lookup map. If the stack is empty at the end, all brackets were matched.",
     "test_cases": [
-      {
-        "input": [
-          "()"
-        ],
-        "expected": true
-      },
-      {
-        "input": [
-          "()[]{}"
-        ],
-        "expected": true
-      },
-      {
-        "input": [
-          "(]"
-        ],
-        "expected": false
-      },
-      {
-        "input": [
-          "([)]"
-        ],
-        "expected": false
-      },
-      {
-        "input": [
-          "{[]}"
-        ],
-        "expected": true
-      },
-      {
-        "input": [
-          ""
-        ],
-        "expected": true
-      }
+      {"input": ["()"], "expected": true},
+      {"input": ["()[]{}"], "expected": true},
+      {"input": ["(]"], "expected": false},
+      {"input": ["([)]"], "expected": false},
+      {"input": ["{[]}"], "expected": true},
+      {"input": [""], "expected": true}
     ],
     "public_test_cases": 2,
-    "hints": [
-      "Process the brackets in order while keeping track of the unmatched openings that still need closing.",
-      "A dictionary mapping each closing bracket to its opener keeps the match check clean."
-    ],
-    "concepts": [
-      "STACK & MONOTONIC STRUCTURES",
-      "STRING PATTERN REASONING"
-    ]
+    "hints": ["Process the brackets in order while keeping track of the unmatched openings that still need closing.", "A dictionary mapping each closing bracket to its opener keeps the match check clean."],
+    "concepts": ["STACK & MONOTONIC STRUCTURES", "STRING PATTERN REASONING"]
   },
   {
     "id": 21012,
@@ -550,73 +185,15 @@
     "solution_code": "def solve(nums, target):\n    lo, hi = 0, len(nums) - 1\n    while lo <= hi:\n        mid = (lo + hi) // 2\n        if nums[mid] == target:\n            return mid\n        elif nums[mid] < target:\n            lo = mid + 1\n        else:\n            hi = mid - 1\n    return -1",
     "explanation": "Maintain low and high pointers. Each iteration check the midpoint: if it equals the target, return it; if the target is larger, move low up; otherwise move high down. This halves the search space each step, giving O(log n) time.",
     "test_cases": [
-      {
-        "input": [
-          [
-            1,
-            3,
-            5,
-            7,
-            9
-          ],
-          5
-        ],
-        "expected": 2
-      },
-      {
-        "input": [
-          [
-            1,
-            3,
-            5,
-            7,
-            9
-          ],
-          6
-        ],
-        "expected": -1
-      },
-      {
-        "input": [
-          [
-            2
-          ],
-          2
-        ],
-        "expected": 0
-      },
-      {
-        "input": [
-          [
-            2
-          ],
-          3
-        ],
-        "expected": -1
-      },
-      {
-        "input": [
-          [
-            1,
-            2,
-            3,
-            4,
-            5
-          ],
-          1
-        ],
-        "expected": 0
-      }
+      {"input": [[1, 3, 5, 7, 9], 5], "expected": 2},
+      {"input": [[1, 3, 5, 7, 9], 6], "expected": -1},
+      {"input": [[2], 2], "expected": 0},
+      {"input": [[2], 3], "expected": -1},
+      {"input": [[1, 2, 3, 4, 5], 1], "expected": 0}
     ],
     "public_test_cases": 2,
-    "hints": [
-      "Binary search halves the remaining search space each step — maintain the current search boundaries and check the midpoint to decide which half to keep searching.",
-      "If `nums[mid]` is less than the target, the answer must be in the right half — move `lo` up."
-    ],
-    "concepts": [
-      "BINARY SEARCH",
-      "INDEXED SEQUENCE REASONING"
-    ]
+    "hints": ["Binary search halves the remaining search space each step — maintain the current search boundaries and check the midpoint to decide which half to keep searching.", "If `nums[mid]` is less than the target, the answer must be in the right half — move `lo` up."],
+    "concepts": ["BINARY SEARCH", "INDEXED SEQUENCE REASONING"]
   },
   {
     "id": 21013,
@@ -630,58 +207,14 @@
     "solution_code": "def solve(nums, target):\n    count = 0\n    for n in nums:\n        if n == target:\n            count += 1\n    return count",
     "explanation": "A simple linear scan with a manual counter. Initialise the counter to 0 and increment it each time you find the target value. This is the same O(n) work that `.count()` does under the hood.",
     "test_cases": [
-      {
-        "input": [
-          [
-            1,
-            2,
-            2,
-            3,
-            2
-          ],
-          2
-        ],
-        "expected": 3
-      },
-      {
-        "input": [
-          [],
-          1
-        ],
-        "expected": 0
-      },
-      {
-        "input": [
-          [
-            5,
-            5,
-            5
-          ],
-          5
-        ],
-        "expected": 3
-      },
-      {
-        "input": [
-          [
-            1,
-            2,
-            3
-          ],
-          4
-        ],
-        "expected": 0
-      }
+      {"input": [[1, 2, 2, 3, 2], 2], "expected": 3},
+      {"input": [[], 1], "expected": 0},
+      {"input": [[5, 5, 5], 5], "expected": 3},
+      {"input": [[1, 2, 3], 4], "expected": 0}
     ],
     "public_test_cases": 2,
-    "hints": [
-      "A single pass through the list is enough — accumulate a running count of how many elements match the target.",
-      "A plain integer counter, initialised to zero before the loop and incremented on each match, is all the state you need."
-    ],
-    "concepts": [
-      "INDEXED SEQUENCE REASONING",
-      "STREAMING / ONLINE REDUCTION"
-    ]
+    "hints": ["A single pass through the list is enough — accumulate a running count of how many elements match the target.", "A plain integer counter, initialised to zero before the loop and incremented on each match, is all the state you need."],
+    "concepts": ["INDEXED SEQUENCE REASONING"]
   },
   {
     "id": 21016,
@@ -695,80 +228,14 @@
     "solution_code": "def solve(pages):\n    result = []\n    for page in pages:\n        result.extend(page)\n    return result",
     "explanation": "Use `list.extend()` to append all elements of each sub-list to the result in one call. This avoids the overhead of repeated concatenation and clearly expresses the one-level flatten intent.",
     "test_cases": [
-      {
-        "input": [
-          [
-            [
-              1,
-              2
-            ],
-            [
-              3
-            ],
-            [
-              4,
-              5,
-              6
-            ]
-          ]
-        ],
-        "expected": [
-          1,
-          2,
-          3,
-          4,
-          5,
-          6
-        ]
-      },
-      {
-        "input": [
-          []
-        ],
-        "expected": []
-      },
-      {
-        "input": [
-          [
-            [
-              1
-            ]
-          ]
-        ],
-        "expected": [
-          1
-        ]
-      },
-      {
-        "input": [
-          [
-            [
-              1,
-              2
-            ],
-            [
-              3,
-              4
-            ]
-          ]
-        ],
-        "expected": [
-          1,
-          2,
-          3,
-          4
-        ]
-      }
+      {"input": [[[1, 2], [3], [4, 5, 6]]], "expected": [1, 2, 3, 4, 5, 6]},
+      {"input": [[]], "expected": []},
+      {"input": [[[1]]], "expected": [1]},
+      {"input": [[[1, 2], [3, 4]]], "expected": [1, 2, 3, 4]}
     ],
     "public_test_cases": 2,
-    "hints": [
-      "To flatten one level, you need to add all elements from each inner list into a single accumulator — the key question is whether you add them one at a time or all at once.",
-      "The `extend` method adds every item from an iterable to the result in one call — unlike `append`, which adds only one item at a time."
-    ],
-    "concepts": [
-      "INDEXED SEQUENCE REASONING",
-      "LIST & COLLECTION TRANSFORMATION"
-    ]
+    "hints": ["To flatten one level, you need to add all elements from each inner list into a single accumulator — the key question is whether you add them one at a time or all at once.", "The `extend` method adds every item from an iterable to the result in one call — unlike `append`, which adds only one item at a time."],
+    "concepts": ["INDEXED SEQUENCE REASONING", "LIST & COLLECTION TRANSFORMATION"]
   },
   {
     "id": 21017,
@@ -782,76 +249,14 @@
     "solution_code": "def solve(lst, k):\n    if not lst:\n        return lst\n    k = k % len(lst)\n    return lst[k:] + lst[:k]",
     "explanation": "Take `k` modulo the list length to handle rotations larger than the list size. Then slice: everything from index `k` onward becomes the new front, and the first `k` elements are appended to the back.",
     "test_cases": [
-      {
-        "input": [
-          [
-            1,
-            2,
-            3,
-            4,
-            5
-          ],
-          2
-        ],
-        "expected": [
-          3,
-          4,
-          5,
-          1,
-          2
-        ]
-      },
-      {
-        "input": [
-          [
-            1,
-            2,
-            3
-          ],
-          0
-        ],
-        "expected": [
-          1,
-          2,
-          3
-        ]
-      },
-      {
-        "input": [
-          [
-            1,
-            2,
-            3
-          ],
-          3
-        ],
-        "expected": [
-          1,
-          2,
-          3
-        ]
-      },
-      {
-        "input": [
-          [
-            1
-          ],
-          5
-        ],
-        "expected": [
-          1
-        ]
-      }
+      {"input": [[1, 2, 3, 4, 5], 2], "expected": [3, 4, 5, 1, 2]},
+      {"input": [[1, 2, 3], 0], "expected": [1, 2, 3]},
+      {"input": [[1, 2, 3], 3], "expected": [1, 2, 3]},
+      {"input": [[1], 5], "expected": [1]}
     ],
     "public_test_cases": 2,
-    "hints": [
-      "Rotating left by more than the list length wraps around — rotating by exactly the list length returns you to the original order, so any k is equivalent to a smaller rotation.",
-      "Slicing the list at the rotation point gives you two contiguous pieces — placing the back piece first and the front piece second produces the rotated result."
-    ],
-    "concepts": [
-      "INDEXED SEQUENCE REASONING",
-      "LIST & COLLECTION TRANSFORMATION"
-    ]
+    "hints": ["Rotating left by more than the list length wraps around — rotating by exactly the list length returns you to the original order, so any k is equivalent to a smaller rotation.", "Slicing the list at the rotation point gives you two contiguous pieces — placing the back piece first and the front piece second produces the rotated result."],
+    "concepts": ["INDEXED SEQUENCE REASONING", "LIST & COLLECTION TRANSFORMATION"]
   },
   {
     "id": 21018,
@@ -865,83 +270,14 @@
     "solution_code": "def solve(a, b):\n    result = []\n    i = j = 0\n    while i < len(a) and j < len(b):\n        if a[i] <= b[j]:\n            result.append(a[i])\n            i += 1\n        else:\n            result.append(b[j])\n            j += 1\n    result.extend(a[i:])\n    result.extend(b[j:])\n    return result",
     "explanation": "Use two pointers, one per list, and always pick the smaller current element. When one list is exhausted, extend the result with the remaining elements of the other. This runs in O(n + m) time.",
     "test_cases": [
-      {
-        "input": [
-          [
-            1,
-            3,
-            5
-          ],
-          [
-            2,
-            4,
-            6
-          ]
-        ],
-        "expected": [
-          1,
-          2,
-          3,
-          4,
-          5,
-          6
-        ]
-      },
-      {
-        "input": [
-          [],
-          [
-            1,
-            2
-          ]
-        ],
-        "expected": [
-          1,
-          2
-        ]
-      },
-      {
-        "input": [
-          [
-            1
-          ],
-          [
-            1
-          ]
-        ],
-        "expected": [
-          1,
-          1
-        ]
-      },
-      {
-        "input": [
-          [
-            1,
-            2
-          ],
-          [
-            3,
-            4
-          ]
-        ],
-        "expected": [
-          1,
-          2,
-          3,
-          4
-        ]
-      }
+      {"input": [[1, 3, 5], [2, 4, 6]], "expected": [1, 2, 3, 4, 5, 6]},
+      {"input": [[], [1, 2]], "expected": [1, 2]},
+      {"input": [[1], [1]], "expected": [1, 1]},
+      {"input": [[1, 2], [3, 4]], "expected": [1, 2, 3, 4]}
     ],
     "public_test_cases": 2,
-    "hints": [
-      "Use two index pointers — one for each list — and advance the one pointing at the smaller value.",
-      "After the loop, at least one list will still have elements; append them all to the result."
-    ],
-    "concepts": [
-      "TWO POINTERS",
-      "INDEXED SEQUENCE REASONING"
-    ]
+    "hints": ["Use two index pointers — one for each list — and advance the one pointing at the smaller value.", "After the loop, at least one list will still have elements; append them all to the result."],
+    "concepts": ["TWO POINTERS", "INDEXED SEQUENCE REASONING"]
   },
   {
     "id": 21020,
@@ -955,46 +291,15 @@
     "solution_code": "def solve(s):\n    counts = {}\n    for c in s:\n        counts[c] = counts.get(c, 0) + 1\n    for c in s:\n        if counts[c] == 1:\n            return c\n    return ''",
     "explanation": "Two passes: first build a frequency map, then scan the string again in order and return the first character whose count is 1. The second scan preserves original order, which is key.",
     "test_cases": [
-      {
-        "input": [
-          "leetcode"
-        ],
-        "expected": "l"
-      },
-      {
-        "input": [
-          "aabb"
-        ],
-        "expected": ""
-      },
-      {
-        "input": [
-          "z"
-        ],
-        "expected": "z"
-      },
-      {
-        "input": [
-          "aabbcc"
-        ],
-        "expected": ""
-      },
-      {
-        "input": [
-          "abcabc"
-        ],
-        "expected": ""
-      }
+      {"input": ["leetcode"], "expected": "l"},
+      {"input": ["aabb"], "expected": ""},
+      {"input": ["z"], "expected": "z"},
+      {"input": ["aabbcc"], "expected": ""},
+      {"input": ["abcabc"], "expected": ""}
     ],
     "public_test_cases": 2,
-    "hints": [
-      "Separate 'how often does this character appear?' from 'where does it first appear in the original order?'.",
-      "Make a second pass to find the first character whose count is exactly 1."
-    ],
-    "concepts": [
-      "HASH-MAP STATE",
-      "STRING PATTERN REASONING"
-    ]
+    "hints": ["Separate 'how often does this character appear?' from 'where does it first appear in the original order?'.", "Make a second pass to find the first character whose count is exactly 1."],
+    "concepts": ["HASH-MAP STATE", "STRING PATTERN REASONING"]
   },
   {
     "id": 21021,
@@ -1008,46 +313,15 @@
     "solution_code": "def solve(s):\n    if not s:\n        return ''\n    result = []\n    current = s[0]\n    count = 1\n    for c in s[1:]:\n        if c == current:\n            count += 1\n        else:\n            result.append(current + str(count))\n            current = c\n            count = 1\n    result.append(current + str(count))\n    return ''.join(result)",
     "explanation": "Track the current character and its run count. When the character changes, append the current character and count to the result list, then reset. After the loop, flush the final run. Join at the end for efficiency.",
     "test_cases": [
-      {
-        "input": [
-          "aaabbc"
-        ],
-        "expected": "a3b2c1"
-      },
-      {
-        "input": [
-          "a"
-        ],
-        "expected": "a1"
-      },
-      {
-        "input": [
-          ""
-        ],
-        "expected": ""
-      },
-      {
-        "input": [
-          "abcd"
-        ],
-        "expected": "a1b1c1d1"
-      },
-      {
-        "input": [
-          "aabccc"
-        ],
-        "expected": "a2b1c3"
-      }
+      {"input": ["aaabbc"], "expected": "a3b2c1"},
+      {"input": ["a"], "expected": "a1"},
+      {"input": [""], "expected": ""},
+      {"input": ["abcd"], "expected": "a1b1c1d1"},
+      {"input": ["aabccc"], "expected": "a2b1c3"}
     ],
     "public_test_cases": 2,
-    "hints": [
-      "Keep track of the current character and how many times it has appeared consecutively.",
-      "When the character changes (or you reach the end), append char + count to your result."
-    ],
-    "concepts": [
-      "STRING PATTERN REASONING",
-      "INDEXED SEQUENCE REASONING"
-    ]
+    "hints": ["Keep track of the current character and how many times it has appeared consecutively.", "When the character changes (or you reach the end), append char + count to your result."],
+    "concepts": ["STRING PATTERN REASONING", "INDEXED SEQUENCE REASONING"]
   },
   {
     "id": 21023,
@@ -1061,56 +335,14 @@
     "solution_code": "def solve(nums):\n    n = len(nums) + 1\n    expected = n * (n + 1) // 2\n    return expected - sum(nums)",
     "explanation": "The sum of integers 1 through n is n*(n+1)//2. Subtract the actual sum of the list from this expected total to find the missing value in O(n) time with O(1) extra space.",
     "test_cases": [
-      {
-        "input": [
-          [
-            1,
-            2,
-            4,
-            5
-          ]
-        ],
-        "expected": 3
-      },
-      {
-        "input": [
-          [
-            2
-          ]
-        ],
-        "expected": 1
-      },
-      {
-        "input": [
-          [
-            1
-          ]
-        ],
-        "expected": 2
-      },
-      {
-        "input": [
-          [
-            1,
-            2,
-            3,
-            4,
-            6,
-            7
-          ]
-        ],
-        "expected": 5
-      }
+      {"input": [[1, 2, 4, 5]], "expected": 3},
+      {"input": [[2]], "expected": 1},
+      {"input": [[1]], "expected": 2},
+      {"input": [[1, 2, 3, 4, 6, 7]], "expected": 5}
     ],
     "public_test_cases": 2,
-    "hints": [
-      "There is a closed-form formula for the sum of all integers from 1 to n — compare that expected total with the actual sum of the list to identify the gap.",
-      "Subtract the actual sum of the list from the expected sum to find the missing number."
-    ],
-    "concepts": [
-      "MODULAR ARITHMETIC & NUMBER THEORY",
-      "INDEXED SEQUENCE REASONING"
-    ]
+    "hints": ["There is a closed-form formula for the sum of all integers from 1 to n — compare that expected total with the actual sum of the list to identify the gap.", "Subtract the actual sum of the list from the expected sum to find the missing number."],
+    "concepts": ["MODULAR ARITHMETIC & NUMBER THEORY", "INDEXED SEQUENCE REASONING"]
   },
   {
     "id": 21024,
@@ -1124,51 +356,14 @@
     "solution_code": "def solve(strs):\n    if not strs:\n        return ''\n    prefix = strs[0]\n    for s in strs[1:]:\n        while not s.startswith(prefix):\n            prefix = prefix[:-1]\n            if not prefix:\n                return ''\n    return prefix",
     "explanation": "Start with the first string as the candidate prefix. For each subsequent string, shrink the prefix from the right until the string starts with it (or it becomes empty). This converges to the longest common prefix.",
     "test_cases": [
-      {
-        "input": [
-          [
-            "flower",
-            "flow",
-            "flight"
-          ]
-        ],
-        "expected": "fl"
-      },
-      {
-        "input": [
-          [
-            "dog",
-            "racecar"
-          ]
-        ],
-        "expected": ""
-      },
-      {
-        "input": [
-          [
-            "same",
-            "same",
-            "same"
-          ]
-        ],
-        "expected": "same"
-      },
-      {
-        "input": [
-          []
-        ],
-        "expected": ""
-      }
+      {"input": [["flower", "flow", "flight"]], "expected": "fl"},
+      {"input": [["dog", "racecar"]], "expected": ""},
+      {"input": [["same", "same", "same"]], "expected": "same"},
+      {"input": [[]], "expected": ""}
     ],
     "public_test_cases": 2,
-    "hints": [
-      "Start with the first string as the initial prefix candidate.",
-      "For each other string, keep trimming one character from the end of the prefix until it matches."
-    ],
-    "concepts": [
-      "STRING PATTERN REASONING",
-      "INDEXED SEQUENCE REASONING"
-    ]
+    "hints": ["Start with the first string as the initial prefix candidate.", "For each other string, keep trimming one character from the end of the prefix until it matches."],
+    "concepts": ["STRING PATTERN REASONING", "INDEXED SEQUENCE REASONING"]
   },
   {
     "id": 21025,
@@ -1182,67 +377,14 @@
     "solution_code": "def solve(nums):\n    result = []\n    for n in nums:\n        if not result or result[-1] != n:\n            result.append(n)\n    return result",
     "explanation": "Only append an element if the result list is empty or its last element differs from the current one. This single pass correctly collapses each consecutive run to one representative.",
     "test_cases": [
-      {
-        "input": [
-          [
-            1,
-            1,
-            2,
-            3,
-            3,
-            3,
-            4
-          ]
-        ],
-        "expected": [
-          1,
-          2,
-          3,
-          4
-        ]
-      },
-      {
-        "input": [
-          [
-            1,
-            2,
-            3
-          ]
-        ],
-        "expected": [
-          1,
-          2,
-          3
-        ]
-      },
-      {
-        "input": [
-          [
-            5,
-            5,
-            5
-          ]
-        ],
-        "expected": [
-          5
-        ]
-      },
-      {
-        "input": [
-          []
-        ],
-        "expected": []
-      }
+      {"input": [[1, 1, 2, 3, 3, 3, 4]], "expected": [1, 2, 3, 4]},
+      {"input": [[1, 2, 3]], "expected": [1, 2, 3]},
+      {"input": [[5, 5, 5]], "expected": [5]},
+      {"input": [[]], "expected": []}
     ],
     "public_test_cases": 2,
-    "hints": [
-      "Only add an element to the result if it differs from the last element already added.",
-      "Track the last value you kept by reading the end of the result list you're building — compare it against the current element before deciding whether to append."
-    ],
-    "concepts": [
-      "INDEXED SEQUENCE REASONING",
-      "LIST & COLLECTION TRANSFORMATION"
-    ]
+    "hints": ["Only add an element to the result if it differs from the last element already added.", "Track the last value you kept by reading the end of the result list you're building — compare it against the current element before deciding whether to append."],
+    "concepts": ["INDEXED SEQUENCE REASONING", "LIST & COLLECTION TRANSFORMATION"]
   },
   {
     "id": 21026,
@@ -1256,92 +398,14 @@
     "solution_code": "def solve(lst, n):\n    return [lst[i:i + n] for i in range(0, len(lst), n)]",
     "explanation": "Step through the list in increments of n using `range(0, len(lst), n)`, slicing out each chunk. Python slicing handles the final short chunk automatically.",
     "test_cases": [
-      {
-        "input": [
-          [
-            1,
-            2,
-            3,
-            4,
-            5,
-            6
-          ],
-          2
-        ],
-        "expected": [
-          [
-            1,
-            2
-          ],
-          [
-            3,
-            4
-          ],
-          [
-            5,
-            6
-          ]
-        ]
-      },
-      {
-        "input": [
-          [
-            1,
-            2,
-            3
-          ],
-          2
-        ],
-        "expected": [
-          [
-            1,
-            2
-          ],
-          [
-            3
-          ]
-        ]
-      },
-      {
-        "input": [
-          [],
-          3
-        ],
-        "expected": []
-      },
-      {
-        "input": [
-          [
-            1,
-            2,
-            3,
-            4,
-            5
-          ],
-          3
-        ],
-        "expected": [
-          [
-            1,
-            2,
-            3
-          ],
-          [
-            4,
-            5
-          ]
-        ]
-      }
+      {"input": [[1, 2, 3, 4, 5, 6], 2], "expected": [[1, 2], [3, 4], [5, 6]]},
+      {"input": [[1, 2, 3], 2], "expected": [[1, 2], [3]]},
+      {"input": [[], 3], "expected": []},
+      {"input": [[1, 2, 3, 4, 5], 3], "expected": [[1, 2, 3], [4, 5]]}
     ],
     "public_test_cases": 2,
-    "hints": [
-      "To paginate a flat list, step through it at fixed intervals of n — each interval marks the start of a new chunk.",
-      "Once you have each starting index, a fixed-width slice extracts the chunk — Python's slice notation handles the final short chunk automatically, no special case needed."
-    ],
-    "concepts": [
-      "INDEXED SEQUENCE REASONING",
-      "LIST & COLLECTION TRANSFORMATION"
-    ]
+    "hints": ["To paginate a flat list, step through it at fixed intervals of n — each interval marks the start of a new chunk.", "Once you have each starting index, a fixed-width slice extracts the chunk — Python's slice notation handles the final short chunk automatically, no special case needed."],
+    "concepts": ["INDEXED SEQUENCE REASONING", "LIST & COLLECTION TRANSFORMATION"]
   },
   {
     "id": 21028,
@@ -1355,84 +419,13 @@
     "solution_code": "def solve(matrix):\n    if not matrix or not matrix[0]:\n        return []\n    rows = len(matrix)\n    cols = len(matrix[0])\n    return [[matrix[r][c] for r in range(rows)] for c in range(cols)]",
     "explanation": "Build a new matrix where element [c][r] in the result equals element [r][c] in the original. The outer list comprehension iterates over columns, and the inner one iterates over rows, effectively swapping the indices.",
     "test_cases": [
-      {
-        "input": [
-          [
-            [
-              1,
-              2,
-              3
-            ],
-            [
-              4,
-              5,
-              6
-            ]
-          ]
-        ],
-        "expected": [
-          [
-            1,
-            4
-          ],
-          [
-            2,
-            5
-          ],
-          [
-            3,
-            6
-          ]
-        ]
-      },
-      {
-        "input": [
-          [
-            [
-              1
-            ]
-          ]
-        ],
-        "expected": [
-          [
-            1
-          ]
-        ]
-      },
-      {
-        "input": [
-          [
-            [
-              1,
-              2
-            ],
-            [
-              3,
-              4
-            ]
-          ]
-        ],
-        "expected": [
-          [
-            1,
-            3
-          ],
-          [
-            2,
-            4
-          ]
-        ]
-      }
+      {"input": [[[1, 2, 3], [4, 5, 6]]], "expected": [[1, 4], [2, 5], [3, 6]]},
+      {"input": [[[1]]], "expected": [[1]]},
+      {"input": [[[1, 2], [3, 4]]], "expected": [[1, 3], [2, 4]]}
     ],
     "public_test_cases": 2,
-    "hints": [
-      "The element at row r, column c in the original becomes row c, column r in the transpose.",
-      "Use a nested list comprehension iterating over columns in the outer loop and rows in the inner loop."
-    ],
-    "concepts": [
-      "LIST & COLLECTION TRANSFORMATION",
-      "INDEXED SEQUENCE REASONING"
-    ]
+    "hints": ["The element at row r, column c in the original becomes row c, column r in the transpose.", "Use a nested list comprehension iterating over columns in the outer loop and rows in the inner loop."],
+    "concepts": ["LIST & COLLECTION TRANSFORMATION", "INDEXED SEQUENCE REASONING"]
   },
   {
     "id": 21029,
@@ -1446,67 +439,15 @@
     "solution_code": "def solve(nums):\n    unique = sorted(set(nums))\n    if len(unique) < 2:\n        return None\n    return unique[-2]",
     "explanation": "Convert to a set to remove duplicates, then sort. If fewer than 2 unique values exist, return None. Otherwise the second-largest is at index -2 of the sorted list.",
     "test_cases": [
-      {
-        "input": [
-          [
-            1,
-            2,
-            3,
-            4
-          ]
-        ],
-        "expected": 3
-      },
-      {
-        "input": [
-          [
-            5,
-            5,
-            5
-          ]
-        ],
-        "expected": null
-      },
-      {
-        "input": [
-          [
-            1,
-            2
-          ]
-        ],
-        "expected": 1
-      },
-      {
-        "input": [
-          []
-        ],
-        "expected": null
-      },
-      {
-        "input": [
-          [
-            3,
-            1,
-            4,
-            1,
-            5,
-            9,
-            2,
-            6
-          ]
-        ],
-        "expected": 6
-      }
+      {"input": [[1, 2, 3, 4]], "expected": 3},
+      {"input": [[5, 5, 5]], "expected": null},
+      {"input": [[1, 2]], "expected": 1},
+      {"input": [[]], "expected": null},
+      {"input": [[3, 1, 4, 1, 5, 9, 2, 6]], "expected": 6}
     ],
     "public_test_cases": 2,
-    "hints": [
-      "Ignore repeated values before deciding which remaining value sits just below the maximum.",
-      "After deduplication and sorting, the second-largest value has a fixed position relative to the end of the sorted list — count back from the tail."
-    ],
-    "concepts": [
-      "INDEXED SEQUENCE REASONING",
-      "LIST & COLLECTION TRANSFORMATION"
-    ]
+    "hints": ["Ignore repeated values before deciding which remaining value sits just below the maximum.", "After deduplication and sorting, the second-largest value has a fixed position relative to the end of the sorted list — count back from the tail."],
+    "concepts": ["INDEXED SEQUENCE REASONING", "LIST & COLLECTION TRANSFORMATION"]
   },
   {
     "id": 21030,
@@ -1520,75 +461,14 @@
     "solution_code": "def solve(a, b):\n    return sorted(set(a) & set(b))",
     "explanation": "Convert both lists to sets and use the `&` (intersection) operator to find common elements. Wrapping in `sorted()` ensures a deterministic, ordered result with no duplicates.",
     "test_cases": [
-      {
-        "input": [
-          [
-            1,
-            2,
-            2,
-            3
-          ],
-          [
-            2,
-            3,
-            4
-          ]
-        ],
-        "expected": [
-          2,
-          3
-        ]
-      },
-      {
-        "input": [
-          [
-            1
-          ],
-          [
-            2
-          ]
-        ],
-        "expected": []
-      },
-      {
-        "input": [
-          [],
-          [
-            1,
-            2
-          ]
-        ],
-        "expected": []
-      },
-      {
-        "input": [
-          [
-            1,
-            2,
-            3
-          ],
-          [
-            3,
-            2,
-            1
-          ]
-        ],
-        "expected": [
-          1,
-          2,
-          3
-        ]
-      }
+      {"input": [[1, 2, 2, 3], [2, 3, 4]], "expected": [2, 3]},
+      {"input": [[1], [2]], "expected": []},
+      {"input": [[], [1, 2]], "expected": []},
+      {"input": [[1, 2, 3], [3, 2, 1]], "expected": [1, 2, 3]}
     ],
     "public_test_cases": 2,
-    "hints": [
-      "Make membership checks cheap so you can detect shared values without nested loops.",
-      "Use the & operator (set intersection) to find common elements, then sort the result."
-    ],
-    "concepts": [
-      "HASH-MAP STATE",
-      "INDEXED SEQUENCE REASONING"
-    ]
+    "hints": ["Make membership checks cheap so you can detect shared values without nested loops.", "Use the & operator (set intersection) to find common elements, then sort the result."],
+    "concepts": ["HASH-MAP STATE", "INDEXED SEQUENCE REASONING"]
   },
   {
     "id": 21031,
@@ -1602,86 +482,15 @@
     "solution_code": "import csv\n\ndef solve(lines):\n    reader = csv.DictReader(lines)\n    return [dict(row) for row in reader]",
     "explanation": "`csv.DictReader` treats the first row as the header and yields each subsequent row as an `OrderedDict` (Python 3.7+: regular dict) with column names as keys and cell values as strings. Wrapping in `list(...)` or iterating with a list comprehension gives you a plain list of dicts. All values are strings — cast them explicitly if you need numbers.",
     "test_cases": [
-      {
-        "input": [
-          [
-            "name,age",
-            "Alice,30",
-            "Bob,25"
-          ]
-        ],
-        "expected": [
-          {
-            "name": "Alice",
-            "age": "30"
-          },
-          {
-            "name": "Bob",
-            "age": "25"
-          }
-        ]
-      },
-      {
-        "input": [
-          [
-            "id,value",
-            "1,100"
-          ]
-        ],
-        "expected": [
-          {
-            "id": "1",
-            "value": "100"
-          }
-        ]
-      },
-      {
-        "input": [
-          [
-            "x"
-          ]
-        ],
-        "expected": []
-      },
-      {
-        "input": [
-          [
-            "a,b,c",
-            "1,2,3",
-            "4,5,6"
-          ]
-        ],
-        "expected": [
-          {
-            "a": "1",
-            "b": "2",
-            "c": "3"
-          },
-          {
-            "a": "4",
-            "b": "5",
-            "c": "6"
-          }
-        ]
-      },
-      {
-        "input": [
-          [
-            "col"
-          ]
-        ],
-        "expected": []
-      }
+      {"input": [["name,age", "Alice,30", "Bob,25"]], "expected": [{"name": "Alice", "age": "30"}, {"name": "Bob", "age": "25"}]},
+      {"input": [["id,value", "1,100"]], "expected": [{"id": "1", "value": "100"}]},
+      {"input": [["x"]], "expected": []},
+      {"input": [["a,b,c", "1,2,3", "4,5,6"]], "expected": [{"a": "1", "b": "2", "c": "3"}, {"a": "4", "b": "5", "c": "6"}]},
+      {"input": [["col"]], "expected": []}
     ],
     "public_test_cases": 2,
-    "hints": [
-      "The first row defines the column names — treat each subsequent row as a key-value record with those names as keys.",
-      "All values come out as strings — use a list comprehension and `dict(row)` to get plain dicts."
-    ],
-    "concepts": [
-      "STRING PATTERN REASONING",
-      "LIST & COLLECTION TRANSFORMATION"
-    ]
+    "hints": ["The first row defines the column names — treat each subsequent row as a key-value record with those names as keys.", "All values come out as strings — use a list comprehension and `dict(row)` to get plain dicts."],
+    "concepts": ["STRING PATTERN REASONING", "LIST & COLLECTION TRANSFORMATION"]
   },
   {
     "id": 21032,
@@ -1695,52 +504,14 @@
     "solution_code": "import json\n\ndef solve(s):\n    d = json.loads(s)\n    return [d['level'], d['message']]",
     "explanation": "`json.loads(s)` deserialises a JSON string into a Python object — a dict if the top-level value is `{}`, a list if it is `[]`, and so on. After parsing, access keys just like any dict. This is the stdlib counterpart to `json.dumps`, which serialises Python objects back to JSON strings.",
     "test_cases": [
-      {
-        "input": [
-          "{\"level\": \"ERROR\", \"message\": \"disk full\", \"ts\": \"2023-01-01\"}"
-        ],
-        "expected": [
-          "ERROR",
-          "disk full"
-        ]
-      },
-      {
-        "input": [
-          "{\"level\": \"INFO\", \"message\": \"started\"}"
-        ],
-        "expected": [
-          "INFO",
-          "started"
-        ]
-      },
-      {
-        "input": [
-          "{\"level\": \"WARNING\", \"message\": \"high memory\", \"code\": 42}"
-        ],
-        "expected": [
-          "WARNING",
-          "high memory"
-        ]
-      },
-      {
-        "input": [
-          "{\"level\": \"CRITICAL\", \"message\": \"oom\", \"user\": \"system\"}"
-        ],
-        "expected": [
-          "CRITICAL",
-          "oom"
-        ]
-      }
+      {"input": ["{\"level\": \"ERROR\", \"message\": \"disk full\", \"ts\": \"2023-01-01\"}"], "expected": ["ERROR", "disk full"]},
+      {"input": ["{\"level\": \"INFO\", \"message\": \"started\"}"], "expected": ["INFO", "started"]},
+      {"input": ["{\"level\": \"WARNING\", \"message\": \"high memory\", \"code\": 42}"], "expected": ["WARNING", "high memory"]},
+      {"input": ["{\"level\": \"CRITICAL\", \"message\": \"oom\", \"user\": \"system\"}"], "expected": ["CRITICAL", "oom"]}
     ],
     "public_test_cases": 2,
-    "hints": [
-      "A JSON string encodes a structured record — the standard library can parse it directly into a native Python mapping, after which field access is just key lookup.",
-      "Access the parsed dict with square brackets just like any Python dict: `d['key']`."
-    ],
-    "concepts": [
-      "STRING PATTERN REASONING",
-      "HASH-MAP STATE"
-    ]
+    "hints": ["A JSON string encodes a structured record — the standard library can parse it directly into a native Python mapping, after which field access is just key lookup.", "Access the parsed dict with square brackets just like any Python dict: `d['key']`."],
+    "concepts": ["STRING PATTERN REASONING", "HASH-MAP STATE"]
   },
   {
     "id": 21033,
@@ -1754,64 +525,15 @@
     "solution_code": "from datetime import datetime\n\ndef solve(dates):\n    parsed = [datetime.strptime(d, '%m/%d/%Y') for d in dates]\n    return max(parsed).strftime('%Y-%m-%d')",
     "explanation": "`datetime.strptime(s, fmt)` parses a string into a `datetime` object using the given format. `%m` is zero-padded month, `%d` is zero-padded day, `%Y` is four-digit year. Once parsed, `datetime` objects are comparable with `<`, `>`, `max()`, and `min()`. `strftime(fmt)` serialises a `datetime` back to a string in a different format.",
     "test_cases": [
-      {
-        "input": [
-          [
-            "12/25/2022",
-            "01/15/2023",
-            "06/30/2021"
-          ]
-        ],
-        "expected": "2023-01-15"
-      },
-      {
-        "input": [
-          [
-            "03/01/2020"
-          ]
-        ],
-        "expected": "2020-03-01"
-      },
-      {
-        "input": [
-          [
-            "12/31/2023",
-            "01/01/2024",
-            "06/15/2023"
-          ]
-        ],
-        "expected": "2024-01-01"
-      },
-      {
-        "input": [
-          [
-            "02/28/2022",
-            "02/29/2024",
-            "03/01/2022"
-          ]
-        ],
-        "expected": "2024-02-29"
-      },
-      {
-        "input": [
-          [
-            "01/01/2000",
-            "12/31/1999",
-            "06/15/2000"
-          ]
-        ],
-        "expected": "2000-06-15"
-      }
+      {"input": [["12/25/2022", "01/15/2023", "06/30/2021"]], "expected": "2023-01-15"},
+      {"input": [["03/01/2020"]], "expected": "2020-03-01"},
+      {"input": [["12/31/2023", "01/01/2024", "06/15/2023"]], "expected": "2024-01-01"},
+      {"input": [["02/28/2022", "02/29/2024", "03/01/2022"]], "expected": "2024-02-29"},
+      {"input": [["01/01/2000", "12/31/1999", "06/15/2000"]], "expected": "2000-06-15"}
     ],
     "public_test_cases": 2,
-    "hints": [
-      "Date strings in different formats cannot be compared directly as text — parsing them into date objects first enables both correct chronological ordering and clean reformatting into the output format.",
-      "Once parsed to `datetime` objects, use `max(parsed)` to find the most recent."
-    ],
-    "concepts": [
-      "STRING PATTERN REASONING",
-      "INDEXED SEQUENCE REASONING"
-    ]
+    "hints": ["Date strings in different formats cannot be compared directly as text — parsing them into date objects first enables both correct chronological ordering and clean reformatting into the output format.", "Once parsed to `datetime` objects, use `max(parsed)` to find the most recent."],
+    "concepts": ["STRING PATTERN REASONING", "INDEXED SEQUENCE REASONING"]
   },
   {
     "id": 21034,
@@ -1825,77 +547,15 @@
     "solution_code": "def solve(nums):\n    counts = {}\n    for n in nums:\n        counts[n] = counts.get(n, 0) + 1\n    return sorted(k for k, v in counts.items() if v > 1)",
     "explanation": "Build a frequency dict in a single pass using `dict.get(key, 0) + 1`. Filter keys where the count exceeds 1, then sort for a deterministic output. An alternative is two-set tracking: add each element to a `seen` set; if it's already there, add it to a `dupes` set. Both approaches are O(n) time and space.",
     "test_cases": [
-      {
-        "input": [
-          [
-            1,
-            2,
-            3,
-            2,
-            4,
-            1
-          ]
-        ],
-        "expected": [
-          1,
-          2
-        ]
-      },
-      {
-        "input": [
-          [
-            5,
-            5,
-            5
-          ]
-        ],
-        "expected": [
-          5
-        ]
-      },
-      {
-        "input": [
-          [
-            1,
-            2,
-            3
-          ]
-        ],
-        "expected": []
-      },
-      {
-        "input": [
-          [
-            "a",
-            "b",
-            "a",
-            "c",
-            "b"
-          ]
-        ],
-        "expected": [
-          "a",
-          "b"
-        ]
-      },
-      {
-        "input": [
-          [
-            1
-          ]
-        ],
-        "expected": []
-      }
+      {"input": [[1, 2, 3, 2, 4, 1]], "expected": [1, 2]},
+      {"input": [[5, 5, 5]], "expected": [5]},
+      {"input": [[1, 2, 3]], "expected": []},
+      {"input": [["a", "b", "a", "c", "b"]], "expected": ["a", "b"]},
+      {"input": [[1]], "expected": []}
     ],
     "public_test_cases": 2,
-    "hints": [
-      "A frequency map lets you count occurrences in a single pass — anything with count > 1 is a duplicate.",
-      "Filter for keys where the count > 1, then sort the result."
-    ],
-    "concepts": [
-      "HASH-MAP STATE",
-      "INDEXED SEQUENCE REASONING"
-    ]
+    "hints": ["A frequency map lets you count occurrences in a single pass — anything with count > 1 is a duplicate.", "Filter for keys where the count > 1, then sort the result."],
+    "concepts": ["HASH-MAP STATE", "INDEXED SEQUENCE REASONING"]
   },
   {
     "id": 21035,
@@ -1909,106 +569,14 @@
     "solution_code": "from collections import defaultdict\n\ndef solve(pairs):\n    groups = defaultdict(list)\n    for category, item in pairs:\n        groups[category].append(item)\n    return {k: sorted(v) for k, v in groups.items()}",
     "explanation": "`defaultdict(list)` automatically initialises a new key with an empty list on first access, removing the need for an `if key not in d` guard. The factory function (`list`, `int`, `set`, etc.) determines the default. Converting back to a plain `dict` at the end prevents accidental auto-creation of new keys downstream.",
     "test_cases": [
-      {
-        "input": [
-          [
-            [
-              "fruits",
-              "apple"
-            ],
-            [
-              "vegs",
-              "carrot"
-            ],
-            [
-              "fruits",
-              "banana"
-            ],
-            [
-              "vegs",
-              "spinach"
-            ]
-          ]
-        ],
-        "expected": {
-          "fruits": [
-            "apple",
-            "banana"
-          ],
-          "vegs": [
-            "carrot",
-            "spinach"
-          ]
-        }
-      },
-      {
-        "input": [
-          [
-            [
-              "a",
-              1
-            ],
-            [
-              "b",
-              2
-            ],
-            [
-              "a",
-              3
-            ]
-          ]
-        ],
-        "expected": {
-          "a": [
-            1,
-            3
-          ],
-          "b": [
-            2
-          ]
-        }
-      },
-      {
-        "input": [
-          []
-        ],
-        "expected": {}
-      },
-      {
-        "input": [
-          [
-            [
-              "x",
-              "m"
-            ],
-            [
-              "x",
-              "a"
-            ],
-            [
-              "x",
-              "z"
-            ]
-          ]
-        ],
-        "expected": {
-          "x": [
-            "a",
-            "m",
-            "z"
-          ]
-        }
-      }
+      {"input": [[["fruits", "apple"], ["vegs", "carrot"], ["fruits", "banana"], ["vegs", "spinach"]]], "expected": {"fruits": ["apple", "banana"], "vegs": ["carrot", "spinach"]}},
+      {"input": [[["a", 1], ["b", 2], ["a", 3]]], "expected": {"a": [1, 3], "b": [2]}},
+      {"input": [[]], "expected": {}},
+      {"input": [[["x", "m"], ["x", "a"], ["x", "z"]]], "expected": {"x": ["a", "m", "z"]}}
     ],
     "public_test_cases": 2,
-    "hints": [
-      "To group items by a shared key, you need a structure that accumulates values under each unique key — the tricky part is initialising the storage for a new key without an explicit 'if key not in' guard.",
-      "`defaultdict(list)` from the `collections` module creates an empty list automatically on the first access to any new key, so you can append immediately without checking first."
-    ],
-    "concepts": [
-      "HASH-MAP STATE",
-      "LIST & COLLECTION TRANSFORMATION"
-    ]
+    "hints": ["To group items by a shared key, you need a structure that accumulates values under each unique key — the tricky part is initialising the storage for a new key without an explicit 'if key not in' guard.", "`defaultdict(list)` from the `collections` module creates an empty list automatically on the first access to any new key, so you can append immediately without checking first."],
+    "concepts": ["HASH-MAP STATE", "LIST & COLLECTION TRANSFORMATION"]
   },
   {
     "id": 21036,
@@ -2022,104 +590,15 @@
     "solution_code": "from collections import deque\n\ndef solve(nums, k):\n    dq = deque()\n    result = []\n    for i, n in enumerate(nums):\n        while dq and dq[0] < i - k + 1:\n            dq.popleft()\n        while dq and nums[dq[-1]] < n:\n            dq.pop()\n        dq.append(i)\n        if i >= k - 1:\n            result.append(nums[dq[0]])\n    return result",
     "explanation": "The deque stores indices of elements in decreasing value order. Before adding index `i`, remove from the back any indices whose values are smaller than `nums[i]` — they can never be the window maximum while `i` is in the window. Remove from the front any index that has slid out of the window (`< i - k + 1`). The front of the deque always holds the index of the current window's maximum. This gives O(n) overall — each index is added and removed at most once.",
     "test_cases": [
-      {
-        "input": [
-          [
-            1,
-            3,
-            -1,
-            -3,
-            5,
-            3,
-            6,
-            7
-          ],
-          3
-        ],
-        "expected": [
-          3,
-          3,
-          5,
-          5,
-          6,
-          7
-        ]
-      },
-      {
-        "input": [
-          [
-            1
-          ],
-          1
-        ],
-        "expected": [
-          1
-        ]
-      },
-      {
-        "input": [
-          [
-            4,
-            3,
-            2,
-            1
-          ],
-          2
-        ],
-        "expected": [
-          4,
-          3,
-          2
-        ]
-      },
-      {
-        "input": [
-          [
-            1,
-            2,
-            3,
-            4
-          ],
-          2
-        ],
-        "expected": [
-          2,
-          3,
-          4
-        ]
-      },
-      {
-        "input": [
-          [
-            2,
-            1,
-            5,
-            3,
-            6,
-            4,
-            8,
-            7
-          ],
-          4
-        ],
-        "expected": [
-          5,
-          6,
-          6,
-          8,
-          8
-        ]
-      }
+      {"input": [[1, 3, -1, -3, 5, 3, 6, 7], 3], "expected": [3, 3, 5, 5, 6, 7]},
+      {"input": [[1], 1], "expected": [1]},
+      {"input": [[4, 3, 2, 1], 2], "expected": [4, 3, 2]},
+      {"input": [[1, 2, 3, 4], 2], "expected": [2, 3, 4]},
+      {"input": [[2, 1, 5, 3, 6, 4, 8, 7], 4], "expected": [5, 6, 6, 8, 8]}
     ],
     "public_test_cases": 2,
-    "hints": [
-      "A monotonic sliding-window structure (decreasing from front to back) finds the window maximum in O(1) per step — the element at the front always holds the current maximum.",
-      "Maintain the deque's decreasing property by removing from the back any element whose value is beaten by the new arrival — an element that can never be the window maximum while the new element is present is permanently useless."
-    ],
-    "concepts": [
-      "SLIDING WINDOW",
-      "STACK & MONOTONIC STRUCTURES"
-    ]
+    "hints": ["A monotonic sliding-window structure (decreasing from front to back) finds the window maximum in O(1) per step — the element at the front always holds the current maximum.", "Maintain the deque's decreasing property by removing from the back any element whose value is beaten by the new arrival — an element that can never be the window maximum while the new element is present is permanently useless."],
+    "concepts": ["SLIDING WINDOW", "STACK & MONOTONIC STRUCTURES"]
   },
   {
     "id": 21037,
@@ -2133,80 +612,15 @@
     "solution_code": "def solve(events):\n    counts = {}\n    for e in events:\n        counts[e] = counts.get(e, 0) + 1\n    return counts",
     "explanation": "One pass over the event list, incrementing a counter for each event type. dict.get(key, 0) returns the existing count or 0 if the key is new, then +1. Time O(n), space O(d) where d is the number of distinct event types. Equivalent to collections.Counter(events) — but writing the loop explicitly is clearer about the invariant being maintained.",
     "test_cases": [
-      {
-        "input": [
-          [
-            "INFO",
-            "WARN",
-            "INFO",
-            "ERROR",
-            "INFO"
-          ]
-        ],
-        "expected": {
-          "INFO": 3,
-          "WARN": 1,
-          "ERROR": 1
-        }
-      },
-      {
-        "input": [
-          [
-            "A",
-            "B",
-            "A"
-          ]
-        ],
-        "expected": {
-          "A": 2,
-          "B": 1
-        }
-      },
-      {
-        "input": [
-          []
-        ],
-        "expected": {}
-      },
-      {
-        "input": [
-          [
-            "ERR",
-            "ERR",
-            "ERR"
-          ]
-        ],
-        "expected": {
-          "ERR": 3
-        }
-      },
-      {
-        "input": [
-          [
-            "A",
-            "B",
-            "C",
-            "A",
-            "B",
-            "A"
-          ]
-        ],
-        "expected": {
-          "A": 3,
-          "B": 2,
-          "C": 1
-        }
-      }
+      {"input": [["INFO", "WARN", "INFO", "ERROR", "INFO"]], "expected": {"INFO": 3, "WARN": 1, "ERROR": 1}},
+      {"input": [["A", "B", "A"]], "expected": {"A": 2, "B": 1}},
+      {"input": [[]], "expected": {}},
+      {"input": [["ERR", "ERR", "ERR"]], "expected": {"ERR": 3}},
+      {"input": [["A", "B", "C", "A", "B", "A"]], "expected": {"A": 3, "B": 2, "C": 1}}
     ],
     "public_test_cases": 2,
-    "hints": [
-      "A hash map counting occurrences of each event type gives you the frequency distribution in a single linear pass.",
-      "dict.get(key, 0) gives the current count or 0 if the key doesn't exist yet."
-    ],
-    "concepts": [
-      "HASH-MAP STATE",
-      "LIST & COLLECTION TRANSFORMATION"
-    ]
+    "hints": ["A hash map counting occurrences of each event type gives you the frequency distribution in a single linear pass.", "dict.get(key, 0) gives the current count or 0 if the key doesn't exist yet."],
+    "concepts": ["HASH-MAP STATE", "LIST & COLLECTION TRANSFORMATION"]
   },
   {
     "id": 21038,
@@ -2220,67 +634,15 @@
     "solution_code": "def solve(readings, threshold):\n    for i, r in enumerate(readings):\n        if r > threshold:\n            return i\n    return -1",
     "explanation": "Linear scan with early exit: return the index of the first reading that exceeds the threshold without scanning the rest. Time O(n) worst case (no reading exceeds) or O(1) best case (first reading exceeds). Space O(1). This is the standard 'find first satisfying condition' scan used in alert systems, anomaly detectors, and SLA breach monitors.",
     "test_cases": [
-      {
-        "input": [
-          [
-            1.2,
-            3.5,
-            2.1,
-            4.0
-          ],
-          3.0
-        ],
-        "expected": 1
-      },
-      {
-        "input": [
-          [
-            1.0,
-            2.0,
-            3.0
-          ],
-          3.0
-        ],
-        "expected": -1
-      },
-      {
-        "input": [
-          [],
-          0.0
-        ],
-        "expected": -1
-      },
-      {
-        "input": [
-          [
-            5.0
-          ],
-          3.0
-        ],
-        "expected": 0
-      },
-      {
-        "input": [
-          [
-            1.0,
-            1.0,
-            1.0,
-            10.0
-          ],
-          9.9
-        ],
-        "expected": 3
-      }
+      {"input": [[1.2, 3.5, 2.1, 4.0], 3.0], "expected": 1},
+      {"input": [[1.0, 2.0, 3.0], 3.0], "expected": -1},
+      {"input": [[], 0.0], "expected": -1},
+      {"input": [[5.0], 3.0], "expected": 0},
+      {"input": [[1.0, 1.0, 1.0, 10.0], 9.9], "expected": 3}
     ],
     "public_test_cases": 2,
-    "hints": [
-      "Scan from left to right. The moment you find a reading that strictly exceeds the threshold, return its index immediately.",
-      "If you reach the end without finding one, return -1."
-    ],
-    "concepts": [
-      "INDEXED SEQUENCE REASONING",
-      "GREEDY CHOICE"
-    ]
+    "hints": ["Scan from left to right. The moment you find a reading that strictly exceeds the threshold, return its index immediately.", "If you reach the end without finding one, return -1."],
+    "concepts": ["INDEXED SEQUENCE REASONING", "GREEDY CHOICE"]
   },
   {
     "id": 21039,
@@ -2294,69 +656,15 @@
     "solution_code": "def solve(lines):\n    config = {}\n    for line in lines:\n        if '=' not in line:\n            continue\n        key, _, value = line.partition('=')\n        config[key.strip()] = value.strip()\n    return config",
     "explanation": "str.partition('=') splits on the FIRST '=' and returns (before, sep, after) — useful when values may contain '=' (e.g., connection strings). strip() removes surrounding whitespace. Lines without '=' are skipped. Time O(n * L) where L is average line length, space O(n). This parse-with-partition pattern appears in config loaders, HTTP header parsers, and query-string decoders.",
     "test_cases": [
-      {
-        "input": [
-          [
-            "host = localhost",
-            "port = 5432",
-            "db = metrics"
-          ]
-        ],
-        "expected": {
-          "host": "localhost",
-          "port": "5432",
-          "db": "metrics"
-        }
-      },
-      {
-        "input": [
-          [
-            "debug = true",
-            "bad_line",
-            "timeout = 30"
-          ]
-        ],
-        "expected": {
-          "debug": "true",
-          "timeout": "30"
-        }
-      },
-      {
-        "input": [
-          []
-        ],
-        "expected": {}
-      },
-      {
-        "input": [
-          [
-            "key=value"
-          ]
-        ],
-        "expected": {
-          "key": "value"
-        }
-      },
-      {
-        "input": [
-          [
-            "url = jdbc:pg://host:5432/db"
-          ]
-        ],
-        "expected": {
-          "url": "jdbc:pg://host:5432/db"
-        }
-      }
+      {"input": [["host = localhost", "port = 5432", "db = metrics"]], "expected": {"host": "localhost", "port": "5432", "db": "metrics"}},
+      {"input": [["debug = true", "bad_line", "timeout = 30"]], "expected": {"debug": "true", "timeout": "30"}},
+      {"input": [[]], "expected": {}},
+      {"input": [["key=value"]], "expected": {"key": "value"}},
+      {"input": [["url = jdbc:pg://host:5432/db"]], "expected": {"url": "jdbc:pg://host:5432/db"}}
     ],
     "public_test_cases": 2,
-    "hints": [
-      "str.partition('=') splits on the first '=' only — safer than split('=') when values might contain '='.",
-      "Use strip() on both key and value to remove whitespace, and skip lines that have no '=' at all."
-    ],
-    "concepts": [
-      "STRING PATTERN REASONING",
-      "LIST & COLLECTION TRANSFORMATION"
-    ]
+    "hints": ["str.partition('=') splits on the first '=' only — safer than split('=') when values might contain '='.", "Use strip() on both key and value to remove whitespace, and skip lines that have no '=' at all."],
+    "concepts": ["STRING PATTERN REASONING", "LIST & COLLECTION TRANSFORMATION"]
   },
   {
     "id": 21040,
@@ -2370,73 +678,16 @@
     "solution_code": "def solve(record_ids):\n    return len(record_ids) != len(set(record_ids))",
     "explanation": "Convert the list to a set (which discards duplicates) and compare its length to the original list. If any duplicates exist, the set will be smaller. One-liner: O(n) time, O(n) space. Alternative: early-exit scan (`seen = set(); for r in record_ids: if r in seen: return True; seen.add(r)`) avoids materializing the full set when the first duplicate is early in large batches.",
     "test_cases": [
-      {
-        "input": [
-          [
-            "r1",
-            "r2",
-            "r3",
-            "r2"
-          ]
-        ],
-        "expected": true
-      },
-      {
-        "input": [
-          [
-            "r1",
-            "r2",
-            "r3"
-          ]
-        ],
-        "expected": false
-      },
-      {
-        "input": [
-          []
-        ],
-        "expected": false
-      },
-      {
-        "input": [
-          [
-            42,
-            43,
-            42
-          ]
-        ],
-        "expected": true
-      },
-      {
-        "input": [
-          [
-            1,
-            2,
-            3,
-            4,
-            5
-          ]
-        ],
-        "expected": false
-      },
-      {
-        "input": [
-          [
-            "x"
-          ]
-        ],
-        "expected": false
-      }
+      {"input": [["r1", "r2", "r3", "r2"]], "expected": true},
+      {"input": [["r1", "r2", "r3"]], "expected": false},
+      {"input": [[]], "expected": false},
+      {"input": [[42, 43, 42]], "expected": true},
+      {"input": [[1, 2, 3, 4, 5]], "expected": false},
+      {"input": [["x"]], "expected": false}
     ],
     "public_test_cases": 2,
-    "hints": [
-      "When the count of unique elements is smaller than the total count, duplicates must exist — the right data structure computes both in O(n).",
-      "A set discards duplicates automatically — if converting the list to a set produces a smaller collection, at least one ID appeared more than once."
-    ],
-    "concepts": [
-      "HASH-MAP STATE",
-      "LIST & COLLECTION TRANSFORMATION"
-    ]
+    "hints": ["When the count of unique elements is smaller than the total count, duplicates must exist — the right data structure computes both in O(n).", "A set discards duplicates automatically — if converting the list to a set produces a smaller collection, at least one ID appeared more than once."],
+    "concepts": ["HASH-MAP STATE", "LIST & COLLECTION TRANSFORMATION"]
   },
   {
     "id": 21041,
@@ -2450,66 +701,14 @@
     "solution_code": "def solve(transactions, budget):\n    total = 0\n    for i, amount in enumerate(transactions):\n        total += amount\n        if total > budget:\n            return i\n    return -1",
     "explanation": "Maintain a running total, incrementing it with each transaction. As soon as the total exceeds the budget threshold, return the current index. This is an online (streaming) computation with early exit — it works on arbitrarily long transaction streams without needing to buffer them. Time O(n), space O(1). The same pattern applies to cumulative-metric monitors, SLA-breach detectors, and spend-cap alerting.",
     "test_cases": [
-      {
-        "input": [
-          [
-            10,
-            20,
-            30,
-            15
-          ],
-          50
-        ],
-        "expected": 2
-      },
-      {
-        "input": [
-          [
-            5,
-            5,
-            5
-          ],
-          100
-        ],
-        "expected": -1
-      },
-      {
-        "input": [
-          [
-            101
-          ],
-          100
-        ],
-        "expected": 0
-      },
-      {
-        "input": [
-          [],
-          0
-        ],
-        "expected": -1
-      },
-      {
-        "input": [
-          [
-            10,
-            10,
-            10,
-            10
-          ],
-          39
-        ],
-        "expected": 3
-      }
+      {"input": [[10, 20, 30, 15], 50], "expected": 2},
+      {"input": [[5, 5, 5], 100], "expected": -1},
+      {"input": [[101], 100], "expected": 0},
+      {"input": [[], 0], "expected": -1},
+      {"input": [[10, 10, 10, 10], 39], "expected": 3}
     ],
     "public_test_cases": 2,
-    "hints": [
-      "Maintain a running total. After each transaction, check whether it has exceeded the budget — if so, return the current index.",
-      "If you exhaust the list without exceeding the budget, return -1."
-    ],
-    "concepts": [
-      "INDEXED SEQUENCE REASONING",
-      "STREAMING / ONLINE REDUCTION"
-    ]
+    "hints": ["Maintain a running total. After each transaction, check whether it has exceeded the budget — if so, return the current index.", "If you exhaust the list without exceeding the budget, return -1."],
+    "concepts": ["INDEXED SEQUENCE REASONING", "STREAMING / ONLINE REDUCTION"]
   }
 ]
