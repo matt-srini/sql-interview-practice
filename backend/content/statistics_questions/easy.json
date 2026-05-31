@@ -31,52 +31,120 @@
     "title": "Computing the Sample Mean",
     "subtype": "numerical",
     "type": "numerical",
-    "description": "Given the dataset [4, 7, 13, 2, 1, 8, 5], write a Python function `solve()` that returns the arithmetic mean rounded to 4 decimal places.",
-    "starter_code": "def solve():\n    # Compute the mean of the dataset [4, 7, 13, 2, 1, 8, 5]\n    pass",
-    "expected_code": "def solve():\n    data = [4, 7, 13, 2, 1, 8, 5]\n    return round(sum(data) / len(data), 4)",
+    "description": "Write a Python function `solve(data: list[float]) -> float` that returns the arithmetic mean of `data`, rounded to 4 decimal places.",
+    "starter_code": "def solve(data: list[float]) -> float:\n    # Compute and return the arithmetic mean of data, rounded to 4 decimal places\n    pass",
+    "expected_code": "def solve(data: list[float]) -> float:\n    return round(sum(data) / len(data), 4)",
     "test_cases": [
       {
-        "input": [],
+        "input": [
+          [
+            4,
+            7,
+            13,
+            2,
+            1,
+            8,
+            5
+          ]
+        ],
         "expected": 5.7143
+      },
+      {
+        "input": [
+          [
+            10,
+            20,
+            30
+          ]
+        ],
+        "expected": 20.0
+      },
+      {
+        "input": [
+          [
+            1,
+            1,
+            1,
+            1
+          ]
+        ],
+        "expected": 1.0
       }
     ],
     "explanation": "Sum all values: 4+7+13+2+1+8+5 = 40. Divide by count (7): 40/7 ≈ 5.7143.",
     "hints": [
-      "The arithmetic mean is the sum of all values divided by the number of values.",
-      "Use Python's built-in sum() and len() functions, then round to 4 decimal places."
+      "The arithmetic mean is the total of all values divided by how many values there are.",
+      "Python's built-in `sum()` and `len()` give you both components."
     ],
     "concepts": [
       "descriptive statistics",
       "measures of central tendency"
     ],
     "order": 2,
-    "difficulty": "easy"
+    "difficulty": "easy",
+    "solution_code": "def solve(data: list[float]) -> float:\n    return round(sum(data) / len(data), 4)",
+    "public_test_cases": 1
   },
   {
     "id": 71003,
     "title": "Median of an Even-Length Dataset",
     "subtype": "numerical",
     "type": "numerical",
-    "description": "Given the dataset [3, 7, 1, 9, 4, 6], write a Python function `solve()` that returns the median as a float.",
-    "starter_code": "def solve():\n    # Compute the median of [3, 7, 1, 9, 4, 6]\n    pass",
-    "expected_code": "def solve():\n    data = sorted([3, 7, 1, 9, 4, 6])\n    n = len(data)\n    mid = n // 2\n    return (data[mid - 1] + data[mid]) / 2",
+    "description": "Write a Python function `solve(data: list[float]) -> float` that returns the median of `data`. For an even-length list, average the two middle values of the sorted list.",
+    "starter_code": "def solve(data: list[float]) -> float:\n    # Sort data and find the middle value(s)\n    pass",
+    "expected_code": "def solve(data: list[float]) -> float:\n    data = sorted(data)\n    n = len(data)\n    mid = n // 2\n    if n % 2 == 1:\n        return float(data[mid])\n    return (data[mid - 1] + data[mid]) / 2",
     "test_cases": [
       {
-        "input": [],
+        "input": [
+          [
+            3,
+            7,
+            1,
+            9,
+            4,
+            6
+          ]
+        ],
         "expected": 5.0
+      },
+      {
+        "input": [
+          [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6
+          ]
+        ],
+        "expected": 3.5
+      },
+      {
+        "input": [
+          [
+            4,
+            1,
+            8,
+            2
+          ]
+        ],
+        "expected": 3.0
       }
     ],
     "explanation": "Sorted: [1, 3, 4, 6, 7, 9]. With 6 elements, median is average of 3rd and 4th values: (4+6)/2 = 5.0.",
     "hints": [
       "Sort the list first, then find the middle position(s).",
-      "For an even number of elements, average the two middle values."
+      "Even length: average the two central values. Odd length: take the single middle value."
     ],
     "concepts": [
       "descriptive statistics",
       "measures of central tendency"
     ],
     "order": 3,
-    "difficulty": "easy"
+    "difficulty": "easy",
+    "solution_code": "def solve(data: list[float]) -> float:\n    data = sorted(data)\n    n = len(data)\n    mid = n // 2\n    if n % 2 == 1:\n        return float(data[mid])\n    return (data[mid - 1] + data[mid]) / 2",
+    "public_test_cases": 1
   },
   {
     "id": 71004,
@@ -109,26 +177,60 @@
     "title": "Standard Deviation of Small Dataset",
     "subtype": "numerical",
     "type": "numerical",
-    "description": "Write a Python function `solve()` that returns the **population** standard deviation of the dataset [2, 4, 4, 4, 5, 5, 7, 9], rounded to 4 decimal places.",
-    "starter_code": "def solve():\n    # Compute the population standard deviation of [2, 4, 4, 4, 5, 5, 7, 9]\n    pass",
-    "expected_code": "def solve():\n    import math\n    data = [2, 4, 4, 4, 5, 5, 7, 9]\n    mean = sum(data) / len(data)\n    variance = sum((x - mean) ** 2 for x in data) / len(data)\n    return round(math.sqrt(variance), 4)",
+    "description": "Write a Python function `solve(data: list[float]) -> float` that returns the **population** standard deviation of `data`, rounded to 4 decimal places. Population std divides by N, not N−1.",
+    "starter_code": "def solve(data: list[float]) -> float:\n    # Compute population standard deviation of data\n    pass",
+    "expected_code": "def solve(data: list[float]) -> float:\n    import math\n    n = len(data)\n    mean = sum(data) / n\n    variance = sum((x - mean) ** 2 for x in data) / n\n    return round(math.sqrt(variance), 4)",
     "test_cases": [
       {
-        "input": [],
+        "input": [
+          [
+            2,
+            4,
+            4,
+            4,
+            5,
+            5,
+            7,
+            9
+          ]
+        ],
         "expected": 2.0
+      },
+      {
+        "input": [
+          [
+            1,
+            2,
+            3,
+            4,
+            5
+          ]
+        ],
+        "expected": 1.4142
+      },
+      {
+        "input": [
+          [
+            0,
+            10
+          ]
+        ],
+        "expected": 5.0
       }
     ],
     "explanation": "Mean = 40/8 = 5. Squared deviations: 9,1,1,1,0,0,4,16 → sum=32. Population variance = 32/8 = 4. Standard deviation = √4 = 2.0.",
     "hints": [
-      "Population standard deviation divides by N, not N−1.",
-      "Compute the mean first, then average the squared deviations, then take the square root."
+      "Population standard deviation divides by N, not N−1 (sample std uses N−1).",
+      "Compute the mean, then average the squared deviations, then take the square root."
     ],
     "concepts": [
       "descriptive statistics",
       "distributions"
     ],
     "order": 5,
-    "difficulty": "easy"
+    "difficulty": "easy",
+    "solution_code": "def solve(data: list[float]) -> float:\n    import math\n    n = len(data)\n    mean = sum(data) / n\n    variance = sum((x - mean) ** 2 for x in data) / n\n    return round(math.sqrt(variance), 4)",
+    "public_test_cases": 1
   },
   {
     "id": 71006,
@@ -186,19 +288,31 @@
     "title": "Probability of Union Calculation",
     "subtype": "numerical",
     "type": "numerical",
-    "description": "P(A) = 0.5, P(B) = 0.4, P(A∩B) = 0.2. Write a Python function `solve()` that returns P(A∪B) as a float rounded to 4 decimal places.",
-    "starter_code": "def solve():\n    # Compute P(A union B) using the inclusion-exclusion principle\n    pass",
-    "expected_code": "def solve():\n    p_a = 0.5\n    p_b = 0.4\n    p_ab = 0.2\n    return round(p_a + p_b - p_ab, 4)",
+    "description": "Write a Python function `solve(p_a: float, p_b: float, p_ab: float) -> float` that returns P(A∪B) — the probability that at least one of A or B occurs — rounded to 4 decimal places.",
+    "starter_code": "def solve(p_a: float, p_b: float, p_ab: float) -> float:\n    # Apply the inclusion-exclusion principle\n    pass",
+    "expected_code": "def solve(p_a: float, p_b: float, p_ab: float) -> float:\n    return round(p_a + p_b - p_ab, 4)",
     "test_cases": [
       {
-        "input": [],
+        "input": [
+          0.5,
+          0.4,
+          0.2
+        ],
         "expected": 0.7
+      },
+      {
+        "input": [
+          0.6,
+          0.3,
+          0.1
+        ],
+        "expected": 0.8
       }
     ],
     "explanation": "P(A∪B) = P(A) + P(B) − P(A∩B) = 0.5 + 0.4 − 0.2 = 0.7.",
     "hints": [
-      "Use the inclusion-exclusion principle to avoid double-counting.",
-      "P(A∪B) = P(A) + P(B) − P(A∩B)."
+      "Adding P(A) + P(B) double-counts the overlap. You need to subtract it once.",
+      "P(A∪B) = P(A) + P(B) − P(A∩B). Subtract the joint probability to correct the overcounting."
     ],
     "concepts": [
       "probability",
@@ -206,7 +320,9 @@
       "inclusion-exclusion"
     ],
     "order": 8,
-    "difficulty": "easy"
+    "difficulty": "easy",
+    "solution_code": "def solve(p_a: float, p_b: float, p_ab: float) -> float:\n    return round(p_a + p_b - p_ab, 4)",
+    "public_test_cases": 1
   },
   {
     "id": 71009,
@@ -264,26 +380,38 @@
     "title": "Conditional Probability Calculation",
     "subtype": "numerical",
     "type": "numerical",
-    "description": "P(A∩B) = 0.12, P(B) = 0.40. Write a Python function `solve()` that returns P(A | B) rounded to 4 decimal places.",
-    "starter_code": "def solve():\n    # Compute P(A given B) = P(A and B) / P(B)\n    pass",
-    "expected_code": "def solve():\n    p_ab = 0.12\n    p_b = 0.40\n    return round(p_ab / p_b, 4)",
+    "description": "Write a Python function `solve(p_ab: float, p_b: float) -> float` that returns P(A | B) — the probability of A given that B occurred — rounded to 4 decimal places.",
+    "starter_code": "def solve(p_ab: float, p_b: float) -> float:\n    # Conditional probability: restrict the sample space to B\n    pass",
+    "expected_code": "def solve(p_ab: float, p_b: float) -> float:\n    return round(p_ab / p_b, 4)",
     "test_cases": [
       {
-        "input": [],
+        "input": [
+          0.12,
+          0.4
+        ],
         "expected": 0.3
+      },
+      {
+        "input": [
+          0.18,
+          0.45
+        ],
+        "expected": 0.4
       }
     ],
     "explanation": "P(A|B) = P(A∩B) / P(B) = 0.12 / 0.40 = 0.30.",
     "hints": [
-      "Conditional probability restricts the universe to events where B has happened.",
-      "P(A|B) = P(A∩B) / P(B)."
+      "Conditioning on B means restricting the universe to outcomes where B already happened.",
+      "P(A|B) = P(A and B) / P(B). The event you condition on goes in the denominator."
     ],
     "concepts": [
       "conditional probability",
       "probability"
     ],
     "order": 11,
-    "difficulty": "easy"
+    "difficulty": "easy",
+    "solution_code": "def solve(p_ab: float, p_b: float) -> float:\n    return round(p_ab / p_b, 4)",
+    "public_test_cases": 1
   },
   {
     "id": 71012,
@@ -316,19 +444,39 @@
     "title": "Binomial Probability Single Term",
     "subtype": "numerical",
     "type": "numerical",
-    "description": "A fair coin is flipped 6 times. Write a Python function `solve()` that returns the probability of getting exactly 4 heads, rounded to 4 decimal places.",
-    "starter_code": "def solve():\n    # P(X=4) for Binomial(n=6, p=0.5)\n    pass",
-    "expected_code": "def solve():\n    import math\n    n, k, p = 6, 4, 0.5\n    binom_coeff = math.comb(n, k)\n    prob = binom_coeff * (p ** k) * ((1 - p) ** (n - k))\n    return round(prob, 4)",
+    "description": "Write a Python function `solve(n: int, k: int, p: float) -> float` that returns the binomial probability P(X = k) for X ~ Binomial(n, p), rounded to 4 decimal places.",
+    "starter_code": "def solve(n: int, k: int, p: float) -> float:\n    # Binomial PMF: P(X = k) = C(n, k) * p^k * (1-p)^(n-k)\n    pass",
+    "expected_code": "def solve(n: int, k: int, p: float) -> float:\n    import math\n    binom_coeff = math.comb(n, k)\n    return round(binom_coeff * (p ** k) * ((1 - p) ** (n - k)), 4)",
     "test_cases": [
       {
-        "input": [],
+        "input": [
+          6,
+          4,
+          0.5
+        ],
         "expected": 0.2344
+      },
+      {
+        "input": [
+          4,
+          2,
+          0.5
+        ],
+        "expected": 0.375
+      },
+      {
+        "input": [
+          5,
+          2,
+          0.4
+        ],
+        "expected": 0.3456
       }
     ],
     "explanation": "P(X=4) = C(6,4) × 0.5^4 × 0.5^2 = 15 × 0.0625 × 0.25 = 15/64 ≈ 0.2344.",
     "hints": [
-      "Use the binomial probability mass function with the appropriate combination formula.",
-      "P(X=k) = C(n,k) × p^k × (1−p)^(n−k); use math.comb for combinations."
+      "The binomial PMF has three parts: a counting term (how many ways to arrange k successes) and two probability terms (one for each outcome type).",
+      "Python's `math.comb(n, k)` handles the combinatorial counting. Multiply by the appropriate powers of p and (1−p)."
     ],
     "concepts": [
       "distributions",
@@ -336,7 +484,9 @@
       "combinations"
     ],
     "order": 13,
-    "difficulty": "easy"
+    "difficulty": "easy",
+    "solution_code": "def solve(n: int, k: int, p: float) -> float:\n    import math\n    binom_coeff = math.comb(n, k)\n    return round(binom_coeff * (p ** k) * ((1 - p) ** (n - k)), 4)",
+    "public_test_cases": 1
   },
   {
     "id": 71014,
@@ -369,19 +519,39 @@
     "title": "Z-Score Calculation",
     "subtype": "numerical",
     "type": "numerical",
-    "description": "A population has mean μ = 70 and standard deviation σ = 8. Write a Python function `solve()` that returns the z-score for a value of 86, rounded to 4 decimal places.",
-    "starter_code": "def solve():\n    # Compute the z-score for x=86, mu=70, sigma=8\n    pass",
-    "expected_code": "def solve():\n    x, mu, sigma = 86, 70, 8\n    return round((x - mu) / sigma, 4)",
+    "description": "Write a Python function `solve(x: float, mu: float, sigma: float) -> float` that returns the z-score for value `x` from a distribution with mean `mu` and standard deviation `sigma`, rounded to 4 decimal places.",
+    "starter_code": "def solve(x: float, mu: float, sigma: float) -> float:\n    # Express x as a signed multiple of sigma away from mu\n    pass",
+    "expected_code": "def solve(x: float, mu: float, sigma: float) -> float:\n    return round((x - mu) / sigma, 4)",
     "test_cases": [
       {
-        "input": [],
+        "input": [
+          86,
+          70,
+          8
+        ],
         "expected": 2.0
+      },
+      {
+        "input": [
+          52,
+          70,
+          9
+        ],
+        "expected": -2.0
+      },
+      {
+        "input": [
+          100,
+          100,
+          15
+        ],
+        "expected": 0.0
       }
     ],
     "explanation": "z = (x − μ) / σ = (86 − 70) / 8 = 16 / 8 = 2.0. A z-score of 2 means the value is 2 standard deviations above the mean.",
     "hints": [
-      "A z-score measures how many standard deviations a value is from the mean.",
-      "z = (x − μ) / σ."
+      "A z-score measures how far a value is from the mean, in units of standard deviations. Positive means above, negative means below.",
+      "Subtract the mean from the value, then scale by dividing by the standard deviation."
     ],
     "concepts": [
       "distributions",
@@ -389,7 +559,9 @@
       "standardization"
     ],
     "order": 15,
-    "difficulty": "easy"
+    "difficulty": "easy",
+    "solution_code": "def solve(x: float, mu: float, sigma: float) -> float:\n    return round((x - mu) / sigma, 4)",
+    "public_test_cases": 1
   },
   {
     "id": 71016,
@@ -422,19 +594,43 @@
     "title": "Expected Value of Discrete Distribution",
     "subtype": "numerical",
     "type": "numerical",
-    "description": "A game pays $10 with probability 0.20, $2 with probability 0.50, and −$5 with probability 0.30. Write a Python function `solve()` that returns the expected payout rounded to 4 decimal places.",
-    "starter_code": "def solve():\n    # Compute E[X] = sum of x_i * p_i\n    pass",
-    "expected_code": "def solve():\n    outcomes = [(10, 0.20), (2, 0.50), (-5, 0.30)]\n    ev = sum(x * p for x, p in outcomes)\n    return round(ev, 4)",
+    "description": "A discrete random variable X takes the payouts in `values` with the corresponding probabilities in `probs`. Write a Python function `solve(values: list[float], probs: list[float]) -> float` that returns E[X], the expected payout, rounded to 4 decimal places.",
+    "starter_code": "def solve(values: list[float], probs: list[float]) -> float:\n    # Weight each outcome by its probability and sum\n    pass",
+    "expected_code": "def solve(values: list[float], probs: list[float]) -> float:\n    return round(sum(x * p for x, p in zip(values, probs)), 4)",
     "test_cases": [
       {
-        "input": [],
+        "input": [
+          [
+            10,
+            2,
+            -5
+          ],
+          [
+            0.2,
+            0.5,
+            0.3
+          ]
+        ],
         "expected": 1.5
+      },
+      {
+        "input": [
+          [
+            5,
+            0
+          ],
+          [
+            0.6,
+            0.4
+          ]
+        ],
+        "expected": 3.0
       }
     ],
     "explanation": "E[X] = 10×0.20 + 2×0.50 + (−5)×0.30 = 2.0 + 1.0 − 1.5 = 1.5.",
     "hints": [
-      "Expected value is the probability-weighted sum of all possible outcomes.",
-      "E[X] = Σ x_i × P(X = x_i)."
+      "Expected value is the long-run average you'd observe if you repeated the experiment many times.",
+      "Multiply each outcome by its probability and sum all the products: E[X] = Σ x_i × P(X = x_i)."
     ],
     "concepts": [
       "expected value",
@@ -442,7 +638,9 @@
       "probability"
     ],
     "order": 17,
-    "difficulty": "easy"
+    "difficulty": "easy",
+    "solution_code": "def solve(values: list[float], probs: list[float]) -> float:\n    return round(sum(x * p for x, p in zip(values, probs)), 4)",
+    "public_test_cases": 1
   },
   {
     "id": 71018,
@@ -500,71 +698,135 @@
     "title": "Number of Combinations",
     "subtype": "numerical",
     "type": "numerical",
-    "description": "Write a Python function `solve()` that returns C(10, 3) — the number of ways to choose 3 items from 10 without regard to order.",
-    "starter_code": "def solve():\n    # Compute C(10, 3)\n    pass",
-    "expected_code": "def solve():\n    import math\n    return math.comb(10, 3)",
+    "description": "Write a Python function `solve(n: int, k: int) -> int` that returns C(n, k) — the number of ways to choose `k` items from `n` without regard to order.",
+    "starter_code": "def solve(n: int, k: int) -> int:\n    # Combinations: order does not matter\n    pass",
+    "expected_code": "def solve(n: int, k: int) -> int:\n    import math\n    return math.comb(n, k)",
     "test_cases": [
       {
-        "input": [],
+        "input": [
+          10,
+          3
+        ],
         "expected": 120
+      },
+      {
+        "input": [
+          5,
+          2
+        ],
+        "expected": 10
       }
     ],
     "explanation": "C(10,3) = 10! / (3! × 7!) = (10×9×8) / (3×2×1) = 720/6 = 120.",
     "hints": [
-      "The combination formula counts selections where order does not matter.",
-      "C(n,r) = n! / (r! × (n−r)!); Python's math.comb computes this directly."
+      "Combinations count selections where the order of chosen items does not matter.",
+      "Python's `math` module has a built-in function for combinations — look for `comb(n, k)`."
     ],
     "concepts": [
       "combinatorics",
       "combinations"
     ],
     "order": 20,
-    "difficulty": "easy"
+    "difficulty": "easy",
+    "solution_code": "def solve(n: int, k: int) -> int:\n    import math\n    return math.comb(n, k)",
+    "public_test_cases": 1
   },
   {
     "id": 71021,
     "title": "Mode Identification",
     "subtype": "numerical",
     "type": "numerical",
-    "description": "Given the dataset [3, 7, 3, 2, 9, 7, 3, 5], write a Python function `solve()` that returns the mode (most frequent value) as an integer.",
-    "starter_code": "def solve():\n    # Return the mode of [3, 7, 3, 2, 9, 7, 3, 5]\n    pass",
-    "expected_code": "def solve():\n    from collections import Counter\n    data = [3, 7, 3, 2, 9, 7, 3, 5]\n    return Counter(data).most_common(1)[0][0]",
+    "description": "Write a Python function `solve(data: list[int]) -> int` that returns the mode — the most frequently occurring value — of `data`. Assume a unique mode exists.",
+    "starter_code": "def solve(data: list[int]) -> int:\n    # Find the value that appears most often\n    pass",
+    "expected_code": "def solve(data: list[int]) -> int:\n    from collections import Counter\n    return Counter(data).most_common(1)[0][0]",
     "test_cases": [
       {
-        "input": [],
+        "input": [
+          [
+            3,
+            7,
+            3,
+            2,
+            9,
+            7,
+            3,
+            5
+          ]
+        ],
         "expected": 3
+      },
+      {
+        "input": [
+          [
+            4,
+            4,
+            1,
+            2,
+            2,
+            2
+          ]
+        ],
+        "expected": 2
       }
     ],
     "explanation": "Value 3 appears 3 times; 7 appears 2 times; all others appear once. The mode is 3.",
     "hints": [
       "The mode is the value that appears most frequently in the dataset.",
-      "Use collections.Counter to count occurrences, then find the maximum."
+      "`collections.Counter` counts occurrences; `.most_common(1)` returns the top-1 item."
     ],
     "concepts": [
       "descriptive statistics",
       "measures of central tendency"
     ],
     "order": 21,
-    "difficulty": "easy"
+    "difficulty": "easy",
+    "solution_code": "def solve(data: list[int]) -> int:\n    from collections import Counter\n    return Counter(data).most_common(1)[0][0]",
+    "public_test_cases": 1
   },
   {
     "id": 71022,
     "title": "Range and IQR",
     "subtype": "numerical",
     "type": "numerical",
-    "description": "Given the sorted dataset [5, 10, 15, 20, 25, 30, 35, 40], write a Python function `solve()` that returns the Interquartile Range (IQR). Use the inclusive quartile method: Q1 is the median of the lower half and Q3 is the median of the upper half (do not include the overall median in either half for even-length datasets).",
-    "starter_code": "def solve():\n    # Compute IQR of [5, 10, 15, 20, 25, 30, 35, 40]\n    pass",
-    "expected_code": "def solve():\n    data = [5, 10, 15, 20, 25, 30, 35, 40]\n    n = len(data)\n    lower = data[:n//2]\n    upper = data[n//2:]\n    q1 = (lower[len(lower)//2 - 1] + lower[len(lower)//2]) / 2\n    q3 = (upper[len(upper)//2 - 1] + upper[len(upper)//2]) / 2\n    return q3 - q1",
+    "description": "Write a Python function `solve(data: list[float]) -> float` that returns the Interquartile Range (IQR) of `data`. Use the inclusive method: Q1 is the median of the lower half and Q3 is the median of the upper half, splitting the sorted list evenly (do not include any overall median in either half for even-length input).",
+    "starter_code": "def solve(data: list[float]) -> float:\n    # Split sorted data into two halves, find the median of each, subtract\n    pass",
+    "expected_code": "def solve(data: list[float]) -> float:\n    data = sorted(data)\n    n = len(data)\n    lower = data[:n // 2]\n    upper = data[n // 2:]\n    q1 = (lower[len(lower) // 2 - 1] + lower[len(lower) // 2]) / 2\n    q3 = (upper[len(upper) // 2 - 1] + upper[len(upper) // 2]) / 2\n    return q3 - q1",
     "test_cases": [
       {
-        "input": [],
+        "input": [
+          [
+            5,
+            10,
+            15,
+            20,
+            25,
+            30,
+            35,
+            40
+          ]
+        ],
         "expected": 20.0
+      },
+      {
+        "input": [
+          [
+            1,
+            3,
+            5,
+            7,
+            9,
+            11,
+            13,
+            15
+          ]
+        ],
+        "expected": 8.0
       }
     ],
     "explanation": "Lower half: [5,10,15,20] → Q1=(10+15)/2=12.5. Upper half: [25,30,35,40] → Q3=(30+35)/2=32.5. IQR = 32.5−12.5 = 20.0.",
     "hints": [
       "Split the sorted data into two equal halves and find the median of each half.",
-      "IQR = Q3 − Q1; Q1 and Q3 are medians of the lower and upper halves respectively."
+      "IQR = Q3 − Q1 where Q1 and Q3 are the medians of the lower and upper halves respectively."
     ],
     "concepts": [
       "descriptive statistics",
@@ -572,7 +834,9 @@
       "quartiles"
     ],
     "order": 22,
-    "difficulty": "easy"
+    "difficulty": "easy",
+    "solution_code": "def solve(data: list[float]) -> float:\n    data = sorted(data)\n    n = len(data)\n    lower = data[:n // 2]\n    upper = data[n // 2:]\n    q1 = (lower[len(lower) // 2 - 1] + lower[len(lower) // 2]) / 2\n    q3 = (upper[len(upper) // 2 - 1] + upper[len(upper) // 2]) / 2\n    return q3 - q1",
+    "public_test_cases": 1
   },
   {
     "id": 71023,
@@ -605,44 +869,66 @@
     "title": "Permutation Count",
     "subtype": "numerical",
     "type": "numerical",
-    "description": "How many ways can 4 runners finish in 1st, 2nd, and 3rd place (from a field of 8 runners)? Write a Python function `solve()` that returns this count as an integer.",
-    "starter_code": "def solve():\n    # Compute P(8, 3) = number of ordered selections of 3 from 8\n    pass",
-    "expected_code": "def solve():\n    import math\n    return math.perm(8, 3)",
+    "description": "Write a Python function `solve(n: int, r: int) -> int` that returns P(n, r) — the number of ordered selections of `r` items from `n` (permutations), where order matters.",
+    "starter_code": "def solve(n: int, r: int) -> int:\n    # Permutations: order matters\n    pass",
+    "expected_code": "def solve(n: int, r: int) -> int:\n    import math\n    return math.perm(n, r)",
     "test_cases": [
       {
-        "input": [],
+        "input": [
+          8,
+          3
+        ],
         "expected": 336
+      },
+      {
+        "input": [
+          5,
+          2
+        ],
+        "expected": 20
       }
     ],
     "explanation": "P(8,3) = 8!/(8−3)! = 8×7×6 = 336. Order matters because 1st, 2nd, and 3rd are distinct outcomes.",
     "hints": [
-      "Order matters when assigning ranked positions, so use permutations.",
-      "P(n,r) = n! / (n−r)!; math.perm(n, r) computes this."
+      "Permutations count ordered arrangements — 1st/2nd/3rd place all matter, so selecting A then B is different from B then A.",
+      "Python's `math` module has a built-in function for permutations — look for `perm(n, r)`."
     ],
     "concepts": [
       "combinatorics",
       "permutations"
     ],
     "order": 24,
-    "difficulty": "easy"
+    "difficulty": "easy",
+    "solution_code": "def solve(n: int, r: int) -> int:\n    import math\n    return math.perm(n, r)",
+    "public_test_cases": 1
   },
   {
     "id": 71025,
     "title": "Probability of Intersection (Independent Events)",
     "subtype": "numerical",
     "type": "numerical",
-    "description": "P(A) = 0.6 and P(B) = 0.7, and A and B are independent. Write a Python function `solve()` that returns P(A∩B) rounded to 4 decimal places.",
-    "starter_code": "def solve():\n    # For independent events, P(A and B) = P(A) * P(B)\n    pass",
-    "expected_code": "def solve():\n    return round(0.6 * 0.7, 4)",
+    "description": "Write a Python function `solve(p_a: float, p_b: float) -> float` that returns P(A∩B) for two independent events A and B, rounded to 4 decimal places.",
+    "starter_code": "def solve(p_a: float, p_b: float) -> float:\n    # For independent events, joint probability = product of individual probabilities\n    pass",
+    "expected_code": "def solve(p_a: float, p_b: float) -> float:\n    return round(p_a * p_b, 4)",
     "test_cases": [
       {
-        "input": [],
+        "input": [
+          0.6,
+          0.7
+        ],
         "expected": 0.42
+      },
+      {
+        "input": [
+          0.5,
+          0.4
+        ],
+        "expected": 0.2
       }
     ],
     "explanation": "For independent events, P(A∩B) = P(A) × P(B) = 0.6 × 0.7 = 0.42.",
     "hints": [
-      "Independence means knowing A gives no information about B.",
+      "Independence means knowing one event occurred gives no information about the other.",
       "For independent events: P(A and B) = P(A) × P(B)."
     ],
     "concepts": [
@@ -650,7 +936,9 @@
       "independence"
     ],
     "order": 25,
-    "difficulty": "easy"
+    "difficulty": "easy",
+    "solution_code": "def solve(p_a: float, p_b: float) -> float:\n    return round(p_a * p_b, 4)",
+    "public_test_cases": 1
   },
   {
     "id": 71026,
@@ -683,45 +971,81 @@
     "title": "Simple Probability from Sample Space",
     "subtype": "numerical",
     "type": "numerical",
-    "description": "A standard deck has 52 cards. Write a Python function `solve()` that returns the probability of drawing a King on a single draw, rounded to 4 decimal places.",
-    "starter_code": "def solve():\n    # P(King) = number of Kings / total cards\n    pass",
-    "expected_code": "def solve():\n    return round(4 / 52, 4)",
+    "description": "Write a Python function `solve(favorable: int, total: int) -> float` that returns the probability of a single uniform random draw hitting any of the `favorable` outcomes from a `total`-item sample space, rounded to 4 decimal places.",
+    "starter_code": "def solve(favorable: int, total: int) -> float:\n    # Basic probability = favorable outcomes / total outcomes\n    pass",
+    "expected_code": "def solve(favorable: int, total: int) -> float:\n    return round(favorable / total, 4)",
     "test_cases": [
       {
-        "input": [],
+        "input": [
+          4,
+          52
+        ],
         "expected": 0.0769
+      },
+      {
+        "input": [
+          13,
+          52
+        ],
+        "expected": 0.25
       }
     ],
     "explanation": "There are 4 Kings in a 52-card deck. P(King) = 4/52 ≈ 0.0769.",
     "hints": [
-      "Basic probability = number of favorable outcomes / total outcomes in sample space.",
-      "Count the Kings and divide by the deck size."
+      "Basic probability assumes each outcome in the sample space is equally likely.",
+      "Divide the count of favorable outcomes by the total number of possible outcomes."
     ],
     "concepts": [
       "probability",
       "sample space"
     ],
     "order": 27,
-    "difficulty": "easy"
+    "difficulty": "easy",
+    "solution_code": "def solve(favorable: int, total: int) -> float:\n    return round(favorable / total, 4)",
+    "public_test_cases": 1
   },
   {
     "id": 71028,
     "title": "Variance of Discrete Distribution",
     "subtype": "numerical",
     "type": "numerical",
-    "description": "A random variable X takes values 1, 2, 3 with equal probability 1/3 each. Write a Python function `solve()` that returns Var(X) rounded to 4 decimal places.",
-    "starter_code": "def solve():\n    # Compute Var(X) = E[X^2] - (E[X])^2\n    pass",
-    "expected_code": "def solve():\n    outcomes = [1, 2, 3]\n    p = 1/3\n    mean = sum(x * p for x in outcomes)\n    ex2 = sum(x**2 * p for x in outcomes)\n    return round(ex2 - mean**2, 4)",
+    "description": "Write a Python function `solve(values: list[float], probs: list[float]) -> float` that returns Var(X) for a discrete random variable X, using the formula Var(X) = E[X²] − (E[X])², rounded to 4 decimal places.",
+    "starter_code": "def solve(values: list[float], probs: list[float]) -> float:\n    # Compute E[X] and E[X^2] separately, then combine\n    pass",
+    "expected_code": "def solve(values: list[float], probs: list[float]) -> float:\n    mean = sum(x * p for x, p in zip(values, probs))\n    ex2 = sum(x ** 2 * p for x, p in zip(values, probs))\n    return round(ex2 - mean ** 2, 4)",
     "test_cases": [
       {
-        "input": [],
-        "expected": 0.6667
+        "input": [
+          [
+            1,
+            2,
+            3
+          ],
+          [
+            0.2,
+            0.3,
+            0.5
+          ]
+        ],
+        "expected": 0.61
+      },
+      {
+        "input": [
+          [
+            0,
+            1
+          ],
+          [
+            0.5,
+            0.5
+          ]
+        ],
+        "expected": 0.25
       }
     ],
     "explanation": "E[X] = (1+2+3)/3 = 2. E[X²] = (1+4+9)/3 = 14/3. Var(X) = 14/3 − 4 = 2/3 ≈ 0.6667.",
     "hints": [
-      "Variance measures spread: Var(X) = E[X²] − (E[X])².",
-      "Compute E[X] and E[X²] separately using probability-weighted sums."
+      "Variance measures spread around the mean — it is always non-negative.",
+      "Compute E[X] and E[X²] as separate probability-weighted sums, then use Var(X) = E[X²] − (E[X])²."
     ],
     "concepts": [
       "descriptive statistics",
@@ -729,7 +1053,9 @@
       "discrete distributions"
     ],
     "order": 28,
-    "difficulty": "easy"
+    "difficulty": "easy",
+    "solution_code": "def solve(values: list[float], probs: list[float]) -> float:\n    mean = sum(x * p for x, p in zip(values, probs))\n    ex2 = sum(x ** 2 * p for x, p in zip(values, probs))\n    return round(ex2 - mean ** 2, 4)",
+    "public_test_cases": 1
   },
   {
     "id": 71029,
