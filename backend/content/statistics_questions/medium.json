@@ -116,7 +116,7 @@
       "H₀: μ = 200 ms; H₁: μ ≠ 200 ms (two-tailed test because we are unsure of direction)",
       "H₀: the algorithm works; H₁: the algorithm does not reduce processing time, stated in plain English"
     ],
-    "correct_option": 2,
+    "correct_option": 1,
     "explanation": "The null hypothesis is the skeptical, default position — that the algorithm offers no improvement (μ ≥ 200 ms, often stated as μ = 200 ms for testing). The alternative captures what we want to detect (μ < 200 ms), making this a one-tailed test. Hypotheses must be expressed in terms of population parameters.",
     "hints": [
       "Consider what you'd assume if the new treatment or condition had no effect at all — that 'no-effect' position is what the test starts from.",

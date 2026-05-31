@@ -783,10 +783,7 @@
       "Masking and pseudonymization hide data from readers but don't remove it from storage. Crypto shredding is different — why?"
     ],
     "concepts": [
-      "CRYPTO SHREDDING",
-      "GDPR COMPLIANCE",
-      "DATA GOVERNANCE",
-      "IMMUTABLE STORAGE"
+      "DATA GOVERNANCE"
     ]
   },
   {
@@ -810,8 +807,6 @@
     ],
     "concepts": [
       "DATA CONTRACT",
-      "SCHEMA REGISTRY",
-      "BACKWARD COMPATIBILITY",
       "SCHEMA EVOLUTION"
     ]
   },
@@ -943,7 +938,6 @@
       "Global dashboards typically need aggregate metrics, not raw PII. What can safely be shared cross-region without violating residency?"
     ],
     "concepts": [
-      "GDPR COMPLIANCE",
       "DATA GOVERNANCE",
       "STORAGE ARCHITECTURE",
       "CDC & INGESTION"
@@ -972,8 +966,7 @@
     "concepts": [
       "STORAGE ARCHITECTURE",
       "COST OPTIMIZATION",
-      "PARTITIONING & PRUNING",
-      "CLOUD COST MODELING"
+      "PARTITIONING & PRUNING"
     ]
   },
   {
