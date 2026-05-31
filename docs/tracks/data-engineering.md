@@ -120,19 +120,19 @@ Full registry: [`docs/concept-taxonomy.md` → Data Engineering section](../conc
   "title": "Idempotent backfill under at-least-once source",
   "difficulty": "hard",
   "type": "scenario",
-  "scenario_context": "You own a daily pipeline that reads from a Kafka topic with at-least-once delivery, deduplicates by event_id, and writes to a Snowflake fact table partitioned by event_date. The downstream BI team relies on the fact for daily revenue reporting. Yesterday's run failed mid-write; you need to re-run for the missing partition and the next two days have already loaded successfully.",
+  "scenario_context": "You own a daily pipeline that reads from a Kafka topic with at-least-once delivery, deduplicates by event_id, and writes to a Snowflake fact table with CLUSTER BY (event_date). The downstream BI team relies on the fact for daily revenue reporting. Yesterday's run failed mid-write; you need to re-run for the missing date range and the next two days have already loaded successfully.",
   "description": "What's the safest backfill strategy?",
   "options": [
     "Replay from the Kafka offset corresponding to the start of yesterday; the dedup step will handle duplicates.",
-    "Truncate the failed partition, then re-run the pipeline for just that partition; downstream BI can be re-queried.",
+    "Delete yesterday's date range from the fact table, then re-run the pipeline for just that day; downstream BI can be re-queried.",
     "Append the missing rows by reading from a Kafka tier-2 archive bucket filtered to yesterday's events; merge into the fact.",
     "Re-run yesterday's pipeline in dry-run mode, diff against the partial output, then apply only the missing rows."
   ],
   "correct_option": 1,
-  "explanation": "Option 1 is canonical: idempotent partition overwrite is the cleanest pattern for daily batches. The fact's partitioning by event_date means yesterday's partition can be safely truncated and rebuilt without affecting the next two days' partitions. The dedup-on-event-id property of the pipeline means re-running produces the same result regardless of upstream replays. (Option 0) re-reads from offset but doesn't reset the partial fact-table state — the truncate is the discipline. (Option 2) tier-2 archives may not match the original event stream exactly (some sources only retain certain events in archive); introduces drift risk. (Option 3) diffing against partial output is an anti-pattern; you can't trust the partial state if the failure cause is unknown.",
+  "explanation": "Option 1 is canonical: idempotent date-range overwrite is the cleanest pattern for daily batches. Because Snowflake uses micro-partition clustering on event_date (not user-defined partitions), the safe equivalent is a DELETE WHERE event_date = '<yesterday>' followed by a full reload for that day — this leaves adjacent days' micro-partitions untouched. The dedup-on-event-id property of the pipeline means re-running produces the same result regardless of upstream replays. (Option 0) re-reads from offset but doesn't reset the partial fact-table state — the delete+reload is the discipline. (Option 2) tier-2 archives may not match the original event stream exactly (some sources only retain certain events in archive); introduces drift risk. (Option 3) diffing against partial output is an anti-pattern; you can't trust the partial state if the failure cause is unknown.",
   "hints": [
     "What pipeline property makes 're-run' safe regardless of how many times the source replays?",
-    "Partition-aligned writes give you a natural atomicity boundary — use it."
+    "Date-range-aligned deletes give you a natural atomicity boundary in Snowflake — use it."
   ],
   "concepts": ["IDEMPOTENCY", "BACKFILL DESIGN", "PARTITIONING & PRUNING"]
 }
