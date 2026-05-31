@@ -157,7 +157,8 @@ def get_public_question(question: dict[str, Any]) -> dict[str, Any]:
         base["starter_code"] = question.get("starter_code", "")
         base["function_signature"] = question.get("function_signature")
         all_cases = question.get("test_cases", [])
-        public_count = question.get("public_test_cases", len(all_cases))
+        ptc = question.get("public_test_cases")
+        public_count = len(ptc) if isinstance(ptc, list) else (ptc if isinstance(ptc, int) else len(all_cases))
         base["test_cases"] = [
             {"input": tc.get("input"), "description": tc.get("description", "")}
             for tc in all_cases[:public_count]

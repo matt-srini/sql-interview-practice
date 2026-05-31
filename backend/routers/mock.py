@@ -683,7 +683,8 @@ def _public_question_payload(question: dict, track: str) -> dict:
             payload["scenario_context"] = question.get("scenario_context")
         else:  # numerical
             all_cases = question.get("test_cases", [])
-            public_count = question.get("public_test_cases", len(all_cases))
+            ptc = question.get("public_test_cases")
+            public_count = len(ptc) if isinstance(ptc, list) else (ptc if isinstance(ptc, int) else len(all_cases))
             payload["test_cases"] = [
                 {"input": tc.get("input"), "description": tc.get("description", "")}
                 for tc in all_cases[:public_count]

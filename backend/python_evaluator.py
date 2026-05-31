@@ -310,7 +310,8 @@ def run_python_code(code: str, question: dict[str, Any]) -> dict[str, Any]:
       ``print_output`` → ``stdout``
     """
     test_cases = question.get("test_cases", [])
-    public_count = question.get("public_test_cases", len(test_cases))
+    ptc = question.get("public_test_cases")
+    public_count = len(ptc) if isinstance(ptc, list) else (ptc if isinstance(ptc, int) else len(test_cases))
     public_cases = test_cases[:public_count]
 
     payload = {
@@ -337,7 +338,8 @@ def evaluate_python_code(code: str, question: dict[str, Any]) -> dict[str, Any]:
     harness.  The harness receives only expanded literal values.
     """
     test_cases = question.get("test_cases", [])
-    public_count = question.get("public_test_cases", len(test_cases))
+    ptc = question.get("public_test_cases")
+    public_count = len(ptc) if isinstance(ptc, list) else (ptc if isinstance(ptc, int) else len(test_cases))
 
     # Expand generator specs in hidden test cases.  Public cases are always
     # all-literal so expansion is a no-op for them; we expand all for safety.
