@@ -20,9 +20,7 @@
       "One of these operations returns a concrete Python value; the other returns a new DataFrame representing a plan that hasn't executed yet. Which is which?"
     ],
     "concepts": [
-      "transformations vs actions",
-      "lazy evaluation",
-      "DAG execution"
+      "EXECUTION MODEL REASONING"
     ],
     "interaction_mode": "code_adjacent_reasoning"
   },
@@ -47,10 +45,8 @@
       "Transformations are lazy — they build the plan without running it. When does Spark first inspect the plan for correctness?"
     ],
     "concepts": [
-      "lazy evaluation",
-      "DAG",
-      "Catalyst optimizer",
-      "execution plan"
+      "EXECUTION MODEL REASONING",
+      "CATALYST OPTIMIZER"
     ],
     "interaction_mode": "code_adjacent_reasoning"
   },
@@ -75,10 +71,9 @@
       "Consider what happens between the time you write the operations and the time Spark actually executes them — does an optimisation pass run on both the lambda chain and the DataFrame chain?"
     ],
     "concepts": [
-      "RDD vs DataFrame",
-      "Catalyst optimizer",
-      "Tungsten",
-      "schema"
+      "EXECUTION MODEL REASONING",
+      "CATALYST OPTIMIZER",
+      "SCHEMA & TYPE HANDLING"
     ],
     "interaction_mode": "code_adjacent_reasoning"
   },
@@ -103,8 +98,8 @@
       "Think of the Driver as the coordinator or orchestrator — it plans the work. Executors are the workers that execute it."
     ],
     "concepts": [
-      "cluster architecture",
-      "task scheduling"
+      "EXECUTION MODEL REASONING",
+      "MEMORY MANAGEMENT"
     ],
     "interaction_mode": "code_adjacent_reasoning"
   },
@@ -129,10 +124,8 @@
       "What happens when Spark doesn't know the data types ahead of time and no `inferSchema` option is set?"
     ],
     "concepts": [
-      "CSV reading",
-      "schema inference",
-      "StringType",
-      "inferSchema"
+      "FILE FORMATS & READERS",
+      "SCHEMA & TYPE HANDLING"
     ],
     "interaction_mode": "code_adjacent_reasoning"
   },
@@ -185,10 +178,7 @@
       "Count the number of *actions* in the code — each action triggers exactly one Spark job"
     ],
     "concepts": [
-      "lazy evaluation",
-      "transformations vs actions",
-      "job execution",
-      "DAG"
+      "EXECUTION MODEL REASONING"
     ],
     "interaction_mode": "code_adjacent_reasoning"
   },
@@ -213,11 +203,9 @@
       "Wide transformations require data from multiple partitions to be combined — think about which operations need to 'see' all rows with the same key"
     ],
     "concepts": [
-      "wide transformations",
-      "narrow transformations",
-      "shuffle",
-      "WIDE-AGGREGATION SHUFFLE",
-      "partitioning"
+      "NARROW VS WIDE TRANSFORMATIONS",
+      "SHUFFLE REASONING",
+      "PARTITIONING STRATEGY"
     ],
     "interaction_mode": "code_adjacent_reasoning"
   },
@@ -244,10 +232,9 @@
       "The exception fires during plan analysis when Spark cannot find the table name in its session catalog"
     ],
     "concepts": [
-      "Spark SQL catalog",
-      "AnalysisException",
-      "session-scoped views",
-      "plan analysis phase"
+      "EXECUTION MODEL REASONING",
+      "DEBUG SPARK ERRORS",
+      "CATALYST OPTIMIZER"
     ],
     "interaction_mode": "code_adjacent_reasoning"
   },
@@ -272,11 +259,8 @@
       "Separate marking data for reuse from the later moment when Spark actually materializes it."
     ],
     "concepts": [
-      "caching",
-      "persist",
-      "storage level",
-      "lazy evaluation",
-      "recomputation"
+      "CACHING & PERSISTENCE",
+      "EXECUTION MODEL REASONING"
     ],
     "interaction_mode": "code_adjacent_reasoning"
   },
@@ -301,9 +285,8 @@
       "spark.sql.shuffle.partitions (default 200) controls shuffle output — a different setting governs how many chunks Spark creates when reading a file. With the split size given in the stem, how many splits does 512 MB produce?"
     ],
     "concepts": [
-      "partitions",
-      "block size",
-      "data distribution"
+      "PARTITIONING STRATEGY",
+      "FILE FORMATS & READERS"
     ],
     "interaction_mode": "code_adjacent_reasoning"
   },
@@ -328,9 +311,8 @@
       "Which one gives you a value you can use in a Python expression, and which one just prints?"
     ],
     "concepts": [
-      "actions",
-      "OUTPUT SANITY VALIDATION",
-      "return values"
+      "EXECUTION MODEL REASONING",
+      "OUTPUT SANITY VALIDATION"
     ],
     "interaction_mode": "code_adjacent_reasoning"
   },
@@ -382,7 +364,7 @@
     ],
     "concepts": [
       "SCHEMA & TYPE HANDLING",
-      "immutability"
+      "EXECUTION MODEL REASONING"
     ],
     "interaction_mode": "code_adjacent_reasoning"
   },
@@ -434,10 +416,7 @@
       "getOrCreate is an idempotent factory: it 'gets' when one exists, 'creates' only when none does"
     ],
     "concepts": [
-      "SparkSession singleton",
-      "getOrCreate semantics",
-      "session lifecycle",
-      "idempotent factory"
+      "EXECUTION MODEL REASONING"
     ],
     "interaction_mode": "code_adjacent_reasoning"
   },
@@ -488,8 +467,7 @@
       "The data type of a when/otherwise expression comes from its return values, not from the boolean condition"
     ],
     "concepts": [
-      "type inference",
-      "StringType",
+      "SCHEMA & TYPE HANDLING",
       "CATALYST OPTIMIZER"
     ],
     "interaction_mode": "code_adjacent_reasoning"
@@ -569,9 +547,7 @@
       "Consider what would happen to your data if you unioned two DataFrames whose columns are in different orders — would the values silently end up in the wrong columns? What does that imply about how matching works?"
     ],
     "concepts": [
-      "unionByName",
-      "positional matching",
-      "schema alignment"
+      "SCHEMA & TYPE HANDLING"
     ],
     "interaction_mode": "code_adjacent_reasoning"
   },
@@ -624,9 +600,7 @@
       "int literals in lit() map to IntegerType; contrast with count() aggregates which always produce LongType"
     ],
     "concepts": [
-      "nullable vs non-nullable",
-      "IntegerType inference",
-      "schema analysis"
+      "SCHEMA & TYPE HANDLING"
     ],
     "interaction_mode": "code_adjacent_reasoning"
   },
@@ -679,10 +653,9 @@
       "If you need the schema as a Python object, use df.schema (StructType) or df.dtypes (list of tuples)"
     ],
     "concepts": [
-      "schema inspection",
+      "SCHEMA & TYPE HANDLING",
       "OUTPUT SANITY VALIDATION",
-      "StructType",
-      "return values"
+      "EXECUTION MODEL REASONING"
     ],
     "interaction_mode": "code_adjacent_reasoning"
   },
@@ -709,10 +682,8 @@
       "The row count being 6× too high is the key clue: each line of the pretty-printed object is being treated as a separate row"
     ],
     "concepts": [
-      "JSON parsing behavior",
-      "NDJSON vs multi-line JSON",
-      "silent null production",
-      "read option debugging"
+      "SCHEMA & TYPE HANDLING",
+      "DEBUG SPARK ERRORS"
     ],
     "interaction_mode": "code_adjacent_reasoning"
   },
@@ -737,11 +708,8 @@
       "explain() reveals the query plan Spark will execute — look for keywords like 'physical plan' and operator names"
     ],
     "concepts": [
-      "explain",
-      "physical plan",
-      "Catalyst optimizer",
-      "query planning",
-      "debugging"
+      "CATALYST OPTIMIZER",
+      "DEBUG SPARK ERRORS"
     ],
     "interaction_mode": "code_adjacent_reasoning"
   },
@@ -766,8 +734,8 @@
       "One of these gives you a DataFrame to continue transforming; the other gives you Python objects right now"
     ],
     "concepts": [
-      "transformations vs actions",
-      "DRIVER-SIDE MATERIALIZATION RISK"
+      "EXECUTION MODEL REASONING",
+      "MEMORY MANAGEMENT"
     ],
     "interaction_mode": "code_adjacent_reasoning"
   },
@@ -792,11 +760,8 @@
       "Think about what happens to the execution plan (DAG) after checkpoint — does Spark still need to remember all the previous steps?"
     ],
     "concepts": [
-      "checkpoint",
-      "lineage",
-      "DAG",
-      "iterative algorithms",
-      "fault tolerance"
+      "EXECUTION MODEL REASONING",
+      "FAULT TOLERANCE & RECOVERY"
     ],
     "interaction_mode": "code_adjacent_reasoning"
   },
@@ -821,11 +786,9 @@
       "inferSchema needs to 'see' the data before it can know the types — how many times does it need to read the file?"
     ],
     "concepts": [
-      "inferSchema",
-      "CSV reading",
-      "performance",
-      "type inference",
-      "schema"
+      "SCHEMA & TYPE HANDLING",
+      "FILE FORMATS & READERS",
+      "PERFORMANCE TUNING & TRADE-OFFS"
     ],
     "interaction_mode": "code_adjacent_reasoning"
   },
@@ -929,11 +892,9 @@
       "Ask which component becomes the bottleneck when a huge distributed result is forced back onto one machine."
     ],
     "concepts": [
-      "collect() anti-pattern",
-      "OOM",
-      "driver memory",
-      "distributed aggregation",
-      "debug"
+      "MEMORY MANAGEMENT",
+      "EXECUTION MODEL REASONING",
+      "DEBUG SPARK ERRORS"
     ],
     "interaction_mode": "code_adjacent_reasoning"
   },
@@ -958,11 +919,9 @@
       "A UDF's `returnType` is a serialization contract between Python and the JVM — if the Python function returns the wrong type, what happens at the boundary?"
     ],
     "concepts": [
-      "UDF",
-      "returnType",
-      "type contract",
-      "null propagation",
-      "debug"
+      "UDF & PYTHON BOUNDARY",
+      "SCHEMA & TYPE HANDLING",
+      "DEBUG SPARK ERRORS"
     ],
     "interaction_mode": "code_adjacent_reasoning"
   },
@@ -987,10 +946,9 @@
       "Caching changes reuse semantics, not laziness by itself; ask what finally forces the data to be computed."
     ],
     "concepts": [
-      "RECOMPUTATION TRADE-OFF",
-      "lazy evaluation",
-      "materialization timing",
-      "persist"
+      "EXECUTION MODEL REASONING",
+      "MEMORY MANAGEMENT",
+      "CACHING & PERSISTENCE"
     ],
     "interaction_mode": "code_adjacent_reasoning"
   },
@@ -1015,11 +973,8 @@
       "Catalyst builds a logical plan and optimizes it before execution — it can merge filter conditions and push them to the scan level"
     ],
     "concepts": [
-      "Catalyst optimizer",
-      "predicate pushdown",
-      "partition pruning",
-      "filter coalescence",
-      "logical plan"
+      "CATALYST OPTIMIZER",
+      "PARTITIONING STRATEGY"
     ],
     "interaction_mode": "code_adjacent_reasoning"
   },
@@ -1044,9 +999,8 @@
       "F.expr() hands the string to Spark SQL's parser. When the parser sees 'threshold', does it look up Python variables — or does it look for a column with that name?"
     ],
     "concepts": [
-      "F.expr",
-      "SQL expression",
-      "AnalysisException"
+      "EXECUTION MODEL REASONING",
+      "DEBUG SPARK ERRORS"
     ],
     "interaction_mode": "code_adjacent_reasoning"
   },
@@ -1072,7 +1026,7 @@
     ],
     "concepts": [
       "JOIN STRATEGY SELECTION",
-      "Cartesian product"
+      "SHUFFLE REASONING"
     ],
     "interaction_mode": "code_adjacent_reasoning"
   },
@@ -1097,8 +1051,8 @@
       "The Dataset[T] API catches type mismatches before the job runs. What does Python PySpark lack that would make that kind of pre-execution checking possible?"
     ],
     "concepts": [
-      "Dataset vs DataFrame",
-      "type safety"
+      "EXECUTION MODEL REASONING",
+      "SCHEMA & TYPE HANDLING"
     ],
     "interaction_mode": "code_adjacent_reasoning"
   }

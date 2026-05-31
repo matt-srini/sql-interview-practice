@@ -40,7 +40,13 @@ def _iter_question_files() -> list[tuple[str, Path]]:
 
 
 def _validate_concepts() -> None:
+    from concept_families import resolve_to_family
+
     errors: list[str] = []
+    nearduplicate_warnings: list[str] = []
+    # Tracks where the near-duplicate-tag rule is mechanically enforced as an error.
+    # Other tracks emit stderr warnings until their per-track cleanup pass lands.
+    NEARDUP_ENFORCED = {"pyspark"}
 
     for track, file_path in _iter_question_files():
         with file_path.open("r", encoding="utf-8") as handle:
@@ -55,12 +61,15 @@ def _validate_concepts() -> None:
                 errors.append(f"{track} {qid} {title}: concepts must be a non-empty list")
                 continue
 
-            if len(concepts) < 2 or len(concepts) > 5:
+            if len(concepts) < 1 or len(concepts) > 5:
                 errors.append(
-                    f"{track} {qid} {title}: expected 2-5 concept tags, found {len(concepts)}"
+                    f"{track} {qid} {title}: expected 1-5 concept tags, found {len(concepts)}"
                 )
 
             normalized_seen: set[str] = set()
+            # Per-question near-duplicate check: no two tags may resolve to the
+            # same canonical family (content-authoring.md §Concept-tag contract).
+            family_seen_tags: dict[str, str] = {}
             for concept in concepts:
                 if not isinstance(concept, str) or not concept.strip():
                     errors.append(f"{track} {qid} {title}: concept tags must be non-empty strings")
@@ -76,6 +85,32 @@ def _validate_concepts() -> None:
                     errors.append(
                         f"{track} {qid} {title}: concept tag '{concept}' is too syntax/API-level"
                     )
+
+                # Near-duplicate (same-family) check
+                fam = resolve_to_family(concept, track)
+                if fam is not None:
+                    prior = family_seen_tags.get(fam)
+                    if prior is not None:
+                        msg = (
+                            f"{track} {qid} {title}: tags '{prior}' and '{concept}' both resolve to "
+                            f"family '{fam}' — use the canonical family name once instead of multiple sub-patterns"
+                        )
+                        if track in NEARDUP_ENFORCED:
+                            errors.append(msg)
+                        else:
+                            nearduplicate_warnings.append(msg)
+                    else:
+                        family_seen_tags[fam] = concept
+
+    if nearduplicate_warnings:
+        sys.stderr.write(
+            f"WARNING: near-duplicate concept tags in {len(nearduplicate_warnings)} cases "
+            f"across non-enforced tracks (each track to be cleaned in its own audit pass):\n"
+        )
+        for w in nearduplicate_warnings[:20]:
+            sys.stderr.write(f"  - {w}\n")
+        if len(nearduplicate_warnings) > 20:
+            sys.stderr.write(f"  - ... and {len(nearduplicate_warnings) - 20} more\n")
 
     if errors:
         joined = "\n".join(f"- {item}" for item in errors[:200])

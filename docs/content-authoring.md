@@ -240,10 +240,11 @@ Anti-patterns: H1 reading like the first line of the solution; pasting code / me
 
 `concepts` is a learner-facing semantic tag describing the *reasoning pattern* — not a parser keyword or API name.
 
-- **2–4 tags** per question (5 only when a hard question genuinely teaches multiple dependent patterns).
+- **1–4 tags** per question (5 only when a hard question genuinely teaches multiple dependent patterns). The target is 2–4: a question that genuinely tests only one canonical family may use 1 tag. Padding with sub-pattern names or weakly-related families to hit a minimum is forbidden — it produces the same noise as near-duplicates.
 - Every tag must map to a registered family for the track via the algorithm in [`docs/concept-taxonomy.md`](./concept-taxonomy.md). The validator rejects unmappable tags AND per-track blocklist matches at catalog load.
 - Prefer the *reasoning pattern* over the *tool name*. The tag should still make sense if the same problem were solved in another syntax / library (within reason — track-native patterns are OK).
-- No near-duplicate tags (`JOIN` + `INNER JOIN` both blocked).
+- **Use the canonical family name.** When tagging a family, use its canonical registry name (e.g. `EXECUTION MODEL REASONING`), not a sub-pattern that happens to match it (e.g. `lazy evaluation`, `DAG`, `transformations vs actions` — all sub-patterns of EXECUTION MODEL REASONING). Sub-patterns exist for resolution and discoverability, not as alternative tag values.
+- No near-duplicate tags. Within a single question, no two tags may resolve to the same canonical family. Old forms of this rule (e.g. `JOIN` + `INNER JOIN`) are subsumed: if two tags resolve to one family, that's a near-duplicate, even when both look semantically distinct. Machine-enforced for PySpark in `validate_content.py`; warn-only for other tracks until each track's cleanup pass lands.
 - No onboarding / meta tags (`CTE INTRODUCTION`, `WITH CLAUSE SYNTAX`).
 - **Tag the *distinguishing* technique, not incidental mechanics.** Foundational families that almost every question touches (result ordering, column projection, basic grouping, simple iteration) are concepts *only when they are the primary reasoning being tested*. Never bolt a foundational family onto an advanced question just because the construct happens to appear — tag what makes the question hard. A "weak on GROUPED AGGREGATION" insight must mean *can't aggregate*, not *failed a window-function question that happened to group*. (Mirrors how StrataScratch / DataLemur / NeetCode categorise by primary technique.)
 

@@ -151,7 +151,7 @@ Anti-patterns: H1 reading like the first line of the solution; pasting code / me
 
 `concepts` is a learner-facing semantic tag describing the *reasoning pattern* — not a parser keyword or an API name.
 
-- 2–4 tags per question. 5 only when a hard question genuinely teaches multiple dependent patterns.
+- 1–4 tags per question. Target 2–4. A question that genuinely tests one canonical family may use 1 tag; padding to hit a minimum is forbidden. 5 only when a hard question genuinely teaches multiple dependent patterns. Use the canonical family name (UPPERCASE for most tracks) — not sub-pattern names that resolve to the family.
 - Every tag must map to a registered family for the track via the algorithm in [`docs/concept-taxonomy.md`](../../docs/concept-taxonomy.md). The validator rejects unmappable tags AND tags on per-track blocklists.
 - Prefer the *reasoning pattern* over the *tool name*. The tag should still make sense if the same problem were solved in another syntax or library (within reason — track-native patterns are OK).
 - **Per-track blocklists** are enforced. Examples (full list in taxonomy doc):
@@ -278,7 +278,7 @@ Track-specific runtime checks live in each track doc's "Verification before comm
 - [ ] All specific values in the stem (dates, row counts, column names, thresholds, partition values) are internally consistent with the stated scenario and the learning objective — e.g. two "independent date partitions" must have genuinely different date values; a "512 MB file" must be compatible with the stated split size arithmetic.
 - [ ] No invented columns / tables; schema matches CSV headers; DuckDB syntax (SQL); pandas-idiomatic (Pandas)
 - [ ] Hints follow the ladder; first hint does not leak the answer term
-- [ ] Concept tags map to registered families per track; none blocklisted; 2–4 tags
+- [ ] Concept tags map to registered families per track; none blocklisted; 1–4 tags (target 2–4); no two tags resolve to the same canonical family; uses canonical family name, not sub-pattern names
 - [ ] **Per-family coverage discipline** (see `docs/content-authoring.md` § Per-family coverage discipline): the question doesn't push any family above the 50% per-tier ceiling without a load-bearing exception documented in the track-doc; doesn't starve a family (mock-only floor ≥4 per practice-grounded family); doesn't tag the family on this question if the family already has practice + mock coverage and a starved sibling family would benefit more. Weighting is by **reasoning surface, not interview/business frequency** (see `CLAUDE.md` § Platform position)
 - [ ] If `mock_only`: no unseen concept families (every family already taught in practice at that difficulty or lower); recombines learned concepts in a fresh business scenario, not a clone of a practice question's framing; any mock-only realism family co-occurs with ≥1 practice-grounded family (never sole tag); chain rules satisfied (dimensions, atomicity, length, ordering); reverse / debug / scenario rules satisfied; **track-level mock-only inventory tracks toward the Stage A target inside the 1.0×–1.5× contract band, landing within `target ± ~5pp`, never below the 1.10× operational floor; if the anti-duplication rule binds before the band's lower bound, stop and document — do not pad with near-clones**
 - [ ] Verification commands above pass clean

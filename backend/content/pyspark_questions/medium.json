@@ -21,10 +21,9 @@
       "Check `df.columns` (a plain Python list) before building your select expression to avoid this error at runtime"
     ],
     "concepts": [
-      "AnalysisException",
-      "column resolution",
-      "query analysis phase",
-      "DEBUG SPARK ERRORS"
+      "DEBUG SPARK ERRORS",
+      "SCHEMA & TYPE HANDLING",
+      "CATALYST OPTIMIZER"
     ],
     "interaction_mode": "code_adjacent_reasoning"
   },
@@ -50,11 +49,9 @@
       "coalesce avoids a shuffle by merging partitions that already reside on the same executor — this only works when going from more to fewer partitions"
     ],
     "concepts": [
-      "PARTITION SHAPE CONTROL",
-      "coalesce",
-      "shuffle",
-      "partitioning",
-      "performance"
+      "PARTITIONING STRATEGY",
+      "SHUFFLE REASONING",
+      "PERFORMANCE TUNING & TRADE-OFFS"
     ],
     "interaction_mode": "code_adjacent_reasoning"
   },
@@ -107,10 +104,8 @@
       "Use `pyspark.sql.functions.broadcast(small_df)` to hint to Spark that the table should be broadcast"
     ],
     "concepts": [
-      "broadcast join",
-      "join optimization",
-      "shuffle elimination",
-      "F.broadcast"
+      "JOIN STRATEGY SELECTION",
+      "SHUFFLE REASONING"
     ],
     "interaction_mode": "code_adjacent_reasoning"
   },
@@ -163,11 +158,10 @@
       "A good rule of thumb is to target 128–256 MB per partition; with 500 GB of data that means roughly 2000–4000 partitions"
     ],
     "concepts": [
-      "OutOfMemoryError",
-      "partition sizing",
-      "executor memory",
-      "PARTITION SHAPE CONTROL",
-      "performance tuning"
+      "MEMORY MANAGEMENT",
+      "PARTITIONING STRATEGY",
+      "EXECUTION MODEL REASONING",
+      "PERFORMANCE TUNING & TRADE-OFFS"
     ],
     "interaction_mode": "code_adjacent_reasoning"
   },
@@ -193,11 +187,7 @@
       "All three functions share the same ORDER BY — ties differ only in how each function handles duplicate order values"
     ],
     "concepts": [
-      "window functions",
-      "RANK",
-      "DENSE_RANK",
-      "ROW_NUMBER",
-      "ties handling"
+      "WINDOW FUNCTIONS & FRAMES"
     ],
     "interaction_mode": "code_adjacent_reasoning"
   },
@@ -223,11 +213,10 @@
       "With a Broadcast Variable, the 50 MB dictionary is shipped to each executor node (not each task) — a big difference when you have thousands of tasks"
     ],
     "concepts": [
-      "broadcast variable",
-      "accumulator",
-      "UDF",
-      "executor memory",
-      "serialization"
+      "JOIN STRATEGY SELECTION",
+      "UDF & PYTHON BOUNDARY",
+      "EXECUTION MODEL REASONING",
+      "MEMORY MANAGEMENT"
     ],
     "interaction_mode": "code_adjacent_reasoning"
   },
@@ -253,11 +242,9 @@
       "Consider what happens to a column like '00123' (ZIP code) when Spark decides its type based on the data values"
     ],
     "concepts": [
-      "inferSchema",
-      "StructType",
-      "CSV reading",
-      "schema definition",
-      "production patterns"
+      "SCHEMA & TYPE HANDLING",
+      "FILE FORMATS & READERS",
+      "PERFORMANCE TUNING & TRADE-OFFS"
     ],
     "interaction_mode": "code_adjacent_reasoning"
   },
@@ -283,11 +270,9 @@
       "Look at shuffle read/write sizes in the Spark UI Stages tab — large shuffle I/O is a good signal that Kryo serialization could help"
     ],
     "concepts": [
-      "Kryo serialization",
-      "Java serialization",
-      "shuffle optimization",
-      "spark.serializer",
-      "performance tuning"
+      "MEMORY MANAGEMENT",
+      "SHUFFLE REASONING",
+      "PERFORMANCE TUNING & TRADE-OFFS"
     ],
     "interaction_mode": "code_adjacent_reasoning"
   },
@@ -313,11 +298,8 @@
       "You must 'explode' the small (non-skewed) table to match each salt value, so N copies of the matching rows are created"
     ],
     "concepts": [
-      "data skew",
-      "salting",
-      "skewed join",
-      "partition imbalance",
-      "join optimization"
+      "DATA SKEW & MITIGATION",
+      "JOIN STRATEGY SELECTION"
     ],
     "interaction_mode": "code_adjacent_reasoning"
   },
@@ -343,11 +325,8 @@
       "This directory structure is what allows downstream query engines to do partition pruning efficiently"
     ],
     "concepts": [
-      "partitionBy",
-      "Parquet",
-      "Hive partitioning",
-      "directory structure",
-      "partition pruning"
+      "PARTITIONING STRATEGY",
+      "FILE FORMATS & READERS"
     ],
     "interaction_mode": "code_adjacent_reasoning"
   },
@@ -373,11 +352,8 @@
       "The key config is spark.sql.autoBroadcastJoinThreshold; AQE can apply this threshold dynamically using measured shuffle sizes"
     ],
     "concepts": [
-      "AQE",
-      "adaptive query execution",
-      "broadcast join",
-      "autoBroadcastJoinThreshold",
-      "join optimization"
+      "ADAPTIVE QUERY EXECUTION",
+      "JOIN STRATEGY SELECTION"
     ],
     "interaction_mode": "code_adjacent_reasoning"
   },
@@ -403,11 +379,7 @@
       "The Analyzed phase is where Spark validates that columns actually exist; Optimization comes after validation"
     ],
     "concepts": [
-      "Catalyst optimizer",
-      "logical plan",
-      "physical plan",
-      "query optimization",
-      "analysis phase"
+      "CATALYST OPTIMIZER"
     ],
     "interaction_mode": "code_adjacent_reasoning"
   },
@@ -433,11 +405,8 @@
       "Check `.explain(True)` and look for 'PushedFilters' in the plan to confirm pushdown is happening"
     ],
     "concepts": [
-      "predicate pushdown",
-      "Parquet",
-      "row group pruning",
-      "Catalyst optimizer",
-      "I/O optimization"
+      "CATALYST OPTIMIZER",
+      "FILE FORMATS & READERS"
     ],
     "interaction_mode": "code_adjacent_reasoning"
   },
@@ -463,11 +432,8 @@
       "Structured Streaming is built on the same DataFrame API — the key word is 'structured', meaning it uses Catalyst, not DStreams"
     ],
     "concepts": [
-      "structured streaming",
-      "unbounded table",
-      "micro-batch",
-      "continuous processing",
-      "streaming vs batch"
+      "STRUCTURED STREAMING",
+      "EXECUTION MODEL REASONING"
     ],
     "interaction_mode": "code_adjacent_reasoning"
   },
@@ -493,11 +459,7 @@
       "Deduplication requires seeing all rows in a batch together — that rules out foreach"
     ],
     "concepts": [
-      "foreachBatch",
-      "foreach",
-      "structured streaming",
-      "custom sinks",
-      "micro-batch"
+      "STRUCTURED STREAMING"
     ],
     "interaction_mode": "code_adjacent_reasoning"
   },
@@ -551,11 +513,10 @@
       "Call .cache() before the first downstream action and .unpersist() after the last one to release memory promptly"
     ],
     "concepts": [
-      "caching",
-      "persist",
-      "recomputation",
-      "memory management",
-      "pipeline optimization"
+      "CACHING & PERSISTENCE",
+      "EXECUTION MODEL REASONING",
+      "MEMORY MANAGEMENT",
+      "CATALYST OPTIMIZER"
     ],
     "interaction_mode": "code_adjacent_reasoning"
   },
@@ -581,11 +542,9 @@
       "Shuffle boundaries are the key concept — each side of a shuffle is a separate stage"
     ],
     "concepts": [
-      "SPARK EXECUTION HIERARCHY",
-      "SPARK UI DIAGNOSIS",
-      "SHUFFLE BOUNDARY DETECTION",
-      "STAGE DECOMPOSITION",
-      "TASK SCHEDULING"
+      "EXECUTION MODEL REASONING",
+      "OUTPUT SANITY VALIDATION",
+      "NARROW VS WIDE TRANSFORMATIONS"
     ],
     "interaction_mode": "code_adjacent_reasoning"
   },
@@ -611,11 +570,8 @@
       "Speculation is most useful on clusters where hardware performance is variable (cloud spot instances, mixed hardware)"
     ],
     "concepts": [
-      "speculative execution",
-      "straggler tasks",
-      "task scheduling",
-      "spark.speculation",
-      "fault tolerance"
+      "FAULT TOLERANCE & RECOVERY",
+      "EXECUTION MODEL REASONING"
     ],
     "interaction_mode": "code_adjacent_reasoning"
   },
@@ -641,10 +597,9 @@
       "Pattern: load model once at the top of the mapPartitions function, then iterate over the partition rows applying inference"
     ],
     "concepts": [
-      "mapPartitions",
-      "initialization overhead",
-      "UDF optimization",
-      "RDD API"
+      "PARTITIONING STRATEGY",
+      "UDF & PYTHON BOUNDARY",
+      "EXECUTION MODEL REASONING"
     ],
     "interaction_mode": "code_adjacent_reasoning"
   },
@@ -698,11 +653,10 @@
       "Think of it as partition pruning that happens dynamically at runtime, informed by what the dimension filter actually returns"
     ],
     "concepts": [
-      "DYNAMIC PARTITION PRUNING",
-      "STAR-SCHEMA FILTER PUSHDOWN",
-      "PARTITION PRUNING",
-      "I-O REDUCTION",
-      "RUNTIME JOIN FILTERING"
+      "PARTITIONING STRATEGY",
+      "SCHEMA & TYPE HANDLING",
+      "CATALYST OPTIMIZER",
+      "JOIN STRATEGY SELECTION"
     ],
     "interaction_mode": "code_adjacent_reasoning"
   },
@@ -728,11 +682,8 @@
       "Good rule: never call .collect() on a DataFrame whose size you don't know; use .limit(n).collect() for inspection"
     ],
     "concepts": [
-      "driver OOM",
-      "DRIVER-SIDE MATERIALIZATION RISK",
-      "toPandas",
-      "driver memory",
-      "data collection anti-patterns"
+      "EXECUTION MODEL REASONING",
+      "MEMORY MANAGEMENT"
     ],
     "interaction_mode": "code_adjacent_reasoning"
   },
@@ -758,11 +709,7 @@
       "Think in terms of one transaction that handles both matches and misses instead of separate update and insert passes."
     ],
     "concepts": [
-      "DELTA LAKE UPSERT SEMANTICS",
-      "ACID TABLE MUTATION",
-      "MATCHED VS UNMATCHED WRITE PATHS",
-      "MERGE-CONDITION LOGIC",
-      "INCREMENTAL TABLE RECONCILIATION"
+      "DELTA LAKE OPERATIONS"
     ],
     "interaction_mode": "code_adjacent_reasoning"
   },
@@ -788,11 +735,8 @@
       "Recovery is about replaying an older table snapshot, not manually editing files in storage."
     ],
     "concepts": [
-      "Delta Lake",
-      "time travel",
-      "versionAsOf",
-      "transaction log",
-      "data recovery"
+      "DELTA LAKE OPERATIONS",
+      "FAULT TOLERANCE & RECOVERY"
     ],
     "interaction_mode": "code_adjacent_reasoning"
   },
@@ -818,11 +762,7 @@
       "Map each mode to what changes between triggers: the full result, only brand-new rows, or rows whose aggregate state changed."
     ],
     "concepts": [
-      "structured streaming",
-      "output modes",
-      "update mode",
-      "append mode",
-      "stateful aggregation"
+      "STRUCTURED STREAMING"
     ],
     "interaction_mode": "code_adjacent_reasoning"
   },
@@ -848,11 +788,8 @@
       "The trade-off is memory for one small table versus network movement for both large sides."
     ],
     "concepts": [
-      "broadcast join",
-      "shuffle elimination",
-      "broadcast()",
-      "small table optimization",
-      "join strategy"
+      "JOIN STRATEGY SELECTION",
+      "SHUFFLE REASONING"
     ],
     "interaction_mode": "code_adjacent_reasoning"
   },
@@ -878,11 +815,9 @@
       "Separate schema enforcement from schema evolution: one blocks unexpected columns by default, the other must be explicitly enabled."
     ],
     "concepts": [
-      "Delta Lake",
-      "schema enforcement",
-      "schema evolution",
-      "mergeSchema",
-      "AnalysisException"
+      "DELTA LAKE OPERATIONS",
+      "SCHEMA & TYPE HANDLING",
+      "DEBUG SPARK ERRORS"
     ],
     "interaction_mode": "code_adjacent_reasoning"
   },
@@ -909,10 +844,8 @@
       "The number of Kafka partitions equals the maximum number of parallel tasks in the read stage; if that number is too low, ingestion throughput is capped"
     ],
     "concepts": [
-      "STREAMING THROUGHPUT BOTTLENECK",
-      "KAFKA PARTITION PARALLELISM",
-      "STATEFUL AGGREGATION SCALING",
-      "MICRO-BATCH BACKPRESSURE"
+      "STRUCTURED STREAMING",
+      "PERFORMANCE TUNING & TRADE-OFFS"
     ],
     "interaction_mode": "code_adjacent_reasoning"
   },
@@ -939,10 +872,8 @@
       "The threshold is a safety valve: it prevents executors from OOMing when a 'small' table turns out to be large in production"
     ],
     "concepts": [
-      "BROADCAST ELIGIBILITY THRESHOLD",
-      "HINT OVERRIDE CONDITIONS",
       "JOIN STRATEGY SELECTION",
-      "PRODUCTION VS DEV DATA SIZE MISMATCH"
+      "DATA QUALITY SKEPTICISM"
     ],
     "interaction_mode": "code_adjacent_reasoning"
   },
@@ -998,10 +929,9 @@
       "The on='col_name' shorthand is the simplest fix: Spark merges the two join key columns into one and drops the duplicate"
     ],
     "concepts": [
-      "JOIN COLUMN DEDUPLICATION",
-      "AnalysisException",
-      "column reference qualification",
-      "explicit vs shorthand join syntax"
+      "JOIN STRATEGY SELECTION",
+      "DEBUG SPARK ERRORS",
+      "SCHEMA & TYPE HANDLING"
     ],
     "interaction_mode": "code_adjacent_reasoning"
   },
@@ -1028,10 +958,10 @@
       "The guideline is 128–256 MB per shuffle partition; if your data doubles, your partition count should also roughly double"
     ],
     "concepts": [
-      "SHUFFLE PARTITION SIZING",
-      "EXECUTOR MEMORY PRESSURE",
-      "DISK SPILL DIAGNOSIS",
-      "PERFORMANCE REGRESSION FROM DATA GROWTH"
+      "SHUFFLE REASONING",
+      "EXECUTION MODEL REASONING",
+      "MEMORY MANAGEMENT",
+      "PERFORMANCE TUNING & TRADE-OFFS"
     ],
     "interaction_mode": "code_adjacent_reasoning"
   },
@@ -1058,10 +988,10 @@
       "The PartitionFilters: (none) in the FileScan operator is the clearest signal: no partition column was used to restrict the scan"
     ],
     "concepts": [
-      "DELTA LAKE MERGE PARTITION PRUNING",
-      "PREDICATE PUSHDOWN IN MERGE",
-      "PARTITION KEY IN JOIN CONDITIONS",
-      "FULL TABLE SCAN DIAGNOSIS"
+      "PARTITIONING STRATEGY",
+      "CATALYST OPTIMIZER",
+      "JOIN STRATEGY SELECTION",
+      "OUTPUT SANITY VALIDATION"
     ],
     "interaction_mode": "code_adjacent_reasoning"
   },
@@ -1088,10 +1018,9 @@
       "The error message tells you exactly what to do: delete the checkpoint to start fresh, or provide column mappings — read it carefully before choosing"
     ],
     "concepts": [
-      "STREAMING CHECKPOINT SCHEMA COMPATIBILITY",
-      "SCHEMA EVOLUTION IN STREAMING",
-      "CHECKPOINT RECOVERY CONSTRAINTS",
-      "STREAMING JOB RESTART STRATEGIES"
+      "EXECUTION MODEL REASONING",
+      "SCHEMA & TYPE HANDLING",
+      "STRUCTURED STREAMING"
     ],
     "interaction_mode": "code_adjacent_reasoning"
   },
@@ -1118,10 +1047,10 @@
       "When 199 tasks finish in minutes and one runs for hours while all CPUs are idle, data distribution (not hardware or configuration) is the problem"
     ],
     "concepts": [
-      "DATA SKEW DIAGNOSIS",
-      "STRAGGLER TASK ANALYSIS",
-      "SPARK UI TASK METRICS",
-      "SKEW JOIN REMEDIATION"
+      "DATA SKEW & MITIGATION",
+      "FAULT TOLERANCE & RECOVERY",
+      "OUTPUT SANITY VALIDATION",
+      "JOIN STRATEGY SELECTION"
     ],
     "interaction_mode": "code_adjacent_reasoning"
   },
@@ -1148,10 +1077,8 @@
       "DISK_ONLY avoids memory pressure but reads are always from disk. MEMORY_AND_DISK gives memory performance when available and falls back to disk gracefully when it isn't."
     ],
     "concepts": [
-      "storage level selection",
-      "DataFrame persistence",
-      "spill to disk",
-      "memory pressure"
+      "CACHING & PERSISTENCE",
+      "MEMORY MANAGEMENT"
     ],
     "interaction_mode": "code_adjacent_reasoning"
   },
@@ -1234,10 +1161,9 @@
       "The core cost is not the Python logic itself but what happens before and after: the data format conversion and process-boundary socket transfer that occurs once per row."
     ],
     "concepts": [
-      "Python UDF overhead",
-      "JVM-Python boundary",
-      "serialization cost",
-      "Catalyst native execution"
+      "UDF & PYTHON BOUNDARY",
+      "MEMORY MANAGEMENT",
+      "CATALYST OPTIMIZER"
     ],
     "interaction_mode": "code_adjacent_reasoning"
   },
@@ -1264,10 +1190,9 @@
       "The fix is a single additional line per iteration — release the memory occupied by the DataFrame from the previous round before you no longer need it."
     ],
     "concepts": [
-      "memory leak",
-      "persistence lifecycle",
-      "iterative algorithm",
-      "executor memory management"
+      "MEMORY MANAGEMENT",
+      "CACHING & PERSISTENCE",
+      "EXECUTION MODEL REASONING"
     ],
     "interaction_mode": "code_adjacent_reasoning"
   },
@@ -1294,9 +1219,7 @@
       "The output schema must be valid for all rows from both DataFrames. Since df2 allows null names, the combined output schema must also allow them."
     ],
     "concepts": [
-      "schema nullability",
-      "union schema resolution",
-      "permissive nullability"
+      "SCHEMA & TYPE HANDLING"
     ],
     "interaction_mode": "code_adjacent_reasoning"
   },
@@ -1323,10 +1246,8 @@
       "The goal is to split the hot key across multiple tasks. This requires changing the join key itself — but only temporarily, and only for rows belonging to the skewed key."
     ],
     "concepts": [
-      "data skew",
-      "key salting",
-      "join optimization",
-      "hot key handling"
+      "DATA SKEW & MITIGATION",
+      "JOIN STRATEGY SELECTION"
     ],
     "interaction_mode": "code_adjacent_reasoning"
   },
@@ -1354,10 +1275,9 @@
       "Every aggregation and filter that can run on the executors should stay there. Only bring results — counts, samples, aggregated rows — to the driver."
     ],
     "concepts": [
-      "driver memory management",
-      "anti-pattern avoidance",
-      "cluster-side aggregation",
-      "materialisation cost"
+      "EXECUTION MODEL REASONING",
+      "PERFORMANCE TUNING & TRADE-OFFS",
+      "MEMORY MANAGEMENT"
     ],
     "interaction_mode": "code_adjacent_reasoning"
   },
@@ -1385,10 +1305,10 @@
       "GC time at 89% of task duration means the executor's heap is full — it's spending almost all its time collecting garbage instead of processing records. What happens when you try to fit 94 GB into a single executor's heap?"
     ],
     "concepts": [
-      "data skew diagnosis",
-      "straggler task",
-      "shuffle partition imbalance",
-      "GC pressure"
+      "DATA SKEW & MITIGATION",
+      "FAULT TOLERANCE & RECOVERY",
+      "SHUFFLE REASONING",
+      "MEMORY MANAGEMENT"
     ],
     "interaction_mode": "code_adjacent_reasoning"
   },
@@ -1416,10 +1336,8 @@
       "When the metadata listing phase (31 min) far exceeds the actual read time (7 min), the problem is too many files — cloud storage charges per LIST/HEAD request, and opening 200 tiny files is much slower than opening 1 larger one."
     ],
     "concepts": [
-      "small file problem",
-      "partitioned write",
-      "cloud storage metadata cost",
-      "output parallelism tuning"
+      "PERFORMANCE TUNING & TRADE-OFFS",
+      "PARTITIONING STRATEGY"
     ],
     "interaction_mode": "code_adjacent_reasoning"
   },
@@ -2361,7 +2279,7 @@
       "What does VACUUM RETAIN 0 HOURS actually delete? Are the deleted files the same ones yesterday's snapshot pointed to?"
     ],
     "concepts": [
-      "DELTA LAKE & DATA LAKE FORMATS",
+      "DELTA LAKE OPERATIONS",
       "DATA QUALITY SKEPTICISM",
       "DEBUG SPARK ERRORS"
     ]
@@ -2416,7 +2334,7 @@
     ],
     "concepts": [
       "STRUCTURED STREAMING",
-      "DELTA LAKE & DATA LAKE FORMATS",
+      "DELTA LAKE OPERATIONS",
       "OUTPUT SANITY VALIDATION"
     ]
   },
@@ -2502,7 +2420,7 @@
     "concepts": [
       "STRUCTURED STREAMING",
       "FAULT TOLERANCE & RECOVERY",
-      "DELTA LAKE & DATA LAKE FORMATS"
+      "DELTA LAKE OPERATIONS"
     ]
   },
   {
@@ -2531,7 +2449,7 @@
     "concepts": [
       "STRUCTURED STREAMING",
       "FAULT TOLERANCE & RECOVERY",
-      "DELTA LAKE & DATA LAKE FORMATS"
+      "DELTA LAKE OPERATIONS"
     ]
   },
   {
@@ -2667,8 +2585,7 @@
     ],
     "concepts": [
       "CACHING & PERSISTENCE",
-      "EXECUTION MODEL REASONING",
-      "LAZY EVALUATION & LINEAGE"
+      "EXECUTION MODEL REASONING"
     ]
   },
   {
@@ -2751,9 +2668,8 @@
       "Are the two writes in the same Spark job (same DAG) or separate Spark jobs?"
     ],
     "concepts": [
-      "LAZY EVALUATION & LINEAGE",
-      "CACHING & PERSISTENCE",
-      "EXECUTION MODEL REASONING"
+      "EXECUTION MODEL REASONING",
+      "CACHING & PERSISTENCE"
     ]
   },
   {
@@ -2781,7 +2697,6 @@
     ],
     "concepts": [
       "CACHING & PERSISTENCE",
-      "LAZY EVALUATION & LINEAGE",
       "EXECUTION MODEL REASONING"
     ]
   },
@@ -2810,7 +2725,7 @@
     ],
     "concepts": [
       "CACHING & PERSISTENCE",
-      "LAZY EVALUATION & LINEAGE",
+      "EXECUTION MODEL REASONING",
       "FAULT TOLERANCE & RECOVERY"
     ]
   },
@@ -3142,7 +3057,7 @@
     ],
     "concepts": [
       "DATA QUALITY SKEPTICISM",
-      "LAZY EVALUATION & LINEAGE",
+      "EXECUTION MODEL REASONING",
       "OUTPUT SANITY VALIDATION"
     ]
   },
@@ -3222,7 +3137,7 @@
       "The MERGE join key is `event_id`, but the table is partitioned by `event_date`. Without a partition predicate, how does Delta know which partitions to scan?"
     ],
     "concepts": [
-      "DELTA LAKE & DATA LAKE FORMATS",
+      "DELTA LAKE OPERATIONS",
       "PARTITIONING STRATEGY",
       "PERFORMANCE TUNING & TRADE-OFFS"
     ]
