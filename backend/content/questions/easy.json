@@ -746,8 +746,7 @@
     ],
     "concepts": [
       "PRE-AGGREGATION FILTERING",
-      "GROUPED AGGREGATION",
-      "VALUE AGGREGATION"
+      "GROUPED AGGREGATION"
     ],
     "tags": [
       "easy",

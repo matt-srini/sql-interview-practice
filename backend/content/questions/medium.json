@@ -1763,9 +1763,7 @@
       "Multiply by 100.0, not 100, to avoid integer division truncating to 0."
     ],
     "concepts": [
-      "CONDITIONAL AGGREGATION",
-      "FAILURE RATE CALCULATION",
-      "PAYMENTS ANALYSIS"
+      "GROUPED AGGREGATION"
     ],
     "companies": []
   },

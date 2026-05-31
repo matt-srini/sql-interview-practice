@@ -1947,8 +1947,7 @@
       "The semantic layer enforces its definition for queries routed through it. What happens to its governance value when analysts query mart tables directly using SQL clients \u2014 and what naming or access control fixes this?"
     ],
     "concepts": [
-      "SEMANTIC LAYER",
-      "METRIC GOVERNANCE",
+      "SEMANTIC LAYER & METRIC GOVERNANCE",
       "DBT MODELING"
     ]
   },

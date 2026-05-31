@@ -1246,8 +1246,7 @@
       "HAVING COUNT(*) >= 10 filters after aggregation — you can't use WHERE for a condition on the total row count."
     ],
     "concepts": [
-      "CONDITIONAL AGGREGATION",
-      "PAYMENT FAILURE ANALYSIS",
+      "GROUPED AGGREGATION",
       "HAVING THRESHOLD"
     ],
     "companies": []
@@ -1991,8 +1990,7 @@
       "Check your FROM/JOIN clauses — the database table is named products, not product."
     ],
     "concepts": [
-      "TABLE NAME ERRORS",
-      "CATALOG ERROR"
+      "MULTI-TABLE ENTITY LINKING"
     ],
     "companies": []
   },
