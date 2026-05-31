@@ -369,7 +369,7 @@
       "Recursive CTEs are elegant for small hierarchies but can be expensive at query time in analytical warehouses — evaluate whether pre-materialization of the hierarchy structure is feasible given the hierarchy size."
     ],
     "concepts": [
-      "HIERARCHIES",
+      "HIERARCHIES & MULTI-PATH",
       "BRIDGE & MANY-TO-MANY",
       "DIMENSION DESIGN"
     ]
