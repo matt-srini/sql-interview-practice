@@ -18,10 +18,7 @@
       "Consider what 'resistant to outliers' means for a summary statistic."
     ],
     "concepts": [
-      "descriptive statistics",
-      "measures of central tendency",
-      "skewness",
-      "outliers"
+      "descriptive statistics"
     ],
     "order": 1,
     "difficulty": "easy"
@@ -77,8 +74,7 @@
       "Python's built-in `sum()` and `len()` give you both components."
     ],
     "concepts": [
-      "descriptive statistics",
-      "measures of central tendency"
+      "descriptive statistics"
     ],
     "order": 2,
     "difficulty": "easy",
@@ -138,8 +134,7 @@
       "Even length: average the two central values. Odd length: take the single middle value."
     ],
     "concepts": [
-      "descriptive statistics",
-      "measures of central tendency"
+      "descriptive statistics"
     ],
     "order": 3,
     "difficulty": "easy",
@@ -165,9 +160,7 @@
       "Upper fence = Q3 + 1.5 × (Q3 − Q1)."
     ],
     "concepts": [
-      "descriptive statistics",
-      "outliers",
-      "interquartile range"
+      "descriptive statistics"
     ],
     "order": 4,
     "difficulty": "easy"
@@ -224,8 +217,7 @@
       "Compute the mean, then average the squared deviations, then take the square root."
     ],
     "concepts": [
-      "descriptive statistics",
-      "distributions"
+      "descriptive statistics"
     ],
     "order": 5,
     "difficulty": "easy",
@@ -251,8 +243,7 @@
       "P(complement) = 1 − P(original event)."
     ],
     "concepts": [
-      "probability",
-      "complementary events"
+      "probability & combinatorics"
     ],
     "order": 6,
     "difficulty": "easy"
@@ -276,9 +267,7 @@
       "Use the inclusion-exclusion formula: P(A or B) = P(A) + P(B) − P(A and B)."
     ],
     "concepts": [
-      "probability",
-      "set theory",
-      "inclusion-exclusion"
+      "probability & combinatorics"
     ],
     "order": 7,
     "difficulty": "easy"
@@ -315,9 +304,7 @@
       "P(A∪B) = P(A) + P(B) − P(A∩B). Subtract the joint probability to correct the overcounting."
     ],
     "concepts": [
-      "probability",
-      "set theory",
-      "inclusion-exclusion"
+      "probability & combinatorics"
     ],
     "order": 8,
     "difficulty": "easy",
@@ -343,9 +330,7 @@
       "For independent events, P(A and B) = P(A) × P(B)."
     ],
     "concepts": [
-      "probability",
-      "independence",
-      "sampling with replacement"
+      "probability & combinatorics"
     ],
     "order": 9,
     "difficulty": "easy"
@@ -369,8 +354,7 @@
       "P(A|B) = P(A and B) / P(B)."
     ],
     "concepts": [
-      "conditional probability",
-      "probability"
+      "probability & combinatorics"
     ],
     "order": 10,
     "difficulty": "easy"
@@ -405,8 +389,7 @@
       "P(A|B) = P(A and B) / P(B). The event you condition on goes in the denominator."
     ],
     "concepts": [
-      "conditional probability",
-      "probability"
+      "probability & combinatorics"
     ],
     "order": 11,
     "difficulty": "easy",
@@ -432,9 +415,8 @@
       "Check: does each trial have exactly two outcomes with a constant probability of success?"
     ],
     "concepts": [
-      "Bernoulli distribution",
-      "probability",
-      "distributions"
+      "distributions",
+      "probability & combinatorics"
     ],
     "order": 12,
     "difficulty": "easy"
@@ -480,8 +462,7 @@
     ],
     "concepts": [
       "distributions",
-      "probability",
-      "combinations"
+      "probability & combinatorics"
     ],
     "order": 13,
     "difficulty": "easy",
@@ -507,8 +488,6 @@
       "Divide the length of the target interval by the total length of the distribution's support."
     ],
     "concepts": [
-      "uniform distribution",
-      "probability",
       "distributions"
     ],
     "order": 14,
@@ -554,9 +533,7 @@
       "Subtract the mean from the value, then scale by dividing by the standard deviation."
     ],
     "concepts": [
-      "distributions",
-      "z-scores",
-      "standardization"
+      "distributions"
     ],
     "order": 15,
     "difficulty": "easy",
@@ -582,9 +559,7 @@
       "Apply the empirical rule: ±1σ ≈ 68%, ±2σ ≈ 95%, ±3σ ≈ 99.7%."
     ],
     "concepts": [
-      "distributions",
-      "empirical rule",
-      "z-scores"
+      "distributions"
     ],
     "order": 16,
     "difficulty": "easy"
@@ -633,9 +608,7 @@
       "Multiply each outcome by its probability and sum all the products: E[X] = Σ x_i × P(X = x_i)."
     ],
     "concepts": [
-      "expected value",
-      "discrete distributions",
-      "probability"
+      "distributions"
     ],
     "order": 17,
     "difficulty": "easy",
@@ -661,8 +634,7 @@
       "A negative expected value means the player loses money on average in the long run."
     ],
     "concepts": [
-      "expected value",
-      "probability"
+      "probability & combinatorics"
     ],
     "order": 18,
     "difficulty": "easy"
@@ -686,9 +658,7 @@
       "Combinations are used when order does not matter; C(n,r) = n! / (r! × (n−r)!)."
     ],
     "concepts": [
-      "combinatorics",
-      "combinations",
-      "permutations"
+      "probability & combinatorics"
     ],
     "order": 19,
     "difficulty": "easy"
@@ -723,8 +693,7 @@
       "Python's `math` module has a built-in function for combinations — look for `comb(n, k)`."
     ],
     "concepts": [
-      "combinatorics",
-      "combinations"
+      "probability & combinatorics"
     ],
     "order": 20,
     "difficulty": "easy",
@@ -775,8 +744,7 @@
       "`collections.Counter` counts occurrences; `.most_common(1)` returns the top-1 item."
     ],
     "concepts": [
-      "descriptive statistics",
-      "measures of central tendency"
+      "descriptive statistics"
     ],
     "order": 21,
     "difficulty": "easy",
@@ -829,9 +797,7 @@
       "IQR = Q3 − Q1 where Q1 and Q3 are the medians of the lower and upper halves respectively."
     ],
     "concepts": [
-      "descriptive statistics",
-      "interquartile range",
-      "quartiles"
+      "descriptive statistics"
     ],
     "order": 22,
     "difficulty": "easy",
@@ -857,9 +823,7 @@
       "The fundamental counting principle: if there are m ways for one event and n for another, there are m×n combined ways."
     ],
     "concepts": [
-      "combinatorics",
-      "sample space",
-      "probability"
+      "probability & combinatorics"
     ],
     "order": 23,
     "difficulty": "easy"
@@ -894,8 +858,7 @@
       "Python's `math` module has a built-in function for permutations — look for `perm(n, r)`."
     ],
     "concepts": [
-      "combinatorics",
-      "permutations"
+      "probability & combinatorics"
     ],
     "order": 24,
     "difficulty": "easy",
@@ -932,8 +895,7 @@
       "For independent events: P(A and B) = P(A) × P(B)."
     ],
     "concepts": [
-      "probability",
-      "independence"
+      "probability & combinatorics"
     ],
     "order": 25,
     "difficulty": "easy",
@@ -959,9 +921,7 @@
       "The mean, median, and mode all coincide in a symmetric unimodal distribution."
     ],
     "concepts": [
-      "distributions",
-      "symmetry",
-      "descriptive statistics"
+      "distributions"
     ],
     "order": 26,
     "difficulty": "easy"
@@ -996,8 +956,7 @@
       "Divide the count of favorable outcomes by the total number of possible outcomes."
     ],
     "concepts": [
-      "probability",
-      "sample space"
+      "probability & combinatorics"
     ],
     "order": 27,
     "difficulty": "easy",
@@ -1048,9 +1007,7 @@
       "Compute E[X] and E[X²] as separate probability-weighted sums, then use Var(X) = E[X²] − (E[X])²."
     ],
     "concepts": [
-      "descriptive statistics",
-      "expected value",
-      "discrete distributions"
+      "distributions"
     ],
     "order": 28,
     "difficulty": "easy",
@@ -1076,10 +1033,8 @@
       "Think about which real-world phenomena (financial returns, natural disasters) have 'fat tails' — that is leptokurtic behaviour."
     ],
     "concepts": [
-      "kurtosis",
       "descriptive statistics",
-      "distribution shape",
-      "heavy tails"
+      "distributions"
     ],
     "order": 29,
     "difficulty": "easy"
@@ -1103,9 +1058,7 @@
       "What does the Binomial formula produce when n = 1?"
     ],
     "concepts": [
-      "Bernoulli distribution",
-      "discrete distributions",
-      "probability distributions"
+      "distributions"
     ],
     "order": 30,
     "difficulty": "easy"
@@ -1129,10 +1082,7 @@
       "Think about independence: if each flip is independent, does knowing you flipped tails 10 times in a row change the probability the next flip is heads?"
     ],
     "concepts": [
-      "Geometric distribution",
-      "memoryless property",
-      "discrete distributions",
-      "probability distributions"
+      "distributions"
     ],
     "order": 31,
     "difficulty": "easy"
