@@ -69,7 +69,7 @@
     ],
     "concepts": [
       "ETL VS ELT",
-      "DATA QUALITY"
+      "DATA GOVERNANCE"
     ]
   },
   {
@@ -213,7 +213,7 @@
     ],
     "concepts": [
       "ORCHESTRATION",
-      "SCHEDULING & SLAS"
+      "BACKFILL DESIGN"
     ]
   },
   {
@@ -285,7 +285,7 @@
     ],
     "concepts": [
       "BATCH VS STREAMING",
-      "STORAGE ARCHITECTURE"
+      "SCHEDULING & SLAS"
     ]
   },
   {
@@ -438,7 +438,7 @@
     "title": "Data Lake vs Data Warehouse",
     "difficulty": "easy",
     "type": "conceptual",
-    "description": "What is the primary architectural difference between a data lake and a traditional data warehouse?",
+    "description": "Your team is designing storage for a new analytics platform that will ingest a mix of structured CRM exports, semi-structured event JSON, and raw image/PDF regulatory-archive files. An engineer asks whether to land everything in a data lake or load it through ETL into a traditional data warehouse. Which statement correctly describes the architectural distinction that should drive the choice?",
     "options": [
       "A data lake stores raw data in its native format (schema-on-read); a warehouse enforces a schema on write before data is stored",
       "A data lake only stores structured relational data; a warehouse stores unstructured files like logs and images",
@@ -645,7 +645,7 @@
     ],
     "concepts": [
       "SCHEMA EVOLUTION",
-      "DATA QUALITY"
+      "DATA CONTRACT"
     ]
   },
   {
