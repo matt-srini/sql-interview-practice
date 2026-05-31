@@ -174,7 +174,7 @@ All T digits 1–9 are now allocated. New tracks beyond T9 require a T-assignmen
 
 ### Practice vs mock-only allocation
 
-Practice and `mock_only: true` questions share the same `TXNNN` space within each difficulty file. Mock-only questions allocate at the **top of each difficulty range**, immediately after the last practice question — never separately numbered. **No mock-only questions exist at easy** for any track (by design: easy is practice-only).
+Practice and `mock_only: true` questions share the same `TXNNN` space within each difficulty file. IDs are assigned in append order — by when the question was authored — with no guarantee that all practice IDs precede all mock-only IDs. Later-added practice questions may carry IDs that are numerically higher than earlier-added mock-only questions (e.g. Data Modeling medium has practice IDs 62035, 62036, 62077 interspersed with mock-only IDs). **Classification is determined solely by the `mock_only` flag, not by ID sequence or position in the file.** **No mock-only questions exist at easy** for any track (by design: easy is practice-only).
 
 ### SQL sample IDs (3-digit, SQL only)
 
