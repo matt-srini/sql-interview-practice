@@ -251,10 +251,12 @@ def _sample_by_format(
     pool: list[dict],
     targets: list[str],
     mocked_ids: set[int],
-) -> list[dict]:
+) -> tuple[list[dict], bool]:
     """
     Sample from pool following format slot targets (fresh-first within each slot).
     Falls back to any remaining question if a format partition is exhausted.
+    Returns (chosen, type_fallback_occurred) where type_fallback_occurred is True
+    if any slot was filled from outside its declared type partition.
     """
     by_type: dict[str, list[dict]] = {}
     for q in pool:
@@ -262,11 +264,14 @@ def _sample_by_format(
 
     chosen: list[dict] = []
     used_ids: set[int] = set()
+    type_fallback = False
 
     for fmt in targets:
         partition = [q for q in by_type.get(fmt, []) if int(q["id"]) not in used_ids]
         if not partition:
             partition = [q for q in pool if int(q["id"]) not in used_ids]
+            if partition:
+                type_fallback = True
         if not partition:
             break
         fresh = [q for q in partition if int(q["id"]) not in mocked_ids]
@@ -274,7 +279,7 @@ def _sample_by_format(
         chosen.append(pick)
         used_ids.add(int(pick["id"]))
 
-    return chosen
+    return chosen, type_fallback
 
 
 def _mixed_difficulty_targets(num_questions: int) -> list[str]:
@@ -381,7 +386,7 @@ async def _select_questions(
     focus_concepts: list[str] | None = None,
     mode: str | None = None,
     role: str | None = None,
-) -> tuple[list[dict], bool]:
+) -> tuple[list[dict], bool, bool, bool]:
     """
     Select `num_questions` questions for a mock session with freshness scoring.
 
@@ -396,7 +401,12 @@ async def _select_questions(
     Mixed track with mode=benchmark: per-track slot allocation per MIXED_BENCHMARK_CONFIGS[role].
     Mixed track with mode=custom: draws from role_tracks(role) pool combined.
 
-    Returns (list[{"question_id", "track", "position"}], focus_fallback_bool).
+    Returns (selected, focus_fallback, track_substituted, type_fallback) — see
+    docs/features/mock.md § Degradation contracts for the full table of flags.
+    `track_substituted` fires when a mixed-benchmark slot is filled from a
+    different track in the role profile because the declared track's pool was
+    exhausted for the user. `type_fallback` fires when a single-track benchmark
+    slot is filled from outside its declared type partition (via _sample_by_format).
     """
     user_plan = user.get("plan", "free")
     user_id = user["id"]
@@ -445,7 +455,9 @@ async def _select_questions(
             {"question_id": int(q["id"]), "track": q["_track"], "position": i + 1}
             for i, q in enumerate(chosen_raw)
         ]
-        return selected_list, False
+        # Mixed benchmarks fill each track slot via fresh-first pool sampling
+        # (not type-targeted), so type_fallback never applies on this path.
+        return selected_list, False, substituted, False
 
     # ── Mixed custom: draw from role tracks combined pool ──────────────────────
     if track == "mixed":
@@ -458,8 +470,11 @@ async def _select_questions(
         solved = await _get_solved_ids_for_track(user_id, track)
         pool = _pool_for_track(track, difficulty, user_plan, solved)
 
-    # ── Focus filtering (Elite only) ───────────────────────────────────────────
+    # ── Degradation flags (see docs/features/mock.md § Degradation contracts)
     focus_fallback = False
+    type_fallback = False
+
+    # ── Focus filtering (Elite only) ───────────────────────────────────────────
     focus_pool: list[dict] = []
     if focus_concepts:
         focus_pool = _match_focus_concepts(pool, focus_concepts, track)
@@ -499,12 +514,12 @@ async def _select_questions(
             raise _not_enough
     elif mode == "benchmark" and track != "mixed" and get_track(track).eval_kind == "mcq":
         fmt_targets = _benchmark_type_targets(track, difficulty, num_questions)
-        chosen_raw = _sample_by_format(pool, fmt_targets, mocked_ids)
+        chosen_raw, type_fallback = _sample_by_format(pool, fmt_targets, mocked_ids)
         if len(chosen_raw) < num_questions:
             raise _not_enough
     elif track == "pyspark" and difficulty != "mixed":
         fmt_targets = _pyspark_format_targets(difficulty, num_questions)
-        chosen_raw = _sample_by_format(pool, fmt_targets, mocked_ids)
+        chosen_raw, type_fallback = _sample_by_format(pool, fmt_targets, mocked_ids)
         if len(chosen_raw) < num_questions:
             raise _not_enough
     elif difficulty == "mixed":
@@ -531,7 +546,9 @@ async def _select_questions(
         }
         for i, q in enumerate(chosen_raw)
     ]
-    return selected, focus_fallback
+    # Non-mixed paths can't set track_substituted (it's a mixed-only signal);
+    # type_fallback is set only on the two _sample_by_format branches above.
+    return selected, focus_fallback, False, type_fallback
 
 
 async def _select_chain(
@@ -1269,7 +1286,7 @@ async def start_session(
         raise HTTPException(status_code=400, detail="Invalid mode.")
 
     # ── Select questions ──────────────────────────────────────────────────────
-    selected_q, focus_fallback = await _select_questions(
+    selected_q, focus_fallback, track_substituted, type_fallback = await _select_questions(
         body.track, body.difficulty, num_questions, current_user, focus_concepts, body.mode, body.role
     )
 
@@ -1305,6 +1322,8 @@ async def start_session(
         **session,
         "questions": question_details,
         "focus_fallback": focus_fallback,
+        "track_substituted": track_substituted,
+        "type_fallback": type_fallback,
     }
 
 

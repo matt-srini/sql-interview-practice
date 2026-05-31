@@ -525,10 +525,12 @@ def test_tc154_focus_fallback_when_pool_too_small():
     user = {"id": "00000000-0000-0000-0000-000000000001", "plan": "elite"}
     with patch("routers.mock._get_solved_ids_for_track", new=AsyncMock(return_value=set())), \
          patch("routers.mock.get_previously_mocked_ids", new=AsyncMock(return_value=set())):
-        selected, fallback = asyncio.run(
+        selected, focus_fallback, track_substituted, type_fallback = asyncio.run(
             _select_questions("pyspark", "easy", 2, user, focus_concepts=["NONEXISTENT_CONCEPT_XYZ"])
         )
-    assert fallback is True
+    assert focus_fallback is True
+    assert track_substituted is False
+    assert type_fallback is False
     assert len(selected) > 0
 
 
@@ -539,10 +541,12 @@ def test_tc155_empty_focus_concepts_treated_as_no_filter():
     user = {"id": "00000000-0000-0000-0000-000000000001", "plan": "elite"}
     with patch("routers.mock._get_solved_ids_for_track", new=AsyncMock(return_value=set())), \
          patch("routers.mock.get_previously_mocked_ids", new=AsyncMock(return_value=set())):
-        selected, fallback = asyncio.run(
+        selected, focus_fallback, track_substituted, type_fallback = asyncio.run(
             _select_questions("pyspark", "easy", 2, user, focus_concepts=[])
         )
-    assert fallback is False
+    assert focus_fallback is False
+    assert track_substituted is False
+    assert type_fallback is False
     assert len(selected) > 0
 
 
@@ -561,11 +565,11 @@ def test_tc157_freshness_scoring_avoids_recent_questions():
     user = {"id": "00000000-0000-0000-0000-000000000001", "plan": "elite"}
     with patch("routers.mock._get_solved_ids_for_track", new=AsyncMock(return_value=set())), \
          patch("routers.mock.get_previously_mocked_ids", new=AsyncMock(return_value=set())):
-        selected1, _ = asyncio.run(
+        selected1, *_flags1 = asyncio.run(
             _select_questions("pyspark", "easy", 1, user)
         )
         # Second call may or may not re-select; just verify it returns valid data
-        selected2, _ = asyncio.run(
+        selected2, *_flags2 = asyncio.run(
             _select_questions("pyspark", "easy", 1, user)
         )
     assert len(selected1) == 1
@@ -1314,3 +1318,53 @@ def test_tc183_analytics_includes_loop_summary():
     assert "per_dimension_performance" in loop_summary
     perf = loop_summary["per_dimension_performance"]
     assert "data_quality_pivot" in perf
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Degradation contract flags — see docs/features/mock.md § Degradation contracts
+# ─────────────────────────────────────────────────────────────────────────────
+
+def test_type_fallback_not_triggered_when_bank_supports_targets():
+    """DM easy benchmark targets (1 scenario + 4 conceptual via difficulty-aware
+    override) match the bank composition exactly — type_fallback should be False."""
+    from unittest.mock import AsyncMock, patch
+    from routers.mock import _select_questions
+    user = {"id": "00000000-0000-0000-0000-000000000001", "plan": "elite"}
+    with patch("routers.mock._get_solved_ids_for_track", new=AsyncMock(return_value=set())), \
+         patch("routers.mock.get_previously_mocked_ids", new=AsyncMock(return_value=set())):
+        selected, focus_fallback, track_substituted, type_fallback = asyncio.run(
+            _select_questions("data-modeling", "easy", 5, user, mode="benchmark")
+        )
+    assert len(selected) == 5
+    assert focus_fallback is False
+    assert track_substituted is False
+    # Override matches bank distribution exactly; no fallback needed.
+    assert type_fallback is False
+
+
+def test_type_fallback_triggered_when_partition_exhausted():
+    """_sample_by_format returns type_fallback=True when a requested type
+    partition has no questions in the available pool."""
+    from routers.mock import _sample_by_format
+    pool = [
+        {"id": 1, "type": "conceptual", "_track": "x"},
+        {"id": 2, "type": "conceptual", "_track": "x"},
+        {"id": 3, "type": "conceptual", "_track": "x"},
+    ]
+    # Target "scenario" doesn't exist in the pool; should fall back to conceptual.
+    chosen, type_fallback = _sample_by_format(pool, ["scenario", "conceptual"], set())
+    assert len(chosen) == 2
+    assert type_fallback is True
+
+
+def test_sample_by_format_no_fallback_when_partitions_present():
+    """_sample_by_format returns type_fallback=False when each requested type
+    has at least one question available."""
+    from routers.mock import _sample_by_format
+    pool = [
+        {"id": 1, "type": "scenario", "_track": "x"},
+        {"id": 2, "type": "conceptual", "_track": "x"},
+    ]
+    chosen, type_fallback = _sample_by_format(pool, ["scenario", "conceptual"], set())
+    assert len(chosen) == 2
+    assert type_fallback is False
