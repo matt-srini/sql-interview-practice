@@ -164,6 +164,8 @@ Standalone sample practice. No sidebar. No effect on challenge progression.
 
 Has the same **keyboard shortcuts** and **editor height toggle** as `QuestionPage` (same implementation pattern — refs for stale-closure safety, `localStorage` persistence). No `isLocked` guard since sample questions are always accessible.
 
+**Mixed-subtype rendering (Statistics).** For `mixedSubtype: true` tracks, `SampleQuestionPage` derives `renderMode` from the loaded question's `subtype` field rather than the static `meta.hasMCQ` flag — mirroring the same `renderMode` useMemo pattern used by `QuestionPage`. A `subtype === 'numerical'` question renders the Python editor with Run Code + Submit Answer; a `subtype === 'conceptual'` question renders the MCQ panel. Submit payload and draft-autosave logic are both gated on `renderMode`, not `meta.hasMCQ`. Statistics numerical sample submissions show `TestCasePanel` + `PrintOutputPanel` results (same panels as the Python track). This is a product contract — any new mixed-subtype track added to the registry must be exercised in the sample flow without additional frontend changes.
+
 Sample editor drafts are auto-saved per sample question key (`sample-draft:{topic}:{difficulty}:{questionId}`), restored on load, and can be cleared from the editor topbar.
 
 Loading state now renders a skeleton card instead of plain text while fetching a sample question.
@@ -282,7 +284,7 @@ Provides current topic and track metadata to the entire component tree.
 
 `data-engineering` entry: `color: '#B9762B'`, `hasMCQ: true`, `hasRunCode: false`, `apiPrefix: '/data-engineering'`.
 
-`statistics` entry: `color: '#7A5AF0'`, `hasMCQ: true`, `hasRunCode: true`, `mixedSubtype: true`, `apiPrefix: '/statistics'`, `language: 'python'`. The `mixedSubtype: true` flag tells `QuestionPage.js` to derive `renderMode` from `question.subtype` at runtime rather than using the static `hasMCQ` flag — enabling a single page to render both conceptual reasoning and executable numerical questions.
+`statistics` entry: `color: '#7A5AF0'`, `hasMCQ: true`, `hasRunCode: true`, `mixedSubtype: true`, `apiPrefix: '/statistics'`, `language: 'python'`. The `mixedSubtype: true` flag tells both `QuestionPage.js` and `SampleQuestionPage.js` to derive `renderMode` from `question.subtype` at runtime rather than using the static `hasMCQ` flag — enabling a single page to render both conceptual (MCQ) and executable numerical questions. Both pages compute `renderMode` via the same useMemo pattern: `mixedSubtype ? (question?.subtype === 'numerical' ? 'code' : 'mcq') : (hasMCQ ? 'mcq' : 'code')`.
 
 Reasoning-first practice now reads additive `interaction_mode` metadata across PySpark, Data Engineering, Data Modeling, ML Fundamentals, Experimentation, and Statistics. `QuestionPage` keeps `question.type` / `question_type` separate so headings, header guidance, and submit labels can still distinguish predict-output, debug, optimization, and scenario variants even when multiple question forms share the same modality family.
 
