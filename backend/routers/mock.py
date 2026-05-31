@@ -349,6 +349,18 @@ def _benchmark_type_targets(track: str, difficulty: str, num_questions: int) -> 
     if track == "pyspark":
         return _pyspark_format_targets(difficulty, num_questions)
 
+    # Per-(track, difficulty) overrides for banks whose type distribution differs
+    # from the track default at a specific difficulty. See docs/features/mock.md
+    # § Benchmark composition for the canonical type-target contract.
+    difficulty_overrides: dict[tuple[str, str], list[str]] = {
+        ("data-modeling", "easy"): ["scenario", "conceptual", "conceptual", "conceptual", "conceptual"],
+    }
+    override = difficulty_overrides.get((track, difficulty))
+    if override is not None:
+        if len(override) >= num_questions:
+            return override[:num_questions]
+        return override + [override[-1]] * (num_questions - len(override))
+
     targets: dict[str, list[str]] = {
         "data-engineering": ["scenario", "conceptual", "debug", "scenario", "scenario", "conceptual"],
         "data-modeling": ["scenario", "conceptual", "scenario", "conceptual", "scenario"],

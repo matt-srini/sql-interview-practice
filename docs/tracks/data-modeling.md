@@ -130,6 +130,13 @@ Required:
 
 **Mock-only chain inventory:** 10 chains total (31 questions: 10 parents + 21 follow-ups) — 4 medium parents (62047/62053/62059/62060, 2–3 members each) + 6 hard parents (63041/63044/63048/63051/63054/63056, 1–3 members each). All 7 follow-up dimensions covered: `business_rule_pivot` (5), `data_quality_pivot` (3), `performance_pivot` (3), `edge_case_pivot` (3), `ambiguity_pivot` (3), `scale_pivot` (2), `stakeholder_pivot` (2).
 
+**Type distribution (practice easy):**
+- Easy (25 total): conceptual 24, scenario 1
+
+  This skew is intentional. Easy DM questions test single-concept classification — star vs snowflake, fact-table type, surrogate vs natural key, grain definition basics — which map naturally to conceptual MCQ. A scenario walk at easy difficulty would require a business brief that either trivialises the reasoning (too simple to be realistic) or smuggles in medium-level ambiguity (too hard for the tier). The 1 scenario question is retained as a gentle introduction to the scenario format.
+
+  This distribution directly governs the DM easy benchmark shape: **1 scenario + 4 conceptual** (per [`docs/features/mock.md`](../features/mock.md)). Future easy authoring should preserve this profile; if a new easy scenario is added, remove or re-tier an existing one.
+
 **Type distribution (mock-only):**
 - Medium (46 total): scenario 23, conceptual 16, debug 7
 - Hard (51 total): scenario 31, conceptual 12, debug 8

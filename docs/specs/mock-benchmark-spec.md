@@ -63,6 +63,22 @@ Mock composition must respect modality.
 | Constructed reasoning | Prompts should emphasize case analysis, prioritization, tradeoffs, and interpretation |
 | Hybrid | Session blueprint must mix subtypes intentionally rather than randomly |
 
+### Blueprint feasibility — difficulty-aware shapes
+
+**A blueprint declared in code or docs must be achievable given the actual bank composition at the targeted difficulty.**
+
+Bank type-distributions are not uniform across difficulties within a track. For example, a track's easy bank may be almost entirely `conceptual` (e.g., Data Modeling easy: 24 conceptual + 1 scenario), while its medium and hard banks support a richer variety of types. A single, difficulty-agnostic blueprint that targets multiple types will silently fail to honor its declared shape when applied to the easy tier of such a track — the runtime will either skip questions it cannot fill or pull the wrong type proportions.
+
+**Required practice:**
+
+1. **Declare difficulty-specific blueprint shapes.** Where a track's type distribution differs materially across difficulties, each difficulty tier must declare its own type targets in the benchmark selector — not inherit a shared shape that was calibrated for medium/hard.
+
+2. **Match declared targets to actual bank composition.** Before shipping a blueprint change, verify the target counts against the live bank. A blueprint that requests 3 `scenario` questions at easy difficulty is invalid if the easy bank contains only 1 `scenario` question.
+
+3. **Graceful degradation is a fallback, not a design substitute.** When a bank partition is genuinely exhausted at runtime (e.g., due to a pool reduction mid-session), the runtime may apply `type_fallback` degradation as defined in [`docs/features/mock.md`](../features/mock.md) — substituting the nearest compatible type rather than hard-failing the session. However, using `type_fallback` to paper over a blueprint that was never feasible is not acceptable; fix the blueprint instead.
+
+4. **Feasibility check at catalog load (goal state).** The validator should confirm that each declared type target per difficulty is satisfiable by the available bank at that difficulty. Until the validator enforces this, blueprint authors are responsible for manual verification.
+
 ## Summary contract
 
 Every finished benchmark session should produce:
