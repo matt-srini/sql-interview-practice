@@ -54,13 +54,9 @@ def _iter_question_files() -> list[tuple[str, Path]]:
             if file_path.stem == "schemas":
                 continue
             files.append((track, file_path))
-    # Sample-question files participate in the taxonomy + hint checks. SQL
-    # samples currently lack `concepts`/`hints` fields — Phase 4c (sample-bank
-    # audit fix) will add them; until then SQL samples are excluded so the
-    # validator does not fail on missing required fields.
+    # Sample-question files participate in the taxonomy + hint checks. All
+    # tracks including SQL now have concepts/hints (Phase 4c, 2026-06-01).
     for track, sample_file in SAMPLE_FILES.items():
-        if track == "sql":
-            continue
         if sample_file.exists():
             files.append((track, sample_file))
     return files

@@ -4,44 +4,40 @@
     "order": 1,
     "topic": "sql",
     "difficulty": "easy",
-    "title": "Sample Easy: Count Users",
-    "description": "Return the number of users in users as user_count.",
+    "title": "Users Per Acquisition Channel",
+    "description": "Return the count of users in each acquisition channel. Output columns: acquisition_channel, user_count. Sort by user_count descending, then acquisition_channel ascending.",
     "schema": {
-      "users": [
-        "user_id",
-        "name",
-        "signup_date",
-        "country"
-      ]
+      "users": ["user_id", "acquisition_channel"]
     },
-    "dataset_files": [
-      "users.csv"
+    "dataset_files": ["users.csv"],
+    "expected_query": "SELECT acquisition_channel, COUNT(*) AS user_count FROM users GROUP BY acquisition_channel ORDER BY user_count DESC, acquisition_channel ASC",
+    "solution_query": "SELECT acquisition_channel, COUNT(*) AS user_count\nFROM users\nGROUP BY acquisition_channel\nORDER BY user_count DESC, acquisition_channel ASC;",
+    "explanation": "Group the users table by acquisition_channel and count rows per group with COUNT(*). The dataset has 600 users spread across six channels plus a NULL group (15 users whose channel is unknown). Including the NULL group in the output is intentional — a real marketing KPI dashboard should surface unmapped users so the team can investigate, not silently discard them. The two-level ORDER BY (user_count DESC, acquisition_channel ASC) ensures the result is deterministic when two channels have equal counts.",
+    "hints": [
+      "Think of this as a per-segment distribution: you want to know how many users fall into each distinct category — not a single total across all users.",
+      "Once you have the count per category, apply a two-level ORDER BY — primary by count descending so the largest segment appears first, secondary by channel name ascending to break ties deterministically."
     ],
-    "expected_query": "SELECT COUNT(*) AS user_count FROM users",
-    "solution_query": "SELECT COUNT(*) AS user_count\nFROM users;",
-    "explanation": "COUNT(*) counts all rows in users."
+    "concepts": ["GROUPED AGGREGATION", "RESULT SHAPING & ORDERING"]
   },
   {
     "id": 112,
     "order": 2,
     "topic": "sql",
     "difficulty": "easy",
-    "title": "Sample Easy: Distinct Countries",
-    "description": "Return the distinct list of countries users are from, sorted alphabetically.",
+    "title": "Events Per Event Name",
+    "description": "Return the count of events of each type. Output columns: event_name, event_count. Sort by event_count descending, then event_name ascending.",
     "schema": {
-      "users": [
-        "user_id",
-        "name",
-        "signup_date",
-        "country"
-      ]
+      "events": ["event_id", "event_name"]
     },
-    "dataset_files": [
-      "users.csv"
+    "dataset_files": ["events.csv"],
+    "expected_query": "SELECT event_name, COUNT(*) AS event_count FROM events GROUP BY event_name ORDER BY event_count DESC, event_name ASC",
+    "solution_query": "SELECT event_name, COUNT(*) AS event_count\nFROM events\nGROUP BY event_name\nORDER BY event_count DESC, event_name ASC;",
+    "explanation": "Group the events table by event_name and count rows per group. The four event types (view_product, add_to_cart, start_checkout, purchase) form a natural funnel — this count-per-type query is the first step in any product funnel analysis. The result shows that view_product is by far the most common event and purchase is the least common, reflecting expected funnel drop-off. The two-level ORDER BY produces a deterministic ranking.",
+    "hints": [
+      "This is a frequency analysis over an event stream: you want to know how many times each distinct event type occurred — not a global count across all events.",
+      "After computing the per-type counts, apply a two-level ORDER BY — descending by count so the most frequent event appears first, ascending by name to break ties deterministically."
     ],
-    "expected_query": "SELECT DISTINCT country FROM users ORDER BY country",
-    "solution_query": "SELECT DISTINCT country\nFROM users\nORDER BY country;",
-    "explanation": "DISTINCT removes duplicates; ORDER BY sorts the results."
+    "concepts": ["GROUPED AGGREGATION", "RESULT SHAPING & ORDERING"]
   },
   {
     "id": 113,
@@ -51,20 +47,17 @@
     "title": "Sample Easy: Total Completed Order Amount",
     "description": "Return the sum of `net_amount` for completed orders as total_completed_amount.",
     "schema": {
-      "orders": [
-        "order_id",
-        "user_id",
-        "order_date",
-        "status",
-        "net_amount"
-      ]
+      "orders": ["order_id", "user_id", "order_date", "status", "net_amount"]
     },
-    "dataset_files": [
-      "orders.csv"
-    ],
+    "dataset_files": ["orders.csv"],
     "expected_query": "SELECT SUM(net_amount) AS total_completed_amount FROM orders WHERE status = 'completed'",
     "solution_query": "SELECT SUM(net_amount) AS total_completed_amount\nFROM orders\nWHERE status = 'completed';",
-    "explanation": "Filter to completed orders, then sum net_amount."
+    "explanation": "Filter to completed orders, then sum net_amount.",
+    "hints": [
+      "This asks for a single aggregate value from a qualifying subset of rows — identify which condition defines the qualifying rows before deciding what aggregate to apply over them.",
+      "Apply the row-level condition before aggregating: rows that do not meet the status condition should never contribute to the total, so exclude them at the row level rather than adjusting after the fact."
+    ],
+    "concepts": ["PRE-AGGREGATION FILTERING", "GROUPED AGGREGATION"]
   },
   {
     "id": 121,
@@ -74,27 +67,18 @@
     "title": "Sample Medium: Users With No Orders",
     "description": "Return user_id and name for users who have never placed an order.",
     "schema": {
-      "users": [
-        "user_id",
-        "name",
-        "signup_date",
-        "country"
-      ],
-      "orders": [
-        "order_id",
-        "user_id",
-        "order_date",
-        "status",
-        "net_amount"
-      ]
+      "users": ["user_id", "name", "signup_date", "country"],
+      "orders": ["order_id", "user_id", "order_date", "status", "net_amount"]
     },
-    "dataset_files": [
-      "users.csv",
-      "orders.csv"
-    ],
+    "dataset_files": ["users.csv", "orders.csv"],
     "expected_query": "SELECT u.user_id, u.name FROM users u LEFT JOIN orders o ON o.user_id = u.user_id WHERE o.order_id IS NULL ORDER BY u.user_id",
     "solution_query": "SELECT u.user_id, u.name\nFROM users u\nLEFT JOIN orders o ON o.user_id = u.user_id\nWHERE o.order_id IS NULL\nORDER BY u.user_id;",
-    "explanation": "LEFT JOIN keeps all users; users without matching orders have NULL order_id values."
+    "explanation": "LEFT JOIN keeps all users; users without matching orders have NULL order_id values.",
+    "hints": [
+      "You want to find users who have zero matching rows in the orders table — this requires preserving all users first and then identifying those with no counterpart in orders.",
+      "Join users to orders in a way that keeps all users regardless of whether they have orders. After the join, users with no orders will have null values in the orders columns — filter on that null to isolate the unmatched ones."
+    ],
+    "concepts": ["MULTI-TABLE ENTITY LINKING", "NULL HANDLING & COALESCE"]
   },
   {
     "id": 122,
@@ -104,20 +88,17 @@
     "title": "Sample Medium: Revenue By Status",
     "description": "Return each order status and the total `net_amount` for that status.",
     "schema": {
-      "orders": [
-        "order_id",
-        "user_id",
-        "order_date",
-        "status",
-        "net_amount"
-      ]
+      "orders": ["order_id", "user_id", "order_date", "status", "net_amount"]
     },
-    "dataset_files": [
-      "orders.csv"
-    ],
+    "dataset_files": ["orders.csv"],
     "expected_query": "SELECT status, SUM(net_amount) AS revenue FROM orders GROUP BY status ORDER BY status",
     "solution_query": "SELECT status, SUM(net_amount) AS revenue\nFROM orders\nGROUP BY status\nORDER BY status;",
-    "explanation": "Group by status, then sum net_amount within each status."
+    "explanation": "Group by status, then sum net_amount within each status.",
+    "hints": [
+      "Every order belongs to exactly one status — you want one revenue total per status category, not a single global total.",
+      "Include all statuses rather than filtering to one — the breakdown emerges naturally from grouping, giving you the complete picture of how revenue is distributed across the order lifecycle."
+    ],
+    "concepts": ["GROUPED AGGREGATION"]
   },
   {
     "id": 123,
@@ -127,95 +108,78 @@
     "title": "Sample Medium: Monthly Revenue",
     "description": "Return month and revenue, grouped by month from orders.",
     "schema": {
-      "orders": [
-        "order_id",
-        "user_id",
-        "order_date",
-        "status",
-        "net_amount"
-      ]
+      "orders": ["order_id", "user_id", "order_date", "status", "net_amount"]
     },
-    "dataset_files": [
-      "orders.csv"
-    ],
+    "dataset_files": ["orders.csv"],
     "expected_query": "SELECT strftime(CAST(order_date AS DATE), '%Y-%m') AS month, SUM(net_amount) AS revenue FROM orders GROUP BY 1 ORDER BY 1",
     "solution_query": "SELECT strftime(CAST(order_date AS DATE), '%Y-%m') AS month, SUM(net_amount) AS revenue\nFROM orders\nGROUP BY 1\nORDER BY 1;",
-    "explanation": "Bucket by month using strftime with format '%Y-%m', then aggregate net_amount per bucket."
+    "explanation": "Bucket by month using strftime with format '%Y-%m', then aggregate net_amount per bucket.",
+    "hints": [
+      "Revenue needs to be broken out by calendar month, but raw timestamps do not group into months automatically — the first step is converting each order's timestamp into its month.",
+      "Use a date-conversion expression as the grouping key: it collapses all timestamps within the same calendar month into a shared bucket. Format the output as YYYY-MM strings."
+    ],
+    "concepts": ["GROUPED AGGREGATION", "TIME-SERIES BUCKETING & ARITHMETIC"]
   },
   {
     "id": 131,
     "order": 1,
     "topic": "sql",
     "difficulty": "hard",
-    "title": "Sample Hard: Top 2 Orders Per User",
-    "description": "Return each user's top 2 orders by `net_amount` using a window rank.",
+    "title": "Revenue Quartile Within Country",
+    "description": "For each user with at least one completed order, assign them to a revenue quartile within their country (1 = lowest quartile of that country's user revenues, 4 = highest). Return user_id, country, total_revenue (rounded to 2 decimal places), and revenue_quartile. Sort by country ascending, then revenue_quartile descending, then user_id ascending.",
     "schema": {
-      "orders": [
-        "order_id",
-        "user_id",
-        "order_date",
-        "status",
-        "net_amount"
-      ]
+      "users": ["user_id", "country"],
+      "orders": ["user_id", "status", "net_amount"]
     },
-    "dataset_files": [
-      "orders.csv"
+    "dataset_files": ["users.csv", "orders.csv"],
+    "expected_query": "WITH user_revenue AS (SELECT o.user_id, u.country, ROUND(SUM(o.net_amount), 2) AS total_revenue FROM orders o JOIN users u ON o.user_id = u.user_id WHERE o.status = 'completed' GROUP BY o.user_id, u.country), quartiled AS (SELECT user_id, country, total_revenue, NTILE(4) OVER (PARTITION BY country ORDER BY total_revenue) AS revenue_quartile FROM user_revenue) SELECT user_id, country, total_revenue, revenue_quartile FROM quartiled ORDER BY country ASC, revenue_quartile DESC, user_id ASC",
+    "solution_query": "-- Step 1: Aggregate completed orders to user-level revenue\nWITH user_revenue AS (\n    SELECT\n        o.user_id,\n        u.country,\n        ROUND(SUM(o.net_amount), 2) AS total_revenue\n    FROM orders o\n    JOIN users u ON o.user_id = u.user_id\n    WHERE o.status = 'completed'\n    GROUP BY o.user_id, u.country\n),\n-- Step 2: Assign revenue quartile within each country\nquartiled AS (\n    SELECT\n        user_id,\n        country,\n        total_revenue,\n        NTILE(4) OVER (\n            PARTITION BY country\n            ORDER BY total_revenue\n        ) AS revenue_quartile\n    FROM user_revenue\n)\nSELECT user_id, country, total_revenue, revenue_quartile\nFROM quartiled\nORDER BY country ASC, revenue_quartile DESC, user_id ASC;",
+    "explanation": "Two-CTE approach: user_revenue aggregates completed orders to one row per user (joined to users for country). The second CTE applies NTILE(4) partitioned by country — this produces per-country quartiles, not global ones. Without PARTITION BY country, NTILE(4) would bucket users globally, making a US user in quartile 3 incomparable to an AU user in quartile 3. Countries with fewer than 4 users are handled gracefully: NTILE distributes users left-to-right into the lower buckets, so a country with 2 users gets quartiles 1 and 2. The ORDER BY country ASC, revenue_quartile DESC, user_id ASC shows the highest earners within each country first.",
+    "hints": [
+      "Break this into two stages: first collapse orders to a per-user revenue total (one row per qualifying user), then compute each user's relative position within their own country's revenue distribution — not their global position.",
+      "The relative-position step requires partitioning by country so each country's users are ranked independently. The aggregation must happen before the partitioned ranking — the window function cannot operate on raw order rows."
     ],
-    "expected_query": "SELECT user_id, order_id, amount, rnk FROM (  SELECT order_id, user_id, net_amount AS amount, DENSE_RANK() OVER (PARTITION BY user_id ORDER BY net_amount DESC) AS rnk   FROM orders) t WHERE rnk <= 2 ORDER BY user_id, rnk, order_id",
-    "solution_query": "SELECT user_id, order_id, amount, rnk\nFROM (\n  SELECT order_id, user_id, net_amount AS amount,\n         DENSE_RANK() OVER (PARTITION BY user_id ORDER BY net_amount DESC) AS rnk\n  FROM orders\n) t\nWHERE rnk <= 2\nORDER BY user_id, rnk, order_id;",
-    "explanation": "Rank orders per user by net_amount, then keep the top two ranks."
+    "concepts": ["WINDOW FUNCTIONS", "RANKING & TOP-N PER GROUP", "CTE PIPELINE"]
   },
   {
     "id": 132,
     "order": 2,
     "topic": "sql",
     "difficulty": "hard",
-    "title": "Sample Hard: First Order Date Per User",
-    "description": "Return each user_id and their first order date as first_order_date.",
+    "title": "Monthly Order Coverage Per User",
+    "description": "For every user, return one row per calendar month from their signup_date (truncated to month) through the latest order_date in the dataset (truncated to month) — including months when the user placed no orders. Return user_id, month (formatted YYYY-MM), and orders_in_month (count of orders placed in that month across all statuses; 0 if no orders). Sort by user_id ascending, then month ascending.",
     "schema": {
-      "orders": [
-        "order_id",
-        "user_id",
-        "order_date",
-        "status",
-        "net_amount"
-      ]
+      "users": ["user_id", "signup_date"],
+      "orders": ["user_id", "order_date"]
     },
-    "dataset_files": [
-      "orders.csv"
+    "dataset_files": ["users.csv", "orders.csv"],
+    "expected_query": "WITH months AS (SELECT CAST(gs AS DATE) AS month FROM generate_series(DATE_TRUNC('month', (SELECT MIN(signup_date::DATE) FROM users))::DATE, DATE_TRUNC('month', (SELECT MAX(order_date::DATE) FROM orders))::DATE, INTERVAL '1 month') t(gs)), user_months AS (SELECT u.user_id, m.month FROM users u CROSS JOIN months m WHERE m.month >= DATE_TRUNC('month', u.signup_date::DATE)::DATE), order_counts AS (SELECT user_id, DATE_TRUNC('month', order_date::DATE)::DATE AS month, COUNT(*) AS orders_in_month FROM orders GROUP BY user_id, DATE_TRUNC('month', order_date::DATE)::DATE) SELECT s.user_id, strftime(s.month, '%Y-%m') AS month, COALESCE(oc.orders_in_month, 0) AS orders_in_month FROM user_months s LEFT JOIN order_counts oc ON s.user_id = oc.user_id AND s.month = oc.month ORDER BY s.user_id ASC, s.month ASC",
+    "solution_query": "-- Step 1: Generate all calendar months in the dataset's date range\nWITH months AS (\n    SELECT CAST(gs AS DATE) AS month\n    FROM generate_series(\n        DATE_TRUNC('month', (SELECT MIN(signup_date::DATE) FROM users))::DATE,\n        DATE_TRUNC('month', (SELECT MAX(order_date::DATE) FROM orders))::DATE,\n        INTERVAL '1 month'\n    ) t(gs)\n),\n-- Step 2: Build per-user spine (each user x months from their signup onward)\nuser_months AS (\n    SELECT u.user_id, m.month\n    FROM users u\n    CROSS JOIN months m\n    WHERE m.month >= DATE_TRUNC('month', u.signup_date::DATE)::DATE\n),\n-- Step 3: Count actual orders per (user, month) across all statuses\norder_counts AS (\n    SELECT user_id,\n           DATE_TRUNC('month', order_date::DATE)::DATE AS month,\n           COUNT(*) AS orders_in_month\n    FROM orders\n    GROUP BY user_id, DATE_TRUNC('month', order_date::DATE)::DATE\n)\n-- Step 4: Left join spine to order counts; COALESCE fills gaps with 0\nSELECT s.user_id,\n       strftime(s.month, '%Y-%m') AS month,\n       COALESCE(oc.orders_in_month, 0) AS orders_in_month\nFROM user_months s\nLEFT JOIN order_counts oc\n    ON s.user_id = oc.user_id AND s.month = oc.month\nORDER BY s.user_id ASC, s.month ASC;",
+    "explanation": "Three-CTE date spine approach. months generates every calendar month from the earliest user signup to the latest order date using generate_series. user_months cross joins each user with months, filtering to months on or after their signup month — producing that user's full timeline. order_counts aggregates all orders (all statuses) by user and month. The final LEFT JOIN from user_months to order_counts fills in missing months: when a user had no orders in a month, oc.orders_in_month is NULL, and COALESCE converts it to 0. Without the spine, users appear only in months where they placed orders, silently hiding the months with no activity — the pattern that cohort retention and activity analyses depend on.",
+    "hints": [
+      "The orders table only contains rows for months when orders occurred — months with no orders are silently absent. You need to generate the complete set of months each user should have, then check which of those months have orders.",
+      "Build a per-user timeline by combining each user with every month from their signup month onward. Then join the actual order counts onto that timeline — so months with no orders yield zero rather than disappearing from the result."
     ],
-    "expected_query": "SELECT user_id, MIN(CAST(order_date AS DATE)) AS first_order_date FROM orders GROUP BY user_id ORDER BY user_id",
-    "solution_query": "SELECT user_id, MIN(CAST(order_date AS DATE)) AS first_order_date\nFROM orders\nGROUP BY user_id\nORDER BY user_id;",
-    "explanation": "Use MIN(order_date) per user_id to find the first order date."
+    "concepts": ["TIME-SERIES BUCKETING & ARITHMETIC", "MULTI-TABLE ENTITY LINKING", "NULL HANDLING & COALESCE"]
   },
   {
     "id": 133,
     "order": 3,
     "topic": "sql",
     "difficulty": "hard",
-    "title": "Sample Hard: Completed Revenue By Country",
-    "description": "For each country, return total completed order revenue as completed_revenue.",
+    "title": "Top User Per Month By Completed Revenue",
+    "description": "For each calendar month present in the orders data, return the single user with the highest completed-order revenue that month. If two or more users tie for the highest revenue in a month, return the one with the lower user_id. Return month (formatted YYYY-MM), user_id, and monthly_revenue (rounded to 2 decimal places). Sort by month ascending.",
     "schema": {
-      "users": [
-        "user_id",
-        "name",
-        "signup_date",
-        "country"
-      ],
-      "orders": [
-        "order_id",
-        "user_id",
-        "order_date",
-        "status",
-        "net_amount"
-      ]
+      "orders": ["user_id", "order_date", "status", "net_amount"]
     },
-    "dataset_files": [
-      "users.csv",
-      "orders.csv"
+    "dataset_files": ["orders.csv"],
+    "expected_query": "WITH monthly_user_revenue AS (SELECT user_id, DATE_TRUNC('month', order_date::DATE)::DATE AS month, ROUND(SUM(net_amount), 2) AS monthly_revenue FROM orders WHERE status = 'completed' GROUP BY user_id, DATE_TRUNC('month', order_date::DATE)::DATE), ranked AS (SELECT user_id, month, monthly_revenue, ROW_NUMBER() OVER (PARTITION BY month ORDER BY monthly_revenue DESC, user_id ASC) AS row_num FROM monthly_user_revenue) SELECT strftime(month, '%Y-%m') AS month, user_id, monthly_revenue FROM ranked WHERE row_num = 1 ORDER BY month ASC",
+    "solution_query": "-- Step 1: Aggregate completed orders to (user, month) revenue\nWITH monthly_user_revenue AS (\n    SELECT\n        user_id,\n        DATE_TRUNC('month', order_date::DATE)::DATE AS month,\n        ROUND(SUM(net_amount), 2) AS monthly_revenue\n    FROM orders\n    WHERE status = 'completed'\n    GROUP BY user_id, DATE_TRUNC('month', order_date::DATE)::DATE\n),\n-- Step 2: Rank users within each month; secondary sort on user_id breaks ties deterministically\nranked AS (\n    SELECT\n        user_id,\n        month,\n        monthly_revenue,\n        ROW_NUMBER() OVER (\n            PARTITION BY month\n            ORDER BY monthly_revenue DESC, user_id ASC\n        ) AS row_num\n    FROM monthly_user_revenue\n)\n-- Step 3: Keep only the top user per month\nSELECT strftime(month, '%Y-%m') AS month, user_id, monthly_revenue\nFROM ranked\nWHERE row_num = 1\nORDER BY month ASC;",
+    "explanation": "Two-CTE approach: monthly_user_revenue aggregates completed orders to (user, month) level with revenue rounded to 2 decimal places. The ranked CTE applies ROW_NUMBER() partitioned by month and ordered by monthly_revenue DESC, user_id ASC. The secondary user_id ASC is the deterministic tiebreaker — without it, any tie between users produces non-deterministic output that depends on execution order. ROW_NUMBER() is used rather than RANK or DENSE_RANK because it always assigns exactly one row rank 1 per partition, even in a tie: the secondary sort makes the tie-break explicit rather than silent. The final WHERE row_num = 1 extracts the winner per month.",
+    "hints": [
+      "Break this into two stages: first aggregate completed orders to (user, month) revenue totals, then identify the single top user per month — with a rule that makes ties resolve the same way every time.",
+      "The tiebreaker is load-bearing: a window function that ranks users within each month must include a secondary sort key to guarantee identical results regardless of row storage order. Without it, which tied user wins is undefined."
     ],
-    "expected_query": "SELECT u.country, SUM(o.net_amount) AS completed_revenue FROM users u JOIN orders o ON o.user_id = u.user_id WHERE o.status = 'completed' GROUP BY u.country ORDER BY u.country",
-    "solution_query": "SELECT u.country, SUM(o.net_amount) AS completed_revenue\nFROM users u\nJOIN orders o ON o.user_id = u.user_id\nWHERE o.status = 'completed'\nGROUP BY u.country\nORDER BY u.country;",
-    "explanation": "Join users to orders, filter to completed, then sum net_amount by country."
+    "concepts": ["WINDOW FUNCTIONS", "RANKING & TOP-N PER GROUP", "TIME-SERIES BUCKETING & ARITHMETIC"]
   }
 ]
