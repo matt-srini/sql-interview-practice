@@ -18,7 +18,7 @@
       "Ask: does each business event produce exactly one row at one point in time? That is the defining characteristic of a transaction fact table.",
       "Accumulating snapshots are for multi-stage processes where all stages end up on the same row."
     ],
-    "concepts": ["FACT TABLE TYPES & GRAIN"]
+    "concepts": ["FACT TABLE DESIGN"]
   },
   {
     "id": 612,
@@ -39,7 +39,7 @@
       "Grain is the granularity question: what does one row represent? Choose the finest grain that answers the team's questions.",
       "You can always roll up from fine grain to coarse grain — you cannot drill down from coarse grain."
     ],
-    "concepts": ["GRAIN & DIMENSIONAL DESIGN", "FACT TABLE TYPES & GRAIN"]
+    "concepts": ["GRAIN DEFINITION", "FACT TABLE DESIGN"]
   },
   {
     "id": 613,
@@ -60,7 +60,7 @@
       "Ask: what happens to your dimension if the source system changes its ID scheme? A surrogate key insulates you from that change.",
       "SCD Type 2 requires multiple rows for the same business entity — surrogate keys give each version a unique identity."
     ],
-    "concepts": ["SURROGATE KEYS & NATURAL KEYS", "SLOWLY CHANGING DIMENSIONS"]
+    "concepts": ["SURROGATE VS NATURAL KEYS", "SCD STRUCTURE"]
   },
   {
     "id": 621,
@@ -82,7 +82,7 @@
       "Type 2 tracks history via new rows + surrogate keys. A retroactive change requires both updating the dimension row AND repairing any fact rows that reference the old surrogate key.",
       "Ask: which surrogate key did the historical fact rows join to? That determines the cost of a retroactive correction."
     ],
-    "concepts": ["SLOWLY CHANGING DIMENSIONS", "GRAIN & DIMENSIONAL DESIGN"]
+    "concepts": ["SCD STRUCTURE", "GRAIN DEFINITION"]
   },
   {
     "id": 622,
@@ -103,7 +103,7 @@
       "Dimension tables are almost always small relative to fact tables — the storage cost of denormalisation is usually negligible.",
       "For reporting, fewer joins = simpler SQL = faster analyst iteration. Star schema prioritises query ergonomics."
     ],
-    "concepts": ["STAR VS SNOWFLAKE SCHEMA", "GRAIN & DIMENSIONAL DESIGN"]
+    "concepts": ["DIMENSIONAL MODELING", "GRAIN DEFINITION"]
   },
   {
     "id": 623,
@@ -125,7 +125,7 @@
       "A bridge table models many-to-many relationships between a fact and a dimension: one row per (entity, dimension member) pair.",
       "Include a weight_factor (1/n) in the bridge to prevent double-counting when aggregating additive metrics across all tiers."
     ],
-    "concepts": ["MANY-TO-MANY & BRIDGE TABLES", "GRAIN & DIMENSIONAL DESIGN"]
+    "concepts": ["BRIDGE & MANY-TO-MANY", "GRAIN DEFINITION"]
   },
   {
     "id": 631,
@@ -147,7 +147,7 @@
       "A customer with 5 orders and 3 open tickets — how many rows does a direct join produce? Count them; that's the Cartesian product problem.",
       "The fix is always: aggregate each fact to the shared grain first, then join the pre-aggregated results."
     ],
-    "concepts": ["GRAIN & DIMENSIONAL DESIGN", "FACT TABLE TYPES & GRAIN"]
+    "concepts": ["GRAIN DEFINITION", "FACT TABLE DESIGN"]
   },
   {
     "id": 632,
@@ -169,7 +169,7 @@
       "Conformed dimensions share the same attributes and definitions across multiple data marts — that's what allows cross-mart 'drill across' queries to make sense.",
       "When two marts use the same word ('category') to mean different things, you have a semantic incongruence that must be resolved in the model, not in reports."
     ],
-    "concepts": ["CONFORMED DIMENSIONS & DATA GOVERNANCE", "STAR VS SNOWFLAKE SCHEMA"]
+    "concepts": ["CONFORMED DIMENSIONS", "DIMENSIONAL MODELING"]
   },
   {
     "id": 633,
@@ -191,6 +191,6 @@
       "Two questions, two different time axes: 'what the system recorded when' (transaction time) vs 'when it was actually true in the world' (valid time).",
       "Bi-temporal tables store both axes on every row, enabling independent point-in-time queries on either timeline."
     ],
-    "concepts": ["BI-TEMPORAL MODELING", "SLOWLY CHANGING DIMENSIONS", "GRAIN & DIMENSIONAL DESIGN"]
+    "concepts": ["BI-TEMPORAL MODELING", "SCD STRUCTURE", "GRAIN DEFINITION"]
   }
 ]
