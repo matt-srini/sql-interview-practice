@@ -925,7 +925,8 @@
     "mock_only": true,
     "parent_id": 53035,
     "follow_up_dimension": "scale_pivot",
-    "description": "The fix from the previous scenario — removing event_type from the clustering key — resolved the cost spike. Six months later, the table now writes 20 billion rows per day (100x the original volume). Monthly BI summary queries now breach the 3-hour SLA because even with correct event_date clustering-key pruning, each daily micro-partition set is 100x larger and columnar scans of a single day take ~45 minutes. What is the recommended next step?",
+    "scenario_context": "The fix from the previous scenario — removing event_type from the clustering key — resolved the cost spike. Six months later, the table now writes 20 billion rows per day (100x the original volume). Monthly BI summary queries now breach the 3-hour SLA because even with correct event_date clustering-key pruning, each daily micro-partition set is 100x larger and columnar scans of a single day take ~45 minutes.",
+    "description": "What is the recommended next step?",
     "options": [
       "Re-introduce event_type as the leading clustering key alongside event_date — the 100x volume justifies the compound key, and BI queries that include event_type now benefit from clustering-key pruning instead of full micro-partition scans.",
       "Switch from daily to hourly clustering on event_date; each unit is 1/24th the original day size, allowing BI queries that scan a single day to parallelize across 24 smaller micro-partition groups.",
@@ -953,7 +954,8 @@
     "mock_only": true,
     "parent_id": 53035,
     "follow_up_dimension": "performance",
-    "description": "The original clustering fix (removing event_type from the clustering key) resolved the cost spike. The business now tightens the BI SLA from 3 hours to 30 minutes for the nightly revenue report. The fact table holds 200M rows per day in daily clustered micro-partitions. BI queries are aggregation-heavy: SUM(revenue) GROUP BY event_type, event_date. Columnar scans of a 200M-row daily micro-partition set currently complete in ~45 minutes. What is the most targeted change to hit the 30-minute SLA?",
+    "scenario_context": "The original clustering fix (removing event_type from the clustering key) resolved the cost spike. The business now tightens the BI SLA from 3 hours to 30 minutes for the nightly revenue report. The fact table holds 200M rows per day in daily clustered micro-partitions. BI queries are aggregation-heavy: SUM(revenue) GROUP BY event_type, event_date. Columnar scans of a 200M-row daily micro-partition set currently complete in ~45 minutes.",
+    "description": "What is the most targeted change to hit the 30-minute SLA?",
     "options": [
       "Reduce the 3 AM pipeline write frequency from once-nightly to micro-batches every 15 minutes; smaller incremental micro-partitions allow BI to query partial results within the SLA window.",
       "Pre-compute a daily revenue rollup materialized view (event_date, event_type, SUM(revenue)) written by the pipeline at the end of each run; the BI report queries the view rather than the raw fact table.",
@@ -1011,7 +1013,8 @@
     "mock_only": true,
     "parent_id": 53038,
     "follow_up_dimension": "business_rule",
-    "description": "The fix from the previous scenario is deployed: the producer's publishing pipeline now requires all consumer repos to pass application-level integration tests against the new generated class before any proto package update is published. A new compliance requirement arrives: all downstream audit log consumers must preserve the field name user_id for 7 years, even as the operational system transitions to customer_id. The schema team proposes three approaches. Which is most correct?",
+    "scenario_context": "The fix from the previous scenario is deployed: the producer's publishing pipeline now requires all consumer repos to pass application-level integration tests against the new generated class before any proto package update is published. A new compliance requirement arrives: all downstream audit log consumers must preserve the field name user_id for 7 years, even as the operational system transitions to customer_id. The schema team proposes three approaches.",
+    "description": "Which is most correct?",
     "options": [
       "Use Protobuf's json_name field option to add user_id as a JSON alias for customer_id in the .proto file; audit consumers reading JSON-serialized Protobuf see user_id while operational consumers using binary Protobuf use customer_id.",
       "Maintain two parallel Kafka topics — one carrying the old schema (user_id) for audit consumers and one carrying the new schema (customer_id) for operational consumers; a topic-router service reads from the producer's topic and fans messages out to both.",
@@ -1098,7 +1101,8 @@
     "mock_only": true,
     "parent_id": 53040,
     "follow_up_dimension": "edge_case",
-    "description": "The pipeline from the previous scenario has 8 Kafka partitions. During a network partition recovery, all 8 partition consumers rewind their offsets. Mid-rewind, the consumer processing partition 3 is OOM-killed. Partitions 0–2 and 4–7 complete the rewind and the idempotent sink handles their re-delivered events correctly. What is the correctness state of the transactions table, and what happens next for partition 3?",
+    "scenario_context": "The pipeline from the previous scenario has 8 Kafka partitions. During a network partition recovery, all 8 partition consumers rewind their offsets. Mid-rewind, the consumer processing partition 3 is OOM-killed. Partitions 0–2 and 4–7 complete the rewind and the idempotent sink handles their re-delivered events correctly.",
+    "description": "What is the correctness state of the transactions table, and what happens next for partition 3?",
     "options": [
       "The transactions table is partially committed: partitions 0–2 and 4–7 are fully processed, but partition 3's rewind events were dropped. The table has a permanent gap for partition 3's events in the rewind window.",
       "Kafka tracks committed offsets independently per partition. Partition 3's consumer crashed before committing its rewind offsets, so partition 3's offset remains at the rewind start point. On rebalance, the new consumer for partition 3 replays only that partition from the rewind offset; partitions 0–2 and 4–7 are unaffected.",
@@ -1156,7 +1160,8 @@
     "mock_only": true,
     "parent_id": 53043,
     "follow_up_dimension": "stakeholder",
-    "description": "You have identified that yesterday's revenue drop was most likely caused by replication lag on the extraction database — the pipeline read from an under-replicated replica and received an incomplete snapshot. The Finance VP is on a call in 30 minutes and wants a root cause statement, your confidence level, and a remediation timeline. Which response is most appropriate for a data engineering lead?",
+    "scenario_context": "You have identified that yesterday's revenue drop was most likely caused by replication lag on the extraction database — the pipeline read from an under-replicated replica and received an incomplete snapshot. The Finance VP is on a call in 30 minutes and wants a root cause statement, your confidence level, and a remediation timeline.",
+    "description": "Which response is most appropriate for a data engineering lead?",
     "options": [
       "Send a written statement: 'Root cause confirmed — replication lag at extraction caused 8.3% revenue under-reporting. Confidence: high. Remediation: re-run yesterday's pipeline against the primary database by 10 AM.' Include the query showing the row count discrepancy as evidence.",
       "State the working hypothesis with supporting evidence (row count below range, all tasks green, no upstream alerts), distinguish your confidence level (medium-high, not yet confirmed), and commit to a confirmed diagnosis within 45 minutes and corrected figures within 2 hours.",
@@ -1215,7 +1220,8 @@
     "mock_only": true,
     "parent_id": 53045,
     "follow_up_dimension": "scale_pivot",
-    "description": "The 15-minute tolerance fix from the previous scenario is deployed and works at 10,000 events/sec. Six months later, throughput has scaled to 10 million events/sec. The platform team reports that the RocksDB state backend now consumes 2.4 TB of disk and checkpoint times have grown from 30 seconds to 18 minutes — approaching the checkpoint interval. What is the highest-leverage architectural change?",
+    "scenario_context": "The 15-minute tolerance fix from the previous scenario is deployed and works at 10,000 events/sec. Six months later, throughput has scaled to 10 million events/sec. The platform team reports that the RocksDB state backend now consumes 2.4 TB of disk and checkpoint times have grown from 30 seconds to 18 minutes — approaching the checkpoint interval.",
+    "description": "What is the highest-leverage architectural change?",
     "options": [
       "Reduce the out-of-orderness tolerance from 15 minutes to 2 minutes — a shorter window of in-flight state reduces what must be maintained and checkpointed, directly shrinking the state backend footprint.",
       "Switch from RocksDB state backend to in-memory (heap) state — in-memory state avoids disk I/O for state access and eliminates checkpoint serialization overhead, keeping checkpoint times under 30 seconds.",
@@ -1330,7 +1336,8 @@
     "mock_only": true,
     "parent_id": 53048,
     "follow_up_dimension": "data_quality",
-    "description": "The schema registry fix is in place. For the 3 days before the fix, risk_score values were present in CDC events but silently dropped by the pipeline's INSERT statement. The Snowflake transactions table has rows for those 3 days with NULL risk_scores. The Debezium connector retained 7 days of CDC event history in Kafka. What is the most reliable recovery approach?",
+    "scenario_context": "The schema registry fix is in place. For the 3 days before the fix, risk_score values were present in CDC events but silently dropped by the pipeline's INSERT statement. The Snowflake transactions table has rows for those 3 days with NULL risk_scores. The Debezium connector retained 7 days of CDC event history in Kafka.",
+    "description": "What is the most reliable recovery approach?",
     "options": [
       "Re-read the 3 days of CDC events from Kafka, extract only the risk_score values, and issue UPDATE statements against matching rows in Snowflake using each event's primary key — filling the NULLs without touching any other column.",
       "Truncate the 3 affected days' partitions from Snowflake and re-run the full CDC pipeline for those days from Kafka — the idempotent sink handles any re-insertion of already-present rows.",
@@ -1387,7 +1394,8 @@
     "mock_only": true,
     "parent_id": 53051,
     "follow_up_dimension": "performance",
-    "description": "The hourly compaction approach from the previous scenario was deployed successfully. Over 4 months, data volume grew 20x. The compaction job now takes 6 hours to run — well past the 1-hour window it was designed for. Downstream Athena consumers either query the slow micro-files or wait for compaction to finish and get stale data. What is the highest-leverage fix with the least architectural disruption?",
+    "scenario_context": "The hourly compaction approach from the previous scenario was deployed successfully. Over 4 months, data volume grew 20x. The compaction job now takes 6 hours to run — well past the 1-hour window it was designed for. Downstream Athena consumers either query the slow micro-files or wait for compaction to finish and get stale data.",
+    "description": "What is the highest-leverage fix with the least architectural disruption?",
     "options": [
       "Scale up the compaction Spark cluster (more memory, more executors) — the 6-hour runtime is caused by insufficient compute resources, not a design flaw in the compaction approach itself.",
       "Switch from hourly to daily compaction: running the merge job once per day reduces the frequency of the bottleneck and gives the existing compute budget more time to process the larger volume.",
@@ -1577,7 +1585,8 @@
     "difficulty": "hard",
     "type": "scenario",
     "mock_only": true,
-    "description": "A data engineer implements a slowly-changing dimension for a customer table: UPDATEs set current_flag = 'N' and end_date on the prior row, then INSERTs the new row with current_flag = 'Y'. The dimension has multiple rows per customer, each representing a historical state. The data quality team finds that a transaction from 14 months ago is joining to the customer's most recent address rather than the address that was current at transaction time. What went wrong?",
+    "scenario_context": "A data engineer implements a slowly-changing dimension for a customer table: UPDATEs set current_flag = 'N' and end_date on the prior row, then INSERTs the new row with current_flag = 'Y'. The dimension has multiple rows per customer, each representing a historical state. The data quality team finds that a transaction from 14 months ago is joining to the customer's most recent address rather than the address that was current at transaction time.",
+    "description": "What went wrong?",
     "options": [
       "The UPDATE on the prior row changes a column the fact table's JOIN filters on: if the fact table queries WHERE dim.current_flag = 'Y', all historical transactions now join to the current row — the dimension management is correct but the fact JOIN predicate is wrong.",
       "The UPDATE to set current_flag and end_date violated the append-only contract for dimension rows: modifying a written row likely introduced an error in the prior row's end_date, corrupting the date-range join for historical queries.",
@@ -1872,7 +1881,8 @@
     "difficulty": "hard",
     "type": "scenario",
     "mock_only": true,
-    "description": "A data team is building a data lake with four hard requirements: (1) queries from both Databricks (primary compute) and AWS Athena (BI team) against the same tables, (2) row-level deletes for GDPR erasure, (3) schema evolution as upstream producers add columns, (4) time-travel queries for audit. The team must choose between Delta Lake and Apache Iceberg. Which is the more defensible choice?",
+    "scenario_context": "A data team is building a data lake with four hard requirements: (1) queries from both Databricks (primary compute) and AWS Athena (BI team) against the same tables, (2) row-level deletes for GDPR erasure, (3) schema evolution as upstream producers add columns, (4) time-travel queries for audit. The team must choose between Delta Lake and Apache Iceberg.",
+    "description": "Which is the more defensible choice?",
     "options": [
       "Delta Lake: native Databricks integration gives optimal performance for the primary compute, schema enforcement is automatic, and GDPR row-level deletes are supported via MERGE. Athena can query Delta tables via an AWS connector.",
       "Apache Iceberg: the open specification is natively supported by Databricks, Athena, Snowflake, Spark, Flink, and all major cloud catalogs without vendor-specific connectors or format lock-in. All four requirements are first-class Iceberg features.",
@@ -1952,7 +1962,8 @@
     "difficulty": "hard",
     "type": "scenario",
     "mock_only": true,
-    "description": "A backend team needs to add a risk_tier column (VARCHAR(10) NOT NULL DEFAULT 'standard') to a 500-million-row Postgres 14 transactions table receiving 3,000 writes/second in production. A junior engineer proposes: ALTER TABLE transactions ADD COLUMN risk_tier VARCHAR(10) NOT NULL DEFAULT 'standard'. A senior engineer warns this could cause a production outage. Who is correct?",
+    "scenario_context": "A backend team needs to add a risk_tier column (VARCHAR(10) NOT NULL DEFAULT 'standard') to a 500-million-row Postgres 14 transactions table receiving 3,000 writes/second in production. A junior engineer proposes: ALTER TABLE transactions ADD COLUMN risk_tier VARCHAR(10) NOT NULL DEFAULT 'standard'. A senior engineer warns this could cause a production outage.",
+    "description": "Who is correct?",
     "options": [
       "The senior engineer is wrong. In Postgres 11+, adding a NOT NULL column with a constant, non-volatile DEFAULT is a metadata-only operation — the default value is stored in the system catalog and applied to existing rows at read time without rewriting the table. The ACCESS EXCLUSIVE lock is held only briefly for the metadata change and is safe during business hours.",
       "The senior engineer is correct. ALTER TABLE acquires an ACCESS EXCLUSIVE lock for the full duration of backfilling the DEFAULT value into all 500M existing rows. On a busy table, this lock blocks all reads and writes for the duration — potentially minutes to hours — causing a production outage.",
@@ -2112,7 +2123,8 @@
     "difficulty": "hard",
     "type": "scenario",
     "mock_only": true,
-    "description": "A data team is building a feature store for a customer churn prediction model. Three features are needed: (1) 30-day rolling transaction count (expensive SQL window aggregation over millions of rows), (2) current account balance (trivial SELECT from one column), (3) fraud_score (a float delivered by a third-party API HTTP response — not available as a column in any table). The team debates ETL (pre-compute in Spark, write to feature store) vs. ELT (write raw data to the lake, compute features via SQL at query time). Which approach is most defensible?",
+    "scenario_context": "A data team is building a feature store for a customer churn prediction model. Three features are needed: (1) 30-day rolling transaction count (expensive SQL window aggregation over millions of rows), (2) current account balance (trivial SELECT from one column), (3) fraud_score (a float delivered by a third-party API HTTP response — not available as a column in any table). The team debates ETL (pre-compute in Spark, write to feature store) vs. ELT (write raw data to the lake, compute features via SQL at query time).",
+    "description": "Which approach is most defensible?",
     "options": [
       "ELT is always preferred for ML feature stores: it preserves raw data, allows feature definitions to be updated retroactively, and leverages the data warehouse's query engine for computation — no Spark cluster is needed.",
       "Neither ETL nor ELT applies to a feature store: feature stores require a dedicated serving layer with sub-millisecond read latency that neither batch ETL nor query-time ELT can provide.",
@@ -2138,7 +2150,8 @@
     "difficulty": "hard",
     "type": "scenario",
     "mock_only": true,
-    "description": "A schema review committee must classify four proposed changes to an Avro schema: (1) adding an optional field with a default value, (2) renaming an existing field, (3) changing a field from nullable (union type with null) to required (non-nullable), (4) removing an optional field that has a default value. Which classification is correct?",
+    "scenario_context": "A schema review committee must classify four proposed changes to an Avro schema: (1) adding an optional field with a default value, (2) renaming an existing field, (3) changing a field from nullable (union type with null) to required (non-nullable), (4) removing an optional field that has a default value.",
+    "description": "Which classification is correct?",
     "options": [
       "All four are non-breaking: Avro's schema resolution handles optional field additions, renames, nullability changes, and removals transparently at deserialization.",
       "Only change 1 (add optional field) is non-breaking. Changes 2, 3, and 4 are breaking: renames change generated class attribute names, removing the null union drops null tolerance, and removing a field drops data consumers expect.",
@@ -2272,7 +2285,8 @@
     "difficulty": "hard",
     "type": "scenario",
     "mock_only": true,
-    "description": "A data platform team operates 500 Airflow DAGs. The Airflow scheduler is at 80% CPU and occasionally misses 1-minute schedule intervals. The team evaluates two options: (A) scale the Airflow scheduler — larger instance, more workers; (B) migrate high-volume DAGs to event-driven triggers — Kafka events trigger DAG runs instead of cron. A senior engineer argues event-driven is always better at scale. Which response is most accurate?",
+    "scenario_context": "A data platform team operates 500 Airflow DAGs. The Airflow scheduler is at 80% CPU and occasionally misses 1-minute schedule intervals. The team evaluates two options: (A) scale the Airflow scheduler — larger instance, more workers; (B) migrate high-volume DAGs to event-driven triggers — Kafka events trigger DAG runs instead of cron. A senior engineer argues event-driven is always better at scale.",
+    "description": "Which response is most accurate?",
     "options": [
       "The senior engineer is correct: Airflow's cron-based scheduler does not scale past a few hundred DAGs without degrading. Event-driven triggers are always superior for data pipelines at 500+ DAGs.",
       "Airflow scheduling scales horizontally with additional schedulers — adding scheduler instances resolves the CPU bottleneck without any architectural change. Event-driven triggers are only necessary when pipelines must react to real-time events with sub-second latency.",
