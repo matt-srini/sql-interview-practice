@@ -72,8 +72,7 @@
       "A `dict[str, set]` lets you accumulate unique user IDs per date with O(1) inserts."
     ],
     "concepts": [
-      "HASH MAP & FREQUENCY COUNTING",
-      "MEMBERSHIP-BASED DEDUPLICATION"
+      "HASH-MAP STATE"
     ]
   },
   {
@@ -126,7 +125,7 @@
       "For ties, a compound sort key `(-freq, label)` handles descending-count + alphabetical simultaneously."
     ],
     "concepts": [
-      "HASH MAP & FREQUENCY COUNTING",
+      "HASH-MAP STATE",
       "INDEXED SEQUENCE REASONING"
     ]
   },
@@ -191,8 +190,8 @@
       "Iterate once, append only on first occurrence."
     ],
     "concepts": [
-      "MEMBERSHIP-BASED DEDUPLICATION",
-      "LINEAR SCAN & PASS EFFICIENCY"
+      "HASH-MAP STATE",
+      "INDEXED SEQUENCE REASONING"
     ]
   },
   {
@@ -270,8 +269,8 @@
       "A single pass works if events are pre-sorted by timestamp (as stated). No need to sort again."
     ],
     "concepts": [
-      "streaming",
-      "HASH MAP & FREQUENCY COUNTING"
+      "STREAMING / ONLINE REDUCTION",
+      "HASH-MAP STATE"
     ]
   },
   {
@@ -335,7 +334,7 @@
       "A compound sort key handles both ordering rules in one sort."
     ],
     "concepts": [
-      "HASH MAP & FREQUENCY COUNTING",
+      "HASH-MAP STATE",
       "INDEXED SEQUENCE REASONING"
     ]
   },
@@ -402,8 +401,8 @@
       "A monotonic deque stores candidate indices in decreasing value order — the front is always the current window's maximum."
     ],
     "concepts": [
-      "SLIDING WINDOW & TWO-POINTER",
-      "MONOTONIC STACK & DEQUE"
+      "SLIDING WINDOW",
+      "STACK & MONOTONIC STRUCTURES"
     ]
   },
   {
@@ -462,8 +461,7 @@
       "Track three states per node — unvisited, in-progress (on the current DFS stack), and finished. A back edge to an in-progress node is a cycle."
     ],
     "concepts": [
-      "cycle detection",
-      "TOPOLOGICAL SORT & DEPENDENCY ORDERING"
+      "GRAPH TRAVERSAL (BFS / DFS)"
     ]
   },
   {
@@ -557,8 +555,8 @@
       "Maintain the last merged interval's end and extend it greedily when the next start doesn't exceed it."
     ],
     "concepts": [
-      "SLIDING WINDOW & TWO-POINTER",
-      "GREEDY & INTERVAL SCHEDULING"
+      "SLIDING WINDOW",
+      "GREEDY CHOICE"
     ]
   },
   {
@@ -632,9 +630,9 @@
       "A deque lets you efficiently evict old timestamps from the front as the window slides forward."
     ],
     "concepts": [
-      "SLIDING WINDOW & TWO-POINTER",
-      "MONOTONIC STACK & DEQUE",
-      "STREAMING & STATEFUL PROCESSING"
+      "SLIDING WINDOW",
+      "STACK & MONOTONIC STRUCTURES",
+      "STREAMING / ONLINE REDUCTION"
     ]
   }
 ]
