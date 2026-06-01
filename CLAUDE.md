@@ -126,7 +126,7 @@ A data interview practice platform covering nine tracks. Users write SQL or Pyth
 **Modes per track:**
 - **Challenge mode** — plan-aware unlock rules, persistent progress, 876 practice questions across 9 tracks
 - **Mock mode** — 793 additional mock-only questions (Pro/Elite), never shown in practice catalog
-- **Sample mode** — 81 sandbox questions across all 9 tracks (3 per track × 3 difficulties), no progress recorded, no login required. Every track has **dedicated sample questions** completely separate from the practice and mock pools — samples never duplicate practice or mock content. Sample IDs use the compact TXS format (e.g., 211–233 for Python, 711–733 for Statistics); sample files live in `backend/content/sample_questions/`.
+- **Sample mode** — 81 sandbox questions across all 9 tracks (3 per track × 3 difficulties), no progress recorded, no login required. Every track has **dedicated sample questions** completely separate from the practice and mock pools — samples never duplicate practice or mock content. Sample IDs use the compact TXS format (e.g., 211–233 for Python, 711–733 for Statistics); sample files live in `backend/content/sample_questions/`. The Sample Hub at `/sample` is the discovery surface for the entire set; SampleQuestionPage at `/sample/:topic/:difficulty` carries an in-page track + difficulty switcher so users can pivot without returning to the Hub. Logged-in users see per-`(track, difficulty)` tried/total markers on the Hub, powered by `GET /api/sample/summary` (anonymous visitors see ghost counts — no surveilling pre-signup).
 
 **Tracks:**
 - **SQL** — 118 practice (37 easy / 50 medium / 31 hard) + 165 mock-only, DuckDB execution, realistic relational datasets
@@ -264,7 +264,8 @@ sql-interview-practice/
 │   │       ├── ProgressDashboard.js    # Cross-track progress + coaching insights at /dashboard
 │   │       ├── MockHub.js              # Mock interview lobby at /mock — two-column desktop lobby (left: hero + mode cards + benchmark blueprint / drill planner + config; right rail: sticky session brief + start CTA); analytics and history below; collapses to single-column on mobile
 │   │       ├── MockSession.js          # Active mock session + post-mortem insights at /mock/:id with benchmark/drill-aware session framing and follow-up CTAs
-│   │       ├── SampleQuestionPage.js   # Topic-aware sample page with per-question draft autosave
+│   │       ├── SampleHubPage.js        # Sample discovery surface at /sample — 9-track × 3-difficulty grid, tried/total markers when logged in
+│   │       ├── SampleQuestionPage.js   # Topic-aware sample page with per-question draft autosave and in-page track + difficulty switcher
 │   │       ├── AuthPage.js
 │   │       ├── ResetPasswordPage.js    # Password reset token consumer at /auth/reset-password
 │   │       └── VerifyEmailPage.js      # Email verification token consumer at /auth/verify-email

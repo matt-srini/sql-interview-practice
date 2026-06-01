@@ -21,8 +21,10 @@ Defined in `frontend/src/App.js`:
 /learn                           → LearningPathsIndex (all paths, grouped by track, topic pills)
 /learn/:topic                    → LearningPathsIndex (filtered to one track)
 /learn/:topic/:slug              → LearningPath (curated path — breadcrumb, progress bar, question list)
+/sample                          → SampleHubPage (discovery surface — 9-track × 3-difficulty grid)
 /sample/:topic/:difficulty       → SampleQuestionPage (topic-aware sample mode)
-/sample/:difficulty              → redirect → /sample/sql/:difficulty
+/sample/:difficulty              → redirect → /sample/sql/:difficulty (legacy)
+                                   /sample/:track → /sample/:track/easy (URL-guess convenience)
 /practice/:topic                 → TopicShell (TopicProvider + CatalogProvider + AppShell)
   /practice/:topic               → TrackHubPage (track overview when no question selected)
   /practice/:topic/questions/:id → QuestionPage (topic-aware)
@@ -153,13 +155,27 @@ Main practice screen. Layout and behavior vary by modality and topic:
 - **Focus mode**: when `?focus=1` is in the URL, AppShell automatically collapses the sidebar. A "⊞ Focus" / "⊡ Focus" toggle pill in the workspace topbar adds/removes the param. This narrows the workspace to just the editor + question panel.
 - **Session goal widget**: a small widget in the sidebar bottom tracks "questions solved this session" against a user-set target (1–20, default 5, stored in `localStorage` under `session-goal`). Session baseline is captured once from `catalog` on mount and stored in `sessionStorage` under `session-start-solved`. The widget shows a progress bar and a "Goal reached" message when the target is met.
 
+### SampleHubPage (`/sample`)
+
+Discovery surface for the 81 sample questions — the entry point users hit from the landing hero CTA, the closer CTA, the Tracks Index "Try sample →" links, and the Topbar Practice dropdown "Try a sample" entry.
+
+**Layout:**
+- Topbar (shared `Topbar` component, `variant='landing'`) so the user can still pivot to Mock, Dashboard, Practice ▾, or sign in
+- Hero block (`.sample-hub-header`) — eyebrow ("Free samples · no account required"), h1, sub-copy
+- 9-track grid (`.sample-hub-grid`) — 3 cols at ≥ 901 px, 2 cols 641–900 px, 1 col ≤ 640 px
+- Each card (`.sample-hub-card`) shows: track color dot + label, 3-line description, and a 3-column row of difficulty buttons. Card hover border-color uses the track color.
+- Each difficulty button (`.sample-hub-diff-btn`) links to `/sample/:topic/:difficulty`. Logged-in users see `tried/total` markers (`✓ all tried` when complete); logged-out users see a ghost `3 questions` label
+- Footer block — copy + "Create a free account →" CTA
+
+**Tried markers** come from `GET /api/sample/summary`, fetched on mount only when logged in. Anonymous visitors never see counters — matches the no-friction promise (no surveilling pre-signup).
+
 ### SampleQuestionPage (`/sample/:topic/:difficulty`)
 
 Standalone sample practice. No sidebar. No effect on challenge progression.
 
 **Topbar** — three-column, full-width:
 - Left: `datathink` home link
-- Center: `←` back arrow (`<a href="/#landing-tracks">`) + track + difficulty label
+- Center: `←` back arrow (→ `/sample`) + track-mode pill + in-page `SampleSwitcher` (track `<select>` + Easy/Medium/Hard pill group). Switching difficulty/track is a single click — no return to the Hub required.
 - Right: "Start the challenge" CTA → `/practice/:topic`
 
 Has the same **keyboard shortcuts** and **editor height toggle** as `QuestionPage` (same implementation pattern — refs for stale-closure safety, `localStorage` persistence). No `isLocked` guard since sample questions are always accessible.

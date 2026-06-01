@@ -139,6 +139,47 @@ def test_tc117_all_4_sample_tracks_accessible():
     assert "id" in r_pyspark.json()
 
 
+def test_tc119_sample_summary_returns_all_tracks_with_zero_tried():
+    """TC-119: GET /api/sample/summary → 200 with every track + difficulty,
+    tried=0 for a fresh anonymous user, totals match catalog shape."""
+    with TestClient(app) as client:
+        r = client.get("/api/sample/summary")
+    assert r.status_code == 200
+    body = r.json()
+    assert "tracks" in body
+    tracks = body["tracks"]
+
+    # Every active track (9) appears with all 3 difficulties.
+    expected_slugs = {
+        "sql", "python", "python-data", "pyspark",
+        "data-engineering", "data-modeling", "statistics",
+        "ml-fundamentals", "experimentation",
+    }
+    assert set(tracks.keys()) >= expected_slugs
+
+    for slug in expected_slugs:
+        diffs = tracks[slug]
+        for d in ("easy", "medium", "hard"):
+            assert d in diffs
+            cell = diffs[d]
+            assert cell["total"] == 3  # 3 samples per (track, difficulty)
+            assert cell["tried"] == 0
+
+
+def test_tc120_sample_summary_tracks_tried_count_after_seen():
+    """TC-120: After GET /api/sample/sql/easy twice, summary reports tried=2."""
+    with TestClient(app) as client:
+        client.get("/api/sample/sql/easy")
+        client.get("/api/sample/sql/easy")
+        r = client.get("/api/sample/summary")
+    assert r.status_code == 200
+    body = r.json()
+    assert body["tracks"]["sql"]["easy"]["tried"] == 2
+    assert body["tracks"]["sql"]["easy"]["total"] == 3
+    # Other tracks still 0
+    assert body["tracks"]["python"]["easy"]["tried"] == 0
+
+
 def test_tc118_sample_run_code_for_python_data_executes_pandas():
     """TC-118: Sample run-code for python-data → 200 with test results.
     Uses dedicated sample question 311 (not a practice question).

@@ -192,6 +192,17 @@ export default function Topbar({
                           {TRACK_META[t].label}
                         </NavLink>
                       ))}
+                      <div className="topbar-practice-menu-divider" />
+                      <NavLink
+                        className={({ isActive }) =>
+                          `topbar-practice-item topbar-practice-item--secondary${isActive ? ' topbar-practice-item--active' : ''}`
+                        }
+                        to="/sample"
+                        onClick={() => setPracticeOpen(false)}
+                      >
+                        <span className="topbar-practice-item-glyph" aria-hidden="true">★</span>
+                        Try a sample
+                      </NavLink>
                     </div>
                   )}
                 </div>
@@ -298,6 +309,16 @@ export default function Topbar({
                           {TRACK_META[t].label}
                         </NavLink>
                       ))}
+                      <NavLink
+                        className={({ isActive }) =>
+                          `topbar-mobile-item topbar-mobile-item--secondary${isActive ? ' topbar-mobile-item--active' : ''}`
+                        }
+                        to="/sample"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        <span className="topbar-practice-item-glyph" aria-hidden="true">★</span>
+                        Try a sample
+                      </NavLink>
                       <div className="topbar-mobile-divider" />
                       <NavLink
                         to="/mock"

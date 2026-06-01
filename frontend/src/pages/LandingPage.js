@@ -468,7 +468,7 @@ function HeroSection({ user, dashData, reduced }) {
             Nine tracks — SQL, Python, ML, statistics, data engineering, and more — on real engines. The kind of thinking that holds up years into the job — and if it also makes you exceptional in interviews, that's a consequence, not the goal.
           </p>
           <div className="lp-hero-actions">
-            <Link className="btn btn-primary" to="/sample/sql/easy">Try a free sample →</Link>
+            <Link className="btn btn-primary" to="/sample">Try a free sample →</Link>
             <button
               type="button"
               className="btn btn-secondary"
@@ -758,14 +758,22 @@ function TracksIndexSection() {
                     <span className="lp-track-format">{FORMAT_LABELS[slug] ?? meta.tagline}</span>
                   </div>
                   {isActive ? (
-                    <Link
-                      to={`/practice/${slug}`}
-                      className="lp-track-enter"
-                      style={{ '--row-color': meta.color }}
-                      aria-label={`Open ${meta.label} track`}
-                    >
-                      Enter →
-                    </Link>
+                    <div className="lp-track-actions" style={{ '--row-color': meta.color }}>
+                      <Link
+                        to={`/practice/${slug}`}
+                        className="lp-track-enter"
+                        aria-label={`Open ${meta.label} track`}
+                      >
+                        Enter →
+                      </Link>
+                      <Link
+                        to={`/sample/${slug}/easy`}
+                        className="lp-track-sample"
+                        aria-label={`Try a ${meta.label} sample`}
+                      >
+                        Try sample →
+                      </Link>
+                    </div>
                   ) : (
                     <span className="lp-track-enter lp-track-enter--soon">Soon</span>
                   )}
@@ -920,7 +928,7 @@ function CloserSection() {
         <p className="lp-closer-line">
           Stop recognizing. Start reasoning.
         </p>
-        <Link className="btn btn-primary" to="/sample/sql/easy">Try a free sample →</Link>
+        <Link className="btn btn-primary" to="/sample">Try a free sample →</Link>
       </div>
     </section>
   );

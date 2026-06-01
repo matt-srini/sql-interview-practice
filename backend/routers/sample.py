@@ -9,8 +9,14 @@ import python_guard
 from deps import RunQueryRequest, SubmitRequest, _validate_difficulty, get_current_user
 from evaluator import evaluate, run_query
 from middleware.request_context import get_request_id
-from progress import clear_seen_sample_ids, get_seen_sample_ids, mark_sample_seen
+from progress import (
+    clear_seen_sample_ids,
+    get_seen_sample_counts,
+    get_seen_sample_ids,
+    mark_sample_seen,
+)
 from sample_questions import (
+    get_sample_catalog_shape,
     get_sample_question,
     get_sample_question_for_topic,
     get_topic_sample_pool,
@@ -124,6 +130,48 @@ async def _get_sample_question_by_topic_and_difficulty(
             "exhausted": remaining_count == 0,
         },
     }
+
+
+@router.get("/summary")
+async def get_sample_summary(
+    current_user: dict = Depends(get_current_user),
+) -> dict[str, Any]:
+    """Per-(track, difficulty) sample pool sizes and how many the user has tried.
+
+    Powers the Sample Hub tile UI. Anonymous-but-tracked users (real user rows
+    without an email) also get a real count — anonymous-first identity already
+    persists `user_sample_seen` rows for them.
+
+    Response:
+        {
+          "tracks": {
+            "<api_slug>": {
+              "<difficulty>": { "total": int, "tried": int }
+            }
+          }
+        }
+    """
+    request_id = get_request_id()
+    logger.info(
+        "[request_id=%s] Sample /summary: user_id=%s",
+        request_id,
+        current_user["id"],
+    )
+
+    shape = get_sample_catalog_shape()  # {db_topic: {diff: total}}
+    seen_counts = await get_seen_sample_counts(current_user["id"])  # {(db_topic, diff): tried}
+
+    tracks: dict[str, dict[str, dict[str, int]]] = {}
+    for db_topic, by_diff in shape.items():
+        api_slug = _topic_api_slug(db_topic)
+        tracks[api_slug] = {}
+        for diff, total in by_diff.items():
+            tried = seen_counts.get((db_topic, diff), 0)
+            # Clamp tried to total — if pool size ever shrinks below historical
+            # seen rows, never show "5/3 tried".
+            tried_clamped = min(tried, total)
+            tracks[api_slug][diff] = {"total": total, "tried": tried_clamped}
+    return {"tracks": tracks}
 
 
 @router.get("/{difficulty}")

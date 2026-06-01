@@ -3,6 +3,7 @@ from __future__ import annotations
 import logging
 
 from db import clear_progress, clear_seen_samples, get_seen_sample_ids as db_get_seen_sample_ids
+from db import get_seen_sample_counts as db_get_seen_sample_counts
 from db import get_solved_ids as db_get_solved_ids
 from db import mark_sample_seen as db_mark_sample_seen
 from db import mark_solved as db_mark_solved
@@ -40,6 +41,10 @@ async def clear_user_progress(user_id: str) -> None:
 
 async def get_seen_sample_ids(user_id: str, difficulty: str, topic: str = "sql") -> set[int]:
     return await db_get_seen_sample_ids(user_id, difficulty, topic=topic)
+
+
+async def get_seen_sample_counts(user_id: str) -> dict[tuple[str, str], int]:
+    return await db_get_seen_sample_counts(user_id)
 
 
 async def mark_sample_seen(user_id: str, difficulty: str, question_id: int, topic: str = "sql") -> None:

@@ -23,6 +23,8 @@ import MockSession from './pages/MockSession';
 import ProgressDashboard from './pages/ProgressDashboard';
 import QuestionPage from './pages/QuestionPage';
 import SampleQuestionPage from './pages/SampleQuestionPage';
+import SampleHubPage from './pages/SampleHubPage';
+import { TRACK_META } from './trackRegistry';
 import LearningPath from './pages/LearningPath';
 import LearningPathsIndex from './pages/LearningPathsIndex';
 import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
@@ -181,6 +183,7 @@ function AppRoutes() {
         <Route path="/mock" element={<AuthRequired><MockHub /></AuthRequired>} />
         <Route path="/mock/:id" element={<AuthRequired><MockSession /></AuthRequired>} />
         <Route path="/account" element={<AuthRequired><AccountPage /></AuthRequired>} />
+        <Route path="/sample" element={<SampleHubPage />} />
         <Route path="/sample/:topic/:difficulty" element={<SampleQuestionPage />} />
         <Route path="/sample/:difficulty" element={<LegacySampleRedirect />} />
 
@@ -249,9 +252,18 @@ function LegacyQuestionRedirect() {
 }
 
 // Legacy redirect: /sample/:difficulty → /sample/sql/:difficulty
+// Also handles users guessing /sample/<topic> — redirects to /sample/<topic>/easy
+// when the path segment matches a known track slug. Unknown segments fall back
+// to the Sample Hub.
 function LegacySampleRedirect() {
   const { difficulty } = useParams();
-  return <Navigate to={`/sample/sql/${difficulty}`} replace />;
+  if (difficulty === 'easy' || difficulty === 'medium' || difficulty === 'hard') {
+    return <Navigate to={`/sample/sql/${difficulty}`} replace />;
+  }
+  if (TRACK_META[difficulty]) {
+    return <Navigate to={`/sample/${difficulty}/easy`} replace />;
+  }
+  return <Navigate to="/sample" replace />;
 }
 
 export default function App() {

@@ -432,6 +432,26 @@ def get_sample_questions_by_difficulty() -> dict[str, list[dict[str, Any]]]:
     return grouped
 
 
+def get_all_topic_db_slugs() -> list[str]:
+    """All db_topic slugs that have a sample pool (SQL + every dedicated file)."""
+    return ["sql"] + list(_TRACK_SAMPLE_FILES.keys())
+
+
+def get_sample_catalog_shape() -> dict[str, dict[str, int]]:
+    """Return {db_topic: {difficulty: pool_size}} across every track with samples.
+
+    Used by the summary endpoint so the frontend can compute remaining =
+    total - tried per (track, difficulty).
+    """
+    shape: dict[str, dict[str, int]] = {}
+    for db_topic in get_all_topic_db_slugs():
+        shape[db_topic] = {}
+        for diff in _DIFFICULTY_ORDER:
+            pool, _ = get_topic_sample_pool(topic=db_topic, difficulty=diff)
+            shape[db_topic][diff] = len(pool)
+    return shape
+
+
 def get_topic_sample_pool(
     *,
     topic: str,

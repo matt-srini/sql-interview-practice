@@ -9376,6 +9376,21 @@ select {
   border-radius: 50%;
   flex-shrink: 0;
 }
+.topbar-practice-menu-divider {
+  height: 1px;
+  background: var(--border-subtle);
+  margin: 0.3rem 0.4rem;
+}
+.topbar-practice-item--secondary {
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+}
+.topbar-practice-item-glyph {
+  width: 8px;
+  text-align: center;
+  font-size: 0.75rem;
+  color: var(--accent);
+}
 
 /* ── Responsive ──────────────────────────────────────────── */
 @media (max-width: 900px) {
@@ -12589,4 +12604,219 @@ select {
   .lp-hero-li-cards { flex-direction: column; }
   .lp-li-card { max-width: 100%; }
   .lp-paths-header { flex-direction: column; }
+}
+
+/* ─── Sample Hub (/sample) ──────────────────────────────────────────
+ * Discovery surface for the 81 sample questions. Reuses landing tokens
+ * (.lp-track-dot, .lp-eyebrow, .container). Logged-in users see tried/total
+ * markers on each (track, difficulty) tile; logged-out users see ghost
+ * counts to match the no-friction promise.
+ */
+.sample-hub { padding: 56px 0 80px; }
+.sample-hub-header {
+  max-width: 720px;
+  margin: 0 auto 48px;
+  text-align: center;
+}
+.sample-hub-title {
+  font-family: 'Bricolage Grotesque', 'Inter', sans-serif;
+  font-size: clamp(1.7rem, 3.6vw, 2.6rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--text-strong);
+  margin: 0.5rem 0 0.75rem;
+}
+.sample-hub-sub {
+  font-size: 1rem;
+  line-height: 1.55;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.sample-hub-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  margin-bottom: 56px;
+}
+.sample-hub-card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle, rgba(26,26,24,0.08));
+  border-radius: var(--radius-md);
+  padding: 22px 22px 20px;
+  transition: border-color 160ms, box-shadow 160ms, transform 160ms;
+}
+[data-theme="dark"] .sample-hub-card { border-color: rgba(240,238,233,0.08); }
+.sample-hub-card:hover {
+  border-color: var(--track-color, var(--accent));
+  box-shadow: 0 6px 20px rgba(0,0,0,0.06);
+}
+.sample-hub-card-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.sample-hub-card-name {
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--text-strong);
+  margin: 0;
+}
+.sample-hub-card-desc {
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: var(--text-secondary);
+  margin: 0;
+  flex-grow: 1;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.sample-hub-diffs {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-top: 6px;
+}
+.sample-hub-diff-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  padding: 10px 12px;
+  background: var(--surface-base, var(--bg-primary));
+  border: 1px solid var(--border-subtle, rgba(26,26,24,0.08));
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+  transition: background 140ms, border-color 140ms, transform 140ms;
+}
+[data-theme="dark"] .sample-hub-diff-btn { border-color: rgba(240,238,233,0.1); }
+.sample-hub-diff-btn:hover {
+  background: var(--surface-card);
+  border-color: var(--track-color, var(--accent));
+  transform: translateY(-1px);
+}
+.sample-hub-diff-btn.is-done {
+  background: color-mix(in srgb, var(--track-color, var(--accent)) 8%, transparent);
+  border-color: color-mix(in srgb, var(--track-color, var(--accent)) 30%, transparent);
+}
+.sample-hub-diff-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-strong);
+}
+.sample-hub-diff-meta {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+}
+.sample-hub-diff-meta--ghost {
+  opacity: 0.65;
+}
+
+.sample-hub-footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding-top: 32px;
+  border-top: 1px solid var(--border-subtle, rgba(26,26,24,0.06));
+  text-align: center;
+}
+[data-theme="dark"] .sample-hub-footer { border-top-color: rgba(240,238,233,0.06); }
+.sample-hub-foot-copy {
+  max-width: 560px;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin: 0;
+  line-height: 1.55;
+}
+.sample-hub-foot-link {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 600;
+}
+.sample-hub-foot-link:hover { text-decoration: underline; }
+.sample-hub-foot-actions { display: flex; gap: 12px; }
+
+@media (max-width: 900px) {
+  .sample-hub-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 640px) {
+  .sample-hub-grid { grid-template-columns: 1fr; }
+  .sample-hub { padding: 40px 0 64px; }
+}
+
+/* ─── Sample in-page switcher (inside SampleQuestionPage topbar) ─── */
+.sample-switcher {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+.sample-switcher-track {
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-strong);
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle, rgba(26,26,24,0.1));
+  border-radius: var(--radius-sm);
+  padding: 6px 10px;
+  cursor: pointer;
+  transition: border-color 140ms;
+}
+[data-theme="dark"] .sample-switcher-track { border-color: rgba(240,238,233,0.12); }
+.sample-switcher-track:hover { border-color: var(--accent); }
+.sample-switcher-diffs {
+  display: inline-flex;
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle, rgba(26,26,24,0.1));
+  border-radius: var(--radius-sm);
+  padding: 2px;
+}
+[data-theme="dark"] .sample-switcher-diffs { border-color: rgba(240,238,233,0.12); }
+.sample-switcher-diff {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 5px 10px;
+  border-radius: calc(var(--radius-sm) - 2px);
+  text-decoration: none;
+  color: var(--text-secondary);
+  transition: background 120ms, color 120ms;
+}
+.sample-switcher-diff:hover { color: var(--text-strong); }
+.sample-switcher-diff.is-active {
+  background: var(--accent);
+  color: var(--accent-on-color, #fff);
+}
+@media (max-width: 640px) {
+  .sample-switcher { gap: 6px; }
+  .sample-switcher-diff { padding: 4px 7px; font-size: 0.7rem; }
+}
+
+/* ─── Tracks Index 'Try sample →' secondary link ───────────────────── */
+.lp-track-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+.lp-track-sample {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: color 140ms;
+  white-space: nowrap;
+}
+.lp-track-sample:hover { color: var(--row-color, var(--accent)); }
+@media (max-width: 900px) {
+  .lp-track-sample { display: none; }
 }

@@ -114,8 +114,11 @@ Also available without `/api` prefix.
 
 ### Sample — `/api/sample`
 
+The Sample Hub at `/sample` is the discovery surface for the 81 sample questions; its tried/total markers are powered by `GET /api/sample/summary`. SampleQuestionPage at `/sample/:topic/:difficulty` carries an in-page track + difficulty switcher so users can pivot without returning to the Hub.
+
 | Method | Path | Description |
 |---|---|---|
+| GET | `/api/sample/summary` | Aggregate per-`(track, difficulty)` tried/total counts for the current user. Used by the Sample Hub tile UI. Response: `{ tracks: { <api_slug>: { <difficulty>: { total, tried } } } }`. |
 | GET | `/api/sample/{topic}/{difficulty}` | Next unseen sample for a track+difficulty. Marks as seen. Returns 409 when all 3 are exhausted. |
 | POST | `/api/sample/{topic}/{difficulty}/reset` | Clears seen state for that track+difficulty |
 | POST | `/api/sample/sql/run-query` | Run SQL in SQL sample context (no lock checks) |

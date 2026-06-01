@@ -10,6 +10,7 @@ import SchemaViewer from '../components/SchemaViewer';
 import TestCasePanel from '../components/TestCasePanel';
 import VariablesPanel from '../components/VariablesPanel';
 import { TRACK_META } from '../contexts/TopicContext';
+import { TRACK_SLUGS } from '../trackRegistry';
 import { useCatalogCounts } from '../contexts/CatalogCountsContext';
 import { useTheme } from '../App';
 import { renderDescription } from '../utils/renderDescription';
@@ -17,6 +18,37 @@ import { track } from '../analytics';
 
 const SQL_PLACEHOLDER = '-- Write your SQL query here\nSELECT ';
 const PYTHON_PLACEHOLDER = '# Write your solution here\n';
+const DIFFICULTIES = ['easy', 'medium', 'hard'];
+
+// In-page track + difficulty switcher so users can pivot without leaving
+// the sample surface. Lives in the SampleQuestionPage topbar (both states).
+function SampleSwitcher({ topic, difficulty, navigate }) {
+  return (
+    <div className="sample-switcher">
+      <select
+        className="sample-switcher-track"
+        value={topic}
+        onChange={(e) => navigate(`/sample/${e.target.value}/${difficulty}`)}
+        aria-label="Switch sample track"
+      >
+        {TRACK_SLUGS.map((slug) => (
+          <option key={slug} value={slug}>{TRACK_META[slug].label}</option>
+        ))}
+      </select>
+      <div className="sample-switcher-diffs" role="group" aria-label="Switch sample difficulty">
+        {DIFFICULTIES.map((d) => (
+          <Link
+            key={d}
+            to={`/sample/${topic}/${d}`}
+            className={`sample-switcher-diff${d === difficulty ? ' is-active' : ''}`}
+          >
+            {d.charAt(0).toUpperCase() + d.slice(1)}
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 export default function SampleQuestionPage() {
   const { topic: rawTopic, difficulty } = useParams();
@@ -295,8 +327,8 @@ export default function SampleQuestionPage() {
               <button
                 type="button"
                 className="sample-back-link"
-                aria-label="Back to track selection"
-                onClick={() => navigate('/', { state: { scrollTo: 'landing-tracks' } })}
+                aria-label="Back to sample hub"
+                onClick={() => navigate('/sample')}
               >←</button>
               <span
                 className="shell-pill shell-pill-mode shell-pill-mode-sample"
@@ -305,6 +337,7 @@ export default function SampleQuestionPage() {
                 <span className="shell-pill-mode-dot" aria-hidden="true" />
                 {topicLabel} · Sample
               </span>
+              <SampleSwitcher topic={topic} difficulty={difficulty} navigate={navigate} />
             </div>
             <div className="sample-topbar-right">
               <Link className="btn btn-secondary" to={challengePath}>Start the challenge</Link>
@@ -434,8 +467,8 @@ export default function SampleQuestionPage() {
             <button
               type="button"
               className="sample-back-link"
-              aria-label="Back to track selection"
-              onClick={() => navigate('/', { state: { scrollTo: 'landing-tracks' } })}
+              aria-label="Back to sample hub"
+              onClick={() => navigate('/sample')}
             >←</button>
             <span
               className="shell-pill shell-pill-mode shell-pill-mode-sample"
@@ -444,6 +477,7 @@ export default function SampleQuestionPage() {
               <span className="shell-pill-mode-dot" aria-hidden="true" />
               {topicLabel} · Sample
             </span>
+            <SampleSwitcher topic={topic} difficulty={difficulty} navigate={navigate} />
           </div>
           <div className="sample-topbar-right">
             <Link className="btn btn-secondary" to={challengePath}>Start the challenge</Link>

@@ -702,6 +702,28 @@ async def clear_progress(user_id: str) -> None:
         await session.commit()
 
 
+async def get_seen_sample_counts(user_id: str) -> dict[tuple[str, str], int]:
+    """Aggregate seen-sample counts grouped by (topic, difficulty) for one user.
+
+    Returns a mapping {(topic, difficulty): count}. Used by the sample summary
+    endpoint to mark which (track, difficulty) tiles the user has tried.
+    """
+    session_factory = _session_factory_or_raise()
+    async with session_factory() as session:
+        result = await session.execute(
+            text(
+                """
+                SELECT topic, difficulty, COUNT(*) AS n
+                FROM user_sample_seen
+                WHERE user_id = CAST(:user_id AS UUID)
+                GROUP BY topic, difficulty
+                """
+            ),
+            {"user_id": user_id},
+        )
+        return {(str(row[0]), str(row[1])): int(row[2]) for row in result.fetchall()}
+
+
 async def get_seen_sample_ids(user_id: str, difficulty: str, topic: str = "sql") -> set[int]:
     session_factory = _session_factory_or_raise()
     async with session_factory() as session:
