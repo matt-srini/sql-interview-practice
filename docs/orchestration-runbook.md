@@ -201,6 +201,8 @@ Fresh Opus session. NO context from Stage A or Stage B. Reads disk state against
 
 ### 4.3 Per-family coverage audit (subset of E + F)
 
+**Mock-surface blueprint feasibility (added 2026-06-01).** Every MCQ-track audit (Stage C or remediation) must verify the runtime benchmark blueprint declared in `backend/routers/mock.py` (`_benchmark_type_targets`, `_pyspark_format_targets`, and `difficulty_overrides`) is **achievable against the actual on-disk bank shape at each difficulty tier**. Method: for each declared `(track, difficulty)` blueprint, count items by `type` in the corresponding `easy.json` / `medium.json` / `hard.json` (practice + mock-only combined, since Pro/Elite benchmarks include both pools) and confirm every blueprint slot can be filled from its declared type partition without invoking `type_fallback`. This dimension was structurally absent from every prior Stage C (DE / DM / ML / Stats / Experimentation Phase 2) because the rule existed only in `docs/specs/mock-benchmark-spec.md` § Blueprint feasibility and was not propagated to the audit playbook. Treat it as load-bearing: a track that fails this check is silently degrading every benchmark session, eroding the readiness signal Pro/Elite users pay for. The principle is "**bank shape governs blueprint, not vice versa**" — never force-fit content to satisfy a fixed blueprint, and never freeze a blueprint the bank can't honor. When the two conflict, fix the blueprint in `mock.py` AND the canonical table in [`docs/features/mock.md`](../features/mock.md) § Benchmark composition.
+
 New audit dimension since the per-family coverage discipline landed:
 
 - Verify zero rule-1 floor breaches (every applicable family has practice at appropriate tier).

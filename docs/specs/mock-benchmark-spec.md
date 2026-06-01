@@ -65,7 +65,7 @@ Mock composition must respect modality.
 
 ### Blueprint feasibility — difficulty-aware shapes
 
-**A blueprint declared in code or docs must be achievable given the actual bank composition at the targeted difficulty.**
+**Bank shape governs blueprint, not vice versa.** A blueprint declared in code or docs must be achievable given the actual bank composition at the targeted difficulty. Authors **never** force-fit content to a fixed-shape blueprint — if the genuine, quality-preserving question set at a difficulty doesn't match the blueprint, the **blueprint is wrong**, not the content. Good questions are the product; blueprints are a derived contract that describes how those questions are assembled into a session. When the two conflict, fix the blueprint (and this doc).
 
 Bank type-distributions are not uniform across difficulties within a track. For example, a track's easy bank may be almost entirely `conceptual` (e.g., Data Modeling easy: 24 conceptual + 1 scenario), while its medium and hard banks support a richer variety of types. A single, difficulty-agnostic blueprint that targets multiple types will silently fail to honor its declared shape when applied to the easy tier of such a track — the runtime will either skip questions it cannot fill or pull the wrong type proportions.
 
