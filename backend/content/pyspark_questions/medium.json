@@ -2265,7 +2265,8 @@
     "difficulty": "medium",
     "mock_only": true,
     "title": "Delta Time Travel: Reading Last Night's Snapshot for Audit",
-    "description": "An audit requirement asks you to reproduce yesterday's output by reading the Delta table as it was at 11:59 PM last night. The table has had 3 OPTIMIZE runs and 2 MERGE operations since midnight. You write:\n```python\ndf = spark.read.format('delta') \\\n    .option('timestampAsOf', '2025-01-14 23:59:59') \\\n    .load('/delta/transactions')\n```\nA teammate warns: 'VACUUM was run this morning with `RETAIN 0 HOURS` — time travel won't work.' Is the teammate right?",
+    "scenario_context": "An audit requirement asks you to reproduce yesterday's output by reading the Delta table as it was at 11:59 PM last night. The table has had 3 OPTIMIZE runs and 2 MERGE operations since midnight. You write:\n```python\ndf = spark.read.format('delta') \\\n    .option('timestampAsOf', '2025-01-14 23:59:59') \\\n    .load('/delta/transactions')\n```\nA teammate warns: 'VACUUM was run this morning with `RETAIN 0 HOURS` — time travel won't work.'",
+    "description": "Is the teammate right?",
     "options": [
       "Partially right — time travel will work for versions committed before VACUUM, but VACUUM with RETAIN 0 HOURS deletes all files not referenced by the current version, making yesterday's snapshot unreachable if any of its Parquet files were replaced by OPTIMIZE/MERGE and are no longer in the current version.",
       "Wrong — Delta time travel uses the transaction log (JSON files in _delta_log/), not the Parquet data files. VACUUM only deletes unreferenced Parquet files; the transaction log is never deleted by VACUUM, so time travel always works.",
@@ -2623,7 +2624,8 @@
     "difficulty": "medium",
     "mock_only": true,
     "title": "Choosing Between persist(MEMORY_AND_DISK) and cache()",
-    "description": "A pipeline computes an expensive feature-engineering DataFrame (`features`, 50 GB after computation) that is used 4 times in the same Spark application. The cluster has 100 GB total executor memory. A data engineer uses `features.cache()`. During the third reuse, two executors OOM and their tasks are recomputed from scratch (re-running the full feature engineering pipeline). What change would prevent the recomputation?",
+    "scenario_context": "A pipeline computes an expensive feature-engineering DataFrame (`features`, 50 GB after computation) that is used 4 times in the same Spark application. The cluster has 100 GB total executor memory. A data engineer uses `features.cache()`. During the third reuse, two executors OOM and their tasks are recomputed from scratch (re-running the full feature engineering pipeline).",
+    "description": "What change would prevent the recomputation?",
     "options": [
       "Switch from `cache()` to `features.persist(StorageLevel.MEMORY_AND_DISK)`: if the 50 GB exceeds available executor memory, `MEMORY_AND_DISK` spills partition data to local disk rather than evicting it. Reuses read from disk instead of recomputing from the source.",
       "Switch from `cache()` to `features.persist(StorageLevel.DISK_ONLY)`: storing on disk is faster than recomputing and uses no executor memory, eliminating the OOM entirely.",
@@ -2872,7 +2874,8 @@
     "difficulty": "medium",
     "mock_only": true,
     "title": "Choosing the Right Join Type: Anti-Join for Finding Orphaned Records",
-    "description": "A data quality check needs to find all `orders` rows where `customer_id` has no matching row in `customers`. The table `orders` has 500 M rows; `customers` has 10 M rows. Three implementations:\n(A) `orders.join(customers, 'customer_id', 'left').filter(F.col('customers.customer_id').isNull())`\n(B) `orders.join(customers.select('customer_id').distinct(), 'customer_id', 'left_anti')`\n(C) `orders.filter(~F.col('customer_id').isin(customers.select('customer_id').rdd.flatMap(lambda x: x).collect()))`\nWhich is most correct and efficient?",
+    "scenario_context": "A data quality check needs to find all `orders` rows where `customer_id` has no matching row in `customers`. The table `orders` has 500 M rows; `customers` has 10 M rows. Three implementations:\n(A) `orders.join(customers, 'customer_id', 'left').filter(F.col('customers.customer_id').isNull())`\n(B) `orders.join(customers.select('customer_id').distinct(), 'customer_id', 'left_anti')`\n(C) `orders.filter(~F.col('customer_id').isin(customers.select('customer_id').rdd.flatMap(lambda x: x).collect()))`",
+    "description": "Which is most correct and efficient?",
     "options": [
       "Option A is best: the left join + isNull filter is the most readable pattern and Catalyst optimises it to a left anti-join internally.",
       "Option B is best: `left_anti` is the semantically correct join type for 'find rows with no match'; it is more efficient than Option A (no need to materialise the matched columns) and avoids the `distinct()` performance overhead.",
@@ -3069,7 +3072,8 @@
     "difficulty": "medium",
     "mock_only": true,
     "title": "Data Skew Detection: Using the Spark UI to Identify the Problem",
-    "description": "A sort-merge join takes 90 min. The Spark UI's Stage 7 summary shows: 500 tasks, median task duration: 45 sec, max task duration: 85 min, median shuffle read: 150 MB, max shuffle read: 180 GB. Which metric most directly confirms data skew (vs hardware failure or network issues)?",
+    "scenario_context": "A sort-merge join takes 90 min. The Spark UI's Stage 7 summary shows: 500 tasks, median task duration: 45 sec, max task duration: 85 min, median shuffle read: 150 MB, max shuffle read: 180 GB.",
+    "description": "Which metric most directly confirms data skew (vs hardware failure or network issues)?",
     "options": [
       "The 90-minute total job duration — a healthy job with balanced partitions should complete in under 10 min for this data size.",
       "The ratio of max shuffle read to median shuffle read: 180 GB ÷ 150 MB = 1200×. This extreme ratio confirms that one task is processing 1200× more data than the typical task — the signature of severe data skew on the join key.",
@@ -3177,7 +3181,8 @@
     "difficulty": "medium",
     "mock_only": true,
     "title": "Double-Counting in a Pipeline: Detecting Fan-Out Before Aggregation",
-    "description": "A revenue pipeline joins `orders` with `promotions` on `customer_id` (one order can have multiple promotions), then aggregates: `sum(order_amount)`. The result is 40% higher than the known total revenue. What is the most likely cause and diagnostic test?",
+    "scenario_context": "A revenue pipeline joins `orders` with `promotions` on `customer_id` (one order can have multiple promotions), then aggregates: `sum(order_amount)`. The result is 40% higher than the known total revenue.",
+    "description": "What is the most likely cause and diagnostic test?",
     "options": [
       "The join is adding rows due to NULL customer_id values; null keys join to all other null rows, amplifying the row count. Test: run `orders.filter(F.col('customer_id').isNull()).count()` and check if it's non-zero.",
       "The join on `customer_id` is a many-to-many join: one order may match multiple promotions, creating one row per (order, promotion) combination. Each order's `order_amount` is then summed multiple times — once per promotion. Test: compare `orders.count()` with `result_before_agg.count()`.",
