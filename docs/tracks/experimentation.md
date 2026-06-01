@@ -28,7 +28,7 @@ Question types:
 | Medium | 92001–92999 | `backend/content/experimentation_questions/medium.json` |
 | Hard | 93001–93999 | `backend/content/experimentation_questions/hard.json` |
 
-Experimentation samples are auto-sliced from the first 3 practice questions per difficulty.
+Experimentation has **dedicated sample questions** in `backend/content/sample_questions/experimentation.json` (IDs 911–913 easy, 921–923 medium, 931–933 hard). Sample questions are completely separate from the practice and mock pools and must never duplicate practice content.
 
 ## Difficulty vocabulary
 

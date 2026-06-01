@@ -48,7 +48,7 @@ Required output discipline:
 | Medium | 32001–32999 | `backend/content/python_data_questions/medium.json` |
 | Hard | 33001–33999 | `backend/content/python_data_questions/hard.json` |
 
-Samples are not stored separately. `sample_questions.py` slices the first 3 questions per difficulty by `order` field directly from the live practice catalog (e.g. `medium.json`). Sample IDs are regular practice IDs (e.g. 32001, 32002, 32003 for medium). There is no `sample/` subdirectory and no `3XS` IDs for Pandas.
+Pandas has **dedicated sample questions** in `backend/content/sample_questions/pandas.json` (IDs 311–313 easy, 321–323 medium, 331–333 hard). Sample questions are completely separate from the practice and mock pools and must never duplicate practice content.
 
 ## Difficulty vocabulary
 

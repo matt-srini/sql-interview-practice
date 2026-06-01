@@ -28,7 +28,7 @@ Question types:
 | Medium | 82001–82999 | `backend/content/ml_fundamentals_questions/medium.json` |
 | Hard | 83001–83999 | `backend/content/ml_fundamentals_questions/hard.json` |
 
-ML samples are auto-sliced from the first 3 practice questions per difficulty.
+ML Fundamentals has **dedicated sample questions** in `backend/content/sample_questions/ml_fundamentals.json` (IDs 811–813 easy, 821–823 medium, 831–833 hard). Sample questions are completely separate from the practice and mock pools and must never duplicate practice content.
 
 ## Difficulty vocabulary
 

@@ -33,7 +33,7 @@ Question subtypes:
 | Medium | 42001–42999 | `backend/content/pyspark_questions/medium.json` |
 | Hard | 43001–43999 | `backend/content/pyspark_questions/hard.json` |
 
-**PySpark has no separate sample file or sample IDs.** Samples are served at runtime by `backend/sample_questions.py::get_topic_sample_pool()`, which slices the first 3 practice questions by `order` from the live catalog (same as Data Engineering, Data Modeling, Statistics, ML Fundamentals, Experimentation). Do not author dedicated sample questions and do not create a `sample/` directory for this track.
+PySpark has **dedicated sample questions** in `backend/content/sample_questions/pyspark.json` (IDs 411–413 easy, 421–423 medium, 431–433 hard). Sample questions are completely separate from the practice and mock pools and must never duplicate practice content.
 
 ## Difficulty vocabulary
 
@@ -41,10 +41,10 @@ Question subtypes:
 |---|---|---|---|
 | **Easy** | Single concept, one unambiguous correct answer. Mental execution tracing. | `predict_output` or `debug` preferred; `conceptual` only if scenario-anchored | Transformation-vs-action, narrow-vs-wide, basic schema, `collect()` driver implications, common `AnalysisException` patterns |
 
-> **Sample surface note:** Because the sample pool is the first 3 easy practice questions by `order`, the three lowest-`order` easy questions are the track's shopfront for anonymous users. At least one of those three must be `predict_output` or `debug` — three consecutive definitional `conceptual` questions misrepresent the track as definition-recall and fail to demonstrate the code-adjacent reasoning that differentiates it.
+> **Sample surface note:** The 3 easy sample questions are the track's shopfront for anonymous users. At least one of the three must be `predict_output` or `debug` — three consecutive definitional `conceptual` samples misrepresent the track as definition-recall and fail to demonstrate the code-adjacent reasoning that differentiates it.
 | **Medium** | Trade-off reasoning. Two approaches both plausible but differ in meaningful ways. | All subtypes | Partitioning, shuffle triggers, `repartition` vs `coalesce`, broadcast join conditions, PySpark window-function API and frames (`rowsBetween` / ROWS vs RANGE), `explode` and `collect_list`/`pivot`, Delta Lake MERGE / schema evolution / time travel, Structured Streaming output modes |
 
-> **Sample surface note (medium):** Because the medium sample pool is the first 3 medium practice questions by `order`, the three lowest-`order` medium questions serve as the track's medium shopfront for anonymous users. None should be a bare classification question ("which of these triggers a shuffle?") without code context or job symptom — they must demonstrate the scenario-anchored execution-model reasoning that defines PySpark medium. See anti-patterns (§ "Duplicate narrow/wide or shuffle-trigger classification questions") for the specific menu anti-pattern.
+> **Sample surface note (medium):** The 3 medium sample questions serve as the track's medium shopfront for anonymous users. None should be a bare classification question ("which of these triggers a shuffle?") without code context or job symptom — they must demonstrate the scenario-anchored execution-model reasoning that defines PySpark medium. See anti-patterns (§ "Duplicate narrow/wide or shuffle-trigger classification questions") for the specific menu anti-pattern.
 | **Hard** | Multi-factor trade-off under production constraints. **All 4 distractors plausible** to a candidate who partially understands. | All subtypes | AQE (partition coalescing, broadcast conversion, skew-join), dynamic partition pruning, salting, pandas UDF memory model, Z-ordering vs partitioning, watermark behaviour with late data, speculative execution |
 
 If a hard question's distractors are not all plausible — if a competent practitioner immediately eliminates two — the question is medium dressed as hard.

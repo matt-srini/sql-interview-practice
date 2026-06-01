@@ -20,8 +20,7 @@
       "If there is no target variable — no column a human has labelled — the only option is to find structure the data itself reveals."
     ],
     "concepts": [
-      "SUPERVISED VS UNSUPERVISED",
-      "CLUSTERING EVALUATION"
+      "SUPERVISED VS UNSUPERVISED"
     ]
   },
   {
@@ -42,11 +41,10 @@
     "explanation": "This is supervised learning. The team has a labelled dataset — each transaction is marked 'fraud' or 'legitimate' — and the goal is to predict that label for new transactions. The existence of a target variable (the label) and a training set with known outcomes is the hallmark of supervised learning.\n\nOption A is wrong: label staleness is a real operational concern (concept drift), but it doesn't change the paradigm. You still train on labelled data; you manage drift by retraining periodically.\n\nOption C is wrong: generalising to unseen fraud types is a challenge for any model, but it doesn't define the paradigm. A supervised model trained on historical fraud labels can still be deployed to flag new transactions — it just may not catch entirely novel attack vectors.\n\nOption D is wrong: while a feedback loop could be added later as an enhancement, the setup described is a standard batch-trained supervised classifier. Reinforcement learning would require defining a reward function and an agent acting in an environment, which isn't described here.",
     "hints": [
       "The key question is whether a target variable exists in the training data.",
-      "If a human has explicitly assigned a label to each training example, you have the defining ingredient of supervised learning."
+      "Eliminate the paradigms that require something the dataset doesn't provide: two of the four require a target column, one requires sequential reward feedback, and one requires a mix of labelled and unlabelled rows."
     ],
     "concepts": [
-      "SUPERVISED VS UNSUPERVISED",
-      "CLASS IMBALANCE HANDLING"
+      "SUPERVISED VS UNSUPERVISED"
     ]
   },
   {
@@ -195,8 +193,7 @@
       "For distance-based algorithms, ask: if one feature is 100,000× larger, what happens to its contribution to the distance calculation?"
     ],
     "concepts": [
-      "FEATURE SCALING NECESSITY",
-      "GRADIENT DESCENT BEHAVIOR"
+      "FEATURE SCALING NECESSITY"
     ]
   },
   {
@@ -220,8 +217,7 @@
       "Standardisation uses distributional statistics (mean, std dev) rather than extremes (min, max), making it more resistant to values far from the bulk of the data."
     ],
     "concepts": [
-      "FEATURE SCALING NECESSITY",
-      "GRADIENT DESCENT BEHAVIOR"
+      "FEATURE SCALING NECESSITY"
     ]
   },
   {
@@ -270,8 +266,7 @@
       "Recall measures: of all actual positives, how many did the model find? Precision measures: of all flagged positives, how many were real?"
     ],
     "concepts": [
-      "CLASSIFICATION METRICS",
-      "CLASS IMBALANCE HANDLING"
+      "CLASSIFICATION METRICS"
     ]
   },
   {
@@ -295,8 +290,7 @@
       "AUC measures the probability that a randomly chosen positive is ranked higher than a randomly chosen negative. What does AUC = 0.50 imply about that probability?"
     ],
     "concepts": [
-      "CLASSIFICATION METRICS",
-      "OVERFITTING DIAGNOSIS"
+      "CLASSIFICATION METRICS"
     ]
   },
   {
@@ -370,8 +364,7 @@
       "The key question is whether they rank features differently — not whether they produce the same numbers."
     ],
     "concepts": [
-      "HYPERPARAMETER SENSITIVITY",
-      "FEATURE IMPORTANCE INTERPRETATION"
+      "HYPERPARAMETER SENSITIVITY"
     ]
   },
   {
@@ -441,7 +434,7 @@
     "correct_option": 1,
     "explanation": "L1 regularisation (Lasso) adds a penalty proportional to the absolute value of the weights. Geometrically, this creates a constraint region with corners at the coordinate axes, which encourages solutions where many weights are exactly zero. This property — sparsity — makes L1 regularisation a built-in feature selection mechanism.\n\nL2 regularisation (Ridge) adds a penalty proportional to the squared magnitude of weights. Its constraint region is a smooth sphere, which shrinks weights toward zero but rarely to exactly zero. Ridge distributes weight across correlated features and is better for stability when all features are relevant.\n\nOption A is wrong: L2 does not produce zero weights. It produces small weights, but they remain non-zero. This is a fundamental distinction.\n\nOption C is wrong: while L2's property of distributing weight across correlated features is real and valuable, it works against the goal here, which is identifying the 20–30 relevant features.\n\nOption D is wrong: regularisation addresses both overfitting and feature selection. L1 regularisation explicitly selects features by zeroing out uninformative coefficients — this is one of its primary uses.",
     "hints": [
-      "The key word in the question is 'discard'. Which regularisation method produces coefficients that are exactly zero, effectively removing a feature from the model?",
+      "Regularisation penalties have different geometric shapes when visualised as constraint regions. Think about which shape has corners that can pin a weight exactly to zero versus which is smooth everywhere and only shrinks weights toward zero.",
       "Think about the geometric interpretation: L1's diamond-shaped constraint region has corners that coincide with the axes, encouraging sparse solutions."
     ],
     "concepts": [
@@ -495,7 +488,6 @@
       "Model parameters live inside the trained model and are used at prediction time. Hyperparameters govern the training process and are no longer needed once training is done."
     ],
     "concepts": [
-      "REGULARIZATION EFFECT",
       "HYPERPARAMETER SENSITIVITY"
     ]
   },
@@ -670,8 +662,7 @@
       "The same reasoning that makes KNN sensitive to scale applies to any algorithm that uses distances between data points."
     ],
     "concepts": [
-      "FEATURE SCALING NECESSITY",
-      "HYPERPARAMETER SENSITIVITY"
+      "FEATURE SCALING NECESSITY"
     ]
   },
   {
@@ -720,8 +711,7 @@
       "The harmonic mean is chosen over the arithmetic mean specifically because it penalises large gaps between precision and recall — a model that is great on one but terrible on the other gets a low F1."
     ],
     "concepts": [
-      "CLASSIFICATION METRICS",
-      "CLASS IMBALANCE HANDLING"
+      "CLASSIFICATION METRICS"
     ]
   },
   {

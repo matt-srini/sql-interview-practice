@@ -29,7 +29,7 @@ The track does **not** have `predict_output` as a category (PySpark owns that fo
 | Medium | 52001–52999 | `backend/content/data_engineering_questions/medium.json` |
 | Hard | 53001–53999 | `backend/content/data_engineering_questions/hard.json` |
 
-DE samples are auto-sliced from the first 3 practice questions per difficulty (no dedicated sample IDs).
+Data Engineering has **dedicated sample questions** in `backend/content/sample_questions/data_engineering.json` (IDs 511–513 easy, 521–523 medium, 531–533 hard). Sample questions are completely separate from the practice and mock pools and must never duplicate practice content.
 
 ## Difficulty vocabulary
 

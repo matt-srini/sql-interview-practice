@@ -36,7 +36,7 @@ No global mutable state. No I/O (no `print` in the function body). Determinism r
 | Medium | 22001–22999 | `backend/content/python_questions/medium.json` |
 | Hard | 23001–23999 | `backend/content/python_questions/hard.json` |
 
-Samples are auto-sliced from the first 3 practice questions per difficulty by `order` — no separate sample files or IDs exist. See `docs/content-authoring.md` §Non-SQL sample behavior.
+Python has **dedicated sample questions** in `backend/content/sample_questions/python.json` (IDs 211–213 easy, 221–223 medium, 231–233 hard). Sample questions are completely separate from the practice and mock pools and must never duplicate practice content.
 
 ## Difficulty vocabulary
 

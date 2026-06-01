@@ -27,7 +27,7 @@ Question types:
 | Medium | 62001–62999 | `backend/content/data_modeling_questions/medium.json` |
 | Hard | 63001–63999 | `backend/content/data_modeling_questions/hard.json` |
 
-DM samples are auto-sliced from the first 3 practice questions per difficulty.
+Data Modeling has **dedicated sample questions** in `backend/content/sample_questions/data_modeling.json` (IDs 611–613 easy, 621–623 medium, 631–633 hard). Sample questions are completely separate from the practice and mock pools and must never duplicate practice content.
 
 ## Difficulty vocabulary
 

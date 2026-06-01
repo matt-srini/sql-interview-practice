@@ -176,11 +176,25 @@ All T digits 1–9 are now allocated. New tracks beyond T9 require a T-assignmen
 
 Practice and `mock_only: true` questions share the same `TXNNN` space within each difficulty file. IDs are assigned in append order — by when the question was authored — with no guarantee that all practice IDs precede all mock-only IDs. Later-added practice questions may carry IDs that are numerically higher than earlier-added mock-only questions (e.g. Data Modeling medium has practice IDs 62035, 62036, 62077 interspersed with mock-only IDs). **Classification is determined solely by the `mock_only` flag, not by ID sequence or position in the file.** **No mock-only questions exist at easy** for any track (by design: easy is practice-only).
 
-### SQL sample IDs (3-digit, SQL only)
+### Sample IDs (3-digit TXS format, all tracks)
 
-SQL samples use a compact `TXS` format (S = 1–3): `111–113` easy · `121–123` medium · `131–133` hard. Defined in `backend/sample_questions.py`. Never collides with 5-digit practice IDs.
+All 9 tracks use a compact `TXS` format (`T` = track digit, `X` = difficulty digit, `S` = 1–3): 3 easy + 3 medium + 3 hard per track = 9 samples per track, 81 total. By track:
 
-**Non-SQL tracks have no separate sample files or sample IDs.** `get_topic_sample_pool()` serves samples by slicing the first 3 practice questions by `order` from the live catalog. For Pandas, Python, PySpark, DE, DM, Statistics, ML, Experimentation: do not author dedicated sample questions.
+| Track | T | Easy | Medium | Hard |
+|---|---|---|---|---|
+| SQL | 1 | 111–113 | 121–123 | 131–133 |
+| Python | 2 | 211–213 | 221–223 | 231–233 |
+| Pandas | 3 | 311–313 | 321–323 | 331–333 |
+| PySpark | 4 | 411–413 | 421–423 | 431–433 |
+| Data Engineering | 5 | 511–513 | 521–523 | 531–533 |
+| Data Modeling | 6 | 611–613 | 621–623 | 631–633 |
+| Statistics | 7 | 711–713 | 721–723 | 731–733 |
+| ML Fundamentals | 8 | 811–813 | 821–823 | 831–833 |
+| Experimentation | 9 | 911–913 | 921–923 | 931–933 |
+
+3-digit TXS IDs never collide with 5-digit practice / mock-only IDs (`TXNNN`).
+
+**Storage:** SQL samples are defined inline in `backend/sample_questions.py`. All 8 non-SQL tracks have **dedicated sample files** at `backend/content/sample_questions/<track>.json`, loaded by `sample_questions.py` at startup. Sample questions are completely separate from the practice and mock pools — they must never duplicate practice or mock content. Author samples as independent content.
 
 ### `schemas.json`-first rule
 
@@ -485,7 +499,7 @@ Practice questions are the full curriculum. Mock-only questions live in the same
 | Experimentation | 30 | 33 | 24 | **87** | Constructed reasoning (MCQ) |
 | **Total** | | | | **876** | |
 
-Mock-only add-on bank: **1,102 questions** (Pro/Elite only). Samples: **36 total** SQL/Python/Pandas/PySpark + auto-sliced from practice for the other 5 tracks.
+Mock-only add-on bank: **1,102 questions** (Pro/Elite only). Samples: **81 total** (9 per track × 9 tracks, dedicated content separate from practice and mock pools).
 
 **These counts evolve.** They reflect the bank at the time of the 2026-05 refactor. CLAUDE.md mirrors them; both files update together.
 

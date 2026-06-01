@@ -2,7 +2,7 @@
   {
     "id": 811,
     "order": 1,
-    "topic": "ml_fundamentals",
+    "topic": "ml-fundamentals",
     "type": "conceptual",
     "difficulty": "easy",
     "title": "Reading a Learning Curve for Bias and Variance",
@@ -27,7 +27,7 @@
   {
     "id": 812,
     "order": 2,
-    "topic": "ml_fundamentals",
+    "topic": "ml-fundamentals",
     "type": "conceptual",
     "difficulty": "easy",
     "title": "Why Feature Scaling Matters for Some Models",
@@ -45,14 +45,13 @@
       "Distance-based (k-NN, SVM) and gradient-descent (logistic regression, neural nets) algorithms are scale-sensitive. Tree-based algorithms are not."
     ],
     "concepts": [
-      "FEATURE SCALING NECESSITY",
-      "SUPERVISED VS UNSUPERVISED LEARNING"
+      "FEATURE SCALING NECESSITY"
     ]
   },
   {
     "id": 813,
     "order": 3,
-    "topic": "ml_fundamentals",
+    "topic": "ml-fundamentals",
     "type": "conceptual",
     "difficulty": "easy",
     "title": "Choosing a Metric for an Imbalanced Classifier",
@@ -70,14 +69,14 @@
       "Recall measures: of all actual frauds, what fraction did we catch? That is what the business cares about."
     ],
     "concepts": [
-      "CLASSIFICATION METRICS & EVALUATION",
+      "CLASSIFICATION METRICS",
       "CLASS IMBALANCE HANDLING"
     ]
   },
   {
     "id": 821,
     "order": 1,
-    "topic": "ml_fundamentals",
+    "topic": "ml-fundamentals",
     "type": "scenario",
     "difficulty": "medium",
     "title": "Detecting Feature Leakage in a Pipeline",
@@ -102,7 +101,7 @@
   {
     "id": 822,
     "order": 2,
-    "topic": "ml_fundamentals",
+    "topic": "ml-fundamentals",
     "type": "conceptual",
     "difficulty": "medium",
     "title": "Bagging vs Boosting: Which Reduces What",
@@ -127,7 +126,7 @@
   {
     "id": 823,
     "order": 3,
-    "topic": "ml_fundamentals",
+    "topic": "ml-fundamentals",
     "type": "scenario",
     "difficulty": "medium",
     "title": "Handling Class Imbalance: Choosing Between SMOTE and Class Weights",
@@ -152,7 +151,7 @@
   {
     "id": 831,
     "order": 1,
-    "topic": "ml_fundamentals",
+    "topic": "ml-fundamentals",
     "type": "scenario",
     "difficulty": "hard",
     "title": "Production Gap: High Eval Accuracy, Low Production Performance",
@@ -178,7 +177,7 @@
   {
     "id": 832,
     "order": 2,
-    "topic": "ml_fundamentals",
+    "topic": "ml-fundamentals",
     "type": "conceptual",
     "difficulty": "hard",
     "title": "Vanishing Gradients: Cause, Symptom, and Fix",
@@ -203,7 +202,7 @@
   {
     "id": 833,
     "order": 3,
-    "topic": "ml_fundamentals",
+    "topic": "ml-fundamentals",
     "type": "scenario",
     "difficulty": "hard",
     "title": "Deployment Constraint: Latency vs Accuracy Trade-Off",
