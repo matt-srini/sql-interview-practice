@@ -144,6 +144,16 @@ Mock-only intentionally skews toward scenario (66/127 standalones = 52%) and awa
 
 **Sizing note:** The hard mock-only count (68 standalone, including 8 chain parents) landed above the original Stage B plan. Deviation sources from Phase 2: (a) 3 BOOSTING MECHANICS floor-fix questions (83084–83086); (b) chain children (16) are additional rather than pulled from the batch count — making the hard total additive; (c) Stage C remediation promoted 7 medium mock-only questions to hard (83119–83125). BIAS/FAIRNESS Phase 2.5 added 4 more hard standalone (83128–83131): Stage A planned 2 medium + 2 hard mock, but M4 (DEPLOYMENT CONSTRAINTS) and M5 (MODEL MONITORING) were escalated to hard because these families have no easy/medium practice coverage (rule 1), consistent with the track's difficulty vocabulary placing both as hard-tier concepts. The ratio 1.430× is within acceptable range.
 
+## Benchmark shape per difficulty
+
+The runtime declares per-difficulty benchmark blueprints at `backend/routers/mock.py` (`_benchmark_type_targets`, `difficulty_overrides`). ML Fundamentals shapes (bank shape governs blueprint — see [`docs/specs/mock-benchmark-spec.md` § Blueprint feasibility](../specs/mock-benchmark-spec.md)):
+
+- **Easy:** `scenario × 2 + conceptual × 2 + predict_output × 1 + debug × 1` — declared via the default `ml-fundamentals` entry in `_benchmark_type_targets` (line 372). Feasible against the post-2026-06-01 bank (30 practice: 21 conceptual, 4 scenario, 3 predict_output, 2 debug). Was silently infeasible before — the bank was 100% conceptual; reclassification by question shape (2026-06-01 remediation) restored feasibility without net add/remove.
+- **Medium:** `scenario × 2 + conceptual × 2 + predict_output × 1 + debug × 1` (default `_benchmark_type_targets` entry — verified feasible against medium bank)
+- **Hard:** same as medium (default entry — verified feasible against hard bank)
+
+Any change to the bank's per-difficulty type distribution or to the blueprint must update both in the same commit and re-verify feasibility — bank shape governs blueprint, not vice versa.
+
 ## Verification before commit
 
 ```bash

@@ -51,7 +51,7 @@
     "id": 81003,
     "order": 3,
     "topic": "ml-fundamentals",
-    "type": "conceptual",
+    "type": "predict_output",
     "difficulty": "easy",
     "title": "Diagnosing Overfitting from Train-Validation Gap",
     "description": "A model trained on a 100,000-row dataset achieves 96% accuracy on the training set and 71% accuracy on a held-out validation set. The validation set was not used during training. What does this pattern most likely indicate?",
@@ -76,10 +76,11 @@
     "id": 81004,
     "order": 4,
     "topic": "ml-fundamentals",
-    "type": "conceptual",
+    "type": "scenario",
     "difficulty": "easy",
     "title": "Recognising Underfitting",
-    "description": "You train a linear regression model to predict house prices from 15 features including size, location, and age. The model achieves an R² of 0.41 on the training set and 0.39 on the validation set. A colleague suggests the model needs more regularisation. What is the actual problem?",
+    "scenario_context": "You train a linear regression model to predict house prices from 15 features including size, location, and age. The model achieves an R² of 0.41 on the training set and 0.39 on the validation set.",
+    "description": "A colleague suggests the model needs more regularisation. What is the actual problem?",
     "options": [
       "Overfitting — the small gap between train and validation R² confirms the model generalises poorly",
       "Underfitting — both scores are low and nearly identical, suggesting the model lacks capacity to capture the signal",
@@ -249,10 +250,11 @@
     "id": 81011,
     "order": 11,
     "topic": "ml-fundamentals",
-    "type": "conceptual",
+    "type": "scenario",
     "difficulty": "easy",
     "title": "Classification Metrics: Precision vs Recall",
-    "description": "A medical imaging model detects tumours in X-rays. It flags 120 images as positive; 90 of those are true tumours and 30 are false alarms. Of the 200 actual tumours in the dataset, 110 are missed by the model. In this clinical context, which metric should be prioritised and why?",
+    "scenario_context": "A medical imaging model detects tumours in X-rays. It flags 120 images as positive; 90 of those are true tumours and 30 are false alarms. Of the 200 actual tumours in the dataset, 110 are missed by the model.",
+    "description": "In this clinical context, which metric should be prioritised and why?",
     "options": [
       "Precision — minimising false alarms is most important because unnecessary follow-up procedures cause patient harm",
       "Recall — missing a real tumour (false negative) is more costly than an unnecessary follow-up (false positive) in a cancer screening context",
@@ -349,19 +351,19 @@
     "topic": "ml-fundamentals",
     "type": "conceptual",
     "difficulty": "easy",
-    "title": "Decision Tree Splitting Criteria",
-    "description": "A decision tree algorithm must decide which feature to split on first at the root node. It evaluates candidates using Gini impurity reduction. A junior colleague argues that had the algorithm used information gain (entropy) instead, it would likely have ranked the features differently and produced a noticeably different tree structure. Is the colleague correct?",
+    "title": "Decision Tree: Does Criterion Choice Move the Model?",
+    "description": "A junior ML engineer runs systematic experiments comparing Gini impurity and entropy as splitting criteria for a CART decision tree on five different classification datasets. Across all experiments, validation AUC differs by less than 0.5% between the two criteria. A colleague argues this is because the engineer ran too few experiments. Who is correct, and why?",
     "options": [
-      "Yes — Gini favours binary splits while entropy favours multi-way splits, leading to fundamentally different tree shapes",
-      "No — Gini and entropy are monotonically related measures of impurity and almost always select the same feature for splitting in practice",
-      "Yes — entropy always produces deeper trees than Gini because log-based calculations penalise pure nodes more heavily",
-      "No — both measures produce identical numerical values, so they will always rank features identically"
+      "The colleague — 0.5% AUC differences are within noise; more experiments across larger datasets would reveal that entropy produces consistently deeper trees and meaningfully different feature rankings",
+      "The engineer — Gini and entropy are monotonically related measures of node impurity and almost always select the same feature at each split; the negligible performance difference reflects this mathematical relationship, not insufficient experimentation",
+      "The colleague — Gini consistently outperforms entropy by a small margin; the <0.5% gaps reflect Gini's systematic advantage, not random variation",
+      "Neither — the result is entirely implementation-specific; different scikit-learn versions produce completely different feature rankings between Gini and entropy"
     ],
     "correct_option": 1,
-    "explanation": "In practice, Gini impurity and entropy (information gain) almost always agree on which feature to split. They are both measures of node impurity that reach their minimum at purity (all one class) and their maximum at maximum uncertainty. Because they are monotonically related, they rank features very similarly and produce nearly identical tree structures.\n\nThe choice between them is a minor implementation detail. Gini is slightly cheaper to compute (no logarithm), but the resulting trees are not meaningfully different. This is a well-established finding in the decision tree literature.\n\nOption A is wrong: neither Gini nor entropy has a preference for binary vs multi-way splits — that is determined by the algorithm's design (CART always uses binary splits regardless of criterion, while C4.5 uses multi-way splits).\n\nOption C is wrong: tree depth depends on the data and stopping criteria (max depth, min samples per leaf), not on whether Gini or entropy is used as the splitting criterion.\n\nOption D is wrong: Gini and entropy are not numerically identical. They are calculated differently (Gini: 1 - Σp², entropy: -Σp log p), but their rankings of features are almost always the same, which is the practical point.",
+    "explanation": "Gini impurity (1 − Σp²) and information gain / entropy (−Σp log p) are both measures of node impurity that reach their minimum at purity and maximum at maximum uncertainty. Because they are monotonically related, they rank candidate features nearly identically at each node — the feature that maximally reduces Gini almost always also maximally reduces entropy. Empirically, less than 1% of splits produce a different result between the two criteria, and structural differences deeper in the tree are even rarer. The engineer is correct: the negligible performance difference reflects a mathematical property, not insufficient experimentation.\n\nOption 0 is wrong: information gain does not produce consistently deeper trees. Tree depth is governed by stopping criteria (max_depth, min_samples_split) and the data — not by the impurity measure. More experiments would continue to show negligible differences.\n\nOption 2 is wrong: neither criterion is systematically superior. The <0.5% AUC variation is within normal stochastic noise from random feature subsampling and training variance, not a signal of Gini's advantage.\n\nOption 3 is wrong: while minor implementation details can introduce numerical differences, the fundamental property — that Gini and entropy rank features nearly identically — holds across correct implementations. This is a mathematical consequence of their monotonic relationship, not an implementation artifact.",
     "hints": [
-      "Consider what both measures are fundamentally trying to do: assess how mixed the classes are in a potential split. Do two different measures of 'mixedness' tend to agree about which feature is most informative?",
-      "The key question is whether they rank features differently — not whether they produce the same numbers."
+      "Both measures quantify how 'mixed' the classes are at a node. Consider whether two different functions measuring the same underlying property tend to agree about which feature reduces it most.",
+      "The practical question for practitioners is: does switching between these criteria meaningfully change which feature is selected at each split, and therefore which model is built?"
     ],
     "concepts": [
       "HYPERPARAMETER SENSITIVITY"
@@ -396,7 +398,7 @@
     "id": 81017,
     "order": 17,
     "topic": "ml-fundamentals",
-    "type": "conceptual",
+    "type": "predict_output",
     "difficulty": "easy",
     "title": "Gradient Descent: Convergence Indicators",
     "description": "You are training a 3-class classifier using cross-entropy loss. A random classifier on this problem would achieve a cross-entropy loss of approximately 1.10. After 50 training epochs, the training loss has decreased from 2.3 to 1.1 and has been nearly flat for the last 15 epochs. The validation loss mirrors this pattern and is also flat at approximately 1.1. What is the appropriate next step?",
@@ -446,10 +448,11 @@
     "id": 81019,
     "order": 19,
     "topic": "ml-fundamentals",
-    "type": "conceptual",
+    "type": "scenario",
     "difficulty": "easy",
     "title": "Regularisation: Diagnosing the Right Remedy",
-    "description": "A gradient-boosted model achieves 99.2% accuracy on training data and 74.1% on validation data. A colleague proposes increasing the model's max_depth from 6 to 10 to give it more expressive power. What is the correct assessment?",
+    "scenario_context": "A gradient-boosted model achieves 99.2% accuracy on training data and 74.1% on validation data.",
+    "description": "A colleague proposes increasing the model's max_depth from 6 to 10 to give it more expressive power. What is the correct assessment?",
     "options": [
       "The colleague is correct — deeper trees can capture more complex patterns and reduce the validation gap",
       "The model is overfitting and the correct action is regularisation (e.g. reducing max_depth, increasing min_samples_leaf, or adding early stopping), not increasing complexity",
@@ -473,32 +476,34 @@
     "topic": "ml-fundamentals",
     "type": "conceptual",
     "difficulty": "easy",
-    "title": "Hyperparameter vs Model Parameter",
-    "description": "After training a logistic regression model, you inspect the learned weights. You find 50 coefficients (one per feature) plus a bias term. Your training script also set max_iter=1000 and C=0.1 before training began. Which items are model parameters and which are hyperparameters?",
+    "title": "Hyperparameter Sensitivity: Does max_iter Affect Learned Weights?",
+    "description": "You train a logistic regression model with max_iter=500. The loss converges after approximately 200 iterations — the gradient norm drops to near zero well before step 500. You then retrain with max_iter=50, keeping all other settings identical. What is the most likely effect on the learned coefficients?",
     "options": [
-      "The 50 coefficients and bias term are hyperparameters because they are specific to this training run; max_iter and C are model parameters because they control model behaviour",
-      "The 50 coefficients and bias term are model parameters (learned from data); max_iter and C are hyperparameters (set before training)",
-      "All four — coefficients, bias, max_iter, and C — are model parameters because they collectively define the model's behaviour on new data",
-      "max_iter and C are the only true parameters because they directly affect how the model learns; coefficients are outputs, not parameters"
+      "The coefficients will be identical — the model converged at ~200 iterations, so stopping at 50 versus 500 produces the same final weights",
+      "The coefficients will likely differ and the model will perform worse — max_iter=50 halts the optimiser before convergence, leaving the weights at a suboptimal point on the loss surface",
+      "The coefficients will all be zero — stopping training too early prevents the model from learning any pattern from the data",
+      "Only the regularisation penalty changes — max_iter controls how strongly the penalty is applied, not the gradient updates to the coefficients"
     ],
     "correct_option": 1,
-    "explanation": "Model parameters are values learned from the training data through the optimisation process. For logistic regression, these are the coefficients (weights for each feature) and the bias term — they are the outputs of training and encode everything the model has learned.\n\nHyperparameters are values set before training begins that control the learning process itself. max_iter caps the number of optimisation iterations; C controls regularisation strength. Neither is learned from data — they are chosen by the practitioner and are fixed during training.\n\nOption A reverses the definitions. The distinction is not about specificity to a training run — it is about whether the value is learned from data or set externally.\n\nOption C is wrong: max_iter and C do not appear in the final model's predictions. They affect how the coefficients are found, but the deployed model only uses the learned coefficients and bias.\n\nOption D is wrong: coefficients are absolutely parameters — they are the quantities that define the model's mapping from input to output. 'Output of training' and 'model parameter' are the same thing.",
+    "explanation": "max_iter is a real hyperparameter: it caps how many gradient descent steps the optimiser can take. Convergence at ~200 iterations means: if you allow at least 200 steps, the optimiser reaches the minimum of the loss surface and the weights stabilise. Cutting max_iter to 50 stops the optimiser 150 steps short of convergence — the weights are wherever gradient descent was at step 50, which is far from the minimum. The learned coefficients will differ from the fully-converged solution and the model will perform worse.\n\nOption 0 is a common misconception: it conflates 'convergence happens at 200 steps' with 'stopping at 50 gives the same result.' The model converges at 200 only if it is allowed to run that long. Setting max_iter=50 prevents it from ever reaching step 200.\n\nOption 2 is wrong: stopping early at step 50 leaves the coefficients at the partially-learned values at that step — small but non-zero. Zero coefficients would imply the model never updated, which requires zero gradient steps or zero learning rate.\n\nOption 3 is wrong: max_iter has nothing to do with regularisation strength. Regularisation is controlled by a separate hyperparameter (C or alpha). max_iter controls only the number of gradient update steps allowed.",
     "hints": [
-      "Ask two questions: (1) Is this value learned by the optimiser during training? (2) Must this value be set before training can begin?",
-      "Model parameters live inside the trained model and are used at prediction time. Hyperparameters govern the training process and are no longer needed once training is done."
+      "Consider what max_iter actually controls: the number of gradient descent steps the optimiser is allowed to take. The key question is whether 50 steps is enough to reach the minimum loss.",
+      "If convergence normally requires 200 steps and you allow only 50, the optimiser stops mid-journey. What are the weights at step 50 relative to the fully-converged minimum?"
     ],
     "concepts": [
-      "HYPERPARAMETER SENSITIVITY"
+      "HYPERPARAMETER SENSITIVITY",
+      "GRADIENT DESCENT BEHAVIOR"
     ]
   },
   {
     "id": 81021,
     "order": 21,
     "topic": "ml-fundamentals",
-    "type": "conceptual",
+    "type": "scenario",
     "difficulty": "easy",
     "title": "Class Imbalance: When Accuracy Misleads",
-    "description": "A dataset contains 9,500 legitimate transactions and 500 fraudulent ones (95%/5% split). A model that predicts 'legitimate' for every single transaction achieves 95% accuracy. A colleague concludes this is a good baseline. What is wrong with this reasoning?",
+    "scenario_context": "A dataset contains 9,500 legitimate transactions and 500 fraudulent ones (95%/5% split). A model that predicts 'legitimate' for every single transaction achieves 95% accuracy.",
+    "description": "A colleague concludes this is a good baseline. What is wrong with this reasoning?",
     "options": [
       "Nothing — 95% accuracy is a genuinely strong baseline and any model that cannot beat it on accuracy is not useful",
       "Accuracy is misleading on imbalanced data; a model that catches zero fraud has no practical utility, and the correct baseline metric is precision-recall or F1 on the minority class",
@@ -570,7 +575,7 @@
     "id": 81024,
     "order": 24,
     "topic": "ml-fundamentals",
-    "type": "conceptual",
+    "type": "predict_output",
     "difficulty": "easy",
     "title": "Bias-Variance Tradeoff: Diagnosing from Curves",
     "description": "You plot learning curves for a model: as training set size increases from 1,000 to 50,000 examples, training accuracy decreases slightly from 96% to 91%, and validation accuracy increases slightly from 65% to 72%. After 50,000 examples, both curves have stabilised and stopped moving. What is the correct diagnosis?",
@@ -595,7 +600,7 @@
     "id": 81025,
     "order": 25,
     "topic": "ml-fundamentals",
-    "type": "conceptual",
+    "type": "debug",
     "difficulty": "easy",
     "title": "Data Splitting: Leakage from Preprocessing",
     "description": "Before splitting data, a team imputes missing values using the mean of the entire dataset, then splits into train/validation/test sets. A colleague flags this as problematic. What is the issue?",
@@ -622,23 +627,23 @@
     "topic": "ml-fundamentals",
     "type": "conceptual",
     "difficulty": "easy",
-    "title": "Hyperparameter vs Parameter: Neural Networks",
-    "description": "A neural network is trained with the following configuration: learning_rate=0.001, hidden_layers=3, units_per_layer=128, dropout_rate=0.2. After training, the network has 2.4 million weight values. A new engineer asks which of these are 'the model'. What is the correct answer?",
+    "title": "Neural Network Hyperparameter: Effect of Dropout on Learned Weights",
+    "description": "A neural network with hidden_layers=3, units_per_layer=128, and dropout_rate=0.4 is trained to 91% validation accuracy, producing 2.4 million learned weight values. The same architecture is then retrained from scratch with dropout_rate=0.0 and all other settings unchanged. Which statement best describes the most significant difference between the two trained models?",
     "options": [
-      "The configuration values (learning_rate, hidden_layers, units_per_layer, dropout_rate) are the model — they define its structure",
-      "The 2.4 million weight values are the model — they are what is saved, loaded, and used to make predictions on new data",
-      "Both the configuration and the weights are the model — removing either makes the network unable to make predictions",
-      "The model is defined by hidden_layers and units_per_layer only — these determine the architecture; weights and learning_rate are auxiliary"
+      "Nothing changes — dropout_rate is applied only at inference time as a scaling factor and has no effect on the training process",
+      "The 2.4 million weight values will likely differ — dropout randomly zeros neurons during each training step, forcing the network to learn distributed representations; removing it allows neurons to co-adapt, converging to different weights and typically increasing overfitting",
+      "The model with dropout_rate=0.0 cannot make predictions — dropout layers are required in the forward pass to produce valid outputs",
+      "Only the bias terms change — dropout specifically suppresses bias updates and setting it to zero releases those weights"
     ],
     "correct_option": 1,
-    "explanation": "The 2.4 million weight values are the model — they are what is learned during training and what encodes the model's knowledge. When you save a trained model and deploy it, you are saving and loading these weights. They are applied at inference time to transform inputs into predictions.\n\nThe configuration values (learning_rate, dropout_rate, etc.) are hyperparameters that governed the training process. After training completes, learning_rate and dropout_rate (used only during training) are no longer needed for inference. hidden_layers and units_per_layer define the architecture (how many weights there are) but are not themselves the learned values.\n\nOption A is wrong: the configuration defines the training setup and architecture, but it is not 'the model' in the sense of what was learned. Two models with the same configuration but different random initialisations will have completely different weights.\n\nOption C overclaims. The architectural parameters (hidden_layers, units_per_layer) do need to be known to reconstruct the network when loading weights — but learning_rate and dropout_rate are not needed at inference time. They govern the optimisation process during training only and are discarded once training is done. The claim that removing 'the configuration' makes predictions impossible is wrong for these training-only hyperparameters specifically.\n\nOption D is wrong: learning_rate and dropout_rate are not 'auxiliary'; they are hyperparameters that directly shape which weights are found during training. But the weights, not the hyperparameters, are what constitute the deployable model.",
+    "explanation": "Dropout is a training-time regularisation technique: at each forward pass during training, neurons are randomly zeroed with probability dropout_rate. This prevents neurons from co-adapting (relying on specific other neurons being active) and forces each neuron to learn more independently useful features. With dropout_rate=0.4, 40% of neurons are disabled per step, pushing the optimiser toward a different region of the weight space than a fully-connected forward pass would find. Removing dropout (setting it to 0.0) changes the training dynamics — the optimiser explores a different trajectory and converges to different weights. The resulting model typically shows more overfitting: higher training accuracy but lower validation accuracy.\n\nOption 0 is wrong: dropout is applied during the training forward pass, not at inference time. At inference, dropout is disabled — outputs are produced deterministically from the learned weights. Dropout shapes the training dynamics and thereby the final weight values.\n\nOption 2 is wrong: dropout layers are inactive at inference time. A trained model makes predictions without dropout, producing deterministic outputs from its learned weights.\n\nOption 3 is wrong: dropout applies to all neuron activations in the designated layers, not specifically to bias terms. Bias parameters are not suppressed by dropout.",
     "hints": [
-      "Ask: which of these values are saved to disk when you call 'model.save()'? Which are used when you call 'model.predict(new_data)'?",
-      "The model's knowledge is encoded in the values that were adjusted by the optimiser during training to minimise the loss."
+      "Consider any training-time technique that randomly modifies which neurons participate in each forward pass: would changing it affect only training speed, or would it also change which region of the weight space the optimiser converges to?",
+      "Think about what each neuron learns when it can always rely on neighbouring neurons being active versus when those neighbours might be absent in any given step. How does that uncertainty change what each neuron must represent on its own?"
     ],
     "concepts": [
-      "NEURAL NETWORK DESIGN",
-      "HYPERPARAMETER SENSITIVITY"
+      "HYPERPARAMETER SENSITIVITY",
+      "NEURAL NETWORK DESIGN"
     ]
   },
   {
@@ -669,7 +674,7 @@
     "id": 81028,
     "order": 28,
     "topic": "ml-fundamentals",
-    "type": "conceptual",
+    "type": "debug",
     "difficulty": "easy",
     "title": "Cross-Validation: Correct Usage with Test Set",
     "description": "A team uses 5-fold cross-validation to select the best model from 10 candidates and then reports the average cross-validation score as the model's final performance. What is the problem with this approach?",

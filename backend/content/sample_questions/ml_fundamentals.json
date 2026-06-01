@@ -16,7 +16,7 @@
     "correct_option": 1,
     "explanation": "The gap between training and validation accuracy diagnoses variance. Model 1's 26-point gap is a classic overfitting signal — the model has memorised training patterns that don't generalise. Model 2's 2-point gap shows the model generalises well, though 79% training accuracy suggests it may have room to improve with more capacity or data (potential bias). Option 0 ignores the generalisation gap. Option 2 misdiagnoses Model 2 — a small train-validation gap is low variance, not high bias; high bias would show low training accuracy AND low validation accuracy. Option 3 misidentifies what constitutes 'noise' — a 26-point gap is not noise.",
     "hints": [
-      "The train-validation accuracy gap diagnoses variance (overfitting). Training accuracy alone tells you little without the validation comparison.",
+      "Focus on the gap between training and validation accuracy — not either number in isolation, but how large the difference is and what direction it points. A large gap carries a specific diagnostic meaning about how well the model generalises beyond the examples it was trained on.",
       "High bias = poor performance on both train and validation. High variance = good training, poor validation."
     ],
     "concepts": [
