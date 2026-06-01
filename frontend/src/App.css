@@ -11490,7 +11490,7 @@ select {
 }
 .mock-elite-feature {
   display: grid;
-  grid-template-columns: 8.5rem 1fr;
+  grid-template-columns: 10.5rem 1fr;
   gap: 0.75rem;
   font-size: 0.8rem;
   align-items: baseline;
@@ -11508,6 +11508,16 @@ select {
 .mock-elite-feature-desc {
   color: var(--text-muted);
   line-height: 1.45;
+}
+@media (max-width: 700px) {
+  .mock-elite-feature {
+    grid-template-columns: 1fr;
+    gap: 0.2rem;
+    padding: 0.55rem 0;
+  }
+  .mock-elite-feature-name {
+    white-space: normal;
+  }
 }
 .mock-elite-panel-cta {
   display: flex;
