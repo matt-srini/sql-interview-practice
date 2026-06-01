@@ -31,7 +31,8 @@
     "type": "scenario",
     "difficulty": "medium",
     "title": "Choosing the Right Intervention from a Learning Curve",
-    "description": "You train a deep neural network on 10,000 labelled images. The learning curve shows: training loss drops from 2.3 to 0.05 across 100 epochs, while validation loss drops to 0.4 then rises steadily to 1.8 by epoch 100. At epoch 100, training accuracy is 99% and validation accuracy is 61%. Your compute budget allows one of the following interventions. Which addresses the root cause most directly?",
+    "scenario_context": "You train a deep neural network on 10,000 labelled images. The learning curve shows: training loss drops from 2.3 to 0.05 across 100 epochs, while validation loss drops to 0.4 then rises steadily to 1.8 by epoch 100. At epoch 100, training accuracy is 99% and validation accuracy is 61%. Your compute budget allows one of the following interventions.",
+    "description": "Which addresses the root cause most directly?",
     "options": [
       "Collect 50,000 more training images to reduce the model's sensitivity to the specific training set",
       "Train for 200 more epochs \u2014 the validation loss was still decreasing early on and the model needs more time",
@@ -106,7 +107,8 @@
     "type": "scenario",
     "difficulty": "medium",
     "title": "Ensemble Selection: High-Bias vs High-Variance Problem",
-    "description": "A team is trying to predict customer lifetime value (CLV). Their current model is a linear regression that achieves R\u00b2=0.42 on training data and R\u00b2=0.40 on validation data. They are considering two approaches: (A) random forest with 100 trees, or (B) gradient boosting with 50 estimators. Given the current model's behaviour, which is more likely to produce the larger improvement?",
+    "scenario_context": "A team is trying to predict customer lifetime value (CLV). Their current model is a linear regression that achieves R\u00b2=0.42 on training data and R\u00b2=0.40 on validation data. They are considering two approaches: (A) random forest with 100 trees, or (B) gradient boosting with 50 estimators.",
+    "description": "Given the current model's behaviour, which is more likely to produce the larger improvement?",
     "options": [
       "Random forest (A) \u2014 parallel ensemble methods are always safer and less likely to overfit than sequential boosting",
       "Gradient boosting (B) \u2014 the near-identical train and validation scores indicate high bias; boosting's sequential bias correction is directly suited to this problem",
@@ -181,7 +183,8 @@
     "type": "scenario",
     "difficulty": "medium",
     "title": "Class Imbalance: Choosing the Right Threshold for Fraud",
-    "description": "A fraud detection model has been trained with class_weight='balanced'. At threshold=0.5, it achieves precision=0.31 and recall=0.89. The fraud operations team says each investigation costs $50 in analyst time, and each missed fraud case costs $800 on average. Given these economics, should the team raise the threshold, lower it, or leave it as-is?",
+    "scenario_context": "A fraud detection model has been trained with class_weight='balanced'. At threshold=0.5, it achieves precision=0.31 and recall=0.89. The fraud operations team says each investigation costs $50 in analyst time, and each missed fraud case costs $800 on average.",
+    "description": "Given these economics, should the team raise the threshold, lower it, or leave it as-is?",
     "options": [
       "Raise the threshold to improve precision \u2014 fewer false positives reduces the investigation cost burden on the operations team",
       "Lower the threshold to improve recall \u2014 each missed fraud case costs $800, far exceeding the $50 cost of a false positive, so catching more fraud is economically justified",
@@ -231,7 +234,8 @@
     "type": "scenario",
     "difficulty": "medium",
     "title": "Dimensionality Reduction: When PCA Hurts",
-    "description": "A team builds a credit risk model using 40 features including age, income, debt-to-income ratio, number of credit accounts, and several binary flags (employment status, homeowner, etc.). They apply PCA and reduce to 15 components before training a logistic regression. A risk officer reviews the model and says 'I cannot explain to regulators what these 15 components represent.' Beyond interpretability, what is a substantive modelling concern with this pipeline?",
+    "scenario_context": "A team builds a credit risk model using 40 features including age, income, debt-to-income ratio, number of credit accounts, and several binary flags (employment status, homeowner, etc.). They apply PCA and reduce to 15 components before training a logistic regression. A risk officer reviews the model and says 'I cannot explain to regulators what these 15 components represent.'",
+    "description": "Beyond interpretability, what is a substantive modelling concern with this pipeline?",
     "options": [
       "PCA assumes linear relationships between features, so it will fail to capture non-linear credit risk patterns that logistic regression would otherwise handle well",
       "PCA mixes continuous and binary features into the same principal components, and the resulting components have no interpretable meaning while potentially distorting the feature space in ways that harm the model",
@@ -332,7 +336,8 @@
     "type": "scenario",
     "difficulty": "medium",
     "title": "Regularisation: Correlated Features and L1 vs L2",
-    "description": "A credit model uses five features that are all strong predictors of default: payment_history, credit_utilisation, account_age, number_of_accounts, and recent_inquiries. These features are moderately correlated with each other (r \u2248 0.4\u20130.6). A risk officer requires that all five remain in the model with non-zero coefficients for regulatory compliance. Which regularisation approach is appropriate?",
+    "scenario_context": "A credit model uses five features that are all strong predictors of default: payment_history, credit_utilisation, account_age, number_of_accounts, and recent_inquiries. These features are moderately correlated with each other (r \u2248 0.4\u20130.6). A risk officer requires that all five remain in the model with non-zero coefficients for regulatory compliance.",
+    "description": "Which regularisation approach is appropriate?",
     "options": [
       "L1 (Lasso) \u2014 it produces the simplest model with the fewest active features, which is preferred for regulatory models",
       "L2 (Ridge) \u2014 it shrinks all coefficients toward zero without eliminating any, preserving all five features with non-zero contributions as required",
@@ -407,7 +412,8 @@
     "type": "scenario",
     "difficulty": "medium",
     "title": "Logistic Regression: Imbalanced Data and Default Threshold",
-    "description": "A logistic regression model is trained without any class weighting on a dataset where 2% of examples are positive (churn=1). At threshold=0.5, the model achieves 98.1% accuracy but 0% recall on the positive class. A colleague says 'the model is predicting all zeros \u2014 it's not working at all.' What is the most complete explanation of what happened and how to fix it?",
+    "scenario_context": "A logistic regression model is trained without any class weighting on a dataset where 2% of examples are positive (churn=1). At threshold=0.5, the model achieves 98.1% accuracy but 0% recall on the positive class. A colleague says 'the model is predicting all zeros \u2014 it's not working at all.'",
+    "description": "What is the most complete explanation of what happened and how to fix it?",
     "options": [
       "The model has overfit to the negative class \u2014 the solution is to collect more positive class examples until the dataset is balanced at 50%/50%",
       "The loss function is dominated by the majority class \u2014 the model learned to predict zero for everything because this minimises cross-entropy given 98% negatives, so the correct fix is to use class weighting or threshold adjustment",
@@ -507,7 +513,8 @@
     "type": "scenario",
     "difficulty": "medium",
     "title": "Model Calibration: Applying Platt Scaling",
-    "description": "A gradient boosted tree model predicts fraud probability. It has AUC=0.94 but is known to be poorly calibrated \u2014 its scores cluster near 0 and 1 with few examples in the 0.2\u20130.8 range, making raw scores unsuitable as probabilities. A risk analyst needs calibrated probabilities to estimate expected fraud losses. What is the recommended approach?",
+    "scenario_context": "A gradient boosted tree model predicts fraud probability. It has AUC=0.94 but is known to be poorly calibrated \u2014 its scores cluster near 0 and 1 with few examples in the 0.2\u20130.8 range, making raw scores unsuitable as probabilities. A risk analyst needs calibrated probabilities to estimate expected fraud losses.",
+    "description": "What is the recommended approach?",
     "options": [
       "Retrain the model with a logistic loss function instead of the default, which will produce calibrated probability outputs by construction",
       "Apply Platt scaling: train a logistic regression model on the raw scores from a held-out calibration set, with the true labels as targets, to learn a mapping from raw scores to calibrated probabilities",
@@ -557,7 +564,8 @@
     "type": "scenario",
     "difficulty": "medium",
     "title": "Feature Selection: Budget and Timeline Constraints",
-    "description": "A startup has 300 features, a model that needs to be deployed in 5 days, and limited compute (one 8-core machine). A senior engineer proposes recursive feature elimination with cross-validated gradient boosting (wrapper method). A junior engineer proposes mutual information scores between each feature and the target (filter method). Which approach is appropriate and why?",
+    "scenario_context": "A startup has 300 features, a model that needs to be deployed in 5 days, and limited compute (one 8-core machine). A senior engineer proposes recursive feature elimination with cross-validated gradient boosting (wrapper method). A junior engineer proposes mutual information scores between each feature and the target (filter method).",
+    "description": "Which approach is appropriate and why?",
     "options": [
       "Wrapper method \u2014 it produces better features for the gradient boosting model because it evaluates features in the context of the actual downstream model",
       "Filter method \u2014 given the compute and time constraints, mutual information scores can be computed quickly across all 300 features, and the filter approach provides a good-enough starting point that does not block deployment",
@@ -607,7 +615,8 @@
     "type": "scenario",
     "difficulty": "medium",
     "title": "Missing Data: MNAR and Imputation Validity",
-    "description": "A survey collects self-reported annual income. 25% of respondents skipped the income question. Investigation shows that non-response rates are highest among respondents at the top and bottom income extremes \u2014 high-income respondents tend to consider disclosure private, and very low-income respondents feel embarrassed. A data scientist proposes mean imputation: replace all missing values with the average income of respondents who answered. What is the fundamental problem?",
+    "scenario_context": "A survey collects self-reported annual income. 25% of respondents skipped the income question. Investigation shows that non-response rates are highest among respondents at the top and bottom income extremes \u2014 high-income respondents tend to consider disclosure private, and very low-income respondents feel embarrassed. A data scientist proposes mean imputation: replace all missing values with the average income of respondents who answered.",
+    "description": "What is the fundamental problem?",
     "options": [
       "Mean imputation adds too many examples with the same value, which reduces the feature's variance and inflates model confidence incorrectly",
       "The data is MNAR \u2014 missingness depends on the income value itself. Mean imputation will pull extreme values toward the middle, systematically biasing the income distribution and any model trained on it",
@@ -657,7 +666,8 @@
     "type": "scenario",
     "difficulty": "medium",
     "title": "Hyperparameter Tuning: Reading a Grid Search Result",
-    "description": "You run a grid search with the following results for a random forest on a validation set. The parameter grid explored max_depth \u2208 {3, 6, 10} and min_samples_leaf \u2208 {1, 5, 10}. The best configurations are: depth=6, min_leaf=5 (AUC=0.881), depth=6, min_leaf=1 (AUC=0.878), depth=3, min_leaf=5 (AUC=0.843), depth=10, min_leaf=1 (AUC=0.861). What should you investigate next?",
+    "scenario_context": "You run a grid search with the following results for a random forest on a validation set. The parameter grid explored max_depth \u2208 {3, 6, 10} and min_samples_leaf \u2208 {1, 5, 10}. The best configurations are: depth=6, min_leaf=5 (AUC=0.881), depth=6, min_leaf=1 (AUC=0.878), depth=3, min_leaf=5 (AUC=0.843), depth=10, min_leaf=1 (AUC=0.861).",
+    "description": "What should you investigate next?",
     "options": [
       "Deploy the best configuration (depth=6, min_leaf=5) immediately \u2014 grid search has found the optimal hyperparameters within the search space",
       "Explore finer granularity around depth=6 and min_leaf=5, and check whether depth=8 or min_leaf=3 or min_leaf=7 further improves performance, since the best result is at an interior point of the grid",
@@ -707,7 +717,8 @@
     "type": "scenario",
     "difficulty": "medium",
     "title": "Kernel SVM: When High Dimensionality Helps or Hurts",
-    "description": "Team A applies an RBF kernel SVM to a text classification problem with 50,000 TF-IDF features (document-term frequencies). The training takes 18 hours with poor performance. Team B applies a linear SVM to the same data and achieves good performance in 20 minutes. Why does the RBF kernel hurt here when it helps with concentric-circle problems?",
+    "scenario_context": "Team A applies an RBF kernel SVM to a text classification problem with 50,000 TF-IDF features (document-term frequencies). The training takes 18 hours with poor performance. Team B applies a linear SVM to the same data and achieves good performance in 20 minutes.",
+    "description": "Why does the RBF kernel hurt here when it helps with concentric-circle problems?",
     "options": [
       "RBF kernel SVMs cannot process sparse data like TF-IDF features \u2014 they require dense, continuous feature vectors to function correctly",
       "In high-dimensional spaces, points are already approximately equidistant from each other, making the RBF similarity function near-zero for almost all pairs and destroying its ability to separate classes",
@@ -807,7 +818,8 @@
     "type": "scenario",
     "difficulty": "medium",
     "title": "Cross-Validation: Group K-Fold for Patient Data",
-    "description": "A healthcare model predicts patient readmission risk. The dataset has 50,000 rows representing individual hospital visits, but only 8,000 unique patients \u2014 many patients have multiple visits. A data scientist applies standard 5-fold cross-validation at the visit level (each row is assigned to a fold randomly). A senior ML engineer flags this as a serious problem. Why?",
+    "scenario_context": "A healthcare model predicts patient readmission risk. The dataset has 50,000 rows representing individual hospital visits, but only 8,000 unique patients \u2014 many patients have multiple visits. A data scientist applies standard 5-fold cross-validation at the visit level (each row is assigned to a fold randomly). A senior ML engineer flags this as a serious problem.",
+    "description": "Why?",
     "options": [
       "5-fold cross-validation is too few folds for a dataset with only 8,000 unique patients \u2014 at least 10 folds are needed for stable estimates",
       "Random visit-level splitting allows the same patient's data to appear in both training and validation folds. The model learns patient-specific patterns and its performance on validation visits from known patients overestimates true generalisation to new patients",
@@ -858,7 +870,8 @@
     "type": "scenario",
     "difficulty": "medium",
     "title": "Class Imbalance and Threshold Selection for Business Objectives",
-    "description": "A subscription service builds a churn prediction model. The model outputs probabilities and at threshold=0.5 achieves: precision=0.55, recall=0.40, F1=0.47. The retention team can reach out to at most 500 customers per week (capacity constraint). The total customer base is 20,000. A team lead asks: 'We need to maximise the number of churners we actually retain \u2014 how should we set the threshold?' What is the correct approach?",
+    "scenario_context": "A subscription service builds a churn prediction model. The model outputs probabilities and at threshold=0.5 achieves: precision=0.55, recall=0.40, F1=0.47. The retention team can reach out to at most 500 customers per week (capacity constraint). The total customer base is 20,000. A team lead asks: 'We need to maximise the number of churners we actually retain \u2014 how should we set the threshold?'",
+    "description": "What is the correct approach?",
     "options": [
       "Lower the threshold to 0.1 to maximise recall \u2014 catching more churners at any precision is always better than missing them",
       "Keep threshold at 0.5 \u2014 this is the mathematically correct threshold for balanced precision-recall and changing it would be arbitrary",
@@ -884,7 +897,8 @@
     "difficulty": "medium",
     "mock_only": true,
     "title": "Diagnosing Validation Curve Shapes",
-    "description": "You plot validation curves for a decision tree varying max_depth from 1 to 20. At depth=1, train accuracy=0.65 and val accuracy=0.64. At depth=8, train accuracy=0.92 and val accuracy=0.87. At depth=15, train accuracy=0.99 and val accuracy=0.71. What do these three regions of the curve reveal, and what is the optimal depth?",
+    "scenario_context": "You plot validation curves for a decision tree varying max_depth from 1 to 20. At depth=1, train accuracy=0.65 and val accuracy=0.64. At depth=8, train accuracy=0.92 and val accuracy=0.87. At depth=15, train accuracy=0.99 and val accuracy=0.71.",
+    "description": "What do these three regions of the curve reveal, and what is the optimal depth?",
     "options": [
       "Depth 1 is optimal \u2014 the gap is smallest, indicating the best generalization",
       "Depth 15 is optimal \u2014 highest training accuracy means the model learned the most from the data",
@@ -936,7 +950,8 @@
     "difficulty": "medium",
     "mock_only": true,
     "title": "Per-Model Sensitivity to Standardization in a Mixed-Algorithm Bake-off",
-    "description": "A data scientist scales all features before training. Their colleague argues this was unnecessary. They are testing: (A) logistic regression, (B) random forest, (C) k-nearest neighbors, (D) gradient boosting. For which models is feature scaling necessary for correctness or performance, and for which is it irrelevant?",
+    "scenario_context": "A data scientist scales all features before training. Their colleague argues this was unnecessary. They are testing: (A) logistic regression, (B) random forest, (C) k-nearest neighbors, (D) gradient boosting.",
+    "description": "For which models is feature scaling necessary for correctness or performance, and for which is it irrelevant?",
     "options": [
       "Scaling is necessary for all four \u2014 unscaled features always degrade model performance",
       "Scaling is necessary for A and C; irrelevant for B and D \u2014 tree-based models use rank-based splits that are invariant to monotonic transformations of feature values",
@@ -988,7 +1003,8 @@
     "difficulty": "medium",
     "mock_only": true,
     "title": "Interpreting Confusion Matrix for Business Decisions",
-    "description": "A binary classifier for loan default prediction produces this confusion matrix on 9,000 test cases:\n\n- True Negative (predicted no default, actual no default): 7,200\n- False Positive (predicted default, actual no default): 800\n- False Negative (predicted no default, actual default): 400\n- True Positive (predicted default, actual default): 600\n\nThe bank loses $5,000 per false negative and spends $200 per false positive in review costs. What is the total cost of errors and which error type should the bank prioritize reducing?",
+    "scenario_context": "A binary classifier for loan default prediction produces this confusion matrix on 9,000 test cases:\n\n- True Negative (predicted no default, actual no default): 7,200\n- False Positive (predicted default, actual no default): 800\n- False Negative (predicted no default, actual default): 400\n- True Positive (predicted default, actual default): 600",
+    "description": "The bank loses $5,000 per false negative and spends $200 per false positive in review costs. What is the total cost of errors and which error type should the bank prioritize reducing?",
     "options": [
       "Total cost: $2,160,000; prioritize reducing false negatives because each costs 25x more than a false positive",
       "Total cost: $2,160,000; prioritize reducing false positives because there are twice as many of them",
@@ -1040,7 +1056,8 @@
     "difficulty": "medium",
     "mock_only": true,
     "title": "Selecting the Right Imputation Strategy by Mechanism",
-    "description": "You are analyzing missingness in three features of a healthcare dataset:\n- `blood_pressure`: missing for 8% of patients, no correlation with demographics or other features\n- `income`: missing for 31% of patients, strongly correlated with education level\n- `mental_health_score`: missing for 19% of patients, and inspection reveals patients with worse scores are less likely to complete the survey\n\nMatch each feature to the correct missingness mechanism (MCAR, MAR, MNAR) and the appropriate imputation strategy.",
+    "scenario_context": "You are analyzing missingness in three features of a healthcare dataset:\n- `blood_pressure`: missing for 8% of patients, no correlation with demographics or other features\n- `income`: missing for 31% of patients, strongly correlated with education level\n- `mental_health_score`: missing for 19% of patients, and inspection reveals patients with worse scores are less likely to complete the survey",
+    "description": "Match each feature to the correct missingness mechanism (MCAR, MAR, MNAR) and the appropriate imputation strategy.",
     "options": [
       "blood_pressure=MCAR (mean imputation), income=MAR (multiple imputation), mental_health_score=MNAR (no imputation possible)",
       "blood_pressure=MCAR (simple imputation or complete case analysis is unbiased), income=MAR (multiple imputation using education as auxiliary), mental_health_score=MNAR (missingness indicator + pattern mixture model or sensitivity analysis)",
@@ -1066,7 +1083,8 @@
     "difficulty": "medium",
     "mock_only": true,
     "title": "Gradient Descent Convergence: Batch vs Mini-Batch vs SGD",
-    "description": "You are training a neural network on 1 million samples. You compare three optimizers: (A) full batch gradient descent, (B) mini-batch SGD with batch size 256, (C) stochastic gradient descent with batch size 1. Rank them by: convergence stability, memory usage, and final model quality.",
+    "scenario_context": "You are training a neural network on 1 million samples. You compare three optimizers: (A) full batch gradient descent, (B) mini-batch SGD with batch size 256, (C) stochastic gradient descent with batch size 1.",
+    "description": "Rank them by: convergence stability, memory usage, and final model quality.",
     "options": [
       "A > B > C on all three dimensions \u2014 more data per gradient update is always better",
       "A: stable but memory-prohibitive; B: moderate stability + practical memory usage + best final quality in practice; C: noisy convergence, minimal memory, often escapes local minima better than A",
@@ -1118,7 +1136,8 @@
     "difficulty": "medium",
     "mock_only": true,
     "title": "Principled PCA Component Selection: Cross-Validation vs the Variance Threshold",
-    "description": "You apply PCA to a 200-feature dataset. The explained variance ratios for the first 10 components are: [0.31, 0.18, 0.12, 0.08, 0.06, 0.04, 0.03, 0.02, 0.02, 0.01]. Cumulative: [0.31, 0.49, 0.61, 0.69, 0.75, 0.79, 0.82, 0.84, 0.86, 0.87]. You need to select the number of components for a downstream classifier. Which approach is most principled?",
+    "scenario_context": "You apply PCA to a 200-feature dataset. The explained variance ratios for the first 10 components are: [0.31, 0.18, 0.12, 0.08, 0.06, 0.04, 0.03, 0.02, 0.02, 0.01]. Cumulative: [0.31, 0.49, 0.61, 0.69, 0.75, 0.79, 0.82, 0.84, 0.86, 0.87]. You need to select the number of components for a downstream classifier.",
+    "description": "Which approach is most principled?",
     "options": [
       "Use 3 components \u2014 the cumulative explained variance reaches 61%, which is sufficient",
       "Use all 200 components \u2014 discarding any variance loses information",
@@ -1144,7 +1163,8 @@
     "difficulty": "medium",
     "mock_only": true,
     "title": "Model Selection: When Simpler Beats Complex",
-    "description": "For a tabular customer satisfaction prediction task (5,000 samples, 25 features), you compare: logistic regression (AUC=0.78), gradient boosting (AUC=0.82), and a 3-layer neural network (AUC=0.80). The product team needs to explain individual predictions to customers. Gradient boosting is the highest performer but requires SHAP post-hoc explanations. What factors should determine the final model choice?",
+    "scenario_context": "For a tabular customer satisfaction prediction task (5,000 samples, 25 features), you compare: logistic regression (AUC=0.78), gradient boosting (AUC=0.82), and a 3-layer neural network (AUC=0.80). The product team needs to explain individual predictions to customers. Gradient boosting is the highest performer but requires SHAP post-hoc explanations.",
+    "description": "What factors should determine the final model choice?",
     "options": [
       "Always choose the highest AUC model \u2014 gradient boosting at 0.82",
       "Always choose logistic regression \u2014 it is inherently interpretable and regulators prefer it",
@@ -1299,7 +1319,8 @@
     "difficulty": "medium",
     "mock_only": true,
     "title": "Reading a Regularization Sweep: Finding the Bias-Variance Sweet Spot",
-    "description": "You tune L2 regularization strength (C) for logistic regression on a 10,000-row customer churn dataset. C controls the inverse of regularization strength \u2014 larger C means less regularization. Results (C / train AUC / val AUC): 0.001\u21920.65/0.64, 0.01\u21920.74/0.73, 0.1\u21920.81/0.80, 1\u21920.87/0.86, 10\u21920.92/0.85, 100\u21920.95/0.79. Which C should you select and what does the pattern reveal?",
+    "scenario_context": "You tune L2 regularization strength (C) for logistic regression on a 10,000-row customer churn dataset. C controls the inverse of regularization strength \u2014 larger C means less regularization. Results (C / train AUC / val AUC): 0.001\u21920.65/0.64, 0.01\u21920.74/0.73, 0.1\u21920.81/0.80, 1\u21920.87/0.86, 10\u21920.92/0.85, 100\u21920.95/0.79.",
+    "description": "Which C should you select and what does the pattern reveal?",
     "options": [
       "C=100 \u2014 maximize training AUC; high training performance means the model has learned the data well",
       "C=0.001 \u2014 the most regularized model is safest against overfitting regardless of validation performance",
@@ -1403,7 +1424,8 @@
     "difficulty": "medium",
     "mock_only": true,
     "title": "Semi-Supervised Learning: Using Unlabeled Data Strategically",
-    "description": "You are building a fraud detection model. You have 500 labeled fraud examples, 2,000 labeled non-fraud examples, and 200,000 unlabeled transactions. Three strategies are proposed: (A) use only the 2,500 labeled examples; (B) pseudo-label the 200,000 unlabeled examples using a model trained on the 2,500 labeled, then retrain on all; (C) use label propagation to spread labels from labeled to unlabeled examples in a similarity graph. What is the primary risk of strategy B?",
+    "scenario_context": "You are building a fraud detection model. You have 500 labeled fraud examples, 2,000 labeled non-fraud examples, and 200,000 unlabeled transactions. Three strategies are proposed: (A) use only the 2,500 labeled examples; (B) pseudo-label the 200,000 unlabeled examples using a model trained on the 2,500 labeled, then retrain on all; (C) use label propagation to spread labels from labeled to unlabeled examples in a similarity graph.",
+    "description": "What is the primary risk of strategy B?",
     "options": [
       "Strategy B is always superior \u2014 more data always improves model performance; pseudo-labeling is a standard and risk-free technique",
       "Pseudo-labeling amplifies model errors: the initial model's wrong predictions become training labels for the second model, reinforcing its mistakes; if the initial model has poor precision on fraud examples (few labeled), pseudo-labeled fraud cases may be systematically incorrect, training the next model on wrong labels",
@@ -1455,7 +1477,8 @@
     "difficulty": "medium",
     "mock_only": true,
     "title": "Reliability Diagram Diagnosis: Identifying Systematic Over-Confidence",
-    "description": "A reliability diagram for a binary classifier shows: predicted probability bin 0.1\u2192 actual rate 0.09, bin 0.3\u2192 actual rate 0.22, bin 0.5\u2192 actual rate 0.38, bin 0.7\u2192 actual rate 0.51, bin 0.9\u2192 actual rate 0.67. The diagonal represents perfect calibration. What pattern does this show, and which calibration method would help?",
+    "scenario_context": "A reliability diagram for a binary classifier shows: predicted probability bin 0.1\u2192 actual rate 0.09, bin 0.3\u2192 actual rate 0.22, bin 0.5\u2192 actual rate 0.38, bin 0.7\u2192 actual rate 0.51, bin 0.9\u2192 actual rate 0.67. The diagonal represents perfect calibration.",
+    "description": "What pattern does this show, and which calibration method would help?",
     "options": [
       "The model is under-confident \u2014 predicted probabilities are systematically higher than actual rates; apply Platt scaling to stretch the probabilities upward",
       "The model is over-confident \u2014 predicted probabilities in the high range (0.7, 0.9) are systematically higher than actual rates (0.51, 0.67); apply isotonic regression or Platt scaling to compress predicted probabilities toward the true rates",
@@ -1533,7 +1556,8 @@
     "difficulty": "medium",
     "mock_only": true,
     "title": "Regression Metrics: Choosing Between RMSE, MAE, and MAPE",
-    "description": "You build a house price prediction model. Three teams use the predictions differently: the finance team calculates total portfolio risk (cares about large errors more than small ones), the operations team measures average prediction error per house (equal weighting), and the regional team compares error across markets with different price ranges (needs scale-invariant errors). Which metric should each team use?",
+    "scenario_context": "You build a house price prediction model. Three teams use the predictions differently: the finance team calculates total portfolio risk (cares about large errors more than small ones), the operations team measures average prediction error per house (equal weighting), and the regional team compares error across markets with different price ranges (needs scale-invariant errors).",
+    "description": "Which metric should each team use?",
     "options": [
       "All three teams should use RMSE \u2014 it is the standard regression metric and consistent across use cases",
       "Finance team: RMSE (squares large errors, giving them disproportionate weight); Operations team: MAE (equal weight per prediction); Regional team: MAPE (percentage error is scale-invariant, enabling cross-market comparison)",
@@ -1611,7 +1635,8 @@
     "difficulty": "medium",
     "mock_only": true,
     "title": "Feature Selection for High-Dimensional, Low-Sample Genomic Data",
-    "description": "A bioinformatics team has 500 genomic features and only 200 patient samples (p >> n setting). They propose recursive feature elimination (RFE) with a random forest. A statistical reviewer flags the approach. What is the specific risk in this setting and what alternative is more appropriate?",
+    "scenario_context": "A bioinformatics team has 500 genomic features and only 200 patient samples (p >> n setting). They propose recursive feature elimination (RFE) with a random forest. A statistical reviewer flags the approach.",
+    "description": "What is the specific risk in this setting and what alternative is more appropriate?",
     "options": [
       "RFE is appropriate \u2014 it handles high-dimensional data well by iteratively removing the least important feature until the optimal subset is found",
       "With p >> n, RFE with cross-validated random forest will overfit: evaluating feature subsets on small folds of 200 samples is noisy, and the selected features may be spuriously important in the training folds; preferable approaches: univariate filter methods with multiple testing correction (e.g., Benjamini-Hochberg), LASSO with cross-validated regularization strength, or stability selection",
@@ -1689,7 +1714,8 @@
     "difficulty": "medium",
     "mock_only": true,
     "title": "XGBoost Early Stopping: Diagnosing Overfitting Without It",
-    "description": "You train an XGBoost model with n_estimators=1000, learning_rate=0.1, early_stopping_rounds disabled. The training log shows: epoch 100: train_auc=0.88, val_auc=0.87 | epoch 300: train_auc=0.93, val_auc=0.89 | epoch 500: train_auc=0.97, val_auc=0.89 | epoch 700: train_auc=0.99, val_auc=0.87 | epoch 1000: train_auc=1.00, val_auc=0.82. What happened and what would early stopping have done?",
+    "scenario_context": "You train an XGBoost model with n_estimators=1000, learning_rate=0.1, early_stopping_rounds disabled. The training log shows: epoch 100: train_auc=0.88, val_auc=0.87 | epoch 300: train_auc=0.93, val_auc=0.89 | epoch 500: train_auc=0.97, val_auc=0.89 | epoch 700: train_auc=0.99, val_auc=0.87 | epoch 1000: train_auc=1.00, val_auc=0.82.",
+    "description": "What happened and what would early stopping have done?",
     "options": [
       "The model converged at epoch 1000 \u2014 train_auc=1.00 means optimal performance; val_auc=0.82 is the correct test performance",
       "The model overfit: validation AUC peaked around epoch 300-500 and then degraded as additional trees memorized training noise; early stopping (with rounds=50) would have stopped training when val_auc failed to improve for 50 consecutive rounds, restoring the model to its best validation checkpoint (epoch ~400, val_auc\u22480.89)",
@@ -1767,7 +1793,8 @@
     "difficulty": "medium",
     "mock_only": true,
     "title": "Group-Based vs Random Split: Avoiding Patient-Level Leakage",
-    "description": "A hospital trains a readmission prediction model on records from 5,000 patients, each contributing an average of 3 visits (15,000 total records). A random 80/20 train/test split is performed on records (not patients). Validation accuracy is 0.88. After deployment, accuracy on new patients is 0.71. A colleague proposes group k-fold cross-validation. What is the leakage mechanism?",
+    "scenario_context": "A hospital trains a readmission prediction model on records from 5,000 patients, each contributing an average of 3 visits (15,000 total records). A random 80/20 train/test split is performed on records (not patients). Validation accuracy is 0.88. After deployment, accuracy on new patients is 0.71. A colleague proposes group k-fold cross-validation.",
+    "description": "What is the leakage mechanism?",
     "options": [
       "Random split is correct \u2014 each record is independent; patient identity should not affect model evaluation",
       "A patient's records in the test set share features (demographics, chronic conditions, medication history) with that patient's records in the training set; the model learns patient-specific patterns in training and 'recognizes' the same patient at test time, inflating accuracy; group k-fold ensures all records from a given patient are in the same fold, testing generalization to new patients",
@@ -1845,7 +1872,8 @@
     "difficulty": "medium",
     "mock_only": true,
     "title": "Perfect Training Accuracy, Random Validation Accuracy: Diagnosing Severe Overfitting",
-    "description": "A neural network reaches 100% training accuracy after 50 epochs but validation accuracy oscillates between 49% and 55% (near random chance) for a binary classification task. Three engineers diagnose differently: (A) 'The model needs more capacity to learn the validation set'; (B) 'The model has severely overfit \u2014 it memorized training labels'; (C) 'The learning rate is too low \u2014 it found a local minimum.' Which diagnosis is correct and what should be done?",
+    "scenario_context": "A neural network reaches 100% training accuracy after 50 epochs but validation accuracy oscillates between 49% and 55% (near random chance) for a binary classification task. Three engineers diagnose differently: (A) 'The model needs more capacity to learn the validation set'; (B) 'The model has severely overfit \u2014 it memorized training labels'; (C) 'The learning rate is too low \u2014 it found a local minimum.'",
+    "description": "Which diagnosis is correct and what should be done?",
     "options": [
       "Engineer A is correct \u2014 add more layers and neurons to give the model capacity to learn validation patterns",
       "Engineer B is correct \u2014 100% training accuracy with near-random validation accuracy is the definition of severe overfitting; the model memorized training samples instead of learning generalizable patterns; remedies: add dropout/L2 regularization, reduce model capacity, apply early stopping, augment training data if possible",
@@ -1949,7 +1977,8 @@
     "difficulty": "medium",
     "mock_only": true,
     "title": "Time Series Missing Values: When Forward Fill Fails",
-    "description": "A sensor dataset records machine temperature every minute. Missing values occur in three patterns: (A) single missing minutes scattered randomly; (B) 4-hour outage gaps; (C) systematic absence every midnight (sensor reboot). You apply forward fill (ffill) to all three patterns. Which pattern does forward fill handle incorrectly and why?",
+    "scenario_context": "A sensor dataset records machine temperature every minute. Missing values occur in three patterns: (A) single missing minutes scattered randomly; (B) 4-hour outage gaps; (C) systematic absence every midnight (sensor reboot). You apply forward fill (ffill) to all three patterns.",
+    "description": "Which pattern does forward fill handle incorrectly and why?",
     "options": [
       "Forward fill handles all three correctly \u2014 carrying forward the last known value is always appropriate for time series",
       "Forward fill is reasonable for pattern A (single random gaps); it becomes increasingly problematic for pattern B (4-hour gaps introduce stale values through major temperature changes \u2014 forward-filled values may differ substantially from true readings); for pattern C, midnight reboots create a systematic artifact where overnight temperature changes are invisible until the sensor restarts, introducing a predictable bias in midnight-adjacent features",
@@ -2001,7 +2030,8 @@
     "difficulty": "medium",
     "mock_only": true,
     "title": "Focal Loss for Severe Class Imbalance: What It Does Differently",
-    "description": "A content moderation classifier has 1% positive (harmful content) and 99% negative (safe). Trained with binary cross-entropy, the model achieves 99% accuracy but F1=0.11 on the positive class. Switching to focal loss with \u03b3=2 improves F1 to 0.43. What mechanism makes focal loss more effective for this imbalance?",
+    "scenario_context": "A content moderation classifier has 1% positive (harmful content) and 99% negative (safe). Trained with binary cross-entropy, the model achieves 99% accuracy but F1=0.11 on the positive class. Switching to focal loss with \u03b3=2 improves F1 to 0.43.",
+    "description": "What mechanism makes focal loss more effective for this imbalance?",
     "options": [
       "Focal loss up-weights positive examples by a fixed factor of \u03b3=2, equivalent to oversampling positives by 2\u00d7",
       "Focal loss multiplies the cross-entropy loss by (1 - p_t)^\u03b3, where p_t is the model's predicted probability for the true class; easy examples (those the model classifies confidently, high p_t) receive near-zero loss weight; hard examples (those the model is uncertain about, low p_t) retain near-full loss weight; in severe imbalance, the majority of easy negatives contribute negligible loss, forcing the model to focus training gradient on the hard examples \u2014 which are predominantly the rare positives",
@@ -2053,7 +2083,8 @@
     "difficulty": "medium",
     "mock_only": true,
     "title": "Regulatory Explanation Requirement: Choosing Model and Explanation Pair",
-    "description": "A European fintech must comply with GDPR Article 22: rejected loan applicants have a right to 'meaningful information about the logic involved' in automated decisions. The team wants to use gradient boosting (best AUC) but a legal reviewer says SHAP post-hoc explanations may not satisfy the regulatory standard. What is the most defensible approach?",
+    "scenario_context": "A European fintech must comply with GDPR Article 22: rejected loan applicants have a right to 'meaningful information about the logic involved' in automated decisions. The team wants to use gradient boosting (best AUC) but a legal reviewer says SHAP post-hoc explanations may not satisfy the regulatory standard.",
+    "description": "What is the most defensible approach?",
     "options": [
       "Use gradient boosting with SHAP \u2014 SHAP is mathematically rigorous and satisfies any regulatory explanation requirement",
       "Use a logistic regression with selected interpretable features \u2014 each coefficient has a clear, auditable direction of effect; rejected applicants can be given an explanation in terms of the specific features that most negatively affected their score, with magnitudes proportional to the coefficient \u00d7 feature value product",
@@ -2131,7 +2162,8 @@
     "difficulty": "medium",
     "mock_only": true,
     "title": "SVM with RBF Kernel: Training-Validation Accuracy Gap from Unscaled Features",
-    "description": "An SVM with RBF kernel on a 30-feature dataset achieves training accuracy 0.96, validation accuracy 0.54 \u2014 near random. Features include: age (0-100), salary ($20K-$300K), num_transactions (0-500). The team tried C=1, C=0.1, C=10 and \u03b3=auto \u2014 all produce similar poor validation accuracy. What is the most likely cause?",
+    "scenario_context": "An SVM with RBF kernel on a 30-feature dataset achieves training accuracy 0.96, validation accuracy 0.54 \u2014 near random. Features include: age (0-100), salary ($20K-$300K), num_transactions (0-500). The team tried C=1, C=0.1, C=10 and \u03b3=auto \u2014 all produce similar poor validation accuracy.",
+    "description": "What is the most likely cause?",
     "options": [
       "The SVM needs more training data \u2014 validation accuracy this low indicates insufficient sample size",
       "Unscaled features: salary has range ~$280K while age has range ~100 \u2014 the RBF kernel computes Euclidean distances in this raw feature space; salary dominates the distance metric by ~2800\u00d7, making age and num_transactions geometrically invisible; the kernel can only separate classes along the salary axis, producing an overfit model with near-random validation accuracy; fix: standardize all features before SVM",
@@ -2183,7 +2215,8 @@
     "difficulty": "medium",
     "mock_only": true,
     "title": "Non-Monotonic PDP: Interpreting and Acting on an Unexpected Feature Effect",
-    "description": "A partial dependence plot for customer tenure (days) in a churn model shows: churn probability decreases from 0 to 365 days, spikes upward at 370-400 days, then decreases again through 730 days and beyond. The business team expects tenure to reduce churn monotonically. What are the plausible interpretations and appropriate follow-up?",
+    "scenario_context": "A partial dependence plot for customer tenure (days) in a churn model shows: churn probability decreases from 0 to 365 days, spikes upward at 370-400 days, then decreases again through 730 days and beyond. The business team expects tenure to reduce churn monotonically.",
+    "description": "What are the plausible interpretations and appropriate follow-up?",
     "options": [
       "The PDP is wrong \u2014 tenure should always monotonically reduce churn and the spike indicates a modeling error; retrain with a monotonicity constraint",
       "The spike at 370-400 days may reflect a real business phenomenon (e.g., end of a 12-month contract renewal period triggers evaluation and potential churn); or it may be a data artifact (e.g., different subscription plans with 1-year terms creating a cohort effect); investigate by checking business context and whether the spike aligns with contract renewal events before applying monotonicity constraints",
@@ -2209,7 +2242,8 @@
     "difficulty": "medium",
     "mock_only": true,
     "title": "Oscillating Training Loss: Diagnosing a Learning Rate Too High",
-    "description": "Training loss after each epoch: 1.82, 0.95, 1.71, 0.88, 1.65, 0.91, 1.58, 0.89. The pattern alternates high-low-high-low. Validation loss mirrors this oscillation. A junior engineer proposes training for 100 more epochs to 'wait for convergence.' What is the problem and the correct fix?",
+    "scenario_context": "Training loss after each epoch: 1.82, 0.95, 1.71, 0.88, 1.65, 0.91, 1.58, 0.89. The pattern alternates high-low-high-low. Validation loss mirrors this oscillation. A junior engineer proposes training for 100 more epochs to 'wait for convergence.'",
+    "description": "What is the problem and the correct fix?",
     "options": [
       "The model is underfitting \u2014 alternating loss indicates insufficient model capacity; add more layers",
       "The learning rate is too high: large gradient steps cause the optimizer to overshoot the loss minimum, bouncing between sides of the loss bowl rather than descending into it; training for more epochs will not fix this \u2014 oscillation will continue indefinitely; fix: reduce learning rate by 5-10\u00d7, or use learning rate warmup (start low, ramp up to target, then decay)",
@@ -2261,7 +2295,8 @@
     "difficulty": "medium",
     "mock_only": true,
     "title": "Stratified vs Random Split for Imbalanced Datasets: Why Stratification Is Necessary",
-    "description": "A fraud dataset has 1% positive rate (1,000 fraud among 100,000 transactions). An 80/20 random split on a single run produces: training set with 820 fraud cases (0.82% rate), test set with 180 fraud cases (0.90% rate). A colleague says 'the rates are close enough \u2014 stratification is unnecessary.' Why is stratification still recommended?",
+    "scenario_context": "A fraud dataset has 1% positive rate (1,000 fraud among 100,000 transactions). An 80/20 random split on a single run produces: training set with 820 fraud cases (0.82% rate), test set with 180 fraud cases (0.90% rate). A colleague says 'the rates are close enough \u2014 stratification is unnecessary.'",
+    "description": "Why is stratification still recommended?",
     "options": [
       "The colleague is correct \u2014 random splits with n=100,000 are large enough that stratification adds no value; the 0.08% difference is negligible",
       "With 1% positive rate, random splits have high relative variance in the positive class count. A single lucky split with 180 test positives could easily become 50 or 300 on a different random seed \u2014 the evaluation metric (e.g., F1 or AUC on the positive class) depends heavily on how many positives land in the test set; stratification guarantees exactly 200 positives in the test set (1% of 20,000) every time, making evaluation reproducible and comparable across experiments",
@@ -2313,7 +2348,8 @@
     "difficulty": "medium",
     "mock_only": true,
     "title": "DBSCAN vs K-Means for Spatial Anomaly Detection",
-    "description": "A logistics team monitors GPS coordinates of delivery vehicles. Normal vehicles cluster in 5 urban hubs. Anomalous vehicles are scattered at arbitrary non-hub locations. They try k-means (k=5) and DBSCAN (\u03b5=0.5km, min_samples=10). K-means misclassifies most anomalous vehicles as belonging to the nearest hub cluster. DBSCAN flags them as noise points. Which method is appropriate for this task and why?",
+    "scenario_context": "A logistics team monitors GPS coordinates of delivery vehicles. Normal vehicles cluster in 5 urban hubs. Anomalous vehicles are scattered at arbitrary non-hub locations. They try k-means (k=5) and DBSCAN (\u03b5=0.5km, min_samples=10). K-means misclassifies most anomalous vehicles as belonging to the nearest hub cluster. DBSCAN flags them as noise points.",
+    "description": "Which method is appropriate for this task and why?",
     "options": [
       "K-means is correct \u2014 it always outperforms DBSCAN because it uses fewer hyperparameters and is more stable",
       "DBSCAN is appropriate because it identifies points in low-density regions as noise (anomalies) \u2014 vehicles not within 0.5km of at least 10 other vehicles are flagged as outliers; k-means cannot identify outliers because it assigns every point to the nearest centroid regardless of distance, grouping isolated anomalous vehicles with the nearest hub",
@@ -2469,7 +2505,8 @@
     "difficulty": "medium",
     "mock_only": true,
     "title": "Bayesian Optimization Found Wrong Optimum: Diagnosing a Poor Surrogate Fit",
-    "description": "A team runs Bayesian optimization (30 trials) for SVM-RBF hyperparameters C \u2208 [0.001, 1000] and \u03b3 \u2208 [0.00001, 10] over log-uniform search space. It recommends C=0.001, AUC=0.63. Manual grid search identifies C=1, \u03b3=0.1 with AUC=0.87. The team blames Bayesian optimization. What likely went wrong?",
+    "scenario_context": "A team runs Bayesian optimization (30 trials) for SVM-RBF hyperparameters C \u2208 [0.001, 1000] and \u03b3 \u2208 [0.00001, 10] over log-uniform search space. It recommends C=0.001, AUC=0.63. Manual grid search identifies C=1, \u03b3=0.1 with AUC=0.87. The team blames Bayesian optimization.",
+    "description": "What likely went wrong?",
     "options": [
       "Bayesian optimization cannot handle 2+ hyperparameters simultaneously \u2014 it only works for single-parameter tuning",
       "The search space is very large (log-scale spanning 6 orders of magnitude for C, 5 for \u03b3); with only 30 trials, the Gaussian process surrogate model may not have sampled densely enough near the true optimum to build an accurate surrogate \u2014 initial random trials may have concentrated in C<0.01 by random chance, building a surrogate that wrongly estimates poor performance for C=1; the fix: increase trials (100+), restrict search space based on domain knowledge, or use a warm start with manual anchor points",
