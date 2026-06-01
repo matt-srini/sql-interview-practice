@@ -1,0 +1,224 @@
+[
+  {
+    "id": 711,
+    "order": 1,
+    "title": "Interpreting a Confidence Interval",
+    "difficulty": "easy",
+    "type": "conceptual",
+    "subtype": "conceptual",
+    "description": "A data scientist reports: 'We ran an A/B test and the 95% confidence interval for the lift in conversion rate is [+1.2%, +4.8%].' A PM asks: 'Does this mean there's a 95% chance the true lift is between 1.2% and 4.8%?'\n\nHow should the data scientist respond?",
+    "options": [
+      "Yes — a 95% confidence interval means there is a 95% probability that the true parameter is inside this specific interval",
+      "No — the correct interpretation is procedural: if we repeated this experiment many times and computed a CI each time, 95% of those intervals would contain the true parameter. For this specific interval, the true lift is either inside or not — we cannot assign it a probability",
+      "No — a 95% CI means we are 95% confident the effect is positive, not that the interval bounds the true value",
+      "Yes — Bayesian credible intervals and frequentist confidence intervals are equivalent in practice, so a 95% probability statement is valid"
+    ],
+    "correct_option": 1,
+    "explanation": "A frequentist confidence interval has a procedural interpretation: the 95% refers to the long-run coverage of the procedure, not the probability that a specific interval contains the true parameter. Once the data is collected and the interval is computed, the true parameter is fixed (not random) — the interval either covers it or not. The PM's statement applies to a Bayesian credible interval, not a frequentist CI. Option 0 and 3 conflate frequentist and Bayesian interpretations. Option 2 confuses the CI interpretation with a one-sided hypothesis test conclusion.",
+    "hints": [
+      "A confidence interval is a statement about the long-run behaviour of the procedure, not about any single interval.",
+      "The true parameter is fixed. It's the intervals that vary from sample to sample — 95% of them capture the truth."
+    ],
+    "concepts": ["confidence intervals & estimation", "hypothesis testing"]
+  },
+  {
+    "id": 712,
+    "order": 2,
+    "title": "Compute a Sample Mean and Standard Deviation",
+    "difficulty": "easy",
+    "type": "numerical",
+    "subtype": "numerical",
+    "description": "Write `solve(values)` that takes a list of numbers and returns a tuple `(mean, std_dev)` where `mean` is the sample mean and `std_dev` is the **sample** standard deviation (ddof=1), both rounded to 4 decimal places.\n\nExample: `[2.0, 4.0, 4.0, 4.0, 5.0, 5.0, 7.0, 9.0]` → `(5.0, 2.0)`",
+    "starter_code": "def solve(values: list[float]) -> tuple[float, float]:\n    pass",
+    "expected_code": "def solve(values: list[float]) -> tuple[float, float]:\n    import statistics\n    mean = statistics.mean(values)\n    std = statistics.stdev(values)  # sample stdev (ddof=1)\n    return (round(mean, 4), round(std, 4))",
+    "solution_code": "def solve(values: list[float]) -> tuple[float, float]:\n    import statistics\n    mean = statistics.mean(values)\n    std = statistics.stdev(values)  # sample stdev (ddof=1)\n    return (round(mean, 4), round(std, 4))",
+    "explanation": "`statistics.mean` and `statistics.stdev` implement the sample mean and sample standard deviation (ddof=1) directly. Sample stdev divides by n-1 (Bessel's correction) rather than n, giving an unbiased estimator of the population variance.",
+    "test_cases": [
+      {
+        "input": [[2.0, 4.0, 4.0, 4.0, 5.0, 5.0, 7.0, 9.0]],
+        "expected": [5.0, 2.0],
+        "tolerance": 0.001
+      },
+      {
+        "input": [[1.0, 2.0, 3.0]],
+        "expected": [2.0, 1.0],
+        "tolerance": 0.001
+      }
+    ],
+    "hints": [
+      "Use `statistics.stdev` for sample standard deviation (ddof=1), not population standard deviation.",
+      "Return both values as a tuple rounded to 4 decimal places."
+    ],
+    "concepts": ["descriptive statistics"]
+  },
+  {
+    "id": 713,
+    "order": 3,
+    "title": "P-Value: What It Measures",
+    "difficulty": "easy",
+    "type": "conceptual",
+    "subtype": "conceptual",
+    "description": "An A/B test shows p = 0.03. A PM concludes: 'There is only a 3% chance the null hypothesis is true.' A data scientist disagrees. Who is right and why?",
+    "options": [
+      "The PM is right — p = 0.03 means the null hypothesis has a 3% probability of being true given the observed data",
+      "The data scientist is right — the p-value is the probability of observing data at least as extreme as what was collected, given that the null hypothesis is true. It is not the probability that the null hypothesis itself is true",
+      "Both are right — the p-value is defined symmetrically so P(null true | data) = P(data | null true) in a well-powered test",
+      "The PM is right for one-sided tests; the data scientist is right for two-sided tests"
+    ],
+    "correct_option": 1,
+    "explanation": "The p-value is P(data as extreme or more extreme | H₀ is true) — a statement about what data we would see if the null were true, not about the probability of the null itself. P(H₀ true | data) is a Bayesian posterior that depends on the prior probability of H₀ — the frequentist framework does not compute it. This confusion (inverting the conditional) is one of the most common misinterpretations of statistical significance. Option 0 and 3 commit the base-rate fallacy on H₀. Option 2 inverts the conditional incorrectly.",
+    "hints": [
+      "Write out which probability is which: p-value = P(data | H₀). The PM claimed P(H₀ | data). Are those the same thing?",
+      "Inverting a conditional probability requires knowing the prior — the frequentist framework does not have one."
+    ],
+    "concepts": ["hypothesis testing", "bayesian inference"]
+  },
+  {
+    "id": 721,
+    "order": 1,
+    "title": "Central Limit Theorem: When It Applies",
+    "difficulty": "medium",
+    "type": "conceptual",
+    "subtype": "conceptual",
+    "description": "A data scientist wants to build a 95% confidence interval for the mean revenue per order. The revenue distribution is heavily right-skewed (many small orders, a few very large ones). The sample has n = 500 orders. They plan to use a z-interval based on the sample mean. A colleague says the CLT justifies this. Are they correct?",
+    "options": [
+      "No — the CLT only applies to normally distributed populations; skewed data requires a non-parametric bootstrap CI instead",
+      "Yes — with n = 500, the CLT justifies treating the sampling distribution of the sample mean as approximately normal regardless of the population distribution's shape, making the z-interval valid",
+      "Yes — the CLT always guarantees a normal sampling distribution for any sample size, so a z-interval is always valid",
+      "No — the CLT applies to means but not to revenue data specifically because monetary values are bounded below by zero"
+    ],
+    "correct_option": 1,
+    "explanation": "The CLT states that the sampling distribution of the sample mean approaches normality as n increases, regardless of the population distribution's shape. With n = 500 and a moderately skewed distribution, the CLT approximation is generally valid — though the 'n ≥ 30' rule of thumb is a rough heuristic and heavily skewed distributions may require larger n. The key insight is that it's the *distribution of sample means* (not the revenue values themselves) that becomes normal. Option 0 is wrong — the CLT applies to any distribution with finite variance. Option 2 overstates — small samples from heavy-tailed distributions may not converge. Option 3 is wrong — the CLT is not specific to symmetric or unbounded distributions.",
+    "hints": [
+      "The CLT is about the distribution of the sample mean, not the distribution of the raw data.",
+      "With n = 500, the sampling distribution of the mean is approximately normal for most practically encountered distributions."
+    ],
+    "concepts": ["sampling & central limit theorem", "confidence intervals & estimation"]
+  },
+  {
+    "id": 722,
+    "order": 2,
+    "title": "Compute a 95% Confidence Interval for a Proportion",
+    "difficulty": "medium",
+    "type": "numerical",
+    "subtype": "numerical",
+    "description": "Write `solve(k, n)` that returns the Wald 95% confidence interval `(lower, upper)` for a binomial proportion, rounded to 4 decimal places each. Clamp both bounds to [0.0, 1.0].\n\nFormula: p̂ ± 1.96 × √(p̂(1−p̂)/n) where p̂ = k/n.",
+    "starter_code": "def solve(k: int, n: int) -> tuple[float, float]:\n    pass",
+    "expected_code": "import math\ndef solve(k: int, n: int) -> tuple[float, float]:\n    phat = k / n\n    se = math.sqrt(phat * (1 - phat) / n)\n    lower = max(0.0, phat - 1.96 * se)\n    upper = min(1.0, phat + 1.96 * se)\n    return (round(lower, 4), round(upper, 4))",
+    "solution_code": "import math\ndef solve(k: int, n: int) -> tuple[float, float]:\n    phat = k / n\n    se = math.sqrt(phat * (1 - phat) / n)\n    lower = max(0.0, phat - 1.96 * se)\n    upper = min(1.0, phat + 1.96 * se)\n    return (round(lower, 4), round(upper, 4))",
+    "explanation": "The Wald interval uses the normal approximation to the binomial. p̂ = k/n is the sample proportion. The standard error is √(p̂(1−p̂)/n). Multiply by z = 1.96 for 95% confidence. Clamping ensures the interval stays within valid probability bounds.",
+    "test_cases": [
+      {
+        "input": [50, 200],
+        "expected": [0.1913, 0.3087],
+        "tolerance": 0.001
+      },
+      {
+        "input": [10, 100],
+        "expected": [0.0412, 0.1588],
+        "tolerance": 0.001
+      }
+    ],
+    "hints": [
+      "p̂ = k/n, then SE = sqrt(p̂*(1-p̂)/n), and the interval is p̂ ± 1.96*SE.",
+      "Clamp both bounds to [0, 1] — the formula can produce negative lower bounds when p̂ is close to 0."
+    ],
+    "concepts": ["confidence intervals & estimation", "distributions"]
+  },
+  {
+    "id": 723,
+    "order": 3,
+    "title": "Type I vs Type II Error Trade-Off in A/B Testing",
+    "difficulty": "medium",
+    "type": "conceptual",
+    "subtype": "conceptual",
+    "description": "A product team runs an A/B test with α = 0.05 and power = 0.80. The test concludes with p = 0.12 — not significant. A stakeholder says: 'We cannot conclude the treatment has no effect — only that we lack evidence to reject the null.' A junior analyst disagrees: 'p = 0.12 > 0.05 so we accept the null.' Who is right?",
+    "options": [
+      "The junior analyst is right — failing to reject H₀ at α = 0.05 is equivalent to accepting H₀ at 95% confidence",
+      "The stakeholder is right — failing to reject H₀ only means the data did not provide sufficient evidence against it; absence of evidence is not evidence of absence, especially with power = 0.80 (20% chance of missing a true effect of the assumed size)",
+      "Both are wrong — a p-value of 0.12 is borderline significant and the test should be re-run with more data before drawing any conclusion",
+      "The stakeholder is right, but only because power = 0.80 is below the required 0.95 threshold for business decisions"
+    ],
+    "correct_option": 1,
+    "explanation": "Failing to reject H₀ is not the same as 'accepting' it — this is a fundamental asymmetry in hypothesis testing. The test was designed with 80% power: there was a 20% chance of missing a true effect of the assumed size. With p = 0.12, the data simply didn't cross the evidence threshold; the null is not confirmed as true. The stakeholder's statement is statistically precise. Option 0 confuses failing-to-reject with confirming H₀ — a classic error. Option 2 misframes 0.12 as borderline significant (it's not near 0.05 in a meaningful sense). Option 3 is wrong — there is no universal '0.95 power threshold' for business decisions.",
+    "hints": [
+      "A significance test can only reject H₀ or fail to reject it — it cannot 'accept' H₀.",
+      "Power tells you the probability of detecting a true effect of a given size. Failing to detect doesn't mean the effect doesn't exist."
+    ],
+    "concepts": ["hypothesis testing", "errors & power"]
+  },
+  {
+    "id": 731,
+    "order": 1,
+    "title": "Multiple Testing: FWER When Running Many Comparisons",
+    "difficulty": "hard",
+    "type": "conceptual",
+    "subtype": "conceptual",
+    "description": "A PM ran 20 independent A/B tests simultaneously, each at α = 0.05. Three came back 'significant.' The PM is excited. A data scientist cautions: even if all 20 null hypotheses are true, the probability of at least one false positive is not 5%. What is the approximate probability of at least one false positive across all 20 tests, and what correction does the data scientist likely recommend?",
+    "options": [
+      "5% — each test controls its own Type I error at 5%, so the family-wise error rate across all tests is also 5%",
+      "Approximately 64% — under all-true-null, FWER = 1 − 0.95^20 ≈ 0.64; the data scientist would recommend Bonferroni correction (α/20 = 0.0025 per test) to control FWER at 5%",
+      "100% — running more than 10 tests at α = 0.05 guarantees at least one false positive",
+      "Approximately 20% — the false positive probability scales linearly with the number of tests (20 × 0.05 = 1.0, capped at 100%, but practically about 20% for 20 tests)"
+    ],
+    "correct_option": 1,
+    "explanation": "The family-wise error rate (FWER) under independent tests is 1 − (1−α)^k. With k=20 and α=0.05: FWER = 1 − 0.95^20 ≈ 0.64. Even if nothing is real, there is a ~64% chance of at least one false positive. Bonferroni correction divides α by the number of tests (0.05/20 = 0.0025), controlling FWER at 5% at the cost of reduced power per test. Option 0 incorrectly treats per-test and family-wise error rates as equivalent. Option 2 overstates — 20 tests don't guarantee false positives, just make them likely. Option 3 confuses the additive approximation (valid only when k×α is small) with the exact formula.",
+    "hints": [
+      "FWER = 1 − (1−α)^k for k independent tests. Plug in k=20 and α=0.05.",
+      "Bonferroni corrects by testing each hypothesis at α/k — simple but conservative."
+    ],
+    "concepts": ["multiple testing & correction", "errors & power"]
+  },
+  {
+    "id": 732,
+    "order": 2,
+    "title": "Compute Bonferroni-Corrected Power",
+    "difficulty": "hard",
+    "type": "numerical",
+    "subtype": "numerical",
+    "description": "Write `solve(k, effect_size, n_per_arm)` that returns the statistical power for each of `k` independent two-sample z-tests after Bonferroni correction, given `effect_size` (Cohen's d) and `n_per_arm` (sample size per group). Use `statistics.NormalDist` for all normal CDF computations.\n\nFormula: power = P(Z > z_{α_bonf/2} - effect_size × √(n/2)) where α_bonf = 0.05/k and n = n_per_arm. Round to 4 decimal places.",
+    "starter_code": "def solve(k: int, effect_size: float, n_per_arm: int) -> float:\n    pass",
+    "expected_code": "import math\nfrom statistics import NormalDist\ndef solve(k: int, effect_size: float, n_per_arm: int) -> float:\n    alpha_bonf = 0.05 / k\n    z_crit = NormalDist().inv_cdf(1 - alpha_bonf / 2)\n    ncp = effect_size * math.sqrt(n_per_arm / 2)\n    power = 1 - NormalDist().cdf(z_crit - ncp)\n    return round(power, 4)",
+    "solution_code": "import math\nfrom statistics import NormalDist\ndef solve(k: int, effect_size: float, n_per_arm: int) -> float:\n    alpha_bonf = 0.05 / k\n    z_crit = NormalDist().inv_cdf(1 - alpha_bonf / 2)\n    ncp = effect_size * math.sqrt(n_per_arm / 2)\n    power = 1 - NormalDist().cdf(z_crit - ncp)\n    return round(power, 4)",
+    "explanation": "Bonferroni correction divides the overall α by k, raising the per-test critical value. Power = P(reject H₀ | H₁ is true) = P(Z > z_crit - ncp) where ncp = effect_size × √(n/2) is the non-centrality parameter for the two-sample z-test. As k increases, z_crit rises and power falls — the multiple-testing cost.",
+    "test_cases": [
+      {
+        "input": [1, 0.5, 100],
+        "expected": 0.6946,
+        "tolerance": 0.01
+      },
+      {
+        "input": [10, 0.5, 100],
+        "expected": 0.2831,
+        "tolerance": 0.01
+      }
+    ],
+    "hints": [
+      "Bonferroni raises the critical value from z_{0.025} to z_{α_bonf/2} where α_bonf = 0.05/k.",
+      "ncp = effect_size × √(n_per_arm/2) is the non-centrality parameter for a two-sample z-test."
+    ],
+    "concepts": ["errors & power", "multiple testing & correction", "sampling & central limit theorem"]
+  },
+  {
+    "id": 733,
+    "order": 3,
+    "title": "Diagnosing Simpson's Paradox in Segmented Data",
+    "difficulty": "hard",
+    "type": "conceptual",
+    "subtype": "conceptual",
+    "description": "A recommendation algorithm A is compared to algorithm B. In the aggregate dataset, A has a 12% click-through rate vs B's 10% — A appears better. Segmenting by user type reveals: Mobile users: A = 8%, B = 9% — B is better. Desktop users: A = 15%, B = 17% — B is better. Which phenomenon explains this, and which algorithm should be deployed?",
+    "options": [
+      "Selection bias — users were not randomly assigned to algorithms, so the comparison is invalid",
+      "Simpson's paradox — B is better within every segment but A appears better in aggregate because A is disproportionately shown to desktop users (who have higher baseline CTR), inflating A's aggregate rate. Algorithm B should be deployed",
+      "Regression to the mean — the segment-level advantage for B will disappear over time as the population stabilises",
+      "Survivorship bias — mobile users who clicked are over-represented in B's dataset, artificially inflating B's within-segment rate"
+    ],
+    "correct_option": 1,
+    "explanation": "This is Simpson's paradox: an aggregate trend (A beats B) reverses in every subgroup (B beats A in both mobile and desktop). The confounding variable is user type: A is disproportionately shown to desktop users, who have higher baseline CTR. Desktop's higher rates inflate A's aggregate. Within each type, B is superior. The decision-relevant comparison is within each segment — B should be deployed. Option 0 (selection bias) may also be present but doesn't explain the within-group reversal. Option 2 (regression to the mean) applies to extreme measurements that converge over time — not a group-level reversal. Option 3 (survivorship bias) would affect how we measure CTR but doesn't produce the within-group vs aggregate directional flip.",
+    "hints": [
+      "When aggregate and subgroup results point in opposite directions, ask: is one group over-represented in the aggregate, pulling the total toward its result?",
+      "The decision should use within-segment comparisons, not the aggregate — the aggregate is confounded by the unequal distribution of users across algorithms."
+    ],
+    "concepts": ["correlation, regression & causality", "descriptive statistics"]
+  }
+]

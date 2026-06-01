@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import csv
+import json
 from pathlib import Path
 from typing import Any, Optional
 
@@ -354,14 +355,47 @@ for _t in TRACKS:
     _TOPIC_ALIASES[_t.slug] = _t.db_topic
     _TOPIC_ALIASES[_t.db_topic] = _t.db_topic
 
-# Non-SQL catalogs indexed by db_topic (SQL samples use a separate hardcoded pool)
-_TOPIC_CATALOGS = {
-    _t.db_topic: _t.catalog_module
-    for _t in TRACKS
-    if _t.slug != "sql"
-}
 _DIFFICULTY_ORDER = ("easy", "medium", "hard")
 _SAMPLE_POOL_SIZE = 3
+
+# Dedicated sample question files for non-SQL tracks.
+# Each file contains exactly 9 questions: 3 easy, 3 medium, 3 hard.
+# IDs follow the TXS compact format: T = track digit, X = difficulty digit (1/2/3), S = 1–3.
+_SAMPLE_DIR = Path(__file__).resolve().parent / "content" / "sample_questions"
+_TRACK_SAMPLE_FILES: dict[str, str] = {
+    "python": "python.json",
+    "python_data": "pandas.json",
+    "pyspark": "pyspark.json",
+    "data-engineering": "data_engineering.json",
+    "data-modeling": "data_modeling.json",
+    "statistics": "statistics.json",
+    "ml-fundamentals": "ml_fundamentals.json",
+    "experimentation": "experimentation.json",
+}
+
+
+def _load_track_samples(db_topic: str) -> dict[str, list[dict[str, Any]]]:
+    """Load and group dedicated sample questions for a non-SQL track by difficulty."""
+    filename = _TRACK_SAMPLE_FILES[db_topic]
+    sample_path = _SAMPLE_DIR / filename
+    with sample_path.open("r", encoding="utf-8") as fh:
+        questions: list[dict[str, Any]] = json.load(fh)
+    grouped: dict[str, list[dict[str, Any]]] = {"easy": [], "medium": [], "hard": []}
+    for q in questions:
+        diff = str(q.get("difficulty", "")).lower()
+        if diff in grouped:
+            grouped[diff].append(q)
+    for diff in grouped:
+        grouped[diff] = sorted(grouped[diff], key=lambda x: int(x.get("order", 0)))
+    return grouped
+
+
+# Pre-load all non-SQL track sample pools at module import time so the first
+# request does not pay the file-read cost.
+_TRACK_SAMPLES: dict[str, dict[str, list[dict[str, Any]]]] = {
+    db_topic: _load_track_samples(db_topic)
+    for db_topic in _TRACK_SAMPLE_FILES
+}
 
 
 def normalize_sample_topic(topic: str) -> str:
@@ -413,17 +447,6 @@ def get_topic_sample_pool(
         pool = list(grouped.get(normalized_difficulty, []))
         return pool, normalized_difficulty
 
-    grouped = _TOPIC_CATALOGS[normalized_topic].get_questions_by_difficulty()
-    requested_pool = list(grouped.get(normalized_difficulty, []))
-    served_difficulty = normalized_difficulty
-    if not requested_pool:
-        easy_pool = sorted(grouped.get("easy", []), key=lambda question: int(question.get("order", 0)))
-        if normalized_difficulty == "medium":
-            requested_pool = easy_pool[_SAMPLE_POOL_SIZE:_SAMPLE_POOL_SIZE * 2]
-        elif normalized_difficulty == "hard":
-            requested_pool = easy_pool[_SAMPLE_POOL_SIZE * 2:_SAMPLE_POOL_SIZE * 3]
-        else:
-            requested_pool = easy_pool[:_SAMPLE_POOL_SIZE]
-
-    requested_pool = sorted(requested_pool, key=lambda question: int(question.get("order", 0)))
-    return requested_pool[:_SAMPLE_POOL_SIZE], served_difficulty
+    # Non-SQL tracks: serve from dedicated sample files, never from the practice catalog.
+    pool = list(_TRACK_SAMPLES[normalized_topic].get(normalized_difficulty, []))
+    return pool[:_SAMPLE_POOL_SIZE], normalized_difficulty

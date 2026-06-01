@@ -1,0 +1,197 @@
+[
+  {
+    "id": 511,
+    "order": 1,
+    "title": "ETL vs ELT: Choosing the Right Pattern",
+    "difficulty": "easy",
+    "type": "conceptual",
+    "description": "A team needs to load raw JSON event logs from an S3 bucket into a data warehouse for analyst queries. Transformation involves flattening nested fields and joining with a small reference table. The data warehouse supports complex SQL. Which approach is most appropriate?",
+    "options": [
+      "ETL — transform the data before loading so the warehouse only stores clean, structured data and analysts never see raw records",
+      "ELT — load raw data into the warehouse first, then use SQL transformations inside the warehouse where compute scales cheaply with the data",
+      "Neither — always use a streaming pipeline with Kafka to land data in real time before any analyst touches it",
+      "ETL is required because ELT cannot handle nested JSON fields in any modern warehouse"
+    ],
+    "correct_option": 1,
+    "explanation": "Modern cloud warehouses (Snowflake, BigQuery, Redshift) have powerful SQL engines with native JSON handling and elastic compute — they are designed to run heavy transformations on stored raw data. ELT exploits this: load raw data cheaply (storage is inexpensive), then transform in-place with SQL that scales. ETL made sense when warehouses were expensive or compute-limited, but it adds pipeline complexity and slows iteration when analysts need to change transformation logic. Option 0 is not wrong about ETL semantics but is the weaker choice here given warehouse capabilities. Option 2 introduces unnecessary streaming complexity for a batch load scenario. Option 3 is factually wrong — all major warehouses support VARIANT/JSON columns.",
+    "hints": [
+      "Consider where the compute cost is lower: before loading (ETL) or inside the warehouse after loading (ELT).",
+      "Modern cloud warehouses handle complex SQL transformations efficiently — that changes the cost equation versus legacy on-prem systems."
+    ],
+    "concepts": ["ETL VS ELT PATTERNS"]
+  },
+  {
+    "id": 512,
+    "order": 2,
+    "title": "Why Idempotency Matters in Pipeline Steps",
+    "difficulty": "easy",
+    "type": "conceptual",
+    "description": "An ETL job writes aggregated daily revenue to a Postgres table. The job runs at midnight but occasionally fails and is retried. A senior engineer insists every pipeline step must be idempotent. Why?",
+    "options": [
+      "Idempotency guarantees the pipeline runs faster on retry because it caches intermediate results",
+      "Idempotency ensures that running the step multiple times for the same input produces the same output state — so retries do not cause double-counting or data corruption",
+      "Idempotency is only relevant for streaming pipelines; batch jobs that run once per day do not need it",
+      "Idempotency requires exactly-once delivery guarantees from the message broker upstream"
+    ],
+    "correct_option": 1,
+    "explanation": "Without idempotency, a failed-and-retried job can write the same rows twice, duplicate aggregates, or corrupt state. An idempotent step can be run any number of times and always leaves the destination in the same correct state — typically achieved via upserts, delete-then-insert for the date partition, or MERGE operations. This is essential for batch jobs too: network timeouts, orchestrator restarts, or upstream delays can all cause reruns. Option 0 conflates idempotency with caching. Option 2 is wrong — batch jobs that are retried are just as exposed to double-writes as streaming jobs. Option 3 confuses idempotency with delivery semantics — they are related but distinct concepts.",
+    "hints": [
+      "Ask: what happens if this step runs twice with the same input? Does the output double-count or stay the same?",
+      "Idempotent writes often use upserts or partition-level delete-then-insert to avoid accumulating duplicates."
+    ],
+    "concepts": ["IDEMPOTENCY & EXACTLY-ONCE SEMANTICS"]
+  },
+  {
+    "id": 513,
+    "order": 3,
+    "title": "Batch vs Streaming: Latency vs Throughput",
+    "difficulty": "easy",
+    "type": "conceptual",
+    "description": "An operations team must decide between a batch pipeline (runs every hour) and a streaming pipeline (processes events within seconds) for updating a customer-facing 'order status' dashboard. Orders are placed throughout the day and customers expect near-real-time status updates. Which approach is appropriate and why?",
+    "options": [
+      "Batch — hourly aggregates are sufficient for dashboards; streaming is only needed for fraud detection",
+      "Streaming — customers expect near-real-time status; an hourly batch pipeline introduces up to 59 minutes of lag between an order update and its reflection on the dashboard",
+      "Batch with 5-minute intervals — this provides low enough latency without the operational complexity of streaming",
+      "Streaming is never preferable to batch because streaming systems are inherently less reliable due to out-of-order events"
+    ],
+    "correct_option": 1,
+    "explanation": "Latency is the deciding factor. If customers expect status updates within seconds, an hourly batch job can leave them waiting up to 59 minutes for their order to move from 'processing' to 'shipped' — an unacceptable user experience. Streaming (or micro-batch) pipelines are designed for exactly this low-latency requirement. Option 0 incorrectly limits streaming to fraud detection. Option 2 is a reasonable middle ground but 5-minute polling is still batch and introduces unnecessary scheduling complexity compared to event-driven streaming. Option 3 is wrong — streaming systems are mature and production-proven; out-of-order handling is a solved problem with watermarks and event-time semantics.",
+    "hints": [
+      "What is the maximum acceptable lag between an event happening and it appearing in the dashboard? Match that to the pipeline frequency.",
+      "Batch is simpler to operate but has bounded-by-schedule latency. Streaming has near-zero latency but adds complexity."
+    ],
+    "concepts": ["BATCH VS STREAMING TRADE-OFFS"]
+  },
+  {
+    "id": 521,
+    "order": 1,
+    "title": "Delivery Semantics Under Consumer Restart",
+    "difficulty": "medium",
+    "type": "scenario",
+    "scenario_context": "A Kafka consumer processes payment events and writes results to a relational database. The consumer commits offsets after each successful database write. During a deployment, the consumer process crashes after writing a record to the database but before committing the offset to Kafka.",
+    "description": "What is the delivery semantic of this system, and what is the consequence of the crash?",
+    "options": [
+      "Exactly-once — the idempotent write to the database ensures no duplicates regardless of offset commit timing",
+      "At-least-once — the offset was not committed, so the consumer will re-read and re-process the last event on restart, potentially writing a duplicate to the database unless the write is idempotent",
+      "At-most-once — because the consumer crashed before committing, the event is permanently lost",
+      "Exactly-once — Kafka guarantees exactly-once delivery to any downstream system when transactional producers are enabled"
+    ],
+    "correct_option": 1,
+    "explanation": "Committing the offset after a successful write is the at-least-once pattern: if the process dies after writing but before committing, it restarts and re-reads the uncommitted offset, processing the event again. This guarantees no events are lost but risks duplicates if writes are not idempotent. At-most-once would commit the offset before the write (so a crash after commit but before write loses the event). Exactly-once across Kafka and an external relational DB requires an atomic transaction spanning both systems — Kafka transactions alone do not achieve this. Option 0 is partially right (idempotent writes prevent duplicate rows) but incorrectly labels the semantic as exactly-once when the system design is at-least-once. Option 2 inverts the semantics. Option 3 overstates Kafka's transactional guarantee scope.",
+    "hints": [
+      "Trace what happens on restart: which offset does the consumer resume from, and does it re-process any events?",
+      "At-least-once = commit after write (risk: duplicates on restart). At-most-once = commit before write (risk: loss on crash)."
+    ],
+    "concepts": ["DELIVERY SEMANTICS", "IDEMPOTENCY & EXACTLY-ONCE SEMANTICS"]
+  },
+  {
+    "id": 522,
+    "order": 2,
+    "title": "Diagnosing Growing Consumer Lag",
+    "difficulty": "medium",
+    "type": "scenario",
+    "scenario_context": "A Kafka consumer group processing a high-volume clickstream topic has been running stably for two weeks. This morning, consumer lag on the topic began growing steadily. No deployments or configuration changes occurred. CPU and memory on consumer nodes are at 40% utilisation.",
+    "description": "What is the most likely root cause, and what is the correct first diagnostic step?",
+    "options": [
+      "The consumer is under-provisioned — add more consumer instances immediately since lag means the consumer is at capacity",
+      "A producer-side spike is the most likely cause — check whether the topic's incoming message rate increased (e.g., traffic spike, upstream retry storm) before scaling consumers",
+      "Kafka broker disk is full — growing lag is always caused by broker-side I/O bottlenecks",
+      "The consumer group rebalanced and one partition is now unassigned — check for unassigned partitions in the consumer group status"
+    ],
+    "correct_option": 1,
+    "explanation": "Growing lag with low resource utilisation suggests the producer is writing faster than usual, not that consumers are too slow. A traffic spike, upstream retry storm, or a new producer sending to the same topic would all increase the rate and cause lag to grow even if consumers are nominally healthy. The correct diagnostic order is: (1) check producer throughput trend on the topic, (2) check consumer throughput, (3) check partition assignment. Scaling consumers first without diagnosing can lead to a consumer-side overload if the spike subsides. Option 0 jumps to scaling without diagnosis. Option 2 is implausible with 40% disk utilisation. Option 3 is a valid secondary check but unassigned partitions would show as zero consumption on that partition, not uniform growing lag.",
+    "hints": [
+      "Low consumer resource utilisation with growing lag points to the producer side — check whether the incoming rate changed.",
+      "Diagnose before scaling: understand whether the problem is consumer capacity, producer volume, or partition assignment."
+    ],
+    "concepts": ["STREAMING & WATERMARKS", "BATCH VS STREAMING TRADE-OFFS"]
+  },
+  {
+    "id": 523,
+    "order": 3,
+    "title": "Small-File Problem: Root Cause and Fix",
+    "difficulty": "medium",
+    "type": "scenario",
+    "scenario_context": "A Spark pipeline writes Parquet files partitioned by `event_date` and `event_type` to S3. After three months, the S3 prefix contains 2 million files averaging 50 KB each. Downstream Athena queries on date ranges are extremely slow due to excessive listing and open operations.",
+    "description": "What is the root cause of the small-file problem and what is the most effective fix?",
+    "options": [
+      "The file format is wrong — switch from Parquet to ORC, which automatically compacts small files during writes",
+      "The partition cardinality is too high — the combination of (event_date × event_type) creates many partition combinations, each receiving a small number of records. Fix by reducing partition granularity and/or compacting files periodically with a MERGE INTO or INSERT OVERWRITE that reads the existing small files and rewrites them as fewer, larger files",
+      "Increase Spark executor memory — small files are created when executors run out of memory and flush early",
+      "The S3 consistency model causes small files — switch to a consistent object store like HDFS to fix the listing performance"
+    ],
+    "correct_option": 1,
+    "explanation": "Small files arise when partitioning cardinality × write frequency creates many combinations, each receiving few records per write cycle. With daily writes and many event types, each (date, type) partition may only receive a handful of records per run — producing tiny files. The fix is twofold: (a) reduce partition granularity (e.g., partition by date only, filter by type at query time), and (b) schedule a periodic compaction job that reads existing small files and rewrites each partition as a smaller number of larger files. Option 0 is wrong — ORC does not auto-compact. Option 2 misattributes small files to memory pressure. Option 3 is wrong — S3 strong consistency is already the standard since 2020, and small files are a data engineering concern unrelated to consistency semantics.",
+    "hints": [
+      "High-cardinality partitioning + frequent small writes = many tiny files. The fix is either coarser partitioning or periodic compaction.",
+      "A compaction job reads small files per partition and rewrites them as a few larger files — it's a standard maintenance pattern for Parquet on object stores."
+    ],
+    "concepts": ["DATA LAYOUT & FILE FORMATS", "PARTITIONING STRATEGY"]
+  },
+  {
+    "id": 531,
+    "order": 1,
+    "title": "Schema Evolution Under Backward Compatibility",
+    "difficulty": "hard",
+    "type": "scenario",
+    "scenario_context": "A data engineering team maintains a Kafka topic with an Avro schema registered in a schema registry under BACKWARD compatibility mode. The current schema has fields: user_id (string), event_ts (long), amount (double). A producer team wants to add a required field checkout_channel (string, no default) to capture a new business attribute.",
+    "description": "Can the schema change proceed as described? If not, what is the correct approach?",
+    "options": [
+      "Yes — adding a new field in BACKWARD mode is always safe because consumers receive all fields",
+      "No — BACKWARD compatibility requires that new schemas can read data written with the old schema. A required field with no default cannot be read from old messages (which don't have it), violating BACKWARD compatibility. Add checkout_channel with a default value (e.g., null or 'unknown') so old messages can still be deserialised",
+      "No — any schema change under BACKWARD mode requires a major version bump in the registry and a consumer-side upgrade before the producer can write new messages",
+      "Yes — the schema registry will automatically infer a null default for new fields under BACKWARD mode, so no explicit default is needed"
+    ],
+    "correct_option": 1,
+    "explanation": "BACKWARD compatibility means a newer schema can read data written with an older schema. If a new required field has no default, a consumer using the new schema cannot deserialise old messages (which were written before the field existed) — they have no value to populate the new field. The fix is to add the field as optional with a default (e.g., `null` for a nullable union, or `'unknown'` for a string with default). FORWARD compatibility would cover the reverse direction (old consumer reading new messages). Option 0 is wrong — consumers using the new schema cannot fill in a required field from old records. Option 2 misrepresents schema registry mechanics — versioning is automatic and a major bump is not required for backward-compatible changes. Option 3 is wrong — Avro does not auto-infer defaults; the default must be explicitly declared in the schema.",
+    "hints": [
+      "BACKWARD compatibility = new schema can read old data. Ask: can a consumer with the new schema deserialise a message written with the old schema?",
+      "A new required field (no default) breaks BACKWARD compatibility — old messages have no value for it. Add a default to make it safe."
+    ],
+    "concepts": ["SCHEMA EVOLUTION & COMPATIBILITY", "DATA CONTRACTS & VALIDATION"]
+  },
+  {
+    "id": 532,
+    "order": 2,
+    "title": "Diagnosing a Silent Lineage Failure",
+    "difficulty": "hard",
+    "type": "scenario",
+    "scenario_context": "An analyst reports that the 'daily active users' metric in the BI dashboard dropped 30% last Tuesday but recovered the next day. No pipeline failures were logged. A data engineer investigates and finds the raw event log on S3 has correct row counts for Tuesday, the Spark job that processes it completed successfully with no errors, and the downstream metrics table shows the anomaly.",
+    "description": "Given that the pipeline succeeded and raw data is intact, what is the most likely silent failure category and the correct investigation approach?",
+    "options": [
+      "Network partition between S3 and the Spark cluster caused partial reads — check CloudTrail for S3 GetObject errors on Tuesday",
+      "A schema-level or join-level silent failure: the Spark job processed without errors but may have silently dropped rows (e.g., a join key mismatch, a filter on a column that changed data type, or a partition that was skipped). Investigate by comparing row counts at each pipeline stage on Tuesday vs a normal day",
+      "The BI tool is caching stale data — clear the BI cache for Tuesday's date range and the metric will correct itself",
+      "Tuesday's data was a genuine traffic anomaly — a 30% drop is within normal variance for daily active user counts"
+    ],
+    "correct_option": 1,
+    "explanation": "A successful job status with intact raw data that produces anomalous output is the hallmark of a silent data quality failure. Common causes: (1) a join that produces fewer rows than expected due to a key type mismatch or upstream schema change; (2) a filter that was overly restrictive on that day's data; (3) a partition being silently skipped because an upstream partition was empty or mis-dated. The investigation approach is row-count auditing at each stage: raw → after join → after filter → output table. A drop at a specific stage locates the failure. Option 0 is unlikely given S3 and Spark both reported success. Option 2 conflates BI caching with pipeline data quality. Option 3 dismisses a 30% anomaly without investigation — that is never the correct first response.",
+    "hints": [
+      "When raw data is intact and the job succeeded but output is wrong, the failure is inside the pipeline logic — compare row counts stage by stage.",
+      "Silent drops often happen at joins (key type mismatch) or filters (a column's distribution changed and the filter became over-restrictive)."
+    ],
+    "concepts": ["DATA QUALITY & LINEAGE", "MONITORING & OBSERVABILITY"]
+  },
+  {
+    "id": 533,
+    "order": 3,
+    "title": "Partition Pruning Trade-Off Under SLA",
+    "difficulty": "hard",
+    "type": "scenario",
+    "scenario_context": "A petabyte-scale data lake stores events partitioned by `event_date`. A new reporting requirement asks for a rolling 90-day window of events, re-aggregated every hour. The current job scans all 90 partitions on each hourly run. Query execution takes 45 minutes end-to-end. The SLA is 60 minutes.",
+    "description": "The job currently meets the SLA, but the team is asked to design a more efficient approach. Which strategy best balances correctness, efficiency, and SLA headroom?",
+    "options": [
+      "Run the job only once per day at midnight — 90-day rollups don't change materially within a single day",
+      "Incrementally process only the new partition (today's data) each hour and maintain a pre-aggregated 90-day summary table that is updated with an upsert — read 1 partition per run instead of 90",
+      "Increase cluster size by 10× — the current approach is correct and scaling compute is simpler than redesigning the pipeline",
+      "Switch the partitioning from event_date to event_hour — this lets the job scan exactly 90×24 = 2160 partitions more precisely"
+    ],
+    "correct_option": 1,
+    "explanation": "The incremental + summary table pattern (also called a 'lambda-lite' or 'incremental materialization' approach) is the standard solution for bounded-window aggregates that are refreshed frequently. Instead of re-scanning 90 partitions each run, read only today's new partition and upsert the result into a pre-built summary. The 89-day history is already aggregated in the summary. This reduces each hourly run from 45 minutes to seconds while maintaining correctness as long as the summary is partitioned and upserted correctly. Option 0 violates the 'hourly update' requirement. Option 2 works but is expensive and provides no long-term scalability as the window grows. Option 3 increases partition count 24×, adding overhead rather than reducing it.",
+    "hints": [
+      "For a rolling window that is refreshed frequently, ask: does each run need to re-read the full history, or can incremental updates to a summary table replace most of the scan?",
+      "An incremental + summary table pattern reads only new data per run and merges it with pre-aggregated history — reducing scan cost by orders of magnitude."
+    ],
+    "concepts": ["INCREMENTAL PROCESSING PATTERNS", "PARTITIONING STRATEGY", "PERFORMANCE TUNING & RESOURCE MANAGEMENT"]
+  }
+]

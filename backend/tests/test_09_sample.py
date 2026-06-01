@@ -140,9 +140,14 @@ def test_tc117_all_4_sample_tracks_accessible():
 
 
 def test_tc118_sample_run_code_for_python_data_executes_pandas():
-    """TC-118: Sample run-code for python-data → 200 with test results."""
-    from python_data_questions import get_questions_by_difficulty as get_pq
-    easy_q = get_pq()["easy"][0]
+    """TC-118: Sample run-code for python-data → 200 with test results.
+    Uses dedicated sample question 311 (not a practice question).
+    """
+    import json as _json
+    from pathlib import Path
+    sample_file = Path(__file__).resolve().parent.parent / "content" / "sample_questions" / "pandas.json"
+    sample_qs = _json.loads(sample_file.read_text())
+    easy_q = next(q for q in sample_qs if q["difficulty"] == "easy")
 
     code = easy_q["solution_code"]
     with TestClient(app) as client:

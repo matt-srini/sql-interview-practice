@@ -1,0 +1,200 @@
+[
+  {
+    "id": 911,
+    "order": 1,
+    "topic": "experimentation",
+    "type": "conceptual",
+    "difficulty": "easy",
+    "title": "Formulating a Testable Hypothesis",
+    "description": "A product team wants to test whether changing the checkout button color from grey to green increases purchase conversion. Which hypothesis formulation is correct for an A/B test?",
+    "options": [
+      "H₀: the green button is better. H₁: the grey button is better. Run the test until we get p < 0.05",
+      "H₀: there is no difference in purchase conversion rate between the grey button (control) and green button (treatment). H₁: there is a difference. Define the primary metric, significance level, and minimum detectable effect before running the test",
+      "H₀: conversion will improve by at least 5%. H₁: conversion will not improve. Run until we have 1,000 conversions",
+      "H₀: users prefer the green button. H₁: users prefer the grey button. Survey users and use their preference as the test metric"
+    ],
+    "correct_option": 1,
+    "explanation": "A well-formed A/B hypothesis has a null (no effect) and a directional or non-directional alternative, along with a pre-specified primary metric. Defining the significance level (α) and minimum detectable effect (MDE) before running is essential — post-hoc threshold adjustments inflate false positive rates. Option 0 reverses the null/alternative convention (null should represent the 'no effect' baseline) and commits to peeking-until-significant, inflating the false positive rate. Option 2 pre-specifies the direction correctly but uses a directional H₀ and a stopping rule based on event count rather than pre-calculated sample size. Option 3 substitutes a preference survey for a behavioural outcome — preference doesn't equal conversion.",
+    "hints": [
+      "H₀ always represents the status quo / no effect. H₁ represents the change you are testing for.",
+      "Define α, power, and MDE before starting — they determine sample size and cannot be adjusted after peeking at results."
+    ],
+    "concepts": ["HYPOTHESIS FORMULATION & DESIGN", "STATISTICAL SIGNIFICANCE & POWER"]
+  },
+  {
+    "id": 912,
+    "order": 2,
+    "topic": "experimentation",
+    "type": "conceptual",
+    "difficulty": "easy",
+    "title": "Type I and Type II Errors in Experiment Decisions",
+    "description": "A team runs an A/B test at α = 0.05 and power = 0.80. The test returns p = 0.03 and the team ships the feature. Later it turns out the feature had no real effect. What kind of error occurred, and which experiment design choice contributed to the risk of this error?",
+    "options": [
+      "Type II error — the team failed to detect a true effect because power was set too low",
+      "Type I error — the team rejected a true null hypothesis (incorrectly concluded there was an effect). Setting α = 0.05 means there is a 5% chance of this error when the null is true; this risk is set by the choice of α",
+      "No error occurred — p = 0.03 < 0.05 is a valid significant result and shipping was the correct decision",
+      "Type II error — the true effect was too small to detect at power = 0.80, so the p-value was unreliable"
+    ],
+    "correct_option": 1,
+    "explanation": "A Type I error (false positive) is rejecting a true null hypothesis. Here, the null was true (no real effect) but the test rejected it at p = 0.03 — a false positive. The α = 0.05 choice directly controls the Type I error rate: 5% of the time, a true-null experiment will produce p < 0.05 by chance. This is the cost of the significance level choice, not a mistake in the analysis. Type II errors (false negatives) would occur if the effect were real but the test missed it — that is not what happened here. Option 0 and 3 confuse the error types. Option 2 is correct in execution but misses the broader point that false positives occur at rate α even in a well-run experiment.",
+    "hints": [
+      "Type I error = false positive = rejecting H₀ when H₀ is true. The rate of this error is exactly α.",
+      "Type II error = false negative = failing to reject H₀ when H₁ is true. The rate of this error is 1 − power."
+    ],
+    "concepts": ["TYPE I & TYPE II ERRORS", "STATISTICAL SIGNIFICANCE & POWER"]
+  },
+  {
+    "id": 913,
+    "order": 3,
+    "topic": "experimentation",
+    "type": "conceptual",
+    "difficulty": "easy",
+    "title": "Choosing a Primary Metric",
+    "description": "A team is testing a new onboarding flow aimed at improving user activation. They consider three candidate primary metrics: (A) click-through rate on the first onboarding screen, (B) 7-day retention, (C) Net Promoter Score survey response rate. Which metric is the best primary metric and why?",
+    "options": [
+      "Option A — click-through rate is the most sensitive metric and will detect a treatment effect fastest",
+      "Option B — 7-day retention is closest to the north star business outcome; it measures whether users actually stick around after the new onboarding flow, not just whether they clicked through a screen or reported an intention to stay",
+      "Option C — NPS is the gold standard for measuring user satisfaction and is widely used by industry leaders",
+      "Option A — primary metrics should always be the most proximal action in the funnel to maximise statistical power"
+    ],
+    "correct_option": 1,
+    "explanation": "The primary metric should be the outcome that most directly measures whether the experiment's goal was achieved. The goal is activation — getting users to actually engage with and stay in the product. 7-day retention is the closest measurable proxy for that goal. Click-through rate on screen 1 (Option A) is a leading indicator but is too early in the funnel — users can click through and then churn immediately. NPS (Option C) is a satisfaction measure with low response rates and high noise, making it a poor primary metric for a conversion test. Using the most proximal metric (Option D's logic) optimises for clicks at the cost of downstream outcomes.",
+    "hints": [
+      "The primary metric should be aligned with the experiment's goal — what behaviour are you actually trying to change?",
+      "High-sensitivity metrics (clicks) detect effects faster but may not reflect the real business outcome you care about."
+    ],
+    "concepts": ["METRIC SELECTION & SENSITIVITY", "HYPOTHESIS FORMULATION & DESIGN"]
+  },
+  {
+    "id": 921,
+    "order": 1,
+    "topic": "experimentation",
+    "type": "scenario",
+    "difficulty": "medium",
+    "title": "Sample Ratio Mismatch: Detecting and Diagnosing",
+    "description": "An A/B test is designed with 50/50 traffic split. After 7 days, the control arm has 48,200 users and the treatment arm has 31,750 users. A chi-square test on the assignment ratio gives p < 0.0001. What is this called, how serious is it, and what should the team do?",
+    "options": [
+      "This is normal variance in random assignment — small imbalances are expected and the test results are still valid",
+      "This is a Sample Ratio Mismatch (SRM): the observed allocation (60% / 40%) significantly deviates from the intended 50/50 split. SRM invalidates all metric comparisons in the experiment because the two groups are no longer exchangeable — there may be self-selection or instrumentation bias in who ended up in treatment. The team should pause the experiment, diagnose the root cause (e.g., bot filtering applied only to one arm, client-side logging loss, assignment bug), fix it, and re-run",
+      "This is a power issue — the test is under-powered because the treatment arm is smaller. Collect more data until both arms reach the original target sample size",
+      "This is acceptable if the primary metric shows a strong effect (p < 0.01) — the assignment imbalance does not affect metric significance calculations"
+    ],
+    "correct_option": 1,
+    "explanation": "A Sample Ratio Mismatch (SRM) occurs when the observed split differs significantly from the designed split (p < 0.001 is a conventional threshold). Here, 60/40 vs 50/50 with p < 0.0001 is a clear SRM. SRM does not just mean 'the groups are different sizes' — it means the assignment mechanism may have introduced systematic bias (e.g., bot filtering removing users from one arm, logging failures, a sticky assignment bug). Because we cannot determine which users were incorrectly assigned, all metric results are unreliable. The correct response is always to diagnose and fix before drawing any conclusions. Option 0 dismisses a highly significant imbalance as noise — a 16,000-user difference with p < 0.0001 is not noise. Option 2 misdiagnoses the root cause as a power problem. Option 3 is dangerously wrong — metric significance is meaningless when assignment integrity is compromised.",
+    "hints": [
+      "SRM is a validity threat, not a power problem. Before interpreting any metrics, verify that the assignment mechanism worked as intended.",
+      "Run a chi-square test on the assignment counts. p < 0.001 is a conventional SRM detection threshold."
+    ],
+    "concepts": ["SAMPLE RATIO MISMATCH", "EXPERIMENT VALIDITY THREATS"]
+  },
+  {
+    "id": 922,
+    "order": 2,
+    "topic": "experimentation",
+    "type": "scenario",
+    "difficulty": "medium",
+    "title": "Novelty Effect: Separating Real Lift from Temporary Excitement",
+    "description": "A new recommendation widget is launched in an A/B test. In week 1, treatment shows a 12% lift in click-through rate. In weeks 2–3, the lift narrows to 4%, then 2%. The team is deciding whether to ship. How should they interpret this pattern?",
+    "options": [
+      "Ship immediately — week 1's 12% lift is real and the decline is due to the control group catching up",
+      "The declining lift is consistent with a novelty effect: users in treatment initially engage more due to the novelty of a new UI element, not because the widget provides durable value. The 2% long-run lift may be real but is much smaller than week 1 suggested. The team should wait until the treatment effect stabilises before making a ship decision, and evaluate the long-run (week 3+) lift against the business threshold",
+      "The test has low power — the declining lift means the sample size was insufficient and the initial 12% was noise",
+      "Ship at the week 3 result — 2% lift is small but still positive and any positive metric movement justifies shipping"
+    ],
+    "correct_option": 1,
+    "explanation": "A novelty effect causes inflated initial engagement that decays over time as users habituate to a new UI element. This is a well-documented threat to internal validity in A/B tests for UI changes, content recommendations, and notifications. The decay pattern (12% → 4% → 2%) is the signature. The team should use the stabilised long-run lift (2%) for the ship decision, not the week-1 spike. Shipping based on week 1 would deploy based on a temporary effect, not durable value. The business threshold question — 'is a 2% stable lift worth the engineering cost?' — is a separate decision. Option 0 misattributes the decline to the control group. Option 2 conflates novelty decay with statistical noise. Option 3 is too simplistic — positive lift should be durable, not just present.",
+    "hints": [
+      "When engagement is highest in week 1 and decays steadily, ask whether users are excited by newness or genuinely getting value.",
+      "Ship decisions should use the stabilised long-run metric, not the initial novelty spike."
+    ],
+    "concepts": ["NOVELTY & PRIMACY EFFECTS", "EXPERIMENT VALIDITY THREATS"]
+  },
+  {
+    "id": 923,
+    "order": 3,
+    "topic": "experimentation",
+    "type": "scenario",
+    "difficulty": "medium",
+    "title": "Correcting for Multiple Testing in a Segmentation Analysis",
+    "description": "An A/B test has a null primary metric result (p = 0.14). An analyst then slices the data by 15 user segments and finds one segment (power users) with p = 0.03. The analyst reports this as a 'significant finding for power users.' A data scientist objects. Who is right?",
+    "options": [
+      "The analyst is right — a sub-group showing p < 0.05 is statistically significant by definition",
+      "The data scientist is right — running 15 sub-group tests without correction inflates the false positive rate. With 15 independent tests at α = 0.05, the probability of at least one false positive is 1 − 0.95^15 ≈ 54%. The 'power user' finding must be treated as exploratory and hypothesis-generating, not a confirmatory result, unless a Bonferroni or Benjamini-Hochberg correction is applied and the corrected p-value is still significant",
+      "Both are right — the primary metric was null but sub-group analysis always yields valid separate conclusions",
+      "The analyst is right — power users are a pre-specified segment so no correction is needed"
+    ],
+    "correct_option": 1,
+    "explanation": "Running 15 sub-group tests is a multiple comparisons problem. Without correction, FWER = 1 − 0.95^15 ≈ 54% — over half the time, at least one 'significant' result will appear by chance even when there are no true effects. The correct response is to apply a correction (Bonferroni: α = 0.05/15 = 0.0033 per test) — 0.03 doesn't survive. Alternatively, treat the power-user finding as exploratory and pre-register a confirmatory test. Option 0 ignores multiple testing entirely. Option 2 incorrectly treats sub-group and primary metric tests as independent. Option 3 grants exemption from correction based on segment importance — not a valid statistical rule. Pre-specification must happen before data collection, not after seeing the results.",
+    "hints": [
+      "Slicing results after seeing them is exploratory analysis, not confirmatory. Confirmatory tests require pre-specification before data is collected.",
+      "FWER = 1 − (1−α)^k for k independent tests — plug in k=15 to see how likely a false positive is."
+    ],
+    "concepts": ["MULTIPLE TESTING & CORRECTIONS", "EXPERIMENT VALIDITY THREATS", "STATISTICAL SIGNIFICANCE & POWER"]
+  },
+  {
+    "id": 931,
+    "order": 1,
+    "topic": "experimentation",
+    "type": "scenario",
+    "difficulty": "hard",
+    "title": "CUPED for Variance Reduction: When and Why",
+    "description": "An A/B test on a new checkout flow runs for 2 weeks. The primary metric is revenue per user. The team has 6 months of pre-experiment revenue data per user. A data scientist proposes using CUPED. A PM asks: 'We already randomised — why do we need CUPED?'",
+    "options": [
+      "CUPED is only needed when randomisation fails (e.g., SRM) — with valid randomisation it provides no benefit",
+      "Randomisation ensures unbiasedness but does not minimise variance. CUPED reduces the residual variance of the metric by regressing out the pre-experiment covariate (prior revenue), which is correlated with the post-experiment outcome. This reduces the standard error of the treatment effect estimate, increasing the test's effective power — allowing detection of smaller effects or reaching significance faster with the same sample size. The PM should think of CUPED as increasing sensitivity without changing sample size",
+      "CUPED corrects for user heterogeneity bias — without it, high-revenue users in the treatment arm will skew the results even with randomisation",
+      "CUPED is equivalent to stratified sampling and should only be applied when the team can pre-stratify users before experiment assignment"
+    ],
+    "correct_option": 1,
+    "explanation": "Randomisation guarantees that the expected value of the treatment effect estimate is unbiased — but the variance of that estimate depends on the metric's noise level. Revenue per user is typically high-variance because it depends on persistent user-level factors (some users always spend more). CUPED (Controlled-experiment Using Pre-Experiment Data) exploits this correlation: it adjusts each user's outcome by their pre-experiment value, removing the portion of variance explained by their historical behaviour. The adjusted outcome has lower variance, so the standard error shrinks, and the same data provides more statistical power. This is equivalent to analysis of covariance (ANCOVA) with the pre-experiment covariate. Option 0 conflates bias and variance. Option 2 misidentifies the issue — randomisation already handles heterogeneity bias in expectation; CUPED is about variance, not bias correction. Option 3 conflates CUPED with stratified sampling.",
+    "hints": [
+      "Randomisation removes bias but not variance. Ask: what drives the noise in the metric? Prior user behaviour explains a lot — CUPED uses that to reduce noise.",
+      "CUPED ≈ ANCOVA with a pre-experiment covariate. Variance reduction = smaller standard error = higher power for the same sample size."
+    ],
+    "concepts": ["VARIANCE REDUCTION METHODS", "STATISTICAL SIGNIFICANCE & POWER", "EXPERIMENT VALIDITY THREATS"]
+  },
+  {
+    "id": 932,
+    "order": 2,
+    "topic": "experimentation",
+    "type": "scenario",
+    "difficulty": "hard",
+    "title": "Interference and Network Effects in Marketplace Experiments",
+    "description": "A two-sided marketplace team wants to A/B test a dynamic pricing algorithm. They plan a standard user-level randomisation: treatment users see the new pricing, control users see the old pricing. A senior scientist raises a concern. What is the concern and what is the correct experimental design?",
+    "options": [
+      "The test will be underpowered because pricing experiments require very large sample sizes — increase the traffic allocation to 80/20",
+      "Standard user-level randomisation violates the Stable Unit Treatment Value Assumption (SUTVA): treatment users' pricing affects supply availability for control users (e.g., surges that clear more drivers reduces availability for control-side riders). This interference biases both arms. The correct design is a geo-based or time-based experiment: randomise by geography or time period so treated and control units do not interact",
+      "The dynamic pricing algorithm will overfit to the treatment group — use a hold-out set to evaluate generalisation",
+      "Standard user randomisation is valid — marketplace interference is a theoretical concern but does not affect the primary conversion metric in practice"
+    ],
+    "correct_option": 1,
+    "explanation": "SUTVA (Stable Unit Treatment Value Assumption) requires that a unit's outcome depends only on its own treatment assignment, not on others'. Marketplaces violate this: if treatment drivers accept more rides because of higher pricing, fewer drivers are available for control-side riders, contaminating the control arm's outcomes. Standard user-level A/B testing cannot isolate the true treatment effect in this setting. The standard solutions are geo holdout (assign treatment to geographies, compare to control geographies) or switchback tests (alternate treatment and control by time window in the same geography). Both reduce cross-arm interference. Option 0 is a power concern, not the key validity concern. Option 2 conflates experiment validity with model generalisation. Option 3 dismisses a real and well-documented problem in two-sided market experiments.",
+    "hints": [
+      "Ask: does one user's treatment assignment affect another user's outcome? If yes, SUTVA is violated and user-level randomisation is invalid.",
+      "Geo holdout and switchback experiments are the standard solutions for marketplace interference — they reduce cross-arm contamination by separating units in space or time."
+    ],
+    "concepts": ["NETWORK EFFECTS & INTERFERENCE", "EXPERIMENT DESIGN & UNITS OF RANDOMIZATION"]
+  },
+  {
+    "id": 933,
+    "order": 3,
+    "topic": "experimentation",
+    "type": "scenario",
+    "difficulty": "hard",
+    "title": "Sequential Testing: Why Peeking Inflates False Positives",
+    "description": "A team runs an experiment and checks significance every day. On day 5, they see p = 0.04 and consider shipping. A data scientist warns that this approach inflates the false positive rate above 5%. The team responds: 'But we pre-specified α = 0.05.' Who is correct and why?",
+    "options": [
+      "The team is correct — pre-specifying α = 0.05 means the false positive rate is controlled at 5% regardless of how many times you look at the data",
+      "The data scientist is correct — repeatedly testing a null experiment until p < 0.05 inflates FWER substantially above 5%. With daily peeking over a 30-day experiment, the actual false positive rate can reach 40–50%. Pre-specifying α = 0.05 controls the error for a single test at a fixed sample size, not for sequential testing. Solutions include Group Sequential methods, alpha spending functions (O'Brien-Fleming), or always-valid confidence sequences",
+      "Both are correct — the pre-specified α controls the experiment-level error; daily peeking is a monitoring practice that does not affect the final test",
+      "The team is correct only if they stop as soon as p < 0.05 — stopping early at the first significant result controls the family-wise error rate"
+    ],
+    "correct_option": 1,
+    "explanation": "The α = 0.05 threshold controls Type I error for a single hypothesis test at a fixed sample size. When you peek at data multiple times and could stop at any significant result, you are effectively running multiple tests — the probability of at least one falling below 0.05 by chance grows with each peek, even when the null is true. Simulations show that daily peeking over 30 days at α = 0.05 can produce a true false positive rate of 30–50%. Solutions: Group Sequential designs pre-specify interim looks and adjust the per-look threshold using alpha-spending functions (O'Brien-Fleming is conservative early, more permissive late). Bayesian always-valid inference frameworks maintain Type I error control under continuous monitoring. Option 0 incorrectly extends single-test guarantees to sequential testing. Option 2 is wrong — daily peeking with the option to stop fundamentally changes the test structure. Option 3 is the classic 'optional stopping' error — stopping as soon as significant exploits random walks in the p-value trajectory.",
+    "hints": [
+      "α = 0.05 controls error for one fixed-sample test. Each additional 'peek' is effectively another test opportunity — the cumulative false positive probability grows.",
+      "Group Sequential methods and alpha-spending functions are designed specifically for this problem — they pre-specify interim looks and adjust the threshold at each look."
+    ],
+    "concepts": ["SEQUENTIAL TESTING & PEEKING", "MULTIPLE TESTING & CORRECTIONS", "STATISTICAL SIGNIFICANCE & POWER"]
+  }
+]

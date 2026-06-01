@@ -31,7 +31,7 @@ Mix by difficulty:
 | Medium | 72001–72999 | `backend/content/statistics_questions/medium.json` |
 | Hard | 73001–73999 | `backend/content/statistics_questions/hard.json` |
 
-Samples for Statistics are auto-sliced from the first 3 practice questions per difficulty (no dedicated sample IDs).
+Statistics has **dedicated sample questions** in `backend/content/sample_questions/statistics.json` (IDs 711–733, 3 per difficulty). Sample questions are completely separate from the practice and mock pools and must never duplicate practice content.
 
 ## Difficulty vocabulary
 

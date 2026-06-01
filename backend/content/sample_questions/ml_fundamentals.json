@@ -1,0 +1,200 @@
+[
+  {
+    "id": 811,
+    "order": 1,
+    "topic": "ml_fundamentals",
+    "type": "conceptual",
+    "difficulty": "easy",
+    "title": "Reading a Learning Curve for Bias and Variance",
+    "description": "A model's training accuracy is 98% and validation accuracy is 72%. A second model has training accuracy 79% and validation accuracy 77%. Which diagnosis is correct?",
+    "options": [
+      "Model 1 is better — higher training accuracy always indicates a stronger model",
+      "Model 1 is high variance (overfitting): it has learned the training data well but fails to generalise. Model 2 has a small train-validation gap, indicating low variance — though both models may have room to improve overall accuracy",
+      "Model 2 is high bias (underfitting): a 79% training accuracy means the model has not learned enough from the training data and needs more capacity",
+      "Both models have the same validation accuracy gap — the train-validation delta for Model 2 is 2%, which is within noise for any model"
+    ],
+    "correct_option": 1,
+    "explanation": "The gap between training and validation accuracy diagnoses variance. Model 1's 26-point gap is a classic overfitting signal — the model has memorised training patterns that don't generalise. Model 2's 2-point gap shows the model generalises well, though 79% training accuracy suggests it may have room to improve with more capacity or data (potential bias). Option 0 ignores the generalisation gap. Option 2 misdiagnoses Model 2 — a small train-validation gap is low variance, not high bias; high bias would show low training accuracy AND low validation accuracy. Option 3 misidentifies what constitutes 'noise' — a 26-point gap is not noise.",
+    "hints": [
+      "The train-validation accuracy gap diagnoses variance (overfitting). Training accuracy alone tells you little without the validation comparison.",
+      "High bias = poor performance on both train and validation. High variance = good training, poor validation."
+    ],
+    "concepts": ["BIAS-VARIANCE TRADEOFF", "MODEL EVALUATION & VALIDATION"]
+  },
+  {
+    "id": 812,
+    "order": 2,
+    "topic": "ml_fundamentals",
+    "type": "conceptual",
+    "difficulty": "easy",
+    "title": "Why Feature Scaling Matters for Some Models",
+    "description": "A data scientist trains two models on a dataset with features: `age` (range 20–80) and `income` (range 20,000–200,000). Which statement correctly explains why scaling matters for one model type but not the other?",
+    "options": [
+      "Scaling matters for both models equally — all ML models require standardised features to converge correctly",
+      "Scaling matters for distance-based and gradient-descent models (e.g., logistic regression, SVM, k-NN) because they use feature magnitudes; it does not affect tree-based models (e.g., Random Forest, XGBoost) which split on thresholds and are scale-invariant",
+      "Scaling only matters for neural networks — all other models are unaffected by feature magnitude differences",
+      "Scaling is needed only when features are correlated — if age and income are independent, no scaling is required for any model"
+    ],
+    "correct_option": 1,
+    "explanation": "Models that use Euclidean distances or gradient descent are sensitive to feature scale. In k-NN, income's range (20k–200k) would dominate age's range (20–80), making income's raw difference dominate all distance calculations. In logistic regression, the gradient descent step size depends on feature magnitude, causing slow convergence or instability. Tree-based models split on individual feature thresholds and are invariant to monotonic transformations of features — income of 50,000 vs standardised 0.2 produces identical splits. Option 0 overstates. Option 2 is too narrow. Option 3 conflates feature independence with scale sensitivity.",
+    "hints": [
+      "Ask: does the algorithm care about the absolute magnitude of a feature, or only about its relative ordering?",
+      "Distance-based (k-NN, SVM) and gradient-descent (logistic regression, neural nets) algorithms are scale-sensitive. Tree-based algorithms are not."
+    ],
+    "concepts": ["FEATURE ENGINEERING & SELECTION", "SUPERVISED VS UNSUPERVISED LEARNING"]
+  },
+  {
+    "id": 813,
+    "order": 3,
+    "topic": "ml_fundamentals",
+    "type": "conceptual",
+    "difficulty": "easy",
+    "title": "Choosing a Metric for an Imbalanced Classifier",
+    "description": "A fraud detection model is trained on a dataset where 0.1% of transactions are fraudulent. The model predicts 'not fraud' for every transaction and achieves 99.9% accuracy. Why is accuracy a poor metric here, and what should be used instead?",
+    "options": [
+      "Accuracy is fine — 99.9% is an excellent result and no other metric is needed for production models",
+      "Accuracy is misleading because the majority class dominates: a model that predicts everything as 'not fraud' achieves 99.9% accuracy without detecting a single fraud. Precision, recall, F1, or AUC-ROC are appropriate — they evaluate the model's ability to correctly identify the minority class",
+      "The model is accurate but needs a lower threshold — reduce the decision threshold from 0.5 to 0.01 to capture more fraud cases",
+      "Replace accuracy with cross-entropy loss — the model's loss function is better than any classification metric for evaluating imbalanced problems"
+    ],
+    "correct_option": 1,
+    "explanation": "When classes are severely imbalanced, the naive majority-class predictor achieves very high accuracy by construction — it's not a meaningful signal. For fraud detection, we care specifically about recall (how many actual frauds did we catch) and precision (of the flagged cases, how many were real fraud). F1 balances these, and AUC-ROC measures discriminative power across all thresholds. Option 0 ignores the fundamental problem of class imbalance. Option 2 is a valid operational step but doesn't address the metric choice. Option 3 is wrong — cross-entropy is a training loss, not an evaluation metric for this business problem.",
+    "hints": [
+      "If a model that predicts everything as 'not fraud' achieves 99.9% accuracy, what is that accuracy actually measuring?",
+      "Recall measures: of all actual frauds, what fraction did we catch? That is what the business cares about."
+    ],
+    "concepts": ["CLASSIFICATION METRICS & EVALUATION", "CLASS IMBALANCE HANDLING"]
+  },
+  {
+    "id": 821,
+    "order": 1,
+    "topic": "ml_fundamentals",
+    "type": "scenario",
+    "difficulty": "medium",
+    "title": "Detecting Feature Leakage in a Pipeline",
+    "description": "A data scientist builds a churn prediction model. The training pipeline: (1) join user features with historical support tickets, (2) scale all features, (3) split into train/test, (4) train a gradient boosted model. The model achieves 97% AUC on the test set. In production, AUC drops to 61%. What is the most likely cause?",
+    "options": [
+      "The model is overfitting — 97% AUC on test data is always a sign of overfitting and gradient boosted trees should be replaced with logistic regression",
+      "Feature leakage: a feature computed from the full dataset (including test rows) was used before the train/test split — for example, a support ticket count that includes future tickets the churned users generated after their churn event. The test set was 'contaminated' by information that would not exist at prediction time, making the offline metric unrealistically optimistic",
+      "The production data has a different distribution (covariate shift) — retrain the model on recent data to fix the gap",
+      "97% AUC cannot occur without mislabeling — audit the target labels before investigating the pipeline"
+    ],
+    "correct_option": 1,
+    "explanation": "A large offline-to-online performance gap combined with an unrealistically high test AUC is the canonical signature of feature leakage. Here, the support ticket join likely includes tickets created after the churn event — data a real-time model wouldn't have at prediction time. Because the scaling (step 2) was applied before the split (step 3), it also used test-set statistics, which is a secondary leakage. Fix: split first, then compute any aggregations or scalers on training data only, and apply them to the test set. Option 0 conflates overfitting (which shows on a properly constructed test set) with leakage. Option 2 (covariate shift) could cause a gap but doesn't explain a 36-point drop from an unrealistically high baseline. Option 3 misdiagnoses the root cause.",
+    "hints": [
+      "A test AUC much higher than what production delivers almost always means the test set is 'contaminated' — it saw information that production wouldn't have.",
+      "Check whether any feature joins, scalers, or encoders used data from the test set. The split must happen before all feature engineering."
+    ],
+    "concepts": ["DATA LEAKAGE & PIPELINE INTEGRITY", "MODEL EVALUATION & VALIDATION"]
+  },
+  {
+    "id": 822,
+    "order": 2,
+    "topic": "ml_fundamentals",
+    "type": "conceptual",
+    "difficulty": "medium",
+    "title": "Bagging vs Boosting: Which Reduces What",
+    "description": "A model is high variance (overfit). A colleague recommends switching to an ensemble method. Which ensemble approach directly targets variance reduction, and why?",
+    "options": [
+      "Boosting — sequential weak learners focus on misclassified points, progressively reducing error and also reducing variance",
+      "Bagging — averaging multiple models trained on different bootstrap samples reduces variance by combining diverse, independently trained predictors; each model overfits to its bootstrap sample, but their average generalises better",
+      "Both reduce variance equally — ensemble methods universally reduce both bias and variance regardless of the technique",
+      "Neither — ensembles reduce bias by combining weak learners; variance is reduced only by regularisation techniques like L1/L2 penalty"
+    ],
+    "correct_option": 1,
+    "explanation": "Bagging (Bootstrap Aggregating) is the ensemble technique specifically designed to reduce variance. By training each model on a different bootstrap sample and averaging predictions, the ensemble's variance is approximately 1/n of a single model's variance (for uncorrelated models). This is Random Forest's primary mechanism. Boosting reduces bias: it trains weak learners sequentially, each correcting the residuals of the previous, building a strong learner from many biased-but-diverse components. Boosting can also reduce variance but is primarily a bias-reduction technique and can overfit if not regularised. Option 0 misstates boosting's primary target. Option 2 overgeneralises. Option 3 confuses regularisation (a different technique) with ensembling.",
+    "hints": [
+      "Bagging averages diverse models — averaging uncorrelated models reduces variance. What does that remind you of in statistics?",
+      "Boosting corrects errors sequentially — it starts with weak (high-bias) learners and reduces bias. Different goal than bagging."
+    ],
+    "concepts": ["ENSEMBLE METHODS & BOOSTING", "BIAS-VARIANCE TRADEOFF"]
+  },
+  {
+    "id": 823,
+    "order": 3,
+    "topic": "ml_fundamentals",
+    "type": "scenario",
+    "difficulty": "medium",
+    "title": "Handling Class Imbalance: Choosing Between SMOTE and Class Weights",
+    "description": "A binary classifier for rare disease detection has 1% positive class prevalence. A data scientist considers two strategies: (A) SMOTE to oversample the minority class in training data, or (B) setting `class_weight='balanced'` in the model. A colleague argues that SMOTE is always superior for medical data. Is the colleague correct?",
+    "options": [
+      "Yes — SMOTE generates realistic synthetic samples and should always be used for medical data to increase minority class representation",
+      "Not necessarily — SMOTE and class weights address the same imbalance problem but have different failure modes. SMOTE can introduce synthetic samples that interpolate across decision boundaries, potentially adding noise; it is also more complex to implement correctly (must be applied only to training data, not validation). Class weights adjust the loss function without touching the data. The choice depends on the model, data geometry, and whether synthetic points are meaningful in the feature space",
+      "Yes — class weights only work with linear models and are ineffective for tree-based or neural network classifiers",
+      "No — neither works for 1% prevalence; the only correct approach is to collect more positive samples"
+    ],
+    "correct_option": 1,
+    "explanation": "Both SMOTE and class weights are valid imbalance-handling strategies with different trade-offs. SMOTE synthesises new minority-class points by interpolating between existing ones in feature space — useful when the model needs more diverse minority examples, but risky when the minority class is sparse or noisy (synthetic points may span decision boundaries). Class weights penalise misclassification of minority-class examples more heavily in the loss function — simpler, no data leakage risk, but relies entirely on the model's existing decision boundary. For medical data, whether interpolated features are medically meaningful matters. Option 0 overstates SMOTE's universality. Option 2 is wrong — class weights work in tree-based models and neural networks. Option 3 is unnecessarily pessimistic — both methods are widely used effectively at 1% prevalence.",
+    "hints": [
+      "SMOTE generates synthetic training points; class weights adjust the loss function. Both correct for imbalance but through different mechanisms.",
+      "Ask: could synthetic interpolated features be physically or medically meaningful in this feature space? If not, class weights may be safer."
+    ],
+    "concepts": ["CLASS IMBALANCE HANDLING", "MODEL EVALUATION & VALIDATION"]
+  },
+  {
+    "id": 831,
+    "order": 1,
+    "topic": "ml_fundamentals",
+    "type": "scenario",
+    "difficulty": "hard",
+    "title": "Production Gap: High Eval Accuracy, Low Production Performance",
+    "description": "A recommendation model achieves 91% hit-rate@10 in offline evaluation. After deployment, the observed hit-rate@10 is 58%. The team verifies there is no obvious data leakage, the test set held out correctly, and there are no bugs in the serving code. What is the most likely remaining cause and the correct investigation path?",
+    "options": [
+      "The model is overfitting — reduce model capacity and re-evaluate",
+      "Training-serving skew or distribution shift: the offline evaluation uses historical user-item interactions as ground truth, but production behaviour is dynamic — users may interact differently with recommendations in real time than the offline logs suggest. Investigate by (a) checking feature distributions between training data and serving requests, (b) auditing how offline labels were created (e.g., did historical clicks define 'hit'?), and (c) measuring the gap between offline and online metrics over time to assess drift",
+      "The serving latency is too high, causing requests to time out and fall back to a default recommendation list",
+      "The evaluation metric is wrong — replace hit-rate@10 with NDCG@10 for a more accurate offline estimate"
+    ],
+    "correct_option": 1,
+    "explanation": "A large offline-to-online gap without leakage or code bugs typically indicates training-serving skew or distribution shift. For recommendation systems, two common sources: (1) feedback loop bias — historical click data reflects the previous recommendation policy, not user preferences independent of what was shown; (2) feature distribution shift — features used in training (e.g., user history up to a cutoff) differ from features available at serving time. The investigation proceeds by auditing feature distributions and understanding how offline labels were generated. Option 0 (overfitting) would show a train-test gap, which was presumably absent. Option 2 (serving latency) is plausible but should show as errors in infrastructure logs. Option 3 is wrong — switching metrics doesn't explain the production gap.",
+    "hints": [
+      "When offline and online metrics diverge without leakage, look at whether features or labels in training are actually representative of production conditions.",
+      "Recommendation systems are especially prone to feedback loop bias: historical clicks reflect what was previously recommended, not raw user preferences."
+    ],
+    "concepts": ["TRAINING-SERVING SKEW & DRIFT", "MODEL EVALUATION & VALIDATION", "DATA LEAKAGE & PIPELINE INTEGRITY"]
+  },
+  {
+    "id": 832,
+    "order": 2,
+    "topic": "ml_fundamentals",
+    "type": "conceptual",
+    "difficulty": "hard",
+    "title": "Vanishing Gradients: Cause, Symptom, and Fix",
+    "description": "A 20-layer feedforward neural network is trained on a tabular dataset. After 100 epochs, training loss plateaus at a high value. Inspecting gradients reveals that gradients in layers 1–5 (near the input) are near zero while layers 16–20 (near the output) have normal gradient magnitudes. What is happening and what is the correct fix?",
+    "options": [
+      "The network is overfitting — reduce the number of layers to improve generalisation",
+      "Vanishing gradients: during backpropagation, gradient magnitudes shrink exponentially as they propagate toward earlier layers because sigmoid/tanh activations have gradients < 1. Fixes: (a) use ReLU or variants (Leaky ReLU, ELU) which have gradients of 0 or 1 rather than compressing to near-zero; (b) add residual (skip) connections which provide gradient highways; (c) use batch normalisation to normalise activations and stabilise gradient flow",
+      "The network is too large — remove layers 1–5 since they have near-zero gradients and contribute nothing",
+      "The learning rate is too high — near-zero gradients in early layers mean those layers are being updated too aggressively and have converged to a flat region"
+    ],
+    "correct_option": 1,
+    "explanation": "Vanishing gradients occur because backpropagated gradients are multiplied by the local gradient at each layer. Sigmoid/tanh derivatives are at most 0.25/1.0 — when these are chained through 20 layers, the gradient shrinks by a factor of (0.25)^20 ≈ 10^-12. Early layers receive nearly zero gradient signal and barely update, while later layers update normally. This causes early layers to stay at random initialisation. Fixes: ReLU has a gradient of exactly 1 in its active region (no squashing), residual connections add the identity to the gradient path, and batch norm stabilises the activation scale. Option 0 conflates vanishing gradients (a training failure) with overfitting (a generalisation failure). Option 2 removes layers that could learn — the layers have near-zero gradients because the gradient isn't reaching them, not because they are useless. Option 3 inverts the direction: near-zero gradients indicate updates that are too small, not too large.",
+    "hints": [
+      "Each layer multiplies the gradient by its local derivative during backprop. If that derivative is consistently < 1, the gradient shrinks exponentially with depth.",
+      "ReLU's derivative is 1 (for positive inputs) — it passes gradients through unchanged, avoiding the exponential shrinkage problem."
+    ],
+    "concepts": ["NEURAL NETWORK DESIGN & TRAINING", "GRADIENT PATHOLOGY & OPTIMIZATION"]
+  },
+  {
+    "id": 833,
+    "order": 3,
+    "topic": "ml_fundamentals",
+    "type": "scenario",
+    "difficulty": "hard",
+    "title": "Deployment Constraint: Latency vs Accuracy Trade-Off",
+    "description": "A team has a large transformer model (2B parameters) that achieves 94% accuracy on a document classification task. Production SLA requires responses within 50 ms. The large model takes 800 ms per inference. A lighter model (50M parameters) achieves 88% accuracy with 45 ms latency. Which deployment strategy is most appropriate, and what considerations justify it?",
+    "options": [
+      "Deploy the large model — accuracy is always the primary constraint in production ML; SLA can be relaxed to accommodate higher accuracy",
+      "The 6% accuracy gap must be quantified in business terms before deciding; a reasonable approach is to deploy the 50M model to meet the SLA while investigating (a) distillation to compress the large model's knowledge into a smaller architecture, (b) model quantisation to reduce inference cost while retaining accuracy, or (c) caching for frequent inputs. The deployment decision should be driven by the business cost of a 6% accuracy reduction relative to the operational infeasibility of 800 ms latency",
+      "Deploy the large model with horizontal scaling — adding more servers reduces per-request latency proportionally to the number of instances",
+      "Deploy the 50M model permanently — a 6% accuracy difference is within noise for any production model and should not block deployment"
+    ],
+    "correct_option": 1,
+    "explanation": "Production ML decisions are multi-objective: accuracy matters, but so do latency, cost, and reliability. An 800 ms latency that violates SLA is not 'a large model with a minor latency issue' — it is a product failure. The correct approach is not a binary choice between the two models. Distillation trains a smaller model to mimic the large model's output distribution, often recovering much of the accuracy gap. Quantisation reduces precision (e.g., FP32 → INT8) to cut inference cost with minimal accuracy loss. Caching frequent inputs eliminates repeated computation. The 6% gap must be translated into business impact — what decisions does it affect, what is the cost of a misclassification — before the trade-off is properly framed. Option 0 ignores operational reality. Option 2 is wrong: horizontal scaling reduces throughput pressure, not per-request latency for a single-request bottleneck. Option 3 dismisses the accuracy gap without business justification.",
+    "hints": [
+      "A model that violates SLA is not deployable regardless of accuracy — start from the constraint, then find ways to recover accuracy within it.",
+      "Distillation and quantisation are the standard paths to close the accuracy gap while meeting latency requirements."
+    ],
+    "concepts": ["DEPLOYMENT CONSTRAINTS & EFFICIENCY", "BIAS-VARIANCE TRADEOFF", "MODEL EVALUATION & VALIDATION"]
+  }
+]

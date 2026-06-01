@@ -1,0 +1,641 @@
+[
+  {
+    "id": 211,
+    "order": 1,
+    "topic": "python",
+    "difficulty": "easy",
+    "title": "Count Unique Visitors Per Day",
+    "description": "You receive a list of `(date_str, user_id)` tuples from a clickstream log. Each tuple records one page view. Write `solve(events)` that returns a `dict[str, int]` mapping each date string to the number of *distinct* users active on that date.\n\nExample: `[('2024-01-01','u1'),('2024-01-01','u2'),('2024-01-01','u1'),('2024-01-02','u1')]` → `{'2024-01-01': 2, '2024-01-02': 1}`",
+    "starter_code": "def solve(events: list[tuple[str, str]]) -> dict[str, int]:\n    pass",
+    "expected_code": "def solve(events: list[tuple[str, str]]) -> dict[str, int]:\n    seen: dict[str, set] = {}\n    for date, user_id in events:\n        seen.setdefault(date, set()).add(user_id)\n    return {date: len(users) for date, users in seen.items()}",
+    "solution_code": "def solve(events: list[tuple[str, str]]) -> dict[str, int]:\n    seen: dict[str, set] = {}\n    for date, user_id in events:\n        seen.setdefault(date, set()).add(user_id)\n    return {date: len(users) for date, users in seen.items()}",
+    "explanation": "Use a dict of sets: one set per date accumulates unique user IDs. A set's O(1) add and automatic deduplication handle the uniqueness requirement. Then convert each set's length to the output count. This is the standard hash-map grouping pattern for per-key distinct counts.",
+    "test_cases": [
+      {
+        "input": [
+          [
+            [
+              "2024-01-01",
+              "u1"
+            ],
+            [
+              "2024-01-01",
+              "u2"
+            ],
+            [
+              "2024-01-01",
+              "u1"
+            ],
+            [
+              "2024-01-02",
+              "u1"
+            ]
+          ]
+        ],
+        "expected": {
+          "2024-01-01": 2,
+          "2024-01-02": 1
+        }
+      },
+      {
+        "input": [
+          [
+            [
+              "2024-03-05",
+              "alice"
+            ],
+            [
+              "2024-03-05",
+              "alice"
+            ],
+            [
+              "2024-03-06",
+              "bob"
+            ]
+          ]
+        ],
+        "expected": {
+          "2024-03-05": 1,
+          "2024-03-06": 1
+        }
+      },
+      {
+        "input": [
+          []
+        ],
+        "expected": {}
+      }
+    ],
+    "public_test_cases": 1,
+    "hints": [
+      "Group events by date first — then deduplicate users within each group.",
+      "A `dict[str, set]` lets you accumulate unique user IDs per date with O(1) inserts."
+    ],
+    "concepts": [
+      "HASH MAP & FREQUENCY COUNTING",
+      "SET OPERATIONS & UNIQUENESS"
+    ]
+  },
+  {
+    "id": 212,
+    "order": 2,
+    "topic": "python",
+    "difficulty": "easy",
+    "title": "Most Frequent Label",
+    "description": "Given `labels: list[str]`, return the label that appears most often. If two labels tie for the highest frequency, return the lexicographically smallest one.\n\nExample: `['error','warn','error','info','warn']` → `'error'`\nTie example: `['a','b','a','b']` → `'a'`",
+    "starter_code": "def solve(labels: list[str]) -> str:\n    pass",
+    "expected_code": "def solve(labels: list[str]) -> str:\n    freq: dict[str, int] = {}\n    for label in labels:\n        freq[label] = freq.get(label, 0) + 1\n    return min(freq, key=lambda k: (-freq[k], k))",
+    "solution_code": "def solve(labels: list[str]) -> str:\n    freq: dict[str, int] = {}\n    for label in labels:\n        freq[label] = freq.get(label, 0) + 1\n    return min(freq, key=lambda k: (-freq[k], k))",
+    "explanation": "Build a frequency dict with a single pass. The tie-breaking rule (lexicographically smallest on frequency tie) is handled by `min` with a compound sort key: `(-freq[k], k)` sorts primarily by descending frequency then by ascending label name. The minimum under this key is the answer.",
+    "test_cases": [
+      {
+        "input": [
+          [
+            "error",
+            "warn",
+            "error",
+            "info",
+            "warn"
+          ]
+        ],
+        "expected": "error"
+      },
+      {
+        "input": [
+          [
+            "a",
+            "b",
+            "a",
+            "b"
+          ]
+        ],
+        "expected": "a"
+      },
+      {
+        "input": [
+          [
+            "x"
+          ]
+        ],
+        "expected": "x"
+      }
+    ],
+    "public_test_cases": 1,
+    "hints": [
+      "Count frequencies with a dict in one pass over the list.",
+      "For ties, a compound sort key `(-freq, label)` handles descending-count + alphabetical simultaneously."
+    ],
+    "concepts": [
+      "HASH MAP & FREQUENCY COUNTING",
+      "SORTING & ORDERING"
+    ]
+  },
+  {
+    "id": 213,
+    "order": 3,
+    "topic": "python",
+    "difficulty": "easy",
+    "title": "Deduplicate Preserving Order",
+    "description": "Given `items: list`, return a new list containing each element exactly once, preserving the order of first occurrence.\n\nExample: `[3, 1, 4, 1, 5, 3, 2]` → `[3, 1, 4, 5, 2]`",
+    "starter_code": "def solve(items: list) -> list:\n    pass",
+    "expected_code": "def solve(items: list) -> list:\n    seen = set()\n    result = []\n    for item in items:\n        if item not in seen:\n            seen.add(item)\n            result.append(item)\n    return result",
+    "solution_code": "def solve(items: list) -> list:\n    seen = set()\n    result = []\n    for item in items:\n        if item not in seen:\n            seen.add(item)\n            result.append(item)\n    return result",
+    "explanation": "A set tracks which elements have already been appended. The O(1) membership test `item not in seen` lets us skip duplicates without nested loops. Preserving order rules out `list(set(...))` which does not guarantee insertion order in general use.",
+    "test_cases": [
+      {
+        "input": [
+          [
+            3,
+            1,
+            4,
+            1,
+            5,
+            3,
+            2
+          ]
+        ],
+        "expected": [
+          3,
+          1,
+          4,
+          5,
+          2
+        ]
+      },
+      {
+        "input": [
+          [
+            "b",
+            "a",
+            "b",
+            "c",
+            "a"
+          ]
+        ],
+        "expected": [
+          "b",
+          "a",
+          "c"
+        ]
+      },
+      {
+        "input": [
+          []
+        ],
+        "expected": []
+      }
+    ],
+    "public_test_cases": 1,
+    "hints": [
+      "Track what you have already added — a set gives O(1) membership checks.",
+      "Iterate once, append only on first occurrence."
+    ],
+    "concepts": [
+      "SET OPERATIONS & UNIQUENESS",
+      "LINEAR SCAN & PASS EFFICIENCY"
+    ]
+  },
+  {
+    "id": 221,
+    "order": 1,
+    "topic": "python",
+    "difficulty": "medium",
+    "title": "Session Grouper",
+    "description": "Given a list of `(user_id, timestamp_seconds)` events sorted by timestamp, write `solve(events, gap)` that groups each user's events into sessions separated by gaps of more than `gap` seconds. Return a `dict[str, int]` mapping each user_id to their total session count.\n\nExample: `events=[('u1',0),('u1',100),('u1',1000),('u2',50)]`, `gap=300` → `{'u1': 2, 'u2': 1}` (u1's gap of 900s > 300s starts a new session).",
+    "starter_code": "def solve(events: list[tuple[str, int]], gap: int) -> dict[str, int]:\n    pass",
+    "expected_code": "def solve(events: list[tuple[str, int]], gap: int) -> dict[str, int]:\n    sessions: dict[str, int] = {}\n    last_ts: dict[str, int] = {}\n    for user_id, ts in events:\n        if user_id not in last_ts or ts - last_ts[user_id] > gap:\n            sessions[user_id] = sessions.get(user_id, 0) + 1\n        last_ts[user_id] = ts\n    return sessions",
+    "solution_code": "def solve(events: list[tuple[str, int]], gap: int) -> dict[str, int]:\n    sessions: dict[str, int] = {}\n    last_ts: dict[str, int] = {}\n    for user_id, ts in events:\n        if user_id not in last_ts or ts - last_ts[user_id] > gap:\n            sessions[user_id] = sessions.get(user_id, 0) + 1\n        last_ts[user_id] = ts\n    return sessions",
+    "explanation": "One pass is enough. For each event, compare its timestamp to the user's most recent event. If the gap exceeds the threshold (or it's the user's first event), start a new session. Track the last-seen timestamp per user and update it on each event. This is the standard sessionisation pattern used in clickstream pipelines.",
+    "test_cases": [
+      {
+        "input": [
+          [
+            [
+              "u1",
+              0
+            ],
+            [
+              "u1",
+              100
+            ],
+            [
+              "u1",
+              1000
+            ],
+            [
+              "u2",
+              50
+            ]
+          ],
+          300
+        ],
+        "expected": {
+          "u1": 2,
+          "u2": 1
+        }
+      },
+      {
+        "input": [
+          [
+            [
+              "a",
+              0
+            ],
+            [
+              "a",
+              60
+            ],
+            [
+              "a",
+              120
+            ]
+          ],
+          30
+        ],
+        "expected": {
+          "a": 3
+        }
+      },
+      {
+        "input": [
+          [],
+          300
+        ],
+        "expected": {}
+      }
+    ],
+    "public_test_cases": 1,
+    "hints": [
+      "Track each user's most recent timestamp — a new session starts when the gap to the next event exceeds the threshold.",
+      "A single pass works if events are pre-sorted by timestamp (as stated). No need to sort again."
+    ],
+    "concepts": [
+      "SESSIONIZATION & WINDOW OPERATIONS",
+      "HASH MAP & FREQUENCY COUNTING"
+    ]
+  },
+  {
+    "id": 222,
+    "order": 2,
+    "topic": "python",
+    "difficulty": "medium",
+    "title": "Top-K Frequent Items",
+    "description": "Given `items: list[str]` and `k: int`, return the `k` most frequent items. Order by frequency descending; break ties alphabetically. Raise `ValueError` if `k > len(set(items))`.\n\nExample: `items=['b','a','b','c','a','b'], k=2` → `['b','a']`",
+    "starter_code": "def solve(items: list[str], k: int) -> list[str]:\n    pass",
+    "expected_code": "def solve(items: list[str], k: int) -> list[str]:\n    freq: dict[str, int] = {}\n    for item in items:\n        freq[item] = freq.get(item, 0) + 1\n    if k > len(freq):\n        raise ValueError(f'k={k} exceeds distinct item count {len(freq)}')\n    return [item for item, _ in sorted(freq.items(), key=lambda x: (-x[1], x[0]))[:k]]",
+    "solution_code": "def solve(items: list[str], k: int) -> list[str]:\n    freq: dict[str, int] = {}\n    for item in items:\n        freq[item] = freq.get(item, 0) + 1\n    if k > len(freq):\n        raise ValueError(f'k={k} exceeds distinct item count {len(freq)}')\n    return [item for item, _ in sorted(freq.items(), key=lambda x: (-x[1], x[0]))[:k]]",
+    "explanation": "Count frequencies in one pass. Sorting with key `(-count, label)` handles descending-frequency + ascending-alphabetical in a single sort call. Slicing to `k` gives the top-K. The `ValueError` guard is needed when k exceeds the number of distinct items.",
+    "test_cases": [
+      {
+        "input": [
+          [
+            "b",
+            "a",
+            "b",
+            "c",
+            "a",
+            "b"
+          ],
+          2
+        ],
+        "expected": [
+          "b",
+          "a"
+        ]
+      },
+      {
+        "input": [
+          [
+            "x",
+            "y",
+            "x",
+            "y"
+          ],
+          1
+        ],
+        "expected": [
+          "x"
+        ]
+      },
+      {
+        "input": [
+          [
+            "z"
+          ],
+          1
+        ],
+        "expected": [
+          "z"
+        ]
+      }
+    ],
+    "public_test_cases": 1,
+    "hints": [
+      "Build a frequency dict, then sort by (count descending, label ascending) and take the first k entries.",
+      "A compound sort key handles both ordering rules in one sort."
+    ],
+    "concepts": [
+      "HASH MAP & FREQUENCY COUNTING",
+      "SORTING & ORDERING"
+    ]
+  },
+  {
+    "id": 223,
+    "order": 3,
+    "topic": "python",
+    "difficulty": "medium",
+    "title": "Sliding Window: Maximum of Every Window",
+    "description": "Given `values: list[float]` and `window_size: int`, return a list of the maximum value in each consecutive window of size `window_size`. The output list has `len(values) - window_size + 1` elements.\n\nExample: `values=[1.0,3.0,2.0,5.0,4.0], window_size=3` → `[3.0, 5.0, 5.0]`\n\nAim for better than O(n·w) if you can.",
+    "starter_code": "def solve(values: list[float], window_size: int) -> list[float]:\n    pass",
+    "expected_code": "from collections import deque\ndef solve(values: list[float], window_size: int) -> list[float]:\n    dq: deque[int] = deque()\n    result: list[float] = []\n    for i, v in enumerate(values):\n        while dq and values[dq[-1]] <= v:\n            dq.pop()\n        dq.append(i)\n        if dq[0] <= i - window_size:\n            dq.popleft()\n        if i >= window_size - 1:\n            result.append(values[dq[0]])\n    return result",
+    "solution_code": "from collections import deque\ndef solve(values: list[float], window_size: int) -> list[float]:\n    dq: deque[int] = deque()\n    result: list[float] = []\n    for i, v in enumerate(values):\n        # Maintain monotonic decreasing deque of indices\n        while dq and values[dq[-1]] <= v:\n            dq.pop()\n        dq.append(i)\n        # Remove index that slid out of the window\n        if dq[0] <= i - window_size:\n            dq.popleft()\n        if i >= window_size - 1:\n            result.append(values[dq[0]])\n    return result",
+    "explanation": "A monotonic deque stores indices in decreasing order of their values. When a new element arrives: (1) pop any rear index whose value is ≤ the new value (it can never be a future window maximum); (2) push the new index; (3) pop the front if it fell outside the current window. The front of the deque is always the index of the current window's maximum. This gives O(n) time.",
+    "test_cases": [
+      {
+        "input": [
+          [
+            1.0,
+            3.0,
+            2.0,
+            5.0,
+            4.0
+          ],
+          3
+        ],
+        "expected": [
+          3.0,
+          5.0,
+          5.0
+        ]
+      },
+      {
+        "input": [
+          [
+            4.0,
+            2.0,
+            1.0,
+            3.0
+          ],
+          2
+        ],
+        "expected": [
+          4.0,
+          2.0,
+          3.0
+        ]
+      },
+      {
+        "input": [
+          [
+            7.0
+          ],
+          1
+        ],
+        "expected": [
+          7.0
+        ]
+      }
+    ],
+    "public_test_cases": 1,
+    "hints": [
+      "A brute-force O(n·w) loop works but a smarter approach uses the observation that once a smaller value enters the window from the right, it can never be the maximum while the larger value is also in the window.",
+      "A monotonic deque stores candidate indices in decreasing value order — the front is always the current window's maximum."
+    ],
+    "concepts": [
+      "SLIDING WINDOW & TWO-POINTER",
+      "MONOTONIC STACK & DEQUE"
+    ]
+  },
+  {
+    "id": 231,
+    "order": 1,
+    "topic": "python",
+    "difficulty": "hard",
+    "title": "Pipeline Dependency Resolver",
+    "description": "Given `tasks: dict[str, list[str]]` where `tasks[task]` is the list of tasks that must complete before `task` can run, write `solve(tasks)` that returns a valid execution order as a `list[str]`. Raise `ValueError('cycle detected')` if a circular dependency exists.\n\nExample: `{'deploy': ['test','build'], 'test': ['build'], 'build': []}` → `['build', 'test', 'deploy']` (any topological order is accepted if valid).",
+    "starter_code": "def solve(tasks: dict[str, list[str]]) -> list[str]:\n    pass",
+    "expected_code": "def solve(tasks: dict[str, list[str]]) -> list[str]:\n    WHITE, GRAY, BLACK = 0, 1, 2\n    color = {t: WHITE for t in tasks}\n    order: list[str] = []\n\n    def dfs(node: str) -> None:\n        color[node] = GRAY\n        for dep in tasks.get(node, []):\n            if dep not in color:\n                raise ValueError('cycle detected')\n            if color[dep] == GRAY:\n                raise ValueError('cycle detected')\n            if color[dep] == WHITE:\n                dfs(dep)\n        color[node] = BLACK\n        order.append(node)\n\n    for task in tasks:\n        if color[task] == WHITE:\n            dfs(task)\n    return order",
+    "solution_code": "def solve(tasks: dict[str, list[str]]) -> list[str]:\n    WHITE, GRAY, BLACK = 0, 1, 2\n    color = {t: WHITE for t in tasks}\n    order: list[str] = []\n\n    def dfs(node: str) -> None:\n        color[node] = GRAY  # in progress\n        for dep in tasks.get(node, []):\n            if dep not in color:\n                raise ValueError('cycle detected')\n            if color[dep] == GRAY:\n                raise ValueError('cycle detected')  # back edge = cycle\n            if color[dep] == WHITE:\n                dfs(dep)\n        color[node] = BLACK  # finished\n        order.append(node)\n\n    for task in tasks:\n        if color[task] == WHITE:\n            dfs(task)\n    return order",
+    "explanation": "DFS-based topological sort with three-color marking: WHITE = unvisited, GRAY = in the current DFS path, BLACK = fully processed. A GRAY-to-GRAY back edge means we re-entered an in-progress node — that is the cycle. Append to `order` only after all dependencies are resolved (post-order), which naturally produces a valid execution sequence. Raising `ValueError` on cycle satisfies the contract.",
+    "test_cases": [
+      {
+        "input": [
+          {
+            "deploy": [
+              "test",
+              "build"
+            ],
+            "test": [
+              "build"
+            ],
+            "build": []
+          }
+        ],
+        "expected": [
+          "build",
+          "test",
+          "deploy"
+        ]
+      },
+      {
+        "input": [
+          {
+            "a": [
+              "b"
+            ],
+            "b": [
+              "c"
+            ],
+            "c": []
+          }
+        ],
+        "expected": [
+          "c",
+          "b",
+          "a"
+        ]
+      }
+    ],
+    "public_test_cases": 1,
+    "hints": [
+      "Topological sort via DFS: visit dependencies recursively before marking a node done and appending it to the output.",
+      "Track three states per node — unvisited, in-progress (on the current DFS stack), and finished. A back edge to an in-progress node is a cycle."
+    ],
+    "concepts": [
+      "GRAPH ALGORITHMS & TRAVERSAL",
+      "TOPOLOGICAL SORT & DEPENDENCY ORDERING"
+    ]
+  },
+  {
+    "id": 232,
+    "order": 2,
+    "topic": "python",
+    "difficulty": "hard",
+    "title": "Merge Overlapping Intervals",
+    "description": "Given a list of `(start, end)` intervals (integers, inclusive), merge all overlapping intervals and return the result sorted by start value.\n\nExample: `[(1,3),(2,6),(8,10),(15,18)]` → `[(1,6),(8,10),(15,18)]`\n`[(1,4),(4,5)]` → `[(1,5)]` (touching intervals merge)",
+    "starter_code": "def solve(intervals: list[tuple[int, int]]) -> list[tuple[int, int]]:\n    pass",
+    "expected_code": "def solve(intervals: list[tuple[int, int]]) -> list[tuple[int, int]]:\n    if not intervals:\n        return []\n    intervals = sorted(intervals, key=lambda x: x[0])\n    merged = [intervals[0]]\n    for start, end in intervals[1:]:\n        if start <= merged[-1][1]:\n            merged[-1] = (merged[-1][0], max(merged[-1][1], end))\n        else:\n            merged.append((start, end))\n    return merged",
+    "solution_code": "def solve(intervals: list[tuple[int, int]]) -> list[tuple[int, int]]:\n    if not intervals:\n        return []\n    intervals = sorted(intervals, key=lambda x: x[0])\n    merged = [intervals[0]]\n    for start, end in intervals[1:]:\n        if start <= merged[-1][1]:  # overlapping or touching\n            merged[-1] = (merged[-1][0], max(merged[-1][1], end))\n        else:\n            merged.append((start, end))\n    return merged",
+    "explanation": "Sort by start value so potential merges are always between the current interval and the previous output. After sorting, a single pass maintains the last merged interval. If the next interval's start is ≤ the current end, they overlap (or touch) — extend the end to the max. Otherwise push the new interval. This is O(n log n) for sorting, O(n) for the merge pass.",
+    "test_cases": [
+      {
+        "input": [
+          [
+            [
+              1,
+              3
+            ],
+            [
+              2,
+              6
+            ],
+            [
+              8,
+              10
+            ],
+            [
+              15,
+              18
+            ]
+          ]
+        ],
+        "expected": [
+          [
+            1,
+            6
+          ],
+          [
+            8,
+            10
+          ],
+          [
+            15,
+            18
+          ]
+        ]
+      },
+      {
+        "input": [
+          [
+            [
+              1,
+              4
+            ],
+            [
+              4,
+              5
+            ]
+          ]
+        ],
+        "expected": [
+          [
+            1,
+            5
+          ]
+        ]
+      },
+      {
+        "input": [
+          [
+            [
+              5,
+              10
+            ]
+          ]
+        ],
+        "expected": [
+          [
+            5,
+            10
+          ]
+        ]
+      }
+    ],
+    "public_test_cases": 1,
+    "hints": [
+      "Sort by start value first — then overlapping intervals are always adjacent in the sorted list.",
+      "Maintain the last merged interval's end and extend it greedily when the next start doesn't exceed it."
+    ],
+    "concepts": [
+      "SLIDING WINDOW & TWO-POINTER",
+      "SORTING & ORDERING",
+      "GREEDY & INTERVAL SCHEDULING"
+    ]
+  },
+  {
+    "id": 233,
+    "order": 3,
+    "topic": "python",
+    "difficulty": "hard",
+    "title": "Sliding Window Rate Limiter",
+    "description": "Implement `solve(timestamps, window_ms, max_calls)`: given a list of request timestamps in milliseconds (non-decreasing), return a `list[bool]` where element `i` is `True` if request `i` is allowed. A request is allowed if strictly fewer than `max_calls` requests were allowed in the `window_ms` milliseconds strictly before this request's timestamp (i.e., timestamps in `(ts - window_ms, ts)` exclusive on both ends do not count; the window is the last `window_ms` ms).\n\nMore precisely: request `i` is allowed if the count of previously *allowed* requests with timestamp in `[timestamps[i] - window_ms, timestamps[i])` is < `max_calls`.",
+    "starter_code": "from collections import deque\ndef solve(timestamps: list[int], window_ms: int, max_calls: int) -> list[bool]:\n    pass",
+    "expected_code": "from collections import deque\ndef solve(timestamps: list[int], window_ms: int, max_calls: int) -> list[bool]:\n    allowed_times: deque[int] = deque()\n    result: list[bool] = []\n    for ts in timestamps:\n        cutoff = ts - window_ms\n        while allowed_times and allowed_times[0] < cutoff:\n            allowed_times.popleft()\n        if len(allowed_times) < max_calls:\n            allowed_times.append(ts)\n            result.append(True)\n        else:\n            result.append(False)\n    return result",
+    "solution_code": "from collections import deque\ndef solve(timestamps: list[int], window_ms: int, max_calls: int) -> list[bool]:\n    allowed_times: deque[int] = deque()  # timestamps of allowed requests\n    result: list[bool] = []\n    for ts in timestamps:\n        cutoff = ts - window_ms\n        while allowed_times and allowed_times[0] < cutoff:\n            allowed_times.popleft()\n        if len(allowed_times) < max_calls:\n            allowed_times.append(ts)\n            result.append(True)\n        else:\n            result.append(False)\n    return result",
+    "explanation": "Track only the timestamps of *allowed* requests in a deque. For each incoming request: evict entries older than `window_ms` from the front. If the remaining count is below `max_calls`, allow it and record its timestamp. Otherwise deny. The deque grows and shrinks as the window slides, giving amortised O(1) per request.",
+    "test_cases": [
+      {
+        "input": [
+          [
+            100,
+            200,
+            300,
+            400,
+            1200
+          ],
+          500,
+          3
+        ],
+        "expected": [
+          true,
+          true,
+          true,
+          false,
+          true
+        ]
+      },
+      {
+        "input": [
+          [
+            0,
+            0,
+            0
+          ],
+          1000,
+          2
+        ],
+        "expected": [
+          true,
+          true,
+          false
+        ]
+      },
+      {
+        "input": [
+          [
+            1000,
+            2000,
+            3000
+          ],
+          500,
+          1
+        ],
+        "expected": [
+          true,
+          true,
+          true
+        ]
+      }
+    ],
+    "public_test_cases": 1,
+    "hints": [
+      "Only track timestamps of *allowed* requests — denied requests don't consume quota.",
+      "A deque lets you efficiently evict old timestamps from the front as the window slides forward."
+    ],
+    "concepts": [
+      "SLIDING WINDOW & TWO-POINTER",
+      "MONOTONIC STACK & DEQUE",
+      "STREAMING & STATEFUL PROCESSING"
+    ]
+  }
+]

@@ -126,7 +126,7 @@ A data interview practice platform covering nine tracks. Users write SQL or Pyth
 **Modes per track:**
 - **Challenge mode** — plan-aware unlock rules, persistent progress, 876 practice questions across 9 tracks
 - **Mock mode** — 793 additional mock-only questions (Pro/Elite), never shown in practice catalog
-- **Sample mode** — 36 sandbox questions across SQL/Python/Pandas/PySpark (3 per track+difficulty), no progress recorded, no login required. Data Engineering, Data Modeling, Statistics, ML Fundamentals, and Experimentation samples are auto-sliced from the first 3 practice questions per difficulty (no dedicated sample IDs).
+- **Sample mode** — 81 sandbox questions across all 9 tracks (3 per track × 3 difficulties), no progress recorded, no login required. Every track has **dedicated sample questions** completely separate from the practice and mock pools — samples never duplicate practice or mock content. Sample IDs use the compact TXS format (e.g., 211–233 for Python, 711–733 for Statistics); sample files live in `backend/content/sample_questions/`.
 
 **Tracks:**
 - **SQL** — 118 practice (37 easy / 50 medium / 31 hard) + 165 mock-only, DuckDB execution, realistic relational datasets
@@ -179,7 +179,7 @@ Mock-only questions (`mock_only: true`) live in the same JSON files as practice 
 
 See [docs/content-authoring.md](docs/content-authoring.md) for the full mock-only authoring spec.
 
-- **Sample questions:** SQL/Python/Pandas/PySpark: 3 per track × 3 difficulties = 36 total. Data Engineering, Data Modeling, Statistics, ML Fundamentals, and Experimentation samples are auto-sliced from the first 3 practice questions per difficulty (no dedicated IDs).
+- **Sample questions:** All 9 tracks × 3 difficulties × 3 questions = **81 dedicated sample questions** total. Sample questions live in `backend/content/sample_questions/<track>.json` and use the compact TXS ID format (SQL: 111–133, Python: 211–233, Pandas: 311–333, PySpark: 411–433, DE: 511–533, DM: 611–633, Statistics: 711–733, ML: 811–833, Exp: 911–933). Sample questions are never drawn from the practice or mock pools.
 - **Learning paths:** 46 total — SQL: 9, Python: 6, Pandas: 5, PySpark: 5, Data Engineering: 3, Data Modeling: 5, Statistics: 3, ML Fundamentals: 5, Experimentation: 5. Each track has exactly one `starter` path (UX entry point); intermediate and advanced are uncapped. Paths are curated 5–9 question walks through a *pattern* (practitioner skill — see `docs/content-authoring.md` §Paths). Paths do not unlock anything; unlocks follow the standard practice thresholds.
 - Every question has `hints` (currently 1–3 entries across the bank; new content should target the active hint ladder) and `concepts` (semantic pattern tags surfaced as pills)
 - SQL questions have a `companies` field (`["Meta", "Stripe", ...]`) used for the company filter in SidebarNav

@@ -119,7 +119,7 @@ Rules:
 - Practice and `mock_only` share the same TXNNN space within each difficulty file. Mock-only IDs allocate at the top of the range, immediately after the last practice question.
 - **No mock-only questions at easy** for any track. By design.
 - IDs must be globally unique across all question files.
-- SQL samples use a separate compact `TXS` 3-digit format (`111–133`); never give a sample a 5-digit ID. Non-SQL tracks have no dedicated sample files — samples auto-slice from the first 3 practice questions by `order`.
+- **All tracks** use the compact `TXS` 3-digit format for sample questions. Never give a sample a 5-digit ID. Sample files live in `backend/content/sample_questions/<track>.json` and are loaded by `sample_questions.py` at startup — they are completely separate from the practice and mock pools. ID ranges: SQL 111–133, Python 211–233, Pandas 311–333, PySpark 411–433, DE 511–533, DM 611–633, Statistics 711–733, ML 811–833, Exp 911–933. When authoring or editing a sample question, treat it as independent content — it must not duplicate any practice or mock question.
 - Each track's `schemas.json` defines valid `id_ranges`; the catalog loader validates at startup and crashes on violation.
 
 ---

@@ -1,0 +1,200 @@
+[
+  {
+    "id": 411,
+    "order": 1,
+    "topic": "pyspark",
+    "type": "predict_output",
+    "difficulty": "easy",
+    "title": "Lazy Evaluation: When Does the Job Run?",
+    "description": "A PySpark job runs this sequence:\n\n```python\ndf = spark.read.parquet('events/')\nfiltered = df.filter(col('status') == 'active')\nselected = filtered.select('user_id', 'event_ts')\nselected.write.parquet('output/')\n```\n\nHow many Spark jobs are triggered?",
+    "options": [
+      "Three jobs — one for filter, one for select, one for write",
+      "One job — triggered only by the write action; filter and select are lazy transformations",
+      "Two jobs — read triggers one job, write triggers another",
+      "Zero jobs until an explicit `.cache()` is called"
+    ],
+    "correct_option": 1,
+    "explanation": "PySpark uses lazy evaluation: transformations (`filter`, `select`) build a logical plan but do not execute. Only an **action** — here `.write.parquet(...)` — triggers a Spark job. The entire plan (read → filter → select → write) executes as a single job when the action fires. Option 0 misidentifies transformations as job-triggering. Option 2 is wrong: `spark.read.parquet` builds a scan plan but triggers no job by itself. Option 3 invents a `.cache()` requirement — caching is optional and persists results for reuse, not a prerequisite for execution.",
+    "hints": [
+      "PySpark separates transformations (build a plan) from actions (execute it). Only actions trigger jobs.",
+      "Count the number of actions in the code — that's how many Spark jobs will run."
+    ],
+    "concepts": ["LAZY EVALUATION & EXECUTION MODEL", "TRANSFORMATIONS VS ACTIONS"]
+  },
+  {
+    "id": 412,
+    "order": 2,
+    "topic": "pyspark",
+    "type": "conceptual",
+    "difficulty": "easy",
+    "title": "Narrow vs Wide Transformations",
+    "description": "A data engineer runs two operations on a 200-partition DataFrame:\n\n- **Operation A:** `.filter(col('amount') > 100)`\n- **Operation B:** `.groupBy('country').agg(sum('amount'))`\n\nWhich statement correctly classifies these operations?",
+    "options": [
+      "Both are narrow — they each read from a single input partition and write to a single output partition",
+      "A is narrow (each output partition depends on exactly one input partition); B is wide (output requires reading across multiple input partitions, causing a shuffle)",
+      "A is wide because filtering changes the number of output rows; B is narrow because it only counts values",
+      "Both are wide — any operation involving aggregation or filtering requires a shuffle in Spark"
+    ],
+    "correct_option": 1,
+    "explanation": "A narrow transformation's output partitions each depend on at most one input partition — no shuffle is needed. `filter` is narrow: each partition is independently filtered and the partition layout is unchanged. A wide transformation requires data from multiple input partitions — a shuffle. `groupBy` is wide: rows with the same `country` may live in different partitions and must be co-located before aggregation. Option 0 is wrong about B. Option 2 inverts the classification. Option 3 overgeneralises — filtering is narrow in the standard Spark model.",
+    "hints": [
+      "Ask: can each output partition be produced using only one input partition, or does it need data from multiple partitions?",
+      "Shuffles happen when rows need to be redistributed across partitions — that is the defining trait of a wide transformation."
+    ],
+    "concepts": ["NARROW VS WIDE TRANSFORMATIONS", "SHUFFLE & PARTITIONING"]
+  },
+  {
+    "id": 413,
+    "order": 3,
+    "topic": "pyspark",
+    "type": "predict_output",
+    "difficulty": "easy",
+    "title": "Predict: withColumn on Existing Column",
+    "description": "Given:\n```python\nfrom pyspark.sql.functions import col\ndf = spark.createDataFrame([(1, 'a'), (2, 'b')], ['id', 'val'])\ndf2 = df.withColumn('val', col('val').cast('string').alias('upper_val'))\ndf2.printSchema()\n```\nWhat does `df2` look like after this code?",
+    "options": [
+      "df2 has three columns: id, val, upper_val — withColumn adds a new column named by the alias",
+      "df2 has two columns: id, val — withColumn with an existing column name replaces that column; the alias inside cast is ignored for the output column name",
+      "The code raises an AnalysisException because you cannot alias a column inside withColumn",
+      "df2 has two columns: id, upper_val — the alias renames the column and the original val is dropped"
+    ],
+    "correct_option": 1,
+    "explanation": "`withColumn(name, expr)` always uses the first argument (`'val'`) as the output column name — the `.alias('upper_val')` inside the expression is ignored for naming purposes. Since `'val'` already exists, it is replaced in place. The DataFrame has exactly two columns: `id` and `val`. Option 0 is wrong — `withColumn` does not add a third column when the name matches an existing column. Options 2 and 3 misrepresent the Spark API: there is no AnalysisException, and the alias does not propagate to the output schema.",
+    "hints": [
+      "The first argument to `withColumn` is always the output column name — any alias inside the expression is overridden.",
+      "When the first argument matches an existing column name, that column is replaced."
+    ],
+    "concepts": ["SCHEMA & COLUMN OPERATIONS", "TRANSFORMATIONS VS ACTIONS"]
+  },
+  {
+    "id": 421,
+    "order": 1,
+    "topic": "pyspark",
+    "type": "scenario",
+    "difficulty": "medium",
+    "title": "repartition vs coalesce Before a Write",
+    "description": "A Spark job produces a DataFrame with 400 partitions and needs to write it as 20 Parquet files to cloud storage. A junior engineer proposes two options:\n\n- **Option A:** `df.repartition(20).write.parquet(...)`\n- **Option B:** `df.coalesce(20).write.parquet(...)`\n\nWhich option is preferable and why?",
+    "options": [
+      "Option A — repartition always produces exactly 20 uniform files; coalesce can produce uneven files so it should be avoided",
+      "Option B — coalesce reduces partitions without a full shuffle by merging partitions on the same executor; it is lower-cost than repartition for reducing partition count, though it may produce slightly uneven file sizes",
+      "Both are equivalent — Spark internally converts coalesce to repartition before writing",
+      "Option A — coalesce cannot reduce partitions below the original number, so it would have no effect here"
+    ],
+    "correct_option": 1,
+    "explanation": "`coalesce(n)` with n < current partitions merges existing partitions without a full shuffle — it moves data only within the same executor where possible, making it significantly cheaper for a downsizing operation. The tradeoff is potential file-size skew (merged partitions may be uneven). `repartition(n)` triggers a full shuffle, produces uniform partitions, but is more expensive. For most write-to-storage jobs where slight size variation is acceptable, `coalesce` is the right choice. Option 0 is wrong that coalesce should be 'avoided'. Option 2 is false. Option 3 inverts the behaviour — `coalesce` can only decrease partition count (or leave it unchanged), which is exactly what is needed here.",
+    "hints": [
+      "coalesce merges partitions without a global shuffle; repartition shuffles all data to achieve perfect balance. Which fits a simple 'reduce count' scenario?",
+      "For moving from 400 to 20 partitions before a write, ask whether you need perfect balance or just fewer files."
+    ],
+    "concepts": ["SHUFFLE & PARTITIONING", "PERFORMANCE TUNING & RESOURCE MANAGEMENT"]
+  },
+  {
+    "id": 422,
+    "order": 2,
+    "topic": "pyspark",
+    "type": "conceptual",
+    "difficulty": "medium",
+    "title": "When to Use a Broadcast Join",
+    "description": "A Spark job joins a 500 GB fact table with a 15 MB dimension table. The engineer tests two approaches:\n\n- **Sort-merge join (default):** both tables are sorted and shuffled before joining\n- **Broadcast join:** the small table is sent in full to every executor\n\nWhich statement correctly captures the trade-off?",
+    "options": [
+      "Sort-merge join is always preferable — broadcast joins are only valid when both tables are under 10 MB",
+      "Broadcast join is preferable here: the 15 MB table comfortably fits in memory, eliminating the shuffle on the large table; this is the primary use case for broadcast joins",
+      "Broadcast join increases network traffic proportionally to the large table's size, making it more expensive than sort-merge for tables over 100 GB",
+      "Both produce identical execution plans — Spark's AQE automatically converts sort-merge to broadcast when it detects a small table"
+    ],
+    "correct_option": 1,
+    "explanation": "A broadcast join ships the small table to every executor, avoiding the expensive shuffle of the large table entirely. 15 MB is well within the default broadcast threshold (10 MB by default, configurable via `spark.sql.autoBroadcastJoinThreshold`). The small table is sent once per executor, not once per row or proportional to the large table's size. Option 0 is wrong about the 10 MB hard limit — the threshold is configurable and the table comfortably fits memory. Option 2 mischaracterises broadcast cost — it scales with the small table, not the large one. Option 3 is close but not fully correct: AQE can convert some joins post-shuffle, but that is distinct from an explicit broadcast of a pre-known small table.",
+    "hints": [
+      "Broadcast joins trade a one-time cost of sending the small table everywhere for eliminating the shuffle on the large table.",
+      "The key question: is the small table small enough to fit comfortably in executor memory?"
+    ],
+    "concepts": ["JOIN STRATEGIES & BROADCAST", "SHUFFLE & PARTITIONING"]
+  },
+  {
+    "id": 423,
+    "order": 3,
+    "topic": "pyspark",
+    "type": "debug",
+    "difficulty": "medium",
+    "title": "Debug: AnalysisException on Window Function",
+    "description": "A Spark job fails with:\n```\nAnalysisException: Window function avg(amount) requires an OVER clause\n```\n\nThe offending code:\n```python\nfrom pyspark.sql.functions import avg\ndf.withColumn('avg_amount', avg('amount'))\n```\n\nWhat is the root cause and how do you fix it?",
+    "options": [
+      "avg is not available as a PySpark column function — use df.agg(avg('amount')) instead",
+      "avg used as a column expression requires a Window specification via .over(window); without it Spark cannot resolve the aggregation scope",
+      "The column 'amount' does not exist — the AnalysisException is a column-not-found error, not a window error",
+      "withColumn cannot accept aggregation functions — use groupBy().agg() instead for any aggregation"
+    ],
+    "correct_option": 1,
+    "explanation": "When `avg` (or any aggregation function like `sum`, `count`) is used inside `withColumn`, Spark interprets it as a window function because there is no `groupBy` context. Window functions require an explicit `Window` specification via `.over(windowSpec)` so Spark knows the frame. Fix: either (a) add `.over(Window.partitionBy(...))` for a per-partition average, or (b) compute a global average with `df.agg(avg('amount'))` and join back. Option 0 is wrong — `avg` is a valid column function. Option 2 invents a column-not-found problem. Option 3 is too broad — `withColumn` can accept many aggregation functions when used with `.over(window)`.",
+    "hints": [
+      "Aggregation functions inside `withColumn` need a window specification — Spark can't determine the aggregation boundary without one.",
+      "Add `.over(Window.partitionBy(...).orderBy(...))` to define the window frame, or move the aggregation to `.agg()` with a `groupBy`."
+    ],
+    "concepts": ["WINDOW FUNCTIONS & FRAMES", "SCHEMA & COLUMN OPERATIONS"]
+  },
+  {
+    "id": 431,
+    "order": 1,
+    "topic": "pyspark",
+    "type": "scenario",
+    "difficulty": "hard",
+    "title": "Hot-Key Skew: Diagnosing and Fixing a Slow Join",
+    "description": "A Spark join on `user_id` between a 1 TB event log and a 500 GB user profile table runs for 6 hours. Spark UI shows one task running 100× longer than the median. Investigation reveals that 40% of all events belong to a single `user_id` ('bot_crawler').\n\nWhich mitigation correctly addresses the root cause?",
+    "options": [
+      "Increase `spark.sql.shuffle.partitions` from 200 to 2000 — more partitions distribute the skewed key across more tasks",
+      "Use salting: append a random integer suffix to the skewed key on the large side and replicate the matching rows on the small side, then strip the suffix after the join",
+      "Enable speculative execution — Spark will automatically re-launch the slow task on a different executor where the key is less skewed",
+      "Switch from sort-merge join to broadcast join — this eliminates partitioning entirely and removes the skew problem"
+    ],
+    "correct_option": 1,
+    "explanation": "Skew is a data distribution problem: one key owns a disproportionate share of rows, so that partition's task is overwhelmed regardless of how many total partitions exist. Salting splits the skewed key into multiple synthetic sub-keys (e.g., 'bot_crawler_0', 'bot_crawler_1', …), distributing its rows across multiple partitions. The small side is replicated to match all salted variants, and the suffix is stripped post-join. Option 0 (more partitions) doesn't help — the bot_crawler rows all land in one partition by hash. Option 2 (speculative execution) reruns the slow task but doesn't fix the underlying data imbalance. Option 3 (broadcast join) is not viable here: the user profile table at 500 GB is far too large to broadcast.",
+    "hints": [
+      "More shuffle partitions don't fix skew — the hot key always hashes to one partition no matter how many partitions exist.",
+      "Salting artificially splits the heavy key into multiple synthetic keys, distributing its rows — then reassembles after the join."
+    ],
+    "concepts": ["DATA SKEW & SALTING", "SHUFFLE & PARTITIONING", "JOIN STRATEGIES & BROADCAST"]
+  },
+  {
+    "id": 432,
+    "order": 2,
+    "topic": "pyspark",
+    "type": "optimization",
+    "difficulty": "hard",
+    "title": "Watermark Trade-Offs in Structured Streaming",
+    "description": "A Structured Streaming job aggregates events by `event_time` using a 10-minute tumbling window. The team needs to decide on a watermark setting. They observe:\n- 95th percentile event latency: 8 minutes\n- 99th percentile event latency: 25 minutes\n- Max tolerable state size: moderate (must bound memory)\n\nWhich watermark setting best balances correctness and resource use?",
+    "options": [
+      "No watermark — Spark will automatically manage state and discard old data when memory pressure is detected",
+      "Watermark of 10 minutes — matches the window size, which is the standard pairing; any smaller watermark drops events that should be in the current window",
+      "Watermark of 15 minutes — captures 95%+ of late events while keeping state bounded and discarding data that is almost certainly too late to matter",
+      "Watermark of 30 minutes — captures all events including the 99th percentile, guaranteeing correctness at the cost of slightly larger state"
+    ],
+    "correct_option": 2,
+    "explanation": "A watermark tells Spark how late an event can arrive before its window is finalised and dropped from state. With no watermark (Option 0), state grows unboundedly — Spark never discards old windows. A 10-minute watermark (Option 1) would drop events that arrive 10–25 minutes late, missing the 95th and 99th percentile traffic. A 15-minute watermark captures 95%+ of events, bounds state to roughly 25 minutes of windows in memory, and accepts that the 1% tail (>25 minutes late) will be dropped — a reasonable engineering trade-off. A 30-minute watermark captures the 99th percentile but increases state by 50% for events that are highly unlikely to arrive. The right answer weighs business requirements (what late-event loss is acceptable) against operational cost (state size = memory).",
+    "hints": [
+      "A watermark controls when Spark finalises and drops old window state — without one, state grows forever.",
+      "Set the watermark high enough to capture the tail of your latency distribution, but not so high that state becomes operationally unmanageable."
+    ],
+    "concepts": ["STREAMING & WATERMARKS", "PERFORMANCE TUNING & RESOURCE MANAGEMENT"]
+  },
+  {
+    "id": 433,
+    "order": 3,
+    "topic": "pyspark",
+    "type": "scenario",
+    "difficulty": "hard",
+    "title": "Adaptive Query Execution: What AQE Actually Changes",
+    "description": "A team enables `spark.sql.adaptive.enabled=true` on their Spark 3 cluster. A junior engineer claims: \"AQE will automatically fix our skewed join, reduce our shuffle partition count, and convert any eligible sort-merge join to a broadcast join — all without any code changes.\"\n\nWhich statement best evaluates this claim?",
+    "options": [
+      "The claim is entirely correct — AQE handles all three optimisations automatically once enabled",
+      "The claim is partially correct: AQE can coalesce post-shuffle partitions and convert some sort-merge joins to broadcast joins at runtime, but skew join mitigation only applies when Spark detects a partition that exceeds the skew threshold — it does not address all forms of skew",
+      "The claim is wrong — AQE only optimises the query plan during compilation, not at runtime",
+      "The claim is wrong — AQE requires explicit hints (broadcast(), skewjoin()) in the code to activate each optimisation"
+    ],
+    "correct_option": 1,
+    "explanation": "AQE in Spark 3 does provide three key runtime optimisations: (1) dynamic partition coalescing — merging small post-shuffle partitions; (2) dynamic join strategy switching — converting a sort-merge join to broadcast if one side turns out small after a shuffle; (3) skew join handling — splitting oversized partitions into sub-tasks. However, skew mitigation triggers only when a partition exceeds `spark.sql.adaptive.skewJoin.skewedPartitionThresholdInBytes` and `...skewedPartitionFactor` thresholds. Extreme skew (e.g., a single user_id owning 40% of data) may still need manual salting if it doesn't hit the threshold correctly. The claim overstates AQE's skew handling as unconditional. Option 0 overstates certainty. Option 2 is wrong — AQE's defining feature is runtime plan adjustment. Option 3 is wrong — AQE requires no explicit hints.",
+    "hints": [
+      "AQE operates post-shuffle at runtime, not just at planning time — that's what makes it adaptive.",
+      "Skew join handling in AQE is threshold-based: a partition must exceed a size threshold AND a factor relative to the median partition before Spark splits it."
+    ],
+    "concepts": ["ADAPTIVE QUERY EXECUTION", "DATA SKEW & SALTING", "JOIN STRATEGIES & BROADCAST"]
+  }
+]

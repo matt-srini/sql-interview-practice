@@ -1,0 +1,196 @@
+[
+  {
+    "id": 611,
+    "order": 1,
+    "title": "Choosing Fact Table Type for an Event",
+    "difficulty": "easy",
+    "type": "conceptual",
+    "description": "An e-commerce company records each individual order as it is placed. Each order has exactly one row representing the transaction at a specific point in time. Which Kimball fact table type best models this?",
+    "options": [
+      "Periodic snapshot fact table — because orders accumulate over time and the team wants to see counts at regular intervals",
+      "Transaction fact table — each row records one business event (one order) at a specific moment in time; the most natural model for event-level data",
+      "Accumulating snapshot fact table — because an order passes through multiple status stages and all stages should be on one row",
+      "Factless fact table — because the primary key of an order is the order_id and no numeric measures are needed"
+    ],
+    "correct_option": 1,
+    "explanation": "A transaction fact table has one row per discrete business event. An individual order placed at a specific timestamp is the canonical example. Periodic snapshots accumulate measures at fixed intervals (e.g., inventory level at end of day) — not appropriate for individual events. Accumulating snapshots track a process with multiple lifecycle stages in a single row (e.g., order → shipped → delivered), useful when you want all milestones on one fact row. A factless fact table records the occurrence of events without measures — but orders typically include measures (revenue, quantity). Option 1 is the right foundation for event-level, single-timestamp data.",
+    "hints": [
+      "Ask: does each business event produce exactly one row at one point in time? That is the defining characteristic of a transaction fact table.",
+      "Accumulating snapshots are for multi-stage processes where all stages end up on the same row."
+    ],
+    "concepts": ["FACT TABLE TYPES & GRAIN"]
+  },
+  {
+    "id": 612,
+    "order": 2,
+    "title": "Defining Grain Before Designing a Fact Table",
+    "difficulty": "easy",
+    "type": "conceptual",
+    "description": "A BI team wants to analyse order line-items — each order can contain multiple products. A junior analyst proposes building a fact table with `order_id` as the primary key, aggregating all line-items per order into a single row. What is the problem with this approach?",
+    "options": [
+      "There is no problem — aggregating to order level reduces storage and is fine for BI reporting",
+      "Aggregating line-items to order level loses the ability to analyse metrics at the product level (e.g., revenue per product, units sold per SKU). The grain should be one row per order line-item to preserve the maximum analytical flexibility",
+      "The grain should be one row per customer to support customer-level reporting, not one row per order",
+      "Using order_id as the primary key is technically incorrect — fact tables cannot have natural keys as primary keys"
+    ],
+    "correct_option": 1,
+    "explanation": "Grain defines the level of detail each row represents. Aggregating to order level permanently discards line-item detail: you can never reconstruct which products were in an order, how many units of each were sold, or what each product's margin was. The Kimball principle is to declare grain at the most granular level that answers all anticipated questions, and then aggregate upward as needed. You can always aggregate a line-item grain to order level, but you cannot disaggregate an order-level fact to the line-item level. Option 0 ignores the analytical cost of pre-aggregation. Option 2 introduces a grain mismatch (customer level is too coarse for a fact that naturally lives at order level). Option 3 is wrong — natural keys are commonly used in fact tables alongside surrogate keys.",
+    "hints": [
+      "Grain is the granularity question: what does one row represent? Choose the finest grain that answers the team's questions.",
+      "You can always roll up from fine grain to coarse grain — you cannot drill down from coarse grain."
+    ],
+    "concepts": ["GRAIN & DIMENSIONAL DESIGN", "FACT TABLE TYPES & GRAIN"]
+  },
+  {
+    "id": 613,
+    "order": 3,
+    "title": "Surrogate vs Natural Key Trade-Offs",
+    "difficulty": "easy",
+    "type": "conceptual",
+    "description": "A data warehouse team debates whether to use natural keys (source system IDs like `product_sku`) or surrogate keys (warehouse-generated integers) as the primary key for a product dimension. Which statement best captures the case for surrogate keys?",
+    "options": [
+      "Surrogate keys are unnecessary overhead — natural keys are stable and already unique, so they serve perfectly as dimension primary keys",
+      "Surrogate keys decouple the warehouse from source system changes: if a product_sku is reassigned or reformatted in the source, the surrogate key is unaffected; surrogate keys also enable SCD Type 2 by giving each historical version its own key",
+      "Surrogate keys improve query performance because integer joins are slower than string joins on modern warehouses",
+      "Surrogate keys are only needed for slowly changing dimensions — for stable reference tables, natural keys are always preferred"
+    ],
+    "correct_option": 1,
+    "explanation": "Surrogate keys provide stability and SCD support. If the source system reformats or reassigns a natural key (e.g., SKU format changes, system migration), the surrogate key in the warehouse is unaffected — dimension members maintain their identity and historical joins remain valid. For SCD Type 2, surrogate keys are essential: each historical version of a dimension row (e.g., product before and after a price change) gets its own surrogate key, while the natural key is preserved as a business key attribute. Option 0 underestimates how often 'stable' natural keys change in practice. Option 2 has the join performance direction backwards — integer joins are typically faster than string joins. Option 3 is too narrow — surrogate keys are beneficial even for stable reference dimensions (isolation from source changes).",
+    "hints": [
+      "Ask: what happens to your dimension if the source system changes its ID scheme? A surrogate key insulates you from that change.",
+      "SCD Type 2 requires multiple rows for the same business entity — surrogate keys give each version a unique identity."
+    ],
+    "concepts": ["SURROGATE KEYS & NATURAL KEYS", "SLOWLY CHANGING DIMENSIONS"]
+  },
+  {
+    "id": 621,
+    "order": 1,
+    "title": "SCD Type 2 Under a Business Rule Change",
+    "difficulty": "medium",
+    "type": "scenario",
+    "scenario_context": "A customer dimension uses SCD Type 2 to track changes. The `customer_segment` attribute changes when customers cross spend thresholds. A customer was in segment 'Bronze' from Jan 1 to Mar 31, moved to 'Silver' on Apr 1, and is currently in 'Silver'. On May 1, the business retroactively changes the segmentation rules: all customers who spent ≥ $5,000 in Q1 should have been classified 'Silver' during Q1 (the Bronze customer qualified).",
+    "description": "How should the SCD Type 2 dimension handle this retroactive rule change?",
+    "options": [
+      "Update the existing 'Bronze' row in-place — Type 2 only tracks natural changes, not retroactive corrections",
+      "Insert a new Type 2 row covering Jan 1–Mar 31 with segment = 'Silver', close the existing Bronze row (or delete it), and re-etl any fact rows that joined to the Bronze surrogate key during Q1 to join to the Silver surrogate key instead — retroactive corrections are expensive because fact-to-dimension joins must be repaired",
+      "SCD Type 2 cannot handle retroactive corrections — switch to SCD Type 3 which stores both old and new values on a single row",
+      "Add a new effective_end_date to the Silver row and leave the Bronze row unchanged — analysts can filter by the correction date"
+    ],
+    "correct_option": 1,
+    "explanation": "SCD Type 2 can represent any historical state as long as you correctly manage the surrogate key. A retroactive correction requires: (1) updating or replacing the historical row's segment; (2) critically, updating any fact rows that referenced the old surrogate key during Q1 to point to the corrected surrogate key. This is expensive because it involves a fact table update — which is why retroactive business rule changes are one of the hardest problems in dimensional modeling and teams often accept 'as-was' history instead. Option 0 (in-place update) would silently rewrite history with no audit trail. Option 2 is wrong — SCD Type 3 is not a substitute for Type 2; it only tracks the previous value in a separate column on the same row. Option 3 ignores the need to repair fact rows.",
+    "hints": [
+      "Type 2 tracks history via new rows + surrogate keys. A retroactive change requires both updating the dimension row AND repairing any fact rows that reference the old surrogate key.",
+      "Ask: which surrogate key did the historical fact rows join to? That determines the cost of a retroactive correction."
+    ],
+    "concepts": ["SLOWLY CHANGING DIMENSIONS", "GRAIN & DIMENSIONAL DESIGN"]
+  },
+  {
+    "id": 622,
+    "order": 2,
+    "title": "Star vs Snowflake: Reporting Query Trade-Off",
+    "difficulty": "medium",
+    "type": "conceptual",
+    "description": "A BI team designs a sales data mart. They debate between a star schema (denormalized, one product dimension with category and subcategory embedded) and a snowflake schema (normalized, separate category and subcategory dimension tables joined to product). Which trade-off best guides the decision for an analyst-facing reporting layer?",
+    "options": [
+      "Snowflake is always better — normalisation reduces storage costs and is the industry standard for data warehouses",
+      "Star schema is generally preferred for analyst-facing reporting: fewer joins mean simpler queries and better performance; storage cost of denormalisation is negligible at dimension scale, and the slight redundancy is accepted for query simplicity",
+      "Star schema cannot represent hierarchical data like category → subcategory → product — use snowflake whenever hierarchies exist",
+      "Both are equivalent — modern columnar warehouses optimise join paths automatically so the schema structure has no impact on query performance"
+    ],
+    "correct_option": 1,
+    "explanation": "For analyst-facing reporting layers, star schema's primary advantage is query simplicity: analysts join one fact table to one dimension, not through multiple normalised hops. The storage overhead of embedding category/subcategory into the product dimension is minimal (dimension tables are small relative to facts). Snowflake schemas are appropriate when dimension tables are large enough that normalisation saves meaningful space, or when the same dimension is shared across many marts and consistency matters more than query simplicity. Option 0 overstates snowflake's storage advantage for typical dimension sizes. Option 2 is wrong — a star schema can embed hierarchies as columns in the same dimension row. Option 3 is partially true for join execution but ignores the analyst ergonomics of query writing.",
+    "hints": [
+      "Dimension tables are almost always small relative to fact tables — the storage cost of denormalisation is usually negligible.",
+      "For reporting, fewer joins = simpler SQL = faster analyst iteration. Star schema prioritises query ergonomics."
+    ],
+    "concepts": ["STAR VS SNOWFLAKE SCHEMA", "GRAIN & DIMENSIONAL DESIGN"]
+  },
+  {
+    "id": 623,
+    "order": 3,
+    "title": "Resolving a Many-to-Many Relationship with a Bridge Table",
+    "difficulty": "medium",
+    "type": "scenario",
+    "scenario_context": "A marketing data mart needs to capture that customers can belong to multiple loyalty tiers simultaneously (a customer can hold 'Gold' and 'VIP Partner' status at the same time). The initial design placed a single `loyalty_tier` column in the customer dimension.",
+    "description": "How should the schema be redesigned to correctly represent the many-to-many relationship?",
+    "options": [
+      "Add additional columns: loyalty_tier_1, loyalty_tier_2, loyalty_tier_3 — this handles up to three tiers per customer without schema changes",
+      "Introduce a bridge table: customer_loyalty_bridge with columns (customer_surr_key, loyalty_tier_surr_key, weight_factor). The fact table joins to customer; to get tier information, analysts join customer to the bridge then to the loyalty_tier dimension. Set weight_factor = 1/n (where n = number of tiers) to avoid double-counting in additive metrics",
+      "Flatten multiple tiers into a comma-separated string in the loyalty_tier column and parse it at query time",
+      "Create a separate fact table for loyalty tier assignments — many-to-many relationships cannot be modelled in a dimension and must be treated as facts"
+    ],
+    "correct_option": 1,
+    "explanation": "The bridge table pattern resolves many-to-many dimension relationships without denormalising or duplicating fact rows. The bridge sits between the customer dimension and loyalty tier dimension, with one row per (customer, tier) pair. The weight_factor (1/n) is crucial for additive measures: without it, a customer counted in both Gold and VIP Partner segments would be double-counted in total customer counts. Analysts must include the weight in any aggregation across tier. Option 0 (additional columns) creates a rigid schema that breaks when a fourth tier is added and cannot be queried uniformly. Option 2 (comma-separated) violates first normal form and makes filtering and joining impossible with standard SQL. Option 3 misidentifies the correct modelling approach — loyalty tier assignment is a dimension attribute relationship, not a fact.",
+    "hints": [
+      "A bridge table models many-to-many relationships between a fact and a dimension: one row per (entity, dimension member) pair.",
+      "Include a weight_factor (1/n) in the bridge to prevent double-counting when aggregating additive metrics across all tiers."
+    ],
+    "concepts": ["MANY-TO-MANY & BRIDGE TABLES", "GRAIN & DIMENSIONAL DESIGN"]
+  },
+  {
+    "id": 631,
+    "order": 1,
+    "title": "Grain Alignment Across Two Fact Tables",
+    "difficulty": "hard",
+    "type": "scenario",
+    "scenario_context": "A data mart has two fact tables: `fct_orders` (grain: one row per order line-item) and `fct_support_tickets` (grain: one row per support ticket). Analysts want a report showing, per customer, total revenue and total open ticket count for the last 30 days. A junior analyst joins the two fact tables directly on customer_id.",
+    "description": "What is the fundamental problem with directly joining two fact tables on a dimension key, and how should it be resolved?",
+    "options": [
+      "There is no problem — joining fact tables on dimension keys is a standard Kimball pattern called a fact-to-fact join",
+      "Directly joining two fact tables produces a Cartesian product at the row level: a customer with 5 orders and 3 tickets produces 15 combined rows, inflating every metric. The correct approach is to aggregate each fact to the shared grain (customer + date range) independently, then join the two aggregated results",
+      "The join is only problematic if the two facts have different date granularities — use a FULL OUTER JOIN to avoid row loss",
+      "Joining across fact tables requires a conformed dimension — create a new customer_activity dimension that combines orders and tickets before joining"
+    ],
+    "correct_option": 1,
+    "explanation": "Fact-to-fact joins produce a Cartesian product at the unaggregated level: every order row joins to every ticket row for the same customer, multiplying both counts. The solution is to aggregate each fact to the shared query grain (customer over the 30-day window) independently, then join the two single-row-per-customer aggregates. This is the standard approach: `WITH orders_agg AS (SELECT customer_id, SUM(revenue) ...), tickets_agg AS (SELECT customer_id, COUNT(*) ...) SELECT ... FROM dim_customers LEFT JOIN orders_agg USING (customer_id) LEFT JOIN tickets_agg USING (customer_id)`. Option 0 misstates Kimball guidance — Kimball explicitly warns against fact-to-fact joins. Option 2 is wrong — the grain mismatch problem is not solved by join type. Option 3 introduces unnecessary schema complexity.",
+    "hints": [
+      "A customer with 5 orders and 3 open tickets — how many rows does a direct join produce? Count them; that's the Cartesian product problem.",
+      "The fix is always: aggregate each fact to the shared grain first, then join the pre-aggregated results."
+    ],
+    "concepts": ["GRAIN & DIMENSIONAL DESIGN", "FACT TABLE TYPES & GRAIN"]
+  },
+  {
+    "id": 632,
+    "order": 2,
+    "title": "Conformed Dimensions Across Business Units",
+    "difficulty": "hard",
+    "type": "scenario",
+    "scenario_context": "Two business units — Retail and Wholesale — each maintain their own data marts with independent product dimensions. The Retail mart defines 'category' at the department level (Apparel, Electronics); the Wholesale mart defines 'category' at the brand level (Nike, Samsung). The Data Governance team wants to create a cross-BU revenue report comparing performance by product.",
+    "description": "What is the core governance challenge, and what is the correct resolution approach?",
+    "options": [
+      "Add a product_id foreign key to both marts — matching on a shared product_id resolves the category definition conflict automatically",
+      "The category attributes are incongruent across marts — they describe different things. Resolution requires a conformed product dimension: a shared dimension table agreed upon by both BUs that provides a common attribute hierarchy (e.g., department → brand → product). Both fact tables reference this shared dimension via a surrogate key, enabling drill-across queries without conflating the two category definitions",
+      "Use a UNION ALL of both marts' product dimensions and let analysts filter by data_source column to separate Retail vs Wholesale categories",
+      "This is a reporting tool problem — configure the BI tool to map Retail categories to Wholesale categories at the visualisation layer"
+    ],
+    "correct_option": 1,
+    "explanation": "Conformed dimensions are the mechanism for enabling drill-across queries (queries that join across multiple fact tables or business unit marts). The root problem here is semantic incongruence: 'category' means department in one mart and brand in another. A UNION ALL or BI-layer mapping doesn't resolve the underlying model — it creates confusion and maintenance debt. The correct approach is a shared product dimension with a unified attribute hierarchy agreed upon by governance. Both marts' fact tables reference this conformed dimension, so a cross-BU query drills across correctly. Option 0 is partly right (a shared product_id is a prerequisite) but doesn't solve the attribute hierarchy conflict. Option 2 makes the incongruence visible but doesn't fix it. Option 3 pushes a modeling problem to the presentation layer.",
+    "hints": [
+      "Conformed dimensions share the same attributes and definitions across multiple data marts — that's what allows cross-mart 'drill across' queries to make sense.",
+      "When two marts use the same word ('category') to mean different things, you have a semantic incongruence that must be resolved in the model, not in reports."
+    ],
+    "concepts": ["CONFORMED DIMENSIONS & DATA GOVERNANCE", "STAR VS SNOWFLAKE SCHEMA"]
+  },
+  {
+    "id": 633,
+    "order": 3,
+    "title": "Bi-Temporal Modeling for Regulatory Audit",
+    "difficulty": "hard",
+    "type": "scenario",
+    "scenario_context": "A financial services company must store loan records in a way that supports two questions: (1) 'What was the loan status as of December 31, 2023, according to what the system believed at that time?' (system time query) and (2) 'What was the actual loan status on December 31, 2023, corrected for any retroactive amendments made since?' (valid time query). Standard SCD Type 2 only tracks one time dimension.",
+    "description": "Which modeling approach satisfies both requirements?",
+    "options": [
+      "Use SCD Type 2 with an additional 'correction_date' column — filter on correction_date to answer retroactive questions",
+      "Bi-temporal modeling: store two time dimensions on every row — valid_time (when the fact was true in the real world) and transaction_time (when the record was written to the system). This allows point-in-time queries on either axis independently, satisfying both audit requirements",
+      "Store corrections as new fact table rows with negative amounts — this is the standard append-only correction pattern for financial data",
+      "SCD Type 4 history tables solve this: the main dimension holds current data and the history table holds all previous versions with transaction timestamps"
+    ],
+    "correct_option": 1,
+    "explanation": "Bi-temporal modeling addresses the two-timeline problem: valid_time (real-world truth) and transaction_time (when the system learned of it). A standard SCD Type 2 only tracks one timeline — typically system write time. To answer 'what did the system believe on Dec 31, 2023' you query on transaction_time. To answer 'what was actually true on Dec 31, 2023 per all subsequent corrections', you query on valid_time. The two axes are independent, so a correction received in February 2024 for December 2023 will have transaction_time = Feb 2024 and valid_time = Dec 2023 — both queryable correctly. Option 0 adds one column but doesn't provide a full two-axis query model. Option 2 (correction amounts) is an append-only pattern used for ledgers but doesn't answer point-in-time belief queries. Option 3 (SCD Type 4) addresses current vs history but still only one time dimension.",
+    "hints": [
+      "Two questions, two different time axes: 'what the system recorded when' (transaction time) vs 'when it was actually true in the world' (valid time).",
+      "Bi-temporal tables store both axes on every row, enabling independent point-in-time queries on either timeline."
+    ],
+    "concepts": ["BI-TEMPORAL MODELING", "SLOWLY CHANGING DIMENSIONS", "GRAIN & DIMENSIONAL DESIGN"]
+  }
+]
