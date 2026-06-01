@@ -103,7 +103,7 @@
     "title": "Making an Insert Idempotent",
     "difficulty": "easy",
     "type": "debug",
-    "description": "A daily job inserts yesterday's sales records into a fact table. After a server crash, the job restarted and inserted the same records again, creating duplicates. Which change makes this job idempotent?",
+    "description": "A daily job loads yesterday's sales records using `INSERT INTO sales_fact SELECT * FROM staging WHERE event_date = CURRENT_DATE - 1`. The job retries automatically on failure. After a server crash mid-run, the retry completed — but row counts in the fact table for that date are exactly double what the staging table contains. Which change is the minimum fix?",
     "options": [
       "Replace the INSERT with an UPSERT (INSERT ... ON CONFLICT UPDATE) keyed on a natural unique identifier",
       "Add a retry counter column so duplicate rows can be identified and removed later",
@@ -111,7 +111,7 @@
       "Wrap the insert in a transaction so partial inserts are automatically rolled back"
     ],
     "correct_option": 0,
-    "explanation": "An UPSERT (also called MERGE or INSERT ON CONFLICT) ensures that re-inserting a row with an existing key updates rather than duplicates it, making the outcome identical whether the job ran once or ten times. Option B defers the problem — it adds cleanup work without preventing duplicates. Option C does not prevent restarts; a crash can happen at any time. Option D prevents partial writes but does not prevent full duplicate inserts on retry.",
+    "explanation": "The bare INSERT has no conflict guard: on retry, every staging row is inserted again regardless of whether it already exists in the fact table, producing the doubled row count. Replacing it with an UPSERT (INSERT ... ON CONFLICT UPDATE) keyed on a natural unique identifier ensures that re-inserting a row with an existing key updates rather than creates a new row, producing an identical outcome whether the job ran once or ten times. Option B defers the problem — it adds cleanup work without preventing the re-insertion. Option C does not prevent restarts; a crash can happen at any time. Option D prevents partial writes but does not prevent full duplicate inserts on retry.",
     "hints": [
       "Think about what database operation lets you insert a row that might already exist without creating a duplicate.",
       "An operation that 'insert or update' on a unique key guarantees the same final state regardless of how many times it runs."
@@ -349,11 +349,11 @@
     "options": [
       "File system metadata overhead dominates — listing and opening millions of files is slower than reading fewer large files",
       "Too many partitions cause the query planner to time out before it can generate a query plan",
-      "Compression ratios drop to zero because small files cannot be compressed effectively",
+      "Compression efficiency degrades because small files cannot fill the column-store row groups that Parquet relies on, inflating total storage footprint",
       "Partition pruning stops working entirely when a table has more than 10,000 partitions"
     ],
     "correct_option": 0,
-    "explanation": "The small-file problem is real and severe: every file requires a metadata operation (open, seek, close). With millions of 2 KB files, the overhead of accessing file metadata far exceeds the time spent actually reading data. Query engines are optimized for reading large sequential files. Option B is an exaggeration — planners handle large partition counts with appropriate metadata caching. Option C is false — compression works at the file level regardless of count. Option D is incorrect — partition pruning still functions; it's the I/O overhead that degrades performance.",
+    "explanation": "The small-file problem is real and severe: every file requires a metadata operation (open, seek, close). With millions of 2 KB files, the overhead of accessing file metadata far exceeds the time spent actually reading data. Query engines are optimized for reading large sequential files. Option B is an exaggeration — planners handle large partition counts with appropriate metadata caching. Option C conflates a real storage-efficiency concern (small files do compress less effectively, especially in columnar formats like Parquet where undersized row groups reduce compression gains) with the primary performance bottleneck — the true root cause is file-handle metadata overhead at read time, not bytes stored on disk. Option D is incorrect — partition pruning still functions; it's the I/O overhead that degrades performance.",
     "hints": [
       "Consider what a distributed query engine must do before it can read any actual data from a file.",
       "The overhead of listing, opening, and closing files adds up when there are millions of them, even if each file is tiny."
