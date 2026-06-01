@@ -19,7 +19,7 @@
       "PySpark separates transformations (build a plan) from actions (execute it). Only actions trigger jobs.",
       "Count the number of actions in the code — that's how many Spark jobs will run."
     ],
-    "concepts": ["LAZY EVALUATION & EXECUTION MODEL", "TRANSFORMATIONS VS ACTIONS"]
+    "concepts": ["EXECUTION MODEL REASONING"]
   },
   {
     "id": 412,
@@ -41,7 +41,7 @@
       "Ask: can each output partition be produced using only one input partition, or does it need data from multiple partitions?",
       "Shuffles happen when rows need to be redistributed across partitions — that is the defining trait of a wide transformation."
     ],
-    "concepts": ["NARROW VS WIDE TRANSFORMATIONS", "SHUFFLE & PARTITIONING"]
+    "concepts": ["NARROW VS WIDE TRANSFORMATIONS", "SHUFFLE REASONING"]
   },
   {
     "id": 413,
@@ -63,7 +63,7 @@
       "The first argument to `withColumn` is always the output column name — any alias inside the expression is overridden.",
       "When the first argument matches an existing column name, that column is replaced."
     ],
-    "concepts": ["SCHEMA & COLUMN OPERATIONS", "TRANSFORMATIONS VS ACTIONS"]
+    "concepts": ["SCHEMA & TYPE HANDLING", "EXECUTION MODEL REASONING"]
   },
   {
     "id": 421,
@@ -85,7 +85,7 @@
       "coalesce merges partitions without a global shuffle; repartition shuffles all data to achieve perfect balance. Which fits a simple 'reduce count' scenario?",
       "For moving from 400 to 20 partitions before a write, ask whether you need perfect balance or just fewer files."
     ],
-    "concepts": ["SHUFFLE & PARTITIONING", "PERFORMANCE TUNING & RESOURCE MANAGEMENT"]
+    "concepts": ["SHUFFLE REASONING", "PERFORMANCE TUNING & TRADE-OFFS"]
   },
   {
     "id": 422,
@@ -107,7 +107,7 @@
       "Broadcast joins trade a one-time cost of sending the small table everywhere for eliminating the shuffle on the large table.",
       "The key question: is the small table small enough to fit comfortably in executor memory?"
     ],
-    "concepts": ["JOIN STRATEGIES & BROADCAST", "SHUFFLE & PARTITIONING"]
+    "concepts": ["JOIN STRATEGY SELECTION", "SHUFFLE REASONING"]
   },
   {
     "id": 423,
@@ -129,7 +129,7 @@
       "Aggregation functions inside `withColumn` need a window specification — Spark can't determine the aggregation boundary without one.",
       "Add `.over(Window.partitionBy(...).orderBy(...))` to define the window frame, or move the aggregation to `.agg()` with a `groupBy`."
     ],
-    "concepts": ["WINDOW FUNCTIONS & FRAMES", "SCHEMA & COLUMN OPERATIONS"]
+    "concepts": ["WINDOW FUNCTIONS & FRAMES", "SCHEMA & TYPE HANDLING"]
   },
   {
     "id": 431,
@@ -151,7 +151,7 @@
       "More shuffle partitions don't fix skew — the hot key always hashes to one partition no matter how many partitions exist.",
       "Salting artificially splits the heavy key into multiple synthetic keys, distributing its rows — then reassembles after the join."
     ],
-    "concepts": ["DATA SKEW & SALTING", "SHUFFLE & PARTITIONING", "JOIN STRATEGIES & BROADCAST"]
+    "concepts": ["DATA SKEW & MITIGATION", "SHUFFLE REASONING", "JOIN STRATEGY SELECTION"]
   },
   {
     "id": 432,
@@ -173,7 +173,7 @@
       "A watermark controls when Spark finalises and drops old window state — without one, state grows forever.",
       "Set the watermark high enough to capture the tail of your latency distribution, but not so high that state becomes operationally unmanageable."
     ],
-    "concepts": ["STREAMING & WATERMARKS", "PERFORMANCE TUNING & RESOURCE MANAGEMENT"]
+    "concepts": ["STRUCTURED STREAMING", "PERFORMANCE TUNING & TRADE-OFFS"]
   },
   {
     "id": 433,
@@ -195,6 +195,6 @@
       "AQE operates post-shuffle at runtime, not just at planning time — that's what makes it adaptive.",
       "Skew join handling in AQE is threshold-based: a partition must exceed a size threshold AND a factor relative to the median partition before Spark splits it."
     ],
-    "concepts": ["ADAPTIVE QUERY EXECUTION", "DATA SKEW & SALTING", "JOIN STRATEGIES & BROADCAST"]
+    "concepts": ["ADAPTIVE QUERY EXECUTION", "DATA SKEW & MITIGATION", "JOIN STRATEGY SELECTION"]
   }
 ]
