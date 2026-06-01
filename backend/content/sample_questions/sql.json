@@ -44,7 +44,7 @@
     "order": 3,
     "topic": "sql",
     "difficulty": "easy",
-    "title": "Sample Easy: Total Completed Order Amount",
+    "title": "Total Completed Order Amount",
     "description": "Return the sum of `net_amount` for completed orders as total_completed_amount.",
     "schema": {
       "orders": ["order_id", "user_id", "order_date", "status", "net_amount"]
@@ -64,7 +64,7 @@
     "order": 1,
     "topic": "sql",
     "difficulty": "medium",
-    "title": "Sample Medium: Users With No Orders",
+    "title": "Users With No Orders",
     "description": "Return user_id and name for users who have never placed an order.",
     "schema": {
       "users": ["user_id", "name", "signup_date", "country"],
@@ -85,7 +85,7 @@
     "order": 2,
     "topic": "sql",
     "difficulty": "medium",
-    "title": "Sample Medium: Revenue By Status",
+    "title": "Revenue By Status",
     "description": "Return each order status and the total `net_amount` for that status.",
     "schema": {
       "orders": ["order_id", "user_id", "order_date", "status", "net_amount"]
@@ -105,7 +105,7 @@
     "order": 3,
     "topic": "sql",
     "difficulty": "medium",
-    "title": "Sample Medium: Monthly Revenue",
+    "title": "Monthly Revenue",
     "description": "Return month and revenue, grouped by month from orders.",
     "schema": {
       "orders": ["order_id", "user_id", "order_date", "status", "net_amount"]
