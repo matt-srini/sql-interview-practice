@@ -140,6 +140,18 @@ Required:
 - 10 chains (30 members) cover: SRM+CDN bias, sequential testing Q4 pressure, Thompson Sampling bandit, Bayesian stop-at-95%, switchback carryover, national policy quasi-exp, 5% long-run holdout, HTE desktop+mobile, email referral network effects, MDE/CUPED sample size.
 - Q83029 resurrected from ML Fundamentals (git `60005e9`) at ID 93038 with tags CAUSAL INFERENCE + SEGMENTATION ANALYSIS (uplift modeling, 4-segment HTE).
 
+## Benchmark shape per difficulty
+
+The Experimentation benchmark blueprint varies by difficulty to match the actual on-disk bank composition. Bank shape governs blueprint (see [`docs/specs/mock-benchmark-spec.md` § Blueprint feasibility](../specs/mock-benchmark-spec.md)). Canonical runtime source: `backend/routers/mock.py` `_benchmark_type_targets` + `difficulty_overrides`. Canonical doc render: [`docs/features/mock.md` § Benchmark composition](../features/mock.md).
+
+| Difficulty | Blueprint (6 slots) | Notes |
+|---|---|---|
+| Easy | `scenario × 2 + conceptual × 2 + predict_output × 1 + debug × 1` | Bank after Phase 2 + type reclassification: scenario 6 / conceptual 22 / predict_output 1 / debug 1. Standard target — no override needed. |
+| Medium | `scenario × 4 + predict_output × 1 + debug × 1` (override) | Bank: scenario 61 / predict_output 9 / debug 7 / conceptual 1. Standard target asked for 2 conceptuals — bank has 1. Override drops conceptuals entirely; heavy scenario skew is intentional (see line 135 above: "operational A/B reasoning grades cleanest as scenario MCQ"). |
+| Hard | `scenario × 3 + debug × 2 + predict_output × 1` (override) | Bank: scenario 61 / debug 17 / predict_output 5 / conceptual 0. Standard target asked for 2 conceptuals — bank has 0. Override uses the bank's three strongest partitions; preserves diagnostic variety. |
+
+**Why medium and hard deviate:** The scenario-heavy bank shape is a deliberate curriculum decision, not an authoring gap. Do not author new conceptuals at medium or hard to satisfy the standard blueprint — that would contradict the intentional skew documented above.
+
 ## Verification before commit
 
 ```bash

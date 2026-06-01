@@ -359,6 +359,10 @@ def _benchmark_type_targets(track: str, difficulty: str, num_questions: int) -> 
     # § Benchmark composition for the canonical type-target contract.
     difficulty_overrides: dict[tuple[str, str], list[str]] = {
         ("data-modeling", "easy"): ["scenario", "conceptual", "conceptual", "conceptual", "conceptual"],
+        # Experimentation medium/hard: intentional scenario skew documented in docs/tracks/experimentation.md.
+        # Standard target asks for 2 conceptuals; medium bank has 1 and hard has 0.
+        ("experimentation", "medium"): ["scenario", "predict_output", "debug", "scenario", "scenario", "scenario"],
+        ("experimentation", "hard"): ["scenario", "debug", "predict_output", "scenario", "debug", "scenario"],
     }
     override = difficulty_overrides.get((track, difficulty))
     if override is not None:
