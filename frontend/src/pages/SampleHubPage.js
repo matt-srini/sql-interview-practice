@@ -86,12 +86,12 @@ export default function SampleHubPage() {
                         key={diff}
                         to={`/sample/${slug}/${diff}`}
                         className={`sample-hub-diff-btn sample-hub-diff-btn--${diff}${isDone ? ' is-done' : ''}`}
-                        aria-label={`Try ${diff} ${meta.label} sample${user ? ` — ${tried} of ${total} tried` : ''}`}
+                        aria-label={`Try ${diff} ${meta.label} sample${user ? ` — ${tried} of ${total} attempted` : ''}`}
                       >
                         <span className="sample-hub-diff-label">{diff.charAt(0).toUpperCase() + diff.slice(1)}</span>
                         {user && cell ? (
                           <span className="sample-hub-diff-meta">
-                            {isDone ? '✓ all tried' : `${tried}/${total} tried`}
+                            {isDone ? '✓ all attempted' : tried > 0 ? `${tried}/${total} attempted` : 'Start →'}
                           </span>
                         ) : (
                           <span className="sample-hub-diff-meta sample-hub-diff-meta--ghost">

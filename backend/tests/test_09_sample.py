@@ -24,32 +24,44 @@ def test_tc110_anonymous_user_can_access_sample_questions():
     assert "title" in body
 
 
-def test_tc111_second_call_returns_different_question():
-    """TC-111: Two GET /api/sample/sql/easy calls return different questions."""
+def test_tc111_repeated_get_returns_same_question_resume_model():
+    """TC-111 (resume model): Two GET /api/sample/sql/easy calls return the
+    SAME question — GET is read-only under the resume model. Marking happens
+    only on submit or explicit skip."""
     with TestClient(app) as client:
         r1 = client.get("/api/sample/sql/easy")
         r2 = client.get("/api/sample/sql/easy")
     assert r1.status_code == 200
     assert r2.status_code == 200
-    assert r1.json()["id"] != r2.json()["id"]
+    # Both calls should return Q1 (the same question) — viewing does not advance.
+    assert r1.json()["id"] == r2.json()["id"]
+    # Counters: position=1, attempted=0 — nothing has been committed yet.
+    assert r1.json()["sample"]["position"] == 1
+    assert r1.json()["sample"]["attempted"] == 0
 
 
-def test_tc112_after_all_3_samples_seen_returns_409():
-    """TC-112: After 3 easy SQL samples seen, 4th call → 409."""
+def test_tc112_after_3_submits_returns_409():
+    """TC-112 (resume model): After 3 *submits* (not just views), 4th GET → 409.
+    Pure GETs no longer exhaust the pool — only commitment (submit) does."""
     with TestClient(app) as client:
         for _ in range(3):
             r = client.get("/api/sample/sql/easy")
             assert r.status_code == 200
+            qid = r.json()["id"]
+            # Submit something (correctness doesn't matter for the seen state)
+            client.post("/api/sample/sql/submit", json={"question_id": qid, "query": "SELECT 1"})
         r4 = client.get("/api/sample/sql/easy")
     assert r4.status_code == 409
 
 
 def test_tc113_reset_clears_seen_state():
-    """TC-113: Exhaust easy SQL samples; POST /reset; GET works again."""
+    """TC-113: Exhaust easy SQL samples via submits; POST /reset; GET works again."""
     with TestClient(app) as client:
-        # Exhaust 3 samples
+        # Exhaust 3 samples by submitting each
         for _ in range(3):
-            client.get("/api/sample/sql/easy")
+            r = client.get("/api/sample/sql/easy")
+            qid = r.json()["id"]
+            client.post("/api/sample/sql/submit", json={"question_id": qid, "query": "SELECT 1"})
         # Confirm exhausted
         assert client.get("/api/sample/sql/easy").status_code == 409
         # Reset
@@ -109,11 +121,13 @@ def test_tc115_sample_submit_does_not_record_challenge_progress():
 
 
 def test_tc116_sql_seen_does_not_affect_python_pool():
-    """TC-116: Exhausting SQL easy samples doesn't affect Python easy pool."""
+    """TC-116: Exhausting SQL easy samples (via submits) doesn't affect Python easy pool."""
     with TestClient(app) as client:
-        # Exhaust SQL easy
+        # Exhaust SQL easy via submits (not just views)
         for _ in range(3):
-            client.get("/api/sample/sql/easy")
+            r = client.get("/api/sample/sql/easy")
+            qid = r.json()["id"]
+            client.post("/api/sample/sql/submit", json={"question_id": qid, "query": "SELECT 1"})
         assert client.get("/api/sample/sql/easy").status_code == 409
         # Python easy still available
         r_python = client.get("/api/sample/python/easy")
@@ -137,6 +151,53 @@ def test_tc117_all_4_sample_tracks_accessible():
     assert "id" in r_python.json()
     assert "id" in r_pandas.json()
     assert "id" in r_pyspark.json()
+
+
+def test_tc121_submit_marks_question_as_attempted():
+    """TC-121 (resume model): Submitting an answer advances the user to the
+    next question on the subsequent GET — submit is the commitment event that
+    marks the question as attempted."""
+    with TestClient(app) as client:
+        r1 = client.get("/api/sample/sql/easy")
+        qid1 = r1.json()["id"]
+        # Submit (correctness doesn't matter; marking happens either way)
+        sub = client.post("/api/sample/sql/submit", json={"question_id": qid1, "query": "SELECT 1"})
+        assert sub.status_code == 200
+        # Next GET returns Q2
+        r2 = client.get("/api/sample/sql/easy")
+    assert r2.status_code == 200
+    assert r2.json()["id"] != qid1
+    assert r2.json()["sample"]["position"] == 2
+    assert r2.json()["sample"]["attempted"] == 1
+
+
+def test_tc122_skip_endpoint_marks_seen_and_returns_next():
+    """TC-122 (resume model): POST /skip marks the supplied question as
+    attempted and returns the next unattempted question in the pool."""
+    with TestClient(app) as client:
+        r1 = client.get("/api/sample/sql/easy")
+        qid1 = r1.json()["id"]
+        # Skip Q1
+        skip = client.post(
+            "/api/sample/sql/easy/skip",
+            json={"question_id": qid1},
+        )
+        assert skip.status_code == 200
+        # Response is shaped like a GET — has the next question
+        assert skip.json()["id"] != qid1
+        assert skip.json()["sample"]["position"] == 2
+        assert skip.json()["sample"]["attempted"] == 1
+        # Subsequent plain GET also returns Q2 (skip persisted, view did not advance)
+        r2 = client.get("/api/sample/sql/easy")
+    assert r2.status_code == 200
+    assert r2.json()["id"] == skip.json()["id"]
+
+
+def test_tc123_skip_requires_question_id():
+    """TC-123: POST /skip without a question_id payload → 422."""
+    with TestClient(app) as client:
+        r = client.post("/api/sample/sql/easy/skip", json={})
+    assert r.status_code == 422
 
 
 def test_tc119_sample_summary_returns_all_tracks_with_zero_tried():
@@ -166,15 +227,24 @@ def test_tc119_sample_summary_returns_all_tracks_with_zero_tried():
             assert cell["tried"] == 0
 
 
-def test_tc120_sample_summary_tracks_tried_count_after_seen():
-    """TC-120: After GET /api/sample/sql/easy twice, summary reports tried=2."""
+def test_tc120_sample_summary_tracks_attempted_count():
+    """TC-120 (resume model): summary counts submits/skips as attempted, not
+    plain GETs. Two GETs should report 0; one submit then one GET reports 1."""
     with TestClient(app) as client:
+        # Two plain GETs — should NOT count as attempted under resume model
         client.get("/api/sample/sql/easy")
         client.get("/api/sample/sql/easy")
-        r = client.get("/api/sample/summary")
-    assert r.status_code == 200
-    body = r.json()
-    assert body["tracks"]["sql"]["easy"]["tried"] == 2
+        r_before = client.get("/api/sample/summary")
+        assert r_before.json()["tracks"]["sql"]["easy"]["tried"] == 0
+
+        # Submit once — now the summary should reflect 1 attempted
+        r1 = client.get("/api/sample/sql/easy")
+        qid = r1.json()["id"]
+        client.post("/api/sample/sql/submit", json={"question_id": qid, "query": "SELECT 1"})
+        r_after = client.get("/api/sample/summary")
+    assert r_after.status_code == 200
+    body = r_after.json()
+    assert body["tracks"]["sql"]["easy"]["tried"] == 1
     assert body["tracks"]["sql"]["easy"]["total"] == 3
     # Other tracks still 0
     assert body["tracks"]["python"]["easy"]["tried"] == 0

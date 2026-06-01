@@ -114,20 +114,23 @@ Also available without `/api` prefix.
 
 ### Sample — `/api/sample`
 
-The Sample Hub at `/sample` is the discovery surface for the 81 sample questions; its tried/total markers are powered by `GET /api/sample/summary`. SampleQuestionPage at `/sample/:topic/:difficulty` carries an in-page track + difficulty switcher so users can pivot without returning to the Hub.
+The Sample Hub at `/sample` is the discovery surface for the 81 sample questions; its attempted/total markers are powered by `GET /api/sample/summary`. SampleQuestionPage at `/sample/:topic/:difficulty` carries an in-page track + difficulty switcher so users can pivot without returning to the Hub.
+
+**Resume model.** Sample progression follows a commit-not-glance contract: viewing a sample question (GET) is read-only and idempotent. Marking a question as attempted happens only on **submit** (the user committed an answer) or on the explicit **skip** endpoint (the user chose to move on). This means refreshing the page, closing/reopening the tab, or navigating away and back never advances the user past a question they didn't engage with. Anonymous-first identity ensures every visitor (even pre-signup) has a real user row, so the resume state persists across sessions for the same browser.
 
 | Method | Path | Description |
 |---|---|---|
-| GET | `/api/sample/summary` | Aggregate per-`(track, difficulty)` tried/total counts for the current user. Used by the Sample Hub tile UI. Response: `{ tracks: { <api_slug>: { <difficulty>: { total, tried } } } }`. |
-| GET | `/api/sample/{topic}/{difficulty}` | Next unseen sample for a track+difficulty. Marks as seen. Returns 409 when all 3 are exhausted. |
-| POST | `/api/sample/{topic}/{difficulty}/reset` | Clears seen state for that track+difficulty |
-| POST | `/api/sample/sql/run-query` | Run SQL in SQL sample context (no lock checks) |
-| POST | `/api/sample/{topic}/run-code` | Run Python / Pandas sample code (no lock checks) |
-| POST | `/api/sample/{topic}/submit` | Evaluate sample answer for any track. Does not affect challenge progression. |
+| GET | `/api/sample/summary` | Aggregate per-`(track, difficulty)` attempted/total counts for the current user. Used by the Sample Hub tile UI. Response: `{ tracks: { <api_slug>: { <difficulty>: { total, tried } } } }`. The `tried` field is named for backward compatibility — semantically it now counts submits + skips, not GETs. |
+| GET | `/api/sample/{topic}/{difficulty}` | Next unattempted sample for a track+difficulty. **Read-only — does not mark anything.** Returns 409 when all 3 have been submitted/skipped. Response `sample` block carries `position` (1-indexed within the pool), `total`, `attempted`, plus legacy aliases `shown_count` (= position) and `remaining` (questions left after the user submits this one). |
+| POST | `/api/sample/{topic}/{difficulty}/skip` | Marks the supplied `question_id` as attempted without an answer submission, then returns the next unattempted question (same response shape as GET). Powers the "Another sample →" button. Body: `{ question_id: int }`. |
+| POST | `/api/sample/{topic}/{difficulty}/reset` | Clears attempted state for that track+difficulty so the user can redo the set from scratch. |
+| POST | `/api/sample/sql/run-query` | Run SQL in SQL sample context (no lock checks). Does not mark attempted. |
+| POST | `/api/sample/{topic}/run-code` | Run Python / Pandas sample code (no lock checks). Does not mark attempted. |
+| POST | `/api/sample/{topic}/submit` | Evaluate sample answer for any track. **Marks the question as attempted** (correct or incorrect — both count). Does not affect challenge progression. |
 | GET | `/api/sample/{difficulty}` | Legacy SQL alias for `/api/sample/sql/{difficulty}` |
 | POST | `/api/sample/{difficulty}/reset` | Legacy SQL alias for `/api/sample/sql/{difficulty}/reset` |
 | POST | `/api/sample/run-query` | Legacy SQL alias for `/api/sample/sql/run-query` |
-| POST | `/api/sample/submit` | Legacy SQL alias for `/api/sample/sql/submit` |
+| POST | `/api/sample/submit` | Legacy SQL alias for `/api/sample/sql/submit`. Also marks attempted. |
 
 ### User and plan — `/api/user`
 

@@ -179,28 +179,37 @@ export default function SampleQuestionPage() {
   }, []);
 
   const topicLabel = meta.label;
-  const shownSamples = sampleMeta?.shown_count ?? 0;
+  const position = sampleMeta?.position ?? sampleMeta?.shown_count ?? 1;
   const totalSamples = sampleMeta?.total ?? 3;
-  const remainingSamples = sampleMeta?.remaining ?? 0;
+  const attemptedCount = sampleMeta?.attempted ?? 0;
   const servedDifficulty = sampleMeta?.served_difficulty ?? difficulty;
   const sampleStatusLine = useMemo(() => {
     const chunks = [
       `${servedDifficulty.charAt(0).toUpperCase()}${servedDifficulty.slice(1)} sample`,
-      `${shownSamples} of ${totalSamples} shown`,
+      `Question ${position} of ${totalSamples}`,
     ];
-    if (remainingSamples >= 0) {
-      chunks.push(`${remainingSamples} remaining`);
+    if (attemptedCount > 0) {
+      chunks.push(`${attemptedCount} attempted`);
     }
     return chunks.join(' · ');
-  }, [remainingSamples, servedDifficulty, shownSamples, totalSamples]);
+  }, [attemptedCount, position, servedDifficulty, totalSamples]);
 
-  function handleAnotherSample() {
-    if (sampleMeta && sampleMeta.remaining <= 0) {
-      setSampleExhausted(true);
-      return;
+  async function handleAnotherSample() {
+    if (!question) return;
+    // Resume-model: skip is an explicit commit — POST it before re-fetching.
+    // This is what marks the current question as attempted; pure GET no longer
+    // advances the user's progress.
+    try {
+      await api.post(`${sampleBasePath}/${difficulty}/skip`, { question_id: Number(question.id) });
+      setResetNotice('');
+      setReloadToken((value) => value + 1);
+    } catch (err) {
+      if (err.response?.status === 409) {
+        setSampleExhausted(true);
+        return;
+      }
+      setLoadError(err.response?.data?.detail ?? 'Failed to load the next sample.');
     }
-    setResetNotice('');
-    setReloadToken((value) => value + 1);
   }
 
   async function handleResetSamples() {
@@ -351,21 +360,26 @@ export default function SampleQuestionPage() {
             <div className="section-heading">
               <div>
                 <span className="section-kicker">Sample track</span>
-                <h3>You've seen all {totalSamples} {difficulty} samples for {topicLabel}</h3>
+                <h3>You've attempted all {totalSamples} {difficulty} samples for {topicLabel}</h3>
               </div>
-              <span className="section-meta">{totalSamples} shown</span>
+              <span className="section-meta">{totalSamples} attempted</span>
             </div>
             <p className="sample-challenge-copy">
               Ready for the full {trackTotal ? `${trackTotal}-question ` : ''}{topicLabel} track? Pro unlocks every medium + hard question.
             </p>
             <div className="sample-challenge-actions">
-              <button className="btn btn-secondary sample-challenge-button" onClick={handleResetSamples} disabled={resetting}>
-                {resetting ? 'Resetting…' : 'Reset sample progress'}
-              </button>
               <Link className="btn btn-primary sample-challenge-button" to={challengePath}>
                 Take the challenge
               </Link>
             </div>
+            <button
+              type="button"
+              className="sample-reset-link"
+              onClick={handleResetSamples}
+              disabled={resetting}
+            >
+              {resetting ? 'Resetting…' : 'Or redo this set from scratch →'}
+            </button>
           </div>
         </main>
       </>
@@ -543,28 +557,33 @@ export default function SampleQuestionPage() {
               <div className="section-heading">
                 <div>
                   <span className="section-kicker">Sample track</span>
-                  <h3>{remainingSamples > 0 ? 'Keep sampling or move into the full flow' : 'Sample set exhausted'}</h3>
+                  <h3>{attemptedCount < totalSamples ? 'Keep sampling or move into the full flow' : 'Sample set exhausted'}</h3>
                 </div>
-                <span className="section-meta">{shownSamples}/{totalSamples} shown</span>
+                <span className="section-meta">{attemptedCount}/{totalSamples} attempted</span>
               </div>
               <p className="sample-challenge-copy">
-                {remainingSamples > 0
-                  ? `${remainingSamples} sample ${remainingSamples === 1 ? 'question remains' : 'questions remain'} in this ${difficulty} set.`
-                  : `You've seen all ${totalSamples} ${difficulty} samples. The full ${topicLabel} track has ${trackTotal || 'many'} questions — Pro unlocks medium + hard.`}
+                {attemptedCount < totalSamples
+                  ? `Question ${position} of ${totalSamples} in this ${difficulty} set. Submitting or "Another sample →" advances; refreshing keeps you here.`
+                  : `You've attempted all ${totalSamples} ${difficulty} samples. The full ${topicLabel} track has ${trackTotal || 'many'} questions — Pro unlocks medium + hard.`}
               </p>
               <div className="sample-challenge-actions">
-                {remainingSamples > 0 && (
+                {attemptedCount < totalSamples && (
                   <button className="btn btn-secondary sample-challenge-button" onClick={handleAnotherSample}>
-                    Show next sample
+                    Another sample →
                   </button>
                 )}
-                <button className="btn btn-secondary sample-challenge-button" onClick={handleResetSamples} disabled={resetting}>
-                  {resetting ? 'Resetting…' : 'Reset sample progress'}
-                </button>
                 <Link className="btn btn-primary sample-challenge-button" to={challengePath}>
                   Enter challenge track
                 </Link>
               </div>
+              <button
+                type="button"
+                className="sample-reset-link"
+                onClick={handleResetSamples}
+                disabled={resetting}
+              >
+                {resetting ? 'Resetting…' : 'Or redo this set from scratch →'}
+              </button>
             </div>
           </aside>
 

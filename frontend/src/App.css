@@ -4239,6 +4239,25 @@ select {
   width: fit-content;
 }
 
+/* Demoted reset link on the exhausted state — secondary intent, not visually
+ * competing with the primary "Take the challenge" CTA. */
+.sample-reset-link {
+  margin-top: 14px;
+  padding: 0;
+  background: none;
+  border: none;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-secondary);
+  cursor: pointer;
+  align-self: flex-start;
+  transition: color 140ms;
+}
+.sample-reset-link:hover:not(:disabled) { color: var(--text-strong); }
+.sample-reset-link:disabled { opacity: 0.6; cursor: default; }
+
 .sample-reset-notice {
   margin-bottom: 1rem;
   padding: 0.8rem 0.95rem;

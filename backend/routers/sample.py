@@ -95,19 +95,20 @@ async def _get_sample_question_by_topic_and_difficulty(
         normalized_difficulty,
         topic=normalized_topic,
     )
+    # Resume-model semantics: GET is read-only. The first unattempted question
+    # is returned without marking anything; marking happens on submit (commit)
+    # or on the explicit skip endpoint. This means refresh / navigate-back is
+    # idempotent — viewing never advances the user's progress.
     next_unseen = next((question for question in pool if int(question["id"]) not in seen_ids), None)
     if next_unseen is None:
         raise HTTPException(status_code=409, detail="All sample questions exhausted for this topic and difficulty.")
 
-    await mark_sample_seen(
-        current_user["id"],
-        normalized_difficulty,
-        int(next_unseen["id"]),
-        topic=normalized_topic,
+    attempted_count = sum(1 for question in pool if int(question["id"]) in seen_ids)
+    # 1-indexed position of the returned question within the pool order.
+    position = next(
+        (i + 1 for i, question in enumerate(pool) if int(question["id"]) == int(next_unseen["id"])),
+        1,
     )
-    seen_in_pool_before = sum(1 for question in pool if int(question["id"]) in seen_ids)
-    seen_count = seen_in_pool_before + 1
-    remaining_count = max(len(pool) - seen_count, 0)
 
     public_question = _public_question_for_topic(next_unseen, normalized_topic)
     public_question["difficulty"] = normalized_difficulty
@@ -124,10 +125,16 @@ async def _get_sample_question_by_topic_and_difficulty(
             "topic": _topic_api_slug(normalized_topic),
             "difficulty": normalized_difficulty,
             "served_difficulty": served_difficulty,
-            "shown_count": seen_count,
+            "position": position,
             "total": len(pool),
-            "remaining": remaining_count,
-            "exhausted": remaining_count == 0,
+            "attempted": attempted_count,
+            # Legacy field names kept for backward compat with SampleQuestionPage
+            # status line. `shown_count` is now the position of the current
+            # question (1-indexed) and `remaining` is questions left after the
+            # user submits the current one.
+            "shown_count": position,
+            "remaining": max(len(pool) - attempted_count - 1, 0),
+            "exhausted": False,
         },
     }
 
@@ -262,8 +269,30 @@ def run_sql_sample_query(body: RunQueryRequest) -> dict:
     return run_query(body.query, question)
 
 
+async def _mark_sample_attempted(
+    current_user: dict[str, Any],
+    normalized_topic: str,
+    question: dict[str, Any],
+) -> None:
+    """Record that the user attempted (submitted or skipped) this sample question.
+
+    Resume-model semantics: marking is the side effect of *commitment* — a submit
+    or an explicit skip — never a side effect of viewing. Keeping this in one
+    place ensures both the submit and skip paths agree on what 'attempted' means.
+    """
+    await mark_sample_seen(
+        current_user["id"],
+        str(question["difficulty"]),
+        int(question["id"]),
+        topic=normalized_topic,
+    )
+
+
 @router.post("/submit")
-def submit_sample_answer(body: SubmitRequest) -> dict:
+async def submit_sample_answer(
+    body: SubmitRequest,
+    current_user: dict = Depends(get_current_user),
+) -> dict:
     request_id = get_request_id()
     logger.info(
         "[request_id=%s] Sample /submit: question_id=%s",
@@ -275,6 +304,8 @@ def submit_sample_answer(body: SubmitRequest) -> dict:
         raise HTTPException(status_code=404, detail="Question not found")
 
     result = evaluate(body.query, question["expected_query"], question)
+
+    await _mark_sample_attempted(current_user, "sql", question)
 
     return {
         **result,
@@ -334,8 +365,57 @@ def run_topic_sample_code(topic: str, body: SampleRunCodeRequest) -> dict[str, A
     return raw
 
 
+@router.post("/{topic}/{difficulty}/skip")
+async def skip_sample_question(
+    topic: str,
+    difficulty: str,
+    body: dict[str, Any],
+    current_user: dict = Depends(get_current_user),
+) -> dict[str, Any]:
+    """Explicitly skip the current sample question without submitting an answer.
+
+    Marks the supplied `question_id` as attempted and returns the next unattempted
+    question (same shape as GET). Used by the SampleQuestionPage "Another sample →"
+    button so 'I'm moving on without solving this' is an explicit user intent,
+    not a silent side effect of a page refresh.
+    """
+    request_id = get_request_id()
+    normalized_topic = _validate_topic(topic)
+    normalized_difficulty = _validate_difficulty(difficulty)
+    qid_raw = body.get("question_id") if isinstance(body, dict) else None
+    if qid_raw is None:
+        raise HTTPException(status_code=422, detail="question_id is required")
+    try:
+        qid = int(qid_raw)
+    except (TypeError, ValueError):
+        raise HTTPException(status_code=422, detail="question_id must be an integer")
+    logger.info(
+        "[request_id=%s] Sample /%s/%s/skip: user_id=%s question_id=%s",
+        request_id,
+        normalized_topic,
+        normalized_difficulty,
+        current_user["id"],
+        qid,
+    )
+    await mark_sample_seen(
+        current_user["id"],
+        normalized_difficulty,
+        qid,
+        topic=normalized_topic,
+    )
+    return await _get_sample_question_by_topic_and_difficulty(
+        topic=normalized_topic,
+        difficulty=normalized_difficulty,
+        current_user=current_user,
+    )
+
+
 @router.post("/{topic}/submit")
-def submit_topic_sample_answer(topic: str, body: dict[str, Any]) -> dict[str, Any]:
+async def submit_topic_sample_answer(
+    topic: str,
+    body: dict[str, Any],
+    current_user: dict = Depends(get_current_user),
+) -> dict[str, Any]:
     request_id = get_request_id()
     normalized_topic = _validate_topic(topic)
     logger.info(
@@ -352,6 +432,7 @@ def submit_topic_sample_answer(topic: str, body: dict[str, Any]) -> dict[str, An
         if question is None:
             raise HTTPException(status_code=404, detail="Question not found")
         result = evaluate(parsed.query, question["expected_query"], question)
+        await _mark_sample_attempted(current_user, normalized_topic, question)
         return {
             **result,
             "solution_query": question["solution_query"],
@@ -375,6 +456,7 @@ def submit_topic_sample_answer(topic: str, body: dict[str, Any]) -> dict[str, An
             result = python_evaluator.evaluate_python_data_code(parsed.code, question)
         result["solution_code"] = question.get("expected_code", "")
         result["explanation"] = question.get("explanation", "")
+        await _mark_sample_attempted(current_user, normalized_topic, question)
         return result
 
     # mixed (statistics): dispatch on per-question subtype
@@ -400,6 +482,7 @@ def submit_topic_sample_answer(topic: str, body: dict[str, Any]) -> dict[str, An
             result["solution_code"] = question.get("expected_code", "")
             result["explanation"] = question.get("explanation", "")
             result["subtype"] = "numerical"
+            await _mark_sample_attempted(current_user, normalized_topic, question)
             return result
         else:  # conceptual
             parsed = _parse_body(SampleSubmitPySparkRequest, body)
@@ -407,6 +490,7 @@ def submit_topic_sample_answer(topic: str, body: dict[str, Any]) -> dict[str, An
             if question is None:
                 raise HTTPException(status_code=404, detail="Question not found")
             correct = parsed.selected_option == question["correct_option"]
+            await _mark_sample_attempted(current_user, normalized_topic, question)
             return {
                 "correct": correct,
                 "subtype": "conceptual",
@@ -419,6 +503,7 @@ def submit_topic_sample_answer(topic: str, body: dict[str, Any]) -> dict[str, An
     if question is None:
         raise HTTPException(status_code=404, detail="Question not found")
     correct = parsed.selected_option == question["correct_option"]
+    await _mark_sample_attempted(current_user, normalized_topic, question)
     return {
         "correct": correct,
         "explanation": question.get("explanation", ""),

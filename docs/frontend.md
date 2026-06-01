@@ -368,12 +368,13 @@ All requests use `withCredentials: true` so the `session_token` cookie is sent d
 3. Submit → topic-specific submit endpoint returns verdict + explanation
 4. No `Run` affordance unless the question's modality is executable
 
-### Sample flow
-1. `/sample/:topic/:difficulty` → `GET /api/sample/:topic/:difficulty`
-2. Backend marks that topic+difficulty sample as seen, returns next sample question
-3. Run/submit uses topic-specific sample endpoints
-4. 409 on exhaustion → reset button → `POST /api/sample/:topic/:difficulty/reset` → re-fetch
-5. No effect on challenge progress
+### Sample flow (resume model)
+1. `/sample/:topic/:difficulty` → `GET /api/sample/:topic/:difficulty` returns the next **unattempted** question. GET is read-only — refresh, navigate-back, or close/reopen the tab is idempotent.
+2. Run uses `/api/sample/{topic}/run-code` (no marking). Submit uses `/api/sample/{topic}/submit` — submit is the commitment event that marks the question as attempted (correct + incorrect both count).
+3. "Another sample →" calls `POST /api/sample/:topic/:difficulty/skip` with the current `question_id` to mark it attempted without submitting, then re-fetches.
+4. 409 on exhaustion → the page renders the exhausted state with a primary "Take the challenge" CTA and a demoted `Or redo this set from scratch →` link that calls `POST /api/sample/:topic/:difficulty/reset` and re-fetches.
+5. The Hub tile counters reflect submit/skip events only — pure views never advance them.
+6. No effect on challenge progress.
 
 ---
 
