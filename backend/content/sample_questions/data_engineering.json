@@ -19,7 +19,7 @@
       "Modern cloud warehouses handle complex SQL transformations efficiently — that changes the cost equation versus legacy on-prem systems."
     ],
     "concepts": [
-      "ETL VS ELT PATTERNS"
+      "ETL VS ELT"
     ]
   },
   {
@@ -42,7 +42,7 @@
       "Idempotent writes often use upserts or partition-level delete-then-insert to avoid accumulating duplicates."
     ],
     "concepts": [
-      "IDEMPOTENCY & EXACTLY-ONCE SEMANTICS"
+      "IDEMPOTENCY"
     ]
   },
   {
@@ -65,7 +65,7 @@
       "Batch is simpler to operate but has bounded-by-schedule latency. Streaming has near-zero latency but adds complexity."
     ],
     "concepts": [
-      "BATCH VS STREAMING TRADE-OFFS"
+      "BATCH VS STREAMING"
     ]
   },
   {
@@ -90,7 +90,7 @@
     ],
     "concepts": [
       "DELIVERY SEMANTICS",
-      "IDEMPOTENCY & EXACTLY-ONCE SEMANTICS"
+      "IDEMPOTENCY"
     ]
   },
   {
@@ -114,8 +114,8 @@
       "Diagnose before scaling: understand whether the problem is consumer capacity, producer volume, or partition assignment."
     ],
     "concepts": [
-      "STREAMING & WATERMARKS",
-      "BATCH VS STREAMING TRADE-OFFS"
+      "WATERMARKING",
+      "BATCH VS STREAMING"
     ]
   },
   {
@@ -139,8 +139,8 @@
       "A compaction job reads small files per partition and rewrites them as a few larger files — it's a standard maintenance pattern for Parquet on object stores."
     ],
     "concepts": [
-      "DATA LAYOUT & FILE FORMATS",
-      "PARTITIONING STRATEGY"
+      "STORAGE LAYOUT & FILE FORMATS",
+      "PARTITIONING & PRUNING"
     ]
   },
   {
@@ -164,8 +164,8 @@
       "A new required field (no default) breaks BACKWARD compatibility — old messages have no value for it. Add a default to make it safe."
     ],
     "concepts": [
-      "SCHEMA EVOLUTION & COMPATIBILITY",
-      "DATA CONTRACTS & VALIDATION"
+      "SCHEMA EVOLUTION",
+      "DATA CONTRACT"
     ]
   },
   {
@@ -189,8 +189,8 @@
       "Silent drops often happen at joins (key type mismatch) or filters (a column's distribution changed and the filter became over-restrictive)."
     ],
     "concepts": [
-      "DATA QUALITY & LINEAGE",
-      "MONITORING & OBSERVABILITY"
+      "DATA QUALITY",
+      "LINEAGE & OBSERVABILITY"
     ]
   },
   {
@@ -214,8 +214,8 @@
       "An incremental + summary table pattern reads only new data per run and merges it with pre-aggregated history — reducing scan cost by orders of magnitude."
     ],
     "concepts": [
-      "BACKFILL",
-      "PARTITIONING STRATEGY",
+      "BACKFILL DESIGN",
+      "PARTITIONING & PRUNING",
       "COST OPTIMIZATION"
     ]
   }
