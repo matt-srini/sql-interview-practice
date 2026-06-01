@@ -78,6 +78,13 @@ Full registry: [`docs/concept-taxonomy.md` → Data Engineering section](../conc
 
 **Mock-only chain inventory (post retro-cleanup 2026-05-25):** 13 chains total — 5 medium (parents at 52045/52047/52050/52052/52054; note: 52052 was dissolved when its child 52053 re-tiered to hard) + 8 hard (parents at 53035/53038/53040/53043/53045/53048/53051/53053) + the chain 53089/53090/53091 (re-tiered from medium to hard together, intact). 7 follow-up dimensions remain covered.
 
+**Type distribution (practice easy, post reclassification 2026-06-01):**
+- Easy (30 total): scenario 5, debug 1, conceptual 24
+
+  This distribution directly governs the DE easy benchmark shape: **scenario × 3 + conceptual × 2 + debug × 1** (per [`docs/features/mock.md`](../features/mock.md)). The bank's 5 scenarios and 1 debug comfortably support the blueprint without a `difficulty_overrides` entry in `mock.py`. Future easy authoring should preserve at minimum 3 scenarios and 1 debug; if a new debug question is added, no ceiling concern applies.
+
+  The conceptual-heavy skew is intentional: easy DE questions test single-concept reasoning about fundamental pipeline properties (idempotency definition, batch-vs-streaming tradeoffs, SCD mechanics, ETL/ELT distinction) that map naturally to conceptual MCQ. The 5 scenario questions introduce realistic decision-making context at easy difficulty (choosing ETL vs ELT given a constraint; choosing a partition key for a stated query pattern; selecting a processing paradigm for a latency requirement).
+
 **Type distribution (mock-only, post retro-cleanup):**
 - Medium (34 total): 16 INCIDENT RESPONSE questions re-tiered to hard; remaining mix of scenario, debug, conceptual
 - Hard (76 total): includes the 16 re-tiered INCIDENT RESPONSE questions (scenario/debug/conceptual)
