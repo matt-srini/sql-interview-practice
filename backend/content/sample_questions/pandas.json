@@ -76,34 +76,32 @@
     "order": 3,
     "topic": "python_data",
     "difficulty": "easy",
-    "title": "Bin Users Into Age Brackets",
-    "description": "You have a DataFrame `df_users` with columns `user_id`, `name`, `age` (integer).\n\nWrite `solve(df_users)` that adds a column `age_bracket` using these bins: `'18-24'`, `'25-34'`, `'35-44'`, `'45+'`. Return a DataFrame with only `user_id`, `name`, and `age_bracket`, sorted ascending by `user_id`.",
+    "title": "Bin Support Tickets by Resolution Speed",
+    "description": "You have a DataFrame `df_tickets` representing support tickets.\n\n**Columns:** `ticket_id`, `user_id`, `created_at`, `issue_type`, `priority`, `status`, `resolution_hours`\n\nSome tickets have not yet been resolved and have a null `resolution_hours` — exclude those entirely.\n\nFor each resolved ticket, add a `speed_tier` column that bins `resolution_hours` into three categories:\n- `'fast'` — resolved in 24 hours or less\n- `'standard'` — resolved in more than 24 hours but within 72 hours\n- `'slow'` — resolved in more than 72 hours\n\nReturn a DataFrame with columns `ticket_id`, `priority`, `resolution_hours`, `speed_tier`, sorted by `ticket_id` ascending.",
     "dataframes": {
-      "df_users": "users.csv"
+      "df_tickets": "support_tickets.csv"
     },
     "schema": {
-      "df_users": [
+      "df_tickets": [
+        "ticket_id",
         "user_id",
-        "name",
-        "email",
-        "signup_date",
-        "country",
-        "acquisition_channel",
-        "plan_tier",
-        "is_active"
+        "created_at",
+        "issue_type",
+        "priority",
+        "status",
+        "resolution_hours"
       ]
     },
-    "starter_code": "import pandas as pd\ndef solve(df_users: pd.DataFrame) -> pd.DataFrame:\n    pass",
-    "expected_code": "import pandas as pd\ndef solve(df_users: pd.DataFrame) -> pd.DataFrame:\n    df = df_users[['user_id','name']].copy()\n    ages = df_users['age'] if 'age' in df_users.columns else pd.Series([25]*len(df_users))\n    df['age_bracket'] = pd.cut(\n        ages,\n        bins=[17, 24, 34, 44, float('inf')],\n        labels=['18-24','25-34','35-44','45+']\n    ).astype(str)\n    return df.sort_values('user_id').reset_index(drop=True)",
-    "solution_code": "import pandas as pd\ndef solve(df_users: pd.DataFrame) -> pd.DataFrame:\n    df = df_users[['user_id','name']].copy()\n    ages = df_users['age'] if 'age' in df_users.columns else pd.Series([25]*len(df_users))\n    df['age_bracket'] = pd.cut(\n        ages,\n        bins=[17, 24, 34, 44, float('inf')],\n        labels=['18-24','25-34','35-44','45+']\n    ).astype(str)\n    return df.sort_values('user_id').reset_index(drop=True)",
-    "explanation": "`pd.cut` with explicit bin edges and labels is the idiomatic pandas approach for bucketing. The bin edge `17` (exclusive lower bound) means ages 18+ fall into the first bin; `float('inf')` handles any age above 44 in the last bin. Always `.astype(str)` the Categorical output before returning to avoid comparison issues in the evaluator.",
+    "starter_code": "import pandas as pd\ndef solve(df_tickets: pd.DataFrame) -> pd.DataFrame:\n    pass",
+    "expected_code": "import pandas as pd\n\ndef solve(df_tickets: pd.DataFrame) -> pd.DataFrame:\n    df = df_tickets[df_tickets['resolution_hours'].notna()].copy()\n    df = df[['ticket_id', 'priority', 'resolution_hours']].copy()\n    df['speed_tier'] = pd.cut(\n        df['resolution_hours'],\n        bins=[-0.01, 24, 72, float('inf')],\n        labels=['fast', 'standard', 'slow']\n    ).astype(str)\n    return df.sort_values('ticket_id').reset_index(drop=True)",
+    "solution_code": "import pandas as pd\n\ndef solve(df_tickets: pd.DataFrame) -> pd.DataFrame:\n    df = df_tickets[df_tickets['resolution_hours'].notna()].copy()\n    df = df[['ticket_id', 'priority', 'resolution_hours']].copy()\n    df['speed_tier'] = pd.cut(\n        df['resolution_hours'],\n        bins=[-0.01, 24, 72, float('inf')],\n        labels=['fast', 'standard', 'slow']\n    ).astype(str)\n    return df.sort_values('ticket_id').reset_index(drop=True)",
+    "explanation": "This is a `CATEGORICAL & BINNING` pattern — the idiomatic pandas approach for mapping a continuous numeric column to ordered string categories in one call. Filter null `resolution_hours` first (unresolved tickets have no resolution time), then select only the output columns before binning to keep the working frame clean. `pd.cut` uses half-open `(left, right]` intervals by default: a lower bound of `-0.01` ensures a ticket resolved in exactly 0 hours would land in `'fast'` rather than being silently dropped (values ≤ the left edge fall outside all bins and become NaN). Always call `.astype(str)` on the resulting Categorical before returning — the evaluator compares values as strings, and a raw Categorical column can produce unexpected comparison failures.",
     "hints": [
-      "`pd.cut(series, bins=[...], labels=[...])` maps a numeric column to string categories in one call.",
-      "Set the bin edges carefully — `pd.cut` intervals are half-open `(left, right]` by default."
+      "Before writing code, sketch your bin edges on paper. What is the operational threshold between 'fast' and 'standard'? Between 'standard' and 'slow'? The edges are the design decision.",
+      "`pd.cut(series, bins=[...], labels=[...])` maps a numeric column to string categories in one call. Watch the half-open interval convention: bins are `(left, right]` by default — choose your lower bound carefully if zero values matter."
     ],
     "concepts": [
-      "COLUMN SELECTION & PROJECTION",
-      "DATETIME & TIME-SERIES RESHAPING"
+      "CATEGORICAL & BINNING"
     ]
   },
   {
