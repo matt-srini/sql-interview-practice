@@ -148,7 +148,7 @@
     "correct_option": 1,
     "explanation": "Skew is a data distribution problem: one key owns a disproportionate share of rows, so that partition's task is overwhelmed regardless of how many total partitions exist. Salting splits the skewed key into multiple synthetic sub-keys (e.g., 'bot_crawler_0', 'bot_crawler_1', …), distributing its rows across multiple partitions. The small side is replicated to match all salted variants, and the suffix is stripped post-join. Option 0 (more partitions) doesn't help — the bot_crawler rows all land in one partition by hash. Option 2 (speculative execution) reruns the slow task but doesn't fix the underlying data imbalance. Option 3 (broadcast join) is not viable here: the user profile table at 500 GB is far too large to broadcast.",
     "hints": [
-      "Think about what determines which task receives a given row, and why the same `user_id` always lands in the same place — what would have to change about the key for those rows to spread across multiple tasks?",
+      "Think about what determines which task handles a given set of rows — is the slowdown caused by there being too few tasks overall, or by one key's rows all landing in the same place?",
       "Salting artificially splits the heavy key into multiple synthetic keys, distributing its rows — then reassembles after the join."
     ],
     "concepts": ["DATA SKEW & MITIGATION", "SHUFFLE REASONING", "JOIN STRATEGY SELECTION"]
