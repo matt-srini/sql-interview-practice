@@ -19,7 +19,7 @@
       "Re-read the PM's claim word by word. Is the claim about this specific interval you computed, or about the procedure that generates such intervals? Those are different kinds of probability statements.",
       "The true parameter is fixed. It's the intervals that vary from sample to sample — 95% of them capture the truth."
     ],
-    "concepts": ["confidence intervals & estimation", "hypothesis testing"]
+    "concepts": ["confidence intervals & estimation"]
   },
   {
     "id": 712,
@@ -219,6 +219,6 @@
       "Before naming the phenomenon, look at how algorithm A's aggregate rate is constructed. What determines how much weight each segment contributes to the overall number? Are the two segments equally weighted?",
       "The decision should use within-segment comparisons, not the aggregate — the aggregate is confounded by the unequal distribution of users across algorithms."
     ],
-    "concepts": ["correlation, regression & causality", "descriptive statistics"]
+    "concepts": ["correlation, regression & causality"]
   }
 ]

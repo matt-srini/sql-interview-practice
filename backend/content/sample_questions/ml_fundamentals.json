@@ -144,8 +144,7 @@
       "Ask: could synthetic interpolated features be physically or medically meaningful in this feature space? If not, class weights may be safer."
     ],
     "concepts": [
-      "CLASS IMBALANCE HANDLING",
-      "CROSS-VALIDATION DESIGN"
+      "CLASS IMBALANCE HANDLING"
     ]
   },
   {
@@ -220,8 +219,7 @@
       "Distillation and quantisation are the standard paths to close the accuracy gap while meeting latency requirements."
     ],
     "concepts": [
-      "DEPLOYMENT CONSTRAINTS",
-      "BIAS-VARIANCE TRADEOFF"
+      "DEPLOYMENT CONSTRAINTS"
     ]
   }
 ]

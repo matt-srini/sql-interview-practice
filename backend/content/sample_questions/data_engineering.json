@@ -114,8 +114,8 @@
       "Diagnose before scaling: understand whether the problem is consumer capacity, producer volume, or partition assignment."
     ],
     "concepts": [
-      "WATERMARKING",
-      "BATCH VS STREAMING"
+      "BACKPRESSURE",
+      "LINEAGE & OBSERVABILITY"
     ]
   },
   {
@@ -214,7 +214,6 @@
       "An incremental + summary table pattern reads only new data per run and merges it with pre-aggregated history — reducing scan cost by orders of magnitude."
     ],
     "concepts": [
-      "BACKFILL DESIGN",
       "PARTITIONING & PRUNING",
       "COST OPTIMIZATION"
     ]

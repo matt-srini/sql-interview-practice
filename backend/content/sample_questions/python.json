@@ -125,8 +125,7 @@
       "For ties, a compound sort key `(-freq, label)` handles descending-count + alphabetical simultaneously."
     ],
     "concepts": [
-      "HASH-MAP STATE",
-      "INDEXED SEQUENCE REASONING"
+      "HASH-MAP STATE"
     ]
   },
   {
@@ -334,8 +333,7 @@
       "A compound sort key handles both ordering rules in one sort."
     ],
     "concepts": [
-      "HASH-MAP STATE",
-      "INDEXED SEQUENCE REASONING"
+      "HASH-MAP STATE"
     ]
   },
   {
