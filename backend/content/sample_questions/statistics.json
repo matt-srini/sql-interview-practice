@@ -16,7 +16,7 @@
     "correct_option": 1,
     "explanation": "A frequentist confidence interval has a procedural interpretation: the 95% refers to the long-run coverage of the procedure, not the probability that a specific interval contains the true parameter. Once the data is collected and the interval is computed, the true parameter is fixed (not random) — the interval either covers it or not. The PM's statement applies to a Bayesian credible interval, not a frequentist CI. Option 0 and 3 conflate frequentist and Bayesian interpretations. Option 2 confuses the CI interpretation with a one-sided hypothesis test conclusion.",
     "hints": [
-      "A confidence interval is a statement about the long-run behaviour of the procedure, not about any single interval.",
+      "Re-read the PM's claim word by word. Is the claim about this specific interval you computed, or about the procedure that generates such intervals? Those are different kinds of probability statements.",
       "The true parameter is fixed. It's the intervals that vary from sample to sample — 95% of them capture the truth."
     ],
     "concepts": ["confidence intervals & estimation", "hypothesis testing"]
@@ -68,7 +68,7 @@
     "correct_option": 1,
     "explanation": "The p-value is P(data as extreme or more extreme | H₀ is true) — a statement about what data we would see if the null were true, not about the probability of the null itself. P(H₀ true | data) is a Bayesian posterior that depends on the prior probability of H₀ — the frequentist framework does not compute it. This confusion (inverting the conditional) is one of the most common misinterpretations of statistical significance. Option 0 and 3 commit the base-rate fallacy on H₀. Option 2 inverts the conditional incorrectly.",
     "hints": [
-      "Write out which probability is which: p-value = P(data | H₀). The PM claimed P(H₀ | data). Are those the same thing?",
+      "The PM made a claim about the probability of a hypothesis given the observed data. Think carefully: is that the same as the probability of observing such data given the hypothesis? Which direction is the condition, and which is the event?",
       "Inverting a conditional probability requires knowing the prior — the frequentist framework does not have one."
     ],
     "concepts": ["hypothesis testing", "bayesian inference"]
@@ -90,7 +90,7 @@
     "correct_option": 1,
     "explanation": "The CLT states that the sampling distribution of the sample mean approaches normality as n increases, regardless of the population distribution's shape. With n = 500 and a moderately skewed distribution, the CLT approximation is generally valid — though the 'n ≥ 30' rule of thumb is a rough heuristic and heavily skewed distributions may require larger n. The key insight is that it's the *distribution of sample means* (not the revenue values themselves) that becomes normal. Option 0 is wrong — the CLT applies to any distribution with finite variance. Option 2 overstates — small samples from heavy-tailed distributions may not converge. Option 3 is wrong — the CLT is not specific to symmetric or unbounded distributions.",
     "hints": [
-      "The CLT is about the distribution of the sample mean, not the distribution of the raw data.",
+      "There are two distributions in this question: the distribution of individual revenue values, and the distribution of the sample mean. Which one does the normality assumption for a z-interval actually apply to?",
       "With n = 500, the sampling distribution of the mean is approximately normal for most practically encountered distributions."
     ],
     "concepts": ["sampling & central limit theorem", "confidence intervals & estimation"]
@@ -142,7 +142,7 @@
     "correct_option": 1,
     "explanation": "Failing to reject H₀ is not the same as 'accepting' it — this is a fundamental asymmetry in hypothesis testing. The test was designed with 80% power: there was a 20% chance of missing a true effect of the assumed size. With p = 0.12, the data simply didn't cross the evidence threshold; the null is not confirmed as true. The stakeholder's statement is statistically precise. Option 0 confuses failing-to-reject with confirming H₀ — a classic error. Option 2 misframes 0.12 as borderline significant (it's not near 0.05 in a meaningful sense). Option 3 is wrong — there is no universal '0.95 power threshold' for business decisions.",
     "hints": [
-      "A significance test can only reject H₀ or fail to reject it — it cannot 'accept' H₀.",
+      "Think carefully about the difference between 'I found no evidence of X' and 'I found evidence that X is false.' Are those two statements saying the same thing?",
       "Power tells you the probability of detecting a true effect of a given size. Failing to detect doesn't mean the effect doesn't exist."
     ],
     "concepts": ["hypothesis testing", "errors & power"]
@@ -164,7 +164,7 @@
     "correct_option": 1,
     "explanation": "The family-wise error rate (FWER) under independent tests is 1 − (1−α)^k. With k=20 and α=0.05: FWER = 1 − 0.95^20 ≈ 0.64. Even if nothing is real, there is a ~64% chance of at least one false positive. Bonferroni correction divides α by the number of tests (0.05/20 = 0.0025), controlling FWER at 5% at the cost of reduced power per test. Option 0 incorrectly treats per-test and family-wise error rates as equivalent. Option 2 overstates — 20 tests don't guarantee false positives, just make them likely. Option 3 confuses the additive approximation (valid only when k×α is small) with the exact formula.",
     "hints": [
-      "FWER = 1 − (1−α)^k for k independent tests. Plug in k=20 and α=0.05.",
+      "If each test has a 5% chance of producing a false positive, start with the complementary question: what is the probability that a single test does not produce a false positive? Then ask: what happens to that probability when you have 20 independent tests?",
       "Bonferroni corrects by testing each hypothesis at α/k — simple but conservative."
     ],
     "concepts": ["multiple testing & correction", "errors & power"]
@@ -216,7 +216,7 @@
     "correct_option": 1,
     "explanation": "This is Simpson's paradox: an aggregate trend (A beats B) reverses in every subgroup (B beats A in both mobile and desktop). The confounding variable is user type: A is disproportionately shown to desktop users, who have higher baseline CTR. Desktop's higher rates inflate A's aggregate. Within each type, B is superior. The decision-relevant comparison is within each segment — B should be deployed. Option 0 (selection bias) may also be present but doesn't explain the within-group reversal. Option 2 (regression to the mean) applies to extreme measurements that converge over time — not a group-level reversal. Option 3 (survivorship bias) would affect how we measure CTR but doesn't produce the within-group vs aggregate directional flip.",
     "hints": [
-      "When aggregate and subgroup results point in opposite directions, ask: is one group over-represented in the aggregate, pulling the total toward its result?",
+      "Before naming the phenomenon, look at how algorithm A's aggregate rate is constructed. What determines how much weight each segment contributes to the overall number? Are the two segments equally weighted?",
       "The decision should use within-segment comparisons, not the aggregate — the aggregate is confounded by the unequal distribution of users across algorithms."
     ],
     "concepts": ["correlation, regression & causality", "descriptive statistics"]
