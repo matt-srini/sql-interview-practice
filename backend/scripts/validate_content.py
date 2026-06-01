@@ -385,12 +385,20 @@ def _warn_unenforced_tracks() -> None:
 
 
 def _validate_concept_taxonomy() -> None:
-    """Every concept tag must resolve to a registered family for its track.
+    """Every concept tag must (a) resolve to a registered family for its track
+    AND (b) be written as the canonical family name itself, not a sub-pattern
+    or alias that resolves via match_patterns.
 
-    Tags that remain unresolved (resolve_to_family returns the input unchanged
-    and that string is not itself a registered family name) are authoring errors.
-    SQL blocklist tags (REVERSE SQL, DEBUG SQL, OR, etc.) are also caught here
-    because they have no registered family and won't match any pattern.
+    Rule (a) catches unresolvable tags — SQL blocklist values (REVERSE SQL,
+    DEBUG SQL, OR, etc.) and typos. Rule (b) catches the historical hole where
+    a sub-pattern like 'CLASSIFICATION METRICS & EVALUATION' resolves to
+    'CLASSIFICATION METRICS' but isn't itself the canonical name. Sub-patterns
+    exist for resolution and analytics, NOT as tag values (see authoring agent
+    § Tag lookup procedure and docs/concept-taxonomy.md). Resolution ≠
+    authoring permission.
+
+    Comparison is case-insensitive because Statistics uses a lowercase
+    convention while every other track uses uppercase.
 
     Only runs for tracks listed in _TAXONOMY_VALIDATED_TRACKS.
     """
@@ -416,9 +424,19 @@ def _validate_concept_taxonomy() -> None:
                 if not isinstance(concept, str):
                     continue
                 resolved = resolve_to_family(concept, track)
+                # Rule (a): unresolvable tag — resolver returned its input unchanged
+                # and that string isn't itself a registered family name.
                 if resolved == concept.upper() and resolved not in families:
                     errors.append(
                         f"{track} {qid} {title}: concept tag {concept!r} does not resolve to any registered family"
+                    )
+                    continue
+                # Rule (b): tag resolves but isn't the canonical family name —
+                # author wrote a sub-pattern / alias instead of the family header.
+                if resolved in families and concept.strip().lower() != resolved.lower():
+                    errors.append(
+                        f"{track} {qid} {title}: concept tag {concept!r} is a sub-pattern of family "
+                        f"{resolved!r} — write the canonical family name as the tag value, not the alias"
                     )
 
     if errors:

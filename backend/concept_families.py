@@ -750,8 +750,7 @@ CONCEPT_FAMILIES: dict[str, dict[str, list[str]]] = {
             "GROUPED AGGREGATION",
             "GROUPBY AGGREGATION",
             "AGGREGATION",
-            "AGGREG",
-            "NAMED AGGREG",
+            "NAMED AGGREGATION",
         ],
         "MULTI-DATAFRAME ENTITY LINKING": [
             "MULTI-DATAFRAME",

@@ -1090,7 +1090,7 @@
     ],
     "concepts": [
       "WINDOW & ROLLING OPERATIONS",
-      "GROUPBY TRANSFORM",
+      "TRANSFORM VS AGGREGATE",
       "DATETIME OPERATIONS"
     ],
     "follow_ups": [
@@ -1676,7 +1676,7 @@
     "concepts": [
       "DATETIME OPERATIONS",
       "GROUPED AGGREGATION",
-      "MULTI-TABLE JOINING"
+      "MULTI-DATAFRAME ENTITY LINKING"
     ],
     "follow_ups": [
       33041,
@@ -1768,7 +1768,7 @@
       "The cohort logic is the same as the parent — only the population changes."
     ],
     "concepts": [
-      "MULTI-TABLE JOINING",
+      "MULTI-DATAFRAME ENTITY LINKING",
       "DATETIME OPERATIONS",
       "GROUPED AGGREGATION"
     ]
@@ -1863,7 +1863,7 @@
     "concepts": [
       "DATA QUALITY SKEPTICISM",
       "MISSING VALUE STRATEGY",
-      "MULTI-TABLE JOINING"
+      "MULTI-DATAFRAME ENTITY LINKING"
     ]
   },
   {
@@ -1946,7 +1946,7 @@
       "unstack() on a groupby result is the idiomatic way to go from long to wide in one step."
     ],
     "concepts": [
-      "MULTI-TABLE JOINING",
+      "MULTI-DATAFRAME ENTITY LINKING",
       "RESHAPING & PIVOT",
       "GROUPED AGGREGATION"
     ],
@@ -2036,7 +2036,7 @@
     ],
     "concepts": [
       "BOOLEAN INDEXING & FILTERING",
-      "MULTI-TABLE JOINING",
+      "MULTI-DATAFRAME ENTITY LINKING",
       "RESHAPING & PIVOT",
       "GROUPED AGGREGATION"
     ]
@@ -2084,7 +2084,7 @@
       "ltv_proxy is a derived column — compute it in .assign() after the second groupby."
     ],
     "concepts": [
-      "MULTI-TABLE JOINING",
+      "MULTI-DATAFRAME ENTITY LINKING",
       "GROUPED AGGREGATION",
       "COLUMN SELECTION & PROJECTION"
     ],
@@ -2141,7 +2141,7 @@
     "concepts": [
       "DATA QUALITY SKEPTICISM",
       "MISSING VALUE STRATEGY",
-      "MULTI-TABLE JOINING"
+      "MULTI-DATAFRAME ENTITY LINKING"
     ]
   },
   {
@@ -2191,7 +2191,7 @@
     ],
     "concepts": [
       "DATETIME OPERATIONS",
-      "MULTI-TABLE JOINING",
+      "MULTI-DATAFRAME ENTITY LINKING",
       "GROUPED AGGREGATION",
       "BOOLEAN INDEXING & FILTERING"
     ]
@@ -2472,7 +2472,7 @@
       "avg_price_per_unit = total_revenue / units_sold — compute in .assign() after the groupby."
     ],
     "concepts": [
-      "MULTI-TABLE JOINING",
+      "MULTI-DATAFRAME ENTITY LINKING",
       "GROUPED AGGREGATION"
     ],
     "follow_ups": [
@@ -2567,7 +2567,7 @@
     ],
     "concepts": [
       "BOOLEAN INDEXING & FILTERING",
-      "MULTI-TABLE JOINING",
+      "MULTI-DATAFRAME ENTITY LINKING",
       "GROUPED AGGREGATION"
     ]
   },
@@ -2808,7 +2808,7 @@
       "The key distinction: aggregation collapses rows, while the broadcast variant preserves the original row count — both use the same grouping key."
     ],
     "concepts": [
-      "GROUPBY TRANSFORM",
+      "TRANSFORM VS AGGREGATE",
       "GROUPED AGGREGATION"
     ],
     "solution_code": "import pandas as pd\n\ndef solve(df_orders):\n    completed = df_orders[df_orders['status'] == 'completed'].copy()\n    completed['group_total'] = completed.groupby('payment_status')['net_amount'].transform('sum')\n    completed['pct_of_group'] = (completed['net_amount'] / completed['group_total']).round(4)\n    return (\n        completed[['order_id', 'user_id', 'payment_status', 'net_amount', 'pct_of_group']]\n        .sort_values(['payment_status', 'pct_of_group', 'order_id'], ascending=[True, False, True])\n        .reset_index(drop=True)\n    )\n",
@@ -2849,7 +2849,7 @@
       "Compute an absolute-value helper column to sort by magnitude of deviation, then drop it from the final output."
     ],
     "concepts": [
-      "GROUPBY TRANSFORM",
+      "TRANSFORM VS AGGREGATE",
       "MULTI-DATAFRAME ENTITY LINKING"
     ],
     "solution_code": "import pandas as pd\n\ndef solve(df_emp, df_dept):\n    merged = df_emp.merge(df_dept[['department_id', 'department_name']], on='department_id')\n    merged['dept_mean_salary'] = merged.groupby('department_name')['salary'].transform('mean').round(2)\n    merged['salary_deviation'] = (merged['salary'] - merged['dept_mean_salary']).round(2)\n    merged['abs_dev'] = merged['salary_deviation'].abs()\n    return (\n        merged[['employee_id', 'employee_name', 'department_name', 'salary', 'dept_mean_salary', 'salary_deviation', 'abs_dev']]\n        .sort_values(['abs_dev', 'employee_id'], ascending=[False, True])\n        .drop(columns='abs_dev')\n        .reset_index(drop=True)\n    )\n"
@@ -2883,7 +2883,7 @@
       "Once the user median is a column, the above-median flag is a simple element-wise comparison — no aggregation or join needed."
     ],
     "concepts": [
-      "GROUPBY TRANSFORM",
+      "TRANSFORM VS AGGREGATE",
       "BOOLEAN INDEXING & FILTERING"
     ],
     "solution_code": "import pandas as pd\n\ndef solve(df_orders):\n    completed = df_orders[df_orders['status'] == 'completed'].copy()\n    completed['user_median'] = completed.groupby('user_id')['net_amount'].transform('median').round(2)\n    completed['above_personal_median'] = completed['net_amount'] > completed['user_median']\n    return (\n        completed[['order_id', 'user_id', 'net_amount', 'user_median', 'above_personal_median']]\n        .sort_values(['user_id', 'net_amount'], ascending=[True, False])\n        .reset_index(drop=True)\n    )\n"

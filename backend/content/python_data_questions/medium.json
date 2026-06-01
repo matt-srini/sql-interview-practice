@@ -203,7 +203,7 @@
     ],
     "concepts": [
       "GROUPED AGGREGATION",
-      "GROUPBY TRANSFORM",
+      "TRANSFORM VS AGGREGATE",
       "COLUMN SELECTION & PROJECTION"
     ]
   },
@@ -808,7 +808,7 @@
     ],
     "concepts": [
       "GROUPED AGGREGATION",
-      "GROUPBY TRANSFORM",
+      "TRANSFORM VS AGGREGATE",
       "BOOLEAN INDEXING & FILTERING"
     ]
   },
@@ -964,7 +964,7 @@
     ],
     "concepts": [
       "GROUPED AGGREGATION",
-      "GROUPBY TRANSFORM",
+      "TRANSFORM VS AGGREGATE",
       "BOOLEAN INDEXING & FILTERING"
     ]
   },
@@ -1170,7 +1170,7 @@
     ],
     "concepts": [
       "METHOD CHAINING & PIPELINE STYLE",
-      "GROUPBY TRANSFORM",
+      "TRANSFORM VS AGGREGATE",
       "GROUPED AGGREGATION"
     ]
   },
@@ -1430,7 +1430,7 @@
       "After broadcasting, a simple boolean comparison flags each employee. Then `groupby.agg(sum=...)` collapses to department-level counts."
     ],
     "concepts": [
-      "GROUPBY TRANSFORM",
+      "TRANSFORM VS AGGREGATE",
       "MULTI-DATAFRAME ENTITY LINKING",
       "GROUPED AGGREGATION"
     ]
@@ -1801,7 +1801,7 @@
     ],
     "concepts": [
       "METHOD CHAINING & PIPELINE STYLE",
-      "GROUPBY TRANSFORM"
+      "TRANSFORM VS AGGREGATE"
     ]
   },
   {
@@ -2123,7 +2123,7 @@
       "Named aggregation in a single `.agg()` call is cleaner: `agg(headcount=('employee_id','count'), avg_salary=('salary','mean'))`."
     ],
     "concepts": [
-      "GROUPBY TRANSFORM",
+      "TRANSFORM VS AGGREGATE",
       "MULTI-DATAFRAME ENTITY LINKING",
       "GROUPED AGGREGATION"
     ]
@@ -2369,7 +2369,7 @@
     ],
     "concepts": [
       "DATETIME OPERATIONS",
-      "FILTER & BOOLEAN INDEXING"
+      "BOOLEAN INDEXING & FILTERING"
     ],
     "order": 59,
     "solution_code": "import pandas as pd\n\ndef solve(df_tickets):\n    # Keep only tickets still awaiting resolution\n    active = df_tickets[df_tickets['status'].isin(['open', 'in_progress'])].copy()\n\n    # Use the latest created_at in the whole dataset as the reference date (no external \"today\")\n    ref_date = pd.to_datetime(df_tickets['created_at']).max()\n\n    # dt.days extracts the integer part of a Timedelta, giving whole-day counts\n    active['days_open'] = (ref_date - pd.to_datetime(active['created_at'])).dt.days\n\n    return (\n        active[['ticket_id', 'priority', 'status', 'days_open']]\n        .sort_values('days_open', ascending=False)\n        .reset_index(drop=True)\n    )"
@@ -2436,7 +2436,7 @@
     ],
     "concepts": [
       "COLUMN SELECTION & PROJECTION",
-      "FILTER & BOOLEAN INDEXING"
+      "BOOLEAN INDEXING & FILTERING"
     ],
     "order": 61,
     "solution_code": "import pandas as pd\n\ndef solve(df_items):\n    df = df_items.copy()\n\n    # computed_amount is the arithmetic ground truth: quantity * unit_price\n    df['computed_amount'] = (df['unit_price'] * df['quantity']).round(2)\n\n    # discrepancy = stored line_amount minus computed — positive means line_amount is higher\n    df['discrepancy'] = (df['line_amount'] - df['computed_amount']).round(2)\n\n    # Flag only rows where the absolute discrepancy exceeds the rounding tolerance\n    flagged = df[df['discrepancy'].abs() > 0.01].copy()\n\n    return (\n        flagged[['order_item_id', 'order_id', 'product_id', 'unit_price', 'quantity', 'line_amount', 'computed_amount', 'discrepancy']]\n        .sort_values('order_item_id')\n        .reset_index(drop=True)\n    )"

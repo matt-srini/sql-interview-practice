@@ -1,0 +1,221 @@
+[
+  {
+    "id": 111,
+    "order": 1,
+    "topic": "sql",
+    "difficulty": "easy",
+    "title": "Sample Easy: Count Users",
+    "description": "Return the number of users in users as user_count.",
+    "schema": {
+      "users": [
+        "user_id",
+        "name",
+        "signup_date",
+        "country"
+      ]
+    },
+    "dataset_files": [
+      "users.csv"
+    ],
+    "expected_query": "SELECT COUNT(*) AS user_count FROM users",
+    "solution_query": "SELECT COUNT(*) AS user_count\nFROM users;",
+    "explanation": "COUNT(*) counts all rows in users."
+  },
+  {
+    "id": 112,
+    "order": 2,
+    "topic": "sql",
+    "difficulty": "easy",
+    "title": "Sample Easy: Distinct Countries",
+    "description": "Return the distinct list of countries users are from, sorted alphabetically.",
+    "schema": {
+      "users": [
+        "user_id",
+        "name",
+        "signup_date",
+        "country"
+      ]
+    },
+    "dataset_files": [
+      "users.csv"
+    ],
+    "expected_query": "SELECT DISTINCT country FROM users ORDER BY country",
+    "solution_query": "SELECT DISTINCT country\nFROM users\nORDER BY country;",
+    "explanation": "DISTINCT removes duplicates; ORDER BY sorts the results."
+  },
+  {
+    "id": 113,
+    "order": 3,
+    "topic": "sql",
+    "difficulty": "easy",
+    "title": "Sample Easy: Total Completed Order Amount",
+    "description": "Return the sum of `net_amount` for completed orders as total_completed_amount.",
+    "schema": {
+      "orders": [
+        "order_id",
+        "user_id",
+        "order_date",
+        "status",
+        "net_amount"
+      ]
+    },
+    "dataset_files": [
+      "orders.csv"
+    ],
+    "expected_query": "SELECT SUM(net_amount) AS total_completed_amount FROM orders WHERE status = 'completed'",
+    "solution_query": "SELECT SUM(net_amount) AS total_completed_amount\nFROM orders\nWHERE status = 'completed';",
+    "explanation": "Filter to completed orders, then sum net_amount."
+  },
+  {
+    "id": 121,
+    "order": 1,
+    "topic": "sql",
+    "difficulty": "medium",
+    "title": "Sample Medium: Users With No Orders",
+    "description": "Return user_id and name for users who have never placed an order.",
+    "schema": {
+      "users": [
+        "user_id",
+        "name",
+        "signup_date",
+        "country"
+      ],
+      "orders": [
+        "order_id",
+        "user_id",
+        "order_date",
+        "status",
+        "net_amount"
+      ]
+    },
+    "dataset_files": [
+      "users.csv",
+      "orders.csv"
+    ],
+    "expected_query": "SELECT u.user_id, u.name FROM users u LEFT JOIN orders o ON o.user_id = u.user_id WHERE o.order_id IS NULL ORDER BY u.user_id",
+    "solution_query": "SELECT u.user_id, u.name\nFROM users u\nLEFT JOIN orders o ON o.user_id = u.user_id\nWHERE o.order_id IS NULL\nORDER BY u.user_id;",
+    "explanation": "LEFT JOIN keeps all users; users without matching orders have NULL order_id values."
+  },
+  {
+    "id": 122,
+    "order": 2,
+    "topic": "sql",
+    "difficulty": "medium",
+    "title": "Sample Medium: Revenue By Status",
+    "description": "Return each order status and the total `net_amount` for that status.",
+    "schema": {
+      "orders": [
+        "order_id",
+        "user_id",
+        "order_date",
+        "status",
+        "net_amount"
+      ]
+    },
+    "dataset_files": [
+      "orders.csv"
+    ],
+    "expected_query": "SELECT status, SUM(net_amount) AS revenue FROM orders GROUP BY status ORDER BY status",
+    "solution_query": "SELECT status, SUM(net_amount) AS revenue\nFROM orders\nGROUP BY status\nORDER BY status;",
+    "explanation": "Group by status, then sum net_amount within each status."
+  },
+  {
+    "id": 123,
+    "order": 3,
+    "topic": "sql",
+    "difficulty": "medium",
+    "title": "Sample Medium: Monthly Revenue",
+    "description": "Return month and revenue, grouped by month from orders.",
+    "schema": {
+      "orders": [
+        "order_id",
+        "user_id",
+        "order_date",
+        "status",
+        "net_amount"
+      ]
+    },
+    "dataset_files": [
+      "orders.csv"
+    ],
+    "expected_query": "SELECT strftime(CAST(order_date AS DATE), '%Y-%m') AS month, SUM(net_amount) AS revenue FROM orders GROUP BY 1 ORDER BY 1",
+    "solution_query": "SELECT strftime(CAST(order_date AS DATE), '%Y-%m') AS month, SUM(net_amount) AS revenue\nFROM orders\nGROUP BY 1\nORDER BY 1;",
+    "explanation": "Bucket by month using strftime with format '%Y-%m', then aggregate net_amount per bucket."
+  },
+  {
+    "id": 131,
+    "order": 1,
+    "topic": "sql",
+    "difficulty": "hard",
+    "title": "Sample Hard: Top 2 Orders Per User",
+    "description": "Return each user's top 2 orders by `net_amount` using a window rank.",
+    "schema": {
+      "orders": [
+        "order_id",
+        "user_id",
+        "order_date",
+        "status",
+        "net_amount"
+      ]
+    },
+    "dataset_files": [
+      "orders.csv"
+    ],
+    "expected_query": "SELECT user_id, order_id, amount, rnk FROM (  SELECT order_id, user_id, net_amount AS amount, DENSE_RANK() OVER (PARTITION BY user_id ORDER BY net_amount DESC) AS rnk   FROM orders) t WHERE rnk <= 2 ORDER BY user_id, rnk, order_id",
+    "solution_query": "SELECT user_id, order_id, amount, rnk\nFROM (\n  SELECT order_id, user_id, net_amount AS amount,\n         DENSE_RANK() OVER (PARTITION BY user_id ORDER BY net_amount DESC) AS rnk\n  FROM orders\n) t\nWHERE rnk <= 2\nORDER BY user_id, rnk, order_id;",
+    "explanation": "Rank orders per user by net_amount, then keep the top two ranks."
+  },
+  {
+    "id": 132,
+    "order": 2,
+    "topic": "sql",
+    "difficulty": "hard",
+    "title": "Sample Hard: First Order Date Per User",
+    "description": "Return each user_id and their first order date as first_order_date.",
+    "schema": {
+      "orders": [
+        "order_id",
+        "user_id",
+        "order_date",
+        "status",
+        "net_amount"
+      ]
+    },
+    "dataset_files": [
+      "orders.csv"
+    ],
+    "expected_query": "SELECT user_id, MIN(CAST(order_date AS DATE)) AS first_order_date FROM orders GROUP BY user_id ORDER BY user_id",
+    "solution_query": "SELECT user_id, MIN(CAST(order_date AS DATE)) AS first_order_date\nFROM orders\nGROUP BY user_id\nORDER BY user_id;",
+    "explanation": "Use MIN(order_date) per user_id to find the first order date."
+  },
+  {
+    "id": 133,
+    "order": 3,
+    "topic": "sql",
+    "difficulty": "hard",
+    "title": "Sample Hard: Completed Revenue By Country",
+    "description": "For each country, return total completed order revenue as completed_revenue.",
+    "schema": {
+      "users": [
+        "user_id",
+        "name",
+        "signup_date",
+        "country"
+      ],
+      "orders": [
+        "order_id",
+        "user_id",
+        "order_date",
+        "status",
+        "net_amount"
+      ]
+    },
+    "dataset_files": [
+      "users.csv",
+      "orders.csv"
+    ],
+    "expected_query": "SELECT u.country, SUM(o.net_amount) AS completed_revenue FROM users u JOIN orders o ON o.user_id = u.user_id WHERE o.status = 'completed' GROUP BY u.country ORDER BY u.country",
+    "solution_query": "SELECT u.country, SUM(o.net_amount) AS completed_revenue\nFROM users u\nJOIN orders o ON o.user_id = u.user_id\nWHERE o.status = 'completed'\nGROUP BY u.country\nORDER BY u.country;",
+    "explanation": "Join users to orders, filter to completed, then sum net_amount by country."
+  }
+]

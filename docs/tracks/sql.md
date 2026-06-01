@@ -44,7 +44,7 @@ Full row counts and intentional edge cases (NULLs, duplicates, orphans): see [`d
 | Medium | 12001–12999 | `backend/content/questions/medium.json` |
 | Hard | 13001–13999 | `backend/content/questions/hard.json` |
 
-Samples use a separate `TXS` 3-digit format (`111–133`) in `backend/content/questions/sample/`. Never give a sample a 5-digit ID.
+SQL has **dedicated sample questions** in `backend/content/sample_questions/sql.json` (IDs 111–113 easy, 121–123 medium, 131–133 hard). Sample questions are completely separate from the practice and mock pools and must never duplicate practice content. The SQL sample file is additionally validated against committed CSV headers at startup (`_validate_sample_questions` in `backend/sample_questions.py`).
 
 ## Difficulty vocabulary (where complexity lives)
 

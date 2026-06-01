@@ -7,33 +7,6 @@ from typing import Any, Optional
 
 from tracks import TRACKS
 
-# Inline schemas and helpers (formerly from question_bank.common)
-ORDERS_SCHEMA = {
-    "orders": ["order_id", "user_id", "order_date", "status", "net_amount"],
-}
-USERS_SCHEMA = {
-    "users": ["user_id", "name", "signup_date", "country"],
-}
-def merge_schema(*schemas):
-    merged = {}
-    for schema in schemas:
-        for table, cols in schema.items():
-            merged[table] = list(cols)
-    return merged
-def q(*, id, order, title, description, difficulty, schema, dataset_files, expected_query, solution_query, explanation):
-    return {
-        "id": id,
-        "order": order,
-        "title": title,
-        "description": description,
-        "difficulty": difficulty,
-        "schema": schema,
-        "dataset_files": dataset_files,
-        "expected_query": expected_query,
-        "solution_query": solution_query,
-        "explanation": explanation,
-    }
-
 
 _DATASETS_DIR = Path(__file__).resolve().parent / "datasets"
 
@@ -142,212 +115,6 @@ def _validate_sample_questions(questions: list[dict[str, Any]]) -> None:
             _fail(-1, f"Expected exactly 3 sample questions for difficulty='{diff}', found {len(by_diff[diff])}")
 
 
-SAMPLE_QUESTIONS: list[dict[str, Any]] = [
-    q(
-        id=111,
-        order=1,
-        title="Sample Easy: Count Users",
-        difficulty="easy",
-        description="Return the number of users in users as user_count.",
-        schema=merge_schema(USERS_SCHEMA),
-        dataset_files=["users.csv"],
-        expected_query="SELECT COUNT(*) AS user_count FROM users",
-        solution_query="SELECT COUNT(*) AS user_count\nFROM users;",
-        explanation="COUNT(*) counts all rows in users.",
-    ),
-    q(
-        id=112,
-        order=2,
-        title="Sample Easy: Distinct Countries",
-        difficulty="easy",
-        description="Return the distinct list of countries users are from, sorted alphabetically.",
-        schema=merge_schema(USERS_SCHEMA),
-        dataset_files=["users.csv"],
-        expected_query=(
-            "SELECT DISTINCT country "
-            "FROM users "
-            "ORDER BY country"
-        ),
-        solution_query=(
-            "SELECT DISTINCT country\n"
-            "FROM users\n"
-            "ORDER BY country;"
-        ),
-        explanation="DISTINCT removes duplicates; ORDER BY sorts the results.",
-    ),
-    q(
-        id=113,
-        order=3,
-        title="Sample Easy: Total Completed Order Amount",
-        difficulty="easy",
-        description="Return the sum of `net_amount` for completed orders as total_completed_amount.",
-        schema=merge_schema(ORDERS_SCHEMA),
-        dataset_files=["orders.csv"],
-        expected_query=(
-            "SELECT SUM(net_amount) AS total_completed_amount "
-            "FROM orders "
-            "WHERE status = 'completed'"
-        ),
-        solution_query=(
-            "SELECT SUM(net_amount) AS total_completed_amount\n"
-            "FROM orders\n"
-            "WHERE status = 'completed';"
-        ),
-        explanation="Filter to completed orders, then sum net_amount.",
-    ),
-    q(
-        id=121,
-        order=1,
-        title="Sample Medium: Users With No Orders",
-        difficulty="medium",
-        description="Return user_id and name for users who have never placed an order.",
-        schema=merge_schema(USERS_SCHEMA, ORDERS_SCHEMA),
-        dataset_files=["users.csv", "orders.csv"],
-        expected_query=(
-            "SELECT u.user_id, u.name "
-            "FROM users u "
-            "LEFT JOIN orders o ON o.user_id = u.user_id "
-            "WHERE o.order_id IS NULL "
-            "ORDER BY u.user_id"
-        ),
-        solution_query=(
-            "SELECT u.user_id, u.name\n"
-            "FROM users u\n"
-            "LEFT JOIN orders o ON o.user_id = u.user_id\n"
-            "WHERE o.order_id IS NULL\n"
-            "ORDER BY u.user_id;"
-        ),
-        explanation="LEFT JOIN keeps all users; users without matching orders have NULL order_id values.",
-    ),
-    q(
-        id=122,
-        order=2,
-        title="Sample Medium: Revenue By Status",
-        difficulty="medium",
-        description="Return each order status and the total `net_amount` for that status.",
-        schema=merge_schema(ORDERS_SCHEMA),
-        dataset_files=["orders.csv"],
-        expected_query=(
-            "SELECT status, SUM(net_amount) AS revenue "
-            "FROM orders "
-            "GROUP BY status "
-            "ORDER BY status"
-        ),
-        solution_query=(
-            "SELECT status, SUM(net_amount) AS revenue\n"
-            "FROM orders\n"
-            "GROUP BY status\n"
-            "ORDER BY status;"
-        ),
-        explanation="Group by status, then sum net_amount within each status.",
-    ),
-    q(
-        id=123,
-        order=3,
-        title="Sample Medium: Monthly Revenue",
-        difficulty="medium",
-        description="Return month and revenue, grouped by month from orders.",
-        schema=merge_schema(ORDERS_SCHEMA),
-        dataset_files=["orders.csv"],
-        expected_query=(
-            "SELECT strftime(CAST(order_date AS DATE), '%Y-%m') AS month, SUM(net_amount) AS revenue "
-            "FROM orders "
-            "GROUP BY 1 "
-            "ORDER BY 1"
-        ),
-        solution_query=(
-            "SELECT strftime(CAST(order_date AS DATE), '%Y-%m') AS month, SUM(net_amount) AS revenue\n"
-            "FROM orders\n"
-            "GROUP BY 1\n"
-            "ORDER BY 1;"
-        ),
-        explanation="Bucket by month using strftime with format '%Y-%m', then aggregate net_amount per bucket.",
-    ),
-    q(
-        id=131,
-        order=1,
-        title="Sample Hard: Top 2 Orders Per User",
-        difficulty="hard",
-        description="Return each user's top 2 orders by `net_amount` using a window rank.",
-        schema=merge_schema(ORDERS_SCHEMA),
-        dataset_files=["orders.csv"],
-        expected_query=(
-            "SELECT user_id, order_id, amount, rnk "
-            "FROM ("
-            "  SELECT order_id, user_id, net_amount AS amount, DENSE_RANK() OVER (PARTITION BY user_id ORDER BY net_amount DESC) AS rnk "
-            "  FROM orders"
-            ") t "
-            "WHERE rnk <= 2 "
-            "ORDER BY user_id, rnk, order_id"
-        ),
-        solution_query=(
-            "SELECT user_id, order_id, amount, rnk\n"
-            "FROM (\n"
-            "  SELECT order_id, user_id, net_amount AS amount,\n"
-            "         DENSE_RANK() OVER (PARTITION BY user_id ORDER BY net_amount DESC) AS rnk\n"
-            "  FROM orders\n"
-            ") t\n"
-            "WHERE rnk <= 2\n"
-            "ORDER BY user_id, rnk, order_id;"
-        ),
-        explanation="Rank orders per user by net_amount, then keep the top two ranks.",
-    ),
-    q(
-        id=132,
-        order=2,
-        title="Sample Hard: First Order Date Per User",
-        difficulty="hard",
-        description="Return each user_id and their first order date as first_order_date.",
-        schema=merge_schema(ORDERS_SCHEMA),
-        dataset_files=["orders.csv"],
-        expected_query=(
-            "SELECT user_id, MIN(CAST(order_date AS DATE)) AS first_order_date "
-            "FROM orders "
-            "GROUP BY user_id "
-            "ORDER BY user_id"
-        ),
-        solution_query=(
-            "SELECT user_id, MIN(CAST(order_date AS DATE)) AS first_order_date\n"
-            "FROM orders\n"
-            "GROUP BY user_id\n"
-            "ORDER BY user_id;"
-        ),
-        explanation="Use MIN(order_date) per user_id to find the first order date.",
-    ),
-    q(
-        id=133,
-        order=3,
-        title="Sample Hard: Completed Revenue By Country",
-        difficulty="hard",
-        description="For each country, return total completed order revenue as completed_revenue.",
-        schema=merge_schema(USERS_SCHEMA, ORDERS_SCHEMA),
-        dataset_files=["users.csv", "orders.csv"],
-        expected_query=(
-            "SELECT u.country, SUM(o.net_amount) AS completed_revenue "
-            "FROM users u "
-            "JOIN orders o ON o.user_id = u.user_id "
-            "WHERE o.status = 'completed' "
-            "GROUP BY u.country "
-            "ORDER BY u.country"
-        ),
-        solution_query=(
-            "SELECT u.country, SUM(o.net_amount) AS completed_revenue\n"
-            "FROM users u\n"
-            "JOIN orders o ON o.user_id = u.user_id\n"
-            "WHERE o.status = 'completed'\n"
-            "GROUP BY u.country\n"
-            "ORDER BY u.country;"
-        ),
-        explanation="Join users to orders, filter to completed, then sum net_amount by country.",
-    ),
-]
-
-
-_validate_sample_questions(SAMPLE_QUESTIONS)
-
-
-SAMPLE_INDEX: dict[int, dict[str, Any]] = {int(q["id"]): q for q in SAMPLE_QUESTIONS}
-
 # Build alias map from the registry: both slug and db_topic resolve to db_topic.
 # This preserves "python-data" → "python_data" without any hardcoding here.
 _TOPIC_ALIASES: dict[str, str] = {}
@@ -358,11 +125,15 @@ for _t in TRACKS:
 _DIFFICULTY_ORDER = ("easy", "medium", "hard")
 _SAMPLE_POOL_SIZE = 3
 
-# Dedicated sample question files for non-SQL tracks.
+# Dedicated sample question files for every track.
 # Each file contains exactly 9 questions: 3 easy, 3 medium, 3 hard.
 # IDs follow the TXS compact format: T = track digit, X = difficulty digit (1/2/3), S = 1–3.
+# SQL samples are validated against committed CSV headers (schema/dataset_files
+# integrity) via _validate_sample_questions below. Other tracks rely on
+# track-level catalog validators run by scripts/validate_content.py.
 _SAMPLE_DIR = Path(__file__).resolve().parent / "content" / "sample_questions"
 _TRACK_SAMPLE_FILES: dict[str, str] = {
+    "sql": "sql.json",
     "python": "python.json",
     "python_data": "pandas.json",
     "pyspark": "pyspark.json",
@@ -375,7 +146,7 @@ _TRACK_SAMPLE_FILES: dict[str, str] = {
 
 
 def _load_track_samples(db_topic: str) -> dict[str, list[dict[str, Any]]]:
-    """Load and group dedicated sample questions for a non-SQL track by difficulty."""
+    """Load and group dedicated sample questions for a track by difficulty."""
     filename = _TRACK_SAMPLE_FILES[db_topic]
     sample_path = _SAMPLE_DIR / filename
     with sample_path.open("r", encoding="utf-8") as fh:
@@ -390,12 +161,21 @@ def _load_track_samples(db_topic: str) -> dict[str, list[dict[str, Any]]]:
     return grouped
 
 
-# Pre-load all non-SQL track sample pools at module import time so the first
+# Pre-load every track's sample pool at module import time so the first
 # request does not pay the file-read cost.
 _TRACK_SAMPLES: dict[str, dict[str, list[dict[str, Any]]]] = {
     db_topic: _load_track_samples(db_topic)
     for db_topic in _TRACK_SAMPLE_FILES
 }
+
+# SQL samples carry executable schema and dataset_files — validate that schema
+# columns match committed CSV headers and that exactly 3 questions exist per
+# difficulty. Other tracks are MCQ/conceptual and don't need this check.
+SAMPLE_QUESTIONS: list[dict[str, Any]] = [
+    q for diff_pool in _TRACK_SAMPLES["sql"].values() for q in diff_pool
+]
+_validate_sample_questions(SAMPLE_QUESTIONS)
+SAMPLE_INDEX: dict[int, dict[str, Any]] = {int(q["id"]): q for q in SAMPLE_QUESTIONS}
 
 
 def normalize_sample_topic(topic: str) -> str:
@@ -411,9 +191,6 @@ def get_sample_question(question_id: int) -> Optional[dict[str, Any]]:
 
 def get_sample_question_for_topic(question_id: int, topic: str) -> Optional[dict[str, Any]]:
     normalized_topic = normalize_sample_topic(topic)
-    if normalized_topic == "sql":
-        return get_sample_question(question_id)
-
     target_id = int(question_id)
     for difficulty in _DIFFICULTY_ORDER:
         pool, _ = get_topic_sample_pool(topic=normalized_topic, difficulty=difficulty)
@@ -424,6 +201,8 @@ def get_sample_question_for_topic(question_id: int, topic: str) -> Optional[dict
 
 
 def get_sample_questions_by_difficulty() -> dict[str, list[dict[str, Any]]]:
+    """SQL-only legacy accessor used by tests. Other tracks should call
+    get_topic_sample_pool() directly."""
     grouped: dict[str, list[dict[str, Any]]] = {"easy": [], "medium": [], "hard": []}
     for q in SAMPLE_QUESTIONS:
         grouped[q["difficulty"]].append(q)
@@ -433,8 +212,8 @@ def get_sample_questions_by_difficulty() -> dict[str, list[dict[str, Any]]]:
 
 
 def get_all_topic_db_slugs() -> list[str]:
-    """All db_topic slugs that have a sample pool (SQL + every dedicated file)."""
-    return ["sql"] + list(_TRACK_SAMPLE_FILES.keys())
+    """All db_topic slugs that have a sample pool — one per dedicated file."""
+    return list(_TRACK_SAMPLE_FILES.keys())
 
 
 def get_sample_catalog_shape() -> dict[str, dict[str, int]]:
@@ -462,11 +241,6 @@ def get_topic_sample_pool(
     if normalized_difficulty not in _DIFFICULTY_ORDER:
         raise ValueError(f"Unsupported sample difficulty: {difficulty}")
 
-    if normalized_topic == "sql":
-        grouped = get_sample_questions_by_difficulty()
-        pool = list(grouped.get(normalized_difficulty, []))
-        return pool, normalized_difficulty
-
-    # Non-SQL tracks: serve from dedicated sample files, never from the practice catalog.
+    # Every track — SQL included — is served from its dedicated sample file.
     pool = list(_TRACK_SAMPLES[normalized_topic].get(normalized_difficulty, []))
     return pool[:_SAMPLE_POOL_SIZE], normalized_difficulty
