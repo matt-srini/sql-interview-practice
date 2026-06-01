@@ -142,7 +142,7 @@
     "solution_code": "import pandas as pd\ndef solve(df_users: pd.DataFrame, df_orders: pd.DataFrame) -> pd.DataFrame:\n    order_counts = (\n        df_orders\n        .groupby('user_id', as_index=False)\n        .agg(order_count=('order_id','count'))\n    )\n    completed_rev = (\n        df_orders[df_orders['status']=='completed']\n        .groupby('user_id', as_index=False)\n        .agg(completed_revenue=('net_amount','sum'))\n    )\n    result = (\n        df_users[['user_id','country','plan_tier']]\n        .merge(order_counts, on='user_id', how='left')\n        .merge(completed_rev, on='user_id', how='left')\n    )\n    result['order_count'] = result['order_count'].fillna(0).astype(int)\n    result['completed_revenue'] = result['completed_revenue'].fillna(0.0)\n    return (\n        result\n        .sort_values(['completed_revenue','user_id'], ascending=[False,True])\n        .reset_index(drop=True)\n    )",
     "explanation": "Compute two separate groupby aggregations — one for total order counts, one for completed revenue — then left-join both onto the user base to preserve users with no orders. `fillna(0)` handles users with no match in either aggregation. Two separate left joins are cleaner and avoid double-counting that can occur with conditional aggregation in a single groupby.",
     "hints": [
-      "Compute order count and completed revenue in separate groupby calls, then left-join both onto the user frame.",
+      "Compute two separate aggregations — one over all orders per user, one over completed orders only — then left-join both results onto the user table to preserve users with no orders.",
       "Users with no orders will have NaN after the left join — fill those with 0 before returning."
     ],
     "concepts": [
@@ -178,7 +178,7 @@
     "solution_code": "import pandas as pd\ndef solve(df_orders: pd.DataFrame) -> pd.DataFrame:\n    completed = df_orders[df_orders['status']=='completed'].copy()\n    completed['order_date'] = pd.to_datetime(completed['order_date'])\n    daily = (\n        completed\n        .groupby('order_date', as_index=False)['net_amount']\n        .sum()\n        .set_index('order_date')\n        .sort_index()\n    )\n    daily['rolling_7d_revenue'] = daily['net_amount'].rolling('7D').sum()\n    daily = daily.reset_index()\n    daily['order_date'] = daily['order_date'].dt.strftime('%Y-%m-%d')\n    return daily[['order_date','rolling_7d_revenue']].reset_index(drop=True)",
     "explanation": "After filtering and aggregating to daily revenue, `.rolling('7D')` uses a time-based window (requires a DatetimeIndex) so the window always spans exactly 7 calendar days regardless of gaps in the data — unlike `.rolling(7)` which counts 7 rows. Reset the index, convert back to string for the output column.",
     "hints": [
-      "`.rolling('7D')` uses a time-based window on a DatetimeIndex — it handles date gaps correctly, unlike `.rolling(7)` which counts rows.",
+      "The window must cover the last 7 calendar days — not the last 7 rows. On a dataset with gaps in dates, a row-count window would silently produce wrong results.",
       "Set the datetime column as the index before calling `.rolling`, then reset it afterwards."
     ],
     "concepts": [
@@ -225,7 +225,7 @@
     "solution_code": "import pandas as pd\ndef solve(df_users: pd.DataFrame, df_orders: pd.DataFrame) -> pd.DataFrame:\n    completed_rev = (\n        df_orders[df_orders['status']=='completed']\n        .groupby('user_id', as_index=False)\n        .agg(total_revenue=('net_amount','sum'))\n    )\n    result = (\n        df_users[['user_id','country']]\n        .merge(completed_rev, on='user_id', how='left')\n    )\n    result['total_revenue'] = result['total_revenue'].fillna(0.0)\n    result['revenue_pct_rank'] = result['total_revenue'].rank(pct=True, method='average')\n    return (\n        result[['user_id','country','total_revenue','revenue_pct_rank']]\n        .sort_values(['revenue_pct_rank','user_id'], ascending=[False,True])\n        .reset_index(drop=True)\n    )",
     "explanation": "Left-join completed revenue aggregates onto the full user set (so no-order users get 0). Then `.rank(pct=True, method='average')` computes percentile ranks with average handling for ties — the same semantics as `PERCENT_RANK` in SQL. `pct=True` normalises to [0, 1].",
     "hints": [
-      "Left-join the revenue aggregation onto the user list — users with no completed orders need a `fillna(0)` after the join.",
+      "Left-join the revenue aggregation onto the full user list — users with no completed orders will have missing values after the join; treat those as 0 for the purpose of ranking.",
       "`.rank(pct=True, method='average')` computes percentile ranks; `pct=True` normalises the result to [0,1]."
     ],
     "concepts": [

@@ -121,7 +121,7 @@
     ],
     "public_test_cases": 1,
     "hints": [
-      "Count frequencies with a dict in one pass over the list.",
+      "Count occurrences of each label in a single pass — then pick the label with the highest count, breaking ties by choosing the lexicographically smallest.",
       "For ties, a compound sort key `(-freq, label)` handles descending-count + alphabetical simultaneously."
     ],
     "concepts": [
@@ -185,7 +185,7 @@
     ],
     "public_test_cases": 1,
     "hints": [
-      "Track what you have already added — a set gives O(1) membership checks.",
+      "Track which elements have already appeared — an O(1) membership check lets you skip duplicates on first occurrence without nested loops.",
       "Iterate once, append only on first occurrence."
     ],
     "concepts": [
@@ -329,7 +329,7 @@
     ],
     "public_test_cases": 1,
     "hints": [
-      "Build a frequency dict, then sort by (count descending, label ascending) and take the first k entries.",
+      "Count occurrences per item, then sort by a compound key (count descending, label ascending) and take the first k results.",
       "A compound sort key handles both ordering rules in one sort."
     ],
     "concepts": [
