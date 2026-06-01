@@ -39,7 +39,7 @@
     "explanation": "Without idempotency, a failed-and-retried job can write the same rows twice, duplicate aggregates, or corrupt state. An idempotent step can be run any number of times and always leaves the destination in the same correct state — typically achieved via upserts, delete-then-insert for the date partition, or MERGE operations. This is essential for batch jobs too: network timeouts, orchestrator restarts, or upstream delays can all cause reruns. Option 0 conflates idempotency with caching. Option 2 is wrong — batch jobs that are retried are just as exposed to double-writes as streaming jobs. Option 3 confuses idempotency with delivery semantics — they are related but distinct concepts.",
     "hints": [
       "Ask: what happens if this step runs twice with the same input? Does the output double-count or stay the same?",
-      "Idempotent writes often use upserts or partition-level delete-then-insert to avoid accumulating duplicates."
+      "Two write strategies that avoid double-counting on retry: an upsert (insert or update based on a unique key) or a partition-level overwrite (delete all rows for the date partition, then re-insert)."
     ],
     "concepts": [
       "IDEMPOTENCY"
