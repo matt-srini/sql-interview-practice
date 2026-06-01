@@ -30,7 +30,8 @@
     "type": "scenario",
     "difficulty": "easy",
     "title": "Choosing a Primary Metric",
-    "description": "A team is launching an A/B test on a new recommendation widget. They have access to click-through rate (CTR), time spent on page, downstream purchase rate, and number of page scrolls. They want a primary metric that most directly reflects whether the widget is creating genuine value for users. Which metric is the strongest choice?",
+    "scenario_context": "A team is launching an A/B test on a new recommendation widget. They have access to click-through rate (CTR), time spent on page, downstream purchase rate, and number of page scrolls. They want a primary metric that most directly reflects whether the widget is creating genuine value for users.",
+    "description": "Which metric is the strongest choice?",
     "options": [
       "Number of page scrolls, because it reflects deeper engagement with content",
       "Time spent on page, because more time indicates users find the content interesting",
@@ -294,7 +295,8 @@
     "type": "scenario",
     "difficulty": "easy",
     "title": "Peeking at Results Early",
-    "description": "A team launches an A/B test and plans to run it for four weeks. At the end of week one, results look promising with p = 0.04. A stakeholder wants to stop the experiment early and ship the feature. What is the primary risk of stopping now?",
+    "scenario_context": "A team launches an A/B test and plans to run it for four weeks. At the end of week one, results look promising with p = 0.04. A stakeholder wants to stop the experiment early and ship the feature.",
+    "description": "What is the primary risk of stopping now?",
     "options": [
       "The sample size is large enough at week one, so there is no statistical risk",
       "Stopping early because the result looks significant inflates the Type I error rate beyond the planned alpha",
@@ -438,7 +440,8 @@
     "type": "scenario",
     "difficulty": "easy",
     "title": "Increasing Power Without More Users",
-    "description": "A team has already recruited the maximum number of users they can for an experiment, but their power analysis suggests they are underpowered for the effect size they care about. Which of the following approaches can increase statistical power without acquiring more users?",
+    "scenario_context": "A team has already recruited the maximum number of users they can for an experiment, but their power analysis suggests they are underpowered for the effect size they care about.",
+    "description": "Which of the following approaches can increase statistical power without acquiring more users?",
     "options": [
       "Raise the significance threshold from 0.05 to 0.10, accepting more false positives to reduce false negatives",
       "Switch to a two-sided test instead of a one-sided test",
@@ -462,7 +465,8 @@
     "type": "scenario",
     "difficulty": "easy",
     "title": "Segmentation Analysis After Significance",
-    "description": "An experiment on a notification feature shows no statistically significant overall lift. A curious analyst breaks down the results by device type and finds that mobile users show a strong positive effect. The analyst wants to report this as a success. What is the primary risk of this approach?",
+    "scenario_context": "An experiment on a notification feature shows no statistically significant overall lift. A curious analyst breaks down the results by device type and finds that mobile users show a strong positive effect. The analyst wants to report this as a success.",
+    "description": "What is the primary risk of this approach?",
     "options": [
       "Device-level analysis is technically impossible without additional data collection",
       "Reporting a significant subgroup finding from a post-hoc analysis inflates the false positive risk, since many subgroups were implicitly tested",
@@ -486,7 +490,8 @@
     "type": "scenario",
     "difficulty": "easy",
     "title": "Network Effects and Experiment Validity",
-    "description": "A social platform wants to test a new connection recommendation feature. They randomly assign 50% of users to treatment and 50% to control. A data scientist warns that this design may produce a biased estimate of the true effect. What is the most likely concern?",
+    "scenario_context": "A social platform wants to test a new connection recommendation feature. They randomly assign 50% of users to treatment and 50% to control. A data scientist warns that this design may produce a biased estimate of the true effect.",
+    "description": "What is the most likely concern?",
     "options": [
       "The 50/50 split wastes half the user base on a control group that does not benefit",
       "Users in control and treatment interact with each other, so the treatment group's behavior can influence control users, violating the independence assumption",
@@ -630,7 +635,8 @@
     "type": "scenario",
     "difficulty": "easy",
     "title": "Defining Experiment Eligibility Criteria",
-    "description": "A team is testing a new checkout experience and wants to include all users in the experiment. A data scientist suggests restricting the experiment to users who have at least one item in their cart. What is the strongest reason for this restriction?",
+    "scenario_context": "A team is testing a new checkout experience and wants to include all users in the experiment. A data scientist suggests restricting the experiment to users who have at least one item in their cart.",
+    "description": "What is the strongest reason for this restriction?",
     "options": [
       "Users without items in their cart will dilute the treatment group and bias the result toward zero",
       "Including ineligible users violates GDPR and should be avoided for compliance reasons",
