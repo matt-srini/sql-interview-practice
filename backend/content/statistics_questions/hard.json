@@ -713,7 +713,7 @@
       "Survivorship bias: candidates who failed screening are excluded, but this only reduces sample size and does not distort the correlation structure"
     ],
     "correct_option": 1,
-    "explanation": "A collider is a variable with two incoming arrows (A → C ← B). Conditioning on a collider (here, selecting only screened candidates) opens a non-causal association between its parents (X and Y) even if X and Y are independent in the population. Intuitively: among those who passed screening, a candidate with weak system design skills must have strong coding experience to have been admitted (and vice versa), creating a negative correlation purely as an artefact of the selection filter. This is sometimes called Berkson's bias and is a special case of selection bias. The fix is to analyse the full candidate pool, not the filtered subgroup — never condition on a collider.",
+    "explanation": "A collider is a variable with two incoming arrows (A → C ← B). Conditioning on a collider (here, selecting only screened candidates) opens a non-causal association between its parents (X and Y) even if X and Y are independent in the population. Intuitively: among those who passed screening, a candidate with weak system design skills must have strong coding experience to have been admitted (and vice versa), creating a negative correlation purely as an artefact of the selection filter. This is sometimes called Berkson's bias. The fix is to analyse the full candidate pool — never condition on a collider. Option 0 proposes a direct causal mechanism (X causes Y through over-preparation), but a real X→Y causal effect would produce a correlation in the full candidate pool too — which the question explicitly rules out. The observed correlation is a selection artefact, not a causal signal. Option 2 misidentifies Passed Screening as a confounder. A confounder has arrows pointing INTO both X and Y (it causes both). Passed Screening has arrows pointing FROM X and Y — it is caused by both — which is the defining structure of a collider. Adjusting for a confounder removes spurious correlation; conditioning on a collider creates it. Option 3 conflates collider bias with survivorship bias. Survivorship bias reduces representativeness and external validity, but does not by itself distort the correlation structure between two independent variables within the surviving group. Collider conditioning specifically manufactures within-group correlations absent in the full population.",
     "hints": [
       "A confounder has arrows pointing TO both the treatment and outcome. A collider has arrows pointing FROM both the treatment and outcome. Which pattern does Passed Screening fit?",
       "Think about who makes it through screening: to pass without strong system design, you need exceptional coding skills. Does this create a within-group negative correlation even if the two skills are independent in the population?"
@@ -2485,7 +2485,7 @@
           0.1,
           0.15
         ],
-        "expected": 394,
+        "expected": 687,
         "tolerance": 5
       },
       {
@@ -2494,7 +2494,7 @@
           0.1,
           0.15
         ],
-        "expected": 631,
+        "expected": 1165,
         "tolerance": 5
       }
     ],
