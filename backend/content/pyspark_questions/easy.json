@@ -858,10 +858,10 @@
       "total=1, unique=1",
       "total=2, unique=1",
       "total=2, unique=2",
-      "total=1, unique=2"
+      "total=5, unique=3"
     ],
     "correct_option": 1,
-    "explanation": "For user_id=2, there are two rows: (2,'A') and (2,'A'). `count('category')` counts all non-null values = 2. `countDistinct('category')` counts unique values = 1 (only 'A'). Option A is wrong — there are 2 rows for user 2. Option C is wrong — distinct count is 1. Option D is impossible.",
+    "explanation": "For user_id=2, there are two rows: (2,'A') and (2,'A'). `count('category')` counts all non-null values = 2. `countDistinct('category')` counts unique values = 1 (only 'A'). Option A is wrong — there are 2 rows for user 2. Option C is wrong — distinct count is 1. Option D is wrong: `count` and `countDistinct` inside `groupBy().agg()` compute within each group, not over the full DataFrame. Across all 5 rows the DataFrame has 3 distinct category values (A, B, C) — but those are global figures. For user_id=2 specifically there are 2 rows and 1 distinct value. The pair (total=5, unique=3) reflects forgetting the groupBy and running the aggregations on the unpartitioned DataFrame.",
     "hints": [
       "Trace through the data for user_id=2 specifically: how many rows? How many distinct category values?"
     ],
