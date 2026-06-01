@@ -61,7 +61,7 @@
       "Option A — click-through rate is the most sensitive metric and will detect a treatment effect fastest",
       "Option B — 7-day retention is closest to the north star business outcome; it measures whether users actually stick around after the new onboarding flow, not just whether they clicked through a screen or reported an intention to stay",
       "Option C — NPS is the gold standard for measuring user satisfaction and is widely used by industry leaders",
-      "Option A — primary metrics should always be the most proximal action in the funnel to maximise statistical power"
+      "Option D — primary metrics should always be the most proximal action in the funnel to maximise statistical power"
     ],
     "correct_option": 1,
     "explanation": "The primary metric should be the outcome that most directly measures whether the experiment's goal was achieved. The goal is activation — getting users to actually engage with and stay in the product. 7-day retention is the closest measurable proxy for that goal. Click-through rate on screen 1 (Option A) is a leading indicator but is too early in the funnel — users can click through and then churn immediately. NPS (Option C) is a satisfaction measure with low response rates and high noise, making it a poor primary metric for a conversion test. Using the most proximal metric (Option D's logic) optimises for clicks at the cost of downstream outcomes.",

@@ -336,7 +336,7 @@
     "topic": "python_data",
     "difficulty": "hard",
     "title": "Funnel Drop-Off by Traffic Source",
-    "description": "You have DataFrames `df_sessions` (columns: `session_id`, `user_id`, `session_start`, `traffic_source`) and `df_events` (columns: `event_id`, `session_id`, `user_id`, `event_name`).\n\nA user funnel has three steps in order: `'page_view'` → `'add_to_cart'` → `'purchase'`. Write `solve(df_sessions, df_events)` that returns a DataFrame with columns `traffic_source`, `sessions` (total sessions per source), `reached_add_to_cart` (sessions containing an `add_to_cart` event), `reached_purchase` (sessions containing a `purchase` event). Sort by `traffic_source` ascending.",
+    "description": "You have DataFrames `df_sessions` (columns: `session_id`, `user_id`, `session_start`, `traffic_source`) and `df_events` (columns: `event_id`, `session_id`, `user_id`, `event_name`).\n\nA user funnel has two steps in order: `'add_to_cart'` → `'purchase'`. Write `solve(df_sessions, df_events)` that returns a DataFrame with columns `traffic_source`, `sessions` (total sessions per source), `reached_add_to_cart` (sessions containing an `add_to_cart` event), `reached_purchase` (sessions containing a `purchase` event). Sort by `traffic_source` ascending.",
     "dataframes": {
       "df_sessions": "sessions.csv",
       "df_events": "events.csv"
