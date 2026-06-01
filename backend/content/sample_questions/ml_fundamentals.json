@@ -16,7 +16,7 @@
     "correct_option": 1,
     "explanation": "The gap between training and validation accuracy diagnoses variance. Model 1's 26-point gap is a classic overfitting signal — the model has memorised training patterns that don't generalise. Model 2's 2-point gap shows the model generalises well, though 79% training accuracy suggests it may have room to improve with more capacity or data (potential bias). Option 0 ignores the generalisation gap. Option 2 misdiagnoses Model 2 — a small train-validation gap is low variance, not high bias; high bias would show low training accuracy AND low validation accuracy. Option 3 misidentifies what constitutes 'noise' — a 26-point gap is not noise.",
     "hints": [
-      "Focus on the gap between training and validation accuracy — not either number in isolation, but how large the difference is and what direction it points. A large gap carries a specific diagnostic meaning about how well the model generalises beyond the examples it was trained on.",
+      "Look at both models side by side. For each model, what is the relationship between its training number and its validation number? Do the two models show the same relationship, or a different one?",
       "High bias = poor performance on both train and validation. High variance = good training, poor validation."
     ],
     "concepts": [
@@ -90,7 +90,7 @@
     "correct_option": 1,
     "explanation": "A large offline-to-online performance gap combined with an unrealistically high test AUC is the canonical signature of feature leakage. Here, the support ticket join likely includes tickets created after the churn event — data a real-time model wouldn't have at prediction time. Because the scaling (step 2) was applied before the split (step 3), it also used test-set statistics, which is a secondary leakage. Fix: split first, then compute any aggregations or scalers on training data only, and apply them to the test set. Option 0 conflates overfitting (which shows on a properly constructed test set) with leakage. Option 2 (covariate shift) could cause a gap but doesn't explain a 36-point drop from an unrealistically high baseline. Option 3 misdiagnoses the root cause.",
     "hints": [
-      "A test AUC much higher than what production delivers almost always means the test set is 'contaminated' — it saw information that production wouldn't have.",
+      "Walk through the pipeline steps in order. Which operations use data from which rows? Is there any step that occurs before the train/test split but processes data from all rows — including those that end up in the test set?",
       "Check whether any feature joins, scalers, or encoders used data from the test set. The split must happen before all feature engineering."
     ],
     "concepts": [
@@ -165,7 +165,7 @@
     "correct_option": 1,
     "explanation": "A large offline-to-online gap without leakage or code bugs typically indicates training-serving skew or distribution shift. For recommendation systems, two common sources: (1) feedback loop bias — historical click data reflects the previous recommendation policy, not user preferences independent of what was shown; (2) feature distribution shift — features used in training (e.g., user history up to a cutoff) differ from features available at serving time. The investigation proceeds by auditing feature distributions and understanding how offline labels were generated. Option 0 (overfitting) would show a train-test gap, which was presumably absent. Option 2 (serving latency) is plausible but should show as errors in infrastructure logs. Option 3 is wrong — switching metrics doesn't explain the production gap.",
     "hints": [
-      "When offline and online metrics diverge without leakage, look at whether features or labels in training are actually representative of production conditions.",
+      "The question explicitly rules out certain causes. Given what remains, what assumptions about the relationship between your offline evaluation setup and production could still fail silently?",
       "Recommendation systems are especially prone to feedback loop bias: historical clicks reflect what was previously recommended, not raw user preferences."
     ],
     "concepts": [
@@ -216,7 +216,7 @@
     "correct_option": 1,
     "explanation": "Production ML decisions are multi-objective: accuracy matters, but so do latency, cost, and reliability. An 800 ms latency that violates SLA is not 'a large model with a minor latency issue' — it is a product failure. The correct approach is not a binary choice between the two models. Distillation trains a smaller model to mimic the large model's output distribution, often recovering much of the accuracy gap. Quantisation reduces precision (e.g., FP32 → INT8) to cut inference cost with minimal accuracy loss. Caching frequent inputs eliminates repeated computation. The 6% gap must be translated into business impact — what decisions does it affect, what is the cost of a misclassification — before the trade-off is properly framed. Option 0 ignores operational reality. Option 2 is wrong: horizontal scaling reduces throughput pressure, not per-request latency for a single-request bottleneck. Option 3 dismisses the accuracy gap without business justification.",
     "hints": [
-      "A model that violates SLA is not deployable regardless of accuracy — start from the constraint, then find ways to recover accuracy within it.",
+      "Before choosing a strategy, clarify what 'most appropriate' means here. Which of the two stated requirements — accuracy and latency — is negotiable, and which is not? Does the question give you enough information to determine that?",
       "Distillation and quantisation are the standard paths to close the accuracy gap while meeting latency requirements."
     ],
     "concepts": [
