@@ -12,7 +12,7 @@ This is the **orchestration handbook**, not the contract. The contract (rules, p
 | Stage | Who runs it | What it produces | Critical rule |
 |---|---|---|---|
 | **A — Pre-execution analysis** | Opus | Per-track decisions log + Sonnet handoff prompt | Plans, does not author. Locked decisions go into the handoff verbatim. |
-| **B — Execution** | Sonnet (fresh session, model-gated) | New questions + remaps + validators clean + H1–H7 closeout commits | Executes the locked plan. Does not re-litigate Stage A decisions. Does not self-audit. |
+| **B — Execution** | Sonnet (fresh session, model-gated) | New questions + remaps + validators clean + H1–H8 closeout commits | Executes the locked plan. Does not re-litigate Stage A decisions. Does not self-audit. |
 | **C — Post-execution audit** | Opus (fresh session) | PASS / FAIL verdict against durable contract; remediation prompt if FAIL | Independent. No context from Stage A or Stage B. Verifies disk state, not hand-back claims. |
 
 ### Why stages are independent
@@ -144,7 +144,7 @@ print('No orphans')
 
 Rule: if orphans returned in an ITEM, fix in that ITEM before authoring the next. Do not accumulate drift.
 
-### 3.4 Closeout (H-series H1–H7)
+### 3.4 Closeout (H-series H1–H8)
 
 Sonnet executes the H-series as the CLOSING step of Stage B. The H-series is durable and lives in `docs/content-authoring.md` § Phase 2 closeout doc-hygiene. Summary (full text in the durable doc):
 
@@ -160,7 +160,7 @@ Sonnet executes the H-series as the CLOSING step of Stage B. The H-series is dur
 
 ### 3.5 Procedural rules (always include in handoff)
 
-- **P1** — closeout commits must NOT self-title "audit PASS" or "PASS." Sonnet does not audit itself. Use descriptive titles like `Phase 2 closeout (H1–H7)`.
+- **P1** — closeout commits must NOT self-title "audit PASS" or "PASS." Sonnet does not audit itself. Use descriptive titles like `Phase 2 closeout (H1–H8)`.
 - **P2** — any durable-contract doc change outside the H-series scope MUST be surfaced in the hand-back summary BEFORE self-applying. Sonnet flags; user triggers separate doc-hygiene pass.
 
 Full text in `docs/content-authoring.md` § Phase 2 closeout doc-hygiene.
@@ -195,7 +195,7 @@ Fresh Opus session. NO context from Stage A or Stage B. Reads disk state against
 | **E. Concept tags** | Every tag resolves to a registered family; no blocklist hits; tags identify distinguishing technique (not incidental); cross-track family names semantically aligned if reused | Zero orphans; spot-check passes |
 | **F. Mock-only contract** | Recombination rule, anti-duplication, realism family path verified, type-mix differentiation, chain atomicity, W4-type decisions actually implemented (not theoretical) | All sampled rules satisfied |
 | **G. Sizing benchmark** | Practice:mock ratio inside 1.0–1.5× band; mock m:h split defensible against precedent table | Ratio in band; split documented if outlier |
-| **H. Doc hygiene (H1–H7)** | Each step independently verified on disk — DONE / MISSING / PARTIAL per item | All 7 DONE |
+| **H. Doc hygiene (H1–H8)** | Each step independently verified on disk — DONE / MISSING / PARTIAL per item | All 8 DONE |
 | **I. Procedural (P1, P2)** | No self-titled "PASS" commits; out-of-scope doc changes flagged (not self-applied) | Both verified |
 | **J. Commit hygiene** | Main branch, no `--no-verify`, co-author line present, descriptive commit messages | All four verified |
 
@@ -213,7 +213,7 @@ New audit dimension since the per-family coverage discipline landed:
 
 ### 4.4 Verdict format (PASS / FAIL)
 
-Verdict block must include: track name, result, counts on disk (practice + mock split), ratio, difficulty split, type mix, realism path, chain count, findings (one line per dimension A–J marked OK/FAIL/N/A/FLAG), H1–H7 closeout status (DONE/MISSING/PARTIAL per item), procedural verdict (P1/P2 VERIFIED or VIOLATED), scope-creep verdict (any commits outside H-series scope judged ACCEPTED / ACCEPTED-WITH-NOTE / REJECTED), required remediations if FAIL, Sonnet remediation prompt if FAIL (opens with model-gate verbatim).
+Verdict block must include: track name, result, counts on disk (practice + mock split), ratio, difficulty split, type mix, realism path, chain count, findings (one line per dimension A–J marked OK/FAIL/N/A/FLAG), H1–H8 closeout status (DONE/MISSING/PARTIAL per item), procedural verdict (P1/P2 VERIFIED or VIOLATED), scope-creep verdict (any commits outside H-series scope judged ACCEPTED / ACCEPTED-WITH-NOTE / REJECTED), required remediations if FAIL, Sonnet remediation prompt if FAIL (opens with model-gate verbatim).
 
 If PASS: state "<Track> Phase 2 closed. Tracker may tick <track>." Stop. Do NOT propose next-track work.
 
@@ -239,7 +239,7 @@ Focused on the flagged findings ONLY. NOT a full Phase 2 round. No new Stage A d
 - New questions, edits to existing questions, tag remaps for the flagged families.
 - Numerical count-syncing in CLAUDE.md (content footprint table + "Practice totals" + "Mock-only totals") AND `docs/content-authoring.md` § Question bank current state. Required by the no-stale-docs rule whenever question counts shift — this overrides any blanket "do not modify CLAUDE.md" language in the brief.
 - Re-running validators after each ITEM and at end.
-- The applicable subset of the H-series H1–H7 closeout (typically H1 orphan remap if any new orphans were introduced; H6 count sync; H7 tracker tick if scope is large enough to warrant a decision-log entry).
+- The applicable subset of the H-series H1–H8 closeout (typically H1 orphan remap if any new orphans were introduced; H6 count sync; H7 tracker tick if scope is large enough to warrant a decision-log entry).
 
 **What is OUT of scope (P2 applies — surface as flag, do not self-apply):**
 - Adding new families to `CONCEPT_FAMILIES`.
@@ -416,7 +416,7 @@ Where every rule lives. The runbook references; the contract enforces.
 | Concept-family registry (per track) + 7 universal follow-up dimensions | `docs/concept-taxonomy.md` |
 | Machine-readable family registry + realism families | `backend/concept_families.py` |
 | Validator coverage state + per-family coverage warnings | `backend/scripts/validate_content.py` + `docs/content-authoring.md` § Validator coverage state |
-| Phase 2 closeout doc-hygiene (H1–H7) | `docs/content-authoring.md` § Phase 2 closeout doc-hygiene |
+| Phase 2 closeout doc-hygiene (H1–H8) | `docs/content-authoring.md` § Phase 2 closeout doc-hygiene |
 | Procedural rules (P1, P2) | `docs/content-authoring.md` § Phase 2 closeout doc-hygiene |
 | Historical execution log (archived) | `docs/archive/2026-05-authoring-refactor.md` |
 

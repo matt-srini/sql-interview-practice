@@ -288,7 +288,7 @@ The 4-step verbatim lookup procedure lives in [`.github/agents/question-authorin
 | Data Modeling | ✅ | clean | Phase 2 closed; no realism families by design |
 | Statistics | ✅ | clean (216 q, 0 orphans) | Phase 2 closed 2026-05-26; 13 families, no realism families by design; 100 practice + 116 mock-only |
 | ML Fundamentals | ✅ | clean (243 q, 0 orphans) | Phase 2 closed 2026-05-26; BIAS/FAIRNESS Phase 2.5 closed 2026-05-26; 30 families, no realism families by design; 100 practice + 143 mock-only (8 chains) |
-| Experimentation | ⛔ | 0 orphans / 109 q | Phase 2 pending; clean enough to enforce, awaiting Phase 2 closure |
+| Experimentation | ✅ | clean | Phase 2 closed 2026-05-26; 24 families, no realism families by design; 87 practice + 104 mock-only (10 chains) |
 
 **Per-ITEM authoring discipline.** When the target track is NOT in `_TAXONOMY_VALIDATED_TRACKS`, Sonnet (or any executor) must run an explicit orphan-resolver one-liner after every ITEM (chunk of 8–12 questions) — `validate_content.py` is not sufficient. The one-liner appears in the Stage A handoff template; if orphans return, fix in that ITEM before authoring the next. Do not accumulate drift across multiple ITEMs.
 
@@ -309,6 +309,7 @@ Every track's Phase 2 closure must execute this checklist as the final step of e
 5. **Realism designation.** Set `MOCK_ONLY_REALISM_FAMILIES["<track>"]` in `backend/concept_families.py` (populated set OR explicit `set()` with design-rationale comment). Must match the track-doc's stated realism path.
 6. **IS-count sync.** Update CLAUDE.md (content footprint table + "Practice totals" + "Mock-only totals"), `docs/content-authoring.md` § Question bank current state, `docs/content-authoring.md` § Power-user runway sizing benchmark precedent table (add the row with locked ratio).
 7. **Archive record.** Record the closeout summary in the decision log within the archived tracker at `docs/archive/2026-05-authoring-refactor.md`.
+8. **Sample-bank sweep.** Audit `backend/content/sample_questions/<track>.json` against the same cross-track rules already verified for practice/mock: canonical-name tags (no sub-patterns / aliases), no duplicate-family within a question, no first-hint-leak or premise-disclosure violations, dataset/schema references match committed CSV headers (SQL only), no near-duplicates of practice or mock content. The 9 samples per track (3 per difficulty) are the first-impression surface — drift here erodes trust in the entire bank. Added 2026-06-01 after a retroactive audit (see `backend/content/sample_questions/` commits dca06fe → cc1c67d and onward) found systematic drift on the 7 closed tracks; future Phase 2 closeouts must not skip this step.
 
 **P1 — closeout commit naming.** The closeout commit must NOT self-title "audit PASS," "PASS," or any self-graded language. The executor does not audit itself; Stage C declares PASS. Use descriptive titles like `Phase 2 doc-hygiene closeout (orphan remap + validator enable + H-series)`.
 

@@ -146,7 +146,16 @@ _TRACK_SAMPLE_FILES: dict[str, str] = {
 
 
 def _load_track_samples(db_topic: str) -> dict[str, list[dict[str, Any]]]:
-    """Load and group dedicated sample questions for a track by difficulty."""
+    """Load and group dedicated sample questions for a track by difficulty.
+
+    Enforces exactly 3 questions per difficulty for every track. SQL gets
+    additional schema/CSV-header validation via `_validate_sample_questions`
+    below — this function provides the per-difficulty count guard that
+    applies uniformly to every track. Previously the count check ran only
+    for SQL, so a stray edit dropping a non-SQL track to 2 or 4 of any
+    difficulty would silently return a wrong-sized pool via `pool[:3]` at
+    request time. This guard raises at module import instead.
+    """
     filename = _TRACK_SAMPLE_FILES[db_topic]
     sample_path = _SAMPLE_DIR / filename
     with sample_path.open("r", encoding="utf-8") as fh:
@@ -158,6 +167,15 @@ def _load_track_samples(db_topic: str) -> dict[str, list[dict[str, Any]]]:
             grouped[diff].append(q)
     for diff in grouped:
         grouped[diff] = sorted(grouped[diff], key=lambda x: int(x.get("order", 0)))
+    # Per-difficulty count guard — every sample track must have exactly 3
+    # questions per difficulty.
+    for diff in ("easy", "medium", "hard"):
+        n = len(grouped[diff])
+        if n != 3:
+            raise ValueError(
+                f"Sample loader: db_topic={db_topic!r} difficulty={diff!r} "
+                f"expected exactly 3 questions, found {n}"
+            )
     return grouped
 
 

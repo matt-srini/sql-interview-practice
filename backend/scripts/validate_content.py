@@ -16,6 +16,24 @@ BACKEND_ROOT = Path(__file__).resolve().parent.parent
 
 QUESTION_DIRS: dict[str, Path] = {t.slug: t.content_dir for t in TRACKS}
 
+# Sample-question files participate in the same canonical-name + duplicate-family
+# taxonomy checks as practice/mock. The mapping mirrors
+# backend/sample_questions.py:_TRACK_SAMPLE_FILES but keys by validator-style
+# track slug (e.g. "python-data", not "python_data") so the iteration aligns
+# with QUESTION_DIRS and _TAXONOMY_VALIDATED_TRACKS membership.
+_SAMPLE_DIR = BACKEND_ROOT / "content" / "sample_questions"
+SAMPLE_FILES: dict[str, Path] = {
+    "sql": _SAMPLE_DIR / "sql.json",
+    "python": _SAMPLE_DIR / "python.json",
+    "python-data": _SAMPLE_DIR / "pandas.json",
+    "pyspark": _SAMPLE_DIR / "pyspark.json",
+    "data-engineering": _SAMPLE_DIR / "data_engineering.json",
+    "data-modeling": _SAMPLE_DIR / "data_modeling.json",
+    "statistics": _SAMPLE_DIR / "statistics.json",
+    "ml-fundamentals": _SAMPLE_DIR / "ml_fundamentals.json",
+    "experimentation": _SAMPLE_DIR / "experimentation.json",
+}
+
 _RAW_CONCEPTS_BY_TRACK: dict[str, set[str]] = {t.slug: t.concept_blocklist for t in TRACKS}
 
 _HINT_COUNT_RULES: dict[str, dict[str, tuple[int, int]]] = {t.slug: t.hint_rules for t in TRACKS}
@@ -36,6 +54,15 @@ def _iter_question_files() -> list[tuple[str, Path]]:
             if file_path.stem == "schemas":
                 continue
             files.append((track, file_path))
+    # Sample-question files participate in the taxonomy + hint checks. SQL
+    # samples currently lack `concepts`/`hints` fields — Phase 4c (sample-bank
+    # audit fix) will add them; until then SQL samples are excluded so the
+    # validator does not fail on missing required fields.
+    for track, sample_file in SAMPLE_FILES.items():
+        if track == "sql":
+            continue
+        if sample_file.exists():
+            files.append((track, sample_file))
     return files
 
 
@@ -219,8 +246,12 @@ def _validate_hints() -> None:
     errors: list[str] = []
 
     for track, file_path in _iter_question_files():
-        difficulty = file_path.stem
-        min_hints, max_hints = _HINT_COUNT_RULES[track][difficulty]
+        # For practice/mock files (easy.json/medium.json/hard.json), every
+        # question shares the file's difficulty. For sample files (e.g.,
+        # pyspark.json), all 3 difficulties are mixed in one file. Read
+        # difficulty from the question field — works uniformly for both.
+        file_stem_difficulty = file_path.stem if file_path.stem in ("easy", "medium", "hard") else None
+        is_sample = file_path.parent.name == "sample_questions"
 
         with file_path.open("r", encoding="utf-8") as handle:
             questions = json.load(handle)
@@ -229,15 +260,18 @@ def _validate_hints() -> None:
             qid = question.get("id", "<unknown>")
             title = question.get("title", "<untitled>")
             hints = question.get("hints")
+            difficulty = question.get("difficulty") or file_stem_difficulty
 
             if not isinstance(hints, list) or not hints:
                 errors.append(f"{track} {qid} {title}: hints must be a non-empty list")
                 continue
 
-            if len(hints) < min_hints or len(hints) > max_hints:
-                errors.append(
-                    f"{track} {qid} {title}: expected {min_hints}-{max_hints} hints, found {len(hints)}"
-                )
+            if difficulty in _HINT_COUNT_RULES.get(track, {}):
+                min_hints, max_hints = _HINT_COUNT_RULES[track][difficulty]
+                if len(hints) < min_hints or len(hints) > max_hints:
+                    errors.append(
+                        f"{track} {qid} {title}: expected {min_hints}-{max_hints} hints, found {len(hints)}"
+                    )
 
             normalized_seen: set[str] = set()
             for hint in hints:
@@ -250,6 +284,17 @@ def _validate_hints() -> None:
                     errors.append(f"{track} {qid} {title}: duplicate hint '{hint}'")
                     continue
                 normalized_seen.add(normalized)
+
+            # First-hint leak-pattern regex check is calibrated for
+            # practice/mock content. Sample-tier content has its own audit
+            # cadence (sample-bank audit fix, 2026-06-01) and is exempt from
+            # the strict per-track patterns — samples often legitimately
+            # reference their own question subject (e.g., DM 612 is literally
+            # titled "...Grain..."; the H1 mentioning "grain" is question
+            # context, not a leak). Canonical-name + concept-blocklist +
+            # near-duplicate checks still apply via _validate_concepts.
+            if is_sample:
+                continue
 
             first_hint = hints[0] if hints else ""
             for pattern in _FIRST_HINT_LEAK_PATTERNS[track]:
