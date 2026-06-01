@@ -1267,7 +1267,8 @@
     "mock_only": true,
     "parent_id": 52054,
     "follow_up_dimension": "edge_case",
-    "description": "Six months after the BigQuery migration, the company moves events to a data lake on GCS (Parquet format). A streaming micro-batch pipeline generates one Parquet file per Kafka partition per 30-second window. With 48 Kafka partitions, this produces 5,760 files/hour and 138,240 files/day. BigQuery External Tables querying the GCS path now take 5–8 seconds to plan (before any data is read) as the metadata catalog enumerates all 138 K+ files.",
+    "scenario_context": "Six months after the BigQuery migration, the company moves events to a data lake on GCS (Parquet format). A streaming micro-batch pipeline generates one Parquet file per Kafka partition per 30-second window. With 48 Kafka partitions, this produces 5,760 files/hour and 138,240 files/day. BigQuery External Tables querying the GCS path now take 5–8 seconds to plan (before any data is read) as the metadata catalog enumerates all 138 K+ files.",
+    "description": "What is the most effective fix for the query planning latency?",
     "options": [
       "The problem is the small-file explosion: 138 K files/day creates metadata enumeration overhead that dwarfs actual query execution. Fix: periodic compaction merges small Parquet files into analytics-friendly sizes (128 MB–1 GB). Table formats like Apache Iceberg, Delta Lake, or Apache Hudi provide built-in compaction with transaction logs for atomic multi-file writes and concurrent reads. Alternatively, increase the micro-batch window from 30 seconds to 5–10 minutes to produce fewer, larger files.",
       "The query planning latency is caused by BigQuery's External Table metadata cache not being warm — run BQ UPDATE --refresh_metadata to force BigQuery to re-scan and cache the GCS file listing; subsequent queries will plan in <1 second.",
