@@ -20,8 +20,8 @@
       "Define α, power, and MDE before starting — they determine sample size and cannot be adjusted after peeking at results."
     ],
     "concepts": [
-      "HYPOTHESIS FORMULATION & DESIGN",
-      "STATISTICAL SIGNIFICANCE & POWER"
+      "HYPOTHESIS FORMULATION",
+      "STATISTICAL SIGNIFICANCE"
     ]
   },
   {
@@ -45,8 +45,8 @@
       "Type II error = false negative = failing to reject H₀ when H₁ is true. The rate of this error is 1 − power."
     ],
     "concepts": [
-      "TYPE I & TYPE II ERRORS",
-      "STATISTICAL SIGNIFICANCE & POWER"
+      "TYPE I AND TYPE II ERRORS",
+      "STATISTICAL SIGNIFICANCE"
     ]
   },
   {
@@ -70,8 +70,8 @@
       "High-sensitivity metrics (clicks) detect effects faster but may not reflect the real business outcome you care about."
     ],
     "concepts": [
-      "METRIC SELECTION & SENSITIVITY",
-      "HYPOTHESIS FORMULATION & DESIGN"
+      "METRIC SELECTION",
+      "HYPOTHESIS FORMULATION"
     ]
   },
   {
@@ -120,7 +120,7 @@
       "Ship decisions should use the stabilised long-run metric, not the initial novelty spike."
     ],
     "concepts": [
-      "NOVELTY & PRIMACY EFFECTS",
+      "NOVELTY EFFECTS",
       "EXPERIMENT DURATION"
     ]
   },
@@ -145,9 +145,9 @@
       "FWER = 1 − (1−α)^k for k independent tests — plug in k=15 to see how likely a false positive is."
     ],
     "concepts": [
-      "MULTIPLE TESTING & CORRECTIONS",
+      "MULTIPLE TESTING",
       "SEGMENTATION ANALYSIS",
-      "STATISTICAL SIGNIFICANCE & POWER"
+      "STATISTICAL SIGNIFICANCE"
     ]
   },
   {
@@ -171,8 +171,8 @@
       "CUPED ≈ ANCOVA with a pre-experiment covariate. Variance reduction = smaller standard error = higher power for the same sample size."
     ],
     "concepts": [
-      "VARIANCE REDUCTION METHODS",
-      "STATISTICAL SIGNIFICANCE & POWER",
+      "VARIANCE REDUCTION",
+      "STATISTICAL SIGNIFICANCE",
       "EXPERIMENT DESIGN"
     ]
   },
@@ -197,8 +197,8 @@
       "Geo holdout and switchback experiments are the standard solutions for marketplace interference — they reduce cross-arm contamination by separating units in space or time."
     ],
     "concepts": [
-      "NETWORK EFFECTS & INTERFERENCE",
-      "EXPERIMENT DESIGN & UNITS OF RANDOMIZATION"
+      "NETWORK EFFECTS",
+      "EXPERIMENT DESIGN"
     ]
   },
   {
@@ -222,9 +222,9 @@
       "Group Sequential methods and alpha-spending functions are designed specifically for this problem — they pre-specify interim looks and adjust the threshold at each look."
     ],
     "concepts": [
-      "SEQUENTIAL TESTING & PEEKING",
-      "MULTIPLE TESTING & CORRECTIONS",
-      "STATISTICAL SIGNIFICANCE & POWER"
+      "SEQUENTIAL TESTING",
+      "MULTIPLE TESTING",
+      "STATISTICAL SIGNIFICANCE"
     ]
   }
 ]
