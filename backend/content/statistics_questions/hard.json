@@ -30,15 +30,15 @@
     "title": "Simpson's Paradox",
     "subtype": "conceptual",
     "type": "conceptual",
-    "description": "Hospital A treats 100 severe patients (80 survive) and 200 mild patients (190 survive). Hospital B treats 200 severe patients (140 survive) and 100 mild patients (95 survive). Hospital A has a higher overall survival rate, but Hospital B has a higher survival rate within each severity group. What phenomenon explains this?",
+    "description": "Hospital A treats 100 severe patients (50 survive) and 200 mild patients (190 survive). Hospital B treats 200 severe patients (120 survive) and 100 mild patients (97 survive). Hospital A has a higher overall survival rate, but Hospital B has a higher survival rate within each severity group. What phenomenon explains this?",
     "options": [
       "Regression to the mean: extreme outcomes in small samples tend to move toward the population average over time",
       "Simpson's paradox: aggregating groups can reverse a trend that holds within each subgroup due to an imbalanced confound",
       "Selection bias: patients are not randomly assigned to hospitals so the comparison is invalid by design",
       "The base rate fallacy: one cannot compare percentages derived from groups of different sizes mathematically"
     ],
-    "correct_option": 2,
-    "explanation": "Hospital A: overall (270/300 = 90%). Hospital B: (235/300 = 78.3%). But within severe patients, B has 140/200=70% vs A's 80/100=80% — A wins; within mild, B has 95/100=95% vs A's 190/200=95% — tie. The reversal occurs because Hospital B treats proportionally more severe (harder) cases, making its aggregate rate appear worse despite equal or better within-group performance. This is Simpson's paradox.",
+    "correct_option": 1,
+    "explanation": "Hospital A overall: 240/300 = 80%. Hospital B overall: 217/300 = 72.3% — A wins overall. But within severe patients B has 120/200=60% vs A's 50/100=50% — B wins. Within mild, B has 97/100=97% vs A's 190/200=95% — B wins again. The reversal occurs because Hospital A's case mix is 67% mild (easier) while Hospital B's is 67% severe (harder), so severity inflates A's aggregate rate despite A losing within every subgroup. This is Simpson's paradox: a confounder (severity) creates opposite trends at the aggregate and subgroup levels. Option 0 (regression to the mean) describes extreme individual measurements moving toward a population average over repeated sampling — unrelated to aggregate-vs-subgroup directional reversals. Option 2 (selection bias) correctly notes non-random patient assignment, but non-random assignment alone does not explain the within-group reversal; Simpson's paradox is the specific mechanism behind the flip. Option 3 (base rate fallacy) refers to ignoring prior probabilities in single-event probabilistic inference — a different cognitive error, not the aggregate-reversal pattern.",
     "hints": [
       "Check whether one hospital systematically treats more of the harder cases — that imbalance can flip aggregate conclusions.",
       "Simpson's paradox arises when a lurking variable (severity) creates different group compositions that reverse a trend."
@@ -88,8 +88,8 @@
       "Bootstrapping uses the t-distribution with n−1 degrees of freedom when the population distribution is unknown",
       "Bootstrapping is only valid when the original sample size exceeds 200, otherwise the t-distribution must be used"
     ],
-    "correct_option": 2,
-    "explanation": "The bootstrap treats the observed sample as a proxy for the population. By resampling with replacement and computing the statistic (e.g., median) on each resample, it empirically approximates the sampling distribution — without assuming any parametric family. This is especially valuable when no closed-form formula exists for the statistic's distribution.",
+    "correct_option": 1,
+    "explanation": "The bootstrap treats the observed sample as a proxy for the population. By resampling with replacement and computing the statistic (e.g., median) on each resample, it empirically approximates the sampling distribution — without assuming any parametric family. This is especially valuable when no closed-form formula exists for the statistic's distribution. Option 0 describes parametric bootstrapping (fit a model first, draw from that model) — a different and less common variant than the standard non-parametric bootstrap. Option 2 describes the t-interval, which assumes normality of the statistic's sampling distribution — the antithesis of bootstrap's distribution-free approach. Option 3 invents a minimum sample size requirement; bootstrap has no such threshold, though larger n improves the approximation.",
     "hints": [
       "Bootstrap is a non-parametric resampling technique — it makes minimal distributional assumptions.",
       "Think about how repeated resampling from your own data mimics the process of repeatedly sampling from the population."
@@ -140,8 +140,8 @@
       "The correlation between square footage and price is 0.82, indicating a strong positive relationship",
       "Adding more predictors cannot raise R² above 0.82 because it is a theoretical upper bound for this dataset"
     ],
-    "correct_option": 2,
-    "explanation": "R² is the proportion of variance in Y explained by the model. R²=0.82 means the regression line accounts for 82% of the total variance in prices; the remaining 18% is residual (unexplained) variance. The correlation r = √R² ≈ 0.906, not 0.82 itself. R² can only increase as more predictors are added (adjusted R² corrects for this).",
+    "correct_option": 1,
+    "explanation": "R² is the proportion of variance in Y explained by the model. R²=0.82 means the regression line accounts for 82% of the total variance in house prices; the remaining 18% is residual (unexplained) variance from factors not in the model. Option 0 mistakes R² for a per-prediction accuracy probability — R² is a fit metric over the full dataset, not the chance of correctly predicting any single house price. Option 2 confuses R² with the Pearson correlation r; for simple linear regression R = √R² ≈ 0.91, not 0.82. Correlation and explained variance are related but distinct. Option 3 inverts the direction: R² never decreases when predictors are added (it can only stay the same or rise). The current 0.82 is not a ceiling — it is the model's present explained variance.",
     "hints": [
       "R² measures goodness of fit — what fraction of the total variability is captured by the model.",
       "Think of R² as 1 minus the fraction of variance that the model leaves unexplained."
@@ -191,8 +191,8 @@
       "High bias and high variance: the model is simultaneously too complex and too simple, a theoretically rare condition",
       "Low bias and low variance: the model has ideal fit and the high test error is caused by a mismatch in data distributions"
     ],
-    "correct_option": 2,
-    "explanation": "Low training error means the model fits the training data well (low bias). High test error means the model fails to generalize, capturing noise rather than signal — this is overfitting, characterized by high variance. The bias-variance tradeoff says reducing one typically increases the other; overfitting is the high-variance regime.",
+    "correct_option": 1,
+    "explanation": "Low training error means the model fits the training data well — low bias. High test error means the model fails to generalise, capturing noise rather than signal — high variance (overfitting). Option 0 is wrong because low training error rules out high bias; high bias manifests as poor performance even on training data. Option 2 is self-contradictory in the bias-variance framing: a model cannot simultaneously be too complex (overfitting → high variance) and too simple (underfitting → high bias) for the same learning task. Option 3 is wrong because high test error directly contradicts low variance; low variance means consistent, generalisable performance across datasets.",
     "hints": [
       "Ask: does the model fail on training data (high bias) or only on new data (high variance)?",
       "Overfitting = excellent training performance + poor test performance = low bias + high variance."
@@ -242,8 +242,8 @@
       "20 tests, FWER ≈ 0.642, because all ordered pairs (5×4) are tested and FWER = 1−0.95^20",
       "10 tests, FWER = 0.50, because with 10 tests we expect exactly half to produce false positives"
     ],
-    "correct_option": 2,
-    "explanation": "C(5,2) = 10 pairwise tests. Under all-true-null, FWER = 1 − (1−0.05)^10 = 1 − 0.95^10 ≈ 1 − 0.5987 ≈ 0.40. This motivates corrections like Bonferroni or Tukey's HSD when comparing multiple group means.",
+    "correct_option": 1,
+    "explanation": "C(5,2) = 10 pairwise tests. Under all-true-null, FWER = 1 − (1−0.05)^10 = 1 − 0.95^10 ≈ 1 − 0.599 ≈ 0.40. This motivates corrections like Bonferroni or Tukey's HSD. Option 0 counts only 5 tests (one per group) rather than all C(5,2) pairwise combinations, underestimating the inflation. Option 2 counts ordered pairs (5×4=20), double-counting each unique pair: pairwise tests are symmetric (A vs B equals B vs A), so the correct count is combinations, not permutations. Option 3 uses a linear approximation (10×0.05=0.50) and misframes the result as 'half produce false positives' — FWER is the probability of at least one false positive, not the expected count.",
     "hints": [
       "Count pairwise comparisons using combinations: C(k,2) for k groups.",
       "FWER = 1 − (1−α)^m where m is the number of tests, assuming independence."
@@ -294,8 +294,8 @@
       "SS_Between measures the sum of squared residuals after fitting all possible regression lines to each group separately",
       "SS_Between measures pairwise mean differences and equals the sum of all C(k,2) t-statistics squared"
     ],
-    "correct_option": 2,
-    "explanation": "ANOVA partitions total variance: SS_Total = SS_Between + SS_Within. SS_Between (or SS_Treatment) captures how much group means deviate from the overall grand mean — the signal. SS_Within captures random variation within groups — the noise. The F-statistic = (SS_Between/(k−1)) / (SS_Within/(N−k)) tests whether group means are all equal.",
+    "correct_option": 1,
+    "explanation": "ANOVA partitions total variance: SS_Total = SS_Between + SS_Within. SS_Between captures how much group means deviate from the grand mean — the between-group signal. SS_Within captures random variation of individual observations around their group mean — the noise. F = (SS_Between/(k−1)) / (SS_Within/(N−k)) tests whether group means are equal. Option 0 confuses SS_Between with SS_Within — the deviation of individual observations within each group from that group's mean is exactly SS_Within. Option 2 describes fitting separate regression lines per group and summing residuals, which is not how ANOVA's between-group component is computed. Option 3 conflates SS_Between with pairwise t-statistics; the F-test uses a single pooled ratio of mean squares, not a sum of squared t-values.",
     "hints": [
       "Think about what varies between groups versus within groups in an experiment.",
       "ANOVA's F-test is a ratio of variance explained by group membership to unexplained within-group variance."
@@ -345,8 +345,8 @@
       "The hazard rate decreases over time for exponential models, meaning the longer a subject survives, the safer they become",
       "The memoryless property only applies to discrete-time survival models; the exponential applies to continuous lifetimes without the property"
     ],
-    "correct_option": 2,
-    "explanation": "The exponential distribution is memoryless: P(T > t+s | T > t) = P(T > s) for all t,s ≥ 0. A component that has survived t hours is statistically 'as good as new.' The hazard is constant (not increasing or decreasing), so past survival time conveys no information about residual life — unlike the Weibull distribution, which can model increasing or decreasing hazard.",
+    "correct_option": 1,
+    "explanation": "The exponential distribution is memoryless: P(T > t+s | T > t) = P(T > s) for all t,s ≥ 0. A component that has survived t hours is statistically 'as good as new.' The hazard is constant — past survival conveys no information about residual life. Option 0 describes an increasing hazard model (Weibull shape > 1), where older subjects face greater instantaneous failure risk — the opposite of memorylessness. Option 2 gets the direction wrong: exponential hazard is constant, not decreasing. Decreasing hazard (Weibull shape < 1) would make subjects progressively safer over time. Option 3 inverts the truth: the memoryless property is the defining characteristic of the exponential in continuous time; the geometric distribution is its discrete-time analogue — both satisfy memorylessness.",
     "hints": [
       "The memoryless property means past history is irrelevant to the conditional future risk.",
       "Think about whether knowing a component has lasted 100 hours changes your expectation of how much longer it will last."
@@ -459,7 +459,7 @@
     ],
     "concepts": [
       "correlation, regression & causality",
-      "bayesian inference"
+      "variance decomposition & ANOVA"
     ],
     "order": 18,
     "difficulty": "hard"
@@ -476,8 +476,8 @@
       "Reject H₀ and conclude causation; a significant chi-squared test proves one variable causes the other",
       "Accept H₀; the chi-squared test can only confirm independence, never reject it with a 2×2 table"
     ],
-    "correct_option": 2,
-    "explanation": "When χ² > critical value, we reject the null hypothesis of independence. Here 12.4 > 3.84, so we reject H₀ and conclude there is statistically significant evidence of an association between the two variables. This does not establish causation — chi-squared tests only evaluate association in categorical data.",
+    "correct_option": 1,
+    "explanation": "When χ² > critical value we reject H₀ (independence). Here 12.4 > 3.84, so we reject H₀ and conclude there is statistically significant evidence of an association between the two categorical variables. Option 0 reverses the decision rule: a large χ² is evidence against independence, not for it. Option 2 commits the causal fallacy — chi-squared tests measure statistical association in contingency tables, not causation; a significant result only means the variables are not independent, never that one causes the other. Option 3 is wrong on both counts: chi-squared tests can and do reject H₀ when evidence is sufficient, and 2×2 tables are a standard valid case.",
     "hints": [
       "Compare the computed test statistic to the critical value at the given significance level.",
       "Rejecting H₀ of independence means the data provide evidence of an association, not causation."
@@ -553,8 +553,8 @@
       "It has no statistical cost; Bonferroni always improves both Type I and Type II error rates simultaneously",
       "It inflates the variance of the test statistic, making the test statistic distribution non-normal under H₀"
     ],
-    "correct_option": 2,
-    "explanation": "By lowering the rejection threshold from 0.05 to 0.0025, the Bonferroni correction controls false positives at the cost of requiring stronger evidence to reject any single H₀. This reduces the probability of detecting true effects (lower power, higher β). Bonferroni is conservative — it trades power for FWER control, which can be undesirably strict when tests are positively correlated.",
+    "correct_option": 1,
+    "explanation": "Bonferroni lowers each test's rejection threshold from 0.05 to 0.0025, requiring stronger evidence to reject any single H₀. This reduces the probability of detecting true effects — lower power, higher Type II error. Option 0 reverses the mechanism: a lower threshold makes rejection harder, which decreases the Type I error rate (false positives), not increases it. Option 2 is a statistical impossibility — every FWER-controlling procedure trades power for error-rate control; the Bonferroni–Holm step-down procedure mitigates but never eliminates this. Option 3 is mechanistically wrong: Bonferroni adjusts the rejection threshold only; the test statistic and its null distribution are unchanged.",
     "hints": [
       "Power is the probability of detecting a true effect. What happens to power when you raise the bar for rejection?",
       "Stricter thresholds reduce false positives but also reduce true positives."
@@ -604,8 +604,8 @@
       "Parametric t-interval with 24 degrees of freedom, because the t-distribution is always appropriate for small samples",
       "No valid CI can be constructed for a ratio of medians; only means have known sampling distributions"
     ],
-    "correct_option": 2,
-    "explanation": "The ratio of two medians has no standard closed-form sampling distribution, especially under skewness. The bootstrap makes no normality assumptions and works for any statistic — making it the natural choice here. With n=25, the CLT does not guarantee normality for the ratio of medians (a non-linear transformation). The t-distribution assumes normality of the underlying variable.",
+    "correct_option": 1,
+    "explanation": "The ratio of two medians has no standard closed-form sampling distribution, especially under skewness. The bootstrap makes no normality assumptions and works for any statistic — making it the natural choice here. Option 0 misapplies the CLT: CLT guarantees normality of sample means, not of non-linear combinations like ratios of medians; under skewness with n=25, the z-approximation fails. Option 2 misapplies the t-interval: the t-distribution requires approximate normality of the underlying data (not just the statistic) and is designed for means; for skewed data with n=25 it is unreliable. Option 3 is wrong: bootstrap provides a valid CI for any statistic whose sampling distribution can be approximated by resampling, including ratios of medians.",
     "hints": [
       "Ask: is there a known parametric formula for the standard error of this specific statistic?",
       "When the statistic is complex or the distribution is non-normal, resampling methods like bootstrap are the flexible alternative."
@@ -685,8 +685,8 @@
       "Responses are missing because people who exercise very little are ashamed to report their true level and leave the question blank",
       "Responses are missing because older users (who exercise less on average) are less comfortable with the survey technology; age is recorded in the dataset"
     ],
-    "correct_option": 3,
-    "explanation": "MNAR means the probability of missingness depends on the missing value itself — people who exercise little are more likely to skip precisely because of their low exercise level. The observed data will systematically overestimate exercise frequency, and this bias cannot be corrected using observed variables alone. Option A is MCAR (missingness is fully random, independent of all variables — safe to ignore with a complete-case analysis). Option B is also approximately MCAR since mobile usage is unrelated to exercise. Option D is MAR: missingness depends on age (an observed variable), so it can be addressed using multiple imputation or model-based methods that condition on age.",
+    "correct_option": 2,
+    "explanation": "MNAR means the probability of missingness depends on the unobserved missing value itself — people who exercise little are more likely to skip precisely because of their low exercise level. The observed data will systematically overestimate exercise frequency, and this bias cannot be corrected using observed variables alone. Option 0 is MCAR: missingness is fully random, independent of all variables (recorded or not) — a complete-case analysis introduces no bias. Option 1 is MAR, not MCAR: missingness depends on mobile login status, which is a recorded variable. Because the cause of missingness is observed, it can be corrected by conditioning on it (e.g., multiple imputation). MCAR requires independence from every variable — recorded and unrecorded. Option 3 is also MAR: missingness depends on age (recorded), so model-based methods conditioning on age can address the bias.",
     "hints": [
       "For each scenario, ask: 'Does the probability of missingness depend on the unobserved value itself, or only on observed variables?' If the answer is the former, it is MNAR.",
       "MCAR and MAR can both be handled with standard imputation. MNAR requires sensitivity analysis or external data because the missingness pattern is baked into the missing values."
@@ -1566,7 +1566,7 @@
         ],
         "expected": [
           0.0,
-          0.0257
+          0.0356
         ],
         "tolerance": 0.002
       }
@@ -2159,10 +2159,10 @@
     "difficulty": "hard",
     "mock_only": true,
     "title": "Distribution Selection: Matching Data Characteristics to Distribution Families",
-    "description": "A data team is building models for four different metrics. Match each metric to its most appropriate distribution family and explain the key characteristic that drives the choice.\n\n1. Number of customer service calls per day (integer, ≥ 0, rate-driven)\n2. Conversion rate inferred from a Bayesian model (continuous, bounded [0,1])\n3. Time until a user's first purchase after signup (continuous, positive, decreasing hazard)\n4. Count of defects per 10,000 items with 0.01% defect rate\n\nWhich matching is correct?",
+    "description": "A data team is building models for four different metrics. Match each metric to its most appropriate distribution family and explain the key characteristic that drives the choice.\n\n1. Number of customer service calls per day (integer, ≥ 0, rate-driven)\n2. Conversion rate inferred from a Bayesian model (continuous, bounded [0,1])\n3. Time until a user's first purchase after signup (continuous, positive, approximately constant hazard rate)\n4. Count of defects per 10,000 items with 0.01% defect rate\n\nWhich matching is correct?",
     "options": [
       "1→Normal, 2→Uniform, 3→Exponential, 4→Binomial",
-      "1→Poisson, 2→Beta, 3→Exponential, 4→Poisson. Key: (1) Poisson models independent counts at a constant rate; (2) Beta models probabilities — continuous on (0,1), flexible shape; (3) Exponential models time-to-event with memoryless property and constant hazard (or Weibull if hazard varies); (4) Large n, very small p makes this Poisson(λ=np=1)",
+      "1→Poisson, 2→Beta, 3→Exponential, 4→Poisson. Key: (1) Poisson models independent counts at a constant rate; (2) Beta models probabilities — continuous on (0,1), flexible shape; (3) Exponential models time-to-event with constant hazard rate (memoryless property); (4) Large n, very small p makes this Poisson(λ=np=1)",
       "1→Binomial, 2→Normal, 3→Normal, 4→Normal",
       "1→Poisson, 2→Uniform, 3→Normal, 4→Binomial"
     ],
@@ -2456,7 +2456,7 @@
           0.1,
           0.15
         ],
-        "expected": 394,
+        "expected": 687,
         "tolerance": 5
       },
       {
@@ -2465,7 +2465,7 @@
           0.1,
           0.15
         ],
-        "expected": 631,
+        "expected": 1165,
         "tolerance": 5
       },
       {
@@ -2474,7 +2474,7 @@
           0.05,
           0.07
         ],
-        "expected": 5785,
+        "expected": 4213,
         "tolerance": 50
       }
     ],
