@@ -1571,7 +1571,8 @@
     "difficulty": "hard",
     "mock_only": true,
     "title": "Z-Ordering the Wrong Column: Why File Skipping Doesn't Trigger",
-    "description": "A Delta table stores 10 TB of clickstream data. Analysts run queries that filter almost exclusively by `user_segment` (10 distinct values; roughly equal row distribution). The table was Z-ordered on `event_timestamp` last week. Queries still scan all 12,000 files. A platform engineer proposes Z-ordering on `user_segment` instead. What is the most accurate prediction of whether this will help?",
+    "scenario_context": "A Delta table stores 10 TB of clickstream data. Analysts run queries that filter almost exclusively by `user_segment` (10 distinct values; roughly equal row distribution). The table was Z-ordered on `event_timestamp` last week. Queries still scan all 12,000 files. A platform engineer proposes Z-ordering on `user_segment` instead.",
+    "description": "What is the most accurate prediction of whether this will help?",
     "options": [
       "Z-ordering on `user_segment` will not help because Z-ordering works on continuous numeric ranges and `user_segment` is a low-cardinality string column; file skipping only applies to numeric columns with natural ordering.",
       "Z-ordering on `user_segment` will cluster files by segment value, enabling Delta's file-skipping to eliminate ~90% of files for a single-segment filter, but effectiveness is limited because 10 equal-sized segments means at best 90% file elimination per query.",
@@ -1882,7 +1883,8 @@
     "parent_id": 43067,
     "follow_up_dimension": "edge_case_pivot",
     "title": "Streaming Job Restart: Which Micro-Batches Are Reprocessed?",
-    "description": "The streaming job (watermark + append mode) crashes at micro-batch 47 after writing micro-batches 1–46 to the sink. The checkpoint directory is on HDFS and intact. The Kafka source has `startingOffsets='latest'` in the stream reader config. After restart, which data is reprocessed?",
+    "scenario_context": "The streaming job (watermark + append mode) crashes at micro-batch 47 after writing micro-batches 1–46 to the sink. The checkpoint directory is on HDFS and intact. The Kafka source has `startingOffsets='latest'` in the stream reader config.",
+    "description": "After restart, which data is reprocessed?",
     "options": [
       "Micro-batches 1–47 are reprocessed from the beginning because Structured Streaming replays from the checkpoint's earliest recorded offset to ensure exactly-once semantics.",
       "Micro-batch 47 is reprocessed from the offsets recorded in the checkpoint; Structured Streaming's checkpoint stores the last committed offsets and resumes from there, regardless of the `startingOffsets` config.",
@@ -2081,7 +2083,8 @@
     "parent_id": 43073,
     "follow_up_dimension": "business_rule_pivot",
     "title": "Mutable Closure in pandas UDF: Why Is the Accumulator Always Empty?",
-    "description": "A data scientist adds prediction logging to the UDF using a driver-side list:\n```python\naccumulated = []\n\n@F.pandas_udf('double')\ndef scoring_udf(features: pd.Series) -> pd.Series:\n    scores = model.predict(features)\n    accumulated.append(scores.tolist())\n    return pd.Series(scores)\n\ndf.withColumn('score', scoring_udf('feature_vec')).count()\nprint(len(accumulated))  # prints 0\n```\nWhy is `accumulated` always empty after the job completes?",
+    "scenario_context": "A data scientist adds prediction logging to the UDF using a driver-side list:\n```python\naccumulated = []\n\n@F.pandas_udf('double')\ndef scoring_udf(features: pd.Series) -> pd.Series:\n    scores = model.predict(features)\n    accumulated.append(scores.tolist())\n    return pd.Series(scores)\n\ndf.withColumn('score', scoring_udf('feature_vec')).count()\nprint(len(accumulated))  # prints 0\n```",
+    "description": "Why is `accumulated` always empty after the job completes?",
     "options": [
       "PySpark UDFs are lazy transformations; `accumulated` is not populated until the DataFrame is collected with `.collect()`. After `.collect()`, the list contains all batch predictions.",
       "The `@pandas_udf` decorator registers the function with Spark's Python serialiser, which captures `accumulated` by value (as an empty list) at decoration time; subsequent mutations on executors affect the serialised copy, not the original.",
@@ -2359,7 +2362,8 @@
     "difficulty": "hard",
     "mock_only": true,
     "title": "Watermark and Multi-Stream Join: Late Data Handling Across Streams",
-    "description": "A Structured Streaming job joins `clickstream` (watermark: 5 min) with `impressions` (watermark: 10 min) on `ad_id` and `user_id` within a 2-minute event-time window. The overall join watermark is determined by Spark's multi-stream watermark policy. An ad impression arrives 8 minutes late. Will this impression be joined correctly, and why?",
+    "scenario_context": "A Structured Streaming job joins `clickstream` (watermark: 5 min) with `impressions` (watermark: 10 min) on `ad_id` and `user_id` within a 2-minute event-time window. The overall join watermark is determined by Spark's multi-stream watermark policy. An ad impression arrives 8 minutes late.",
+    "description": "Will this impression be joined correctly, and why?",
     "options": [
       "Yes — the `impressions` stream has a 10-minute watermark; events up to 10 minutes late are included. The join watermark is the maximum of the two stream watermarks (10 min), so 8-minute-late impressions are within tolerance.",
       "No — the global join watermark for a multi-stream join is the **minimum** of the two stream watermarks by default (5 min, from `clickstream`). An impression arriving 8 minutes late exceeds the global 5-minute watermark; it is dropped from state before the join can complete.",
@@ -2556,7 +2560,8 @@
     "difficulty": "hard",
     "mock_only": true,
     "title": "Choosing Between Delta MERGE and INSERT OVERWRITE for Nightly Upserts",
-    "description": "A nightly job upserts 1% of rows in a 10 TB Delta table (updates to existing rows + inserts of new rows). Option A: `MERGE INTO target USING source ON target.id = source.id WHEN MATCHED THEN UPDATE ... WHEN NOT MATCHED THEN INSERT ...`. Option B: overwrite the affected date partition: `source.write.format('delta').mode('overwrite').option('replaceWhere', 'event_date=current_date()').save(path)`. Both correctly handle updates and inserts. Which is operationally better, and why?",
+    "scenario_context": "A nightly job upserts 1% of rows in a 10 TB Delta table (updates to existing rows + inserts of new rows). Option A: `MERGE INTO target USING source ON target.id = source.id WHEN MATCHED THEN UPDATE ... WHEN NOT MATCHED THEN INSERT ...`. Option B: overwrite the affected date partition: `source.write.format('delta').mode('overwrite').option('replaceWhere', 'event_date=current_date()').save(path)`. Both correctly handle updates and inserts.",
+    "description": "Which is operationally better, and why?",
     "options": [
       "Option A (MERGE) is better: it minimises the number of files rewritten (only files containing matched rows are modified). For 1% of rows matching, MERGE rewrites far fewer files than overwriting an entire date partition.",
       "Option B (INSERT OVERWRITE with replaceWhere) is better: it atomically replaces the entire date partition in a single write operation, which is simpler and more predictable in terms of file count. MERGE may rewrite more files than replaceWhere when the matched rows are spread across many files.",
@@ -2645,7 +2650,8 @@
     "parent_id": 43093,
     "follow_up_dimension": "edge_case_pivot",
     "title": "Delta ACID: What Happens When Two Writers Conflict on the Same Column Change?",
-    "description": "Two concurrent processes both attempt `ALTER TABLE events ALTER COLUMN score TYPE DOUBLE` simultaneously on the same Delta table. Process A commits first (version 15). Process B then tries to commit the same change. What does Process B experience?",
+    "scenario_context": "Two concurrent processes both attempt `ALTER TABLE events ALTER COLUMN score TYPE DOUBLE` simultaneously on the same Delta table. Process A commits first (version 15). Process B then tries to commit the same change.",
+    "description": "What does Process B experience?",
     "options": [
       "Process B's commit succeeds idempotently — Delta detects that the schema is already DOUBLE and treats the duplicate ALTER as a no-op.",
       "Process B fails with `ConcurrentModificationException` — Delta's optimistic concurrency detects that another transaction modified the schema between B's read and write; B must retry.",
@@ -2841,7 +2847,8 @@
     "parent_id": 43100,
     "follow_up_dimension": "edge_case_pivot",
     "title": "DPP Disabled by AQE: When Optimisations Conflict",
-    "description": "The team enables both DPP (`dynamicPartitionPruning.enabled=true`) and AQE (`spark.sql.adaptive.enabled=true`). In production, DPP is visible in `explain()` (Extended) but the Spark UI shows fact_sales partitions are NOT being skipped — all 1095 date partitions are scanned. AQE is active. What is the most likely interaction causing DPP to be ineffective?",
+    "scenario_context": "The team enables both DPP (`dynamicPartitionPruning.enabled=true`) and AQE (`spark.sql.adaptive.enabled=true`). In production, DPP is visible in `explain()` (Extended) but the Spark UI shows fact_sales partitions are NOT being skipped — all 1095 date partitions are scanned. AQE is active.",
+    "description": "What is the most likely interaction causing DPP to be ineffective?",
     "options": [
       "AQE's partition coalescing merges the 365 DPP-matching partitions into fewer, larger partitions; the merged partitions span multiple date ranges, causing the DPP filter to be evaluated against wider ranges and passing more partitions than intended.",
       "AQE replaced the planned broadcast hash join with a sort-merge join based on runtime size estimates. With `spark.sql.optimizer.dynamicPartitionPruning.reuseBroadcastOnly=true` (default), DPP only fires when it can reuse the key set from an existing broadcast — when AQE removes the broadcast at runtime, the DPP plan node is left without a broadcast to reuse and deactivates.",
@@ -2922,7 +2929,8 @@
     "difficulty": "hard",
     "mock_only": true,
     "title": "Memory Pressure from Broadcast Table + Concurrent Tasks: Sizing the Broadcast Threshold",
-    "description": "A cluster has 50 executors × 16 GB heap × 4 cores each. A join broadcasts a lookup table of size 2 GB (compressed Parquet) which decompresses to 6 GB in-memory. With `autoBroadcastJoinThreshold=2048MB`, the broadcast is activated. What is the memory impact per executor, and is it safe?",
+    "scenario_context": "A cluster has 50 executors × 16 GB heap × 4 cores each. A join broadcasts a lookup table of size 2 GB (compressed Parquet) which decompresses to 6 GB in-memory. With `autoBroadcastJoinThreshold=2048MB`, the broadcast is activated.",
+    "description": "What is the memory impact per executor, and is it safe?",
     "options": [
       "Each executor holds 1 copy of the 6 GB broadcast table. With 16 GB heap, 4 concurrent tasks × typical working memory (1–2 GB each), and the 6 GB broadcast table, the executor is at 6+8=14 GB — dangerously close to the 16 GB limit. The broadcast is unsafe at this configuration.",
       "Each executor holds 1 copy of the 6 GB broadcast table (shared across all 4 tasks). The remaining 10 GB of heap must support 4 concurrent tasks' working memory, execution overhead, and JVM GC headroom. With ~3 GB reserved for GC (30%), ~7 GB available for 4 tasks = 1.75 GB/task. This is tight but potentially safe for narrow tasks.",
@@ -3038,7 +3046,8 @@
     "parent_id": 43107,
     "follow_up_dimension": "scale_pivot",
     "title": "Revenue Attribution at Scale: When Option B's dropDuplicates Causes Memory Issues",
-    "description": "At 500 M order-coupon join rows, Option B's `dropDuplicates(['order_id', 'campaign_id'])` causes Stage 8 OOM on 3 executors. The team investigates: `dropDuplicates` triggers a shuffle on `[order_id, campaign_id]`; some `campaign_id` values have millions of (order_id, campaign_id) rows in a single shuffle partition (e.g., Camp_A has 40% of all coupons). What is the most targeted fix?",
+    "scenario_context": "At 500 M order-coupon join rows, Option B's `dropDuplicates(['order_id', 'campaign_id'])` causes Stage 8 OOM on 3 executors. The team investigates: `dropDuplicates` triggers a shuffle on `[order_id, campaign_id]`; some `campaign_id` values have millions of (order_id, campaign_id) rows in a single shuffle partition (e.g., Camp_A has 40% of all coupons).",
+    "description": "What is the most targeted fix?",
     "options": [
       "Replace `dropDuplicates(['order_id', 'campaign_id'])` with `groupBy('order_id', 'campaign_id').agg(F.first('revenue'))` — `groupBy` + `first` is more memory-efficient than `dropDuplicates` for large datasets.",
       "Add a salt to the `dropDuplicates` shuffle: before `dropDuplicates`, repartition by both `order_id` and `campaign_id` with a higher partition count (e.g., 5000); the hot Campaign_A partition is split across more tasks.",
@@ -3119,7 +3128,8 @@
     "difficulty": "hard",
     "mock_only": true,
     "title": "Production Incident: Streaming Job Falls Behind on Kafka — Root Cause Analysis",
-    "description": "A Structured Streaming job (trigger: 30 seconds, Kafka source) processes 50K events/trigger normally. After a Kafka topic rebalance (5 partitions added, total now 25), the streaming job falls behind: consumer lag grows from 0 to 10M events over 6 hours. The job doesn't fail — it just processes fewer events per trigger than arrive. Cluster resources are unchanged. Which root cause best explains the lag growth?",
+    "scenario_context": "A Structured Streaming job (trigger: 30 seconds, Kafka source) processes 50K events/trigger normally. After a Kafka topic rebalance (5 partitions added, total now 25), the streaming job falls behind: consumer lag grows from 0 to 10M events over 6 hours. The job doesn't fail — it just processes fewer events per trigger than arrive. Cluster resources are unchanged.",
+    "description": "Which root cause best explains the lag growth?",
     "options": [
       "The Kafka topic rebalance triggered a consumer group metadata change; Spark's Structured Streaming consumer re-reads all offsets from the earliest position on restart, causing O(n) reprocessing of historical events.",
       "After adding 5 Kafka partitions, the throughput per partition dropped (events redistributed); Structured Streaming's per-partition rate limiter (`maxOffsetsPerTrigger`) is set per partition and now reads 20% fewer total events per trigger than before the rebalance.",
@@ -3146,7 +3156,8 @@
     "difficulty": "hard",
     "mock_only": true,
     "title": "AQE Skew Join: Classifying a Partition and Counting Sub-Tasks",
-    "description": "AQE is enabled with: `spark.sql.adaptive.skewJoin.enabled=true`, `spark.sql.adaptive.advisoryPartitionSizeInBytes=64MB`, `spark.sql.adaptive.skewJoin.skewedPartitionFactor=5`, `spark.sql.adaptive.skewJoin.skewedPartitionThresholdInBytes=256MB`. A join's probe-side shuffle has 200 partitions; **median** partition size is 100 MB. Partition 17 is 2 GB. Is partition 17 classified as skewed, and approximately how many map-side sub-tasks does AQE create for it?",
+    "scenario_context": "AQE is enabled with: `spark.sql.adaptive.skewJoin.enabled=true`, `spark.sql.adaptive.advisoryPartitionSizeInBytes=64MB`, `spark.sql.adaptive.skewJoin.skewedPartitionFactor=5`, `spark.sql.adaptive.skewJoin.skewedPartitionThresholdInBytes=256MB`. A join's probe-side shuffle has 200 partitions; **median** partition size is 100 MB. Partition 17 is 2 GB.",
+    "description": "Is partition 17 classified as skewed, and approximately how many map-side sub-tasks does AQE create for it?",
     "options": [
       "Partition 17 IS skewed (2 GB > 5 x 100 MB = 500 MB AND > 256 MB). AQE creates ceil(2048 MB / 64 MB) = **32 sub-tasks**, each reading a ~64 MB slice of partition 17.",
       "Partition 17 IS skewed (same criteria). AQE creates **5 sub-tasks** (equal to `skewedPartitionFactor`), evenly splitting the 2 GB into five 400 MB pieces.",
@@ -3173,7 +3184,8 @@
     "difficulty": "hard",
     "mock_only": true,
     "title": "Structured Streaming Watermark: Fate of an Event 2.5 Hours Past the Watermark",
-    "description": "A streaming query uses a 1-hour watermark and `append` output mode:\n```python\nstream.withWatermark('event_ts', '1 hour') \\\n    .groupBy(F.window('event_ts', '1 hour')) \\\n    .agg(F.count().alias('cnt')) \\\n    .writeStream.outputMode('append').start()\n```\nThe current watermark is `2024-01-15 10:00`. An event arrives with `event_ts = 2024-01-15 07:30` (2.5 hours before the watermark). What happens?",
+    "scenario_context": "A streaming query uses a 1-hour watermark and `append` output mode:\n```python\nstream.withWatermark('event_ts', '1 hour') \\\n    .groupBy(F.window('event_ts', '1 hour')) \\\n    .agg(F.count().alias('cnt')) \\\n    .writeStream.outputMode('append').start()\n```\nThe current watermark is `2024-01-15 10:00`. An event arrives with `event_ts = 2024-01-15 07:30` (2.5 hours before the watermark).",
+    "description": "What happens?",
     "options": [
       "The event is **silently dropped**. Its window (07:00-08:00) ends at 08:00, which is before the watermark (10:00). State for windows ending before the watermark is finalised and evicted in `append` mode. The watermark does not change: max(observed event_ts) - 1 hour = remains at 10:00 (07:30 < previous max).",
       "The event is **processed**: Spark re-opens the 07:00-08:00 window state from the checkpoint, increments the count, and emits the corrected result at the next trigger.",
