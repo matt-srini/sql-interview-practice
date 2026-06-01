@@ -176,6 +176,38 @@ def _load_track_samples(db_topic: str) -> dict[str, list[dict[str, Any]]]:
                 f"Sample loader: db_topic={db_topic!r} difficulty={diff!r} "
                 f"expected exactly 3 questions, found {n}"
             )
+    # Field-presence guard — every sample (every track, every difficulty) must
+    # carry exactly 2 hints and 1-4 canonical concept tags. Added 2026-06-01 as
+    # the closing step of the sample-bank audit (Phase 5b). Belt-and-suspenders
+    # alongside validate_content.py's checks: this fires at app startup so a
+    # bad edit can't reach a user even if the validator hasn't been re-run.
+    for diff in ("easy", "medium", "hard"):
+        for q in grouped[diff]:
+            qid = q.get("id", "<unknown>")
+            hints = q.get("hints")
+            if not isinstance(hints, list) or len(hints) != 2:
+                hint_count = len(hints) if isinstance(hints, list) else 0
+                raise ValueError(
+                    f"Sample loader: db_topic={db_topic!r} qid={qid} "
+                    f"expected exactly 2 hints, found {hint_count}"
+                )
+            if not all(isinstance(h, str) and h.strip() for h in hints):
+                raise ValueError(
+                    f"Sample loader: db_topic={db_topic!r} qid={qid} "
+                    f"hints must be non-empty strings"
+                )
+            concepts = q.get("concepts")
+            if not isinstance(concepts, list) or not (1 <= len(concepts) <= 4):
+                concept_count = len(concepts) if isinstance(concepts, list) else 0
+                raise ValueError(
+                    f"Sample loader: db_topic={db_topic!r} qid={qid} "
+                    f"expected 1-4 concept tags, found {concept_count}"
+                )
+            if not all(isinstance(c, str) and c.strip() for c in concepts):
+                raise ValueError(
+                    f"Sample loader: db_topic={db_topic!r} qid={qid} "
+                    f"concept tags must be non-empty strings"
+                )
     return grouped
 
 

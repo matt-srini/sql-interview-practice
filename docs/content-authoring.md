@@ -195,7 +195,13 @@ All 9 tracks use a compact `TXS` format (`T` = track digit, `X` = difficulty dig
 
 3-digit TXS IDs never collide with 5-digit practice / mock-only IDs (`TXNNN`).
 
-**Storage:** Every track — SQL included — has a **dedicated sample file** at `backend/content/sample_questions/<track>.json`, loaded by `sample_questions.py` at startup. The SQL file additionally goes through `_validate_sample_questions`, which enforces that `schema` columns match committed CSV headers, `dataset_files` exist, and exactly 3 samples exist per difficulty. Sample questions are completely separate from the practice and mock pools — they must never duplicate practice or mock content. Author samples as independent content.
+**Storage:** Every track — SQL included — has a **dedicated sample file** at `backend/content/sample_questions/<track>.json`, loaded by `sample_questions.py` at startup. Sample questions are completely separate from the practice and mock pools — they must never duplicate practice or mock content. Author samples as independent content.
+
+**Required fields (every sample, every track):** `id`, `title`, `difficulty`, `description`, `hints` (exactly 2 entries), `concepts` (1–4 canonical family tags), plus per-eval-kind fields (SQL: `schema`, `dataset_files`, `expected_query`, `solution_query`, `explanation`, `order`; Python/Pandas: `dataframes`, `starter_code`, `expected_code`, `solution_code`, `test_cases`, `explanation`, `order`; MCQ tracks: `options`, `correct_option`, `explanation`, `order`). Field presence is enforced at module-import time by `_load_track_samples` (since 2026-06-01) — a stray edit removing required fields raises before any user can hit the sample.
+
+**Cross-track validator coverage (since Phase 5a, 2026-06-01):** `validate_content.py` extends to `sample_questions/*.json` (SQL excluded for hint-rule reasons — see source). Samples participate in the canonical-name-strict, concept-blocklist, and near-duplicate checks alongside practice/mock. The strict per-track first-hint-leak regex patterns are exempt for samples — those patterns are calibrated for practice/mock and false-positive on samples that legitimately reference their own question subject. Samples have their own audit cadence via the Phase 2 closeout H8 step (see § Phase 2 closeout doc-hygiene).
+
+**SQL-specific validation:** The SQL file additionally goes through `_validate_sample_questions`, which enforces that `schema` columns match committed CSV headers, `dataset_files` exist, and exactly 3 samples exist per difficulty.
 
 ### `schemas.json`-first rule
 
