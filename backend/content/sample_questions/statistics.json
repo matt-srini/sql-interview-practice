@@ -164,7 +164,7 @@
     "correct_option": 1,
     "explanation": "The family-wise error rate (FWER) under independent tests is 1 − (1−α)^k. With k=20 and α=0.05: FWER = 1 − 0.95^20 ≈ 0.64. Even if nothing is real, there is a ~64% chance of at least one false positive. Bonferroni correction divides α by the number of tests (0.05/20 = 0.0025), controlling FWER at 5% at the cost of reduced power per test. Option 0 incorrectly treats per-test and family-wise error rates as equivalent. Option 2 overstates — 20 tests don't guarantee false positives, just make them likely. Option 3 confuses the additive approximation (valid only when k×α is small) with the exact formula.",
     "hints": [
-      "If each test has a 5% chance of producing a false positive, start with the complementary question: what is the probability that a single test does not produce a false positive? Then ask: what happens to that probability when you have 20 independent tests?",
+      "Three significant results out of 20 — could that happen by chance even if every null were true? Think about what α controls (single-test error rate) versus what you are actually asking about (the chance of any false positive across many tests).",
       "Bonferroni corrects by testing each hypothesis at α/k — simple but conservative."
     ],
     "concepts": ["multiple testing & correction", "errors & power"]
