@@ -18,7 +18,9 @@
       "Consider where the compute cost is lower: before loading (ETL) or inside the warehouse after loading (ELT).",
       "Modern cloud warehouses handle complex SQL transformations efficiently — that changes the cost equation versus legacy on-prem systems."
     ],
-    "concepts": ["ETL VS ELT PATTERNS"]
+    "concepts": [
+      "ETL VS ELT PATTERNS"
+    ]
   },
   {
     "id": 512,
@@ -39,7 +41,9 @@
       "Ask: what happens if this step runs twice with the same input? Does the output double-count or stay the same?",
       "Idempotent writes often use upserts or partition-level delete-then-insert to avoid accumulating duplicates."
     ],
-    "concepts": ["IDEMPOTENCY & EXACTLY-ONCE SEMANTICS"]
+    "concepts": [
+      "IDEMPOTENCY & EXACTLY-ONCE SEMANTICS"
+    ]
   },
   {
     "id": 513,
@@ -60,7 +64,9 @@
       "What is the maximum acceptable lag between an event happening and it appearing in the dashboard? Match that to the pipeline frequency.",
       "Batch is simpler to operate but has bounded-by-schedule latency. Streaming has near-zero latency but adds complexity."
     ],
-    "concepts": ["BATCH VS STREAMING TRADE-OFFS"]
+    "concepts": [
+      "BATCH VS STREAMING TRADE-OFFS"
+    ]
   },
   {
     "id": 521,
@@ -82,7 +88,10 @@
       "Trace what happens on restart: which offset does the consumer resume from, and does it re-process any events?",
       "At-least-once = commit after write (risk: duplicates on restart). At-most-once = commit before write (risk: loss on crash)."
     ],
-    "concepts": ["DELIVERY SEMANTICS", "IDEMPOTENCY & EXACTLY-ONCE SEMANTICS"]
+    "concepts": [
+      "DELIVERY SEMANTICS",
+      "IDEMPOTENCY & EXACTLY-ONCE SEMANTICS"
+    ]
   },
   {
     "id": 522,
@@ -104,7 +113,10 @@
       "Low consumer resource utilisation with growing lag points to the producer side — check whether the incoming rate changed.",
       "Diagnose before scaling: understand whether the problem is consumer capacity, producer volume, or partition assignment."
     ],
-    "concepts": ["STREAMING & WATERMARKS", "BATCH VS STREAMING TRADE-OFFS"]
+    "concepts": [
+      "STREAMING & WATERMARKS",
+      "BATCH VS STREAMING TRADE-OFFS"
+    ]
   },
   {
     "id": 523,
@@ -126,7 +138,10 @@
       "High-cardinality partitioning + frequent small writes = many tiny files. The fix is either coarser partitioning or periodic compaction.",
       "A compaction job reads small files per partition and rewrites them as a few larger files — it's a standard maintenance pattern for Parquet on object stores."
     ],
-    "concepts": ["DATA LAYOUT & FILE FORMATS", "PARTITIONING STRATEGY"]
+    "concepts": [
+      "DATA LAYOUT & FILE FORMATS",
+      "PARTITIONING STRATEGY"
+    ]
   },
   {
     "id": 531,
@@ -148,7 +163,10 @@
       "BACKWARD compatibility = new schema can read old data. Ask: can a consumer with the new schema deserialise a message written with the old schema?",
       "A new required field (no default) breaks BACKWARD compatibility — old messages have no value for it. Add a default to make it safe."
     ],
-    "concepts": ["SCHEMA EVOLUTION & COMPATIBILITY", "DATA CONTRACTS & VALIDATION"]
+    "concepts": [
+      "SCHEMA EVOLUTION & COMPATIBILITY",
+      "DATA CONTRACTS & VALIDATION"
+    ]
   },
   {
     "id": 532,
@@ -170,7 +188,10 @@
       "When raw data is intact and the job succeeded but output is wrong, the failure is inside the pipeline logic — compare row counts stage by stage.",
       "Silent drops often happen at joins (key type mismatch) or filters (a column's distribution changed and the filter became over-restrictive)."
     ],
-    "concepts": ["DATA QUALITY & LINEAGE", "MONITORING & OBSERVABILITY"]
+    "concepts": [
+      "DATA QUALITY & LINEAGE",
+      "MONITORING & OBSERVABILITY"
+    ]
   },
   {
     "id": 533,
@@ -192,6 +213,10 @@
       "For a rolling window that is refreshed frequently, ask: does each run need to re-read the full history, or can incremental updates to a summary table replace most of the scan?",
       "An incremental + summary table pattern reads only new data per run and merges it with pre-aggregated history — reducing scan cost by orders of magnitude."
     ],
-    "concepts": ["INCREMENTAL PROCESSING PATTERNS", "PARTITIONING STRATEGY", "PERFORMANCE TUNING & RESOURCE MANAGEMENT"]
+    "concepts": [
+      "BACKFILL",
+      "PARTITIONING STRATEGY",
+      "COST OPTIMIZATION"
+    ]
   }
 ]

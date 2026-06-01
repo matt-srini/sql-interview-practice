@@ -73,7 +73,7 @@
     ],
     "concepts": [
       "HASH MAP & FREQUENCY COUNTING",
-      "SET OPERATIONS & UNIQUENESS"
+      "MEMBERSHIP-BASED DEDUPLICATION"
     ]
   },
   {
@@ -127,7 +127,7 @@
     ],
     "concepts": [
       "HASH MAP & FREQUENCY COUNTING",
-      "SORTING & ORDERING"
+      "INDEXED SEQUENCE REASONING"
     ]
   },
   {
@@ -191,7 +191,7 @@
       "Iterate once, append only on first occurrence."
     ],
     "concepts": [
-      "SET OPERATIONS & UNIQUENESS",
+      "MEMBERSHIP-BASED DEDUPLICATION",
       "LINEAR SCAN & PASS EFFICIENCY"
     ]
   },
@@ -270,7 +270,7 @@
       "A single pass works if events are pre-sorted by timestamp (as stated). No need to sort again."
     ],
     "concepts": [
-      "SESSIONIZATION & WINDOW OPERATIONS",
+      "streaming",
       "HASH MAP & FREQUENCY COUNTING"
     ]
   },
@@ -336,7 +336,7 @@
     ],
     "concepts": [
       "HASH MAP & FREQUENCY COUNTING",
-      "SORTING & ORDERING"
+      "INDEXED SEQUENCE REASONING"
     ]
   },
   {
@@ -462,7 +462,7 @@
       "Track three states per node — unvisited, in-progress (on the current DFS stack), and finished. A back edge to an in-progress node is a cycle."
     ],
     "concepts": [
-      "GRAPH ALGORITHMS & TRAVERSAL",
+      "cycle detection",
       "TOPOLOGICAL SORT & DEPENDENCY ORDERING"
     ]
   },
@@ -558,7 +558,6 @@
     ],
     "concepts": [
       "SLIDING WINDOW & TWO-POINTER",
-      "SORTING & ORDERING",
       "GREEDY & INTERVAL SCHEDULING"
     ]
   },

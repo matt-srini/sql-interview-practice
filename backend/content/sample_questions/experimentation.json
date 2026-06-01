@@ -19,7 +19,10 @@
       "H₀ always represents the status quo / no effect. H₁ represents the change you are testing for.",
       "Define α, power, and MDE before starting — they determine sample size and cannot be adjusted after peeking at results."
     ],
-    "concepts": ["HYPOTHESIS FORMULATION & DESIGN", "STATISTICAL SIGNIFICANCE & POWER"]
+    "concepts": [
+      "HYPOTHESIS FORMULATION & DESIGN",
+      "STATISTICAL SIGNIFICANCE & POWER"
+    ]
   },
   {
     "id": 912,
@@ -41,7 +44,10 @@
       "Type I error = false positive = rejecting H₀ when H₀ is true. The rate of this error is exactly α.",
       "Type II error = false negative = failing to reject H₀ when H₁ is true. The rate of this error is 1 − power."
     ],
-    "concepts": ["TYPE I & TYPE II ERRORS", "STATISTICAL SIGNIFICANCE & POWER"]
+    "concepts": [
+      "TYPE I & TYPE II ERRORS",
+      "STATISTICAL SIGNIFICANCE & POWER"
+    ]
   },
   {
     "id": 913,
@@ -63,7 +69,10 @@
       "The primary metric should be aligned with the experiment's goal — what behaviour are you actually trying to change?",
       "High-sensitivity metrics (clicks) detect effects faster but may not reflect the real business outcome you care about."
     ],
-    "concepts": ["METRIC SELECTION & SENSITIVITY", "HYPOTHESIS FORMULATION & DESIGN"]
+    "concepts": [
+      "METRIC SELECTION & SENSITIVITY",
+      "HYPOTHESIS FORMULATION & DESIGN"
+    ]
   },
   {
     "id": 921,
@@ -85,7 +94,10 @@
       "SRM is a validity threat, not a power problem. Before interpreting any metrics, verify that the assignment mechanism worked as intended.",
       "Run a chi-square test on the assignment counts. p < 0.001 is a conventional SRM detection threshold."
     ],
-    "concepts": ["SAMPLE RATIO MISMATCH", "EXPERIMENT VALIDITY THREATS"]
+    "concepts": [
+      "SAMPLE RATIO MISMATCH",
+      "A/B TEST MECHANICS"
+    ]
   },
   {
     "id": 922,
@@ -107,7 +119,10 @@
       "When engagement is highest in week 1 and decays steadily, ask whether users are excited by newness or genuinely getting value.",
       "Ship decisions should use the stabilised long-run metric, not the initial novelty spike."
     ],
-    "concepts": ["NOVELTY & PRIMACY EFFECTS", "EXPERIMENT VALIDITY THREATS"]
+    "concepts": [
+      "NOVELTY & PRIMACY EFFECTS",
+      "EXPERIMENT DURATION"
+    ]
   },
   {
     "id": 923,
@@ -129,7 +144,11 @@
       "Slicing results after seeing them is exploratory analysis, not confirmatory. Confirmatory tests require pre-specification before data is collected.",
       "FWER = 1 − (1−α)^k for k independent tests — plug in k=15 to see how likely a false positive is."
     ],
-    "concepts": ["MULTIPLE TESTING & CORRECTIONS", "EXPERIMENT VALIDITY THREATS", "STATISTICAL SIGNIFICANCE & POWER"]
+    "concepts": [
+      "MULTIPLE TESTING & CORRECTIONS",
+      "SEGMENTATION ANALYSIS",
+      "STATISTICAL SIGNIFICANCE & POWER"
+    ]
   },
   {
     "id": 931,
@@ -151,7 +170,11 @@
       "Randomisation removes bias but not variance. Ask: what drives the noise in the metric? Prior user behaviour explains a lot — CUPED uses that to reduce noise.",
       "CUPED ≈ ANCOVA with a pre-experiment covariate. Variance reduction = smaller standard error = higher power for the same sample size."
     ],
-    "concepts": ["VARIANCE REDUCTION METHODS", "STATISTICAL SIGNIFICANCE & POWER", "EXPERIMENT VALIDITY THREATS"]
+    "concepts": [
+      "VARIANCE REDUCTION METHODS",
+      "STATISTICAL SIGNIFICANCE & POWER",
+      "EXPERIMENT DESIGN"
+    ]
   },
   {
     "id": 932,
@@ -173,7 +196,10 @@
       "Ask: does one user's treatment assignment affect another user's outcome? If yes, SUTVA is violated and user-level randomisation is invalid.",
       "Geo holdout and switchback experiments are the standard solutions for marketplace interference — they reduce cross-arm contamination by separating units in space or time."
     ],
-    "concepts": ["NETWORK EFFECTS & INTERFERENCE", "EXPERIMENT DESIGN & UNITS OF RANDOMIZATION"]
+    "concepts": [
+      "NETWORK EFFECTS & INTERFERENCE",
+      "EXPERIMENT DESIGN & UNITS OF RANDOMIZATION"
+    ]
   },
   {
     "id": 933,
@@ -195,6 +221,10 @@
       "α = 0.05 controls error for one fixed-sample test. Each additional 'peek' is effectively another test opportunity — the cumulative false positive probability grows.",
       "Group Sequential methods and alpha-spending functions are designed specifically for this problem — they pre-specify interim looks and adjust the threshold at each look."
     ],
-    "concepts": ["SEQUENTIAL TESTING & PEEKING", "MULTIPLE TESTING & CORRECTIONS", "STATISTICAL SIGNIFICANCE & POWER"]
+    "concepts": [
+      "SEQUENTIAL TESTING & PEEKING",
+      "MULTIPLE TESTING & CORRECTIONS",
+      "STATISTICAL SIGNIFICANCE & POWER"
+    ]
   }
 ]

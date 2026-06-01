@@ -19,7 +19,10 @@
       "The train-validation accuracy gap diagnoses variance (overfitting). Training accuracy alone tells you little without the validation comparison.",
       "High bias = poor performance on both train and validation. High variance = good training, poor validation."
     ],
-    "concepts": ["BIAS-VARIANCE TRADEOFF", "MODEL EVALUATION & VALIDATION"]
+    "concepts": [
+      "BIAS-VARIANCE TRADEOFF",
+      "OVERFITTING DIAGNOSIS"
+    ]
   },
   {
     "id": 812,
@@ -41,7 +44,10 @@
       "Ask: does the algorithm care about the absolute magnitude of a feature, or only about its relative ordering?",
       "Distance-based (k-NN, SVM) and gradient-descent (logistic regression, neural nets) algorithms are scale-sensitive. Tree-based algorithms are not."
     ],
-    "concepts": ["FEATURE ENGINEERING & SELECTION", "SUPERVISED VS UNSUPERVISED LEARNING"]
+    "concepts": [
+      "FEATURE SCALING NECESSITY",
+      "SUPERVISED VS UNSUPERVISED LEARNING"
+    ]
   },
   {
     "id": 813,
@@ -63,7 +69,10 @@
       "If a model that predicts everything as 'not fraud' achieves 99.9% accuracy, what is that accuracy actually measuring?",
       "Recall measures: of all actual frauds, what fraction did we catch? That is what the business cares about."
     ],
-    "concepts": ["CLASSIFICATION METRICS & EVALUATION", "CLASS IMBALANCE HANDLING"]
+    "concepts": [
+      "CLASSIFICATION METRICS & EVALUATION",
+      "CLASS IMBALANCE HANDLING"
+    ]
   },
   {
     "id": 821,
@@ -85,7 +94,10 @@
       "A test AUC much higher than what production delivers almost always means the test set is 'contaminated' — it saw information that production wouldn't have.",
       "Check whether any feature joins, scalers, or encoders used data from the test set. The split must happen before all feature engineering."
     ],
-    "concepts": ["DATA LEAKAGE & PIPELINE INTEGRITY", "MODEL EVALUATION & VALIDATION"]
+    "concepts": [
+      "DATA LEAKAGE & PIPELINE INTEGRITY",
+      "DATA SPLITTING STRATEGY"
+    ]
   },
   {
     "id": 822,
@@ -107,7 +119,10 @@
       "Bagging averages diverse models — averaging uncorrelated models reduces variance. What does that remind you of in statistics?",
       "Boosting corrects errors sequentially — it starts with weak (high-bias) learners and reduces bias. Different goal than bagging."
     ],
-    "concepts": ["ENSEMBLE METHODS & BOOSTING", "BIAS-VARIANCE TRADEOFF"]
+    "concepts": [
+      "ENSEMBLE METHODS & BOOSTING",
+      "BIAS-VARIANCE TRADEOFF"
+    ]
   },
   {
     "id": 823,
@@ -129,7 +144,10 @@
       "SMOTE generates synthetic training points; class weights adjust the loss function. Both correct for imbalance but through different mechanisms.",
       "Ask: could synthetic interpolated features be physically or medically meaningful in this feature space? If not, class weights may be safer."
     ],
-    "concepts": ["CLASS IMBALANCE HANDLING", "MODEL EVALUATION & VALIDATION"]
+    "concepts": [
+      "CLASS IMBALANCE HANDLING",
+      "CROSS-VALIDATION DESIGN"
+    ]
   },
   {
     "id": 831,
@@ -151,7 +169,11 @@
       "When offline and online metrics diverge without leakage, look at whether features or labels in training are actually representative of production conditions.",
       "Recommendation systems are especially prone to feedback loop bias: historical clicks reflect what was previously recommended, not raw user preferences."
     ],
-    "concepts": ["TRAINING-SERVING SKEW & DRIFT", "MODEL EVALUATION & VALIDATION", "DATA LEAKAGE & PIPELINE INTEGRITY"]
+    "concepts": [
+      "TRAINING-SERVING SKEW & DRIFT",
+      "MODEL MONITORING",
+      "DATA LEAKAGE & PIPELINE INTEGRITY"
+    ]
   },
   {
     "id": 832,
@@ -173,7 +195,10 @@
       "Each layer multiplies the gradient by its local derivative during backprop. If that derivative is consistently < 1, the gradient shrinks exponentially with depth.",
       "ReLU's derivative is 1 (for positive inputs) — it passes gradients through unchanged, avoiding the exponential shrinkage problem."
     ],
-    "concepts": ["NEURAL NETWORK DESIGN & TRAINING", "GRADIENT PATHOLOGY & OPTIMIZATION"]
+    "concepts": [
+      "NEURAL NETWORK DESIGN & TRAINING",
+      "GRADIENT PATHOLOGY & OPTIMIZATION"
+    ]
   },
   {
     "id": 833,
@@ -195,6 +220,9 @@
       "A model that violates SLA is not deployable regardless of accuracy — start from the constraint, then find ways to recover accuracy within it.",
       "Distillation and quantisation are the standard paths to close the accuracy gap while meeting latency requirements."
     ],
-    "concepts": ["DEPLOYMENT CONSTRAINTS & EFFICIENCY", "BIAS-VARIANCE TRADEOFF", "MODEL EVALUATION & VALIDATION"]
+    "concepts": [
+      "DEPLOYMENT CONSTRAINTS & EFFICIENCY",
+      "BIAS-VARIANCE TRADEOFF"
+    ]
   }
 ]
