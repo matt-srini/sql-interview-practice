@@ -279,8 +279,7 @@
       "What if the fact that the value is missing is itself informative?"
     ],
     "concepts": [
-      "MISSING DATA STRATEGY",
-      "DATA LEAKAGE DETECTION"
+      "MISSING DATA STRATEGY"
     ]
   },
   {
@@ -407,7 +406,7 @@
       "If your residuals fan out as fitted values increase, what property of linear regression is being violated?"
     ],
     "concepts": [
-      "OVERFITTING DIAGNOSIS"
+      "REGRESSION METRICS"
     ]
   },
   {
@@ -1114,7 +1113,7 @@
       "The model was fine-tuned with batch size 32; ResNet-50 is architecturally sensitive to single-image batches because the final global average pooling layer produces degenerate statistics at batch_size=1",
       "model.eval() is only required when also using torch.no_grad(); without no_grad(), eval mode is automatically inferred from the batch size by PyTorch's autograd engine"
     ],
-    "correct_option": 1,
+    "correct_option": 0,
     "explanation": "PyTorch's BatchNorm layers have two distinct operating modes controlled by model.train() / model.eval(). In train mode, each forward pass computes batch statistics (mean and variance) over the current batch and uses them for normalization, while also updating running statistics via exponential moving average. In eval mode, the stored running mean and running variance (accumulated during training) are used instead. With batch_size=1 at inference, train-mode BatchNorm computes mean and variance over a single sample — the batch mean equals the sample value and the variance is zero (or near-zero), producing normalization outputs that differ dramatically from training-time behavior. This explains the 0.91 → 0.74 degradation on identical images. Option B is incorrect: eval mode does not freeze weights; requires_grad=False or torch.no_grad() control gradient computation. Option C: global average pooling is well-defined for any batch size including 1. Option D is entirely wrong — eval mode must be set explicitly.",
     "hints": [
       "What statistics does this layer compute during training to normalize activations, and how does a batch of exactly one sample affect the reliability of those statistics?",
@@ -1223,7 +1222,7 @@
       "The problem is that all three Level 0 models are tree-based and produce correlated predictions; the meta-learner overfits to this correlated output space; adding a linear Level 0 learner would reduce correlation and fix the gap",
       "The training AUC of 0.89 confirms the meta-learner is functioning correctly; the 0.76 holdout gap indicates Level 0 overfitting, not a stacking procedure defect"
     ],
-    "correct_option": 1,
+    "correct_option": 0,
     "explanation": "When Level 0 models are trained on the full training set and then predict on that same set, ensemble tree models in particular produce near-perfect predictions for training examples (Random Forest and boosted trees can memorize training points). The meta-learner then learns from these memorized predictions, which are far more informative than out-of-sample predictions will be — it trains on leaked signals and generalizes poorly. The correct approach is out-of-fold (OOF) stacking: use k-fold CV to train Level 0, collecting each fold's predictions from a model that did not see those examples. The meta-learner trains on the OOF predictions (same size as the training set, but each prediction was made out-of-sample). Option B: using original features in the meta-learner is optional (and sometimes done), but it is not the fix for this problem. Option C: correlated base learners reduce diversity and thus the ceiling of the ensemble, but do not explain this specific memorization-based gap. Option D misattributes the gap — the memorization in the stacking procedure is the specific mechanism.",
     "hints": [
       "When Random Forest or XGBoost predicts on training data it was fitted on, what property do those predictions have compared to out-of-sample predictions?",
@@ -1250,7 +1249,7 @@
       "Both causes contribute equally and cannot be disentangled without controlled A/B testing — neither can be identified as primary without additional experiments",
       "The AUC degradation is due to seasonal fraud pattern changes unrelated to feature distribution — the model needs separate January and July versions rather than a single retrained model"
     ],
-    "correct_option": 1,
+    "correct_option": 0,
     "explanation": "A 4-hour lag on a 30-day (720-hour) rolling window represents a maximum of 0.5% window staleness. Even in the worst case (a user with all transactions in the final 4 hours), the 30-day count is off by at most the last 4 hours of activity. This is a real but bounded skew. The distribution shift — median doubling from 12 to 27 transactions over 30 days — indicates the model is operating significantly out of distribution: it learned fraud patterns against a low-activity user base and is now scoring a high-activity population with different behavioral baselines. A 12-point AUC drop from 0.93 to 0.81 is consistent with distribution shift at this magnitude, not with a <1% feature staleness. The fix is retraining (or continual learning) on recent data with drift monitoring to trigger future retraining. Option B: the lag is a real concern for fraud detection latency, but its contribution to this AUC gap is mathematically bounded — it cannot explain a 12-point degradation. Option C: the causes are separable; compute the fraction of high-velocity fraud cases (those with all activity in <4h) to isolate the lag effect. Option D: seasonality is a type of distribution drift, not a separate category; the fix is still retraining.",
     "hints": [
       "The 30-day window is 720 hours long. A 4-hour lag affects at most what fraction of that window?",
@@ -1333,7 +1332,7 @@
       "ADWIN is specifically designed for concept drift (changes in P(Y|X)); (A) shows it incorrectly triggered on covariate shift (P(X) change) while (B) shows it is unable to detect gradual concept drift by design",
       "The 3-week lag in (B) means ADWIN's maximum window size is too large; reducing the window size would speed detection of gradual changes and simultaneously eliminate the false positive in (A)"
     ],
-    "correct_option": 1,
+    "correct_option": 0,
     "explanation": "ADWIN maintains an adaptive window of recent stream data and tests whether the mean of the older sub-window differs significantly from the newer sub-window. It monitors whatever statistic is passed to it (a feature mean, model error rate, or prediction distribution). (A) is not an algorithmic error — ADWIN correctly detected a statistically significant distribution change. The fact that model performance (P(Y|score)) was unchanged means the change was in P(X) (covariate shift), a pipeline artifact, or a transient upstream data issue. This is useful signal for data quality monitoring, even without concept drift. (B) is inherent to ADWIN's design: gradual drift incrementally shifts the mean of the stream. ADWIN's window expands until the statistical test can reject the null hypothesis of stationarity — for slow changes, this requires accumulating more observations, producing a detection lag proportional to drift speed. A 3-week lag for gradual drift is expected behavior, not misconfiguration. Option B: raising delta (reducing sensitivity) would reduce both (A) and (B) sensitivity simultaneously — it does not independently fix false positives while maintaining gradual drift detection. Option C: ADWIN monitors any streaming statistic; it can detect covariate shift by monitoring feature means, which is a legitimate and common use. Option D: reducing window size speeds detection but increases false positive rate — these are different parameters with different trade-offs.",
     "hints": [
       "ADWIN triggered a change in (A) but model performance was unaffected — does that mean ADWIN made an error, or that a real change occurred that did not affect model predictions?",
@@ -1389,7 +1388,7 @@
       "Partially correct: the methods are equivalent for bias parameters but differ for weight matrices because Adam's bias correction term interacts differently with the weight decay in AdamW",
       "Incorrect, but for a different reason: AdamW uses a higher effective learning rate for weight decay, causing faster convergence but worse generalization at long training horizons — Adam + L2 is preferable for transformers trained beyond 100K steps"
     ],
-    "correct_option": 1,
+    "correct_option": 0,
     "explanation": "In Adam with L2, the gradient at step t becomes g_t + lambda*w_t. Adam then divides this by (v_hat_t^0.5 + eps) where v_hat_t is the bias-corrected second moment estimate of the gradient. The effective weight decay applied to parameter w is lambda*w / (v_hat_t^0.5 + eps). For parameters with large gradient variance (high v_hat_t) — such as token embeddings in dense vocabulary positions — the effective regularization is much smaller than lambda. For rarely updated parameters with small v_hat_t, the effective regularization is much larger. This non-uniform regularization is an unintended side effect of combining L2 with Adam. AdamW (Loshchilov & Hutter 2019) decouples weight decay from gradient scaling: the update is w_{t+1} = (1 - eta*lambda)*w_t - eta*m_hat_t/(v_hat_t^0.5 + eps), where the weight decay term is applied directly and multiplicatively, independent of the gradient's second moment. This produces the intended uniform regularization and was shown to significantly improve transformer and ResNet training. Option B states the common misconception — the operations are not equivalent due to Adam's adaptive denominator. Option C: the equivalence/non-equivalence applies to all parameters consistently, not just subsets. Option D is fabricated.",
     "hints": [
       "Trace one Adam update step with L2: the gradient is g + lambda*w, then Adam divides by (v_hat^0.5 + eps). What happens to the lambda*w term when v_hat is large?",
@@ -1416,7 +1415,7 @@
       "The compliance officer is right: any modification to a risk model's probability outputs constitutes a material model change requiring full validation and retraining approval regardless of scope",
       "Recalibration is unnecessary: AUC 0.87 confirms strong discrimination and ECE 0.09 is within acceptable bounds for a model that uses decision thresholds rather than raw probabilities"
     ],
-    "correct_option": 1,
+    "correct_option": 0,
     "explanation": "AUC measures rank-order discrimination: P(score_positive > score_negative). Stable AUC means the model's relative ordering of examples has not changed — the learned representations and feature relationships are intact. ECE measures the alignment between predicted probabilities and empirical event rates. These can decouple: if the population's base rate has shifted (e.g., from 5% to 8% positives), the Platt scaling fitted at the original 5% base rate will produce systematically off-calibrated probabilities even though the model's discrimination is perfect. Recalibrating the Platt layer on recent labeled data (which reflects the current base rate) restores ECE to an acceptable level without touching the base model's weights or decision logic. This is a well-established practice in production ML. Option B conflates calibration drift with concept drift — they are separable phenomena. Calibration can drift due to base rate shift, label definition changes, or population composition changes, all without the model's discriminative ability changing. Option C overstates material change risk; recalibrating a post-hoc output transformation layer is categorically different from modifying the core model under regulatory frameworks. Option D dismisses a real and measurable problem: ECE 0.09 is a 4.5x increase from 0.02, which matters significantly for risk decisions that rely on probability magnitude.",
     "hints": [
       "AUC is stable but ECE has increased — which aspect of the model's behavior is captured by AUC, and which aspect is captured by ECE? Can they decouple?",
@@ -1473,8 +1472,8 @@
       "Training: [0, 4.0, 0, 8.0]; Inference: [2.0, 4.0, 6.0, 8.0] — dropout only zeros neurons during training; inference passes activations through unchanged without any scaling",
       "Training: [0, 8.0, 0, 16.0]; Inference: [1.0, 2.0, 3.0, 4.0] — surviving training neurons are scaled up by 2; at inference, all activations are halved to match expected training output"
     ],
-    "correct_option": 1,
-    "explanation": "PyTorch implements inverted dropout by default. During training with p=0.5: each neuron is independently dropped with probability p=0.5. The surviving neurons are scaled by 1/(1-p) = 1/0.5 = 2.0. For the specific mask [drop, keep, drop, keep]: neurons at index 0 and 2 become 0; neurons at index 1 and 3 are multiplied by 2 → [0, 4.0*2, 0, 8.0*2] = [0, 8.0, 0, 16.0]. The purpose of this scaling is to keep the expected activation magnitude consistent across training and inference: E[output | inverted] = (1-p) * (activation * 1/(1-p)) = activation. During inference (model.eval()), dropout is disabled entirely — all neurons are active and activations pass through unchanged: [2.0, 4.0, 6.0, 8.0]. No scaling is applied at inference. Option B describes naive dropout (no scaling during training) with test-time halving — the old approach before inverted dropout. Option C is correct for the training behavior but wrong on the scaling aspect. Option D correctly identifies the training output but wrongly applies halving at inference.",
+    "correct_option": 0,
+    "explanation": "PyTorch implements inverted dropout by default. During training with p=0.5: each neuron is independently dropped with probability p=0.5. The surviving neurons are scaled by 1/(1-p) = 1/0.5 = 2.0. For the specific mask [drop, keep, drop, keep]: neurons at index 0 and 2 become 0; neurons at index 1 and 3 are multiplied by 2 → [0, 4.0*2, 0, 8.0*2] = [0, 8.0, 0, 16.0]. The purpose of this scaling is to keep the expected activation magnitude consistent across training and inference: E[output | inverted] = (1-p) * (activation * 1/(1-p)) = activation. During inference (model.eval()), dropout is disabled entirely — all neurons are active and activations pass through unchanged: [2.0, 4.0, 6.0, 8.0]. No scaling is applied at inference. Option B describes naive dropout (no scaling during training) with test-time halving — the old approach before inverted dropout. Option C correctly identifies which neurons are zeroed during training but predicts wrong output magnitudes — it omits the 2× scaling that inverted dropout applies to surviving neurons, giving [0, 4.0, 0, 8.0] instead of [0, 8.0, 0, 16.0]. Option D correctly identifies the training output but wrongly applies halving at inference.",
     "hints": [
       "Randomly zeroing p fraction of neurons each forward pass changes the expected sum of activations entering the next layer — what scaling must be applied during training to preserve that expected sum, and what happens at inference when no neurons are zeroed?",
       "At inference (eval mode), what does PyTorch's dropout layer do to its input activations?"
@@ -1500,7 +1499,7 @@
       "Partially correct: both metrics are valid; AUC-PR should be used for threshold selection while AUC-ROC should be used for model comparison across datasets with different prevalences",
       "Incorrect: at 0.5% prevalence, both metrics are dominated by negative class performance; Matthews Correlation Coefficient (MCC) is the only appropriate single-number metric at this imbalance"
     ],
-    "correct_option": 1,
+    "correct_option": 0,
     "explanation": "AUC-ROC plots TPR (recall) vs FPR (1-specificity). At 0.5% positive rate, the FPR denominator is the number of true negatives — 99.5% of the data. A model that produces 1,000 false positives out of 200,000 negatives has FPR = 0.005, which looks excellent on the ROC curve. The same model has precision = TP/(TP+FP) = say 50/(50+1000) ≈ 4.5% — clinically unacceptable. AUC-ROC can appear very high (>0.95) for models that are actually useless in a screening context. AUC-PR directly plots precision against recall, both computed from the positive class's perspective. At high recall (required for screening), the PR curve reveals how rapidly precision degrades — the key clinical trade-off. For rare disease screening with high recall requirements, AUC-PR is the scientifically appropriate primary metric. Option B: 'prevalence-independent' describes AUC-ROC's mathematical property but is precisely what makes it misleading at extreme imbalance. Option C: the choice between metrics is not determined by threshold vs comparison purpose. Option D: MCC is a single-threshold metric and does not provide the full curve needed for threshold selection.",
     "hints": [
       "At 0.5% prevalence, the FPR denominator is 99.5% of the dataset — how does that affect what a 'small' FPR means in terms of raw false positives?",
@@ -1526,7 +1525,7 @@
       "Both are equivalent: UMAP preserves local distances by design, so nearest-neighbor structure in 2D is consistent with 200D and silhouette values will agree across both spaces",
       "Neither evaluation is valid: silhouette score assumes convex clusters and Euclidean distance, which are violated by UMAP's nonlinear transformation; Davies-Bouldin index should be used in UMAP space instead"
     ],
-    "correct_option": 1,
+    "correct_option": 0,
     "explanation": "UMAP is a nonlinear dimensionality reduction optimized for preserving local neighborhood structure while compressing global topology for visualization. It explicitly distorts inter-cluster distances and can 'fold' a continuous manifold into visually discrete blobs. Computing silhouette score in 2D UMAP space asks: are clusters well-separated in the visualization? This is trivially achievable by UMAP's design. Computing silhouette in the original 200D space asks: are these clusters actually distinct in the biological feature space? — the scientifically meaningful question. Clusters with high 2D silhouette but low 200D silhouette indicate UMAP compression artifacts, not genuine biological structure. For communicating biological validity, 200D evaluation is the appropriate primary metric, while 2D evaluation reveals visualization quality. Option B has algorithmic-consistency appeal but conflates visualization quality with biological meaning. Option C is factually incorrect: UMAP explicitly does NOT preserve global distances; it sacrifices global structure for local fidelity, which is a documented trade-off. Option D: Davies-Bouldin assumes cluster compactness, not convexity; silhouette is valid for the purpose of measuring separation.",
     "hints": [
       "UMAP's design goal is local neighborhood preservation for visualization — what does it explicitly sacrifice about global structure, and how does that affect distance-based metrics in the 2D space?",
@@ -1574,7 +1573,7 @@
     "mock_only": true,
     "description": "An Adam optimizer (lr=0.01, beta1=0.9, beta2=0.999, eps=1e-8) processes its first gradient update with g=0.001 (a near-zero gradient, as encountered near a saddle point). A vanilla SGD optimizer (lr=0.01, no momentum) processes the same gradient. Which statement correctly predicts the relative step sizes?",
     "options": [
-      "Adam takes a larger effective step: Adam's first-step update magnitude ≈ lr * |g| / sqrt(g^2/(1-beta2) + eps) ≈ lr / sqrt(1 + eps/(g^2/(1-beta2))); with g=0.001, the bias-corrected second moment is ~1e-6/0.001=1e-3, giving step ≈ 0.01*0.001/0.032 ≈ 3.1e-4; SGD takes step = 0.01*0.001 = 1e-5, so Adam moves ~30x further",
+      "Adam takes a larger effective step: at t=1 with g=0.001, bias-corrected second moment v_hat = (1-beta2)*g²/(1-beta2) = 1e-9/0.001 = 1e-6; Adam step = lr × m_hat / √(v_hat + ε) = 0.01 × 1e-3 / √(1e-6) ≈ 0.01 × 1e-3 / 0.001 ≈ 1e-2 ≈ lr; SGD step = lr × |g| = 0.01 × 0.001 = 1e-5; Adam moves ~1000× further, escaping the saddle while SGD nearly stalls",
       "SGD takes a larger step: SGD's step = lr*g = 1e-5; Adam's adaptive scaling by 1/sqrt(v) reduces the step proportionally to the gradient magnitude, making Adam's step smaller for small gradients",
       "Both take identical steps: on the first gradient update, Adam's bias-corrected moments equal the raw gradient, so the effective step reduces to lr*g, identical to SGD",
       "Adam takes a smaller step: the bias correction factors (1-beta1^t and 1-beta2^t) at t=1 scale down Adam's effective learning rate significantly below the nominal lr=0.01"
@@ -1739,7 +1738,7 @@
       "The OOB error is a biased overestimate of generalization error because bootstrap samples with replacement introduce duplicate observations, artificially inflating the apparent training error for OOB samples"
     ],
     "correct_option": 0,
-    "explanation": "The OOB estimate is generally a reliable approximation of 5-fold CV error for Random Forests, and the small gap (0.15 vs 0.16) is consistent with expected behavior. OOB error for each sample is computed using only the trees that did not include that sample in their bootstrap training set — approximately 36.8% of n_estimators, which is ~185 trees here. The full forest (500 trees) is slightly more accurate than a 185-tree sub-forest, so OOB predictions are made by a slightly weaker ensemble than the full model, but with n_estimators=500 the difference is small and OOB is near-equivalent to CV. The slight optimism (OOB < CV here) can arise because OOB samples are evaluated against trees trained on the full bootstrap samples from the remaining training data — more training data per tree (n=1000 bootstrap) vs CV folds (n=800 training fold). The difference is small and the direction can vary. Importantly, OOB computation is a free byproduct of training; CV requires retraining. Option B: there is a known small systematic difference between OOB and CV, not just noise. Option C gets the direction backwards — OOB uses ~63.2% of data per tree while CV trains on 80%; CV models are trained on slightly more data, so CV error would be slightly optimistic (lower), not OOB. Option D: OOB is an unbiased estimator specifically because it uses held-out samples; duplicates in bootstrap affect training, not OOB evaluation.",
+    "explanation": "The OOB estimate is generally a reliable approximation of 5-fold CV error for Random Forests, and the small gap (0.15 vs 0.16) is consistent with expected behavior. OOB error for each sample is computed using only the trees that did not include that sample in their bootstrap training set — approximately 36.8% of n_estimators, which is ~185 trees here. The full forest (500 trees) is slightly more accurate than a 185-tree sub-forest, so OOB predictions are made by a slightly weaker ensemble than the full model, but with n_estimators=500 the difference is small and OOB is near-equivalent to CV. The slight optimism (OOB < CV here) can arise because OOB samples are evaluated against trees trained on the full bootstrap samples from the remaining training data — more training data per tree (n=1000 bootstrap) vs CV folds (n=800 training fold). Importantly, OOB computation is a free byproduct of training; CV requires retraining. Option B: there is a known small systematic difference between OOB and CV, not just noise. Option C gets the direction backwards — even though OOB uses only ~185 of 500 trees per prediction, each tree was trained on the full 1,000-sample bootstrap while CV fold forests train on only 800 samples; individually stronger trees explain the slight OOB advantage in this scenario. Option D: OOB is an unbiased estimator specifically because it uses held-out samples; duplicates in bootstrap affect training, not OOB evaluation.",
     "hints": [
       "Each OOB prediction uses only the trees that did not see that sample — with n_estimators=500, how many trees typically contribute to each OOB prediction, and how does that affect the estimate quality?",
       "Compare how much training data each tree sees in the OOB setting (~63.2% bootstrapped) vs each fold's training set in 5-fold CV (~80%) — which produces stronger individual models?"
@@ -2957,8 +2956,7 @@
       "A feature ranking #1 by importance gain with 0.71 correlation to group membership — what signal is the model actually extracting from that feature?"
     ],
     "concepts": [
-      "ALGORITHMIC FAIRNESS",
-      "DATA LEAKAGE DETECTION"
+      "ALGORITHMIC FAIRNESS"
     ]
   },
   {

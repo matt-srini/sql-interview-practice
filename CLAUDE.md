@@ -111,6 +111,13 @@ The five-perspective pushback in § Standing instructions reads this section as 
 
 - **Always commit after meaningful changes.** End every session of edits with a `git commit` carrying a clear, specific message (not "update files" — something like "add mock interview mode with timer and session summary"). Co-author line: `Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>`.
 
+- **After any batch fix commit touching question JSON files, run this post-fix verification checklist in the same session — no exceptions:**
+  1. `cd backend && ../.venv/bin/python scripts/validate_content.py` — must show zero errors. The validator now includes `_validate_correct_option_explanation_consistency` (ERROR-level, catches inverted `correct_option` where the explanation refutes the keyed option) and `_validate_hint_numbers_in_stem` (WARN-level, catches hints containing ms/p99/× values not present in the question stem).
+  2. Manual spot-review: read at least 5 changed questions end-to-end — `correct_option` → keyed option text → explanation conclusion. Confirm the explanation defends the keyed option and does not refute it.
+  3. For any hint rewrite: verify every specific number (latency, multiplier, threshold) in the new hint appears verbatim in the question stem — not from memory, not from an adjacent question.
+
+  Skipping this checklist is the root cause of the ML Fundamentals correct_option inversion that persisted through the first audit pass and required a second pass to fully resolve (9 questions missed + 1 hint regression introduced by the fix commit itself).
+
 - **Keep `CLAUDE.md` in sync.** When content footprint, tech stack, or standing-instruction-relevant product behaviour changes, update the relevant section below in the same commit. Pure reference (routes, endpoints, design tokens, dev commands) lives in `docs/` — update there, not here.
 
 - **Parallelize coding work when possible.** If a coding task can be split safely and subagents are available, offload disjoint slices in parallel. Review and integrate results before finishing.

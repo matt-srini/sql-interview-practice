@@ -1328,6 +1328,143 @@ def _validate_non_sql_sample_ids() -> None:
         raise ValueError(f"Non-SQL sample duplicate-ID check failed:\n{joined}")
 
 
+def _validate_correct_option_explanation_consistency() -> None:
+    """ERROR-level check: detect when a question's explanation appears to
+    explicitly refute the keyed correct option.
+
+    For every MCQ question (has 'options' + 'correct_option' + 'explanation')
+    in a _TAXONOMY_VALIDATED_TRACKS file, scan the explanation for patterns
+    that signal the keyed letter (A/B/C/D) is described as wrong, a
+    misconception, or incorrect.  Fires as ERROR because a wrong correct_option
+    means the platform marks the right answer wrong and vice-versa.
+
+    Root cause this catches: bulk authoring runs where options are written with
+    the correct answer first (options[0]) but correct_option is accidentally set
+    to 1 throughout.  The refutation language in the explanation ("Option B is
+    incorrect...") then betrays the inversion mechanically in < 1 second.
+    """
+    letters = ["A", "B", "C", "D"]
+    # Refutation signal: Option <letter> followed by up to 80 chars that do NOT
+    # contain another "Option [A-D]" reference, then a refutation marker.
+    # The no-cross-option constraint prevents matching "Option C. Option A is wrong"
+    # as a refutation of C (false positive from explanation structure where the
+    # author names the correct option then refutes the others in sequence).
+    _REFUTE = re.compile(
+        r"Option ([A-D])\b"
+        r"(?:(?!Option [A-D]).){0,80}"
+        r"(?:"
+        r"is (?:wrong|incorrect|a misconception|not correct)"
+        r"|states the common misconception"
+        r"|mischaracterizes"
+        r"|conflates"
+        r"|describes (?:the naive|the old|an incorrect|the wrong)"
+        r"|is not (?:the fix|correct|equivalent|applied|a valid|the right)"
+        r")",
+        re.IGNORECASE | re.DOTALL,
+    )
+    errors: list[str] = []
+
+    for track, file_path in _iter_question_files():
+        if track not in _TAXONOMY_VALIDATED_TRACKS:
+            continue
+        with file_path.open("r", encoding="utf-8") as fh:
+            questions = json.load(fh)
+        for q in questions:
+            if "options" not in q or "explanation" not in q:
+                continue
+            correct = q.get("correct_option")
+            if not isinstance(correct, int):
+                continue
+            opts = q.get("options", [])
+            if correct < 0 or correct >= len(opts):
+                continue
+            keyed = letters[correct]
+            expl = q.get("explanation", "")
+            qid = q.get("id", "<unknown>")
+            title = q.get("title", "<untitled>")
+            for m in _REFUTE.finditer(expl):
+                if m.group(1).upper() == keyed:
+                    errors.append(
+                        f"{track} {qid} {title}: explanation appears to refute "
+                        f"keyed option {keyed} — '{m.group()[:80].strip()}'"
+                    )
+                    break  # one error per question is enough
+
+    if errors:
+        joined = "\n".join(f"- {item}" for item in errors[:200])
+        remaining = len(errors) - min(len(errors), 200)
+        if remaining:
+            joined += f"\n- ... and {remaining} more"
+        raise ValueError(
+            f"correct_option/explanation consistency check failed:\n{joined}"
+        )
+
+
+def _validate_hint_numbers_in_stem() -> None:
+    """WARN-level check: detect when a hint contains a latency, percentile, or
+    multiplier value that does not appear in the question stem.
+
+    This catches the regression class where a hint rewrite accidentally imports
+    numbers from a different question (e.g. '20ms p99' when the stem says
+    '50ms SLA').  Applied to all tracks; WARN-only (stderr, not ValueError).
+
+    Units checked: ms (latency), p99 (percentile notation), × (multiplier).
+    Plain percentages and bare integers are excluded — they appear too
+    frequently in generic prose to be reliably context-specific.
+    """
+    _NUM_UNIT = re.compile(
+        r"\b(\d+(?:\.\d+)?)\s*(ms\b|p99\b|×)",
+        re.IGNORECASE,
+    )
+    warnings: list[str] = []
+
+    for track, file_path in _iter_question_files():
+        with file_path.open("r", encoding="utf-8") as fh:
+            questions = json.load(fh)
+        for q in questions:
+            hints = q.get("hints")
+            if not isinstance(hints, list) or not hints:
+                continue
+            # Concatenate all fields that constitute the question body / stem
+            stem = " ".join(
+                filter(
+                    None,
+                    [
+                        q.get("description") or "",
+                        q.get("scenario_context") or "",
+                        q.get("question") or "",
+                        q.get("prompt") or "",
+                    ],
+                )
+            )
+            stem_pairs: set[tuple[str, str]] = {
+                (m.group(1), m.group(2).lower().rstrip())
+                for m in _NUM_UNIT.finditer(stem)
+            }
+            qid = q.get("id", "<unknown>")
+            title = q.get("title", "<untitled>")
+            for i, hint in enumerate(hints):
+                if not isinstance(hint, str):
+                    continue
+                for m in _NUM_UNIT.finditer(hint):
+                    pair = (m.group(1), m.group(2).lower().rstrip())
+                    if pair not in stem_pairs:
+                        warnings.append(
+                            f"{track} {qid} {title}: hint[{i}] uses "
+                            f"'{m.group().strip()}' not found in stem"
+                        )
+
+    if warnings:
+        sys.stderr.write(
+            f"WARNING: hint numbers not present in stem "
+            f"({len(warnings)} cases — possible hint regression):\n"
+        )
+        for w in warnings[:20]:
+            sys.stderr.write(f"  - {w}\n")
+        if len(warnings) > 20:
+            sys.stderr.write(f"  - ... and {len(warnings) - 20} more\n")
+
+
 def _load_json_file(path: Path) -> None:
     with path.open("r", encoding="utf-8") as handle:
         json.load(handle)
@@ -1363,6 +1500,8 @@ def main() -> None:
     _validate_mcq_consistency()
     _validate_non_sql_sample_fields()
     _validate_non_sql_sample_ids()
+    _validate_correct_option_explanation_consistency()
+    _validate_hint_numbers_in_stem()
 
     print("Content validation passed")
 
