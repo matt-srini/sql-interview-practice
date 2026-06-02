@@ -30,22 +30,23 @@
     "topic": "ml-fundamentals",
     "type": "conceptual",
     "difficulty": "easy",
-    "title": "Why Feature Scaling Matters for Some Models",
-    "description": "A data scientist trains two models on a dataset with features: `age` (range 20–80) and `income` (range 20,000–200,000). Which statement correctly explains why scaling matters for one model type but not the other?",
+    "title": "ROC-AUC vs Precision-Recall AUC for Imbalanced Evaluation",
+    "description": "A data scientist builds a fraud detection model on a dataset where 1% of transactions are fraudulent. She reports ROC-AUC = 0.97 and concludes the model is excellent. A colleague challenges this, recommending the precision-recall AUC (AUPRC) instead. Is the colleague right, and why?",
     "options": [
-      "Scaling matters for both models equally — all ML models require standardised features to converge correctly",
-      "Scaling matters for distance-based and gradient-descent models (e.g., logistic regression, SVM, k-NN) because they use feature magnitudes; it does not affect tree-based models (e.g., Random Forest, XGBoost) which split on thresholds and are scale-invariant",
-      "Scaling only matters for neural networks — all other models are unaffected by feature magnitude differences",
-      "Scaling is needed only when features are correlated — if age and income are independent, no scaling is required for any model"
+      "The colleague is wrong — ROC-AUC of 0.97 is an objective measure of model quality that applies equally to balanced and imbalanced datasets",
+      "The colleague is right — for severely imbalanced datasets, ROC-AUC is optimistic because its x-axis (False Positive Rate = FP / (FP + TN)) is dominated by the huge pool of true negatives. With 99% legitimate transactions, even a poor model keeps FPR low. The precision-recall curve focuses entirely on the minority class, making AUPRC a more informative evaluation for rare-event detection",
+      "The colleague is wrong — both curves measure the same underlying model quality; the choice affects only visualisation, not the diagnostic conclusion",
+      "The colleague is right, but AUPRC is only meaningful when the positive class is exactly 1%; for other imbalance ratios ROC-AUC remains the correct metric"
     ],
     "correct_option": 1,
-    "explanation": "Models that use Euclidean distances or gradient descent are sensitive to feature scale. In k-NN, income's range (20k–200k) would dominate age's range (20–80), making income's raw difference dominate all distance calculations. In logistic regression, the gradient descent step size depends on feature magnitude, causing slow convergence or instability. Tree-based models split on individual feature thresholds and are invariant to monotonic transformations of features — income of 50,000 vs standardised 0.2 produces identical splits. Option 0 overstates. Option 2 is too narrow. Option 3 conflates feature independence with scale sensitivity.",
+    "explanation": "ROC-AUC measures the trade-off between True Positive Rate (sensitivity) and False Positive Rate (FPR = FP / (FP + TN)) across all decision thresholds. With 99% legitimate transactions, the number of true negatives is enormous — even a model that misses most fraud keeps FPR low just because the denominator is so large. This inflates the ROC curve toward the upper-left, producing high AUC even when precision on fraud is poor. The precision-recall curve plots precision (fraction of flagged cases that are real fraud) against recall (fraction of all fraud caught). Both quantities focus exclusively on the positive class, so AUPRC is not inflated by the abundance of negatives. For fraud detection, rare disease screening, and any problem where the positive class is rare and costly to miss, AUPRC or F1 are more informative than ROC-AUC. Option 0 is wrong: ROC-AUC is objective but measures something different from what matters under severe imbalance. Option 2 is wrong: the two curves give materially different impressions — a model can have high ROC-AUC alongside very low AUPRC when precision on the minority class is poor. Option 3 is wrong: the problem is not tied to a specific proportion; AUPRC is useful whenever the positive class is rare.",
     "hints": [
-      "Ask: does the algorithm care about the absolute magnitude of a feature, or only about its relative ordering?",
-      "Distance-based (k-NN, SVM) and gradient-descent (logistic regression, neural nets) algorithms are scale-sensitive. Tree-based algorithms are not."
+      "ROC's x-axis is False Positive Rate = FP / (FP + TN). With 99% of transactions legitimate, the denominator is enormous. How does that affect the shape of the ROC curve even for a model that rarely catches fraud?",
+      "Precision and recall are both computed purely from the model's handling of positive (fraud) cases — neither metric involves true negatives. How does that make the precision-recall curve more honest for rare-event detection?"
     ],
     "concepts": [
-      "FEATURE SCALING NECESSITY"
+      "CLASSIFICATION METRICS",
+      "CLASS IMBALANCE HANDLING"
     ]
   },
   {
@@ -54,23 +55,23 @@
     "topic": "ml-fundamentals",
     "type": "conceptual",
     "difficulty": "easy",
-    "title": "Choosing a Metric for an Imbalanced Classifier",
-    "description": "A fraud detection model is trained on a dataset where 0.1% of transactions are fraudulent. The model predicts 'not fraud' for every transaction and achieves 99.9% accuracy. Why is accuracy a poor metric here, and what should be used instead?",
+    "title": "Why Perfect Training and Validation Accuracy Signals a Bug",
+    "description": "A team trains a customer churn classifier. Training accuracy: 100%. Validation accuracy: 99.8%. The team celebrates, but a senior engineer says: 'Don't ship — check for leakage immediately.' Which reasoning best explains why near-perfect accuracy on both training and held-out data is a red flag rather than a success?",
     "options": [
-      "Accuracy is fine — 99.9% is an excellent result and no other metric is needed for production models",
-      "Accuracy is misleading because the majority class dominates: a model that predicts everything as 'not fraud' achieves 99.9% accuracy without detecting a single fraud. Precision, recall, F1, or AUC-ROC are appropriate — they evaluate the model's ability to correctly identify the minority class",
-      "The model is accurate but needs a lower threshold — reduce the decision threshold from 0.5 to 0.01 to capture more fraud cases",
-      "Replace accuracy with cross-entropy loss — the model's loss function is better than any classification metric for evaluating imbalanced problems"
+      "100% training accuracy is physically impossible with real-world data because labels are always slightly noisy, so the results must contain a calculation error",
+      "Near-perfect accuracy on both training and held-out data almost certainly indicates a leaked feature — one that directly or indirectly encodes the label (e.g. a column computed post-event that would not be available at prediction time). Genuine churn predictors never achieve this because churn is driven by hard-to-measure behavioural signals. Near-perfect validation accuracy rules out pure overfitting, which would show poor validation performance, pointing squarely at leakage",
+      "100% training accuracy means the model has overfit, which always causes poor validation accuracy — the near-perfect validation score is therefore contradictory and indicates a data processing error",
+      "High validation accuracy means the validation set is too similar to training data; the team should evaluate on a harder, external benchmark dataset"
     ],
     "correct_option": 1,
-    "explanation": "When classes are severely imbalanced, the naive majority-class predictor achieves very high accuracy by construction — it's not a meaningful signal. For fraud detection, we care specifically about recall (how many actual frauds did we catch) and precision (of the flagged cases, how many were real fraud). F1 balances these, and AUC-ROC measures discriminative power across all thresholds. Option 0 ignores the fundamental problem of class imbalance. Option 2 is a valid operational step but doesn't address the metric choice. Option 3 is wrong — cross-entropy is a training loss, not an evaluation metric for this business problem.",
+    "explanation": "With genuine behavioural churn data, no model achieves perfect training AND validation accuracy. The two cases are diagnostically different: if training accuracy were 100% and validation accuracy were 65%, that would be classic overfitting — the model memorised training labels but didn't generalise. But near-perfect performance on both strongly suggests the model found a feature that directly encodes the label. Common examples: a churn_date column that exists for churned customers; a customer status field updated at churn time; a feature aggregated over a window that includes post-churn activity. None of these would be available at real prediction time, so the model exploits information that isn't actually predictive in deployment. Option 0 is wrong: 100% training accuracy is achievable on separable datasets or with sufficiently complex models without any bug. Option 2 misidentifies the pattern — overfitting produces high training accuracy with LOW validation accuracy; near-perfect on BOTH is a different diagnostic. Option 3 confuses difficulty of evaluation with leakage; the problem is in the features, not the split.",
     "hints": [
-      "If a model that predicts everything as 'not fraud' achieves 99.9% accuracy, what is that accuracy actually measuring?",
-      "Recall measures: of all actual frauds, what fraction did we catch? That is what the business cares about."
+      "Before celebrating, ask whether this performance level is consistent with what you know about predicting churn. Churn is driven by subtle, hard-to-observe behavioural signals — what would allow a model to predict it with near-certainty on held-out data?",
+      "Overfitting produces high training accuracy alongside LOW validation accuracy. Here both are near-perfect. What is the only common explanation for a model that predicts held-out labels it never trained on with almost no error?"
     ],
     "concepts": [
-      "CLASSIFICATION METRICS",
-      "CLASS IMBALANCE HANDLING"
+      "DATA LEAKAGE DETECTION",
+      "OVERFITTING DIAGNOSIS"
     ]
   },
   {
@@ -102,25 +103,25 @@
     "id": 822,
     "order": 2,
     "topic": "ml-fundamentals",
-    "type": "conceptual",
+    "type": "scenario",
     "difficulty": "medium",
-    "title": "Bagging vs Boosting: Which Reduces What",
-    "description": "A model is high variance (overfit). A colleague recommends switching to an ensemble method. Which ensemble approach directly targets variance reduction, and why?",
+    "title": "Stacking Ensembles: Why Naive Meta-Feature Construction Leaks",
+    "description": "A team builds a stacking ensemble: three base models (XGBoost, logistic regression, SVM) are each trained on the full training set. Their training-set predictions are concatenated as meta-features and passed to a meta-learner (logistic regression), which is also trained on the training set. Validation accuracy of the meta-learner looks excellent. At test time, performance drops significantly. A reviewer identifies the root cause. What is it, and what is the standard fix?",
     "options": [
-      "Boosting — sequential weak learners focus on misclassified points, progressively reducing error and also reducing variance",
-      "Bagging — averaging multiple models trained on different bootstrap samples reduces variance by combining diverse, independently trained predictors; each model overfits to its bootstrap sample, but their average generalises better",
-      "Both reduce variance equally — ensemble methods universally reduce both bias and variance regardless of the technique",
-      "Neither — ensembles reduce bias by combining weak learners; variance is reduced only by regularisation techniques like L1/L2 penalty"
+      "The base models are too diverse — XGBoost, logistic regression, and SVM are incompatible architectures for stacking; the meta-learner cannot combine predictions from models with fundamentally different output scales",
+      "The meta-learner trains on in-sample base model predictions. Because the base models memorised the training labels, their training-set predictions are nearly perfect — the meta-learner learns to trust these overly optimistic signals. At test time, base model predictions are noisier and the meta-learner fails to generalise. The fix is out-of-fold (OOF) prediction: for each training example, generate its meta-feature using a base model trained on the other folds, ensuring the meta-learner trains on held-out predictions",
+      "The validation set was contaminated — both the base models and the meta-learner overfit to it, and the test drop is simply standard overfitting from lack of a true holdout",
+      "The meta-learner (logistic regression) is too simple to combine the outputs of three diverse models; switching to a tree-based meta-learner would eliminate the test gap"
     ],
     "correct_option": 1,
-    "explanation": "Bagging (Bootstrap Aggregating) is the ensemble technique specifically designed to reduce variance. By training each model on a different bootstrap sample and averaging predictions, the ensemble's variance is approximately 1/n of a single model's variance (for uncorrelated models). This is Random Forest's primary mechanism. Boosting reduces bias: it trains weak learners sequentially, each correcting the residuals of the previous, building a strong learner from many biased-but-diverse components. Boosting can also reduce variance but is primarily a bias-reduction technique and can overfit if not regularised. Option 0 misstates boosting's primary target. Option 2 overgeneralises. Option 3 confuses regularisation (a different technique) with ensembling.",
+    "explanation": "Stacking requires the meta-learner to train on base model predictions on data those base models did NOT train on. When base models predict on their own training data, they exploit memorisation — a base XGBoost that overfit to training labels predicts those labels with near-certainty, producing confident 'meta-features' that are actually close to the labels themselves. The meta-learner learns to rely on this spuriously strong signal, which collapses at test time when base model predictions become genuine probability estimates rather than near-label outputs. Out-of-fold (OOF) construction fixes this: use k-fold CV to train each base model on k-1 folds and generate predictions for the left-out fold. Concatenating all fold predictions gives each training example a meta-feature from a base model that never trained on it. The meta-learner then trains on these realistic, held-out predictions and generalises correctly. Option 0 is wrong: diverse model families are desirable in stacking, and output scales are typically calibrated to [0,1] probabilities for all three. Option 2 misidentifies the mechanism — the issue is the training-time meta-feature construction, not a contaminated validation set. Option 3 is wrong: meta-learner complexity is not the root cause; a simple logistic regression trained on OOF predictions generalises well.",
     "hints": [
-      "Bagging averages diverse models — averaging uncorrelated models reduces variance. What does that remind you of in statistics?",
-      "Boosting corrects errors sequentially — it starts with weak (high-bias) learners and reduces bias. Different goal than bagging."
+      "Think about what training-set predictions from a base model that memorised the training labels actually look like. Are they realistic generalisation estimates — or something close to the labels themselves?",
+      "The meta-learner needs to see what base model predictions look like on data those base models have never trained on. What evaluation technique already generates one held-out prediction for every training example?"
     ],
     "concepts": [
       "ENSEMBLE STRATEGY",
-      "BIAS-VARIANCE TRADEOFF"
+      "DATA LEAKAGE DETECTION"
     ]
   },
   {
