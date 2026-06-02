@@ -1064,6 +1064,270 @@ def _validate_paths(paths: list[dict], catalogs_by_topic: dict[str, dict[str, li
             _dfs(slug, [])
 
 
+def _validate_sample_cross_bank_titles() -> None:
+    """Check that no sample question title collides with any practice or mock question title.
+
+    Both practice and mock-only (mock_only=true) questions count — sample titles must
+    not duplicate either. Comparison is case-sensitive exact match. Missing sample or
+    practice files are skipped with a warning.
+    """
+    errors: list[str] = []
+
+    for track, sample_file in SAMPLE_FILES.items():
+        if not sample_file.exists():
+            sys.stderr.write(
+                f"WARNING: sample file not found, skipping cross-bank title check: {sample_file}\n"
+            )
+            continue
+
+        practice_dir = QUESTION_DIRS.get(track)
+        if practice_dir is None:
+            continue
+
+        # Collect all titles from the practice/mock bank (easy + medium + hard).
+        practice_titles: set[str] = set()
+        for practice_file in sorted(practice_dir.glob("*.json")):
+            if practice_file.stem == "schemas":
+                continue
+            with practice_file.open("r", encoding="utf-8") as handle:
+                try:
+                    questions = json.load(handle)
+                except json.JSONDecodeError:
+                    continue
+            for q in questions:
+                t = q.get("title")
+                if isinstance(t, str) and t:
+                    practice_titles.add(t)
+
+        # Check each sample question against the collected titles.
+        with sample_file.open("r", encoding="utf-8") as handle:
+            sample_questions = json.load(handle)
+
+        for q in sample_questions:
+            qid = q.get("id", "<unknown>")
+            title = q.get("title", "")
+            if isinstance(title, str) and title in practice_titles:
+                errors.append(
+                    f"SAMPLE TITLE COLLISION [{track}] sample ID {qid}: title '{title}' matches practice/mock question"
+                )
+
+    if errors:
+        joined = "\n".join(f"- {item}" for item in errors)
+        raise ValueError(f"Sample cross-bank title collision:\n{joined}")
+
+
+def _validate_mcq_consistency() -> None:
+    """Validate MCQ option-array consistency for all question files that contain an 'options' field.
+
+    Checks applied to every question that has an 'options' key:
+      (a) correct_option is a valid zero-based integer index into the options array.
+      (b) If the description text explicitly names option labels using the patterns
+          r"\\bOption [A-D]\\b" or r"\\([A-D]\\)", the count of *distinct* labels
+          mentioned must not exceed len(options).
+
+    Applied to both sample files and practice/mock files in non-SQL tracks.
+    """
+    _LABEL_PATTERN = re.compile(r"\bOption [A-D]\b|\([A-D]\)")
+
+    errors: list[str] = []
+
+    for track, file_path in _iter_question_files():
+        with file_path.open("r", encoding="utf-8") as handle:
+            questions = json.load(handle)
+
+        for q in questions:
+            if "options" not in q:
+                continue
+
+            qid = q.get("id", "<unknown>")
+            options = q.get("options", [])
+            correct = q.get("correct_option")
+            description = q.get("description", "") or ""
+
+            # (a) correct_option range check
+            if isinstance(correct, int) and isinstance(options, list):
+                if correct < 0 or correct >= len(options):
+                    errors.append(
+                        f"MCQ INDEX OUT OF RANGE [{track}] ID {qid}: "
+                        f"correct_option={correct} but options has {len(options)} entries"
+                    )
+
+            # (b) label-count vs options-array-length check
+            if isinstance(description, str) and isinstance(options, list):
+                labels_found = set(_LABEL_PATTERN.findall(description))
+                if labels_found and len(labels_found) > len(options):
+                    errors.append(
+                        f"MCQ LABEL COUNT MISMATCH [{track}] ID {qid}: "
+                        f"description references {len(labels_found)} distinct labels (A-D) "
+                        f"but options has {len(options)} entries"
+                    )
+
+    if errors:
+        joined = "\n".join(f"- {item}" for item in errors)
+        raise ValueError(f"MCQ consistency validation failed:\n{joined}")
+
+
+def _validate_non_sql_sample_fields() -> None:
+    """Validate required fields on every question in each non-SQL sample file.
+
+    Universal required fields (all non-SQL sample questions):
+      - id (integer)
+      - title (non-empty string)
+      - description (non-empty string)
+      - difficulty (one of: "easy", "medium", "hard")
+      - hints (list with exactly 2 entries)
+      - concepts (list with 1–4 entries)
+      - order (integer)
+
+    Conditional required fields (detected by presence of field in question):
+      - options: must be a non-empty list
+      - expected_code / expected_query: must be non-empty string
+      - test_cases: must be a non-empty list
+
+    Missing sample files are skipped with a warning.
+    """
+    VALID_DIFFICULTIES = {"easy", "medium", "hard"}
+    errors: list[str] = []
+
+    for track, sample_file in SAMPLE_FILES.items():
+        if track == "sql":
+            continue  # SQL sample has a different schema (expected_query, not expected_code)
+
+        if not sample_file.exists():
+            sys.stderr.write(
+                f"WARNING: sample file not found, skipping field check: {sample_file}\n"
+            )
+            continue
+
+        with sample_file.open("r", encoding="utf-8") as handle:
+            questions = json.load(handle)
+
+        for q in questions:
+            qid = q.get("id", "<unknown>")
+
+            # id — must be an integer
+            if not isinstance(q.get("id"), int):
+                errors.append(
+                    f"MISSING/INVALID FIELD [{track}] sample ID {qid}: field 'id' must be an integer"
+                )
+
+            # title — non-empty string
+            title = q.get("title")
+            if not (isinstance(title, str) and title.strip()):
+                errors.append(
+                    f"MISSING/INVALID FIELD [{track}] sample ID {qid}: field 'title' must be a non-empty string"
+                )
+
+            # description — non-empty string
+            description = q.get("description")
+            if not (isinstance(description, str) and description.strip()):
+                errors.append(
+                    f"MISSING/INVALID FIELD [{track}] sample ID {qid}: field 'description' must be a non-empty string"
+                )
+
+            # difficulty — one of the valid values
+            difficulty = q.get("difficulty")
+            if difficulty not in VALID_DIFFICULTIES:
+                errors.append(
+                    f"MISSING/INVALID FIELD [{track}] sample ID {qid}: field 'difficulty' must be one of {sorted(VALID_DIFFICULTIES)}, got {difficulty!r}"
+                )
+
+            # hints — list with exactly 2 entries
+            hints = q.get("hints")
+            if not isinstance(hints, list):
+                errors.append(
+                    f"MISSING/INVALID FIELD [{track}] sample ID {qid}: field 'hints' must be a list"
+                )
+            elif len(hints) != 2:
+                errors.append(
+                    f"MISSING/INVALID FIELD [{track}] sample ID {qid}: field 'hints' must have exactly 2 entries, found {len(hints)}"
+                )
+
+            # concepts — list with 1–4 entries
+            concepts = q.get("concepts")
+            if not isinstance(concepts, list):
+                errors.append(
+                    f"MISSING/INVALID FIELD [{track}] sample ID {qid}: field 'concepts' must be a list"
+                )
+            elif not (1 <= len(concepts) <= 4):
+                errors.append(
+                    f"MISSING/INVALID FIELD [{track}] sample ID {qid}: field 'concepts' must have 1–4 entries, found {len(concepts)}"
+                )
+
+            # order — must be an integer
+            if not isinstance(q.get("order"), int):
+                errors.append(
+                    f"MISSING/INVALID FIELD [{track}] sample ID {qid}: field 'order' must be an integer"
+                )
+
+            # Conditional: options — non-empty list if present
+            if "options" in q:
+                options = q.get("options")
+                if not isinstance(options, list) or len(options) == 0:
+                    errors.append(
+                        f"MISSING/INVALID FIELD [{track}] sample ID {qid}: field 'options' must be a non-empty list"
+                    )
+
+            # Conditional: expected_code / expected_query — non-empty string if present
+            for code_field in ("expected_code", "expected_query"):
+                if code_field in q:
+                    val = q.get(code_field)
+                    if not (isinstance(val, str) and val.strip()):
+                        errors.append(
+                            f"MISSING/INVALID FIELD [{track}] sample ID {qid}: field '{code_field}' must be a non-empty string"
+                        )
+
+            # Conditional: test_cases — non-empty list if present
+            if "test_cases" in q:
+                tc = q.get("test_cases")
+                if not isinstance(tc, list) or len(tc) == 0:
+                    errors.append(
+                        f"MISSING/INVALID FIELD [{track}] sample ID {qid}: field 'test_cases' must be a non-empty list"
+                    )
+
+    if errors:
+        joined = "\n".join(f"- {item}" for item in errors)
+        raise ValueError(f"Non-SQL sample field validation failed:\n{joined}")
+
+
+def _validate_non_sql_sample_ids() -> None:
+    """Check that no two questions in the same non-SQL sample file share an 'id' value.
+
+    Missing sample files are skipped with a warning.
+    """
+    errors: list[str] = []
+
+    for track, sample_file in SAMPLE_FILES.items():
+        if track == "sql":
+            continue
+
+        if not sample_file.exists():
+            sys.stderr.write(
+                f"WARNING: sample file not found, skipping duplicate-ID check: {sample_file}\n"
+            )
+            continue
+
+        with sample_file.open("r", encoding="utf-8") as handle:
+            questions = json.load(handle)
+
+        seen_ids: dict[int, int] = {}  # id -> count
+        for q in questions:
+            qid = q.get("id")
+            if not isinstance(qid, int):
+                continue
+            seen_ids[qid] = seen_ids.get(qid, 0) + 1
+
+        for qid, count in seen_ids.items():
+            if count > 1:
+                errors.append(
+                    f"DUPLICATE SAMPLE ID [{track}] id={qid} appears more than once"
+                )
+
+    if errors:
+        joined = "\n".join(f"- {item}" for item in errors)
+        raise ValueError(f"Non-SQL sample duplicate-ID check failed:\n{joined}")
+
+
 def _load_json_file(path: Path) -> None:
     with path.open("r", encoding="utf-8") as handle:
         json.load(handle)
@@ -1095,6 +1359,10 @@ def main() -> None:
     _validate_mcq_scenario_questions()
     _validate_mock_fields()
     _validate_solution_code_presence()
+    _validate_sample_cross_bank_titles()
+    _validate_mcq_consistency()
+    _validate_non_sql_sample_fields()
+    _validate_non_sql_sample_ids()
 
     print("Content validation passed")
 

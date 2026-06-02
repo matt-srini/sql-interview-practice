@@ -55,7 +55,7 @@
     "topic": "experimentation",
     "type": "conceptual",
     "difficulty": "easy",
-    "title": "Choosing a Primary Metric",
+    "title": "Selecting the Right Primary Metric for an Onboarding Test",
     "description": "A team is testing a new onboarding flow aimed at improving user activation. They consider three candidate primary metrics: (A) click-through rate on the first onboarding screen, (B) 7-day retention, (C) Net Promoter Score survey response rate. Which metric is the best primary metric and why?",
     "options": [
       "Option A — click-through rate is the most sensitive metric and will detect a treatment effect fastest",
