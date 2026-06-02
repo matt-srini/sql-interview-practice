@@ -135,23 +135,23 @@
     "id": 431,
     "order": 1,
     "topic": "pyspark",
-    "type": "scenario",
+    "type": "conceptual",
     "difficulty": "hard",
-    "title": "Hot-Key Skew: Diagnosing and Fixing a Slow Join",
-    "description": "A Spark join on `user_id` between a 1 TB event log and a 500 GB user profile table runs for 6 hours. Spark UI shows one task running 100× longer than the median. Investigation reveals that 40% of all events belong to a single `user_id` ('bot_crawler').\n\nWhich mitigation correctly addresses the root cause?",
+    "title": "Delta Lake Change Data Feed: Pre-Image and Post-Image Rows",
+    "description": "A team enables Delta Lake's Change Data Feed (`delta.enableChangeDataFeed = true`) on a `user_events` table and reads changes via `spark.readStream.format('delta').option('readChangeFeed', 'true')`. They run a MERGE that updates 50,000 rows. Inspecting the CDF output, they find 100,000 rows — exactly double. A junior engineer says: 'We must have a bug in the MERGE condition that's creating duplicate updates.' Is the junior engineer right?",
     "options": [
-      "Increase `spark.sql.shuffle.partitions` from 200 to 2000 — more partitions distribute the skewed key across more tasks",
-      "Use salting: append a random integer suffix to the skewed key on the large side and replicate the matching rows on the small side, then strip the suffix after the join",
-      "Enable speculative execution — Spark will automatically re-launch the slow task on a different executor where the key is less skewed",
-      "Switch from sort-merge join to broadcast join — this eliminates partitioning entirely and removes the skew problem"
+      "Yes — a correct MERGE should produce exactly one output row per modified record in the CDF; 100,000 rows for 50,000 updates indicates the MERGE matched each source row twice",
+      "No — Delta CDF intentionally emits two rows per UPDATE operation: one with `_change_type = 'update_preimage'` (the row's values before the update) and one with `_change_type = 'update_postimage'` (the row's values after). This allows downstream consumers to compute deltas, reconstruct exact before/after state, or audit changes. Downstream consumers must filter to `update_postimage` if they only want the current values",
+      "Yes — the doubled row count is a known CDF bug when the table is partitioned; applying `OPTIMIZE` after the MERGE will deduplicate the pre-image rows automatically",
+      "No — Delta CDF always emits two rows per change regardless of operation type; INSERT and DELETE operations also produce a pre-image and post-image row, so 100,000 rows from 50,000 inserts would also be expected"
     ],
     "correct_option": 1,
-    "explanation": "Skew is a data distribution problem: one key owns a disproportionate share of rows, so that partition's task is overwhelmed regardless of how many total partitions exist. Salting splits the skewed key into multiple synthetic sub-keys (e.g., 'bot_crawler_0', 'bot_crawler_1', …), distributing its rows across multiple partitions. The small side is replicated to match all salted variants, and the suffix is stripped post-join. Option 0 (more partitions) doesn't help — the bot_crawler rows all land in one partition by hash. Option 2 (speculative execution) reruns the slow task but doesn't fix the underlying data imbalance. Option 3 (broadcast join) is not viable here: the user profile table at 500 GB is far too large to broadcast.",
+    "explanation": "Delta Lake's Change Data Feed records the full before-and-after state of every row changed by a write operation. For UPDATE operations, CDF emits two rows: `update_preimage` (the row's values immediately before the update) and `update_postimage` (the row's values immediately after). This 2× output is by design — it is not a MERGE bug. The `_change_type` column distinguishes them. Downstream pipelines that want only current values should filter to `update_postimage`; those computing column-level deltas can join preimage and postimage on the row key. In contrast, INSERT operations produce one row (`insert`) and DELETE operations produce one row (`delete`) — so the doubling is specific to updates. Option 0 mistakes correct CDF behaviour for a MERGE condition error. Option 2 invents a partitioning bug — OPTIMIZE does not remove CDF records. Option 3 is wrong: INSERT produces 1 row and DELETE produces 1 row, not 2; only UPDATE produces both pre- and post-image.",
     "hints": [
-      "Think about what determines which task handles a given set of rows — is the slowdown caused by there being too few tasks overall, or by one key's rows all landing in the same place?",
-      "Salting artificially splits the heavy key into multiple synthetic keys, distributing its rows — then reassembles after the join."
+      "Before concluding there's a MERGE bug, check whether the CDF documentation describes what rows a single UPDATE operation emits. Does 'recording a change' require capturing only the new state, or does it require capturing both the old and new states?",
+      "The `_change_type` column in CDF output takes values from the set: insert, update_preimage, update_postimage, delete. For an update to one row, how many distinct `_change_type` values does CDF emit?"
     ],
-    "concepts": ["DATA SKEW & MITIGATION", "SHUFFLE REASONING", "JOIN STRATEGY SELECTION"]
+    "concepts": ["DELTA LAKE OPERATIONS", "EXECUTION MODEL REASONING"]
   },
   {
     "id": 432,
@@ -181,20 +181,20 @@
     "topic": "pyspark",
     "type": "scenario",
     "difficulty": "hard",
-    "title": "Adaptive Query Execution: What AQE Actually Changes",
-    "description": "A team enables `spark.sql.adaptive.enabled=true` on their Spark 3 cluster. A junior engineer claims: \"AQE will automatically fix our skewed join, reduce our shuffle partition count, and convert any eligible sort-merge join to a broadcast join — all without any code changes.\"\n\nWhich statement best evaluates this claim?",
+    "title": "Python UDF vs Pandas UDF vs Native Function: Why the 10× Gap",
+    "description": "A team benchmarks three implementations of the same string normalisation on a 10 TB `description` column:\n\n- **Version A:** `@udf(StringType())` Python UDF calling a custom Python function\n- **Version B:** `@pandas_udf(StringType())` vectorised UDF processing batches via Apache Arrow\n- **Version C:** Native Spark expressions: `F.lower(F.regexp_replace(col, pattern, replacement))`\n\nAll produce identical output. Version C completes in 12 minutes. Version B completes in 18 minutes. Version A takes over 3 hours. A junior engineer asks: 'Version A and B are both Python — why is there a 10× gap between them?'",
     "options": [
-      "The claim is entirely correct — AQE handles all three optimisations automatically once enabled",
-      "The claim is partially correct: AQE can coalesce post-shuffle partitions and convert some sort-merge joins to broadcast joins at runtime, but skew join mitigation only applies when Spark detects a partition that exceeds the skew threshold — it does not address all forms of skew",
-      "The claim is wrong — AQE only optimises the query plan during compilation, not at runtime",
-      "The claim is wrong — AQE requires explicit hints (broadcast(), skewjoin()) in the code to activate each optimisation"
+      "There is no fundamental serialisation difference — Python UDFs and pandas UDFs both invoke Python once per row; the 10× gap must come from Version A's regex implementation being slower than pandas string methods",
+      "Python UDFs (Version A) serialise each individual row across the JVM–Python boundary via Py4J: one round-trip per row. Pandas UDFs (Version B) use Apache Arrow to transfer entire columnar batches in a single serialisation step: one round-trip per batch (default 10,000 rows). For 10 TB, per-row serialisation produces billions of Py4J round-trips, while batch serialisation produces orders of magnitude fewer. Version C runs entirely inside the JVM Tungsten engine with zero Python overhead",
+      "Pandas UDFs run on the driver node with a faster CPython interpreter; Python UDFs run inside executor JVMs under the slower Py4J bridge, creating the gap regardless of data volume",
+      "The gap is primarily from Python UDFs triggering an extra shuffle to redistribute rows before invoking Python, while pandas UDFs process each partition in-place without data movement"
     ],
     "correct_option": 1,
-    "explanation": "AQE in Spark 3 does provide three key runtime optimisations: (1) dynamic partition coalescing — merging small post-shuffle partitions; (2) dynamic join strategy switching — converting a sort-merge join to broadcast if one side turns out small after a shuffle; (3) skew join handling — splitting oversized partitions into sub-tasks. However, skew mitigation triggers only when a partition exceeds `spark.sql.adaptive.skewJoin.skewedPartitionThresholdInBytes` and `...skewedPartitionFactor` thresholds. Extreme skew (e.g., a single user_id owning 40% of data) may still need manual salting if it doesn't hit the threshold correctly. The claim overstates AQE's skew handling as unconditional. Option 0 overstates certainty. Option 2 is wrong — AQE's defining feature is runtime plan adjustment. Option 3 is wrong — AQE requires no explicit hints.",
+    "explanation": "The serialisation boundary between the JVM executor and the Python process is the bottleneck. Python UDFs (Version A) cross this boundary once per row: each row is serialised from JVM to Python via the Py4J bridge, the function executes, and the result is deserialised back to JVM. At 10 TB with millions of rows, this produces billions of micro-transfers. Pandas UDFs (Version B) use Apache Arrow for columnar batch transfer: each partition is serialised as a compact Arrow buffer (default batch size 10,000 rows), the pandas Series is processed, and the result Arrow buffer is returned. The serialisation overhead per row is 100–1000× lower because Arrow's columnar format is compact and the Python function is invoked once per batch rather than once per row. Version C (native functions) avoids Python entirely — `F.lower` and `F.regexp_replace` are Catalyst expressions executed by the JVM Tungsten engine with no serialisation overhead at all. The order of performance is always: native Spark > pandas UDF > Python UDF for row-level transformations. Option 0 is wrong: the serialisation framework is the dominant factor, not the regex implementation. Option 2 invents a 'driver node' distinction — pandas UDFs also run on executors, not the driver. Option 3 is wrong — Python UDFs do not trigger a shuffle; the data stays in the same partition.",
     "hints": [
-      "The junior's claim covers three distinct optimisations. Before accepting it at face value, evaluate each capability separately — do they all activate unconditionally once AQE is enabled, or do some have conditions?",
-      "Skew join handling in AQE is threshold-based: a partition must exceed a size threshold AND a factor relative to the median partition before Spark splits it."
+      "The key question is: for each Python invocation, how much data is transferred across the JVM–Python boundary? Think about how many times Python is called in Version A versus Version B for a partition of 1 million rows.",
+      "Apache Arrow is a columnar in-memory format designed for zero-copy batch transfers. How does transferring a batch of 10,000 rows as one Arrow buffer compare to transferring 10,000 individual rows one at a time via Py4J?"
     ],
-    "concepts": ["ADAPTIVE QUERY EXECUTION", "DATA SKEW & MITIGATION", "JOIN STRATEGY SELECTION"]
+    "concepts": ["UDF & PYTHON BOUNDARY", "PERFORMANCE TUNING & TRADE-OFFS"]
   }
 ]
