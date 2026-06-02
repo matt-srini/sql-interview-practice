@@ -2,47 +2,47 @@
   {
     "id": 511,
     "order": 1,
-    "title": "ETL vs ELT: Choosing the Right Pattern",
+    "title": "Trigger Rules: When Skipped Is Not the Same as Success",
     "difficulty": "easy",
     "type": "conceptual",
-    "description": "A team needs to load raw JSON event logs from an S3 bucket into a data warehouse for analyst queries. Transformation involves flattening nested fields and joining with a small reference table. The data warehouse supports complex SQL. Which approach is most appropriate?",
+    "description": "A pipeline DAG has three tasks in sequence: `extract → validate → load`. The `validate` task produces a 'skipped' status on days when there is no new data for that partition. In most DAG-based orchestrators, `load` only starts when ALL upstream tasks succeed. What problem does this default create, and what is the correct fix?",
     "options": [
-      "ETL — transform the data before loading so the warehouse only stores clean, structured data and analysts never see raw records",
-      "ELT — load raw data into the warehouse first, then use SQL transformations inside the warehouse where compute scales cheaply with the data",
-      "Neither — always use a streaming pipeline with Kafka to land data in real time before any analyst touches it",
-      "ETL is required because ELT cannot handle nested JSON fields in any modern warehouse"
+      "No problem — 'skipped' is treated as 'success' by all modern orchestrators, so `load` runs normally when `validate` skips",
+      "When `validate` is skipped, `load` will not run because 'skipped' is not the same state as 'success'. To allow `load` to proceed when `validate` legitimately skips, the trigger rule for `load` must be changed from 'all upstream succeeded' to 'all upstream completed' (treating success, skip, and failure all as satisfying the completion condition)",
+      "The pipeline should be redesigned so `validate` never marks itself as skipped — it should return an empty result set instead, which signals success to downstream tasks",
+      "`load` should be split into two tasks: one that depends only on `extract` for no-data days, and one that depends on both `extract` and `validate` for days with new data"
     ],
     "correct_option": 1,
-    "explanation": "Modern cloud warehouses (Snowflake, BigQuery, Redshift) have powerful SQL engines with native JSON handling and elastic compute — they are designed to run heavy transformations on stored raw data. ELT exploits this: load raw data cheaply (storage is inexpensive), then transform in-place with SQL that scales. ETL made sense when warehouses were expensive or compute-limited, but it adds pipeline complexity and slows iteration when analysts need to change transformation logic. Option 0 is not wrong about ETL semantics but is the weaker choice here given warehouse capabilities. Option 2 introduces unnecessary streaming complexity for a batch load scenario. Option 3 is factually wrong — all major warehouses support VARIANT/JSON columns.",
+    "explanation": "In DAG-based orchestrators, 'skipped' is a distinct terminal state that is not the same as 'success'. A downstream task with the default trigger rule ('all upstream must succeed') will remain blocked if any upstream task is skipped — the pipeline stalls for that run without error. The canonical fix is to change the trigger rule to 'all upstream completed' (also called 'all done'), which treats success, skip, and failure as all satisfying the completion condition. This is a standard pattern for conditional or data-availability-dependent DAGs. Option 0 is wrong — modern orchestrators (Airflow, Dagster, Prefect) distinguish skipped from success precisely to support conditional branching. Option 2 avoids the root issue — marking a task as skipped is an intentional signal that a conditional branch was not taken; returning an empty result forces downstream tasks to run even when there is genuinely nothing to load. Option 3 adds structural complexity where a configuration change is the designed solution.",
     "hints": [
-      "Consider where the compute cost is lower: before loading (ETL) or inside the warehouse after loading (ELT).",
-      "Modern cloud warehouses handle complex SQL transformations efficiently — that changes the cost equation versus legacy on-prem systems."
+      "A 'skipped' task communicates something different from a 'succeeded' task — it says 'this branch was intentionally not taken', not 'the work is done'. Does your downstream task's trigger rule account for that distinction?",
+      "Orchestrators let you configure when a task becomes eligible to run. If the default waits for all upstream tasks to succeed, which trigger rule would you use to also allow skips as a valid completion state?"
     ],
     "concepts": [
-      "ETL VS ELT"
+      "ORCHESTRATION"
     ]
   },
   {
     "id": 512,
     "order": 2,
-    "title": "Why Idempotency Matters in Pipeline Steps",
+    "title": "SLA Breach: When 'Close Enough' Is Not Enough",
     "difficulty": "easy",
     "type": "conceptual",
-    "description": "An ETL job writes aggregated daily revenue to a Postgres table. The job runs at midnight but occasionally fails and is retried. A senior engineer insists every pipeline step must be idempotent. Why?",
+    "description": "A daily pipeline ingests sales data and has an SLA: complete within 45 minutes of its 6:00 AM scheduled start — i.e., finish by 6:45 AM — so analysts have fresh data before their 7:00 AM standup. On Monday, the pipeline ran for 52 minutes, finishing at 6:52 AM. An analyst says: 'The data was ready 8 minutes before the standup — no SLA breach.' A data engineer disagrees. Who is right?",
     "options": [
-      "Idempotency guarantees the pipeline runs faster on retry because it caches intermediate results",
-      "Idempotency ensures that running the step multiple times for the same input produces the same output state — so retries do not cause double-counting or data corruption",
-      "Idempotency is only relevant for streaming pipelines; batch jobs that run once per day do not need it",
-      "Idempotency requires exactly-once delivery guarantees from the message broker upstream"
+      "The analyst is right — no downstream user was impacted, the report was ready before 7:00 AM, and SLA compliance should be interpreted in terms of actual business impact",
+      "The data engineer is right — the SLA specifies a concrete deadline of 6:45 AM. The pipeline finished at 6:52 AM, which is 7 minutes past that deadline. That is an SLA breach regardless of whether downstream users happened to be unaffected on this particular run",
+      "The analyst is right — SLA compliance is measured over a rolling 30-day window; a single run that exceeds the threshold is a minor deviation, not a formal breach",
+      "Neither — the 6:45 AM deadline is a target, not a hard limit; SLAs always carry an implicit tolerance band unless explicitly stated otherwise"
     ],
     "correct_option": 1,
-    "explanation": "Without idempotency, a failed-and-retried job can write the same rows twice, duplicate aggregates, or corrupt state. An idempotent step can be run any number of times and always leaves the destination in the same correct state — typically achieved via upserts, delete-then-insert for the date partition, or MERGE operations. This is essential for batch jobs too: network timeouts, orchestrator restarts, or upstream delays can all cause reruns. Option 0 conflates idempotency with caching. Option 2 is wrong — batch jobs that are retried are just as exposed to double-writes as streaming jobs. Option 3 confuses idempotency with delivery semantics — they are related but distinct concepts.",
+    "explanation": "An SLA is a defined operational commitment — 'finish by 6:45 AM' means exactly that. Running for 52 minutes and finishing at 6:52 AM is a 7-minute breach, regardless of whether downstream users noticed or were impacted on this occasion. The analyst conflates two distinct things: (1) the SLA definition (a time-bound commitment) and (2) the business impact of this specific breach (happened to be minor). SLA tracking matters precisely because the threshold exists to ensure reliable downstream systems at scale — if this pipeline consistently runs 50–55 minutes, every run breaches the SLA, and eventually a user will arrive at 6:51 AM for an early call and find stale data. Option 0 is wrong because business impact is the motivation for an SLA, not its definition. Option 2 is wrong because SLA compliance is per-run against the defined threshold, not a rolling average — a 30-day average is a separate reporting metric. Option 3 invents a tolerance band that is not part of the stated SLA.",
     "hints": [
-      "Ask: what happens if this step runs twice with the same input? Does the output double-count or stay the same?",
-      "Two write strategies that avoid double-counting on retry: an upsert (insert or update based on a unique key) or a partition-level overwrite (delete all rows for the date partition, then re-insert)."
+      "The SLA says the pipeline must finish by 6:45 AM. It finished at 6:52 AM. Does the fact that no analyst was harmed on this run change whether the defined deadline was met?",
+      "SLAs exist to enforce reliability at scale, not just to protect a specific downstream user on a specific day. What would happen if 'no one noticed, so it doesn't count' were a valid interpretation every time the pipeline ran slightly over?"
     ],
     "concepts": [
-      "IDEMPOTENCY"
+      "SCHEDULING & SLAS"
     ]
   },
   {
