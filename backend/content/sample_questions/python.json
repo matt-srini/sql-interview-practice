@@ -142,17 +142,53 @@
     "test_cases": [
       {
         "input": [
-          [["api", 120], ["db", 50], ["cache", 30], ["auth", 200]],
+          [
+            [
+              "api",
+              120
+            ],
+            [
+              "db",
+              50
+            ],
+            [
+              "cache",
+              30
+            ],
+            [
+              "auth",
+              200
+            ]
+          ],
           2
         ],
-        "expected": ["cache", "db"]
+        "expected": [
+          "cache",
+          "db"
+        ]
       },
       {
         "input": [
-          [["web", 100], ["grpc", 100], ["rpc", 200]],
+          [
+            [
+              "web",
+              100
+            ],
+            [
+              "grpc",
+              100
+            ],
+            [
+              "rpc",
+              200
+            ]
+          ],
           2
         ],
-        "expected": ["grpc", "web"]
+        "expected": [
+          "grpc",
+          "web"
+        ]
       },
       {
         "input": [
@@ -163,17 +199,45 @@
       },
       {
         "input": [
-          [["search", 80], ["ingest", 40], ["emit", 40], ["parse", 60]],
+          [
+            [
+              "search",
+              80
+            ],
+            [
+              "ingest",
+              40
+            ],
+            [
+              "emit",
+              40
+            ],
+            [
+              "parse",
+              60
+            ]
+          ],
           3
         ],
-        "expected": ["emit", "ingest", "parse"]
+        "expected": [
+          "emit",
+          "ingest",
+          "parse"
+        ]
       },
       {
         "input": [
-          [["x", 10]],
+          [
+            [
+              "x",
+              10
+            ]
+          ],
           1
         ],
-        "expected": ["x"]
+        "expected": [
+          "x"
+        ]
       }
     ],
     "public_test_cases": 1,
@@ -279,31 +343,98 @@
     "test_cases": [
       {
         "input": [
-          [["auth", 120], ["billing", 80], ["auth", 95], ["notify", 200], ["cache", 60]],
+          [
+            [
+              "auth",
+              120
+            ],
+            [
+              "billing",
+              80
+            ],
+            [
+              "auth",
+              95
+            ],
+            [
+              "notify",
+              200
+            ],
+            [
+              "cache",
+              60
+            ]
+          ],
           2
         ],
-        "expected": ["billing", "cache"]
+        "expected": [
+          "billing",
+          "cache"
+        ]
       },
       {
         "input": [
-          [["api", 150], ["db", 30], ["cache", 90]],
+          [
+            [
+              "api",
+              150
+            ],
+            [
+              "db",
+              30
+            ],
+            [
+              "cache",
+              90
+            ]
+          ],
           3
         ],
-        "expected": ["api", "cache", "db"]
+        "expected": [
+          "api",
+          "cache",
+          "db"
+        ]
       },
       {
         "input": [
-          [["svc_a", 500], ["svc_b", 100], ["svc_a", 300], ["svc_b", 400]],
+          [
+            [
+              "svc_a",
+              500
+            ],
+            [
+              "svc_b",
+              100
+            ],
+            [
+              "svc_a",
+              300
+            ],
+            [
+              "svc_b",
+              400
+            ]
+          ],
           1
         ],
-        "expected": ["svc_b"]
+        "expected": [
+          "svc_b"
+        ]
       },
       {
         "input": [
-          [["gateway", 75]],
+          [
+            [
+              "gateway",
+              75
+            ]
+          ],
           1
         ],
-        "expected": ["gateway"]
+        "expected": [
+          "gateway"
+        ]
       },
       {
         "input": [
@@ -314,10 +445,34 @@
       },
       {
         "input": [
-          [["search", 400], ["ingest", 250], ["query", 180], ["search", 300], ["ingest", 210]],
+          [
+            [
+              "search",
+              400
+            ],
+            [
+              "ingest",
+              250
+            ],
+            [
+              "query",
+              180
+            ],
+            [
+              "search",
+              300
+            ],
+            [
+              "ingest",
+              210
+            ]
+          ],
           2
         ],
-        "expected": ["ingest", "query"]
+        "expected": [
+          "ingest",
+          "query"
+        ]
       }
     ],
     "public_test_cases": 1,
@@ -335,66 +490,100 @@
     "order": 3,
     "topic": "python",
     "difficulty": "medium",
-    "title": "Sliding Window: Maximum of Every Window",
-    "description": "Given `values: list[float]` and `window_size: int`, return a list of the maximum value in each consecutive window of size `window_size`. The output list has `len(values) - window_size + 1` elements.\n\nExample: `values=[1.0,3.0,2.0,5.0,4.0], window_size=3` → `[3.0, 5.0, 5.0]`\n\nAim for better than O(n·w) if you can.",
-    "starter_code": "def solve(values: list[float], window_size: int) -> list[float]:\n    pass",
-    "expected_code": "from collections import deque\ndef solve(values: list[float], window_size: int) -> list[float]:\n    dq: deque[int] = deque()\n    result: list[float] = []\n    for i, v in enumerate(values):\n        while dq and values[dq[-1]] <= v:\n            dq.pop()\n        dq.append(i)\n        if dq[0] <= i - window_size:\n            dq.popleft()\n        if i >= window_size - 1:\n            result.append(values[dq[0]])\n    return result",
-    "solution_code": "from collections import deque\ndef solve(values: list[float], window_size: int) -> list[float]:\n    dq: deque[int] = deque()\n    result: list[float] = []\n    for i, v in enumerate(values):\n        # Maintain monotonic decreasing deque of indices\n        while dq and values[dq[-1]] <= v:\n            dq.pop()\n        dq.append(i)\n        # Remove index that slid out of the window\n        if dq[0] <= i - window_size:\n            dq.popleft()\n        if i >= window_size - 1:\n            result.append(values[dq[0]])\n    return result",
-    "explanation": "A monotonic deque stores indices in decreasing order of their values. When a new element arrives: (1) pop any rear index whose value is ≤ the new value (it can never be a future window maximum); (2) push the new index; (3) pop the front if it fell outside the current window. The front of the deque is always the index of the current window's maximum. This gives O(n) time.",
+    "title": "Minimum Pipeline Execution Rounds",
+    "description": "A data platform runs `n` pipeline tasks numbered `0` to `n-1`. A dependency `[a, b]` means task `a` must finish before task `b` can start. Tasks with no pending dependencies can run in parallel in the same round.\n\nWrite `solve(n, dependencies)` that returns the minimum number of rounds needed to complete all tasks. Return `-1` if a circular dependency makes completion impossible.\n\nExample: `n=4, dependencies=[[0,2],[1,2],[2,3]]` → `3`\n(Round 1: tasks 0 and 1 run; Round 2: task 2 runs; Round 3: task 3 runs.)",
+    "starter_code": "def solve(n: int, dependencies: list) -> int:\n    pass",
+    "expected_code": "from collections import deque, defaultdict\n\ndef solve(n: int, dependencies: list) -> int:\n    in_degree = [0] * n\n    graph = defaultdict(list)\n    for a, b in dependencies:\n        graph[a].append(b)\n        in_degree[b] += 1\n    queue = deque(i for i in range(n) if in_degree[i] == 0)\n    rounds = 0\n    processed = 0\n    while queue:\n        rounds += 1\n        for _ in range(len(queue)):\n            node = queue.popleft()\n            processed += 1\n            for nb in graph[node]:\n                in_degree[nb] -= 1\n                if in_degree[nb] == 0:\n                    queue.append(nb)\n    return rounds if processed == n else -1",
+    "solution_code": "from collections import deque, defaultdict\n\ndef solve(n: int, dependencies: list) -> int:\n    # Build in-degree array and adjacency list\n    in_degree = [0] * n\n    graph = defaultdict(list)\n    for a, b in dependencies:\n        graph[a].append(b)\n        in_degree[b] += 1\n    # Start with all tasks that have no upstream dependencies\n    queue = deque(i for i in range(n) if in_degree[i] == 0)\n    rounds = 0\n    processed = 0\n    while queue:\n        rounds += 1\n        # All tasks currently in the queue belong to this round\n        for _ in range(len(queue)):\n            node = queue.popleft()\n            processed += 1\n            for nb in graph[node]:\n                in_degree[nb] -= 1\n                if in_degree[nb] == 0:\n                    queue.append(nb)\n    # If processed < n, some nodes were never unblocked — cycle exists\n    return rounds if processed == n else -1",
+    "explanation": "Kahn's BFS-based topological sort naturally groups tasks into rounds: in each round, process all tasks whose upstream dependencies are now complete (in-degree = 0). After each round, decrement neighbors' in-degree counts and enqueue any that reach zero. The round counter tracks how many parallel execution waves are needed. The minimum number of rounds equals the length of the longest dependency chain. If any tasks remain unprocessed after BFS terminates, they are part of a cycle (they could never reach in-degree 0) — return -1. Time O(n + e), space O(n + e).",
     "test_cases": [
       {
         "input": [
+          4,
           [
-            1.0,
-            3.0,
-            2.0,
-            5.0,
-            4.0
-          ],
-          3
+            [
+              0,
+              2
+            ],
+            [
+              1,
+              2
+            ],
+            [
+              2,
+              3
+            ]
+          ]
         ],
-        "expected": [
-          3.0,
-          5.0,
-          5.0
-        ]
+        "expected": 3
       },
       {
         "input": [
+          3,
           [
-            4.0,
-            2.0,
-            1.0,
-            3.0
-          ],
-          2
+            [
+              0,
+              1
+            ],
+            [
+              1,
+              0
+            ]
+          ]
         ],
-        "expected": [
-          4.0,
-          2.0,
-          3.0
-        ]
+        "expected": -1
       },
       {
         "input": [
-          [
-            7.0
-          ],
-          1
+          3,
+          []
         ],
-        "expected": [
-          7.0
-        ]
+        "expected": 1
+      },
+      {
+        "input": [
+          1,
+          []
+        ],
+        "expected": 1
+      },
+      {
+        "input": [
+          5,
+          [
+            [
+              0,
+              1
+            ],
+            [
+              0,
+              2
+            ],
+            [
+              1,
+              3
+            ],
+            [
+              2,
+              3
+            ],
+            [
+              3,
+              4
+            ]
+          ]
+        ],
+        "expected": 4
       }
     ],
     "public_test_cases": 1,
     "hints": [
-      "A brute-force O(n·w) loop works but a smarter approach uses the observation that once a smaller value enters the window from the right, it can never be the maximum while the larger value is also in the window.",
-      "A monotonic deque stores candidate indices in decreasing value order — the front is always the current window's maximum."
+      "Before a task can start, all of its upstream dependencies must have finished. Starting from tasks with no dependencies, think about which tasks become newly runnable after each round completes — and how many rounds that wave-by-wave process takes.",
+      "Track how many unfinished upstream dependencies each task still has. When that count drops to zero, the task is ready. A queue of ready tasks lets you process an entire parallel round before advancing."
     ],
     "concepts": [
-      "SLIDING WINDOW",
-      "STACK & MONOTONIC STRUCTURES"
+      "GRAPH TRAVERSAL (BFS / DFS)",
+      "DYNAMIC PROGRAMMING (1D)"
     ]
   },
   {
@@ -470,38 +659,162 @@
     "test_cases": [
       {
         "input": [
-          ["auth", "billing", "notify", "db", "cache"],
-          [["auth","billing"],["billing","auth"],["auth","notify"],["db","cache"],["cache","db"]]
+          [
+            "auth",
+            "billing",
+            "notify",
+            "db",
+            "cache"
+          ],
+          [
+            [
+              "auth",
+              "billing"
+            ],
+            [
+              "billing",
+              "auth"
+            ],
+            [
+              "auth",
+              "notify"
+            ],
+            [
+              "db",
+              "cache"
+            ],
+            [
+              "cache",
+              "db"
+            ]
+          ]
         ],
-        "expected": [["auth","billing"],["cache","db"],["notify"]]
+        "expected": [
+          [
+            "auth",
+            "billing"
+          ],
+          [
+            "cache",
+            "db"
+          ],
+          [
+            "notify"
+          ]
+        ]
       },
       {
         "input": [
-          ["a", "b", "c"],
-          [["a","b"],["b","c"]]
+          [
+            "a",
+            "b",
+            "c"
+          ],
+          [
+            [
+              "a",
+              "b"
+            ],
+            [
+              "b",
+              "c"
+            ]
+          ]
         ],
-        "expected": [["a"],["b"],["c"]]
+        "expected": [
+          [
+            "a"
+          ],
+          [
+            "b"
+          ],
+          [
+            "c"
+          ]
+        ]
       },
       {
         "input": [
-          ["p", "q", "r"],
-          [["p","q"],["q","r"],["r","p"]]
+          [
+            "p",
+            "q",
+            "r"
+          ],
+          [
+            [
+              "p",
+              "q"
+            ],
+            [
+              "q",
+              "r"
+            ],
+            [
+              "r",
+              "p"
+            ]
+          ]
         ],
-        "expected": [["p","q","r"]]
+        "expected": [
+          [
+            "p",
+            "q",
+            "r"
+          ]
+        ]
       },
       {
         "input": [
-          ["x"],
+          [
+            "x"
+          ],
           []
         ],
-        "expected": [["x"]]
+        "expected": [
+          [
+            "x"
+          ]
+        ]
       },
       {
         "input": [
-          ["ingestion", "transform", "load", "monitor"],
-          [["ingestion","transform"],["transform","ingestion"],["transform","load"],["monitor","monitor"]]
+          [
+            "ingestion",
+            "transform",
+            "load",
+            "monitor"
+          ],
+          [
+            [
+              "ingestion",
+              "transform"
+            ],
+            [
+              "transform",
+              "ingestion"
+            ],
+            [
+              "transform",
+              "load"
+            ],
+            [
+              "monitor",
+              "monitor"
+            ]
+          ]
         ],
-        "expected": [["ingestion","transform"],["load"],["monitor"]]
+        "expected": [
+          [
+            "ingestion",
+            "transform"
+          ],
+          [
+            "load"
+          ],
+          [
+            "monitor"
+          ]
+        ]
       }
     ],
     "public_test_cases": 1,
@@ -526,27 +839,110 @@
     "explanation": "Sort tasks by deadline ascending. Process each task in deadline order, maintaining a min-heap of the impact scores of the tasks committed so far. For a task with deadline `d`, at most `d` tasks can ever be scheduled (one per slot 1..d). If the heap has fewer than `d` entries, there is a free slot — push the new task. If the heap is full (size == `d`) but the new task has higher impact than the minimum already scheduled, swap them (`heapreplace`): the min-impact task is displaced in favour of the higher-impact one. This greedy exchange is safe because any task we drop was the lowest-value task in a full slot window — keeping the higher-impact task and dropping the lower one always improves (or maintains) the total. After processing all tasks, `sum(heap)` is the maximum achievable total. Time: O(n log n) for the sort, O(n log n) amortised for heap operations. Space: O(n). This is the classic 'job sequencing with deadlines' pattern — applicable whenever an on-call queue, an SLO-bound task runner, or a scheduler must decide which work to drop under capacity constraints.",
     "test_cases": [
       {
-        "input": [[[30, 1], [50, 2], [40, 2], [10, 3]]],
+        "input": [
+          [
+            [
+              30,
+              1
+            ],
+            [
+              50,
+              2
+            ],
+            [
+              40,
+              2
+            ],
+            [
+              10,
+              3
+            ]
+          ]
+        ],
         "expected": 100
       },
       {
-        "input": [[[100, 1], [60, 1], [80, 1]]],
+        "input": [
+          [
+            [
+              100,
+              1
+            ],
+            [
+              60,
+              1
+            ],
+            [
+              80,
+              1
+            ]
+          ]
+        ],
         "expected": 100
       },
       {
-        "input": [[[]]],
+        "input": [
+          [
+            []
+          ]
+        ],
         "expected": 0
       },
       {
-        "input": [[[25, 3]]],
+        "input": [
+          [
+            [
+              25,
+              3
+            ]
+          ]
+        ],
         "expected": 25
       },
       {
-        "input": [[[10, 2], [20, 2], [30, 2], [40, 2]]],
+        "input": [
+          [
+            [
+              10,
+              2
+            ],
+            [
+              20,
+              2
+            ],
+            [
+              30,
+              2
+            ],
+            [
+              40,
+              2
+            ]
+          ]
+        ],
         "expected": 70
       },
       {
-        "input": [[[5, 1], [15, 2], [25, 3], [35, 4]]],
+        "input": [
+          [
+            [
+              5,
+              1
+            ],
+            [
+              15,
+              2
+            ],
+            [
+              25,
+              3
+            ],
+            [
+              35,
+              4
+            ]
+          ]
+        ],
         "expected": 80
       }
     ],
