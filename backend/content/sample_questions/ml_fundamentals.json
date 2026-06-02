@@ -170,8 +170,7 @@
     ],
     "concepts": [
       "TRAINING-SERVING SKEW",
-      "MODEL MONITORING",
-      "DATA LEAKAGE DETECTION"
+      "MODEL MONITORING"
     ]
   },
   {
@@ -216,7 +215,7 @@
     "correct_option": 1,
     "explanation": "Production ML decisions are multi-objective: accuracy matters, but so do latency, cost, and reliability. An 800 ms latency that violates SLA is not 'a large model with a minor latency issue' — it is a product failure. The correct approach is not a binary choice between the two models. Distillation trains a smaller model to mimic the large model's output distribution, often recovering much of the accuracy gap. Quantisation reduces precision (e.g., FP32 → INT8) to cut inference cost with minimal accuracy loss. Caching frequent inputs eliminates repeated computation. The 6% gap must be translated into business impact — what decisions does it affect, what is the cost of a misclassification — before the trade-off is properly framed. Option 0 ignores operational reality. Option 2 is wrong: horizontal scaling reduces throughput pressure, not per-request latency for a single-request bottleneck. Option 3 dismisses the accuracy gap without business justification.",
     "hints": [
-      "Before choosing a strategy, clarify what 'most appropriate' means here. Which of the two stated requirements — accuracy and latency — is negotiable, and which is not? Does the question give you enough information to determine that?",
+      "The model takes ~50ms to produce a prediction; the latency budget is 20ms p99. Approaches that require running full model inference on every request will fail this bound — eliminate them first. What remains?",
       "Distillation and quantisation are the standard paths to close the accuracy gap while meeting latency requirements."
     ],
     "concepts": [
