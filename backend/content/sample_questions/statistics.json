@@ -2,24 +2,24 @@
   {
     "id": 711,
     "order": 1,
-    "title": "Interpreting a Confidence Interval",
+    "title": "At-Least-One Probability for Independent Events",
     "difficulty": "easy",
     "type": "conceptual",
     "subtype": "conceptual",
-    "description": "A data scientist reports: 'We ran an A/B test and the 95% confidence interval for the lift in conversion rate is [+1.2%, +4.8%].' A PM asks: 'Does this mean there's a 95% chance the true lift is between 1.2% and 4.8%?'\n\nHow should the data scientist respond?",
+    "description": "A release pipeline deploys two independent services. Each service independently has a 10% probability of introducing a regression in a given release. What is the probability that at least one service introduces a regression?",
     "options": [
-      "Yes — a 95% confidence interval means there is a 95% probability that the true parameter is inside this specific interval",
-      "No — the correct interpretation is procedural: if we repeated this experiment many times and computed a CI each time, 95% of those intervals would contain the true parameter. For this specific interval, the true lift is either inside or not — we cannot assign it a probability",
-      "No — a 95% CI means we are 95% confident the effect is positive, not that the interval bounds the true value",
-      "Yes — Bayesian credible intervals and frequentist confidence intervals are equivalent in practice, so a 95% probability statement is valid"
+      "20% — sum the individual probabilities: 10% + 10% = 20%",
+      "19% — use the complement: P(at least one) = 1 − P(neither) = 1 − (0.9 × 0.9) = 0.19",
+      "1% — multiply the individual probabilities: 10% × 10% = 1%",
+      "10% — the probability is the same as for a single service since the events are independent"
     ],
     "correct_option": 1,
-    "explanation": "A frequentist confidence interval has a procedural interpretation: the 95% refers to the long-run coverage of the procedure, not the probability that a specific interval contains the true parameter. Once the data is collected and the interval is computed, the true parameter is fixed (not random) — the interval either covers it or not. The PM's statement applies to a Bayesian credible interval, not a frequentist CI. Option 0 and 3 conflate frequentist and Bayesian interpretations. Option 2 confuses the CI interpretation with a one-sided hypothesis test conclusion.",
+    "explanation": "\"At least one\" problems are solved with the complement rule: P(at least one regression) = 1 − P(no regression in either service). Because the services are independent, P(no regression in either) = P(no regression in A) × P(no regression in B) = 0.9 × 0.9 = 0.81. So P(at least one) = 1 − 0.81 = 0.19 (19%). Option 0 adds the probabilities, which would be valid only if the events were mutually exclusive — they are not (both services can regress simultaneously). Option 2 multiplies the failure probabilities, computing P(both regress) = 0.01, not P(at least one). Option 3 ignores the second service entirely.",
     "hints": [
-      "Re-read the PM's claim word by word. Is the claim about this specific interval you computed, or about the procedure that generates such intervals? Those are different kinds of probability statements.",
-      "The true parameter is fixed. It's the intervals that vary from sample to sample — 95% of them capture the truth."
+      "\"At least one\" is often easier to compute via its complement: what is the probability that neither service introduces a regression?",
+      "For independent events, P(neither) = P(not A) × P(not B). Then subtract from 1."
     ],
-    "concepts": ["confidence intervals & estimation"]
+    "concepts": ["probability & combinatorics"]
   },
   {
     "id": 712,

@@ -63,7 +63,7 @@
       "Option C — NPS is the gold standard for measuring user satisfaction and is widely used by industry leaders"
     ],
     "correct_option": 1,
-    "explanation": "The primary metric should be the outcome that most directly measures whether the experiment's goal was achieved. The goal is activation — getting users to actually engage with and stay in the product. 7-day retention is the closest measurable proxy for that goal. Click-through rate on screen 1 (Option A) is a leading indicator but is too early in the funnel — users can click through and then churn immediately. NPS (Option C) is a satisfaction measure with low response rates and high noise, making it a poor primary metric for a conversion test. Using the most proximal metric (Option D's logic) optimises for clicks at the cost of downstream outcomes.",
+    "explanation": "The primary metric should be the outcome that most directly measures whether the experiment's goal was achieved. The goal is activation — getting users to actually engage with and stay in the product. 7-day retention is the closest measurable proxy for that goal. Click-through rate on screen 1 (Option A) is a leading indicator but is too early in the funnel — users can click through and then churn immediately. NPS (Option C) is a satisfaction measure with low response rates and high noise, making it a poor primary metric for a conversion test. Optimising for the most proximal metric (clicks) maximises sensitivity at the cost of downstream outcomes.",
     "hints": [
       "The primary metric should be aligned with the experiment's goal — what behaviour are you actually trying to change?",
       "High-sensitivity metrics (clicks) detect effects faster but may not reflect the real business outcome you care about."

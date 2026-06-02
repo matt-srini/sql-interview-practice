@@ -52,7 +52,7 @@
     "dataset_files": ["orders.csv"],
     "expected_query": "SELECT SUM(net_amount) AS total_completed_amount FROM orders WHERE status = 'completed'",
     "solution_query": "SELECT SUM(net_amount) AS total_completed_amount\nFROM orders\nWHERE status = 'completed';",
-    "explanation": "Filter to completed orders, then sum net_amount.",
+    "explanation": "Filtering before aggregating matters because SUM operates on whatever rows the engine sees — letting non-completed orders in would silently inflate the total with pending, cancelled, or refunded amounts, giving a number that looks authoritative but means nothing financially. A data analyst reaches for this query specifically when reporting recognised revenue: completed orders represent cash actually received, so using this figure instead of total-all-statuses revenue avoids double-counting orders that may still be cancelled or returned. One gotcha worth knowing: if there are no completed orders at all, SUM on an empty set returns NULL (not 0) — so downstream code or dashboards that expect a numeric value should wrap the result in COALESCE(SUM(net_amount), 0). The WHERE clause here is doing real business logic, not just a convenience filter.",
     "hints": [
       "This asks for a single aggregate value from a qualifying subset of rows — identify which condition defines the qualifying rows before deciding what aggregate to apply over them.",
       "Apply the row-level condition before aggregating: rows that do not meet the status condition should never contribute to the total, so exclude them at the row level rather than adjusting after the fact."
@@ -85,20 +85,21 @@
     "order": 2,
     "topic": "sql",
     "difficulty": "medium",
-    "title": "Revenue By Status",
-    "description": "Return each order status and the total `net_amount` for that status.",
+    "title": "Resolved Ticket Resolution Time by Plan Tier",
+    "description": "For each user plan tier, return the count of resolved support tickets and the average resolution time. Output columns: plan_tier, ticket_count, avg_resolution_hours (rounded to 1 decimal place). Only include resolved tickets. Sort by avg_resolution_hours ascending, then plan_tier ascending.",
     "schema": {
-      "orders": ["order_id", "user_id", "order_date", "status", "net_amount"]
+      "users": ["user_id", "plan_tier"],
+      "support_tickets": ["ticket_id", "user_id", "status", "resolution_hours"]
     },
-    "dataset_files": ["orders.csv"],
-    "expected_query": "SELECT status, SUM(net_amount) AS revenue FROM orders GROUP BY status ORDER BY status",
-    "solution_query": "SELECT status, SUM(net_amount) AS revenue\nFROM orders\nGROUP BY status\nORDER BY status;",
-    "explanation": "Group by status, then sum net_amount within each status.",
+    "dataset_files": ["users.csv", "support_tickets.csv"],
+    "expected_query": "SELECT u.plan_tier, COUNT(st.ticket_id) AS ticket_count, ROUND(AVG(st.resolution_hours), 1) AS avg_resolution_hours FROM users u JOIN support_tickets st ON u.user_id = st.user_id WHERE st.status = 'resolved' GROUP BY u.plan_tier ORDER BY avg_resolution_hours ASC, u.plan_tier ASC",
+    "solution_query": "SELECT u.plan_tier,\n       COUNT(st.ticket_id) AS ticket_count,\n       ROUND(AVG(st.resolution_hours), 1) AS avg_resolution_hours\nFROM users u\nJOIN support_tickets st ON u.user_id = st.user_id\nWHERE st.status = 'resolved'\nGROUP BY u.plan_tier\nORDER BY avg_resolution_hours ASC, u.plan_tier ASC;",
+    "explanation": "plan_tier lives on the users table, not on support_tickets — so the join is mandatory to attach a plan tier label to each resolved ticket. An INNER JOIN is correct here: you only care about tickets that have a matching user row (orphan tickets, if any, are excluded by definition since the metric is per-plan-tier). The WHERE filter on status = 'resolved' runs before aggregation, excluding open and in-progress tickets. After filtering and joining, GROUP BY u.plan_tier aggregates each tier's resolved tickets to a count and average resolution time. ROUND(..., 1) truncates precision to one decimal place. The two-level ORDER BY (avg_resolution_hours ASC, plan_tier ASC) produces a deterministic ranking — tiers with faster resolution appear first; plan_tier name breaks any hypothetical tie.",
     "hints": [
-      "Every order belongs to exactly one status — you want one revenue total per status category, not a single global total.",
-      "Include all statuses rather than filtering to one — the breakdown emerges naturally from grouping, giving you the complete picture of how revenue is distributed across the order lifecycle."
+      "The resolution time data is in support_tickets, but plan_tier is in users — you need both tables. Identify which column links the two, and decide which join type preserves only tickets that have a matching user.",
+      "Once you have each resolved ticket tagged with its owner's plan tier, the aggregate is straightforward: count tickets and average resolution hours per tier. Apply the status filter before the aggregation, not after."
     ],
-    "concepts": ["GROUPED AGGREGATION"]
+    "concepts": ["MULTI-TABLE ENTITY LINKING", "GROUPED AGGREGATION"]
   },
   {
     "id": 123,
