@@ -131,6 +131,26 @@ Number theory (prime sieves, GCD/LCM puzzles, modular exponentiation, XOR tricks
 - **Questions testing language quirks** — `__getitem__` exotica, `==` vs `is` gotchas. Not the test.
 - **String-manipulation puzzles disconnected from real work** — anagram-finding has its place; "rotate this string by Fibonacci(n)" is noise.
 - **Hidden test cases that change the problem** — every behaviour a hidden test enforces must be inferable from the public description.
+- **Medium pattern in Hard clothing** — a medium-tier algorithm does not become Hard by adding a realistic business scenario, extra edge cases, or clean framing. Hard requires that the load-bearing algorithmic insight be Hard-tier — specifically: a non-obvious data structure choice (the candidate must know to reach for a heap, monotonic deque, trie, union-find, etc., not just a dict or list), an optimal complexity requirement where a naive approach is demonstrably too slow, or a multi-step pipeline where the composition itself is the non-trivial step.
+
+  Common false Hard patterns (classify as Medium or lower, not Hard):
+  - Sort-and-scan interval merge (O(n log n) sort + O(n) scan, no non-trivial structure) → **Medium**
+  - Frequency dict + full sort + slice for top-K → **Easy** (no heap required, trivially replaceable by `sorted()[:k]`)
+  - Basic sliding window over a sorted or pre-sorted sequence → **Medium**
+  - Single-pass hash-map with a temporal condition → **Medium** (may be low-Medium)
+
+  Test: if a mid-level data professional can solve it confidently on first attempt, it is not Hard.
+
+### Duplication guard: family + shape level, not title level
+
+The sample non-duplication prohibition extends to **concept family + problem shape**, not just exact title. A question titled differently but covering the same algorithm in the same domain is a near-clone:
+
+- "Merge Calendar Events" covering sort-and-scan interval merge is a near-clone of "Merge Overlapping Intervals" even with a different title
+- "Top Performers by Score" using `sorted()[:k]` is a near-clone of "Top-K Frequent Items" even with a different domain
+
+Before finalizing any Hard sample question, check the Python hard and medium practice/mock banks for the same concept family (`GRAPH ALGORITHMS`, `HEAP & PRIORITY QUEUE`, `INTERVAL ALGORITHMS`, `SLIDING WINDOW`, etc.). Same family + same problem shape = near-clone. Reject or redesign around a genuinely distinct algorithmic pivot.
+
+The validator (`_validate_sample_cross_bank_titles`) catches exact title collisions. Family+shape near-clone detection remains an authoring-time judgment call — the validator cannot enforce it.
 
 ## JSON schema
 

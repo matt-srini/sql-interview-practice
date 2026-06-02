@@ -587,3 +587,81 @@ Role has no unlock semantics. Roles are used for sort order on TrackHub, the "St
 #### What this section explicitly rejects (historical)
 
 The platform previously had a "path-completion unlock shortcut" mechanic (completing a starter path unlocked all medium; completing intermediate unlocked the hard cap). **That mechanic was removed.** If you find a doc still describing it, that doc is stale — fix it and link here. The current model is: practice thresholds gate question unlocking; paths are curated walks that respect those gates.
+
+---
+
+## Sample question authoring
+
+Sample questions are governed by the same cross-track quality bar as practice and mock-only questions. This section codifies the additional rules that apply specifically to the sample bank — rules that emerged from the 2026-06 sample audit and were absent from docs prior to that point.
+
+**ID scheme, storage location, required fields, and cross-track validator coverage** for sample questions are documented in § TXNNN ID scheme → Sample IDs (3-digit TXS format, all tracks). Read that subsection first; the rules below build on it.
+
+### Purpose and scope
+
+Sample questions are a **first-impression discovery surface**: shown to anonymous visitors and logged-in users before they commit to any track. Each track has exactly 3 easy + 3 medium + 3 hard sample questions (9 per track, 81 total). Sample questions:
+
+- Must stand alone as an interesting, representative first touch — not as a warm-up for the practice arc.
+- Never appear in the practice or mock catalog; they are completely separate content.
+- Record no progress toward challenge unlock thresholds.
+- Use IDs in the compact TXS format (see § TXNNN ID scheme → Sample IDs for per-track ranges).
+
+Because samples are the first experience a user has with a track, quality failures here erode trust in the entire bank — even if the practice bank is clean.
+
+### Difficulty bar
+
+Sample questions use the **same cross-track difficulty vocabulary as practice questions — no softer interpretation is permitted.** Specifically:
+
+- A medium-tier algorithm or reasoning pattern does not become Hard for a sample by adding realistic scenario framing or extra edge cases. The underlying pattern itself must qualify as Hard by the track's difficulty ladder (see each `docs/tracks/<track>.md`).
+- A question that a mid-level data professional can solve confidently on first attempt is Easy or Medium regardless of how it is framed.
+- **The three-question set within each difficulty tier must cover distinct concept families.** A tier where all three questions tag the same top-level concept family (e.g. all three Easy Python samples are `HASH-MAP STATE`) fails the sample authoring bar even if each individual question is technically correct.
+
+### Anti-duplication rule (authoring-time, not audit-time)
+
+Sample questions must not duplicate, near-clone, or be a weaker reskin of any existing practice or mock question in the same track. This is an **authoring-time obligation** — not something discovered retrospectively. Three forms of violation:
+
+1. **Exact-title match** — prohibited. The validator (`_validate_sample_cross_bank_titles`) enforces this automatically at catalog load.
+
+2. **Family + shape near-clone** — also prohibited, but requires authoring-time judgment. A question titled differently but covering the same algorithm in the same domain with the same problem shape is a near-clone. Example: a sample titled "Top-K Items by Score" that calls `sorted()[:k]` is a near-clone of any practice question covering top-K selection, even if the business domain differs.
+
+3. **Weaker reskin** — prohibited. A sample must not be a lighter, simpler, or less-correct version of an existing practice question. If a practice question already covers the concept, the sample should cover a **different** concept, not a simplified variant of the same one.
+
+The near-clone and weaker-reskin checks are authoring-time judgment calls — the validator cannot enforce them automatically. Check them before finalizing any sample JSON.
+
+### Prompt/solution contract rule
+
+Any specific behavioral promise in the description must be implemented in the canonical solution. This is a **content defect** if violated and must be caught at authoring time, not at audit time. The rule applies to:
+
+- **Coverage promises.** "Include every X", "for each X", "all rows/dates/entities" → the solution must return a row for every X, using a spine, reindex, or equivalent. If the solution cannot guarantee completeness, use conditional phrasing ("for each X with at least one Y") — not absolute coverage language.
+
+- **Ordered constraints.** "Step A then step B", "in order", "A → B" (with arrow notation) → the solution must enforce the ordering. If the solution checks only event co-presence without enforcing order, remove the ordering framing from the description.
+
+- **Set membership.** "Only", "exactly", "all and only" → the solution's output set must match the description's claimed set exactly.
+
+**Test at authoring time:** read the description's behavioral promises; then read the solution; confirm every promise is implemented. A question whose description promises behavior that the solution does not implement is invalid.
+
+### MCQ label alignment rule
+
+For MCQ questions (`options` array + `correct_option` index):
+
+- Every option label explicitly named in the description (e.g. "Option A", "Option B") must correspond to an entry in the `options` array.
+- The `options` array must not contain entries whose labels are not referenced in the description (no phantom options).
+- `correct_option` must be a valid 0-based index into the `options` array.
+- The validator (`_validate_mcq_consistency`) enforces index validity and label-count consistency automatically. **Authoring-time rule:** count the labels named in your description before finalizing the `options` array. A description that names 4 options and an `options` array with 3 entries is a defect — not just a validator error.
+
+### Validator coverage
+
+The following checks are enforced automatically by `validate_content.py` for sample files:
+
+| Check | Function | What it catches |
+|---|---|---|
+| Exact-title collision vs practice/mock bank | `_validate_sample_cross_bank_titles` | Per-track; raises if any sample title exactly matches any practice or mock title in the same track |
+| MCQ index validity and label-count consistency | `_validate_mcq_consistency` | `correct_option` out of bounds; description label count mismatches `options` array length |
+| Required-field presence (non-SQL tracks) | `_validate_non_sql_sample_fields` | Enforces `id`, `title`, `description`, `difficulty`, `hints` (exactly 2), `concepts` (1–4), `order`, plus per-eval-kind fields |
+| Within-bank duplicate ID detection (non-SQL) | `_validate_non_sql_sample_ids` | Duplicate IDs within a single track's sample file |
+| Canonical-name tags, blocklist, near-duplicate families | `_validate_concept_taxonomy` | Same rules as practice/mock (SQL excluded for hint-rule reasons — see source) |
+
+**Authoring-time judgment calls not covered by the validator:**
+- Family + shape near-clone detection (requires semantic comparison against the full practice/mock bank)
+- Prompt/solution contract correctness (requires reading description → solution and verifying every promise is implemented)
+
+These two checks are the author's responsibility on every sample question, every time.
