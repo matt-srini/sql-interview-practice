@@ -156,35 +156,32 @@
     "order": 2,
     "topic": "python_data",
     "difficulty": "medium",
-    "title": "7-Day Rolling Revenue",
-    "description": "You have a DataFrame `df_orders` with columns `order_date` (string YYYY-MM-DD), `net_amount`, `status`. Only completed orders contribute to revenue.\n\nWrite `solve(df_orders)` that returns a DataFrame with columns `order_date` (string) and `rolling_7d_revenue`: the sum of `net_amount` from completed orders in the **7-day window ending on (and including) that date**. Include only dates that have at least one completed order. Sort by `order_date` ascending.",
+    "title": "Session Count by Traffic Source and Device Type",
+    "description": "You have a DataFrame `df_sessions` with columns `session_id`, `user_id`, `session_start`, `device_type`, `traffic_source`, `country`.\n\nWrite `solve(df_sessions)` that returns a **wide** DataFrame with one row per `traffic_source` and one column per `device_type` (`desktop`, `mobile`, `tablet`), where each cell contains the count of sessions for that combination. Fill any missing combinations with 0. Sort rows by `traffic_source` ascending; order device-type columns alphabetically.",
     "dataframes": {
-      "df_orders": "orders.csv"
+      "df_sessions": "sessions.csv"
     },
     "schema": {
-      "df_orders": [
-        "order_id",
+      "df_sessions": [
+        "session_id",
         "user_id",
-        "order_date",
-        "status",
-        "gross_amount",
-        "discount_amount",
-        "net_amount",
-        "payment_status"
+        "session_start",
+        "device_type",
+        "traffic_source",
+        "country"
       ]
     },
-    "starter_code": "import pandas as pd\ndef solve(df_orders: pd.DataFrame) -> pd.DataFrame:\n    pass",
-    "expected_code": "import pandas as pd\ndef solve(df_orders: pd.DataFrame) -> pd.DataFrame:\n    completed = df_orders[df_orders['status']=='completed'].copy()\n    completed['order_date'] = pd.to_datetime(completed['order_date'])\n    daily = (\n        completed\n        .groupby('order_date', as_index=False)['net_amount']\n        .sum()\n        .set_index('order_date')\n        .sort_index()\n    )\n    daily['rolling_7d_revenue'] = daily['net_amount'].rolling('7D').sum()\n    daily = daily.reset_index()\n    daily['order_date'] = daily['order_date'].dt.strftime('%Y-%m-%d')\n    return daily[['order_date','rolling_7d_revenue']].reset_index(drop=True)",
-    "solution_code": "import pandas as pd\ndef solve(df_orders: pd.DataFrame) -> pd.DataFrame:\n    completed = df_orders[df_orders['status']=='completed'].copy()\n    completed['order_date'] = pd.to_datetime(completed['order_date'])\n    daily = (\n        completed\n        .groupby('order_date', as_index=False)['net_amount']\n        .sum()\n        .set_index('order_date')\n        .sort_index()\n    )\n    daily['rolling_7d_revenue'] = daily['net_amount'].rolling('7D').sum()\n    daily = daily.reset_index()\n    daily['order_date'] = daily['order_date'].dt.strftime('%Y-%m-%d')\n    return daily[['order_date','rolling_7d_revenue']].reset_index(drop=True)",
-    "explanation": "After filtering and aggregating to daily revenue, `.rolling('7D')` uses a time-based window (requires a DatetimeIndex) so the window always spans exactly 7 calendar days regardless of gaps in the data — unlike `.rolling(7)` which counts 7 rows. Reset the index, convert back to string for the output column.",
+    "starter_code": "import pandas as pd\ndef solve(df_sessions: pd.DataFrame) -> pd.DataFrame:\n    pass",
+    "expected_code": "import pandas as pd\n\ndef solve(df_sessions: pd.DataFrame) -> pd.DataFrame:\n    pivot = pd.pivot_table(\n        df_sessions,\n        values='session_id',\n        index='traffic_source',\n        columns='device_type',\n        aggfunc='count',\n        fill_value=0\n    )\n    pivot.columns.name = None\n    pivot = pivot.reset_index()\n    device_cols = sorted([c for c in pivot.columns if c != 'traffic_source'])\n    pivot = pivot[['traffic_source'] + device_cols]\n    return pivot.sort_values('traffic_source').reset_index(drop=True)",
+    "solution_code": "import pandas as pd\n\ndef solve(df_sessions: pd.DataFrame) -> pd.DataFrame:\n    pivot = pd.pivot_table(\n        df_sessions,\n        values='session_id',\n        index='traffic_source',\n        columns='device_type',\n        aggfunc='count',\n        fill_value=0\n    )\n    pivot.columns.name = None\n    pivot = pivot.reset_index()\n    device_cols = sorted([c for c in pivot.columns if c != 'traffic_source'])\n    pivot = pivot[['traffic_source'] + device_cols]\n    return pivot.sort_values('traffic_source').reset_index(drop=True)",
+    "explanation": "`pd.pivot_table` reshapes long-form session rows into a wide summary matrix: `index` sets the row dimension (`traffic_source`), `columns` sets the column dimension (`device_type`), and `aggfunc='count'` fills each cell with the number of sessions. `fill_value=0` handles combinations with no sessions (e.g. a source that never appeared on a given device). After `.reset_index()` the MultiIndex column name (`device_type`) must be cleared with `pivot.columns.name = None` to avoid a residual label in the output. Sorting device columns alphabetically and rows by `traffic_source` makes the output fully deterministic.",
     "hints": [
-      "The window must cover the last 7 calendar days — not the last 7 rows. On a dataset with gaps in dates, a row-count window would silently produce wrong results.",
-      "Set the datetime column as the index before calling `.rolling`, then reset it afterwards."
+      "`pd.pivot_table` accepts `index`, `columns`, and `aggfunc` arguments to turn long-form rows into a wide count matrix in a single call — no manual groupby + unstack needed.",
+      "After calling `.reset_index()` on a pivot result, clear the leftover column-level name with `pivot.columns.name = None`; otherwise the axis label leaks into the output schema."
     ],
     "concepts": [
-      "DATETIME OPERATIONS",
-      "WINDOW & ROLLING OPERATIONS",
-      "GROUPED AGGREGATION"
+      "RESHAPING & PIVOT",
+      "OUTPUT SHAPE & ORDERING"
     ]
   },
   {

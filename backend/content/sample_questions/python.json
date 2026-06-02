@@ -467,94 +467,56 @@
     "order": 2,
     "topic": "python",
     "difficulty": "hard",
-    "title": "Merge Overlapping Intervals",
-    "description": "Given a list of `(start, end)` intervals (integers, inclusive), merge all overlapping intervals and return the result sorted by start value.\n\nExample: `[(1,3),(2,6),(8,10),(15,18)]` → `[(1,6),(8,10),(15,18)]`\n`[(1,4),(4,5)]` → `[(1,5)]` (touching intervals merge)",
-    "starter_code": "def solve(intervals: list[tuple[int, int]]) -> list[tuple[int, int]]:\n    pass",
-    "expected_code": "def solve(intervals: list[tuple[int, int]]) -> list[tuple[int, int]]:\n    if not intervals:\n        return []\n    intervals = sorted(intervals, key=lambda x: x[0])\n    merged = [intervals[0]]\n    for start, end in intervals[1:]:\n        if start <= merged[-1][1]:\n            merged[-1] = (merged[-1][0], max(merged[-1][1], end))\n        else:\n            merged.append((start, end))\n    return merged",
-    "solution_code": "def solve(intervals: list[tuple[int, int]]) -> list[tuple[int, int]]:\n    if not intervals:\n        return []\n    intervals = sorted(intervals, key=lambda x: x[0])\n    merged = [intervals[0]]\n    for start, end in intervals[1:]:\n        if start <= merged[-1][1]:  # overlapping or touching\n            merged[-1] = (merged[-1][0], max(merged[-1][1], end))\n        else:\n            merged.append((start, end))\n    return merged",
-    "explanation": "Sort by start value so potential merges are always between the current interval and the previous output. After sorting, a single pass maintains the last merged interval. If the next interval's start is ≤ the current end, they overlap (or touch) — extend the end to the max. Otherwise push the new interval. This is O(n log n) for sorting, O(n) for the merge pass.",
+    "title": "Service Cluster Blast Radius",
+    "description": "Your team maintains a microservices platform. Services call each other, and some call chains form cycles — groups of services that are *mutually dependent*. If any service in such a cycle goes down, all others in the group are affected: they form a single shared-fate cluster.\n\nGiven `services: list[str]` (all service names) and `edges: list[list[str]]` where each `[u, v]` means service `u` calls service `v`, write `solve(services, edges)` that returns the **strongly connected components (SCCs)** — each SCC is a maximal set of services that can all reach each other through call chains.\n\nReturn a `list[list[str]]` where each inner list is one SCC with services sorted alphabetically, and the outer list sorted by each SCC's first element. Isolated services each form their own SCC of size 1.\n\nExample:\n```\nservices = ['auth', 'billing', 'notify', 'db', 'cache']\nedges    = [['auth','billing'], ['billing','auth'], ['auth','notify'],\n            ['db','cache'], ['cache','db']]\n```\n→ `[['auth', 'billing'], ['cache', 'db'], ['notify']]`",
+    "starter_code": "def solve(services: list[str], edges: list[list[str]]) -> list[list[str]]:\n    pass",
+    "expected_code": "from collections import defaultdict\n\ndef solve(services: list[str], edges: list[list[str]]) -> list[list[str]]:\n    graph = defaultdict(list)\n    rev = defaultdict(list)\n    for u, v in edges:\n        graph[u].append(v)\n        rev[v].append(u)\n\n    visited = set()\n    finish_stack = []\n\n    def dfs1(start):\n        stack = [(start, iter(graph[start]))]\n        while stack:\n            node, children = stack[-1]\n            try:\n                child = next(children)\n                if child not in visited:\n                    visited.add(child)\n                    stack.append((child, iter(graph[child])))\n            except StopIteration:\n                finish_stack.append(node)\n                stack.pop()\n\n    for s in services:\n        if s not in visited:\n            visited.add(s)\n            dfs1(s)\n\n    visited2 = set()\n    sccs = []\n\n    def dfs2(start):\n        component = []\n        stack = [start]\n        while stack:\n            node = stack.pop()\n            component.append(node)\n            for nb in rev[node]:\n                if nb not in visited2:\n                    visited2.add(nb)\n                    stack.append(nb)\n        return component\n\n    while finish_stack:\n        node = finish_stack.pop()\n        if node not in visited2:\n            visited2.add(node)\n            sccs.append(sorted(dfs2(node)))\n\n    return sorted(sccs)",
+    "solution_code": "from collections import defaultdict\n\ndef solve(services: list[str], edges: list[list[str]]) -> list[list[str]]:\n    # Kosaraju's two-pass algorithm for strongly connected components\n    graph = defaultdict(list)\n    rev = defaultdict(list)\n    for u, v in edges:\n        graph[u].append(v)\n        rev[v].append(u)  # reverse graph\n\n    # Pass 1: iterative post-order DFS on original graph\n    visited = set()\n    finish_stack = []  # nodes finish in reverse topological order\n\n    def dfs1(start):\n        stack = [(start, iter(graph[start]))]\n        while stack:\n            node, children = stack[-1]\n            try:\n                child = next(children)\n                if child not in visited:\n                    visited.add(child)\n                    stack.append((child, iter(graph[child])))\n            except StopIteration:\n                finish_stack.append(node)  # all neighbours done\n                stack.pop()\n\n    for s in services:\n        if s not in visited:\n            visited.add(s)\n            dfs1(s)\n\n    # Pass 2: DFS on reverse graph in reverse finish order\n    # Each reachable set in the reverse graph is one SCC\n    visited2 = set()\n    sccs = []\n\n    def dfs2(start):\n        component = []\n        stack = [start]\n        while stack:\n            node = stack.pop()\n            component.append(node)\n            for nb in rev[node]:\n                if nb not in visited2:\n                    visited2.add(nb)\n                    stack.append(nb)\n        return component\n\n    while finish_stack:\n        node = finish_stack.pop()\n        if node not in visited2:\n            visited2.add(node)\n            sccs.append(sorted(dfs2(node)))\n\n    return sorted(sccs)",
+    "explanation": "Kosaraju's algorithm finds all SCCs in O(V + E) with two DFS passes.\n\nPass 1 runs DFS on the original graph. Nodes are pushed onto a finish stack when all their outgoing neighbours have been processed (post-order). The last node to finish sits at the top — it is a node from which the entire rest of the graph is reachable if we follow reverse edges.\n\nPass 2 runs DFS on the *reverse* graph (all edges flipped), processing nodes in reverse-finish order. Starting DFS from the top-of-stack node on the reverse graph reaches exactly the nodes that can reach it in the original graph — that is the SCC. Mark them visited and move to the next unvisited node.\n\nWhy this finds SCCs: in the original graph, the finish-stack ordering separates source SCCs (finish last) from sink SCCs (finish first). On the reverse graph, a source SCC's DFS cannot escape into another SCC because those reverse edges lead toward sink SCCs that are already consumed.\n\nData-professional relevance: identifying SCCs reveals service clusters with circular call dependencies — groups that must be treated as atomic units for deployment sequencing, incident blast-radius analysis, and circuit-breaker scope.",
     "test_cases": [
       {
         "input": [
-          [
-            [
-              1,
-              3
-            ],
-            [
-              2,
-              6
-            ],
-            [
-              8,
-              10
-            ],
-            [
-              15,
-              18
-            ]
-          ]
+          ["auth", "billing", "notify", "db", "cache"],
+          [["auth","billing"],["billing","auth"],["auth","notify"],["db","cache"],["cache","db"]]
         ],
-        "expected": [
-          [
-            1,
-            6
-          ],
-          [
-            8,
-            10
-          ],
-          [
-            15,
-            18
-          ]
-        ]
+        "expected": [["auth","billing"],["cache","db"],["notify"]]
       },
       {
         "input": [
-          [
-            [
-              1,
-              4
-            ],
-            [
-              4,
-              5
-            ]
-          ]
+          ["a", "b", "c"],
+          [["a","b"],["b","c"]]
         ],
-        "expected": [
-          [
-            1,
-            5
-          ]
-        ]
+        "expected": [["a"],["b"],["c"]]
       },
       {
         "input": [
-          [
-            [
-              5,
-              10
-            ]
-          ]
+          ["p", "q", "r"],
+          [["p","q"],["q","r"],["r","p"]]
         ],
-        "expected": [
-          [
-            5,
-            10
-          ]
-        ]
+        "expected": [["p","q","r"]]
+      },
+      {
+        "input": [
+          ["x"],
+          []
+        ],
+        "expected": [["x"]]
+      },
+      {
+        "input": [
+          ["ingestion", "transform", "load", "monitor"],
+          [["ingestion","transform"],["transform","ingestion"],["transform","load"],["monitor","monitor"]]
+        ],
+        "expected": [["ingestion","transform"],["load"],["monitor"]]
       }
     ],
     "public_test_cases": 1,
     "hints": [
-      "Sort by start value first — then overlapping intervals are always adjacent in the sorted list.",
-      "Maintain the last merged interval's end and extend it greedily when the next start doesn't exceed it."
+      "Strongly connected components require knowing which nodes can mutually reach each other — think about what information a post-order DFS finish time gives you about reachability.",
+      "Run two DFS passes: the first on the original graph to record finish order, the second on the reversed graph in reverse-finish order — each DFS tree in the second pass is one SCC."
     ],
     "concepts": [
-      "SLIDING WINDOW",
-      "GREEDY CHOICE"
+      "GRAPH TRAVERSAL (BFS / DFS)"
     ]
   },
   {
@@ -562,75 +524,46 @@
     "order": 3,
     "topic": "python",
     "difficulty": "hard",
-    "title": "Sliding Window Rate Limiter",
-    "description": "Implement `solve(timestamps, window_ms, max_calls)`: given a list of request timestamps in milliseconds (non-decreasing), return a `list[bool]` where element `i` is `True` if request `i` is allowed. A request is allowed if strictly fewer than `max_calls` requests were allowed in the `window_ms` milliseconds before this request's timestamp.\n\nMore precisely: request `i` is allowed if the count of previously *allowed* requests with timestamp in `[timestamps[i] - window_ms, timestamps[i])` is < `max_calls`.",
-    "starter_code": "from collections import deque\ndef solve(timestamps: list[int], window_ms: int, max_calls: int) -> list[bool]:\n    pass",
-    "expected_code": "from collections import deque\ndef solve(timestamps: list[int], window_ms: int, max_calls: int) -> list[bool]:\n    allowed_times: deque[int] = deque()\n    result: list[bool] = []\n    for ts in timestamps:\n        cutoff = ts - window_ms\n        while allowed_times and allowed_times[0] < cutoff:\n            allowed_times.popleft()\n        if len(allowed_times) < max_calls:\n            allowed_times.append(ts)\n            result.append(True)\n        else:\n            result.append(False)\n    return result",
-    "solution_code": "from collections import deque\ndef solve(timestamps: list[int], window_ms: int, max_calls: int) -> list[bool]:\n    allowed_times: deque[int] = deque()  # timestamps of allowed requests\n    result: list[bool] = []\n    for ts in timestamps:\n        cutoff = ts - window_ms\n        while allowed_times and allowed_times[0] < cutoff:\n            allowed_times.popleft()\n        if len(allowed_times) < max_calls:\n            allowed_times.append(ts)\n            result.append(True)\n        else:\n            result.append(False)\n    return result",
-    "explanation": "Track only the timestamps of *allowed* requests in a deque. For each incoming request: evict entries older than `window_ms` from the front. If the remaining count is below `max_calls`, allow it and record its timestamp. Otherwise deny. The deque grows and shrinks as the window slides, giving amortised O(1) per request.",
+    "title": "Maximum Impact Alerts Within Deadlines",
+    "description": "Your on-call system receives a backlog of alert tasks, each with a business-impact score and a deadline (in minutes from now). Each task takes exactly one minute to process, and you can only work on one task per minute. An alert task is completable if it can be assigned to any free one-minute slot at or before its deadline.\n\nWrite `solve(tasks)` where `tasks` is a list of `[impact, deadline]` pairs (both positive integers). Return the maximum total impact score achievable by selecting and scheduling a subset of tasks within their deadlines.\n\nExample: `[[30, 1], [50, 2], [40, 2], [10, 3]]` → `100`\n(Schedule impact-50 in slot 1 or 2, impact-40 in the remaining slot 1 or 2, impact-10 in slot 3; drop impact-30 to maximise total.)\n\nConstraints:\n- 0 ≤ len(tasks) ≤ 10^5\n- 1 ≤ impact ≤ 10^6\n- 1 ≤ deadline ≤ 10^5",
+    "starter_code": "import heapq\n\ndef solve(tasks: list[list[int]]) -> int:\n    # Your code here\n    pass",
+    "expected_code": "import heapq\n\ndef solve(tasks: list[list[int]]) -> int:\n    tasks = sorted(tasks, key=lambda x: x[1])\n    heap = []  # min-heap of impact scores of scheduled tasks\n    for impact, deadline in tasks:\n        if len(heap) < deadline:\n            heapq.heappush(heap, impact)\n        elif heap and heap[0] < impact:\n            heapq.heapreplace(heap, impact)\n    return sum(heap)",
+    "solution_code": "import heapq\n\ndef solve(tasks: list[list[int]]) -> int:\n    # Sort by deadline so we process tasks earliest-deadline-first.\n    # A task with deadline d can fill any of the d available slots 1..d.\n    # If we've already filled d slots and the new task has higher impact\n    # than the lowest-impact scheduled task, swap — that task is the one\n    # least worth keeping given we have to drop something.\n    tasks = sorted(tasks, key=lambda x: x[1])\n    heap = []  # min-heap: impact scores of currently scheduled tasks\n    for impact, deadline in tasks:\n        if len(heap) < deadline:\n            heapq.heappush(heap, impact)\n        elif heap and heap[0] < impact:\n            heapq.heapreplace(heap, impact)\n    return sum(heap)",
+    "explanation": "Sort tasks by deadline ascending. Process each task in deadline order, maintaining a min-heap of the impact scores of the tasks committed so far. For a task with deadline `d`, at most `d` tasks can ever be scheduled (one per slot 1..d). If the heap has fewer than `d` entries, there is a free slot — push the new task. If the heap is full (size == `d`) but the new task has higher impact than the minimum already scheduled, swap them (`heapreplace`): the min-impact task is displaced in favour of the higher-impact one. This greedy exchange is safe because any task we drop was the lowest-value task in a full slot window — keeping the higher-impact task and dropping the lower one always improves (or maintains) the total. After processing all tasks, `sum(heap)` is the maximum achievable total. Time: O(n log n) for the sort, O(n log n) amortised for heap operations. Space: O(n). This is the classic 'job sequencing with deadlines' pattern — applicable whenever an on-call queue, an SLO-bound task runner, or a scheduler must decide which work to drop under capacity constraints.",
     "test_cases": [
       {
-        "input": [
-          [
-            100,
-            200,
-            300,
-            400,
-            1200
-          ],
-          500,
-          3
-        ],
-        "expected": [
-          true,
-          true,
-          true,
-          false,
-          true
-        ]
+        "input": [[[30, 1], [50, 2], [40, 2], [10, 3]]],
+        "expected": 100
       },
       {
-        "input": [
-          [
-            0,
-            0,
-            0
-          ],
-          1000,
-          2
-        ],
-        "expected": [
-          true,
-          true,
-          false
-        ]
+        "input": [[[100, 1], [60, 1], [80, 1]]],
+        "expected": 100
       },
       {
-        "input": [
-          [
-            1000,
-            2000,
-            3000
-          ],
-          500,
-          1
-        ],
-        "expected": [
-          true,
-          true,
-          true
-        ]
+        "input": [[[]]],
+        "expected": 0
+      },
+      {
+        "input": [[[25, 3]]],
+        "expected": 25
+      },
+      {
+        "input": [[[10, 2], [20, 2], [30, 2], [40, 2]]],
+        "expected": 70
+      },
+      {
+        "input": [[[5, 1], [15, 2], [25, 3], [35, 4]]],
+        "expected": 80
       }
     ],
     "public_test_cases": 1,
     "hints": [
-      "Only track timestamps of *allowed* requests — denied requests don't consume quota.",
-      "A deque lets you efficiently evict old timestamps from the front as the window slides forward."
+      "Sort tasks by deadline and think about what it means for a task with deadline `d` to be schedulable: it needs one of the `d` available one-minute slots. If all `d` slots are already taken by higher-impact tasks, the new task should be dropped — but if it beats the lowest-impact task currently scheduled, swap them.",
+      "A min-heap over the impact scores of committed tasks lets you check and replace the minimum in O(log n). When the heap size equals the current task's deadline, compare the new task's impact to `heap[0]` — if higher, `heapreplace` to maximise total impact."
     ],
     "concepts": [
-      "SLIDING WINDOW",
-      "STACK & MONOTONIC STRUCTURES",
-      "STREAMING / ONLINE REDUCTION"
+      "HEAP & PRIORITY QUEUE",
+      "GREEDY CHOICE"
     ]
   }
 ]
