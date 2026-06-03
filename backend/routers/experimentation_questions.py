@@ -6,6 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException
 import experimentation_questions as catalog
 from db import get_solved_ids, mark_solved, record_submission
 from deps import get_current_user
+from mcq import is_mcq_correct
 from middleware.request_context import get_request_id
 from models import PySparkSubmitRequest
 from unlock import compute_unlock_state, get_next_questions
@@ -131,7 +132,7 @@ async def submit_answer(
     if unlock_state.get(int(q["id"]), "locked") == "locked":
         raise HTTPException(status_code=403, detail="Question is locked for your current plan or progress.")
 
-    correct = body.selected_option == q["correct_option"]
+    correct = is_mcq_correct(body.selected_option, q)
 
     if correct:
         await mark_solved(current_user["id"], int(q["id"]), topic="experimentation")

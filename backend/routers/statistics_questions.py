@@ -9,6 +9,7 @@ import python_evaluator
 import statistics_questions as catalog
 from db import get_solved_ids, mark_solved, record_submission
 from deps import get_current_user
+from mcq import is_mcq_correct
 from middleware.request_context import get_request_id
 from unlock import compute_unlock_state, get_next_questions
 
@@ -184,7 +185,7 @@ async def submit_statistics_answer(
     if subtype == "conceptual":
         if body.selected_option is None:
             raise HTTPException(status_code=422, detail="selected_option is required for conceptual questions.")
-        correct = body.selected_option == q["correct_option"]
+        correct = is_mcq_correct(body.selected_option, q)
         if correct:
             await mark_solved(current_user["id"], int(q["id"]), topic="statistics")
         await record_submission(

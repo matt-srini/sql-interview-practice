@@ -23,6 +23,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
 from concept_families import CONCEPT_FAMILIES, concept_matches_focus
+from mcq import is_mcq_correct
 
 from db import (
     create_mock_session,
@@ -790,7 +791,7 @@ def _evaluate_submission(
     if get_track(track).eval_kind == "mcq":
         if selected_option is None:
             return False, {"error": "No option selected"}
-        accepted = selected_option == question.get("correct_option")
+        accepted = is_mcq_correct(selected_option, question)
         return accepted, {"correct": accepted}
 
     if get_track(track).mixed_subtype:
@@ -798,7 +799,7 @@ def _evaluate_submission(
         if subtype == "conceptual":
             if selected_option is None:
                 return False, {"error": "No option selected"}
-            accepted = selected_option == question.get("correct_option")
+            accepted = is_mcq_correct(selected_option, question)
             return accepted, {"correct": accepted}
         # numerical
         if not code:

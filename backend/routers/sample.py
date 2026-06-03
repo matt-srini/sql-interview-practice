@@ -7,6 +7,7 @@ from pydantic import BaseModel, ValidationError
 import python_evaluator
 import python_guard
 from deps import RunQueryRequest, SubmitRequest, _validate_difficulty, get_current_user
+from mcq import is_mcq_correct
 from evaluator import evaluate, run_query
 from middleware.request_context import get_request_id
 from progress import (
@@ -489,7 +490,7 @@ async def submit_topic_sample_answer(
             question = get_sample_question_for_topic(parsed.question_id, normalized_topic)
             if question is None:
                 raise HTTPException(status_code=404, detail="Question not found")
-            correct = parsed.selected_option == question["correct_option"]
+            correct = is_mcq_correct(parsed.selected_option, question)
             await _mark_sample_attempted(current_user, normalized_topic, question)
             return {
                 "correct": correct,
@@ -502,7 +503,7 @@ async def submit_topic_sample_answer(
     question = get_sample_question_for_topic(parsed.question_id, normalized_topic)
     if question is None:
         raise HTTPException(status_code=404, detail="Question not found")
-    correct = parsed.selected_option == question["correct_option"]
+    correct = is_mcq_correct(parsed.selected_option, question)
     await _mark_sample_attempted(current_user, normalized_topic, question)
     return {
         "correct": correct,
