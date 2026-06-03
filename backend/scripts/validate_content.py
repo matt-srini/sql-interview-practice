@@ -1473,17 +1473,16 @@ def _validate_hint_numbers_in_stem() -> None:
 
 
 def _validate_no_numeric_option_references() -> None:
-    """WARN-level (→ ERROR after the A/B/C/D normalization lands): explanations
-    should reference options by LETTER ('Option A/B/C/D'), never by 0-indexed
-    number ('Option 0/1/2/3').
+    """ERROR-level: explanations must reference options by LETTER
+    ('Option A/B/C/D'), never by number ('Option 0/1/2/3/4').
 
     Rationale: the UI labels options A-D, so a numeric reference reads wrong to
-    users, and the 0-indexed convention was the ambiguity that masked a real key
-    inversion (pyspark 43112: explanation said 'Option 2 is the most plausible'
-    while correct_option was 1). The canonical convention, going forward, is to
-    tag the correct answer by its letter. Once the residual numeric references
-    are normalised bank-wide, promote this to an ERROR-level gate so the
-    convention can never silently regress.
+    users, and the inconsistent numeric convention (some questions 0-indexed,
+    some 1-indexed) was the ambiguity that masked a real key inversion (pyspark
+    43112: explanation said 'Option 2 is the most plausible' while
+    correct_option was 1). The canonical convention is to tag the correct answer
+    by its letter. The bank was normalised to letters bank-wide (2026-06-03), so
+    this is now a hard gate — the convention can never silently regress.
     """
     pat = re.compile(r"\bOption [0-9]\b")
     hits: list[str] = []
@@ -1496,16 +1495,14 @@ def _validate_no_numeric_option_references() -> None:
                 hits.append(f"{track} {q.get('id', '<unknown>')}")
 
     if hits:
-        sys.stderr.write(
-            f"WARNING: {len(hits)} explanations reference options by 0-indexed "
-            f"number ('Option N') instead of letter ('Option A/B/C/D') — the "
-            f"canonical convention is letters (matches the A-D UI labels). "
-            f"Normalise to letters; this check becomes ERROR-level once clean.\n"
+        joined = "\n".join(f"- {h}" for h in hits[:50])
+        if len(hits) > 50:
+            joined += f"\n- ... and {len(hits) - 50} more"
+        raise ValueError(
+            f"{len(hits)} explanation(s) reference options by number instead of "
+            f"letter ('Option A/B/C/D'). The canonical convention is letters "
+            f"(matches the A-D UI labels):\n{joined}"
         )
-        for h in hits[:12]:
-            sys.stderr.write(f"  - {h}\n")
-        if len(hits) > 12:
-            sys.stderr.write(f"  - ... and {len(hits) - 12} more\n")
 
 
 def _load_json_file(path: Path) -> None:
