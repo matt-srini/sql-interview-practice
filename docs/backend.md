@@ -178,6 +178,8 @@ Signature formulas:
 | POST | `/api/python-data/run-code` | `{ code, question_id }` → DataFrame result + `print_output` |
 | POST | `/api/python-data/submit` | `{ code, question_id, duration_ms? }` → correct/incorrect + DataFrame comparison + solution on correct |
 
+> **MCQ answer evaluation (all MCQ tracks + sample + mock).** Every MCQ submit path routes through the single shared helper `backend/mcq.py` → `is_mcq_correct(selected_option, question)` (the 0-indexed `selected_option == correct_option` comparison; `correct_option` is 0-indexed: 0→A, 1→B, 2→C, 3→D, matching the A–D labels the frontend renders). `correct_letter(question)` returns the key's canonical letter. No track re-implements the comparison — this prevents per-track index drift (added 2026-06-03; replaced 10 duplicated call-sites across the 6 track routers, `sample.py`, and `mock.py`).
+
 ### PySpark — `/api/pyspark`
 
 | Method | Path | Description |
