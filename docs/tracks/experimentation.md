@@ -35,8 +35,8 @@ Experimentation has **dedicated sample questions** in `backend/content/sample_qu
 | Tier | Reasoning depth | Topics |
 |---|---|---|
 | **Easy** | Single concept, clear right answer | Experiment design basics, hypothesis formulation, statistical significance, Type I/II errors, confidence interval interpretation, metric selection, power basics, sample size intuition, experiment duration basics |
-| **Medium** | Trade-off; tempting distractors | Multiple testing, sample-ratio mismatch (SRM), novelty effects, variance reduction (CUPED), network effects, segmentation analysis, metric sensitivity |
-| **Hard** | Multi-factor; all distractors plausible | Causal inference (IV, propensity scoring, RDD), switchback experiments, Bayesian experimentation, multi-armed bandit, holdout groups, quasi-experimental methods, sequential testing, metric sensitivity (advanced) |
+| **Medium** | Trade-off; tempting distractors | Multiple testing, sample-ratio mismatch (SRM), novelty effects, variance reduction (CUPED), network effects, segmentation analysis, metric sensitivity; **introductory-operational:** causal bias recognition and carryover effects (CAUSAL INFERENCE), holdout group purpose and design (HOLDOUT GROUPS), Bayesian early-stopping eligibility (BAYESIAN EXPERIMENTATION), MAB vs A/B trade-offs (MULTI-ARMED BANDIT), quasi-experimental method selection when DiD is the obvious fit (QUASI-EXPERIMENTAL METHODS) |
+| **Hard** | Multi-factor; all distractors plausible | **Advanced depth** of the five intro-operational families: causal identification under confounding (IV, propensity scoring, RDD, assumption testing), advanced Bayesian design (prior sensitivity, optional-stopping risk quantification), MAB regret optimisation and algorithm choice (Thompson sampling, epsilon-greedy), holdout group failure modes and long-run decay, quasi-experimental validity (parallel trends stress-testing, synthetic control) — plus switchback experiments, sequential testing (mSPRT, group sequential, alpha spending), metric sensitivity (advanced) |
 
 ### Representative scenarios per tier
 
@@ -45,16 +45,16 @@ Difficulty controls reasoning depth, never licenses formula or tool-name recall.
 | Tier | Representative scenarios |
 |---|---|
 | **Easy** | Formulate a hypothesis + metric for a feature · what Type I/II error means for this test · basic power intuition · pick a primary metric for a stated goal · verify that traffic assignment looks right before reading results · recognize that non-exposed users dilute a measured effect · understand why starting a follow-on experiment immediately after shipping can bias results · predict how a CI width changes with more data. One concept, clear right answer. |
-| **Medium** | Diagnose a sample-ratio mismatch · correct for multiple testing · spot a novelty effect in a read · apply CUPED for variance reduction. Trade-off with tempting distractors. |
-| **Hard** | Pick a causal method when randomization is impossible · design a switchback for network effects · Bayesian vs frequentist read under business pressure · holdout-group design. Multi-factor, all distractors plausible. |
+| **Medium** | Diagnose a sample-ratio mismatch · correct for multiple testing · spot a novelty effect in a read · apply CUPED for variance reduction · recognise why a naive comparison fails causal validity (carryover, hash-collision, marketplace partial-equilibrium) · choose a holdout group design for long-run measurement · decide when Bayesian early stopping is permissible · identify the exploration-exploitation trade-off in MAB vs A/B · pick DiD when it is the obvious causal tool. Trade-off with tempting distractors. |
+| **Hard** | Pick a causal method when randomization is impossible and defend the identifying assumptions (IV exogeneity, RDD bandwidth, propensity overlap) · design a switchback for marketplace network effects · stress-test the parallel trends assumption in a DiD · Bayesian vs frequentist inference under stakeholder pressure · holdout-group decay and contamination failure modes · regret-optimisation framing for Thompson sampling vs epsilon-greedy. Multi-factor, all distractors plausible. |
 
 ## Concept arc (early → late)
 
 | Tier | Progression |
 |---|---|
 | Easy | Experiment design basics → hypothesis formulation → significance → Type I and II errors → metric selection → power basics |
-| Medium | Multiple testing → SRM → novelty effects → variance reduction (CUPED) → network effects → segmentation |
-| Hard | Causal inference (IV / propensity / RDD) → switchback experiments → Bayesian experimentation → multi-armed bandit → holdout groups → quasi-experimental methods → sequential testing → metric sensitivity (advanced) |
+| Medium | Multiple testing → SRM → novelty effects → variance reduction (CUPED) → network effects → segmentation → [intro-operational] causal bias recognition · holdout group design · Bayesian early stopping · MAB trade-offs · quasi-experimental method selection (DiD) |
+| Hard | Causal identification strategies (IV / propensity / RDD) → switchback experiments → Bayesian experimentation (advanced) → multi-armed bandit (regret optimisation) → holdout group failure modes → quasi-experimental validity (parallel trends, synthetic control) → sequential testing → metric sensitivity (advanced) |
 
 ## Concept families
 
@@ -70,7 +70,7 @@ Full registry: [`docs/concept-taxonomy.md` → Experimentation section](../conce
 | Practice medium | `medium.json` no `mock_only` | Trade-off under realistic constraints. |
 | Practice hard | `hard.json` no `mock_only` | Production / advanced topic. |
 | Mock-only medium | `medium.json` with `mock_only: true` | Real scenarios: "your A/B showed +3% lift in the treatment, but SRM is significant"; "PM wants to ship after 5 days, your MDE says you need 14"; "novelty effect is killing your read". Heavy `SAMPLE RATIO MISMATCH`, `NOVELTY EFFECTS`, `NETWORK EFFECTS`, `EXPERIMENT DURATION`. |
-| Mock-only hard | `hard.json` with `mock_only: true` | Causal / switchback / bandit / Bayesian-vs-frequentist debate. `CAUSAL INFERENCE`, `SWITCHBACK EXPERIMENTS`, `BAYESIAN EXPERIMENTATION`, `QUASI-EXPERIMENTAL METHODS`. |
+| Mock-only hard | `hard.json` with `mock_only: true` | Causal / switchback / bandit / Bayesian-vs-frequentist debate at **advanced depth** — assumption stress-testing, regret optimisation, prior sensitivity, parallel trends validation. `CAUSAL INFERENCE`, `SWITCHBACK EXPERIMENTS`, `BAYESIAN EXPERIMENTATION`, `QUASI-EXPERIMENTAL METHODS`, `MULTI-ARMED BANDIT`. |
 | Mock-only chain | parent + 1–3 follow-ups | Pivots: business rule (success metric changes mid-experiment), data quality (tracking gap), edge case (one arm got 1% by accident), stakeholder (leadership wants to ship despite inconclusive). |
 
 **Easy mock-only: never.** Easy is practice-only.
@@ -84,7 +84,10 @@ Full registry: [`docs/concept-taxonomy.md` → Experimentation section](../conce
 - **Pure formula recall** — "what's the formula for statistical power?" Test the *application* (which lever moves it, what does halving sample size do).
 - **Bayesian-vs-frequentist tribal questions** — both frameworks are valid; questions that frame it as ideology are reject. Test when each is *operationally* the right tool.
 - **Hard questions with one famous right answer** — every distractor must reflect a defensible expert-level position.
-- **Difficulty-drift via medium/hard family tags** — easy questions must not use families from the medium or hard vocabulary (e.g. MULTIPLE TESTING, VARIANCE REDUCTION, NETWORK EFFECTS, SEGMENTATION ANALYSIS at medium; HOLDOUT GROUPS, CAUSAL INFERENCE, BAYESIAN EXPERIMENTATION at hard). The validator checks family names but does not enforce per-tier placement; the author must.
+- **Difficulty-drift via family tags** — easy questions must not use families from the medium vocabulary (MULTIPLE TESTING, VARIANCE REDUCTION, NETWORK EFFECTS, SEGMENTATION ANALYSIS, METRIC SENSITIVITY). Medium questions must not use *advanced* treatments of the five intro-operational families (CAUSAL INFERENCE, HOLDOUT GROUPS, BAYESIAN EXPERIMENTATION, MULTI-ARMED BANDIT, QUASI-EXPERIMENTAL METHODS). The permitted medium/hard split for those five families is:
+  - **Medium (permitted):** causal bias recognition and carryover effect diagnosis; holdout group purpose and basic design; Bayesian early stopping eligibility (posterior threshold logic, prior influence); MAB vs A/B exploration-exploitation trade-off; DiD when the natural-experiment setup is unambiguous.
+  - **Hard (required):** causal identification under confounding — IV construction and exogeneity, propensity score overlap, RDD bandwidth sensitivity, assumption stress-testing; advanced Bayesian design — prior sensitivity analysis, optional-stopping risk quantification; MAB regret optimisation — Thompson sampling, epsilon-greedy, algorithm selection under non-stationarity; holdout group failure modes — contamination, long-run decay, attribution drift; quasi-experimental validity — parallel trends testing, synthetic control, DiD under staggered adoption.
+  The validator checks family names but does not enforce per-tier placement; the author must use the split above.
 - **"Re-running until significant" is an easy TYPE I error question, not a hard sequential-testing question** — framing the problem as "each run carries a 5% false positive risk, running twice inflates the cumulative rate" is easy-level TYPE I AND TYPE II ERRORS + STATISTICAL SIGNIFICANCE reasoning. The corrective methods (mSPRT, group sequential, alpha spending) belong in SEQUENTIAL TESTING at hard. Do not conflate the diagnostic with the remedy when choosing difficulty.
 
 ## JSON schema
