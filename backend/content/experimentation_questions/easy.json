@@ -183,9 +183,10 @@
       "Low baseline conversion rate, large minimum detectable effect, low statistical power"
     ],
     "correct_option": 1,
-    "explanation": "Sample size requirements grow when: (1) the minimum detectable effect is small \u2014 you need more data to distinguish a tiny signal from noise; (2) desired power is high \u2014 you want a low miss rate, requiring more observations; and (3) baseline variance is high, which for conversion rates peaks near 50% but can also be driven by high absolute count variability. A small minimum detectable effect is the dominant driver here. Option A has a large effect size, which reduces needed sample. Option C has low power, which reduces sample needs at the cost of more false negatives. Option D combines a large effect and low power, both of which shrink sample requirements.",
+    "explanation": "Sample size requirements grow when: (1) the minimum detectable effect is small \u2014 detecting a tiny signal requires far more observations; (2) desired power is high \u2014 fewer missed effects means more data. These are the two dominant drivers. For conversion rates, baseline variance (p \u00d7 (1 \u2212 p)) also plays a role, peaking near 50% \u2014 but a low baseline means lower variance, which actually slightly reduces sample demand. In option B, the low baseline works against the conclusion, but the small MDE more than compensates: halving the MDE roughly quadruples required sample. Option A has a large MDE, which slashes the sample requirement despite high baseline variance. Option C has low power, which reduces sample needs at the cost of more false negatives. Option D combines a large MDE and low power, both of which shrink requirements.",
     "hints": [
-      "Think about how hard it is to distinguish a tiny difference from random noise."
+      "Think about how hard it is to distinguish a tiny difference from random noise.",
+      "Focus on which two levers dominate sample size and pick the option that pushes both in the most demanding direction."
     ],
     "concepts": [
       "SAMPLE SIZE BASICS",
@@ -268,24 +269,25 @@
     "id": 91012,
     "order": 12,
     "topic": "experimentation",
-    "type": "conceptual",
+    "type": "scenario",
     "difficulty": "easy",
-    "title": "Running Multiple Tests Simultaneously",
-    "description": "A growth team decides to run 20 independent A/B tests simultaneously, each at a significance threshold of 0.05. Assuming all tested features have no real effect, approximately how many tests would the team expect to produce a false positive result?",
+    "title": "Unexpected Traffic Imbalance at Experiment Start",
+    "scenario_context": "A team launches a 50/50 A/B test on a new onboarding flow. After two days, they check the assignment counts: control has 5,800 users and treatment has 4,200 users. The assignment code was supposed to split traffic equally.",
+    "description": "What should the team do first?",
     "options": [
-      "0 \u2014 because each test is independent and properly controlled at 5%",
-      "1 \u2014 because 5% of 20 tests is 1 expected false positive",
-      "10 \u2014 because the error rate compounds multiplicatively across tests",
-      "20 \u2014 because without correction, all tests at 0.05 are unreliable"
+      "Proceed with analysis \u2014 a 58/42 split is close enough to 50/50 for practical purposes",
+      "Extend the experiment until the treatment group catches up in size",
+      "Investigate whether the assignment mechanism is working correctly before reading any results",
+      "Reweight the treatment group observations to match the control group size, then analyze"
     ],
-    "correct_option": 1,
-    "explanation": "With 20 independent tests each at alpha = 0.05 and no true effects, the expected number of false positives is 20 \u00d7 0.05 = 1. This illustrates why multiple testing is a concern \u2014 even with proper per-test control, the family-wise error rate accumulates. The team should not be surprised to see one 'significant' result that is actually noise. Option A is wrong because false positives do occur at the stated rate. Option C overstates the problem \u2014 the expectation is additive (1), not multiplicative (much larger). Option D is an exaggeration; 0.05 is not inherently unreliable but the family-level risk needs acknowledgment.",
+    "correct_option": 2,
+    "explanation": "A meaningful imbalance in traffic allocation signals that the randomization or assignment pipeline may be broken \u2014 users may not be independently assigned, certain segments may be excluded from one arm, or a logging error may have under-counted treatment exposures. Before reading any metric, the team must understand why the split is off. Acting on results from a broken experiment risks acting on a biased estimate whose direction and magnitude are unknown. Option A is wrong: a 38-percentage-point gap from expected is not noise \u2014 it warrants investigation. Option B extends a potentially broken experiment, producing more contaminated data, not better data. Option D applies a post-hoc correction that cannot fix a structural assignment bias.",
     "hints": [
-      "If each test has a 5% false positive rate, think about expected false positives across 20 independent tests."
+      "If the traffic split is not what you designed, what does that tell you about the experiment's infrastructure before you look at any metric?"
     ],
     "concepts": [
-      "MULTIPLE TESTING",
-      "TYPE I AND TYPE II ERRORS"
+      "EXPERIMENT DESIGN",
+      "A/B TEST MECHANICS"
     ]
   },
   {
@@ -309,7 +311,7 @@
       "Think about how many opportunities the team is giving random noise to look like a real signal."
     ],
     "concepts": [
-      "STATISTICAL SIGNIFICANCE",
+      "EXPERIMENT DURATION",
       "EXPERIMENT DESIGN"
     ]
   },
@@ -358,7 +360,7 @@
     ],
     "concepts": [
       "METRIC SELECTION",
-      "VARIANCE REDUCTION"
+      "EXPERIMENT DURATION"
     ]
   },
   {
@@ -376,7 +378,7 @@
       "Increase the sample size to widen the confidence interval before deciding"
     ],
     "correct_option": 2,
-    "explanation": "Statistical significance tells you the effect is unlikely to be zero, but it says nothing about whether the effect is large enough to matter. A lift of 0.01\u20130.05% in conversion rate may be genuine but far too small to justify six weeks of engineering effort. The team must compare the expected business impact to the cost. Option A conflates statistical and practical significance, a very common error. Option B is wrong; narrow, positive intervals are valid and informative. Option D would likely widen the interval further but would not change the core problem of a tiny effect size.",
+    "explanation": "Statistical significance tells you the effect is unlikely to be zero, but it says nothing about whether the effect is large enough to matter. A lift of 0.01\u20130.05% in conversion rate may be genuine but far too small to justify six weeks of engineering effort. The team must compare the expected business impact to the cost. Option A conflates statistical and practical significance, a very common error. Option B is wrong; narrow, positive intervals are valid and informative. Option D misunderstands the direction: more sample narrows a confidence interval, not widens it. Even if the team were to narrow the interval further, a tight interval around a 0.01–0.05% lift still reveals a tiny effect — it does not change the practical significance problem.",
     "hints": [
       "Ask: even if this effect is real, is it large enough to be worth acting on?"
     ],
@@ -464,23 +466,23 @@
     "topic": "experimentation",
     "type": "scenario",
     "difficulty": "easy",
-    "title": "Segmentation Analysis After Significance",
-    "scenario_context": "An experiment on a notification feature shows no statistically significant overall lift. A curious analyst breaks down the results by device type and finds that mobile users show a strong positive effect. The analyst wants to report this as a success.",
-    "description": "What is the primary risk of this approach?",
+    "title": "Logging at the Step Level in a Checkout Experiment",
+    "scenario_context": "A team is designing an A/B test on a redesigned checkout flow. They plan to measure whether the new design increases overall purchase completion rate. A data scientist recommends also logging which step each user abandons \u2014 payment details, shipping confirmation, or review page.",
+    "description": "What is the primary benefit of logging at the step level?",
     "options": [
-      "Device-level analysis is technically impossible without additional data collection",
-      "Reporting a significant subgroup finding from a post-hoc analysis inflates the false positive risk, since many subgroups were implicitly tested",
-      "The mobile subgroup result cancels out the desktop result, so the overall test is still valid",
-      "Segmentation analysis is only valid when the overall test is also significant"
+      "Step-level logging reduces the variance of the primary metric, making the experiment more powerful",
+      "It enables the team to understand where in the funnel the treatment effect concentrates, which helps diagnose whether a lift is genuine and why it occurred",
+      "Step-level logging replaces the need for a primary metric because it captures all user behavior",
+      "It allows the team to run separate statistical tests on each step without inflating the false positive rate"
     ],
     "correct_option": 1,
-    "explanation": "Post-hoc subgroup analyses suffer from the multiple comparisons problem. Even if no pre-specified subgroup hypothesis existed, looking at several segments simultaneously (mobile, desktop, age groups, geographies, etc.) creates many implicit tests, inflating the chance of a spurious positive in at least one. The analyst should treat the mobile finding as hypothesis-generating, not confirmatory. Option A is incorrect; device type is routinely logged. Option C mischaracterizes how averages work \u2014 overall null with mobile positive simply means desktop was neutral or negative. Option D is an overly strict rule; segmentation can be valid but requires appropriate corrections and pre-registration of hypotheses.",
+    "explanation": "Logging where users drop off provides diagnostic depth: if the new checkout design improves completion, step-level data reveals which friction point was resolved \u2014 payment entry, shipping confusion, or the review stage. This makes the result actionable and defensible. Without step-level data, a positive result is a black box: you know something worked but not what or why, making it hard to iterate or reproduce. Option A is wrong; logging additional events does not reduce variance in the primary metric. Option C is wrong; granular logging complements, not replaces, a pre-specified primary metric. Option D is incorrect: logging additional events does not resolve multiple-testing inflation \u2014 analyzing each step as a separate significance test would still inflate Type I error.",
     "hints": [
-      "If you look at enough subgroups, random chance will eventually produce a significant result in one of them."
+      "If the overall metric improves, what additional information would help you understand why and where?"
     ],
     "concepts": [
-      "SEGMENTATION ANALYSIS",
-      "MULTIPLE TESTING"
+      "METRIC SELECTION",
+      "EXPERIMENT DESIGN"
     ]
   },
   {
@@ -489,23 +491,23 @@
     "topic": "experimentation",
     "type": "scenario",
     "difficulty": "easy",
-    "title": "Network Effects and Experiment Validity",
-    "scenario_context": "A social platform wants to test a new connection recommendation feature. They randomly assign 50% of users to treatment and 50% to control. A data scientist warns that this design may produce a biased estimate of the true effect.",
-    "description": "What is the most likely concern?",
+    "title": "Feature Only Visible to a Subset of Assigned Users",
+    "scenario_context": "A team wants to test a new in-app notification badge that only appears in the mobile app. They randomly assign 50% of all users — mobile and desktop — to the treatment group. Desktop users assigned to treatment see no badge and have an identical experience to control.",
+    "description": "What is the primary problem with this experiment design?",
     "options": [
-      "The 50/50 split wastes half the user base on a control group that does not benefit",
-      "Users in control and treatment interact with each other, so the treatment group's behavior can influence control users, violating the independence assumption",
-      "The recommendation feature should be tested on new users only, not existing users",
-      "A 50/50 split always underestimates effect sizes because treatment effects dilute"
+      "Randomizing at the user level is incorrect for notification features — session-level randomization is required",
+      "Desktop users assigned to treatment receive no exposure to the feature, diluting the measured effect and reducing the experiment's sensitivity",
+      "The experiment should only launch when at least 80% of the user base is on mobile to ensure adequate power",
+      "Including non-mobile users inflates the false positive rate by introducing uncontrolled variance from a non-target segment"
     ],
     "correct_option": 1,
-    "explanation": "Social platforms have network effects: users do not exist in isolation. If a treatment user receives better connection recommendations and connects with a control user, the control user's behavior is influenced by the experiment even though they never received the treatment. This violates the stable unit treatment value assumption (the assumption that each user's outcome depends only on their own assignment). The result is that the measured lift is understated or distorted. Option A is a resource allocation concern, not a bias concern. Option C is an unsupported restriction with no statistical basis. Option D is incorrect; the direction and magnitude of bias depend on the nature of the interaction.",
+    "explanation": "Desktop users assigned to treatment contribute zero signal — they never saw the badge, so their outcomes are identical to control users. Including them in the treatment arm inflates the denominator without adding useful data, which dilutes the estimated effect toward zero and reduces the experiment's ability to detect a real impact. The fix is to restrict assignment to mobile users, or to analyze only the triggered population. Option A is wrong: user-level randomization is appropriate here; session-level would allow the same person to land in both groups across sessions. Option C introduces an arbitrary threshold with no statistical justification. Option D mislabels the mechanism: the problem is reduced power through dilution, not inflated Type I error.",
     "hints": [
-      "Think about whether users in different experimental groups can affect each other's behavior."
+      "If a large share of users assigned to treatment can never actually see the feature, what happens to the measured treatment effect?"
     ],
     "concepts": [
-      "NETWORK EFFECTS",
-      "EXPERIMENT DESIGN"
+      "EXPERIMENT DESIGN",
+      "A/B TEST MECHANICS"
     ]
   },
   {
@@ -514,22 +516,22 @@
     "topic": "experimentation",
     "type": "conceptual",
     "difficulty": "easy",
-    "title": "Holdout Groups",
-    "description": "A product team ships a major feature to all users but keeps a small 5% holdout group that never receives it. Six months later, they compare the holdout to the rest of the user base. What is the primary value of maintaining this holdout group?",
+    "title": "Carryover Effects When Starting a Follow-On Experiment",
+    "description": "A team ships a successful feature and immediately launches a new experiment on the same user population. A data scientist warns this could introduce bias. What is the most likely concern?",
     "options": [
-      "The holdout group serves as a cost-saving measure by receiving fewer product updates",
-      "The holdout allows the team to measure the long-term causal impact of the feature on user behavior after it has been fully shipped",
-      "The holdout group provides a dataset for training recommendation models",
-      "The holdout ensures that at least 5% of users see a faster experience due to reduced feature load"
+      "Users cannot be randomized a second time once they have participated in a previous experiment",
+      "The statistical power of the new experiment is permanently reduced because the eligible pool is now smaller",
+      "Users who experienced the previous treatment may still be behaviorally influenced by it, so their baseline in the new experiment is not clean",
+      "Running two experiments in the same calendar quarter violates standard industry experiment-governance rules"
     ],
-    "correct_option": 1,
-    "explanation": "Holdout groups are a gold-standard tool for measuring sustained causal impact. Once a feature is fully shipped, there is no longer a concurrent control \u2014 except for the holdout. Comparing holdout users to the rest of the base six months later isolates the long-term effect of the feature from other changes. This is especially valuable for detecting whether initial lift persists or decays. Option A mischaracterizes holdouts as a cost-reduction strategy. Option C describes a data engineering use case unrelated to holdout logic. Option D invents a performance benefit that has no basis in the described mechanism.",
+    "correct_option": 2,
+    "explanation": "When a treatment is shipped, users who were exposed to it may carry changed behaviors, expectations, or habits into the next experiment. If a new experiment starts immediately, those users are not at a clean behavioral baseline \u2014 their responses may still reflect the prior change rather than their natural state. This carryover contamination can bias the new experiment's measured effect in either direction. The standard mitigation is a washout period or restricting the new experiment to users who were not exposed to the prior treatment. Option A is incorrect: users can be re-randomized, but their behavioral baseline may not be independent. Option B is wrong: pool size is not the issue here. Option D invents a governance rule that does not exist.",
     "hints": [
-      "After a feature ships universally, how would you ever know its long-term effect without a comparison group?"
+      "Think about whether users who just experienced a changed product are behaving the same way they would have before that change."
     ],
     "concepts": [
-      "HOLDOUT GROUPS",
-      "CAUSAL INFERENCE"
+      "EXPERIMENT DESIGN",
+      "EXPERIMENT DURATION"
     ]
   },
   {
@@ -562,21 +564,21 @@
     "topic": "experimentation",
     "type": "conceptual",
     "difficulty": "easy",
-    "title": "Variance Reduction via Stratification",
-    "description": "A team notices that their experiment metric has very high variance, which is inflating the required sample size. A data scientist proposes stratifying users by their historical activity level (low, medium, high) and analyzing results within each stratum. What is the expected benefit of this approach?",
+    "title": "High-Variance Metric and Required Sample Size",
+    "description": "A team wants to measure the impact of a new pricing page on revenue per user. The metric has very high variance: most users spend nothing, but a small number of users make purchases worth hundreds of dollars. What is the most direct consequence of this metric's variance on the experiment?",
     "options": [
-      "Stratification eliminates confounding variables and makes the experiment equivalent to a randomized controlled trial",
-      "Stratification reduces the within-group variance in the metric, which increases statistical power for the same sample size",
-      "Stratification allows the team to use a lower significance threshold without increasing false positives",
-      "Stratification guarantees that the treatment effect will be the same across all user segments"
+      "High variance systematically biases the p-value upward, increasing the likelihood of a false positive",
+      "The team will need a much larger sample size to detect a real effect because the noise in the metric swamps the expected signal",
+      "High variance is only a concern for non-normal distributions and can be ignored if the overall sample is large enough",
+      "The team should cap revenue at a maximum value per user, which will eliminate the need for a larger sample"
     ],
     "correct_option": 1,
-    "explanation": "Stratification reduces metric variance by ensuring that the treatment and control groups are balanced on a known source of variation (activity level). Users within each stratum are more similar to each other than users in the full pool, which reduces the noise in the estimated treatment effect and increases power. Option A overstates the benefit; stratification improves balance but does not eliminate all confounding \u2014 the experiment is still a randomized design with better blocking. Option C is wrong; stratification does not justify changing alpha. Option D is incorrect; stratification ensures balance, not uniform effect sizes \u2014 heterogeneous treatment effects are possible and often expected.",
+    "explanation": "Statistical power depends on the signal-to-noise ratio. When metric variance is high \u2014 driven here by a handful of large purchases \u2014 the noise is large relative to the expected treatment effect, and many more observations are needed to reliably distinguish a real signal from random fluctuation. Required sample size scales with metric variance: doubling variance roughly doubles the required n. Option A is wrong: high variance inflates standard errors, which makes results harder to achieve statistical significance (Type II error increases), not easier (Type I error is not affected this way). Option C misapplies the central limit theorem \u2014 normality of the sampling distribution is restored by large samples, but high variance still inflates required n regardless of distributional shape. Option D describes a real variance-reduction technique, but it is a mitigation strategy, not a consequence of high variance.",
     "hints": [
-      "If users within each activity stratum are more similar, what happens to the variance of the outcome within each stratum?"
+      "If the metric bounces widely from user to user, how much data does an experiment need to reliably detect the difference between two groups?"
     ],
     "concepts": [
-      "VARIANCE REDUCTION",
+      "SAMPLE SIZE BASICS",
       "STATISTICAL POWER"
     ]
   },
@@ -586,22 +588,22 @@
     "topic": "experimentation",
     "type": "predict_output",
     "difficulty": "easy",
-    "title": "Novelty Effect Contamination",
-    "description": "A team tests a newly redesigned home feed and sees a large positive lift in engagement during the first week of the experiment. When they extend the experiment to four weeks, the lift shrinks to near zero. What phenomenon most likely explains this pattern?",
+    "title": "Predicting CI Width After Quadrupling Sample Size",
+    "description": "An experiment with 10,000 users produces a 95% confidence interval for conversion rate lift of [\u22120.5%, +2.1%], with a point estimate of +0.8%. The team reruns the experiment with 40,000 users under identical conditions. Assuming the true effect is unchanged, which of the following best describes the expected new confidence interval?",
     "options": [
-      "The experiment suffered from a sample ratio mismatch that corrected itself over time",
-      "Users initially engaged more with the new design out of curiosity or novelty, but returned to baseline behavior as the design became familiar",
-      "The traffic allocation system made an error in week one that was fixed in subsequent weeks",
-      "The metric definition changed between week one and week four"
+      "The confidence interval width stays the same \u2014 more data improves accuracy of the point estimate but not the interval width",
+      "The confidence interval widens because a larger sample surfaces more variability in user behavior",
+      "The confidence interval narrows to roughly half its original width, and the point estimate remains close to +0.8%, giving an interval near [+0.15%, +1.45%]",
+      "The confidence interval collapses to a single point equal to the true effect because 40,000 users is a sufficiently large sample"
     ],
-    "correct_option": 1,
-    "explanation": "Novelty effects occur when users engage with a new design simply because it is different \u2014 not because it is genuinely better. The initial spike in engagement reflects exploration and curiosity rather than sustained value. As users habituate, the engagement returns to baseline. This is why running experiments long enough to outlast the novelty period is a standard best practice. Option A is a separate infrastructure issue unrelated to a decaying effect. Option C introduces an unexplained platform error with no supporting evidence. Option D is possible but would typically be detected and corrected in the pipeline, and is a less likely explanation than the well-documented novelty pattern.",
+    "correct_option": 2,
+    "explanation": "Confidence interval width is inversely proportional to the square root of sample size. Quadrupling the sample (10,000 \u2192 40,000) halves the standard error (\u221a4 = 2), which halves the interval width. The original half-width is 1.3 percentage points ([\u22120.5%, +2.1%] spans 2.6pp, so \u00b11.3pp). After quadrupling, the expected half-width is approximately \u00b10.65pp, giving a new interval of roughly [+0.15%, +1.45%]. The point estimate remains near +0.8% because the true effect has not changed. Option A is wrong: width is a function of standard error, which does shrink with more data. Option B is wrong: larger samples reduce sampling variability, not increase it. Option D is wrong: no finite sample collapses the interval to a point \u2014 increasing n narrows the interval but cannot eliminate it.",
     "hints": [
-      "Think about why users might behave differently when they first see something new versus after they have used it for a while."
+      "Recall the relationship between confidence interval width and the square root of sample size."
     ],
     "concepts": [
-      "NOVELTY EFFECTS",
-      "EXPERIMENT DURATION"
+      "CONFIDENCE INTERVALS",
+      "SAMPLE SIZE BASICS"
     ]
   },
   {
@@ -707,22 +709,22 @@
     "topic": "experimentation",
     "type": "conceptual",
     "difficulty": "easy",
-    "title": "Bayesian vs Frequentist Framing",
-    "description": "A data scientist tells a product manager that the experiment results show 'a 92% probability that the treatment is better than control.' The product manager asks how this is different from a frequentist result reporting 'p = 0.04.' Which statement best describes the key conceptual difference?",
+    "title": "Re-Running an Experiment Until Significant",
+    "description": "An experiment returns p = 0.09, which is not significant at alpha = 0.05. The team reruns the identical experiment with a fresh user sample. The second run returns p = 0.04, and they report a significant positive result. What is the statistical problem with this approach?",
     "options": [
-      "The Bayesian statement is always more accurate because it incorporates prior knowledge",
-      "The frequentist statement is always preferable because it does not require assumptions about priors",
-      "The Bayesian statement directly quantifies the probability that the treatment is superior, while the frequentist p-value measures the probability of the observed data given the null hypothesis is true",
-      "Both statements are mathematically equivalent and convey the same information"
+      "The second run is statistically valid because it used an independent sample with no overlap from the first run",
+      "Running the experiment twice doubles the required sample size, which violates the original power assumptions",
+      "Each run independently carries a 5% chance of a false positive, so running twice inflates the cumulative false positive rate to approximately 9.75%, nearly double the stated alpha",
+      "The second run is only valid if the first run had at least 80% power to detect the true effect"
     ],
     "correct_option": 2,
-    "explanation": "The core difference is what each statement conditions on. A Bayesian posterior probability \u2014 '92% chance treatment is better' \u2014 directly answers the question a decision-maker actually wants to ask, incorporating prior beliefs into a probability over outcomes. A frequentist p-value answers a different, more indirect question: 'If the null were true, how likely is this data or more extreme data?' These are fundamentally different quantities. Option A is wrong; Bayesian approaches are not universally more accurate \u2014 they depend on prior quality. Option B is wrong; the choice between frameworks involves trade-offs, not a blanket preference. Option D is incorrect; the two numbers have different meanings and cannot be directly compared.",
+    "explanation": "Each independent run at alpha = 0.05 carries a 5% chance of producing a false positive when there is no true effect. Running the same hypothesis test twice and reporting a result when either run is significant raises the true false positive rate to 1 \u2212 (0.95)\u00b2 \u2248 9.75% \u2014 nearly double the stated alpha. This is the same family-wise error accumulation that occurs when running multiple simultaneous tests. The correct approach is to pre-specify a single run with adequate power, or to use a sequential testing method that controls Type I error across multiple looks. Option A is wrong: an independent sample does not reset the cumulative false positive risk across two testing decisions. Option B is wrong: sample size requirements are unrelated to the inflation problem. Option D introduces an arbitrary power threshold that has no bearing on the validity concern here.",
     "hints": [
-      "Think about what each framework treats as the random variable \u2014 the data or the parameter."
+      "If each test independently has a 5% chance of a false positive, what is the probability of getting at least one false positive across two tests?"
     ],
     "concepts": [
-      "BAYESIAN EXPERIMENTATION",
-      "HYPOTHESIS FORMULATION"
+      "TYPE I AND TYPE II ERRORS",
+      "STATISTICAL SIGNIFICANCE"
     ]
   }
 ]

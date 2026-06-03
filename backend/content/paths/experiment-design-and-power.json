@@ -26,9 +26,9 @@
     "SAMPLE RATIO MISMATCH",
     "EXPERIMENT DURATION",
     "MULTIPLE TESTING",
-    "HOLDOUT GROUPS",
+    "TYPE I AND TYPE II ERRORS",
     "STATISTICAL SIGNIFICANCE",
-    "BAYESIAN EXPERIMENTATION"
+    "EXPERIMENT DESIGN"
   ],
   "outcomes": "You'll compute a minimum sample size from effect size, alpha, and power inputs, explain what an underpowered test risks, identify a sample ratio mismatch from assignment logs and trace its likely causes, decide when novelty inflation means an experiment needs to run longer, and apply Bonferroni or Benjamini-Hochberg correction for multi-metric tests.",
   "recommended_after": [

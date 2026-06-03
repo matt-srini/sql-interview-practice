@@ -27,7 +27,7 @@
     "TYPE I AND TYPE II ERRORS",
     "A/B TEST MECHANICS",
     "STATISTICAL POWER",
-    "MULTIPLE TESTING"
+    "EXPERIMENT DURATION"
   ],
   "outcomes": "You'll state a testable null and alternative hypothesis, choose between user-level and session-level randomization, distinguish primary metrics from guardrail metrics, interpret a p-value and confidence interval correctly, and explain why reducing Type II error costs statistical power.",
   "recommended_after": []
