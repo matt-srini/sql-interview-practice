@@ -1349,9 +1349,14 @@ def _validate_correct_option_explanation_consistency() -> None:
     # The no-cross-option constraint prevents matching "Option C. Option A is wrong"
     # as a refutation of C (false positive from explanation structure where the
     # author names the correct option then refutes the others in sequence).
+    # Capture BOTH letter (A-D) and 0-indexed numeric (0-3) option references.
+    # Older bulk-authored explanations referenced options as "Option 0/1/2/3"
+    # (0-indexed), which the letter-only pattern silently ignored — that blind
+    # spot let the statistics +1 key-shift survive prior audits. The loop below
+    # normalises the captured token to an index and compares to correct_option.
     _REFUTE = re.compile(
-        r"Option ([A-D])\b"
-        r"(?:(?!Option [A-D]).){0,80}"
+        r"Option ([A-D0-3])\b"
+        r"(?:(?!Option [A-D0-3]).){0,80}"
         r"(?:"
         r"is (?:wrong|incorrect|a misconception|not correct)"
         r"|states the common misconception"
@@ -1383,7 +1388,9 @@ def _validate_correct_option_explanation_consistency() -> None:
             qid = q.get("id", "<unknown>")
             title = q.get("title", "<untitled>")
             for m in _REFUTE.finditer(expl):
-                if m.group(1).upper() == keyed:
+                token = m.group(1).upper()
+                ref_idx = (ord(token) - ord("A")) if token.isalpha() else int(token)
+                if ref_idx == correct:
                     errors.append(
                         f"{track} {qid} {title}: explanation appears to refute "
                         f"keyed option {keyed} — '{m.group()[:80].strip()}'"
@@ -1465,6 +1472,42 @@ def _validate_hint_numbers_in_stem() -> None:
             sys.stderr.write(f"  - ... and {len(warnings) - 20} more\n")
 
 
+def _validate_no_numeric_option_references() -> None:
+    """WARN-level (→ ERROR after the A/B/C/D normalization lands): explanations
+    should reference options by LETTER ('Option A/B/C/D'), never by 0-indexed
+    number ('Option 0/1/2/3').
+
+    Rationale: the UI labels options A-D, so a numeric reference reads wrong to
+    users, and the 0-indexed convention was the ambiguity that masked a real key
+    inversion (pyspark 43112: explanation said 'Option 2 is the most plausible'
+    while correct_option was 1). The canonical convention, going forward, is to
+    tag the correct answer by its letter. Once the residual numeric references
+    are normalised bank-wide, promote this to an ERROR-level gate so the
+    convention can never silently regress.
+    """
+    pat = re.compile(r"\bOption [0-9]\b")
+    hits: list[str] = []
+    for track, file_path in _iter_question_files():
+        with file_path.open("r", encoding="utf-8") as fh:
+            questions = json.load(fh)
+        for q in questions:
+            expl = q.get("explanation", "")
+            if isinstance(expl, str) and pat.search(expl):
+                hits.append(f"{track} {q.get('id', '<unknown>')}")
+
+    if hits:
+        sys.stderr.write(
+            f"WARNING: {len(hits)} explanations reference options by 0-indexed "
+            f"number ('Option N') instead of letter ('Option A/B/C/D') — the "
+            f"canonical convention is letters (matches the A-D UI labels). "
+            f"Normalise to letters; this check becomes ERROR-level once clean.\n"
+        )
+        for h in hits[:12]:
+            sys.stderr.write(f"  - {h}\n")
+        if len(hits) > 12:
+            sys.stderr.write(f"  - ... and {len(hits) - 12} more\n")
+
+
 def _load_json_file(path: Path) -> None:
     with path.open("r", encoding="utf-8") as handle:
         json.load(handle)
@@ -1502,6 +1545,7 @@ def main() -> None:
     _validate_non_sql_sample_ids()
     _validate_correct_option_explanation_consistency()
     _validate_hint_numbers_in_stem()
+    _validate_no_numeric_option_references()
 
     print("Content validation passed")
 
