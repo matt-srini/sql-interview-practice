@@ -34,7 +34,7 @@ Experimentation has **dedicated sample questions** in `backend/content/sample_qu
 
 | Tier | Reasoning depth | Topics |
 |---|---|---|
-| **Easy** | Single concept, clear right answer | Experiment design basics, hypothesis formulation, statistical significance, Type I/II, metric selection, power basics |
+| **Easy** | Single concept, clear right answer | Experiment design basics, hypothesis formulation, statistical significance, Type I/II errors, confidence interval interpretation, metric selection, power basics, sample size intuition, experiment duration basics |
 | **Medium** | Trade-off; tempting distractors | Multiple testing, sample-ratio mismatch (SRM), novelty effects, variance reduction (CUPED), network effects, segmentation analysis, metric sensitivity |
 | **Hard** | Multi-factor; all distractors plausible | Causal inference (IV, propensity scoring, RDD), switchback experiments, Bayesian experimentation, multi-armed bandit, holdout groups, quasi-experimental methods, sequential testing, metric sensitivity (advanced) |
 
@@ -44,7 +44,7 @@ Difficulty controls reasoning depth, never licenses formula or tool-name recall.
 
 | Tier | Representative scenarios |
 |---|---|
-| **Easy** | Formulate a hypothesis + metric for a feature · what Type I/II error means for this test · basic power intuition · pick a primary metric for a stated goal. One concept, clear right answer. |
+| **Easy** | Formulate a hypothesis + metric for a feature · what Type I/II error means for this test · basic power intuition · pick a primary metric for a stated goal · verify that traffic assignment looks right before reading results · recognize that non-exposed users dilute a measured effect · understand why starting a follow-on experiment immediately after shipping can bias results · predict how a CI width changes with more data. One concept, clear right answer. |
 | **Medium** | Diagnose a sample-ratio mismatch · correct for multiple testing · spot a novelty effect in a read · apply CUPED for variance reduction. Trade-off with tempting distractors. |
 | **Hard** | Pick a causal method when randomization is impossible · design a switchback for network effects · Bayesian vs frequentist read under business pressure · holdout-group design. Multi-factor, all distractors plausible. |
 
@@ -84,6 +84,8 @@ Full registry: [`docs/concept-taxonomy.md` → Experimentation section](../conce
 - **Pure formula recall** — "what's the formula for statistical power?" Test the *application* (which lever moves it, what does halving sample size do).
 - **Bayesian-vs-frequentist tribal questions** — both frameworks are valid; questions that frame it as ideology are reject. Test when each is *operationally* the right tool.
 - **Hard questions with one famous right answer** — every distractor must reflect a defensible expert-level position.
+- **Difficulty-drift via medium/hard family tags** — easy questions must not use families from the medium or hard vocabulary (e.g. MULTIPLE TESTING, VARIANCE REDUCTION, NETWORK EFFECTS, SEGMENTATION ANALYSIS at medium; HOLDOUT GROUPS, CAUSAL INFERENCE, BAYESIAN EXPERIMENTATION at hard). The validator checks family names but does not enforce per-tier placement; the author must.
+- **"Re-running until significant" is an easy TYPE I error question, not a hard sequential-testing question** — framing the problem as "each run carries a 5% false positive risk, running twice inflates the cumulative rate" is easy-level TYPE I AND TYPE II ERRORS + STATISTICAL SIGNIFICANCE reasoning. The corrective methods (mSPRT, group sequential, alpha spending) belong in SEQUENTIAL TESTING at hard. Do not conflate the diagnostic with the remedy when choosing difficulty.
 
 ## JSON schema
 

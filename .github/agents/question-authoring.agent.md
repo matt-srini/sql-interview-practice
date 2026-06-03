@@ -130,7 +130,7 @@ Hints guide *thinking toward* the approach without revealing it.
 
 | Difficulty | Target count | Ladder |
 |---|---|---|
-| Easy | 2 (PySpark / DE / DM may use 1) | H1 = mental model / operation class. H2 = the concrete tool / transformation family. |
+| Easy | 2 (MCQ-only tracks may use 1 when the concept is simple enough — PySpark / DE / DM / ML Fundamentals / Experimentation) | H1 = mental model / operation class. H2 = the concrete tool / transformation family. |
 | Medium | 2–3 | H1 = core pattern. H2 = subproblem split / intermediate representation. H3 = tool or control-flow shape, only if genuinely needed. |
 | Hard | 2–3 | H1 = decomposition strategy. H2 = dependency ordering / state representation / the bottleneck to isolate. H3 = final assembly or the constraint that commonly breaks solutions. |
 
