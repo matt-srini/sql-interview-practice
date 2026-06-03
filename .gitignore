@@ -62,4 +62,3 @@ frontend/e2e/.test-users.json
 # Blind-answer audit reports (regenerable artifacts from audit_blind_answer.py)
 backend/scripts/audit_*.json
 backend/scripts/_smoke_report.json
-backend/scripts/audit_findings_log.md
