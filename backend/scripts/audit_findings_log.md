@@ -389,3 +389,33 @@ Deterministic scan hits (embedded letter ≠ option position):
 - 93048 | experimentation_hard | A→B | p2=B | mock=True | debug
 - 93063 | experimentation_hard | A→B | p2=B | mock=True | scenario
 - 93066 | experimentation_hard | B→A | p2=A | mock=True | debug
+
+---
+
+## ═══ PHASE 2 REMEDIATION (applied 2026-06-04, user-approved) ═══
+
+**Finding A — label-collision (option text re-letters stem-defined variants):**
+- 21 cross-position questions fixed via authoring agent (descriptive renames, keys + reasoning unchanged):
+  pyspark 42075 42078 42090 42119 43052 43076 43092 43108 43109 (commit a3a53f7);
+  ml-fundamentals 82022 82056 83021 83022 83124 (commit 23ef7b4);
+  DE 52051 52081 53078 · DM 63030 · stats 72073 73049 73064 (commit 555adbd).
+- +2 more cross-position collisions found during the validator-guard backward pass and fixed (commit with Finding C):
+  ml-fundamentals **83034** (plural "Approaches A and D" — missed by the first regex);
+  pyspark **sample 421** (position D referenced "Option A").
+- **Bank now 0 cross-position collisions** (practice + mock + samples), verified by deterministic scan.
+
+**Finding B — tiebreaker stems (keys correct, stems admitted a defensible 2nd answer; commit 0527c9a):**
+- 82002 (key A) — added "architecture well-matched" + "regularization already tried, gap persists" → rules out C & D. **VERIFIED: both NIM models now blind-pick A.**
+- 93066 (key A) — added uniform-outage-distribution + conversion-matches-baseline evidence → removes peak-hour alternative. **VERIFIED: both NIM models now blind-pick A.**
+- 42098 (key A) — reframed prompt to not presuppose a wrong cache() placement. Key correct; remains a hard "spot-the-trap" Q (blind models still pick the misconception). **FLAGGED for human keying review.**
+- 93019 (key B) — narrowed prompt to the mobile-specificity claim. Key defensible (interaction test); blind models still prefer the multiple-comparisons critique (genuinely co-fundamental). **FLAGGED for human keying review.**
+
+**Finding C — durable validator guard (commit with Finding C):**
+- Added `_validate_no_embedded_option_labels()` to `validate_content.py`: ERROR on cross-position embeds (raises), WARN on self-matching embeds (stderr). Domain-entity words excluded; explanations exempt. Passes at 0 errors after the fixes above.
+- Updated `docs/content-authoring.md` § Reject-on-sight to document the machine enforcement.
+
+**False positive recorded:** experimentation **93005** "Variant A/B/C/D" are legitimate experiment arms (domain entities), NOT re-lettered choices — correctly excluded by the guard's word list. Do not "fix."
+
+**WARN backlog (self-matching "Option A —" prefixes — milder, NOT yet remediated; user scope decision pending):** 28 questions — data-modeling 63001–63021, 63033, 63048–63050 (a 25-Q option-prefix template) + DE 53021 + exp 93003 + exp sample 913.
+
+**Net Phase-2 key-error count: 0** (the Phase-1 28 fixes were all independently regression-confirmed; Phase 2 found no new wrong keys, only the label-collision content defects above + 2 flagged tiebreaker keying calls).

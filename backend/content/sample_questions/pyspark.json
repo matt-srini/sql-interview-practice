@@ -72,15 +72,15 @@
     "type": "scenario",
     "difficulty": "medium",
     "title": "repartition vs coalesce Before a Write",
-    "description": "A Spark job produces a DataFrame with 400 partitions and needs to write it as 20 Parquet files to cloud storage. A junior engineer proposes two options:\n\n- **Option A:** `df.repartition(20).write.parquet(...)`\n- **Option B:** `df.coalesce(20).write.parquet(...)`\n\nWhich option is preferable and why?",
+    "description": "A Spark job produces a DataFrame with 400 partitions and needs to write it as 20 Parquet files to cloud storage. A junior engineer proposes two options:\n\n- **The repartition approach:** `df.repartition(20).write.parquet(...)`\n- **The coalesce approach:** `df.coalesce(20).write.parquet(...)`\n\nWhich approach is preferable and why?",
     "options": [
-      "Option A — repartition always produces exactly 20 uniform files; coalesce can produce uneven files so it should be avoided",
-      "Option B — coalesce reduces partitions without a full shuffle by merging partitions on the same executor; it is lower-cost than repartition for reducing partition count, though it may produce slightly uneven file sizes",
+      "The repartition approach is preferable — repartition always produces exactly 20 uniform files; coalesce can produce uneven files so it should be avoided",
+      "The coalesce approach is preferable — coalesce reduces partitions without a full shuffle by merging partitions on the same executor; it is lower-cost than repartition for reducing partition count, though it may produce slightly uneven file sizes",
       "Both are equivalent — Spark internally converts coalesce to repartition before writing",
-      "Option A — coalesce cannot reduce partitions below the original number, so it would have no effect here"
+      "The repartition approach is preferable — coalesce cannot reduce partitions below the original number, so it would have no effect here"
     ],
     "correct_option": 1,
-    "explanation": "`coalesce(n)` with n < current partitions merges existing partitions without a full shuffle — it moves data only within the same executor where possible, making it significantly cheaper for a downsizing operation. The tradeoff is potential file-size skew (merged partitions may be uneven). `repartition(n)` triggers a full shuffle, produces uniform partitions, but is more expensive. For most write-to-storage jobs where slight size variation is acceptable, `coalesce` is the right choice. Option A is wrong that coalesce should be 'avoided'. Option C is false. Option D inverts the behaviour — `coalesce` can only decrease partition count (or leave it unchanged), which is exactly what is needed here.",
+    "explanation": "`coalesce(n)` with n < current partitions merges existing partitions without a full shuffle — it moves data only within the same executor where possible, making it significantly cheaper for a downsizing operation. The tradeoff is potential file-size skew (merged partitions may be uneven). `repartition(n)` triggers a full shuffle, produces uniform partitions, but is more expensive. For most write-to-storage jobs where slight size variation is acceptable, the coalesce approach is the right choice. The first option (repartition) is wrong that coalesce should be 'avoided'. The third option is false. The fourth option inverts the behaviour — `coalesce` can only decrease partition count (or leave it unchanged), which is exactly what is needed here.",
     "hints": [
       "Consider what happens internally when you change the partition count — does this operation need all data to be perfectly redistributed, or can it work by consolidating what's already nearby?",
       "For moving from 400 to 20 partitions before a write, ask whether you need perfect balance or just fewer files."

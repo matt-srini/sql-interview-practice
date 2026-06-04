@@ -1505,6 +1505,88 @@ def _validate_no_numeric_option_references() -> None:
         )
 
 
+def _validate_no_embedded_option_labels() -> None:
+    """Guard against the label-collision anti-pattern (docs/content-authoring.md
+    § Reject on sight): an MCQ option's text must not embed a choice-naming label
+    ('Option/Proposal/Approach/Strategy/Design/Method <letter>') that re-letters
+    the choices.
+
+    ERROR (raises): a CROSS-position embed — option text names a letter DIFFERENT
+    from its own A/B/C/D position (e.g. position C reading 'Approach D is best').
+    This is the harmful form: it makes solvers — and even strong models — answer
+    the embedded letter instead of the position. It caused real blind-model
+    answer flips in the Phase-1/Phase-2 MCQ audits (e.g. 83011, 52051, 83034,
+    sample 421). The bank was de-collided 2026-06-04; this gate prevents regress.
+
+    WARN (stderr, non-blocking): a SELF-MATCHING embed — option text restates its
+    OWN position letter (e.g. position A reading 'Option A — ...'). Milder (no
+    re-lettering) but still discouraged; surfaced as a cleanup backlog (a
+    data-modeling option-prefix template + a few others), not yet remediated.
+
+    Scope: OPTION text only — explanations legitimately reference answer positions
+    as 'Option A/B/C/D' (the canonical letter convention) and are NOT checked
+    here. Domain-entity words ('Variant A' for an experiment arm, 'Group B' for a
+    cohort, etc.) are deliberately excluded — only choice-naming words match.
+    """
+    choice_word = r"(?:Option|Proposal|Approach|Strategy|Design|Method)(?:es|s)?"
+    pat = re.compile(r"\b" + choice_word + r"\s+([A-D])\b")
+    cross: list[str] = []
+    selfmatch: list[str] = []
+    for track, file_path in _iter_question_files():
+        with file_path.open("r", encoding="utf-8") as fh:
+            questions = json.load(fh)
+        for q in questions:
+            correct = q.get("correct_option")
+            options = q.get("options")
+            if (
+                not isinstance(correct, int)
+                or not isinstance(options, list)
+                or len(options) < 2
+            ):
+                continue
+            q_has_cross = False
+            q_has_self = False
+            cross_detail: list[str] = []
+            for i, opt in enumerate(options):
+                if not isinstance(opt, str):
+                    continue
+                own = chr(ord("A") + i)
+                for m in pat.finditer(opt):
+                    if m.group(1) != own:
+                        q_has_cross = True
+                        cross_detail.append(f"option {own} embeds '{m.group(0)}'")
+                    else:
+                        q_has_self = True
+            qid = q.get("id", "<unknown>")
+            if q_has_cross:
+                cross.append(f"{track} {qid} ({'; '.join(cross_detail)})")
+            elif q_has_self:
+                selfmatch.append(f"{track} {qid}")
+
+    if selfmatch:
+        joined = ", ".join(selfmatch[:40])
+        if len(selfmatch) > 40:
+            joined += f", ... (+{len(selfmatch) - 40} more)"
+        print(
+            f"WARNING: {len(selfmatch)} MCQ question(s) embed a self-matching "
+            f"option label ('Option A —' at position A). Milder than a collision "
+            f"but discouraged — describe each choice on its own terms. Cleanup "
+            f"backlog: {joined}",
+            file=sys.stderr,
+        )
+
+    if cross:
+        joined = "\n".join(f"- {h}" for h in cross[:50])
+        if len(cross) > 50:
+            joined += f"\n- ... and {len(cross) - 50} more"
+        raise ValueError(
+            f"{len(cross)} MCQ option(s) embed a CROSS-POSITION choice label "
+            f"(option text names a letter different from its own A/B/C/D position "
+            f"— the label-collision anti-pattern). Describe each choice on its "
+            f"own terms; never re-letter the choices:\n{joined}"
+        )
+
+
 def _load_json_file(path: Path) -> None:
     with path.open("r", encoding="utf-8") as handle:
         json.load(handle)
@@ -1543,6 +1625,7 @@ def main() -> None:
     _validate_correct_option_explanation_consistency()
     _validate_hint_numbers_in_stem()
     _validate_no_numeric_option_references()
+    _validate_no_embedded_option_labels()
 
     print("Content validation passed")
 
