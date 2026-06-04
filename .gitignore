@@ -59,6 +59,9 @@ frontend/playwright-report/
 # e2e ephemeral test user credentials (recreated each run)
 frontend/e2e/.test-users.json
 
-# Blind-answer audit reports (regenerable artifacts from audit_blind_answer.py)
+# Blind-answer audit reports (regenerable artifacts from audit_blind_answer.py / _nim.py)
 backend/scripts/audit_*.json
+backend/scripts/audit_*.json.partial.jsonl
 backend/scripts/_smoke_report.json
+backend/scripts/_smoke_nim*
+backend/scripts/_nim_sweep.log

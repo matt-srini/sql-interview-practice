@@ -241,3 +241,151 @@ Manually verified 73060–73075: every explanation matches `correct_option` (730
 1-token probe returns "Your credit balance is too low to access the Anthropic API." **Cannot run the last 2 cells** (ml-fundamentals easy, experimentation easy) or re-run statistics until credit is restored or a new key is provided. 16 of 18 MCQ cells audited; statistics needs a clean re-run.
 
 ---
+
+---
+
+# ═══ PHASE 2 — EXTERNAL-MODEL (Nvidia NIM) BLIND AUDIT ═══
+_Run 2026-06-04. Pass 1 (blind): `meta/llama-3.3-70b-instruct`. Pass 2 (explanation-consistency, --pass2-all): `openai/gpt-oss-20b`. Both independent of Claude and of each other. Harness: `audit_blind_answer_nim.py` (resumable, error-results not checkpointed). Reports: `audit_nim_<track>_<diff>.json` (gitignored)._
+
+## Headline
+**1157 consistent · 0 inverted_key · 0 broken_mechanism · 78 inconsistent (all review)** across **1,235 MCQs**.
+**0 wrong keys. 0 questions where BOTH external models disagree with the key.** Every one of the 78 review flags is a Pass-1 blind-disagreement where Pass-2 (reading the explanation) returns to the keyed option.
+Pass-1 UNPARSED/ERROR: 0. Pass-2 UNPARSED: 2 (42071, 52051 — both retried; see Finding B).
+
+## Per-cell verdicts (consistent / inverted / broken / inconsistent)
+| Cell | cons | inv | brk | inc |
+|---|---|---|---|---|
+| pyspark_easy | 34 | 0 | 0 | 6 |
+| pyspark_medium | 107 | 0 | 0 | 13 |
+| pyspark_hard | 103 | 0 | 0 | 14 |
+| data-engineering_easy | 29 | 0 | 0 | 1 |
+| data-engineering_medium | 68 | 0 | 0 | 1 |
+| data-engineering_hard | 96 | 0 | 0 | 6 |
+| data-modeling_easy | 25 | 0 | 0 | 0 |
+| data-modeling_medium | 74 | 0 | 0 | 3 |
+| data-modeling_hard | 67 | 0 | 0 | 9 |
+| statistics_easy | 16 | 0 | 0 | 0 |
+| statistics_medium | 82 | 0 | 0 | 1 |
+| statistics_hard | 45 | 0 | 0 | 1 |
+| ml-fundamentals_easy | 29 | 0 | 0 | 1 |
+| ml-fundamentals_medium | 96 | 0 | 0 | 3 |
+| ml-fundamentals_hard | 110 | 0 | 0 | 4 |
+| experimentation_easy | 30 | 0 | 0 | 0 |
+| experimentation_medium | 74 | 0 | 0 | 4 |
+| experimentation_hard | 72 | 0 | 0 | 11 |
+| **TOTAL** | **1157** | **0** | **0** | **78** |
+
+## Regression confirmation of Phase 1 (PRIMARY GOAL — all ✅)
+- **STATS-27** (+1 key-shift fixes, a85fdca): all 27 now `consistent`. Independently confirmed end-to-end.
+- **pyspark 43112** (key-flip 1→2/C, 2474cfc): NIM reads key=C, Pass-2 → C. Confirmed.
+- Phase-1 content fixes **42088** (Delta EOS), **43066** (3-identical-output), **93045** (multi-correct labels): all `consistent`.
+- No new key errors anywhere. Phase 1's 28 mechanical key fixes are independently validated.
+
+## Finding A — Tiebreaker set adjudication (the 7 OPEN Phase-2 candidates)
+NIM Pass-1 independently disagreed (escalation trigger) on **5 of 7**. In all, Pass-2 still defends the key (no key error); the escalation is to CONTENT/stem ambiguity. Verdicts:
+- **82002** (mlf med) — ESCALATE 🟡: stem 'root cause' vs 'most directly' tension; Llama+Haiku both pick C (regularisation). Key A defensible. Fix = sharpen stem.
+- **93066** (exp hard) — ESCALATE 🟡: stem does not foreclose B's peak-hour timing concern; both families pick B (arguably the stronger senior answer). Fix = add stem stipulation (outage uniform across day).
+- **42098** (pyspark med) — ESCALATE 🟡: stem presupposes 'what placement is wrong' but key A = 'nothing is wrong'; stem/key framing contradiction. Fix = reframe stem as a diagnosis.
+- **93019** (exp hard) — BORDERLINE-ESCALATE 🟡: 'most fundamental' superlative pits A (multiple-comparisons, 46% FWER) vs B (interaction test), both true. Fix = soften superlative / make B uniquely correct.
+- **93018** (exp hard) — BORDERLINE-KEEP 🟢: stem's 'right analytical framing' cue does select D (expected-loss); hard but fair.
+- **42115, 93059** — KEEP: NIM Pass-1 AGREED with the keys.
+
+## Finding B — NEW SYSTEMIC: label-collision option text (~21 questions) — § Reject-on-sight class
+Phase 2 surfaced the 83011/43081 anti-pattern (option text embeds a Proposal/Approach/Strategy/Design/Method/Option letter that collides with the option's own A/B/C/D position) in **21 currently-live questions** Phase 1 missed. Surfaced via `--pass2-all` on the independent model: 52051 was a Pass-2 UNPARSED that, on retry, mapped the explanation to the embedded letter ('B') not the position ('A') — exposing the confusion. Several directly caused NIM review-flags (42075, 42119, 83021, 83022). **All keys appear correct → CONTENT fix (rewrite options to drop embedded labels), via the authoring agent.**
+
+Deterministic scan hits (embedded letter ≠ option position):
+- High-severity full re-letter: **52051, 52081, 82022, 82056, 83021, 83022, 83124, 42075, 42119**
+- Comparison-format (in-stem 'Option A/B' code variants): **42078, 42090, 43052, 43076, 43092, 43108, 43109, 53078, 63030, 72073, 73049, 73064**
+- Full list (21): [42075, 42078, 42090, 42119, 43052, 43076, 43092, 43108, 43109, 52051, 52081, 53078, 63030, 72073, 73049, 73064, 82022, 82056, 83021, 83022, 83124]
+
+## Finding C — harness/methodology note
+2 Pass-2 UNPARSED (gpt-oss hit token cap before the LEADS_TO line) were treated as `consistent` (Pass-1 agreed). Retried: 42071 clean (key C); **52051 surfaced Finding B**. Lesson: auto-retry UNPARSED Pass-2 (or raise max_tokens) — silent UNPARSED can mask a survivor-class/collision defect.
+
+## Doc-gap analysis
+- The § Reject-on-sight label-collision rule EXISTS (added post-83011) but its **backward-pass** (audit ALL existing questions of the same type when a new reject-on-sight rule lands) was never completed → 21 instances survived. Recommend: (1) remediate the 21 via authoring agent; (2) add a DETERMINISTIC validator guard `_validate_no_embedded_option_labels` (regex-detectable, analogous to the numeric-option-ref check) so it cannot recur.
+- Harness lesson (Finding C) → fold UNPARSED-retry into the audit harness for any Phase 3.
+
+## Phase 3 candidate list (paid external model)
+- The 5 escalated/borderline tiebreakers (82002, 93066, 42098, 93019, 93018) — a 3rd independent family settles the genuine-ambiguity calls.
+- The 21 label-collision questions, AFTER remediation — confirm the rewrites removed the confusion.
+- The full review-flag set (below) as a regression baseline.
+
+## All 78 review flags (id | cell | p1→key | p2 | mock | type)
+- 41006 | pyspark_easy | D→B | p2=B | mock=False | predict_output
+- 41015 | pyspark_easy | B→A | p2=A | mock=False | conceptual
+- 41023 | pyspark_easy | B→C | p2=C | mock=False | predict_output
+- 41025 | pyspark_easy | C→B | p2=B | mock=False | predict_output
+- 41028 | pyspark_easy | B→A | p2=A | mock=False | conceptual
+- 41031 | pyspark_easy | D→B | p2=B | mock=False | predict_output
+- 42007 | pyspark_medium | C→B | p2=B | mock=False | conceptual
+- 42069 | pyspark_medium | D→A | p2=A | mock=True | optimization
+- 42075 | pyspark_medium | B→A | p2=A | mock=True | predict_output
+- 42078 | pyspark_medium | B→D | p2=D | mock=True | optimization
+- 42080 | pyspark_medium | B→A | p2=A | mock=True | debug
+- 42083 | pyspark_medium | A→C | p2=C | mock=True | scenario
+- 42091 | pyspark_medium | D→B | p2=B | mock=True | predict_output
+- 42098 | pyspark_medium | B→A | p2=A | mock=True | optimization
+- 42100 | pyspark_medium | A→B | p2=B | mock=True | predict_output
+- 42105 | pyspark_medium | A→C | p2=C | mock=True | scenario
+- 42113 | pyspark_medium | B→A | p2=A | mock=True | predict_output
+- 42117 | pyspark_medium | C→B | p2=B | mock=True | predict_output
+- 42119 | pyspark_medium | A→B | p2=B | mock=True | predict_output
+- 43032 | pyspark_hard | A→D | p2=D | mock=True | scenario
+- 43040 | pyspark_hard | B→C | p2=C | mock=False | predict_output
+- 43054 | pyspark_hard | A→C | p2=C | mock=True | optimization
+- 43063 | pyspark_hard | A→C | p2=C | mock=True | debug
+- 43074 | pyspark_hard | B→C | p2=C | mock=True | debug
+- 43081 | pyspark_hard | B→D | p2=D | mock=True | optimization
+- 43083 | pyspark_hard | A→B | p2=B | mock=True | debug
+- 43084 | pyspark_hard | D→B | p2=B | mock=True | predict_output
+- 43088 | pyspark_hard | D→B | p2=B | mock=True | debug
+- 43089 | pyspark_hard | A→C | p2=C | mock=True | predict_output
+- 43097 | pyspark_hard | C→B | p2=B | mock=True | predict_output
+- 43105 | pyspark_hard | B→A | p2=A | mock=True | scenario
+- 43111 | pyspark_hard | A→B | p2=B | mock=True | predict_output
+- 43112 | pyspark_hard | B→C | p2=C | mock=True | scenario
+- 51005 | data-engineering_easy | D→A | p2=A | mock=False | debug
+- 52030 | data-engineering_medium | B→A | p2=A | mock=False | conceptual
+- 53035 | data-engineering_hard | D→A | p2=A | mock=True | scenario
+- 53039 | data-engineering_hard | A→D | p2=D | mock=True | scenario
+- 53049 | data-engineering_hard | A→C | p2=C | mock=True | debug
+- 53064 | data-engineering_hard | A→B | p2=B | mock=True | debug
+- 53078 | data-engineering_hard | A→D | p2=D | mock=True | scenario
+- 53080 | data-engineering_hard | D→C | p2=C | mock=True | scenario
+- 62002 | data-modeling_medium | D→B | p2=B | mock=False | scenario
+- 62004 | data-modeling_medium | C→B | p2=B | mock=False | scenario
+- 62043 | data-modeling_medium | B→A | p2=A | mock=True | scenario
+- 63005 | data-modeling_hard | D→A | p2=A | mock=False | scenario
+- 63008 | data-modeling_hard | D→A | p2=A | mock=False | scenario
+- 63009 | data-modeling_hard | A→D | p2=D | mock=False | scenario
+- 63016 | data-modeling_hard | B→A | p2=A | mock=False | scenario
+- 63018 | data-modeling_hard | A→B | p2=B | mock=False | scenario
+- 63023 | data-modeling_hard | D→A | p2=A | mock=False | scenario
+- 63043 | data-modeling_hard | D→C | p2=C | mock=True | conceptual
+- 63051 | data-modeling_hard | D→B | p2=B | mock=True | scenario
+- 63070 | data-modeling_hard | B→A | p2=A | mock=True | scenario
+- 72054 | statistics_medium | B→D | p2=D | mock=True | conceptual
+- 73057 | statistics_hard | C→B | p2=B | mock=True | conceptual
+- 81025 | ml-fundamentals_easy | C→B | p2=B | mock=False | debug
+- 82002 | ml-fundamentals_medium | C→A | p2=A | mock=False | scenario
+- 82074 | ml-fundamentals_medium | C→B | p2=B | mock=True | predict_output
+- 82075 | ml-fundamentals_medium | C→B | p2=B | mock=True | conceptual
+- 83019 | ml-fundamentals_hard | D→B | p2=B | mock=False | conceptual
+- 83021 | ml-fundamentals_hard | D→C | p2=C | mock=False | scenario
+- 83022 | ml-fundamentals_hard | A→B | p2=B | mock=False | conceptual
+- 83052 | ml-fundamentals_hard | B→A | p2=A | mock=True | conceptual
+- 92036 | experimentation_medium | C→B | p2=B | mock=True | scenario
+- 92061 | experimentation_medium | A→B | p2=B | mock=True | scenario
+- 92070 | experimentation_medium | D→B | p2=B | mock=True | scenario
+- 92074 | experimentation_medium | C→B | p2=B | mock=True | predict_output
+- 93013 | experimentation_hard | A→D | p2=D | mock=False | scenario
+- 93018 | experimentation_hard | B→D | p2=D | mock=False | scenario
+- 93019 | experimentation_hard | A→B | p2=B | mock=False | scenario
+- 93022 | experimentation_hard | B→A | p2=A | mock=True | scenario
+- 93024 | experimentation_hard | A→D | p2=D | mock=True | scenario
+- 93026 | experimentation_hard | A→D | p2=D | mock=True | scenario
+- 93030 | experimentation_hard | B→C | p2=C | mock=True | scenario
+- 93045 | experimentation_hard | B→D | p2=D | mock=True | predict_output
+- 93048 | experimentation_hard | A→B | p2=B | mock=True | debug
+- 93063 | experimentation_hard | A→B | p2=B | mock=True | scenario
+- 93066 | experimentation_hard | B→A | p2=A | mock=True | debug
