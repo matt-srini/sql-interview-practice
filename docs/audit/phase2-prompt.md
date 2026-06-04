@@ -57,6 +57,12 @@ FREE TIER = UNLIMITED CALLS, RATE-LIMITED (no credit cap; the older "1,000 credi
 model is retired for the hosted catalog). So the full sweep is fine on cost; the
 ONLY constraint is the rate limit → use LOW concurrency (1–2 workers) + generous
 exponential backoff + per-(track,difficulty) resumable batching. Do not hammer it.
+Because calls are unlimited, run Pass 2 on EVERY question (`--pass2-all`, the
+DEFAULT for Phase 2), not just on disagreements — it is slower (the Pass-2 model
+runs on all ~1,400 MCQs) but free, and it is the only way to catch the "survivor
+class" (key right, candidate agrees, but the explanation argues toward a distractor;
+Phase 1 found ml-fundamentals 83081 exactly this way). Run resumable so a
+rate-limit stall mid-track can pick up where it left off.
 
 MODELS (probed live HTTP 200 on 2026-06-04 — but the catalog renames/retires models,
 so re-probe with a 1-token call before any run; if a model 404s or 504s, GET
@@ -79,9 +85,12 @@ numerical/predict_output before answering — give ~800 max_tokens for Pass 1 an
 extract from "ANSWER: X", "the answer is X", "Option X", or a trailing letter;
 truncation→UNPARSED was a real Phase 1 false-positive source). Compare to
 correct_option (0-indexed: 0=A,1=B,2=C,3=D). Disagreement = review candidate.
-PASS 2 — EXPLANATION CONSISTENCY (on disagreements; default, not all). Send stem +
-options + explanation; ask which option the explanation's reasoning actually leads
-to. Catches "key right but explanation argues elsewhere."
+PASS 2 — EXPLANATION CONSISTENCY (run on ALL questions via `--pass2-all` — the
+Phase-2 default, since NIM calls are unlimited). Send stem + options + explanation;
+ask which option the explanation's reasoning actually leads to. On Pass-1
+DISAGREEMENTS it disambiguates inverted_key vs review; on Pass-1 AGREEMENTS it
+catches the survivor class — key is right and the candidate agrees, but the
+explanation quietly leads to a distractor → verdict broken_mechanism (authoring).
 VERDICTS (same as Phase 1): consistent / inverted_key (mechanical) / broken_mechanism
 (authoring) / inconsistent (review). Emit a JSON report per the Phase 1 schema, plus
 a "phase1_cross_reference" field per flag (was it flagged/fixed in Phase 1? consult
@@ -129,14 +138,18 @@ before acting.
   2. Confirm NVIDIA_API_KEY in backend/.env; probe Pass-1 + Pass-2 model IDs (1-token each);
      report the final models.
   3. Spawn a Sonnet agent to write backend/scripts/audit_blind_answer_nim.py — same CLI +
-     report schema as audit_blind_answer.py, OpenAI SDK against NIM, low concurrency, strong
-     backoff, robust answer extraction (handle reasoning_content/<think>), phase1 cross-ref.
-     Review the script; smoke-test on 2 questions before any full run.
-  4. Run ml-fundamentals hard first, then experimentation hard/medium, then the rest of the
-     18 cells. Review each batch's flags against source before proceeding. Give special
-     attention to the OPEN Phase-2 tiebreaker set (82002, 93066, 42098, 42115, 93018, 93019,
-     93059): if NIM independently disagrees with those defensible keys too, escalate them
-     from "defensible" to "genuine ambiguity → fix."
+     report schema as audit_blind_answer.py (including a `--pass2-all` flag), OpenAI SDK
+     against NIM, low concurrency, strong backoff, robust answer extraction (handle
+     reasoning_content/<think>), phase1 cross-ref, and RESUMABLE per-cell output so a
+     rate-limit stall can restart without re-spending the whole batch. Review the script;
+     smoke-test on 2 questions before any full run.
+  4. Run with `--pass2-all` (the Phase-2 default): ml-fundamentals hard first, then
+     experimentation hard/medium, then the rest of the 18 cells. Review each batch's flags
+     against source before proceeding. Give special attention to the OPEN Phase-2 tiebreaker
+     set (82002, 93066, 42098, 42115, 93018, 93019, 93059): if NIM independently disagrees
+     with those defensible keys too, escalate them from "defensible" to "genuine ambiguity →
+     fix." Also scan every Pass-1 AGREEMENT whose Pass-2 verdict is broken_mechanism — those
+     are survivor-class candidates Claude's Phase 1 may have passed over.
   5. Apply verified mechanical fixes; route content defects to the authoring agent.
      validate_content.py + commit per batch.
   6. Append a Phase-2 section to backend/scripts/audit_findings_log.md: NIM models used,
