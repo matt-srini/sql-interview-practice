@@ -419,3 +419,11 @@ Deterministic scan hits (embedded letter ≠ option position):
 **WARN backlog (self-matching "Option A —" prefixes — milder, NOT yet remediated; user scope decision pending):** 28 questions — data-modeling 63001–63021, 63033, 63048–63050 (a 25-Q option-prefix template) + DE 53021 + exp 93003 + exp sample 913.
 
 **Net Phase-2 key-error count: 0** (the Phase-1 28 fixes were all independently regression-confirmed; Phase 2 found no new wrong keys, only the label-collision content defects above + 2 flagged tiebreaker keying calls).
+
+## ═══ PHASE 2 REMEDIATION — self-matching cleanup (applied 2026-06-04, user-approved) ═══
+The 28-question self-matching WARN backlog is now fully remediated (option-prefix labels stripped / renamed descriptively; keys + reasoning unchanged):
+- data-modeling hard: 63001–63021, 63033, 63048, 63049, 63050 (25 — the option-prefix template)
+- data-engineering hard 53021 · experimentation hard 93003 (comparison-format → descriptive) · experimentation sample 913
+**Bank now: 0 cross-position AND 0 self-matching embedded option labels** (practice + mock + samples), verified deterministically. The `_validate_no_embedded_option_labels` WARN now guards against reintroduction only.
+
+**Phase-3 hold list (per user):** 42098, 93019 — keys defensible (verified on merits) but both independent NIM model families still blind-pick the alternative after stem-sharpening; routed to the Phase-3 paid-model audit as a tiebreaker before any keying decision.
