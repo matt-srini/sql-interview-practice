@@ -2684,7 +2684,7 @@
     "parent_id": 42097,
     "follow_up_dimension": "performance_pivot",
     "title": "Fixing Double Source Reads: cache() Placement",
-    "description": "To avoid reading the 10 GB source twice, a developer adds `filtered.cache()` before both writes. After the first write completes, `filtered` is cached. The second write reads from cache. But monitoring shows the source is STILL read twice — once for each write. What placement of `cache()` is wrong, and why?",
+    "description": "To avoid reading the 10 GB source twice, a developer adds `filtered.cache()` before both writes. After the first write completes, `filtered` is cached. The second write reads from cache. But monitoring shows the source is STILL read twice — once for each write. Is the `cache()` placement actually the problem here — and if not, what would explain the source still being read twice?",
     "options": [
       "`cache()` is called before the first `write`, but cache is lazy: the DataFrame is not materialised until the first action. The first `write` computes and caches `filtered`, then the second write reads from cache. This should work — the source is read twice only if the cache was evicted between writes.",
       "`filtered.cache()` registers the DataFrame for caching, but `filtered` is a transformation of `df` (the source read + filter). Since `df` is not cached, both `agg1` and `agg2` trace back to `df` in their lineages, causing the source to be re-read. Caching `filtered` does not prevent re-reading `df`.",
