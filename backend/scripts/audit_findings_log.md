@@ -556,3 +556,25 @@ datetime questions flip to gradeable); SQL deterministic unchanged (280 ok, the 
 **REMAINING from the 24 (next tranches, awaiting per-class sign-off):** pandas row-cap ×7
 (31024, 32021, 32042, 32046, 32047, 32074, 32089) · SQL ≥5-join reference ×3 (13018, 13021, 13024) ·
 Python blocked-import reference ×4 (21031, 21032, 21033, 22040). Plus the 93019 keying decision.
+
+## ═══ PHASE 3 REMEDIATION #2 — Python blocked-import class (4 Q), user-approved 2026-06-04 ═══
+**Decision (user):** opposite direction from the datetime fix. The durable `docs/tracks/python.md`
+deliberately restricts the algorithm track to *algorithmic* stdlib (the allowlist has `heapq`/`bisect`/
+`collections`… but excludes `csv`/`json`/`datetime`) and line 101 lists **"library-API trivia"** in the
+banned set. So loosening the guard would re-admit a banned class — **fix the questions, not the platform.**
+Verified the 4 were library-API trivia (the prompts literally said "use `csv.DictReader`/`json.loads`/
+`datetime.strptime`"), and that the date/parse competency is already covered **65 ways** in Python (no-import
+log/event/timestamp questions) + **66** pandas-native date questions — so reframing loses zero coverage.
+
+**Fix (reframe to no-import algorithmic versions via the authoring agent; IDs/difficulty/order/path kept):**
+- 21031 "Parse CSV with DictReader" → "Parse CSV Rows into Records" (split header + `zip` rows).
+- 21032 "Parse JSON Log Entry" → "Extract Fields from a Log Line" (`|`-delimited `key=value` → field map).
+- 21033 "Most Recent Date" → component-tuple `(year,month,day)` comparison (zero-padded → lexicographic), no `datetime`.
+- 22040 "Filter Error Logs from JSON" → "Filter and Order Error Logs" (input is a list of dicts; filter+sort+project; ISO sorts lexicographically).
+
+**Verification:** all 4 guard-clean + grade `correct=True` through the real evaluator (expected+solution
+reproduce every test case); 0 unresolved concept tags; `validate_content.py` passed; python + temporal
+pytest 35 passed; 0 duplicate IDs; learning path `practical-data-python` intact (IDs unchanged). No doc
+change needed — the reframes make the 4 conform to the doc that was already correct.
+
+**REMAINING from the 24:** pandas row-cap ×7 · SQL ≥5-join reference ×3. Plus the 93019 keying decision.

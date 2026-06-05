@@ -475,12 +475,12 @@
     "order": 31,
     "topic": "python",
     "difficulty": "easy",
-    "title": "Parse CSV with DictReader",
-    "description": "Given a list of strings `lines` representing CSV data (the first element is the header row), parse it using `csv.DictReader` and return a list of dicts — one per data row.\n\n```\nsolve(['name,age', 'Alice,30', 'Bob,25'])\n# → [{'name': 'Alice', 'age': '30'}, {'name': 'Bob', 'age': '25'}]\n\nsolve(['x'])\n# → []  (header only, no data rows)\n```",
-    "starter_code": "import csv\n\ndef solve(lines: list) -> list:\n    # Parse lines using csv.DictReader\n    pass",
-    "expected_code": "import csv\n\ndef solve(lines):\n    reader = csv.DictReader(lines)\n    return [dict(row) for row in reader]",
-    "solution_code": "import csv\n\ndef solve(lines):\n    reader = csv.DictReader(lines)\n    return [dict(row) for row in reader]",
-    "explanation": "`csv.DictReader` treats the first row as the header and yields each subsequent row as an `OrderedDict` (Python 3.7+: regular dict) with column names as keys and cell values as strings. Wrapping in `list(...)` or iterating with a list comprehension gives you a plain list of dicts. All values are strings — cast them explicitly if you need numbers.",
+    "title": "Parse CSV Rows into Records",
+    "description": "Given a list of strings `lines` representing simple comma-separated data — the first element is the header row, and there are no quoted fields or embedded commas — return a list of dicts, one per data row, mapping each header name to that row's cell value (a string).\n\n```\nsolve(['name,age', 'Alice,30', 'Bob,25'])\n# → [{'name': 'Alice', 'age': '30'}, {'name': 'Bob', 'age': '25'}]\n\nsolve(['x'])\n# → []  (header only, no data rows)\n```",
+    "starter_code": "def solve(lines: list) -> list:\n    # Map each header name to the matching cell value in every data row\n    pass",
+    "expected_code": "def solve(lines):\n    if not lines:\n        return []\n    header = lines[0].split(',')\n    return [dict(zip(header, row.split(','))) for row in lines[1:]]",
+    "solution_code": "def solve(lines):\n    if not lines:\n        return []\n    header = lines[0].split(',')\n    return [dict(zip(header, row.split(','))) for row in lines[1:]]",
+    "explanation": "The first line lists the column names; every later line is one record. Split the header on commas to get the field names, split each data row the same way, and pair them with `zip(header, cells)` to build one dict per row. A header-only input has no data rows, so the result is empty. Cell values stay strings — cast them yourself if you need numbers.",
     "test_cases": [
       {"input": [["name,age", "Alice,30", "Bob,25"]], "expected": [{"name": "Alice", "age": "30"}, {"name": "Bob", "age": "25"}]},
       {"input": [["id,value", "1,100"]], "expected": [{"id": "1", "value": "100"}]},
@@ -489,7 +489,7 @@
       {"input": [["col"]], "expected": []}
     ],
     "public_test_cases": 2,
-    "hints": ["The first row defines the column names — treat each subsequent row as a key-value record with those names as keys.", "All values come out as strings — use a list comprehension and `dict(row)` to get plain dicts."],
+    "hints": ["The first row names the columns; every other row is a record whose fields line up positionally with those names.", "Split each row the same way you split the header, then pair the two lists together to form one dict per row."],
     "concepts": ["STRING PATTERN REASONING", "LIST & COLLECTION TRANSFORMATION"]
   },
   {
@@ -497,20 +497,21 @@
     "order": 32,
     "topic": "python",
     "difficulty": "easy",
-    "title": "Parse JSON Log Entry",
-    "description": "Given a JSON string `s` representing a single log entry with at least the keys `level` and `message`, parse the string with `json.loads` and return `[level, message]`.\n\n```\nsolve('{\"level\": \"ERROR\", \"message\": \"disk full\", \"ts\": \"2023-01-01\"}')\n# → ['ERROR', 'disk full']\n\nsolve('{\"level\": \"INFO\", \"message\": \"started\"}')\n# → ['INFO', 'started']\n```",
-    "starter_code": "import json\n\ndef solve(s: str) -> list:\n    # Parse the JSON string and return [level, message]\n    pass",
-    "expected_code": "import json\n\ndef solve(s):\n    d = json.loads(s)\n    return [d['level'], d['message']]",
-    "solution_code": "import json\n\ndef solve(s):\n    d = json.loads(s)\n    return [d['level'], d['message']]",
-    "explanation": "`json.loads(s)` deserialises a JSON string into a Python object — a dict if the top-level value is `{}`, a list if it is `[]`, and so on. After parsing, access keys just like any dict. This is the stdlib counterpart to `json.dumps`, which serialises Python objects back to JSON strings.",
+    "title": "Extract Fields from a Log Line",
+    "description": "A service emits each log line as `|`-separated `key=value` fields, e.g. `level=ERROR|message=disk full|ts=2023-01-01`. A value may contain spaces but never `|` or `=`. Given one such line `s` (the keys `level` and `message` are always present, in any order), return `[level, message]`.\n\n```\nsolve('level=ERROR|message=disk full|ts=2023-01-01')\n# → ['ERROR', 'disk full']\n\nsolve('message=started|level=INFO')\n# → ['INFO', 'started']\n```",
+    "starter_code": "def solve(s: str) -> list:\n    # Build a field map from the key=value tokens, then read level and message\n    pass",
+    "expected_code": "def solve(s):\n    fields = {}\n    for token in s.split('|'):\n        key, value = token.split('=', 1)\n        fields[key] = value\n    return [fields['level'], fields['message']]",
+    "solution_code": "def solve(s):\n    fields = {}\n    for token in s.split('|'):\n        key, value = token.split('=', 1)\n        fields[key] = value\n    return [fields['level'], fields['message']]",
+    "explanation": "Each line is a flat record encoded as `|`-separated `key=value` tokens. Split on `|` to get the tokens, then split each token on the first `=` (so a value may itself contain `=`) to recover the key and value, and store them in a dict. Reading `fields['level']` and `fields['message']` then works regardless of the order the fields appeared in — the shape of structured-log parsing before records reach a query engine.",
     "test_cases": [
-      {"input": ["{\"level\": \"ERROR\", \"message\": \"disk full\", \"ts\": \"2023-01-01\"}"], "expected": ["ERROR", "disk full"]},
-      {"input": ["{\"level\": \"INFO\", \"message\": \"started\"}"], "expected": ["INFO", "started"]},
-      {"input": ["{\"level\": \"WARNING\", \"message\": \"high memory\", \"code\": 42}"], "expected": ["WARNING", "high memory"]},
-      {"input": ["{\"level\": \"CRITICAL\", \"message\": \"oom\", \"user\": \"system\"}"], "expected": ["CRITICAL", "oom"]}
+      {"input": ["level=ERROR|message=disk full|ts=2023-01-01"], "expected": ["ERROR", "disk full"]},
+      {"input": ["message=started|level=INFO"], "expected": ["INFO", "started"]},
+      {"input": ["level=WARNING|message=high memory|code=42"], "expected": ["WARNING", "high memory"]},
+      {"input": ["level=CRITICAL|message=oom|user=system"], "expected": ["CRITICAL", "oom"]},
+      {"input": ["ts=2023-06-01|level=DEBUG|message=cache miss"], "expected": ["DEBUG", "cache miss"]}
     ],
     "public_test_cases": 2,
-    "hints": ["A JSON string encodes a structured record — the standard library can parse it directly into a native Python mapping, after which field access is just key lookup.", "Access the parsed dict with square brackets just like any Python dict: `d['key']`."],
+    "hints": ["The line is a flat record — break it into tokens, then split each token into a key and a value you can look up by name.", "Splitting each token on the first `=` only keeps a value that itself contains `=` intact; storing the pairs in a dict lets you read fields regardless of their order."],
     "concepts": ["STRING PATTERN REASONING", "HASH-MAP STATE"]
   },
   {
@@ -519,11 +520,11 @@
     "topic": "python",
     "difficulty": "easy",
     "title": "Most Recent Date",
-    "description": "Given a list of date strings `dates` in `\"MM/DD/YYYY\"` format, return the most recent date formatted as `\"YYYY-MM-DD\"`. Use `datetime.strptime` to parse and `strftime` to format.\n\n```\nsolve(['12/25/2022', '01/15/2023', '06/30/2021'])\n# → '2023-01-15'\n\nsolve(['03/01/2020'])\n# → '2020-03-01'\n```",
-    "starter_code": "from datetime import datetime\n\ndef solve(dates: list) -> str:\n    # Parse with strptime, find max, format with strftime\n    pass",
-    "expected_code": "from datetime import datetime\n\ndef solve(dates):\n    parsed = [datetime.strptime(d, '%m/%d/%Y') for d in dates]\n    return max(parsed).strftime('%Y-%m-%d')",
-    "solution_code": "from datetime import datetime\n\ndef solve(dates):\n    parsed = [datetime.strptime(d, '%m/%d/%Y') for d in dates]\n    return max(parsed).strftime('%Y-%m-%d')",
-    "explanation": "`datetime.strptime(s, fmt)` parses a string into a `datetime` object using the given format. `%m` is zero-padded month, `%d` is zero-padded day, `%Y` is four-digit year. Once parsed, `datetime` objects are comparable with `<`, `>`, `max()`, and `min()`. `strftime(fmt)` serialises a `datetime` back to a string in a different format.",
+    "description": "Given a non-empty list of date strings `dates` in `MM/DD/YYYY` format (zero-padded month and day), return the most recent date reformatted as `YYYY-MM-DD`. Work with the date components directly — no date-parsing library is needed.\n\n```\nsolve(['12/25/2022', '01/15/2023', '06/30/2021'])\n# → '2023-01-15'\n\nsolve(['03/01/2020'])\n# → '2020-03-01'\n```",
+    "starter_code": "def solve(dates: list) -> str:\n    # Compare dates by (year, month, day); return the latest as YYYY-MM-DD\n    pass",
+    "expected_code": "def solve(dates):\n    def key(d):\n        month, day, year = d.split('/')\n        return (year, month, day)\n    latest = max(dates, key=key)\n    month, day, year = latest.split('/')\n    return f'{year}-{month}-{day}'",
+    "solution_code": "def solve(dates):\n    def key(d):\n        month, day, year = d.split('/')\n        return (year, month, day)\n    latest = max(dates, key=key)\n    month, day, year = latest.split('/')\n    return f'{year}-{month}-{day}'",
+    "explanation": "`MM/DD/YYYY` text does not sort chronologically on its own, but the tuple `(year, month, day)` does — and because the month and day are zero-padded to two digits, comparing the components as strings already gives the right order, so no integer conversion is required. Take the `max` of the dates under that key, then re-emit the winner's components in `YYYY-MM-DD` order. This component-wise reasoning is exactly what a date library does for you; here you do it explicitly.",
     "test_cases": [
       {"input": [["12/25/2022", "01/15/2023", "06/30/2021"]], "expected": "2023-01-15"},
       {"input": [["03/01/2020"]], "expected": "2020-03-01"},
@@ -532,7 +533,7 @@
       {"input": [["01/01/2000", "12/31/1999", "06/15/2000"]], "expected": "2000-06-15"}
     ],
     "public_test_cases": 2,
-    "hints": ["Date strings in different formats cannot be compared directly as text — parsing them into date objects first enables both correct chronological ordering and clean reformatting into the output format.", "Once parsed to `datetime` objects, use `max(parsed)` to find the most recent."],
+    "hints": ["Text in MM/DD/YYYY order does not compare chronologically — what ordering of the same three components would?", "Build a (year, month, day) key from each string; with zero-padded fields you can compare the parts as strings, then reassemble the winner in the target order."],
     "concepts": ["STRING PATTERN REASONING", "INDEXED SEQUENCE REASONING"]
   },
   {

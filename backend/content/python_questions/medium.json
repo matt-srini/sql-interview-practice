@@ -407,21 +407,21 @@
     "order": 40,
     "topic": "python",
     "difficulty": "medium",
-    "title": "Filter Error Logs from JSON",
-    "description": "Given a JSON string `s` representing a list of log entries — each with keys `level`, `message`, and `timestamp` — parse it with `json.loads`, keep only entries where `level` is `'ERROR'` or `'CRITICAL'`, sort by `timestamp` ascending, and return a list of `message` strings.\n\n```\nsolve('[{\"level\":\"INFO\",\"message\":\"started\",\"timestamp\":\"2023-01-01\"},{\"level\":\"ERROR\",\"message\":\"db down\",\"timestamp\":\"2023-01-02\"}]')\n# → ['db down']\n\nsolve('[]')\n# → []\n```",
-    "starter_code": "import json\n\ndef solve(s: str) -> list:\n    # Parse JSON, filter for ERROR/CRITICAL, sort by timestamp, return messages\n    pass",
-    "expected_code": "import json\n\ndef solve(s):\n    entries = json.loads(s)\n    errors = [e for e in entries if e['level'] in ('ERROR', 'CRITICAL')]\n    errors.sort(key=lambda e: e['timestamp'])\n    return [e['message'] for e in errors]",
-    "solution_code": "import json\n\ndef solve(s):\n    entries = json.loads(s)\n    errors = [e for e in entries if e['level'] in ('ERROR', 'CRITICAL')]\n    errors.sort(key=lambda e: e['timestamp'])\n    return [e['message'] for e in errors]",
-    "explanation": "`json.loads(s)` deserialises a JSON array string into a Python list of dicts. Membership testing with `in ('ERROR', 'CRITICAL')` is O(1) for a small tuple. Sorting by `e['timestamp']` works for ISO-format strings because lexicographic order matches chronological order. Two-step filter-then-sort is cleaner than a one-liner — the filter pass reduces the sort input, and readability is preserved.",
+    "title": "Filter and Order Error Logs",
+    "description": "Given a list `entries` of log records — each a dict with keys `level`, `message`, and `timestamp` (an ISO-8601 string) — return the `message` values of the records whose `level` is `'ERROR'` or `'CRITICAL'`, ordered by `timestamp` ascending. Return an empty list when none qualify.\n\n```\nsolve([{'level':'INFO','message':'started','timestamp':'2023-01-01'}, {'level':'ERROR','message':'db down','timestamp':'2023-01-02'}])\n# → ['db down']\n\nsolve([])\n# → []\n```",
+    "starter_code": "def solve(entries: list) -> list:\n    # Keep ERROR/CRITICAL records, order by timestamp, return their messages\n    pass",
+    "expected_code": "def solve(entries):\n    errors = [e for e in entries if e['level'] in ('ERROR', 'CRITICAL')]\n    errors.sort(key=lambda e: e['timestamp'])\n    return [e['message'] for e in errors]",
+    "solution_code": "def solve(entries):\n    errors = [e for e in entries if e['level'] in ('ERROR', 'CRITICAL')]\n    errors.sort(key=lambda e: e['timestamp'])\n    return [e['message'] for e in errors]",
+    "explanation": "Three composable passes over the records: filter to the severities of interest (membership in a small tuple is the clearest test), order by `timestamp`, then project just the `message`. The ordering needs no date parsing — ISO-8601 timestamps sort lexicographically in the same order they sort chronologically, so the raw string is a correct sort key. Filtering before sorting also keeps the sort input small.",
     "test_cases": [
-      {"input": ["[{\"level\":\"INFO\",\"message\":\"started\",\"timestamp\":\"2023-01-01\"},{\"level\":\"ERROR\",\"message\":\"db down\",\"timestamp\":\"2023-01-02\"}]"], "expected": ["db down"]},
-      {"input": ["[]"], "expected": []},
-      {"input": ["[{\"level\":\"DEBUG\",\"message\":\"debug msg\",\"timestamp\":\"2023-01-01\"}]"], "expected": []},
-      {"input": ["[{\"level\":\"CRITICAL\",\"message\":\"oom\",\"timestamp\":\"2023-01-01T12:00:00\"},{\"level\":\"ERROR\",\"message\":\"timeout\",\"timestamp\":\"2023-01-02\"},{\"level\":\"INFO\",\"message\":\"ok\",\"timestamp\":\"2023-01-01\"}]"], "expected": ["oom", "timeout"]},
-      {"input": ["[{\"level\":\"ERROR\",\"message\":\"a\",\"timestamp\":\"2023-03-01\"},{\"level\":\"ERROR\",\"message\":\"b\",\"timestamp\":\"2023-01-01\"}]"], "expected": ["b", "a"]}
+      {"input": [[{"level": "INFO", "message": "started", "timestamp": "2023-01-01"}, {"level": "ERROR", "message": "db down", "timestamp": "2023-01-02"}]], "expected": ["db down"]},
+      {"input": [[]], "expected": []},
+      {"input": [[{"level": "DEBUG", "message": "debug msg", "timestamp": "2023-01-01"}]], "expected": []},
+      {"input": [[{"level": "CRITICAL", "message": "oom", "timestamp": "2023-01-01T12:00:00"}, {"level": "ERROR", "message": "timeout", "timestamp": "2023-01-02"}, {"level": "INFO", "message": "ok", "timestamp": "2023-01-01"}]], "expected": ["oom", "timeout"]},
+      {"input": [[{"level": "ERROR", "message": "a", "timestamp": "2023-03-01"}, {"level": "ERROR", "message": "b", "timestamp": "2023-01-01"}]], "expected": ["b", "a"]}
     ],
     "public_test_cases": 2,
-    "hints": ["`json.loads(s)` converts a JSON string to a Python list of dicts — then filter and sort like any list.", "ISO-formatted timestamp strings maintain correct chronological order when sorted lexicographically — the timestamp field can be used directly as a sort key without parsing it into a date object."],
+    "hints": ["Three independent passes — narrow to the records you care about, impose an order, then pull out the one field you return.", "ISO-8601 timestamps already sort chronologically as plain strings, so the timestamp field is a valid sort key with no parsing."],
     "concepts": ["STRING PATTERN REASONING", "LIST & COLLECTION TRANSFORMATION"]
   },
   {
