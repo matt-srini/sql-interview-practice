@@ -724,4 +724,35 @@ REASONING distractor; explanation now refutes C. Key A (`correct_option=0`) and 
 authoring-agent checklist.
 **VERIFIED:** gpt-5-mini blind Pass-1 ×3 → **[A,A,A]** (was an A/C split); `validate_content.py` passed.
 
-## ✅ PHASE 4 FULLY CLOSED — MCQ 0 wrong keys (4th independent confirmation) · 1 multiple-correct fixed (42111) · 1 systemic grading defect fixed (tolerance, 30 Q) + recurrence-guarded · stats-numerical 71/71 clean post-fix. Bank is launch-clean on correctness. (52 MCQ "inconsistent" flags are review-only — all pass2-confirmed the key — and remain available for optional spot-adjudication.)
+## ✅ PHASE 4 FULLY CLOSED — MCQ 0 mechanically-inverted keys (4th independent confirmation) · 1 multiple-correct fixed (42111) · 1 systemic grading defect fixed (tolerance, 30 Q) + recurrence-guarded · stats-numerical 71/71 clean post-fix. Bank is launch-clean on correctness. (The 52 MCQ "inconsistent" flags were subsequently fully adjudicated — see addendum below.)
+
+
+## ═══ PHASE 4 ADDENDUM — adjudication of the 52 "inconsistent" MCQ flags (user-requested), 2026-06-06 ═══
+Independent **blind** re-read (Opus, stem + options only) of all 52 pass2-"inconsistent" flags, then human
+adjudication of every disagreement. Blind-Opus agreed with the key on **43/52**; the 9 disagreements were
+deep-adjudicated on the merits (not deferring to the key, not to the blind pick).
+
+- **Methodology fix mid-run:** the first blind pass omitted the `scenario_context` field for 4 questions
+  (42083/53035/43105/63009) — re-adjudicated with full context (the original audit harness `build_stem` *does*
+  include it, so the original flags were full-context).
+- **2 of the 9 were genuinely the wrong/over-hedged key** (subtle, not mechanically inverted — pass2 confirmed
+  them because it reads *with* the explanation and was anchored):
+  * **72054** (statistics medium) — RE-KEYED D→B (+ pinned the scenario so the undercounted users are the
+    high-engagement, high-retention ones): a positive association is **attenuated** when those users' tickets are
+    suppressed, so the direction *is* determinable; the old key D ("direction undetermined") over-hedged.
+  * **42115** (pyspark medium) — REWRITTEN + re-keyed B→A: the old key asserted *runtime* common-subexpression
+    elimination, which is version/config-dependent and unverifiable from first principles. Rewrote to a
+    **deterministic** predicate-pushdown question (alias inlining + pushdown through the projection), key A.
+- **5 were ambiguity-hardening (key unchanged except 43081's re-key):** **43081** (re-key D→B + replaced the
+  "it-depends" meta-answer D + dropped inline `(A)(B)(C)` labels that collided with option positions; pinned bots
+  as excludable), **63009** (late-arrival tail made unbounded → the `loaded_at` watermark is uniquely correct over
+  a fixed window), **43105** (pinned per-task working memory + GC reserve → executor unambiguously over the 16 GB
+  heap), **42083** (rewrote option A from "partially right" into a clean "teammate-wrong/it-works" distractor so C
+  is the only failure answer), **53035** (stated `event_type` is never filtered → the 2nd clustering dimension is
+  pure reclustering cost).
+- The other **43** (incl. 41023 — `lit(100)`→IntegerType, blind readers trapped by the LongType rule-of-thumb the
+  distractors target; and 63043 — grain alignment) were confirmed **key-correct**; the blind disagreements there
+  reflected genuinely hard questions, not defects.
+- **VERIFIED:** gpt-5-mini blind, **full context, 3× each** → all 7 edited questions now uniquely pick the key
+  (43081 B · 63009 D · 43105 A · 72054 B · 42083 C · 53035 A · 42115 A). `validate_content.py` passed; 129
+  MCQ-track tests pass. The 52-flag bucket is now **closed**.
