@@ -79,6 +79,7 @@ The five-perspective pushback in § Standing instructions reads this section as 
   | Product overview, tech stack, content footprint | This file (`CLAUDE.md`) |
   | User-facing platform guide | `docs/USERGUIDE.md` |
   | New track onboarding process | `docs/track-onboarding.md` |
+  | **Why a decision was made + rejected alternatives (append-only)** | `docs/decisions/DECISIONS.md` |
 
   When in doubt: update more docs, not fewer. Cross-link aggressively. Every doc should link back to its SoT siblings.
 
@@ -110,6 +111,10 @@ The five-perspective pushback in § Standing instructions reads this section as 
 - **Phase 2 orchestration runbook.** Any Opus session running orchestration for a future Phase 2 (new track added post-refactor), Phase 2.5 (re-balance or new-family addition), or Stage C audit must read [`docs/orchestration-runbook.md`](docs/orchestration-runbook.md) before producing any Stage artefact. All active tracks closed Phase 2 by 2026-05-26. The runbook codifies the three-stage process (A → B → C), the Stage A/B/C template skeletons, the retro-cleanup pattern, the historical Phase 2 status table, the precedent table, and the lessons-learned (chain children IN locked total per ML Stage C; pattern-shadow check per Stats Stage C; new-family reasoning-depth defence per ML BIAS/FAIRNESS Phase 2.5). This doc is **durable** and reusable for any future track Phase 2.
 
 - **Always commit after meaningful changes.** End every session of edits with a `git commit` carrying a clear, specific message (not "update files" — something like "add mock interview mode with timer and session summary"). Co-author line: `Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>`.
+
+- **Record decisions in the decision log.** [`docs/decisions/DECISIONS.md`](docs/decisions/DECISIONS.md) is the append-only **why** layer (the docs record *what is true*; the log records *why, and what we rejected*). Two obligations:
+  - **Before reversing or re-deciding** anything load-bearing — architecture, content gating / unlock rules, the mock contract, pricing, the concept taxonomy, or any per-track curriculum framing — **grep the log first** (by `**Area:**` tag or keyword). If a prior entry settled it, honor it or supersede it deliberately; never silently re-litigate (this is the cure for A→B→A oscillation).
+  - **After any meaningful or direction-changing decision** (especially a reversal or a rejected alternative), **append a 4–6 line entry in the same commit** as the change, using the template at the top of the file. Append-only — never edit past entries except to flip a superseded one's `Status:`. Never expire; archive to `docs/decisions/archive-<year>.md` when the file grows. Not every commit needs an entry — only those carrying a real decision.
 
 - **After any batch fix commit touching question JSON files, run this post-fix verification checklist in the same session — no exceptions:**
   1. `cd backend && ../.venv/bin/python scripts/validate_content.py` — must show zero errors. The validator now includes `_validate_correct_option_explanation_consistency` (ERROR-level, catches inverted `correct_option` where the explanation refutes the keyed option — recognises both letter *and* 0-indexed numeric `Option N` references), `_validate_no_numeric_option_references` (ERROR-level, enforces the canonical letter convention: explanations must reference options as `Option A/B/C/D`, never by number — the bank was normalized 2026-06-03), and `_validate_hint_numbers_in_stem` (WARN-level, catches hints containing ms/p99/× values not present in the question stem).

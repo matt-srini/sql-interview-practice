@@ -48,6 +48,7 @@ This is the navigation hub for all platform documentation. Each doc below owns a
 |---|---|
 | [`track-onboarding.md`](track-onboarding.md) | End-to-end process for adding a new track — spec, backend, frontend, content, paths, docs |
 | [`orchestration-runbook.md`](orchestration-runbook.md) | **Phase 2 orchestration handbook** — three-stage process (A planning → B execution → C audit), Stage A/B/C templates, retro-cleanup pattern, current Phase 2 status, pre-identified watch-outs for open tracks. Pickup point for any Opus session running Phase 2 orchestration. |
+| [`decisions/DECISIONS.md`](decisions/DECISIONS.md) | **Decision log** — append-only *why* layer: every direction-changing decision, the alternatives rejected, and why. Consult before reversing anything load-bearing; append after any meaningful decision. Never expires (archive when large). |
 | [`design/color-palette.md`](design/color-palette.md) | Canonical Forest & Ink theme — all CSS token definitions, light/dark values, accessibility notes |
 
 ## AI question authoring
