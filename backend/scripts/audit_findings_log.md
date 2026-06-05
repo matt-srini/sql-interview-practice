@@ -427,3 +427,104 @@ The 28-question self-matching WARN backlog is now fully remediated (option-prefi
 **Bank now: 0 cross-position AND 0 self-matching embedded option labels** (practice + mock + samples), verified deterministically. The `_validate_no_embedded_option_labels` WARN now guards against reintroduction only.
 
 **Phase-3 hold list (per user):** 42098, 93019 — keys defensible (verified on merits) but both independent NIM model families still blind-pick the alternative after stem-sharpening; routed to the Phase-3 paid-model audit as a tiebreaker before any keying decision.
+
+---
+
+# ═══ PHASE 3 — PAID FRONTIER MODEL (OpenAI GPT-5) + FIRST-EVER CODE-TRACK EXECUTION AUDIT ═══
+_Run 2026-06-04. Third independent family, orthogonal to Claude (P1) and NIM Llama/gpt-oss (P2)._
+_MCQ Pass 1 (blind): `gpt-5-mini`. MCQ Pass 2 (explanation-consistency, GATED): `gpt-5`._
+_Code blind-solver: `gpt-5-mini`; oracle = EXECUTION via the real evaluator.py / python_evaluator.py + guards._
+_Harnesses (durable): `audit_blind_answer_openai.py` (provider flag, max_completion_tokens, no temperature, empty-content 2× retry, gated Pass-2, phase12 xref), `audit_code_tracks.py` (deterministic expected-repro + blind-solve + guard; `_DUCKDB_LOCK` serializes the non-threadsafe golden connection)._
+_Reports (gitignored): `audit_gpt5_all.json`, `audit_code_{python,pandas,sql}_all.json`._
+
+## Reasoning-model contract (verified live before the run)
+GPT-5 family uses `max_completion_tokens` (NOT `max_tokens`); rejects non-default `temperature` (omit it);
+a small budget is consumed entirely by hidden reasoning → empty `content` + `finish_reason='length'`
+(Pass-1 budget 2000, Pass-2 4000; empty-content auto-retries at 2× budget).
+
+## MCQ side — 1,235 MCQs across 6 tracks. HEADLINE: 0 WRONG KEYS.
+**1,174 consistent · 0 inverted_key · 0 broken_mechanism · 61 inconsistent (all review).**
+Every one of the 61 flags is a Pass-1 blind-disagreement whose Pass-2 (reading the explanation) returns to
+the keyed option — **0 flags where Pass-2 leads away from the key**. Gated Pass-2 ran on 179/1235
+(every disagreement + hold list + deterministic id%10==3 ~10% survivor sample); the survivor sample found
+**0 broken_mechanism** (no "key right, explanation argues to a distractor" cases).
+Cost: **$2.67** (P1 441k in / 757k out over 1,235 calls; P2 128k in / 89k out over 179 calls).
+
+Per-cell (cons / inv / brk / inc):
+| cell | cons | inv | brk | inc |  | cell | cons | inv | brk | inc |
+|---|---|---|---|---|---|---|---|---|---|---|
+| pyspark_easy | 39 | 0 | 0 | 1 |  | data-modeling_hard | 66 | 0 | 0 | 10 |
+| pyspark_medium | 111 | 0 | 0 | 9 |  | statistics_easy | 16 | 0 | 0 | 0 |
+| pyspark_hard | 110 | 0 | 0 | 7 |  | statistics_medium | 82 | 0 | 0 | 1 |
+| data-engineering_easy | 30 | 0 | 0 | 0 |  | statistics_hard | 46 | 0 | 0 | 0 |
+| data-engineering_medium | 67 | 0 | 0 | 2 |  | ml-fundamentals_easy | 30 | 0 | 0 | 0 |
+| data-engineering_hard | 96 | 0 | 0 | 6 |  | ml-fundamentals_medium | 98 | 0 | 0 | 1 |
+| data-modeling_easy | 25 | 0 | 0 | 0 |  | ml-fundamentals_hard | 106 | 0 | 0 | 8 |
+| data-modeling_medium | 73 | 0 | 0 | 4 |  | experimentation_easy | 29 | 0 | 0 | 1 |
+|  |  |  |  |  |  | experimentation_medium | 76 | 0 | 0 | 2 |
+|  |  |  |  |  |  | experimentation_hard | 74 | 0 | 0 | 9 |
+
+### Regression confirmation of Phases 1–2 (all ✅)
+- pyspark **43112** (P1 key-flip 1→2/C): GPT-5 reads key C, Pass-2 → C. Confirmed.
+- stats **+1 key-shift 27** (a85fdca): all consistent under GPT-5.
+- P1 content fixes 42088 / 43066 / 93045: consistent.
+- **No new key errors anywhere.** Third independent family agrees with the entire MCQ bank.
+
+### MCQ flag cross-reference vs Phase-2 (78 flags)
+27 overlap (both external families blind-disagreed — all hard Qs, all p2==key). 34 NEW under GPT-5 (different
+model, different hard-Q disagreements; all p2==key → review-only, no key danger). 51 of Phase-2's 78 GPT-5
+AGREED with the key (resolved toward key). The recurring class is the same characterized in Phases 1–2:
+synthesis-key-vs-committal (exp), design-choice (DM/DE), hard pyspark internals. No action required on review flags.
+
+### HOLD-LIST RESOLUTION
+- **42098 (pyspark med, key A): VINDICATED.** GPT-5 Pass-1 blind = A, Pass-2 = A → consistent. The frontier
+  family agrees with key A. **Recommend: close the hold, keep key A.**
+- **93019 (exp hard, key B): ESCALATE — genuine keying decision.** GPT-5 Pass-1 re-sampled 5× = [B,A,A,A,A]
+  → 4/5 blind-pick **A** (multiple-comparisons / ~46% FWER critique). Pass-2 → B only because the explanation
+  argues B. So **all three external families (Claude P1, NIM ×2, GPT-5 majority) blind-prefer the alternative A**
+  over key B (interaction test). Both critiques are co-fundamental; the "most fundamental problem" superlative is
+  the defect. Per the brief, do NOT unilaterally flip — surface to user. **Options:** (a) sharpen stem so B is
+  uniquely correct (Phase-2's suggestion); (b) re-key to A; (c) accept as known-hard contestable. Content change
+  → authoring agent.
+
+## CODE side — FIRST-EVER audit of the 3 code tracks (SQL/Python/Pandas), oracle = EXECUTION.
+Phases 1–2 were MCQ-only. Two layers: deterministic expected-reproduction (free) + gpt-5-mini blind-solve.
+
+### 🔴 HIGH-CONFIDENCE (deterministic, execution-proven): 24 questions UNGRADEABLE in production
+A user submitting the CORRECT answer is marked wrong / errors out. Verified through the real grading path.
+These are PLATFORM/HARNESS/GUARD defects (keys + reference logic are correct), not wrong-answer-keys.
+
+**(a) Guard rejects the reference solution — 7 Q**
+- SQL (3, hard practice): **13018, 13021, 13024** — `expected_query` has ≥5 joins; `sql_guard` MAX_JOINS=5
+  rejects it, and `evaluate()` validates the expected query too → any submission throws "Maximum 5 joins allowed."
+- Python (4, practice): **21031** (`import csv`), **21032 / 22040** (`import json`), **21033** (`from datetime import datetime`)
+  — the algorithm-guard allowlist blocks these stdlib imports, so the intended/reference solution is unsubmittable.
+  Fix options (product/security decision): extend the allowlist (csv/json/datetime), rewrite to avoid imports/joins, or re-track.
+
+**(b) Pandas sandbox cannot return the correct output — 17 Q**
+- Datetime/date result columns not JSON-serializable (10): **31006, 31010, 31012, 31017, 31018, 31025, 32020,
+  32072, 32073, 32090** — `python_sandbox_harness._run_data` does `to_dict()`+`json.dumps()` with NO datetime
+  handling (the SQL evaluator HAS `_to_json_native`; the pandas harness lacks the equivalent). Fix: add a
+  JSON datetime default in the harness (infra; unblocks all 10, no content change).
+- Correct result exceeds the harness `_MAX_RESULT_ITEMS=10,000` cap (7): **31024 (43k rows), 32021, 32042,
+  32046, 32047, 32074, 32089** — legitimately large row-level outputs (e.g. 31024 "drop null rows"). Fix options:
+  raise the grading row cap, or re-scope these prompts to aggregate/limited outputs (product decision).
+
+**Python deterministic expected-reproduction: 182/182 reproduce own test cases — 0 wrong expected outputs. CLEAN.**
+
+### 🟡 LOW-CONFIDENCE (blind-solve exact-match): advisory only — 0 confirmed content defects in sample
+Blind-solve + exact-match is a LOW-PRECISION defect detector for code (defensible output variance, ORDER-BY
+tie-breaks truncated at the 200-row cap, NULL/rounding, DataFrame dtype/column-name sensitivity, solver dialect
+errors). Counts: SQL 71 mismatch + 22 guard_reject (ALL candidate-side — wrong-dialect fns array_join/dateadd/
+julianday/convert_timezone, cartesian-heuristic, over-joining; every expected query passes the guard) · pandas
+29 mismatch · python 1 mismatch. Reviewed sample (SQL 11033 — solver didn't UPPER-normalize per spec; pandas
+32006/33002/33017 — defensible percentile/boundary/rolling-edge variance) → all solver-side, expected correct.
+**No changes recommended.** Full ID lists in the reports; a targeted human/Sonnet deep-review of the ~20
+practice (non-mock) mismatches is the only optional follow-up.
+
+## Net Phase-3 result
+- **MCQ: 0 wrong keys** across 1,235 (3rd independent family confirms Phases 1–2; all 28 P1 fixes re-validated).
+- **Code: 0 wrong expected outputs / wrong keys**, but **24 questions ungradeable** in production (guard/harness defects)
+  — a novel, high-value find only an execution-based audit could surface.
+- **Hold list:** 42098 vindicated (keep key A); **93019 escalated** to a user keying decision (3-family evidence favors alt A).
+- Total Phase-3 spend ≈ **$4.3** (MCQ $2.67 + code blind-solve $1.6). NOTHING fixed — awaiting user approval.
