@@ -148,7 +148,9 @@ describe('LandingPage', () => {
       await waitFor(() => {
         const links = screen.getAllByRole('link', { name: /try a free sample/i });
         expect(links.length).toBeGreaterThanOrEqual(1);
-        expect(links.some((link) => link.getAttribute('href') === '/sample/sql/easy')).toBe(true);
+        // The hero CTA points at the Sample Hub discovery surface (/sample), not a
+        // hard-coded per-track deep link.
+        expect(links.some((link) => link.getAttribute('href') === '/sample')).toBe(true);
       });
     });
   });
