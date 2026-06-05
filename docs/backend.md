@@ -306,6 +306,7 @@ Behavioral rules:
 - Row ordering ignored unless expected query is order-sensitive
 - Duplicate rows preserved
 - Float comparisons use tolerance-based normalization
+- **Temporal normalization (shared SQL + pandas):** `normalize_dataframe` → `_canonicalize_temporal` canonicalizes date/datetime values so a trivial representation difference compares equal — a `Timestamp`/`date`/ISO-string of the same calendar value, a `T` vs space separator, and a zero time component all collapse to the same canonical form. **Real** time-of-day (`23:28:10`) and coarser granularity (a month bucket `'2024-01'`) are preserved, so a genuinely wrong answer never passes. This is the single shared comparator, so SQL and pandas behave identically. On the pandas side it pairs with `python_sandbox_harness._json_default`, which ISO-serializes `Timestamp`/`date`/numpy scalars out of the sandbox (mirroring the SQL evaluator's `_to_json_native`) — so pandas questions may return datetime columns directly without a serialization crash.
 
 **Quality and feedback extras:**
 - On correct + `structure_correct` submissions, `_compute_quality()` runs DuckDB `EXPLAIN` on both queries and returns `{ efficiency_note, style_notes, complexity_hint, alternative_solution }` for the Solution Analysis UI.

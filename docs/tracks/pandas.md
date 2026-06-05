@@ -35,7 +35,7 @@ Required output discipline:
 - **Always** end with `.reset_index(drop=True)` unless the index *is* the result.
 - Column names and order must match the expected output exactly.
 - Determinism: explicit `.sort_values(...)` whenever a meaningful order is implied.
-- **Datetime output discipline:** Questions must **not** return `datetime64` columns. The sandbox serializer calls `result.to_dict(orient="records")` followed by `json.dumps(...)`, which cannot serialize `pandas.Timestamp` objects and will raise at runtime. Any date/time column in the output **must** be cast to a string before returning — use `.dt.strftime('%Y-%m-%d')` for dates, `.dt.strftime('%Y-%m-%dT%H:%M:%S')` for timestamps, or `.astype(str)` when an ISO format is acceptable. Update the description's column spec to declare the string format (e.g. "as string YYYY-MM-DD") so candidates know what type is expected.
+- **Datetime output handling (platform-managed, like SQL):** You **may** return `datetime64` / `Timestamp` / `date` columns directly. The sandbox harness serializes them to ISO strings (`python_sandbox_harness._json_default`, mirroring the SQL evaluator's `_to_json_native`), and the shared grading comparator (`evaluator.normalize_dataframe` → `_canonicalize_temporal`) **date-normalizes** before comparison: a `Timestamp` at midnight, a `date`, and an ISO date string all compare equal, and a `T` vs space separator is tolerated. So a candidate is **not** penalized for a trivial representation difference (e.g. returning a Timestamp where the reference used `.dt.date`). **Genuine** differences are still enforced — a real time-of-day (`23:28:10`) is not collapsed, and a coarser granularity that the prompt asks for (e.g. a month bucket `'2024-01'`) must still be produced explicitly. Only stringify in `expected_code` when the prompt asks for a **derived/formatted** value (e.g. `.dt.strftime('%Y-%m')` for a month label); for a plain date, returning the date is fine. Tip: for a date-concept column, prefer `.dt.date` or `.dt.strftime('%Y-%m-%d')` so the *displayed* expected output reads as `2024-01-05` rather than `2024-01-05T00:00:00` — cosmetic only, grading is identical either way.
 - **Row count ceiling:** Questions must not return more than **10,000 rows**. The harness (`python_sandbox_harness.py` `_MAX_RESULT_ITEMS`) rejects results that exceed this limit. When working with large datasets (events.csv ≈ 45 k rows, order_items.csv ≈ 12 k rows), verify the result row count is under the cap before committing. If a join or explode naturally blows up the count, redesign the output to aggregate (e.g. per-group summary instead of all rows) or limit explicitly (e.g. "return top N by metric X").
 
 ## ID range (TXNNN scheme)
@@ -147,7 +147,7 @@ These are the durable *targets* (what the bank ought to look like). For live cou
 - **MultiIndex for the sake of MultiIndex** — only when the index *is* the structure being computed (e.g. wide pivot output).
 - **Questions that test exact method-signature memorization** — "what's the keyword for X" is not a reasoning test.
 - **Stale dtype expectations** — if your expected output assumes `int64` and pandas gives `Int64`, fix the expected, not the candidate.
-- **Returning datetime columns** — returning a `datetime64` column in the result causes the sandbox serializer to crash with a `TypeError`. Always convert to string via `.dt.strftime(...)` before the final `return`.
+- **Hand-stringifying dates the grader already handles** — do **not** force `.dt.strftime(...)` on a plain date/datetime output just to avoid a serializer error; that historical crash is gone (the harness ISO-serializes and the comparator date-normalizes — see "Datetime output handling" above). Only stringify when the prompt asks for a *derived/formatted* value (e.g. a month label `'YYYY-MM'`). Forcing a string format the prompt didn't request makes candidates guess your exact format and penalizes correct answers.
 - **Uncapped large-dataset outputs** — returning all rows from a join over order_items (≈12 k rows) or events (≈45 k rows) will exceed the 10,000-row harness cap. Verify result row count on the committed datasets before authoring; aggregate or cap the output if needed.
 - **Schema column order drift** — declaring the `schema` columns in a different order than the CSV header (e.g. `created_at` after `issue_type` when the CSV puts it second). The schema panel is read top-to-bottom; wrong order is misleading even if no column is absent. Always verify against `head -1 datasets/<file>.csv`.
 - **Stale explanation after code change** — updating `expected_code` without updating `explanation`. The explanation must describe the live code path; leaving a reference to `.apply()` after switching to `np.select`, for example, creates a visible contradiction for any user who reads both.
@@ -207,8 +207,9 @@ print(result.shape)
 print(result.dtypes)
 
 # ---- Check 2: serialization path (exactly what the sandbox does) ----
+from python_sandbox_harness import _json_default
 records = result.to_dict(orient='records')
-json.dumps(records)  # raises if any datetime64/Timestamp column slipped through
+json.dumps(records, default=_json_default)  # datetimes serialize to ISO strings (no longer raises)
 print('Serialization: OK')
 
 # ---- Check 3: row count ceiling ----

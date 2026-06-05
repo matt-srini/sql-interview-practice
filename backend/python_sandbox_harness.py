@@ -242,6 +242,26 @@ def _run_data(user_code: str, dataframes_spec: dict, csv_dir: str) -> dict:
     }
 
 
+def _json_default(o):
+    """Serialize types json.dumps cannot handle natively.
+
+    Mirrors the SQL evaluator's `_to_json_native`: pandas.Timestamp / datetime /
+    date all expose ``isoformat()`` and become ISO strings; numpy scalars expose
+    ``item()`` and become native Python scalars. This is what lets a pandas
+    question return a date/time column without crashing the harness — the grader
+    then date-normalizes the ISO strings in ``evaluator.normalize_dataframe`` so a
+    user is not penalized for a trivial datetime-vs-date representation difference.
+    Import-free (duck-typed) so the algorithm mode pays no import cost.
+    """
+    iso = getattr(o, "isoformat", None)
+    if callable(iso):
+        return iso()
+    item = getattr(o, "item", None)  # numpy scalars (np.int64/np.float64/np.bool_)
+    if callable(item):
+        return item()
+    raise TypeError(f"Object of type {type(o).__name__} is not JSON serializable")
+
+
 def main():
     payload = json.loads(sys.stdin.read())
     mode = payload.get("mode", "algorithm")
@@ -257,7 +277,7 @@ def main():
     else:
         output = {"error": f"Unknown mode: {mode}"}
 
-    sys.stdout.write(json.dumps(output))
+    sys.stdout.write(json.dumps(output, default=_json_default))
     sys.stdout.flush()
 
 

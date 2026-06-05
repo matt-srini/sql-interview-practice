@@ -527,4 +527,32 @@ practice (non-mock) mismatches is the only optional follow-up.
 - **Code: 0 wrong expected outputs / wrong keys**, but **24 questions ungradeable** in production (guard/harness defects)
   — a novel, high-value find only an execution-based audit could surface.
 - **Hold list:** 42098 vindicated (keep key A); **93019 escalated** to a user keying decision (3-family evidence favors alt A).
-- Total Phase-3 spend ≈ **$4.3** (MCQ $2.67 + code blind-solve $1.6). NOTHING fixed — awaiting user approval.
+- Total Phase-3 spend ≈ **$4.3** (MCQ $2.67 + code blind-solve $1.6).
+
+## ═══ PHASE 3 REMEDIATION #1 — pandas datetime class (10 Q), user-approved 2026-06-04 ═══
+**Decision (user):** do NOT keep the sandbox strict + hand-format dates. The "Datetime output
+discipline" (pandas.md) was a self-imposed gap, not a real constraint — the **SQL evaluator already
+ISO-serializes datetimes** (`_to_json_native`). Make pandas consistent with SQL, and don't penalize a
+user for a trivial date-vs-datetime representation after solving the problem (they never had to in SQL),
+**unless the prompt asks for a derived form**.
+
+**Fix (platform-level; 0 question-content edits required):**
+1. `python_sandbox_harness._json_default` — ISO-serializes Timestamp/datetime/date + numpy scalars out of
+   the sandbox (mirrors SQL's `_to_json_native`). Removes the crash class.
+2. `evaluator.normalize_dataframe` → `_canonicalize_temporal` — shared SQL+pandas comparator now
+   date-normalizes: Timestamp==date==ISO-string, `T`/space separator tolerated, **zero** time component
+   collapsed to date-only; **real** time-of-day and month granularity preserved (so a wrong answer can't
+   pass, and a "date only" prompt still requires dropping the time).
+3. `tests/test_evaluator_temporal.py` — 25 tests (unit + integration: a date question accepts
+   `.dt.date`/`.dt.strftime`/`.dt.normalize`, rejects a kept real time).
+4. Docs: `docs/tracks/pandas.md` (flipped the discipline) + `docs/backend.md` (shared comparator).
+
+**Verification:** full backend pytest **474 passed**; pandas deterministic sweep **189→199 ok** (all 10
+datetime questions flip to gradeable); SQL deterministic unchanged (280 ok, the 3 join-limit flags remain
+= next tranche). No content/key changes; no validator needed for this class (datetimes are now valid).
+**Optional cosmetic follow-up (not done):** 31018 `signup_date` + 32090 `hire_date` display a spurious
+`T00:00:00` (date-concept, always midnight) — could `.dt.date` them for clean display; grading already correct.
+
+**REMAINING from the 24 (next tranches, awaiting per-class sign-off):** pandas row-cap ×7
+(31024, 32021, 32042, 32046, 32047, 32074, 32089) · SQL ≥5-join reference ×3 (13018, 13021, 13024) ·
+Python blocked-import reference ×4 (21031, 21032, 21033, 22040). Plus the 93019 keying decision.

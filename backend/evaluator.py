@@ -29,6 +29,43 @@ MAX_RESULT_ROWS = 200
 MAX_QUERY_LENGTH = 5000
 
 
+# Matches a strict ISO date, optionally followed by an ISO time (T or space
+# separator) and optional fractional seconds. A trailing timezone offset / 'Z'
+# deliberately does NOT match, so tz-aware strings are left untouched (conservative).
+_TEMPORAL_RE = re.compile(
+    r"^(\d{4}-\d{2}-\d{2})"                       # group 1: YYYY-MM-DD
+    r"(?:[ T](\d{2}:\d{2}:\d{2})(?:\.(\d+))?)?$"  # group 2: HH:MM:SS, group 3: fractional
+)
+
+
+def _canonicalize_temporal(s: str) -> str:
+    """Canonicalize a date/datetime string so trivial representation differences
+    compare equal, while real time-of-day and granularity differences are kept.
+
+    - 'YYYY-MM-DD', 'YYYY-MM-DDT00:00:00', 'YYYY-MM-DD 00:00:00', '…T00:00:00.000'
+      → 'YYYY-MM-DD'        (a zero/absent time component is dropped)
+    - 'YYYY-MM-DD HH:MM:SS' ↔ 'YYYY-MM-DDTHH:MM:SS'
+      → canonical 'T' separator, real time preserved
+    - month buckets ('YYYY-MM'), tz-aware strings, and non-date strings → unchanged
+
+    Pure string transform: by the time values reach the comparator they have already
+    been JSON-serialized to ISO strings (pandas harness / SQL run_query), so this is
+    the single shared place to normalize them for both tracks.
+    """
+    m = _TEMPORAL_RE.match(s)
+    if not m:
+        return s
+    date_part, time_part, frac = m.group(1), m.group(2), m.group(3)
+    if time_part is None:
+        return date_part
+    frac_is_zero = frac is None or set(frac) == {"0"}
+    if time_part == "00:00:00" and frac_is_zero:
+        return date_part  # midnight → date only
+    if frac is not None and not frac_is_zero:
+        return f"{date_part}T{time_part}.{frac}"
+    return f"{date_part}T{time_part}"
+
+
 def _get_explain_total_ec(query: str, question: dict[str, Any]) -> int | None:
     """Run EXPLAIN and sum all estimated cardinality (EC) values from the plan."""
     cursor = get_query_cursor(question["dataset_files"])
@@ -261,7 +298,11 @@ def normalize_dataframe(df: pd.DataFrame, *, sort_rows: bool = True) -> pd.DataF
         if isinstance(v, float) and v == int(v):
             return str(int(v))
 
-        return str(v)
+        # Normalise date/datetime representations so that a value is not penalised
+        # for a trivial type difference (Timestamp vs date vs ISO string, T vs space
+        # separator, a zero time component). Genuine time-of-day and granularity
+        # differences are preserved. Shared by SQL and pandas grading.
+        return _canonicalize_temporal(str(v))
 
     df = df.apply(lambda col: col.map(_to_canonical))
 
