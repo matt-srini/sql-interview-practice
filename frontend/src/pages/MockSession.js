@@ -15,7 +15,7 @@ import { TRACK_LABELS } from '../trackRegistry';
 import { track as trackEvent } from '../analytics';
 import { renderDescription } from '../utils/renderDescription';
 import { getMockSessionDescriptor } from '../mockModeConfig';
-import { normalizeRunResult } from '../normalizeResult';
+import { normalizeRunResult, rowCountLabel } from '../normalizeResult';
 
 function formatTime(s) {
   if (s == null || s < 0) return '00:00';
@@ -1072,7 +1072,7 @@ export default function MockSession() {
                 <div className="results-card" ref={resultsCardRef}>
                   <div className="results-header">
                     <span>Query Result</span>
-                    <span>{(currentRunResult.rows ?? []).length} row{(currentRunResult.rows ?? []).length !== 1 ? 's' : ''}</span>
+                    <span>{rowCountLabel(currentRunResult)}</span>
                   </div>
                   <ResultsTable columns={currentRunResult.columns} rows={currentRunResult.rows ?? []} />
                 </div>
@@ -1093,7 +1093,7 @@ export default function MockSession() {
                     <div className="results-card">
                       <div className="results-header">
                         <span>Output</span>
-                        <span>{(currentRunResult.rows ?? []).length} rows</span>
+                        <span>{rowCountLabel(currentRunResult)}</span>
                       </div>
                       <ResultsTable columns={currentRunResult.columns} rows={currentRunResult.rows ?? []} />
                     </div>

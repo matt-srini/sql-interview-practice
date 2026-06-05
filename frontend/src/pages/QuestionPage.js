@@ -21,7 +21,7 @@ import { parseSqlError } from '../utils/sqlErrorParser';
 import { renderDescription } from '../utils/renderDescription';
 import { useToast } from '../App';
 import { track } from '../analytics';
-import { normalizeRunResult } from '../normalizeResult';
+import { normalizeRunResult, rowCountLabel } from '../normalizeResult';
 
 const HINT_STEP_LABELS_BY_DIFFICULTY = {
   easy: ['Mental model', 'Tooling nudge'],
@@ -1418,11 +1418,7 @@ export default function QuestionPage() {
             <div className="results-card">
               <div className="results-header">
                 <span>Query Result</span>
-                <span>
-                  {runResult.truncated
-                    ? `showing first ${runResult.row_limit} of ${runResult.total_rows.toLocaleString()} rows`
-                    : `${runResult.rows.length} row${runResult.rows.length !== 1 ? 's' : ''}`}
-                </span>
+                <span>{rowCountLabel(runResult)}</span>
               </div>
               <ResultsTable columns={runResult.columns} rows={runResult.rows} />
             </div>
@@ -1442,11 +1438,7 @@ export default function QuestionPage() {
                 <div className="results-card">
                   <div className="results-header">
                     <span>Output</span>
-                    <span>
-                      {runResult.result?.truncated
-                        ? `showing first ${runResult.result.row_limit} of ${runResult.result.total_rows.toLocaleString()} rows`
-                        : `${(runResult.rows ?? []).length} rows`}
-                    </span>
+                    <span>{rowCountLabel(runResult.result ?? runResult)}</span>
                   </div>
                   <ResultsTable columns={runResult.columns} rows={runResult.rows ?? []} />
                 </div>
@@ -1525,7 +1517,7 @@ export default function QuestionPage() {
               <div className="results-card">
                 <div className="results-header">
                   <span>Your Output</span>
-                  <span>{submitResult.user_result.rows.length} row{submitResult.user_result.rows.length !== 1 ? 's' : ''}</span>
+                  <span>{rowCountLabel(submitResult.user_result)}</span>
                 </div>
                 <ResultsTable
                   columns={submitResult.user_result.columns}
@@ -1538,7 +1530,7 @@ export default function QuestionPage() {
               <div className="results-card">
                 <div className="results-header">
                   <span>Expected Output</span>
-                  <span>{submitResult.expected_result.rows.length} row{submitResult.expected_result.rows.length !== 1 ? 's' : ''}</span>
+                  <span>{rowCountLabel(submitResult.expected_result)}</span>
                 </div>
                 <ResultsTable columns={submitResult.expected_result.columns} rows={submitResult.expected_result.rows} />
               </div>
@@ -1581,7 +1573,7 @@ export default function QuestionPage() {
               <div className="results-card">
                 <div className="results-header">
                   <span>Your Output</span>
-                  <span>{(submitResult.user_result.rows ?? []).length} rows</span>
+                  <span>{rowCountLabel(submitResult.user_result)}</span>
                 </div>
                 <ResultsTable
                   columns={submitResult.user_result.columns ?? []}
@@ -1594,7 +1586,7 @@ export default function QuestionPage() {
               <div className="results-card">
                 <div className="results-header">
                   <span>Expected Output</span>
-                  <span>{(submitResult.expected_result.rows ?? []).length} rows</span>
+                  <span>{rowCountLabel(submitResult.expected_result)}</span>
                 </div>
                 <ResultsTable
                   columns={submitResult.expected_result.columns ?? []}

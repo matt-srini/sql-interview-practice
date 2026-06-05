@@ -29,6 +29,21 @@ function convertBlock(block) {
   }
 }
 
+/**
+ * Human label for a result's row count. When the backend capped the result to a
+ * display preview (truncated=true with a true total_rows), say so explicitly so
+ * the user knows the full size — otherwise just the row count. Used for every
+ * result panel (run + submit, SQL + pandas, practice + sample + mock).
+ */
+export function rowCountLabel(result) {
+  const rows = result?.rows ?? [];
+  if (result?.truncated && typeof result?.total_rows === 'number') {
+    const shown = result.row_limit ?? rows.length;
+    return `showing first ${shown} of ${result.total_rows.toLocaleString()} rows`;
+  }
+  return `${rows.length} row${rows.length !== 1 ? 's' : ''}`;
+}
+
 export function normalizeRunResult(data) {
   if (!data) return data;
   const d = { ...data };
@@ -41,9 +56,13 @@ export function normalizeRunResult(data) {
   convertBlock(d.expected_result);
 
   if (d.result) {
-    // Pandas: the nested result is authoritative for the top-level columns/rows.
+    // Pandas: the nested result is authoritative for the top-level columns/rows
+    // and the preview metadata (so rowCountLabel works on the top-level object).
     d.columns = d.result.columns;
     d.rows = d.result.rows;
+    if (d.result.total_rows !== undefined) d.total_rows = d.result.total_rows;
+    if (d.result.truncated !== undefined) d.truncated = d.result.truncated;
+    if (d.result.row_limit !== undefined) d.row_limit = d.result.row_limit;
   } else {
     // SQL / others: top-level rows are already array-shaped (no-op convert).
     convertBlock(d);

@@ -14,7 +14,7 @@ import { TRACK_SLUGS } from '../trackRegistry';
 import { useCatalogCounts } from '../contexts/CatalogCountsContext';
 import { useTheme } from '../App';
 import { renderDescription } from '../utils/renderDescription';
-import { normalizeRunResult } from '../normalizeResult';
+import { normalizeRunResult, rowCountLabel } from '../normalizeResult';
 import { track } from '../analytics';
 
 const SQL_PLACEHOLDER = '-- Write your SQL query here\nSELECT ';
@@ -680,7 +680,7 @@ export default function SampleQuestionPage() {
               <div className="results-card">
                 <div className="results-header">
                   <span>Query Result</span>
-                  <span>{runResult.rows.length} row{runResult.rows.length !== 1 ? 's' : ''}</span>
+                  <span>{rowCountLabel(runResult)}</span>
                 </div>
                 <ResultsTable columns={runResult.columns} rows={runResult.rows} />
               </div>
@@ -698,7 +698,7 @@ export default function SampleQuestionPage() {
                 <div className="results-card">
                   <div className="results-header">
                     <span>Output</span>
-                    <span>{(pandasRunResult.rows ?? []).length} rows</span>
+                    <span>{rowCountLabel(pandasRunResult)}</span>
                   </div>
                   <ResultsTable columns={pandasRunResult.columns ?? []} rows={pandasRunResult.rows ?? []} />
                 </div>
@@ -737,14 +737,14 @@ export default function SampleQuestionPage() {
                 <div className="results-card">
                   <div className="results-header">
                     <span>Your Output</span>
-                    <span>{submitResult.user_result.rows.length} rows</span>
+                    <span>{rowCountLabel(submitResult.user_result)}</span>
                   </div>
                   <ResultsTable columns={submitResult.user_result.columns} rows={submitResult.user_result.rows} />
                 </div>
                 <div className="results-card">
                   <div className="results-header">
                     <span>Expected Output</span>
-                    <span>{submitResult.expected_result.rows.length} rows</span>
+                    <span>{rowCountLabel(submitResult.expected_result)}</span>
                   </div>
                   <ResultsTable columns={submitResult.expected_result.columns} rows={submitResult.expected_result.rows} />
                 </div>
@@ -776,7 +776,7 @@ export default function SampleQuestionPage() {
                 <div className="results-card">
                   <div className="results-header">
                     <span>Your Output</span>
-                    <span>{(submitResult.user_result.rows ?? []).length} rows</span>
+                    <span>{rowCountLabel(submitResult.user_result)}</span>
                   </div>
                   <ResultsTable
                     columns={submitResult.user_result.columns ?? []}
@@ -786,7 +786,7 @@ export default function SampleQuestionPage() {
                 <div className="results-card">
                   <div className="results-header">
                     <span>Expected Output</span>
-                    <span>{(submitResult.expected_result.rows ?? []).length} rows</span>
+                    <span>{rowCountLabel(submitResult.expected_result)}</span>
                   </div>
                   <ResultsTable
                     columns={submitResult.expected_result.columns ?? []}

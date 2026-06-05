@@ -1,5 +1,18 @@
 import { describe, it, expect } from 'vitest';
-import { dictRowsToArrays, normalizeRunResult } from './normalizeResult';
+import { dictRowsToArrays, normalizeRunResult, rowCountLabel } from './normalizeResult';
+
+describe('rowCountLabel', () => {
+  it('shows the true total when truncated', () => {
+    expect(rowCountLabel({ rows: new Array(200), truncated: true, total_rows: 43152, row_limit: 200 }))
+      .toBe('showing first 200 of 43,152 rows');
+  });
+  it('shows a plain count when not truncated', () => {
+    expect(rowCountLabel({ rows: [1, 2, 3], truncated: false, total_rows: 3 })).toBe('3 rows');
+    expect(rowCountLabel({ rows: [1] })).toBe('1 row');
+    expect(rowCountLabel({ rows: [] })).toBe('0 rows');
+    expect(rowCountLabel(null)).toBe('0 rows');
+  });
+});
 
 describe('dictRowsToArrays', () => {
   it('converts pandas dict-rows to column-ordered arrays', () => {
@@ -34,6 +47,16 @@ describe('normalizeRunResult', () => {
     expect(d.rows).toEqual([[1, 2]]);
     expect(d.columns).toEqual(['c1', 'c2']);
     expect(d.stdout).toBe('hi');
+  });
+
+  it('lifts pandas preview metadata (total_rows/truncated) to the top level', () => {
+    const d = normalizeRunResult({
+      result: { columns: ['c'], rows: [{ c: 1 }], total_rows: 5000, truncated: true, row_limit: 200 },
+    });
+    expect(d.total_rows).toBe(5000);
+    expect(d.truncated).toBe(true);
+    expect(d.row_limit).toBe(200);
+    expect(rowCountLabel(d)).toBe('showing first 200 of 5,000 rows');
   });
 
   it('converts submit user_result / expected_result dict-rows', () => {
