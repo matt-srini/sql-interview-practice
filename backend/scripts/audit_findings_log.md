@@ -664,3 +664,64 @@ unchanged (SEGMENTATION ANALYSIS, MULTIPLE TESTING); key B; via the authoring-ag
 **Cosmetic polishes done:** 31018 `signup_date` + 32090 `hire_date` now display `YYYY-MM-DD` (grading unchanged).
 
 ## ✅ PHASE 3 FULLY CLOSED — MCQ 0 wrong keys (3-family) · all 24 code-track defects fixed · hold list resolved.
+
+
+# ═══ PHASE 4 — FULL-COVERAGE PRE-LAUNCH AUDIT (pass2-all MCQ · code execution · stats-NUMERICAL) ═══
+
+Closes the two Phase-3 scope gaps: (1) MCQ Pass-2 ran *gated* in Phase 3 — Phase 4 runs **pass2-all**, the
+"survivor class" check on EVERY MCQ (key looks right under blind Pass-1, but the explanation actually argues
+to a distractor — only an all-questions Pass-2 catches it). (2) Statistics-**numerical** fell between the
+Phase-3 MCQ harness (conceptual only) and the code harness (sql/python/pandas only) — now covered.
+
+## MCQ pass2-all — 1,235 MCQs, 6 tracks (gpt-5-mini P1 / gpt-5 P2). Report: `audit_final_mcq.json`.
+| verdict | n | meaning |
+|---|---|---|
+| consistent | 1,182 | explanation cleanly supports the key |
+| inverted_key | **0** | no wrong keys — 4th independent confirmation (Phases 1,2,3 + this) |
+| broken_mechanism | **1** | → 42111 (multiple-correct A/C). Fixed, R2 below. |
+| inconsistent | 52 | review-only. **All 52 have pass2_consistent=True** — i.e. blind Pass-1 picked a defensible alternative on a hard Q, but the gpt-5 explanation-consistency pass confirmed the key in every case. 0 key danger. (by cell: pyspark 17, data-modeling 15, DE 8, exp 8, ml 3, stats 1.) |
+
+**Net MCQ: 0 wrong keys, 0 unresolved key dangers across all 1,235.** Only structural defect = 42111.
+
+## CODE + STATS-NUMERICAL execution audit (deterministic expected-reproduction + gpt-5-mini blind-solve)
+Re-confirmed the 3 Phase-3 code tracks clean post-remediation, and added statistics-numerical (71 Q). One
+**systemic platform defect** surfaced via the new stats-numerical coverage:
+
+### 🔴 Declared test-case `tolerance` was silently ignored by grading (30 statistics questions affected)
+`python_sandbox_harness._compare` hard-coded a 1e-6 epsilon AND `python_evaluator._expand_test_case` dropped
+the `tolerance` key before the harness ever saw it. So a question authored with `tolerance` (Monte-Carlo /
+numerical-method answers, where the reference is itself approximate) was graded as if the tolerance didn't
+exist. 73047 ("Bayesian A/B: P(A>B)", random.Random(42), tolerance 0.02): stored 0.9809, reference yields
+0.9805 — within tolerance, but graded a MISS. A correct user answer in the authored band was rejected, and
+the reference couldn't reproduce its own stored value. This is the user's "if the model can't pick it, neither
+can the user" test failing at the grader, not the content.
+
+## ═══ PHASE 4 REMEDIATION R1 — honor declared tolerance (platform), user-approved 2026-06-06 ═══
+- `_compare(actual, expected, tolerance)`: honors `max(tolerance, 1e-6)` — a larger tolerance accepts the
+  author's approximate answers, a tighter one can never make a passing question stricter. Element-wise for
+  equal-length numeric sequences (order-sensitive AND order-insensitive preserved); short-circuits on `a == e`
+  first so exact / `inf` match before `abs()` (abs(inf-inf)=nan — also fixed the Dijkstra inf case, 23058).
+- `_expand_test_case` preserves the `tolerance` key through the submit-path expansion into the harness.
+- **Recurrence guard:** `validate_content._validate_code_reference_reproduces_tests` (ERROR-level) executes
+  every python + stats-numerical reference against its **literal** test cases (1,042 cases, in-process, ~1.5s,
+  tolerance-aware, per-Q SIGALRM timeout). Generator/compute-reference cases are skipped (can't drift).
+- Tests: `test_compare_tolerance.py` (unit + integration 73047/23058). Also fixed a TZ-flaky streak test
+  (`test_tc043`) to compute "yesterday" in UTC, matching `get_user_streak_status`'s UTC bucketing.
+- **VERIFIED post-fix:** stats-numerical blind-solve (gpt-5-mini, all 71, scope=all) → **71/71 reproduce,
+  No flags** ($0.12). 73047 verdict `ok` / blind `reproduces`. The user-proxy now solves every numerical Q
+  in-tolerance — the grader and the solver agree.
+- Commit a57528b. Docs: `docs/backend.md` (Python pipeline § tolerance), `CLAUDE.md` (validator listing).
+
+## ═══ PHASE 4 REMEDIATION R2 — 42111 multiple-correct distractor (PySpark medium, mock_only), 2026-06-06 ═══
+**42111 ("DataFrame.count() Returns Different Values on Repeated Calls"), key A.** Options A and C were BOTH
+correct — the explanation literally conceded *"Option C restates Option A more explicitly… Option A is the
+clearest."* pass2-all verdict `broken_mechanism`. A user who picked C (a correct, arguably more precise
+statement) was marked wrong. **Re-key rejected** — both were right, so re-keying to C still leaves two correct
+answers; the only valid fix is differentiation. Rewrote distractor C into a plausible-but-wrong **task-retry
+double-count** misconception (a real Spark feature + the wrong belief that a failed attempt's partial output
+isn't discarded), distinct from B (sampling variance) and D (offset reset) and squarely an EXECUTION MODEL
+REASONING distractor; explanation now refutes C. Key A (`correct_option=0`) and concepts unchanged. Via the
+authoring-agent checklist.
+**VERIFIED:** gpt-5-mini blind Pass-1 ×3 → **[A,A,A]** (was an A/C split); `validate_content.py` passed.
+
+## ✅ PHASE 4 FULLY CLOSED — MCQ 0 wrong keys (4th independent confirmation) · 1 multiple-correct fixed (42111) · 1 systemic grading defect fixed (tolerance, 30 Q) + recurrence-guarded · stats-numerical 71/71 clean post-fix. Bank is launch-clean on correctness. (52 MCQ "inconsistent" flags are review-only — all pass2-confirmed the key — and remain available for optional spot-adjudication.)
