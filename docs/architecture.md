@@ -45,8 +45,8 @@ POST /api/submit
   3. validate_read_only_select_query() — parser-based SQL guard
   4. Run user query in DuckDB (thread pool, 3-second timeout)
   5. Run expected_query in DuckDB
-  6. normalize_dataframe() on both result sets (column casing, order, floats, nulls)
-  7. Compare normalized DataFrames → correct/incorrect
+  6. normalize_dataframe() on both FULL result sets (column casing, order, floats, nulls, date-normalization)
+  7. Compare normalized DataFrames → correct/incorrect (grading is on the full result; only a 200-row preview is returned to the client)
   8. If correct: mark solved in PostgreSQL (user_progress table)
   9. Return verdict + solution material
 ```
@@ -59,7 +59,7 @@ POST /api/submit
 POST /api/python/submit  (or /api/python-data/submit)
   1. Session cookie → look up user in PostgreSQL
   2. validate_python_code() — AST-based guard (import allowlist per track)
-  3. Spawn python_sandbox_harness.py subprocess (5-second timeout, 512 MB RLIMIT_AS)
+  3. Spawn python_sandbox_harness.py subprocess (512 MB RLIMIT_AS; 5s timeout for algorithm, 12s for pandas data — full-result grading serializes a larger result)
   4. Harness: exec() user code, call solve(*args) per test case (algorithm)
            OR load DataFrames from CSVs, call solve(**dataframes) (pandas)
   5. Parse JSON from harness stdout; non-zero exit or timeout = error

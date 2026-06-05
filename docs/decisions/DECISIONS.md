@@ -35,12 +35,6 @@ Keep entries to 4–6 lines. Friction kills logs; if it's longer than the change
 
 ## Entries
 
-## 2026-06-05 — Resolve 93019 A-vs-B keying by sharpening the stem (keep key B)
-**Area:** content · **Status:** accepted
-**Decision:** For exp/hard 93019 ("Segmentation Analysis and Multiple Comparisons"), keep key **B** (a mobile-specific claim needs a device-type×treatment *interaction* test, not within-segment significance) and **sharpen the stem** so B is unique — the scenario now states a Benjamini-Hochberg correction was applied and the mobile result survived, neutralizing the multiple-comparisons option (A), and the explanation no longer concedes A. Concept tags unchanged (SEGMENTATION ANALYSIS, MULTIPLE TESTING).
-**Rejected:** (a) Re-key to A — the interaction-test reasoning is the deeper, intended lesson and is covered by other questions too; chasing the blind-model majority would shed the harder concept. (b) Accept as known-contestable — leaves an ambiguous question that all three model families (Claude, NIM, GPT-5) mis-picked. Verified the fix flips gpt-5-mini blind picks [B,A,A,A,A] → all-B.
-**Affects:** backend/content/experimentation_questions/hard.json (93019).
-
 ## 2026-06-05 — Raise SQL guard MAX_JOINS 5 → 9
 **Area:** architecture · **Status:** accepted
 **Decision:** Raise `sql_guard.MAX_JOINS` from 5 to 9 (allow up to 8 joins anywhere in a query). The join *count* is not the cost driver on the small committed datasets (≤45k rows) — cost is already bounded by the 3s query timeout, the cartesian-join check, and the result caps. A cap of 5 wrongly rejected legitimately-hard analytics questions *and the platform's own reference solutions* (13018/13021/13024), and blocked the natural EXISTS-cohort approach entirely.

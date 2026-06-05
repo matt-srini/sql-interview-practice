@@ -357,9 +357,9 @@ Token values, full palette, typography, and component specs: [`docs/design/color
 
 ## Backend behaviour
 
-**SQL:** `sql_guard.py` → `evaluator.py` → DuckDB. Parser-based read-only validation; 3-second timeout; 200-row cap. Submit: both queries run → DataFrames normalized → compared. On correct+structure_correct submissions, `_compute_quality()` runs DuckDB `EXPLAIN` on both queries and returns `{ efficiency_note, style_notes, complexity_hint, alternative_solution }` for the Solution Analysis UI in `QuestionPage.js`. On wrong answers where the user and expected results share the same shape (same row+column count but wrong values), style notes are surfaced as a partial quality object (close-miss feedback). Repeat identical wrong attempts are detected via `get_latest_submission()` and a nudge message is prepended to feedback.
+**SQL:** `sql_guard.py` → `evaluator.py` → DuckDB. Parser-based read-only validation (incl. a max-joins complexity cap, currently 9); 3-second timeout. Submit: both queries run → DataFrames normalized + compared on the **full** result (sound — no `head(200)` truncation); only a 200-row display preview is returned (`total_rows`/`truncated`). On correct+structure_correct submissions, `_compute_quality()` runs DuckDB `EXPLAIN` on both queries and returns `{ efficiency_note, style_notes, complexity_hint, alternative_solution }` for the Solution Analysis UI in `QuestionPage.js`. On wrong answers where the user and expected results share the same shape (same row+column count but wrong values), style notes are surfaced as a partial quality object (close-miss feedback). Repeat identical wrong attempts are detected via `get_latest_submission()` and a nudge message is prepended to feedback.
 
-**Python/Pandas:** `python_guard.py` → `python_evaluator.py` → subprocess harness. AST guard, 5-second timeout, 512 MB RLIMIT_AS.
+**Python/Pandas:** `python_guard.py` → `python_evaluator.py` → subprocess harness. AST guard, 512 MB RLIMIT_AS; 5-second timeout (algorithm) / 12-second (pandas data mode — full-result grading serializes a larger result). Pandas grades on the full result and returns a 200-row display preview (`total_rows`/`truncated`); datetime columns are ISO-serialized + date-normalized (no hand-formatting needed).
 
 **PySpark:** No execution. `selected_option` compared to `correct_option`. Explanation always returned.
 

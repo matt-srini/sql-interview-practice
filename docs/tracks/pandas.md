@@ -10,7 +10,7 @@ A data analyst or scientist who *thinks in pandas* writes meaningfully different
 
 ## Modality
 
-**Executable problem-solving.** Subprocess-sandboxed Python execution with the candidate's function called against pre-loaded DataFrames. 5-second timeout. 512 MB RLIMIT_AS. Output DataFrame compared to expected via `normalize_dataframe()` (from `evaluator.py`) followed by `DataFrame.equals()`. Normalization steps applied to both candidate and expected output before comparison:
+**Executable problem-solving.** Subprocess-sandboxed Python execution with the candidate's function called against pre-loaded DataFrames. 12-second timeout (data mode — grading compares the full result and a large output serializes a few MB). 512 MB RLIMIT_AS. The **full** output DataFrame is compared to expected via `normalize_dataframe()` (from `evaluator.py`) followed by `DataFrame.equals()`; only a 200-row preview is returned to the client. Normalization steps applied to both candidate and expected output before comparison:
 1. Column names lowercased
 2. Columns sorted alphabetically
 3. Float columns rounded to 5 decimal places (eliminates floating-point arithmetic noise)
