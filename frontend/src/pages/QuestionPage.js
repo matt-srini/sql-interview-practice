@@ -1438,7 +1438,7 @@ export default function QuestionPage() {
                 <div className="results-card">
                   <div className="results-header">
                     <span>Output</span>
-                    <span>{rowCountLabel(runResult.result ?? runResult)}</span>
+                    <span>{rowCountLabel(runResult)}</span>
                   </div>
                   <ResultsTable columns={runResult.columns} rows={runResult.rows ?? []} />
                 </div>
