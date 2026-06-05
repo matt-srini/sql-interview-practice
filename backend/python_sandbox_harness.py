@@ -18,17 +18,23 @@ try:
     import resource
     # Memory cap: 512 MB virtual address space
     resource.setrlimit(resource.RLIMIT_AS, (512 * 1024 * 1024, 512 * 1024 * 1024))
-    # CPU cap: 6 seconds (slightly above the 5s subprocess timeout so the
-    # timeout fires first, but this catches any slippage and prevents a
-    # tight CPU loop from monopolising a core).
-    resource.setrlimit(resource.RLIMIT_CPU, (6, 6))
+    # CPU cap: a backstop above the longest subprocess wall timeout (data mode's
+    # 12s, so 15s sits just above it). The per-mode wall timeout in python_evaluator
+    # is the primary guard and fires first; this only catches a tight CPU loop that
+    # slips past it.
+    resource.setrlimit(resource.RLIMIT_CPU, (15, 15))
 except Exception:
     pass
 
 
 _MAX_STDOUT_BYTES = 64 * 1024        # 64 KB per run
-_MAX_RESULT_ITEMS = 10_000           # max items in a returned list
+_MAX_RESULT_ITEMS = 10_000           # max items in a returned list (algorithm mode)
 _MAX_RESULT_JSON_BYTES = 512 * 1024  # 512 KB serialised result
+# Data (pandas) mode: the grader compares the FULL result and the evaluator returns
+# only a ~200-row preview to the client (see python_evaluator), so the row count here
+# is just a high safety bound against pathological outputs — legitimate per-row
+# transformations over the largest dataset (events ≈ 45k rows) sit well under it.
+_MAX_DATA_RESULT_ROWS = 100_000
 
 
 class _BoundedStringIO(io.StringIO):
@@ -232,8 +238,8 @@ def _run_data(user_code: str, dataframes_spec: dict, csv_dir: str) -> dict:
     else:
         return {"error": f"solve() must return a DataFrame, Series, or ndarray, got {type(result).__name__}", "result": None, "print_output": print_output}
 
-    if len(result_json) > _MAX_RESULT_ITEMS:
-        return {"error": f"Result has {len(result_json):,} rows — limit is {_MAX_RESULT_ITEMS:,}", "result": None, "print_output": print_output}
+    if len(result_json) > _MAX_DATA_RESULT_ROWS:
+        return {"error": f"Result has {len(result_json):,} rows — limit is {_MAX_DATA_RESULT_ROWS:,}", "result": None, "print_output": print_output}
 
     return {
         "error": None,

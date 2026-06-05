@@ -14,6 +14,7 @@ import { TRACK_SLUGS } from '../trackRegistry';
 import { useCatalogCounts } from '../contexts/CatalogCountsContext';
 import { useTheme } from '../App';
 import { renderDescription } from '../utils/renderDescription';
+import { normalizeRunResult } from '../normalizeResult';
 import { track } from '../analytics';
 
 const SQL_PLACEHOLDER = '-- Write your SQL query here\nSELECT ';
@@ -238,7 +239,7 @@ export default function SampleQuestionPage() {
         ? { code, question_id: Number(question.id) }
         : { query: code, question_id: Number(question.id) };
       const res = await api.post(runApiPath, payload);
-      setRunResult(res.data);
+      setRunResult(normalizeRunResult(res.data));
     } catch (err) {
       setRunError(err.response?.data?.error ?? err.response?.data?.detail ?? 'Execution failed.');
     } finally {
@@ -263,7 +264,7 @@ export default function SampleQuestionPage() {
         payload = { query: code, question_id: Number(question.id) };
       }
       const res = await api.post(submitApiPath, payload);
-      setSubmitResult(res.data);
+      setSubmitResult(normalizeRunResult(res.data));
       track('sample_submitted', { track: topic, difficulty, question_id: Number(question?.id), correct: res.data.correct });
     } catch (err) {
       setSubmitError(err.response?.data?.error ?? err.response?.data?.detail ?? 'Submission failed.');

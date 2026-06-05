@@ -348,22 +348,8 @@ def run_topic_sample_code(topic: str, body: SampleRunCodeRequest) -> dict[str, A
 
     if eval_kind in ("python", "mixed"):
         return python_evaluator.run_python_code(body.code, question)
-    # pandas: run comparison and add test_results
-    raw = python_evaluator.run_python_data_code(body.code, question)
-    if not raw.get("error"):
-        expected_raw = python_evaluator.run_python_data_code(question.get("expected_code", ""), question)
-        import pandas as pd
-        from evaluator import normalize_dataframe
-        try:
-            user_df = pd.DataFrame(raw["result"]["rows"]) if raw.get("result") else pd.DataFrame()
-            exp_df = pd.DataFrame(expected_raw["result"]["rows"]) if expected_raw.get("result") else pd.DataFrame()
-            passed = normalize_dataframe(user_df).equals(normalize_dataframe(exp_df))
-        except Exception:
-            passed = False
-        raw["test_results"] = [{"passed": passed, "actual": raw.get("result"), "expected": expected_raw.get("result")}]
-    else:
-        raw["test_results"] = [{"passed": False, "error": raw.get("error")}]
-    return raw
+    # pandas: compares against expected on the FULL result; returns a ~200-row preview.
+    return python_evaluator.run_python_data_code_checked(body.code, question)
 
 
 @router.post("/{topic}/{difficulty}/skip")

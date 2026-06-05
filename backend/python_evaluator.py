@@ -36,8 +36,41 @@ from evaluator import normalize_dataframe
 logger = logging.getLogger(__name__)
 
 CODE_TIMEOUT_SECONDS = 5
+# Data (pandas) mode grades on the FULL result, which for a correct answer over a
+# large dataset (events ≈ 45k rows) serializes a few MB out of the sandbox. The
+# marginal cost over a small result is only ~1s, but it lifts the heaviest spawns
+# enough that the tight 5s algorithm guard would occasionally false-timeout a correct
+# answer under load — so data mode gets a roomier 12s wall timeout. Small results
+# still return sub-second; the runaway-code guard is just looser for data mode.
+DATA_CODE_TIMEOUT_SECONDS = 12
 HARNESS_PATH = Path(__file__).parent / "python_sandbox_harness.py"
 DATASETS_DIR = Path(__file__).parent / "datasets"
+
+# Pandas grading compares the FULL result, but only this many rows are returned to
+# the client for display (parity with the SQL display cap). This decouples grading
+# soundness from payload/render cost, so legitimate per-row transformations over the
+# full dataset (e.g. dropna over events ≈ 45k rows) grade correctly while the UI stays
+# light. The result dict carries total_rows / truncated so the panel can say
+# "showing first 200 of N".
+DATA_PREVIEW_ROWS = 200
+
+
+def _preview_result(result: dict[str, Any] | None) -> dict[str, Any] | None:
+    """Cap a {columns, rows} result to a display preview, preserving the true count.
+
+    Returns a NEW dict so the caller's full result (used for grading) is untouched.
+    """
+    if not result or result.get("rows") is None:
+        return result
+    rows = result["rows"]
+    total = len(rows)
+    return {
+        "columns": result.get("columns"),
+        "rows": rows[:DATA_PREVIEW_ROWS],
+        "total_rows": total,
+        "row_limit": DATA_PREVIEW_ROWS,
+        "truncated": total > DATA_PREVIEW_ROWS,
+    }
 
 
 # ── Generator library ────────────────────────────────────────────────────────
@@ -273,8 +306,13 @@ def _expand_test_cases(test_cases: list[dict], expected_code: str) -> list[dict]
     return [_expand_test_case(tc, expected_code) for tc in test_cases]
 
 
-def _spawn_harness(payload: dict) -> dict:
-    """Run the harness subprocess, enforce timeout, parse stdout."""
+def _spawn_harness(payload: dict, timeout: int = CODE_TIMEOUT_SECONDS) -> dict:
+    """Run the harness subprocess, enforce timeout, parse stdout.
+
+    Data (pandas) mode uses a longer timeout (DATA_CODE_TIMEOUT_SECONDS) because a
+    correct answer over a large dataset serializes a multi-MB full result for the
+    grade; algorithm mode keeps the tight 5s loop guard.
+    """
     start = time.time()
     try:
         proc = subprocess.run(
@@ -282,10 +320,10 @@ def _spawn_harness(payload: dict) -> dict:
             input=json.dumps(payload),
             capture_output=True,
             text=True,
-            timeout=CODE_TIMEOUT_SECONDS,
+            timeout=timeout,
         )
     except subprocess.TimeoutExpired:
-        return {"error": f"Code timed out after {CODE_TIMEOUT_SECONDS} seconds. Check for infinite loops."}
+        return {"error": f"Code timed out after {timeout} seconds. Check for infinite loops."}
 
     duration = time.time() - start
     logger.debug("Harness completed in %.3fs", duration)
@@ -408,7 +446,7 @@ def run_python_data_code(code: str, question: dict[str, Any]) -> dict[str, Any]:
         "dataframes": dataframes,
         "csv_dir": str(DATASETS_DIR),
     }
-    raw = _spawn_harness(payload)
+    raw = _spawn_harness(payload, timeout=DATA_CODE_TIMEOUT_SECONDS)
     # Normalise print_output → stdout
     if "print_output" in raw:
         raw["stdout"] = raw.pop("print_output")
@@ -418,6 +456,38 @@ def run_python_data_code(code: str, question: dict[str, Any]) -> dict[str, Any]:
         raw["columns"] = nested["columns"]
     if nested.get("rows") is not None:
         raw["rows"] = nested["rows"]
+    return raw
+
+
+def run_python_data_code_checked(code: str, question: dict[str, Any]) -> dict[str, Any]:
+    """Run user code, compare against expected on the FULL result, and return a
+    display-preview payload with a per-case ``test_results`` entry.
+
+    Used by the /run-code endpoints (practice + sample). The pass/fail comparison
+    runs on the complete result; only a ~200-row preview is sent to the client, so a
+    correct answer over a large dataset is not blocked by payload/render cost.
+    """
+    raw = run_python_data_code(code, question)
+    if raw.get("error"):
+        raw["test_results"] = [{"passed": False, "error": raw.get("error")}]
+        return raw
+
+    expected_raw = run_python_data_code(question.get("expected_code", ""), question)
+    try:
+        user_df = pd.DataFrame(raw["result"]["rows"]) if raw.get("result") else pd.DataFrame()
+        exp_df = pd.DataFrame(expected_raw["result"]["rows"]) if expected_raw.get("result") else pd.DataFrame()
+        passed = normalize_dataframe(user_df).equals(normalize_dataframe(exp_df))
+    except Exception:
+        passed = False
+
+    # Cap display payloads AFTER the full-result comparison.
+    user_preview = _preview_result(raw.get("result"))
+    expected_preview = _preview_result(expected_raw.get("result"))
+    raw["result"] = user_preview
+    if user_preview:
+        raw["columns"] = user_preview.get("columns")
+        raw["rows"] = user_preview.get("rows")
+    raw["test_results"] = [{"passed": passed, "actual": user_preview, "expected": expected_preview}]
     return raw
 
 
@@ -445,7 +515,7 @@ def evaluate_python_data_code(code: str, question: dict[str, Any]) -> dict[str, 
         "dataframes": dataframes,
         "csv_dir": str(DATASETS_DIR),
     }
-    expected_output = _spawn_harness(expected_payload)
+    expected_output = _spawn_harness(expected_payload, timeout=DATA_CODE_TIMEOUT_SECONDS)
 
     if expected_output.get("error"):
         logger.error("Expected code failed for question %s: %s", question.get("id"), expected_output["error"])
@@ -460,7 +530,7 @@ def evaluate_python_data_code(code: str, question: dict[str, Any]) -> dict[str, 
     user_result = user_output.get("result")
     expected_result = expected_output.get("result")
 
-    # Normalize and compare
+    # Normalize and compare on the FULL result (correctness must be exact).
     try:
         user_df = pd.DataFrame(user_result["rows"]) if user_result else pd.DataFrame()
         expected_df = pd.DataFrame(expected_result["rows"]) if expected_result else pd.DataFrame()
@@ -469,10 +539,11 @@ def evaluate_python_data_code(code: str, question: dict[str, Any]) -> dict[str, 
         logger.warning("Comparison failed: %s", e)
         correct = False
 
+    # Return only a display preview (the comparison above already used the full result).
     return {
         "correct": correct,
         "error": None,
-        "user_result": user_result,
-        "expected_result": expected_result,
+        "user_result": _preview_result(user_result),
+        "expected_result": _preview_result(expected_result),
         "stdout": user_output.get("stdout", ""),
     }

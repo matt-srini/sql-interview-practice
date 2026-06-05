@@ -21,6 +21,7 @@ import { parseSqlError } from '../utils/sqlErrorParser';
 import { renderDescription } from '../utils/renderDescription';
 import { useToast } from '../App';
 import { track } from '../analytics';
+import { normalizeRunResult } from '../normalizeResult';
 
 const HINT_STEP_LABELS_BY_DIFFICULTY = {
   easy: ['Mental model', 'Tooling nudge'],
@@ -41,22 +42,8 @@ function getHintStepLabels(question) {
   return Array.from({ length: totalHints }, (_, index) => baseLabels[index] ?? `Hint ${index + 1}`);
 }
 
-/**
- * Normalize run-code / submit API responses so the frontend always sees:
- *   test_results  (backend may return `results` or `public_results`)
- *   stdout        (backend may return `print_output`)
- *   columns/rows  at the top level (Pandas nests them under `result`)
- */
-function normalizeRunResult(data) {
-  if (!data) return data;
-  const d = { ...data };
-  if (!('test_results' in d)) d.test_results = d.results ?? d.public_results ?? [];
-  if (!('stdout' in d))       d.stdout = d.print_output ?? '';
-  // Flatten Pandas result.columns / result.rows to top level
-  if (d.result && !d.columns) d.columns = d.result.columns;
-  if (d.result && !d.rows)    d.rows    = d.result.rows;
-  return d;
-}
+// normalizeRunResult is shared in ../normalizeResult — it unifies the run/submit
+// response shape AND converts Pandas dict-rows into the array-rows ResultsTable renders.
 
 
 
@@ -1451,7 +1438,11 @@ export default function QuestionPage() {
                 <div className="results-card">
                   <div className="results-header">
                     <span>Output</span>
-                    <span>{(runResult.rows ?? []).length} rows</span>
+                    <span>
+                      {runResult.result?.truncated
+                        ? `showing first ${runResult.result.row_limit} of ${runResult.result.total_rows.toLocaleString()} rows`
+                        : `${(runResult.rows ?? []).length} rows`}
+                    </span>
                   </div>
                   <ResultsTable columns={runResult.columns} rows={runResult.rows ?? []} />
                 </div>

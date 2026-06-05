@@ -77,17 +77,21 @@ def test_tc103_wrong_dataframe_shape_returns_correct_false():
 
 
 def test_tc104_timeout_enforced_in_pandas_sandbox():
-    """TC-104: time.sleep(10) → timeout error within ~7s."""
-    code = "import time\ndef solve(df_users):\n    time.sleep(10)\n    return df_users"
+    """TC-104: runaway pandas code is killed by the data-mode wall timeout (12s).
+
+    sleep(20) exceeds the timeout, so the harness is terminated and the response
+    carries an error / not-passed, well under the sleep duration.
+    """
+    code = "import time\ndef solve(df_users):\n    time.sleep(20)\n    return df_users"
     with TestClient(app) as client:
         _make_user(client, plan="pro")
         start = time.time()
         r = client.post("/api/python-data/run-code", json={
             "question_id": _easy_id,
             "code": code,
-        }, timeout=15)
+        }, timeout=25)
         elapsed = time.time() - start
-    assert elapsed < 8, f"Timeout too slow: {elapsed:.1f}s"
+    assert elapsed < 16, f"Timeout too slow: {elapsed:.1f}s"
     body = r.json()
     assert "error" in body or any(not tr.get("passed") for tr in body.get("test_results", [{}]))
 

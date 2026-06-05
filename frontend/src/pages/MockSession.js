@@ -15,6 +15,7 @@ import { TRACK_LABELS } from '../trackRegistry';
 import { track as trackEvent } from '../analytics';
 import { renderDescription } from '../utils/renderDescription';
 import { getMockSessionDescriptor } from '../mockModeConfig';
+import { normalizeRunResult } from '../normalizeResult';
 
 function formatTime(s) {
   if (s == null || s < 0) return '00:00';
@@ -50,15 +51,8 @@ const DEFAULT_CODE = {
  *   stdout        (backend may return `print_output`)
  *   columns/rows  at the top level (Pandas nests them under `result`)
  */
-function normalizeRunResult(data) {
-  if (!data) return data;
-  const d = { ...data };
-  if (!('test_results' in d)) d.test_results = d.results ?? [];
-  if (!('stdout' in d))       d.stdout = d.print_output ?? '';
-  if (d.result && !d.columns) d.columns = d.result.columns;
-  if (d.result && !d.rows)    d.rows    = d.result.rows;
-  return d;
-}
+// normalizeRunResult is shared in ../normalizeResult (unifies shape + converts
+// Pandas dict-rows to the array-rows ResultsTable renders).
 
 function isConceptualMcqQuestion(question, meta) {
   if (!question || !meta) return false;

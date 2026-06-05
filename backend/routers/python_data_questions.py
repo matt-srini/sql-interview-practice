@@ -124,22 +124,8 @@ async def run_python_data_code_endpoint(
             detail={"error": "Code contains disallowed constructs.", "guard_errors": guard_errors},
         )
 
-    raw = python_evaluator.run_python_data_code(body.code, q)
-    # Also run expected code to determine pass/fail for the test_results entry
-    if not raw.get("error"):
-        expected_raw = python_evaluator.run_python_data_code(q.get("expected_code", ""), q)
-        import pandas as pd
-        from evaluator import normalize_dataframe
-        try:
-            user_df = pd.DataFrame(raw["result"]["rows"]) if raw.get("result") else pd.DataFrame()
-            exp_df = pd.DataFrame(expected_raw["result"]["rows"]) if expected_raw.get("result") else pd.DataFrame()
-            passed = normalize_dataframe(user_df).equals(normalize_dataframe(exp_df))
-        except Exception:
-            passed = False
-        raw["test_results"] = [{"passed": passed, "actual": raw.get("result"), "expected": expected_raw.get("result")}]
-    else:
-        raw["test_results"] = [{"passed": False, "error": raw.get("error")}]
-    return raw
+    # Compares against expected on the FULL result; returns a ~200-row display preview.
+    return python_evaluator.run_python_data_code_checked(body.code, q)
 
 
 @router.post("/submit")

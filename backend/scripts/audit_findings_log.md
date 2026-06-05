@@ -578,3 +578,37 @@ pytest 35 passed; 0 duplicate IDs; learning path `practical-data-python` intact 
 change needed — the reframes make the 4 conform to the doc that was already correct.
 
 **REMAINING from the 24:** pandas row-cap ×7 · SQL ≥5-join reference ×3. Plus the 93019 keying decision.
+
+## ═══ PHASE 3 REMEDIATION #3 — pandas row-cap class (7 Q), user-approved 2026-06-04 ═══
+**Decision (user): Option C — decouple grading from display (the sound model).** 6 of the 7 are intrinsic
+per-row transformations (dropna, transform-vs-aggregate, per-row datetime, window gaps, per-row arithmetic,
+as-of join) where returning the full table IS the lesson — re-scoping to aggregate/top-N would distort or
+invert them (esp. 32021 transform-vs-aggregate). The 10k cap was solving a *display/payload* problem (3.58 MB,
+43k DOM rows) by blocking *grading* (a full 43k-row compare is 179 ms). SQL silently truncates to head(200)
+and grades that (unsound); pandas hard-errored (sound but unauthorable). Fix: grade the FULL result, return
+only a ~200-row preview — making pandas grading MORE sound than SQL's.
+
+**Fix:**
+- `python_sandbox_harness`: data-mode cap raised to `_MAX_DATA_RESULT_ROWS = 100,000` (safety bound only); RLIMIT_CPU 6→15.
+- `python_evaluator`: `DATA_PREVIEW_ROWS = 200` + `_preview_result()` (carries total_rows/truncated); grade full,
+  return preview in `evaluate_python_data_code`; new `run_python_data_code_checked()` centralizes the /run-code
+  compare-full + preview (replaces duplicated inline logic in `python_data_questions.py` + `sample.py`);
+  `DATA_CODE_TIMEOUT_SECONDS = 12` (a large result serializes a few MB for the grade).
+- Frontend: "showing first N of M rows" indicator (`QuestionPage`).
+- Docs: `pandas.md` row-ceiling rule flipped; `backend.md` documents the full-grade/preview model + the SQL gap.
+
+**🔴 Pre-existing bug discovered + fixed during verification:** `ResultsTable` expects array-rows but pandas
+returns dict-rows (`to_dict(orient="records")`) and `normalizeRunResult` never converted them → **`TypeError:
+row.map is not a function`** crashed EVERY pandas result render (QuestionPage, MockSession, SampleQuestionPage).
+Masked for the row-cap 7 because they errored at the cap (never rendered); surfaced the moment they render.
+Confirmed pre-existing via git-stash A/B on ff56df0 (small pandas Run also crashed). Fix: shared
+`frontend/src/normalizeResult.js` (`dictRowsToArrays` + `normalizeRunResult`) wired into all 3 pages; no-op for
+SQL array-rows (verified live).
+
+**Verification:** backend pytest **478 passed**; pandas deterministic sweep **206 ok, 0 flags** (all 17 pandas
+defects resolved); live HTTP — 31024 grades `correct=true`, returns 200/43,152 preview; **live UI render** of
+31024 shows "showing first 200 of 43,152 rows" (no crash); SQL `/api/run-query` unchanged through the shared
+normalizer (live); frontend build + 6 util tests + 30 MockSession tests pass.
+
+**REMAINING from the 24:** SQL ≥5-join reference ×3 (13018, 13021, 13024). Plus the 93019 keying decision +
+the SQL head(200) soundness follow-up (spawned task).
