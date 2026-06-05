@@ -35,6 +35,18 @@ Keep entries to 4–6 lines. Friction kills logs; if it's longer than the change
 
 ## Entries
 
+## 2026-06-05 — Raise SQL guard MAX_JOINS 5 → 9
+**Area:** architecture · **Status:** accepted
+**Decision:** Raise `sql_guard.MAX_JOINS` from 5 to 9 (allow up to 8 joins anywhere in a query). The join *count* is not the cost driver on the small committed datasets (≤45k rows) — cost is already bounded by the 3s query timeout, the cartesian-join check, and the result caps. A cap of 5 wrongly rejected legitimately-hard analytics questions *and the platform's own reference solutions* (13018/13021/13024), and blocked the natural EXISTS-cohort approach entirely.
+**Rejected:** (a) Rewrite the 3 references to ≤4 joins only — leaves users guard-blocked on the natural multi-join solution and distorts 13021's EXISTS lesson. (b) Keep the cap — keeps hard SQL un-authorable above 4 joins. Over-joining is coached via the EXPLAIN-based efficiency note, not blocked.
+**Affects:** backend/sql_guard.py; 13018/13024 references also CTE-cleaned (4/3 joins) as quality polish.
+
+## 2026-06-05 — Grade code answers on the full result; display only a preview
+**Area:** architecture · **Status:** accepted
+**Decision:** Pandas and SQL grading compare the **full** result (capped only by a high safety bound: pandas `_MAX_DATA_RESULT_ROWS=100k`, SQL `MAX_GRADING_ROWS=100k`) and return only a ~200-row preview (`total_rows`/`truncated`) to the client. This decouples grading soundness from payload/render cost, so legitimately large per-row outputs (e.g. dropna over 45k rows) grade correctly and a query/answer that diverges only beyond row 200 is no longer mis-graded.
+**Rejected:** (a) Keep capping the *graded* result (pandas 10k hard-error / SQL `head(200)`) — unsound (mis-grades) or unauthorable. (b) Re-scope large-output questions to aggregates — distorts per-row lessons (esp. transform-vs-aggregate). Datetimes are ISO-serialized + date-normalized (not re-scoped) for the same "fix the platform, not the curriculum" reason.
+**Affects:** docs/backend.md, docs/tracks/pandas.md, docs/tracks/sql.md; backend evaluator.py / python_evaluator.py / python_sandbox_harness.py.
+
 ## 2026-06-05 — Adopt an append-only decision log (this file)
 **Area:** process · **Status:** accepted
 **Decision:** Capture the *reasoning* layer in a single append-only, topic-tagged, never-expiring `docs/decisions/DECISIONS.md`, consulted on demand via a `CLAUDE.md` trigger and a one-line memory pointer — not auto-loaded every session.

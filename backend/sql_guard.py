@@ -87,7 +87,15 @@ def _node_types_by_name(names: list[str]) -> tuple[type, ...]:
 
 DISALLOWED_NODE_TYPES = _node_types_by_name(_DISALLOWED_NODE_NAMES)
 ALLOWED_ROOT_TYPES = _node_types_by_name(_ALLOWED_ROOT_NAMES)
-MAX_JOINS = 5
+# Max joins anywhere in the query (including subqueries / CTEs / EXISTS). This is a
+# complexity guard, not the cost guard — actual cost is bounded by the 3s query
+# timeout, the cartesian-join check below, and the result caps. On the small
+# committed datasets (≤ ~45k rows) the join *count* is not the cost driver, and a
+# cap of 5 wrongly rejected legitimately-hard analytics questions (multi-quarter
+# cohort shifts, multi-condition EXISTS cohorts, top-N-without-windows) — including
+# the platform's own reference solutions. Raised 5 → 9 so a hard question's natural
+# solution (up to 8 joins) is accepted; the timeout remains the real bound.
+MAX_JOINS = 9
 
 
 def _validate_query_cost(statement: exp.Expression) -> None:

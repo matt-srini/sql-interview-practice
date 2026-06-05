@@ -630,3 +630,24 @@ beyond row 200 now grades INCORRECT (was correct under head(200)); live UI — `
 renders "showing first 200 of 4,200 rows". The spawned follow-up chip can be dismissed (done in-session).
 
 **REMAINING from the 24:** SQL ≥5-join reference ×3 (13018, 13021, 13024). Plus the 93019 keying decision.
+
+## ═══ PHASE 3 REMEDIATION #5 — SQL ≥5-join references (3 Q), user-approved 2026-06-04 ═══
+**The last of the 24.** 13018 (6 joins), 13021 (8), 13024 (5) — their `expected_query` exceeded the guard's
+`MAX_JOINS=5`, so `evaluate()` threw on the reference → ungradeable. All three execute fine when the guard is
+bypassed; the cap was the only blocker, and on the small datasets (≤45k rows) the join *count* is not the cost
+driver (the 3s timeout + cartesian check + result caps are).
+
+**Fix (both, per user):**
+1. **Raised `sql_guard.MAX_JOINS` 5 → 9** (allow up to 8 joins; covers 13021's natural EXISTS solution). Decision
+   logged in `docs/decisions/DECISIONS.md`. Over-joining stays coached (EXPLAIN efficiency note), not blocked.
+2. **CTE-cleaned 13018 + 13024 references** — each computed its base aggregation twice (redundant subqueries);
+   a single base CTE drops them to 4 and 3 joins with **identical** results (verified row-for-row). 13021 kept
+   as-is (the multi-EXISTS pattern is the lesson). Via the authoring-agent checklist (verified-equivalent;
+   `validate_content.py` passed).
+
+**Verification:** SQL deterministic sweep **283 ok, 0 flags** (all 3 now gradeable); backend SQL/guard/security/
+submissions suites pass (49); `validate_content.py` passed.
+
+## ✅ ALL 24 ungradeable code-track questions RESOLVED (datetime 10 · python-import 4 · pandas row-cap 7 · SQL join 3).
+**Open items (not part of the 24):** the **93019** keying decision (3-family evidence favors alt A — needs a user
+call); 2 optional datetime cosmetic polishes (31018/32090).

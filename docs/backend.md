@@ -290,7 +290,7 @@ The `GET /api/dashboard/insights` endpoint uses `focus_concepts` to attach `reco
 Files: `sql_guard.py` → `evaluator.py` → `database.py`
 
 **Run path:**
-1. `validate_read_only_select_query` — parser-based safety check (no writes, single statement)
+1. `validate_read_only_select_query` — parser-based safety check (no writes, single statement; complexity guard rejects a cartesian join (no `ON`/`USING`) and more than `MAX_JOINS` joins — currently 9, since the 3s timeout + result caps are the real cost bound, see `docs/decisions/DECISIONS.md`)
 2. Lightweight cursor from shared in-memory DuckDB engine
 3. Execute directly (preserves `ORDER BY` semantics)
 4. Thread pool with 3-second timeout
