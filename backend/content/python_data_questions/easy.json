@@ -609,8 +609,8 @@
       ]
     },
     "starter_code": "import pandas as pd\n\ndef solve(df_users):\n    # Return users who signed up after 2022-12-31\n    # Columns: user_id, name, email, signup_date — sorted by signup_date ascending\n    pass",
-    "expected_code": "import pandas as pd\n\ndef solve(df_users):\n    df = df_users.copy()\n    df['signup_date'] = pd.to_datetime(df['signup_date'])\n    result = df[df['signup_date'] > '2022-12-31'][['user_id', 'name', 'email', 'signup_date']]\n    return result.sort_values('signup_date').reset_index(drop=True)",
-    "solution_code": "import pandas as pd\n\ndef solve(df_users):\n    df = df_users.copy()\n    df['signup_date'] = pd.to_datetime(df['signup_date'])\n    result = df[df['signup_date'] > '2022-12-31'][['user_id', 'name', 'email', 'signup_date']]\n    return result.sort_values('signup_date').reset_index(drop=True)",
+    "expected_code": "import pandas as pd\n\ndef solve(df_users):\n    df = df_users.copy()\n    df['signup_date'] = pd.to_datetime(df['signup_date'])\n    result = df[df['signup_date'] > '2022-12-31'].sort_values('signup_date')\n    result = result[['user_id', 'name', 'email', 'signup_date']].copy()\n    result['signup_date'] = result['signup_date'].dt.strftime('%Y-%m-%d')\n    return result.reset_index(drop=True)",
+    "solution_code": "import pandas as pd\n\ndef solve(df_users):\n    df = df_users.copy()\n    df['signup_date'] = pd.to_datetime(df['signup_date'])\n    result = df[df['signup_date'] > '2022-12-31'].sort_values('signup_date')\n    result = result[['user_id', 'name', 'email', 'signup_date']].copy()\n    result['signup_date'] = result['signup_date'].dt.strftime('%Y-%m-%d')\n    return result.reset_index(drop=True)",
     "explanation": "After parsing `signup_date` with `pd.to_datetime()`, pandas allows direct string comparisons like `> '2022-12-31'` because it auto-converts the string to a Timestamp for comparison. This is concise and readable.",
     "hints": [
       "Normalize the date values into a true time representation before extracting calendar pieces or measuring intervals.",

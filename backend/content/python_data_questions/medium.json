@@ -3477,7 +3477,7 @@
       ]
     },
     "starter_code": "import pandas as pd\n\ndef solve(df_emp):\n    pass",
-    "expected_code": "import pandas as pd\n\ndef solve(df_emp):\n    df = df_emp.copy()\n    df['hire_date'] = pd.to_datetime(df['hire_date'])\n    ref_date = df['hire_date'].max()\n    df['tenure_years'] = ((ref_date - df['hire_date']).dt.days / 365.25).round(1)\n    df['salary_tier'] = pd.cut(\n        df['salary'],\n        bins=[0, 60000, 90000, float('inf')],\n        labels=['junior', 'senior', 'staff']\n    )\n    return (\n        df[['employee_id', 'employee_name', 'salary', 'salary_tier', 'hire_date', 'tenure_years']]\n        .sort_values(['tenure_years', 'employee_id'], ascending=[False, True])\n        .reset_index(drop=True)\n    )\n",
+    "expected_code": "import pandas as pd\n\ndef solve(df_emp):\n    df = df_emp.copy()\n    df['hire_date'] = pd.to_datetime(df['hire_date'])\n    ref_date = df['hire_date'].max()\n    df['tenure_years'] = ((ref_date - df['hire_date']).dt.days / 365.25).round(1)\n    df['hire_date'] = df['hire_date'].dt.strftime('%Y-%m-%d')\n    df['salary_tier'] = pd.cut(\n        df['salary'],\n        bins=[0, 60000, 90000, float('inf')],\n        labels=['junior', 'senior', 'staff']\n    )\n    return (\n        df[['employee_id', 'employee_name', 'salary', 'salary_tier', 'hire_date', 'tenure_years']]\n        .sort_values(['tenure_years', 'employee_id'], ascending=[False, True])\n        .reset_index(drop=True)\n    )",
     "hints": [
       "Use the most recent hire_date in the dataset as the reference point so the tenure calculation is self-contained and reproducible.",
       "Convert elapsed days to years using a standard calendar convention that accounts for leap years to get accurate fractional tenure."
@@ -3487,7 +3487,7 @@
       "DATETIME OPERATIONS"
     ],
     "order": 90,
-    "solution_code": "import pandas as pd\n\ndef solve(df_emp):\n    df = df_emp.copy()\n    df['hire_date'] = pd.to_datetime(df['hire_date'])\n\n    # Use the most recent hire_date as the reference point so the result is\n    # deterministic regardless of when the script runs\n    ref_date = df['hire_date'].max()\n    df['tenure_years'] = ((ref_date - df['hire_date']).dt.days / 365.25).round(1)\n\n    # pd.cut() bins salary into labeled tiers; edges are exclusive on the left,\n    # inclusive on the right by default (i.e. (0, 60000] -> 'junior')\n    df['salary_tier'] = pd.cut(\n        df['salary'],\n        bins=[0, 60000, 90000, float('inf')],\n        labels=['junior', 'senior', 'staff']\n    )\n\n    return (\n        df[['employee_id', 'employee_name', 'salary', 'salary_tier', 'hire_date', 'tenure_years']]\n        .sort_values(['tenure_years', 'employee_id'], ascending=[False, True])\n        .reset_index(drop=True)\n    )\n"
+    "solution_code": "import pandas as pd\n\ndef solve(df_emp):\n    df = df_emp.copy()\n    df['hire_date'] = pd.to_datetime(df['hire_date'])\n    ref_date = df['hire_date'].max()\n    df['tenure_years'] = ((ref_date - df['hire_date']).dt.days / 365.25).round(1)\n    df['hire_date'] = df['hire_date'].dt.strftime('%Y-%m-%d')\n    df['salary_tier'] = pd.cut(\n        df['salary'],\n        bins=[0, 60000, 90000, float('inf')],\n        labels=['junior', 'senior', 'staff']\n    )\n    return (\n        df[['employee_id', 'employee_name', 'salary', 'salary_tier', 'hire_date', 'tenure_years']]\n        .sort_values(['tenure_years', 'employee_id'], ascending=[False, True])\n        .reset_index(drop=True)\n    )"
   },
   {
     "id": 32091,
