@@ -12,7 +12,7 @@ The SQL track exists to build that translation skill: business question → sche
 
 ## Modality
 
-**Executable problem-solving.** DuckDB execution. Parser-based read-only validation. 3-second query timeout. 200-row output cap. Both candidate's query and reference query run; DataFrames normalised and compared.
+**Executable problem-solving.** DuckDB execution. Parser-based read-only validation. 3-second query timeout. Both candidate's query and reference query run; DataFrames normalised and compared on the **full** result (sound — no `head(200)` truncation), with only a 200-row **display preview** returned to the client.
 
 ## Datasets (DuckDB, loaded from CSV at startup)
 

@@ -612,3 +612,21 @@ normalizer (live); frontend build + 6 util tests + 30 MockSession tests pass.
 
 **REMAINING from the 24:** SQL ≥5-join reference ×3 (13018, 13021, 13024). Plus the 93019 keying decision +
 the SQL head(200) soundness follow-up (spawned task).
+
+## ═══ PHASE 3 REMEDIATION #4 — SQL grade-only-head(200) soundness, user-approved 2026-06-04 ═══
+**Not one of the 24 — the related grading-engine follow-up** spawned during the row-cap work. SQL `evaluate()`
+compared only `head(200)` of each query (via `_execute_limited_query`), so a query that matched the expected
+result on the first 200 rows but diverged beyond them was mis-graded **correct**; an unordered result's
+`head(200)` was also non-deterministic.
+
+**Fix (same decouple-grading-from-display model as pandas):** `evaluator` grades on the FULL result
+(`run_query(query, question, preview=False)`, capped at `MAX_GRADING_ROWS = 100,000`) and returns only a
+`MAX_RESULT_ROWS = 200` preview (`_preview_sql_result`, with total_rows/truncated). Display endpoints use the
+default `preview=True`. Frontend SQL run card shows "showing first 200 of N rows". This makes SQL grading as
+sound as the new pandas model. ORDER-BY semantics preserved (`_requires_order_sensitive_comparison` unchanged).
+
+**Verification:** backend pytest **483 passed**; new `test_sql_grading_soundness.py` proves a query truncated
+beyond row 200 now grades INCORRECT (was correct under head(200)); live UI — `SELECT … FROM orders` (4,200 rows)
+renders "showing first 200 of 4,200 rows". The spawned follow-up chip can be dismissed (done in-session).
+
+**REMAINING from the 24:** SQL ≥5-join reference ×3 (13018, 13021, 13024). Plus the 93019 keying decision.

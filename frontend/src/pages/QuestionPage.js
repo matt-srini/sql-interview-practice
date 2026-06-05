@@ -1418,7 +1418,11 @@ export default function QuestionPage() {
             <div className="results-card">
               <div className="results-header">
                 <span>Query Result</span>
-                <span>{runResult.rows.length} row{runResult.rows.length !== 1 ? 's' : ''}</span>
+                <span>
+                  {runResult.truncated
+                    ? `showing first ${runResult.row_limit} of ${runResult.total_rows.toLocaleString()} rows`
+                    : `${runResult.rows.length} row${runResult.rows.length !== 1 ? 's' : ''}`}
+                </span>
               </div>
               <ResultsTable columns={runResult.columns} rows={runResult.rows} />
             </div>

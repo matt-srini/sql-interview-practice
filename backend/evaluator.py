@@ -25,7 +25,8 @@ from sql_guard import validate_read_only_select_query
 logger = logging.getLogger(__name__)
 
 QUERY_TIMEOUT_SECONDS = 3
-MAX_RESULT_ROWS = 200
+MAX_RESULT_ROWS = 200          # display preview cap (rows returned to the client)
+MAX_GRADING_ROWS = 100_000     # safety bound on the FULL result used for grading
 MAX_QUERY_LENGTH = 5000
 
 
@@ -149,18 +150,34 @@ def _validate_query(query: str) -> str:
 
 
 def _execute_limited_query(normalized_query: str, question: dict[str, Any]) -> pd.DataFrame:
-    """Execute the query in read-only mode and cap returned rows for payloads."""
+    """Execute the query read-only and return the FULL result (up to a high safety
+    cap). Grading compares the full result; only the display preview is capped to
+    MAX_RESULT_ROWS later, in run_query. This keeps correctness sound — a query that
+    diverges only beyond row 200 is no longer mis-graded as correct."""
     cursor = get_query_cursor(question["dataset_files"])
     try:
         # Execute the validated query as-is so ORDER BY semantics are preserved.
         # Wrapping in SELECT * FROM (<query>) can allow the optimizer to drop
         # inner ordering and incorrectly mark reversed-order answers as correct.
         result = cursor.execute(normalized_query).fetchdf()
-        if len(result) > MAX_RESULT_ROWS:
-            return result.head(MAX_RESULT_ROWS)
+        if len(result) > MAX_GRADING_ROWS:
+            return result.head(MAX_GRADING_ROWS)
         return result
     finally:
         cursor.close()
+
+
+def _preview_sql_result(result: dict[str, Any]) -> dict[str, Any]:
+    """Cap a full SQL result dict to the display preview, preserving the true count."""
+    rows = result.get("rows", [])
+    total = result.get("total_rows", len(rows))
+    return {
+        "columns": result.get("columns"),
+        "rows": rows[:MAX_RESULT_ROWS],
+        "row_limit": MAX_RESULT_ROWS,
+        "total_rows": total,
+        "truncated": total > MAX_RESULT_ROWS,
+    }
 
 
 def _run_with_timeout(normalized_query: str, question: dict[str, Any]) -> pd.DataFrame:
@@ -175,10 +192,15 @@ def _run_with_timeout(normalized_query: str, question: dict[str, Any]) -> pd.Dat
             ) from exc
 
 
-def run_query(query: str, question: dict[str, Any]) -> dict[str, Any]:
+def run_query(query: str, question: dict[str, Any], *, preview: bool = True) -> dict[str, Any]:
     """
-    Execute a SELECT query and return results as {columns, rows}.
+    Execute a SELECT query and return results as {columns, rows, ...}.
     Raises ValueError for disallowed queries or on execution error.
+
+    preview=True (default, for display): cap rows to MAX_RESULT_ROWS and report
+        total_rows / truncated so the UI can show "showing first 200 of N".
+    preview=False (for grading, used by evaluate): return the FULL result so the
+        comparison is exact, not a head(200) truncation.
     """
     request_id = get_request_id()
     prefix = f"[request_id={request_id}] "
@@ -210,18 +232,23 @@ def run_query(query: str, question: dict[str, Any]) -> dict[str, Any]:
             return v.isoformat()
         return v
 
-    clean = result.where(pd.notnull(result), None)
+    total_rows = len(result)
+    display = result.head(MAX_RESULT_ROWS) if preview else result
+    clean = display.where(pd.notnull(display), None)
     payload = {
         "columns": list(result.columns),
         "rows": [[_to_json_native(v) for v in row] for row in clean.values.tolist()],
         "row_limit": MAX_RESULT_ROWS,
+        "total_rows": total_rows,
+        "truncated": total_rows > len(clean),
     }
 
     logger.info(
-        "%sQuery succeeded: columns=%s rows=%s",
+        "%sQuery succeeded: columns=%s rows=%s total=%s",
         prefix,
         len(payload["columns"]),
         len(payload["rows"]),
+        total_rows,
     )
     return payload
 
@@ -382,8 +409,10 @@ def evaluate(user_query: str, expected_query: str, question: dict[str, Any]) -> 
     logger.info("%sEvaluate answer: question_id=%s", prefix, question.get("id"))
 
     eval_start = time.time()
-    user_result = run_query(user_query, question)
-    expected_result = run_query(expected_query, question)
+    # Grade on the FULL result of both queries (preview=False) so correctness is
+    # exact; a ~200-row preview is returned to the client below.
+    user_result = run_query(user_query, question, preview=False)
+    expected_result = run_query(expected_query, question, preview=False)
 
     # Build DataFrames from the already-serialised row/column payloads so that
     # the same representation used by the UI is also used for evaluation.
@@ -438,11 +467,12 @@ def evaluate(user_query: str, expected_query: str, question: dict[str, Any]) -> 
         except Exception:
             pass
 
+    # Grading above used the full result; return only display previews to the client.
     return {
         "correct": correct,
         "structure_correct": structure_correct,
         "feedback": feedback,
-        "user_result": user_result,
-        "expected_result": expected_result,
+        "user_result": _preview_sql_result(user_result),
+        "expected_result": _preview_sql_result(expected_result),
         "quality": quality,
     }
