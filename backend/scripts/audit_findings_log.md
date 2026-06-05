@@ -649,5 +649,18 @@ driver (the 3s timeout + cartesian check + result caps are).
 submissions suites pass (49); `validate_content.py` passed.
 
 ## ✅ ALL 24 ungradeable code-track questions RESOLVED (datetime 10 · python-import 4 · pandas row-cap 7 · SQL join 3).
-**Open items (not part of the 24):** the **93019** keying decision (3-family evidence favors alt A — needs a user
-call); 2 optional datetime cosmetic polishes (31018/32090).
+
+## ═══ PHASE 3 REMEDIATION #6 — 93019 keying (sharpen stem so B is unique) + 2 cosmetic polishes, 2026-06-04 ═══
+**93019 (exp hard, "Segmentation Analysis and Multiple Comparisons"), key B.** Across all 3 phases the blind
+models preferred alt A (multiple comparisons) because the title/scenario primed A while the explanation
+over-conceded it ("A is true and important"). **User decision: sharpen the stem so B is uniquely correct**
+(re-key to A rejected — the interaction-test reasoning is the deeper lesson, and the concept is covered
+elsewhere too). Fix: scenario now states a **Benjamini-Hochberg correction was applied and the mobile result
+survived**, neutralizing A; the explanation no longer concedes A; B (within-segment significance ≠ a
+cross-segment *difference*, which needs a device-type×treatment interaction) is the unique flaw. Concepts
+unchanged (SEGMENTATION ANALYSIS, MULTIPLE TESTING); key B; via the authoring-agent checklist.
+**Verified:** gpt-5-mini blind Pass-1 flipped from [B,A,A,A,A] → [B,B,B,B,B] (pre-write) / [B,?,B,B,B] 0×A
+(post-write from file); gpt-5 Pass-2 → B; `validate_content.py` passed.
+**Cosmetic polishes done:** 31018 `signup_date` + 32090 `hire_date` now display `YYYY-MM-DD` (grading unchanged).
+
+## ✅ PHASE 3 FULLY CLOSED — MCQ 0 wrong keys (3-family) · all 24 code-track defects fixed · hold list resolved.
