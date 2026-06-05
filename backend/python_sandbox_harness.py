@@ -14,17 +14,28 @@ import traceback
 import io
 import types
 
-try:
-    import resource
-    # Memory cap: 512 MB virtual address space
-    resource.setrlimit(resource.RLIMIT_AS, (512 * 1024 * 1024, 512 * 1024 * 1024))
-    # CPU cap: a backstop above the longest subprocess wall timeout (data mode's
-    # 12s, so 15s sits just above it). The per-mode wall timeout in python_evaluator
-    # is the primary guard and fires first; this only catches a tight CPU loop that
-    # slips past it.
-    resource.setrlimit(resource.RLIMIT_CPU, (15, 15))
-except Exception:
-    pass
+
+def _apply_sandbox_rlimits() -> None:
+    """Apply the subprocess resource caps. Called ONLY from main() — i.e. only when
+    this module is run as the sandbox subprocess entry point.
+
+    These MUST NOT run at import time: helpers like `_compare` are imported directly
+    by the test suite and `validate_content.py`, and a module-level
+    `setrlimit(RLIMIT_AS, 512MB)` would cap the *importing* process (pytest with
+    pandas/duckdb/numpy loaded → instant MemoryError on Linux; macOS silently ignores
+    RLIMIT_AS, which is why this only ever bit in CI).
+    """
+    try:
+        import resource
+        # Memory cap: 512 MB virtual address space
+        resource.setrlimit(resource.RLIMIT_AS, (512 * 1024 * 1024, 512 * 1024 * 1024))
+        # CPU cap: a backstop above the longest subprocess wall timeout (data mode's
+        # 12s, so 15s sits just above it). The per-mode wall timeout in python_evaluator
+        # is the primary guard and fires first; this only catches a tight CPU loop that
+        # slips past it.
+        resource.setrlimit(resource.RLIMIT_CPU, (15, 15))
+    except Exception:
+        pass
 
 
 _MAX_STDOUT_BYTES = 64 * 1024        # 64 KB per run
@@ -289,6 +300,7 @@ def _json_default(o):
 
 
 def main():
+    _apply_sandbox_rlimits()
     payload = json.loads(sys.stdin.read())
     mode = payload.get("mode", "algorithm")
     user_code = payload.get("code", "")
