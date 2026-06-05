@@ -79,6 +79,12 @@ TRACKS: dict[str, dict[str, str]] = {
     "sql":    {"dir": "content/questions",            "kind": "sql"},
     "python": {"dir": "content/python_questions",     "kind": "python"},
     "pandas": {"dir": "content/python_data_questions", "kind": "pandas"},
+    # Statistics-numerical: graded via python_evaluator.evaluate_python_code (same as
+    # the Python track), but the candidate guard runs under the "statistics" allowlist
+    # (numpy/statistics allowed). Only the numerical subtype is code; conceptual is MCQ
+    # and is covered by the MCQ harness.
+    "statistics": {"dir": "content/statistics_questions", "kind": "python",
+                   "subtype": "numerical", "guard_topic": "statistics"},
 }
 DIFFICULTIES = ["easy", "medium", "hard"]
 TRACK_ORDER = list(TRACKS.keys())
@@ -120,7 +126,10 @@ def load_questions(track: str, difficulties: list[str], scope: str) -> list[dict
         fp = track_dir / f"{diff}.json"
         if not fp.exists():
             continue
+        subtype = TRACKS[track].get("subtype")
         for q in json.loads(fp.read_text(encoding="utf-8")):
+            if subtype is not None and q.get("subtype") != subtype:
+                continue  # statistics: numerical (code) only; conceptual is MCQ
             mock = bool(q.get("mock_only", False))
             if scope == "practice" and mock:
                 continue
@@ -288,7 +297,8 @@ def run_candidate(q: dict[str, Any], kind: str, code: str) -> dict[str, Any]:
             return {"status": "reproduces" if res["correct"] else "mismatch",
                     "detail": "result match" if res["correct"] else "result differs"}
         if kind == "python":
-            errs = validate_code(code, "python")
+            guard_topic = TRACKS.get(q.get("_track"), {}).get("guard_topic", "python")
+            errs = validate_code(code, guard_topic)
             if errs:
                 return {"status": "guard_reject", "detail": "; ".join(errs)[:300]}
             res = evaluate_python_code(code, q)

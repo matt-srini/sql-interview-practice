@@ -298,7 +298,10 @@ def _expand_test_case(tc: dict, expected_code: str) -> dict:
         exec(expected_code, ns)  # noqa: S102 — expected_code is vetted authored content
         expected = ns["solve"](*expanded_input)
 
-    return {"input": expanded_input, "expected": expected}
+    out = {"input": expanded_input, "expected": expected}
+    if "tolerance" in tc:
+        out["tolerance"] = tc["tolerance"]  # preserve declared numeric tolerance for grading
+    return out
 
 
 def _expand_test_cases(test_cases: list[dict], expected_code: str) -> list[dict]:

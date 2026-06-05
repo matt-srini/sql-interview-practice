@@ -183,6 +183,109 @@ def _validate_statistics_subtypes() -> None:
         raise ValueError(f"Statistics subtype validation failed:\n{joined}")
 
 
+def _validate_code_reference_reproduces_tests() -> None:
+    """The reference solution must reproduce every literal test-case `expected` it ships with.
+
+    This is the recurrence guard for the Phase-4 finding: a stored test-case
+    `expected` value that the question's own `expected_code` no longer produces
+    is silently ungradeable — the platform graded the user against a number the
+    reference itself misses (73047: stored 0.9809, reference yields 0.9805).
+
+    Scope is precisely the two tracks that ship *stored* expected values:
+      - python      (all questions: expected_code + test_cases)
+      - statistics  (numerical subtype only; conceptual is MCQ)
+    SQL and pandas compute their expected output live from the reference at
+    grade time, so they cannot drift this way and are out of scope here.
+
+    Only *literal* cases are checked. Generator-spec inputs / {"compute":
+    "reference"} cases derive their expected from the reference at run time, so
+    by construction they cannot disagree with it. The declared per-case
+    `tolerance` is honored exactly as the live grader does (1e-6 floor), so an
+    intentionally approximate Monte-Carlo answer is not flagged.
+    """
+    import signal as _signal
+
+    from python_sandbox_harness import _compare  # tolerance-aware, mirrors live grading
+
+    class _RefTimeout(Exception):
+        pass
+
+    def _alarm(_sig, _frame):
+        raise _RefTimeout()
+
+    def _is_literal_case(tc: dict) -> bool:
+        inp = tc.get("input", [])
+        if any(isinstance(a, dict) and "gen" in a for a in inp):
+            return False
+        exp = tc.get("expected") if "expected" in tc else tc.get("expected_output")
+        if isinstance(exp, dict) and exp.get("compute") == "reference":
+            return False
+        return True
+
+    targets: list[tuple[str, Path]] = [("python", QUESTION_DIRS["python"])]
+    if "statistics" in QUESTION_DIRS:
+        targets.append(("statistics", QUESTION_DIRS["statistics"]))
+
+    errors: list[str] = []
+    has_alarm = hasattr(_signal, "SIGALRM")
+    if has_alarm:
+        _prev = _signal.signal(_signal.SIGALRM, _alarm)
+    try:
+        for track, directory in targets:
+            for file_path in sorted(directory.glob("*.json")):
+                if file_path.stem == "schemas":
+                    continue
+                with file_path.open("r", encoding="utf-8") as handle:
+                    questions = json.load(handle)
+                for q in questions:
+                    if track == "statistics" and q.get("subtype") != "numerical":
+                        continue
+                    code = q.get("expected_code")
+                    cases = q.get("test_cases")
+                    if not code or not isinstance(cases, list) or not cases:
+                        continue
+                    qid = q.get("id", "<unknown>")
+                    title = q.get("title", "<untitled>")
+                    if has_alarm:
+                        _signal.alarm(10)
+                    try:
+                        ns: dict = {}
+                        exec(code, ns)  # noqa: S102 — vetted authored reference
+                        solve = ns.get("solve")
+                        if not callable(solve):
+                            errors.append(f"{track} {qid} {title}: expected_code defines no callable solve()")
+                            continue
+                        for idx, tc in enumerate(cases):
+                            if not _is_literal_case(tc):
+                                continue
+                            exp = tc.get("expected") if "expected" in tc else tc.get("expected_output")
+                            tol = tc.get("tolerance", 1e-6)
+                            try:
+                                actual = solve(*tc.get("input", []))
+                            except Exception as exc:
+                                errors.append(f"{track} {qid} {title}: reference raised on test_case[{idx}]: {exc!r}")
+                                continue
+                            if not _compare(actual, exp, tol):
+                                errors.append(
+                                    f"{track} {qid} {title}: reference does not reproduce test_case[{idx}] "
+                                    f"expected={exp!r} (got {actual!r}, tolerance={tol})"
+                                )
+                    except _RefTimeout:
+                        errors.append(f"{track} {qid} {title}: reference solution timed out (>10s) during validation")
+                    except Exception as exc:
+                        errors.append(f"{track} {qid} {title}: reference solution failed to execute: {exc!r}")
+                    finally:
+                        if has_alarm:
+                            _signal.alarm(0)
+    finally:
+        if has_alarm:
+            _signal.signal(_signal.SIGALRM, _prev)
+
+    if errors:
+        joined = "\n".join(f"- {item}" for item in errors[:200])
+        raise ValueError(f"Code reference-reproduces-tests validation failed:\n{joined}")
+
+
 def _validate_mcq_scenario_questions() -> None:
     """Validate scenario-type MCQ questions (any track) have required observation anchors and rich options."""
     from tracks import TRACKS as _TRACKS
@@ -1615,6 +1718,7 @@ def main() -> None:
     _validate_chain_integrity()
     _validate_hints()
     _validate_statistics_subtypes()
+    _validate_code_reference_reproduces_tests()
     _validate_mcq_scenario_questions()
     _validate_mock_fields()
     _validate_solution_code_presence()

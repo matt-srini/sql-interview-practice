@@ -640,7 +640,11 @@ def test_tc043_streak_at_risk_when_yesterday_only():
     """TC-043: streak_at_risk=true when submission yesterday but none today."""
     import datetime
 
-    yesterday = datetime.datetime.now() - datetime.timedelta(days=1)
+    # Compute "yesterday" in UTC — the same frame get_user_streak_status() buckets
+    # solves by (DATE(submitted_at AT TIME ZONE 'UTC') vs now(UTC)). Using local
+    # naive time made this flaky near midnight in UTC+ timezones (e.g. IST): "yesterday
+    # local" could land on "today UTC", collapsing the expected streak_days==0 case.
+    yesterday = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=1)
     with TestClient(app) as client:
         user = _make_user(client)
         _insert_submission(

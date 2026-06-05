@@ -64,6 +64,7 @@ def _run_algorithm(user_code: str, test_cases: list) -> dict:
     for case in test_cases:
         args = case.get("input", [])
         expected = case.get("expected") if "expected" in case else case.get("expected_output")
+        tol = case.get("tolerance", 1e-6)
         stdout_capture = _BoundedStringIO()
         old_stdout = sys.stdout
         sys.stdout = stdout_capture
@@ -77,7 +78,7 @@ def _run_algorithm(user_code: str, test_cases: list) -> dict:
             # limit and CPU timeout are the real safety bounds in that case.
             if isinstance(actual, (list, tuple)) and len(actual) > _MAX_RESULT_ITEMS:
                 if isinstance(expected, (list, tuple)) and len(expected) == len(actual):
-                    passed = _compare(actual, expected)
+                    passed = _compare(actual, expected, tol)
                     results.append({
                         "input": f"<{len(args)} arg(s)>",
                         "expected": f"<{len(expected):,} items>",
@@ -88,7 +89,7 @@ def _run_algorithm(user_code: str, test_cases: list) -> dict:
                     })
                     continue
                 raise ValueError(f"Result has {len(actual):,} items — limit is {_MAX_RESULT_ITEMS:,}")
-            passed = _compare(actual, expected)
+            passed = _compare(actual, expected, tol)
             results.append({
                 "input": args,
                 "expected": expected,
@@ -136,14 +137,33 @@ def _normalize(value):
     return value
 
 
-def _compare(actual, expected) -> bool:
-    if isinstance(expected, float) or isinstance(actual, float):
+def _compare(actual, expected, tolerance: float = 1e-6) -> bool:
+    # Honor a test case's declared numeric tolerance (e.g. statistics Monte-Carlo /
+    # numerical-method answers), never grading STRICTER than the 1e-6 default — so a
+    # tighter declared tolerance can't break a currently-passing question, while a
+    # larger one accepts correct-but-approximate answers as the author intended.
+    eff_tol = max(tolerance, 1e-6)
+
+    def _num_close(a, e) -> bool:
+        # `a == e` first so exact / infinite values match (abs(inf-inf) is nan).
         try:
-            return abs(float(actual) - float(expected)) < 1e-6
+            return a == e or abs(float(a) - float(e)) <= eff_tol
         except (TypeError, ValueError):
             return False
+
+    if isinstance(expected, float) or isinstance(actual, float):
+        return _num_close(actual, expected)
     actual_n = _normalize(actual)
     expected_n = _normalize(expected)
+    # Element-wise numeric tolerance for equal-length numeric sequences, preserving
+    # the original order-insensitive matching (sorted) AND order-sensitive matching.
+    if (isinstance(actual_n, list) and isinstance(expected_n, list)
+            and len(actual_n) == len(expected_n) and actual_n
+            and all(isinstance(a, (int, float)) for a in actual_n)
+            and all(isinstance(e, (int, float)) for e in expected_n)):
+        def _within(seq_a, seq_b):
+            return all(_num_close(a, e) for a, e in zip(seq_a, seq_b))
+        return _within(actual_n, expected_n) or _within(sorted(actual_n), sorted(expected_n))
     if isinstance(actual_n, list) and isinstance(expected_n, list):
         try:
             return sorted(actual_n) == sorted(expected_n) or actual_n == expected_n
