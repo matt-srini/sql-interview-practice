@@ -329,6 +329,25 @@ def _sandbox_env() -> dict[str, str]:
     return env
 
 
+def _sandbox_preexec() -> None:
+    """Called in the child process after fork() and before exec().
+
+    Puts the sandbox subprocess in its own process group so a SIGKILL on the
+    group terminates the whole tree (prevents zombie child chains from forking
+    grand-children). Also changes cwd to /tmp — the safest writable directory
+    — so that relative-path open() calls cannot reach app source files.
+
+    This runs on Linux/macOS only; on Windows os.setsid() is unavailable, but
+    the sandbox runs on Linux in production so the guard still applies where it
+    matters.
+    """
+    try:
+        os.setsid()          # new process group → SIGKILL kills the entire tree
+        os.chdir("/tmp")     # restrict cwd away from app source
+    except OSError:
+        pass  # non-POSIX (e.g., Windows CI): fail open, RLIMIT is still active
+
+
 def _spawn_harness(payload: dict, timeout: int = CODE_TIMEOUT_SECONDS) -> dict:
     """Run the harness subprocess, enforce timeout, parse stdout.
 
@@ -345,6 +364,7 @@ def _spawn_harness(payload: dict, timeout: int = CODE_TIMEOUT_SECONDS) -> dict:
             text=True,
             timeout=timeout,
             env=_sandbox_env(),
+            preexec_fn=_sandbox_preexec,
         )
     except subprocess.TimeoutExpired:
         return {"error": f"Code timed out after {timeout} seconds. Check for infinite loops."}

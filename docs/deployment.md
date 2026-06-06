@@ -384,3 +384,54 @@ cd backend
 ```
 
 All seeded accounts are created with `email_verified = true` and are idempotent — safe to re-run to reset credentials or plan.
+
+---
+
+## Sandbox security hardening
+
+The user-code execution sandbox has three layers of defense against escape/exfiltration.
+The first two are implemented in code and active now; the third requires Railway/infra
+configuration.
+
+### Layer 1 — Scrubbed subprocess environment (active)
+
+`python_evaluator._spawn_harness` passes a minimal allow-list env to the sandbox
+subprocess (`env=_sandbox_env()`). The subprocess receives only: `PATH`, `HOME`,
+`LANG`, `LC_*`, `TMPDIR`, `TZ`, `PYTHONIOENCODING`, `PYTHONDONTWRITEBYTECODE`,
+`PYTHONNOUSERSITE`. Every secret (`DATABASE_URL`, `RAZORPAY_KEY_SECRET`,
+`GOOGLE/GITHUB_CLIENT_SECRET`, `RESEND_API_KEY`, `SENTRY_DSN`, etc.) is absent.
+No `PYTHONPATH` either, so the sandbox cannot `import` backend app modules.
+
+### Layer 2 — AST guard + in-process OS isolation (active)
+
+`python_guard.validate_code` rejects known escape gadgets before execution: dangerous
+bare names (`globals`, `locals`, `getattr`, `eval`, `exec`, `__builtins__`, etc.),
+dunder chains (`__class__`, `__globals__`, `__subclasses__`, frame/traceback walks),
+blocked imports, and pandas/numpy filesystem I/O methods. The guard is tested by
+34 red-team attempts in `tests/test_guard_redteam.py` (all must be BLOCKED) and 13
+legitimate interview snippets (all must PASS — no false positives).
+
+`python_evaluator._sandbox_preexec` (the subprocess `preexec_fn`) additionally:
+- Calls `os.setsid()` — puts the sandbox in its own process group so a timeout
+  SIGKILL terminates the entire subprocess tree, not just the direct child.
+- Calls `os.chdir('/tmp')` — moves the cwd away from `/app/backend` so relative
+  `open()` calls cannot reach app source files or the backend module tree.
+
+The Dockerfile now runs the app as a non-root `appuser`, so the sandbox subprocess
+inherits an unprivileged UID and cannot write to `/app` even if the guard fails.
+
+### Layer 3 — Infra-level isolation (TODO: Railway configuration)
+
+These require platform configuration and are **not yet active in production**:
+
+| Hardening | How | Priority |
+|---|---|---|
+| **Network egress block** | Railway service egress policy, or `iptables` rule in startup script: `iptables -A OUTPUT -m owner --uid-owner appuser -j DROP` (drop all outbound from the app UID except the DB/Redis ports). Prevents a guard-escaped process from phoning home, exfiltrating data to an attacker server, or scanning the internal network. | P0 pre-launch |
+| **Read-only filesystem** | Docker `--read-only` flag + `--tmpfs /tmp`. Container root fs is immutable; only `/tmp` is writable (for the harness subprocess). A guard escape cannot modify app code or write a backdoor. | P1 |
+| **Seccomp profile** | Restrict syscalls available to the container (block `ptrace`, `clone` with `CLONE_NEWUSER`, `socket` for outbound, etc.). Railway supports custom seccomp profiles via the service config. | P1 |
+| **Memory limit** | Railway service memory cap (already set via `RLIMIT_AS` in the harness, but a container-level hard cap is belt-and-suspenders). Prevents a memory-bomb from OOM-killing the whole app process. | P2 |
+
+**Recommended action before launch:** configure the egress block (P0) and read-only
+filesystem (P1) in Railway. The network egress block is the single highest-leverage
+remaining hardening because it converts a "sandbox escape with network access" from
+"full data exfiltration possible" to "escape but can't communicate out."
