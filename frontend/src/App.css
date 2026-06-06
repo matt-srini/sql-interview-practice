@@ -6079,7 +6079,7 @@ select {
   gap: 1.25rem;
   align-items: start;
 }
-.db-lower-main, .db-lower-aside { display: flex; flex-direction: column; }
+.db-lower-main, .db-lower-aside { display: flex; flex-direction: column; min-width: 0; }
 
 /* Accuracy bar */
 .db-accuracy-bar-wrap {
@@ -6444,6 +6444,12 @@ select {
   .db-track-right-col .db-readiness-gate { display: none; }
   /* Allow focus subline to wrap on narrow screens */
   .db-focus-subline { white-space: normal; }
+  /* Track rows: tagline is nowrap and expands name-col beyond 120px,
+     starving the bar-col. Hide it; track name alone is enough on mobile. */
+  .db-track-tagline { display: none; }
+  .db-track-name-col { flex-shrink: 1; }
+  /* Clip the count chip so a collapsed bar-col doesn't bleed into the row */
+  .db-track-bar-col { overflow: hidden; }
 }
 
 /* ============================================================
