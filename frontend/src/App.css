@@ -12649,7 +12649,7 @@ select {
  * markers on each (track, difficulty) tile; logged-out users see ghost
  * counts to match the no-friction promise.
  */
-.sample-hub { padding: 56px 0 80px; }
+.sample-hub { padding-top: 56px; padding-bottom: 80px; }
 .sample-hub-header {
   max-width: 720px;
   margin: 0 auto 48px;
@@ -12786,7 +12786,7 @@ select {
 }
 @media (max-width: 640px) {
   .sample-hub-grid { grid-template-columns: 1fr; }
-  .sample-hub { padding: 40px 0 64px; }
+  .sample-hub { padding-top: 40px; padding-bottom: 64px; }
 }
 
 /* ─── Sample in-page switcher (inside SampleQuestionPage topbar) ─── */
