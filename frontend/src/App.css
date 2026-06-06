@@ -12834,6 +12834,17 @@ select {
 @media (max-width: 640px) {
   .sample-switcher { gap: 6px; }
   .sample-switcher-diff { padding: 4px 7px; font-size: 0.7rem; }
+  /* Topbar: drop right CTA + duplicated track pill; reduce padding; allow center to shrink */
+  .sample-topbar-right { display: none; }
+  .sample-page-topbar .shell-pill-mode-sample { display: none; }
+  .sample-page-topbar { padding: 0 1rem; gap: 0.5rem; }
+  .sample-topbar-center { flex-shrink: 1; }
+  .sample-switcher-track { max-width: 130px; }
+}
+@media (max-width: 480px) {
+  /* Keep only the logo mark on very narrow screens to free up space */
+  .sample-page-topbar .brand-wordmark-text { display: none; }
+  .sample-switcher-track { max-width: 105px; }
 }
 
 /* ─── Tracks Index 'Try sample →' secondary link ───────────────────── */
