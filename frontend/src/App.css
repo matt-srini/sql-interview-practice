@@ -12659,7 +12659,7 @@ select {
   .lp-track-row { grid-template-columns: 10px 1fr 60px; }
   .lp-track-meta { display: none; }
   .lp-track-row:hover { margin: 0; padding: 20px 0; border-radius: 0; background: none; }
-  .lp-proof-stat { min-width: 120px; padding: 14px 16px; font-size: 0.85rem; }
+  .lp-proof-stat { min-width: 120px; padding: 14px 16px; font-size: 0.85rem; white-space: normal; overflow: hidden; }
   .lp-proof-stat strong { font-size: 1.15rem; }
   .lp-hero-li-cards { flex-direction: column; }
   .lp-li-card { max-width: 100%; }
