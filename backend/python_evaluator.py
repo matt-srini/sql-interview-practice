@@ -309,6 +309,26 @@ def _expand_test_cases(test_cases: list[dict], expected_code: str) -> list[dict]
     return [_expand_test_case(tc, expected_code) for tc in test_cases]
 
 
+# The user-code subprocess MUST NOT inherit the parent process environment, which on
+# production holds every secret: DATABASE_URL, RAZORPAY_KEY_SECRET / WEBHOOK_SECRET,
+# GOOGLE/GITHUB_CLIENT_SECRET, RESEND_API_KEY, SENTRY_DSN, OPENAI_API_KEY. The AST guard
+# (python_guard) is a denylist and denylists are inherently incomplete — a single missed
+# gadget that reaches os.environ would otherwise exfiltrate every secret + the whole DB.
+# Defense-in-depth: pass a minimal default-DENY allowlist so even a full guard bypass finds
+# no secret in its environment. Only keys Python/pandas need to start cleanly are copied.
+_SANDBOX_ENV_ALLOWLIST = ("PATH", "HOME", "LANG", "LC_ALL", "LC_CTYPE", "TMPDIR", "TZ")
+
+
+def _sandbox_env() -> dict[str, str]:
+    env = {k: os.environ[k] for k in _SANDBOX_ENV_ALLOWLIST if k in os.environ}
+    env.setdefault("PATH", "/usr/local/bin:/usr/bin:/bin")
+    env["PYTHONIOENCODING"] = "utf-8"        # deterministic stdout for the JSON protocol
+    env["PYTHONDONTWRITEBYTECODE"] = "1"     # no .pyc writes (also helps a read-only fs)
+    env["PYTHONNOUSERSITE"] = "1"            # ignore ~/.local site-packages
+    # Deliberately NO PYTHONPATH → user code cannot import backend app modules.
+    return env
+
+
 def _spawn_harness(payload: dict, timeout: int = CODE_TIMEOUT_SECONDS) -> dict:
     """Run the harness subprocess, enforce timeout, parse stdout.
 
@@ -324,6 +344,7 @@ def _spawn_harness(payload: dict, timeout: int = CODE_TIMEOUT_SECONDS) -> dict:
             capture_output=True,
             text=True,
             timeout=timeout,
+            env=_sandbox_env(),
         )
     except subprocess.TimeoutExpired:
         return {"error": f"Code timed out after {timeout} seconds. Check for infinite loops."}
