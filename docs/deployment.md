@@ -416,22 +416,25 @@ legitimate interview snippets (all must PASS — no false positives).
   SIGKILL terminates the entire subprocess tree, not just the direct child.
 - Calls `os.chdir('/tmp')` — moves the cwd away from `/app/backend` so relative
   `open()` calls cannot reach app source files or the backend module tree.
+- Calls `_install_seccomp_filter()` — see Layer 3.
 
-The Dockerfile now runs the app as a non-root `appuser`, so the sandbox subprocess
-inherits an unprivileged UID and cannot write to `/app` even if the guard fails.
+### Layer 3 — Seccomp egress filter + read-only app dir (active)
 
-### Layer 3 — Infra-level isolation (TODO: Railway configuration)
+Railway's managed platform uses **eBPF networking** and grants **no `NET_ADMIN`, no
+custom `--security-opt`, and no `--read-only`/`--tmpfs`** — so the *container-level*
+forms of these (in-container `iptables`, a Docker seccomp profile, a read-only root
+fs) are unavailable. We implement the equivalents **in code / in the image** instead:
 
-These require platform configuration and are **not yet active in production**:
-
-| Hardening | How | Priority |
+| Hardening | How we do it (no Railway dependency) | Status |
 |---|---|---|
-| **Network egress block** | Railway service egress policy, or `iptables` rule in startup script: `iptables -A OUTPUT -m owner --uid-owner appuser -j DROP` (drop all outbound from the app UID except the DB/Redis ports). Prevents a guard-escaped process from phoning home, exfiltrating data to an attacker server, or scanning the internal network. | P0 pre-launch |
-| **Read-only filesystem** | Docker `--read-only` flag + `--tmpfs /tmp`. Container root fs is immutable; only `/tmp` is writable (for the harness subprocess). A guard escape cannot modify app code or write a backdoor. | P1 |
-| **Seccomp profile** | Restrict syscalls available to the container (block `ptrace`, `clone` with `CLONE_NEWUSER`, `socket` for outbound, etc.). Railway supports custom seccomp profiles via the service config. | P1 |
-| **Memory limit** | Railway service memory cap (already set via `RLIMIT_AS` in the harness, but a container-level hard cap is belt-and-suspenders). Prevents a memory-bomb from OOM-killing the whole app process. | P2 |
+| **Network egress block** | `python_evaluator._install_seccomp_filter` installs a per-process **seccomp** filter in the sandbox `preexec_fn` that denies the network-syscall family (`socket`, `connect`, `sendto`, …) — an unprivileged process can install a filter once `NO_NEW_PRIVS` is set (libseccomp does this on `.load()`). A guard escape cannot open a socket → cannot phone home, exfiltrate, or scan the internal network. Denylist model (allow-by-default) so pandas/numpy file+compute syscalls are untouched. **Validated:** CI (`tests/test_sandbox_seccomp.py`) asserts `socket()`/`connect()` are denied on Linux. | ✅ active |
+| **Seccomp profile** | Same filter — it *is* the seccomp profile, applied per-process rather than via the (unavailable) Docker `--security-opt`. | ✅ active |
+| **Read-only app dir** | Dockerfile leaves `/app` **root-owned** and runs as non-root `appuser` (no `chown`). appuser reads+executes the app but cannot write it, so an escape cannot drop a backdoor or overwrite a module. `PYTHONDONTWRITEBYTECODE=1` app-wide. Only `/tmp` (world-writable) is writable. The in-image equivalent of `--read-only`. | ✅ active |
+| **Memory limit** | `RLIMIT_AS` 512 MB is enforced per-subprocess in the harness. A container-level cap is belt-and-suspenders — set a **Railway service RAM cap** (Settings → Resource Limits, e.g. 1–2 GB) as the last backstop against a memory bomb OOM-killing the whole app process. | ⚠️ set in Railway dashboard |
 
-**Recommended action before launch:** configure the egress block (P0) and read-only
-filesystem (P1) in Railway. The network egress block is the single highest-leverage
-remaining hardening because it converts a "sandbox escape with network access" from
-"full data exfiltration possible" to "escape but can't communicate out."
+**Dependencies:** `pyseccomp` (requirements.txt) + `libseccomp2` (Dockerfile `apt-get`,
+and the CI `Install libseccomp` step). If either is absent the filter **fails open** —
+no breakage, but the egress block is inactive, so both must be present in production.
+
+**The one remaining manual step before launch:** set the Railway service memory cap
+(P2). Everything else in this layer is active in code and validated by CI.

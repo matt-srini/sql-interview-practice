@@ -13,6 +13,9 @@ sqlalchemy[asyncio]
 alembic
 razorpay
 sentry-sdk[fastapi]
+# Sandbox seccomp egress filter (pure-ctypes libseccomp bindings; Linux-only —
+# import/load is wrapped in try/except so non-Linux dev hosts are a no-op).
+pyseccomp
 # Pin minimum safe versions for packages with known CVEs
 pygments>=2.20.0
 requests>=2.33.0

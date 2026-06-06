@@ -329,23 +329,75 @@ def _sandbox_env() -> dict[str, str]:
     return env
 
 
+# Network-syscall family blocked by the sandbox seccomp filter. Blocking `socket`
+# alone prevents all egress (you cannot connect/send without a socket fd); the rest
+# are belt-and-suspenders for connectionless paths and 32-bit (`socketcall`). We do
+# NOT block `socketpair` (local IPC, used by some libs) or read-only socket queries —
+# only the egress-creating calls — so pandas/numpy are unaffected. `execve` is NOT
+# blocked: subprocess does fork→preexec_fn→execve(python), so blocking it would stop
+# Python from launching (user code can't reach execve anyway — imports are guarded).
+_SECCOMP_BLOCKED_SYSCALLS = (
+    "socket", "socketcall", "connect", "bind", "listen", "accept", "accept4",
+    "sendto", "sendmsg", "sendmmsg", "recvfrom", "recvmsg", "recvmmsg",
+    "ptrace", "process_vm_readv", "process_vm_writev",
+)
+
+
+def _install_seccomp_filter() -> None:
+    """Install a seccomp filter that denies network egress from the sandbox.
+
+    Railway's managed platform does not grant NET_ADMIN or custom Docker
+    --security-opt, so a container-level egress firewall is unavailable. seccomp
+    filters, however, can be installed per-process by an unprivileged process
+    (libseccomp sets NO_NEW_PRIVS on load), so we apply one inside the sandbox
+    subprocess. This restores the egress block the platform otherwise denies us.
+
+    Denylist model (allow-by-default, EPERM on the network-syscall family): an
+    allowlist (default-deny) is stronger but reliably breaks pandas/numpy, which
+    issue hundreds of distinct syscalls. Blocking only egress syscalls leaves all
+    file/compute syscalls untouched.
+
+    Linux-only and fail-open: if the platform isn't Linux, or pyseccomp /
+    libseccomp isn't available, this is a no-op — the env scrub, AST guard,
+    non-root user, and RLIMITs remain the active layers.
+    """
+    if sys.platform != "linux":
+        return
+    try:
+        import errno as _errno
+        import pyseccomp as _seccomp
+    except Exception:
+        return  # library/platform unavailable → other layers still apply
+    try:
+        flt = _seccomp.SyscallFilter(defaction=_seccomp.ALLOW)
+        for name in _SECCOMP_BLOCKED_SYSCALLS:
+            try:
+                flt.add_rule(_seccomp.ERRNO(_errno.EPERM), name)
+            except Exception:
+                pass  # syscall not defined on this arch/kernel → skip
+        flt.load()  # libseccomp sets NO_NEW_PRIVS=1 (SCMP_FLTATR_CTL_NNP) by default
+    except Exception:
+        pass  # never let seccomp setup break execution
+
+
 def _sandbox_preexec() -> None:
     """Called in the child process after fork() and before exec().
 
-    Puts the sandbox subprocess in its own process group so a SIGKILL on the
-    group terminates the whole tree (prevents zombie child chains from forking
-    grand-children). Also changes cwd to /tmp — the safest writable directory
-    — so that relative-path open() calls cannot reach app source files.
+    Layers applied to the sandbox subprocess:
+    - os.setsid(): new process group → a SIGKILL on the group terminates the
+      whole tree (prevents zombie child chains from forking grand-children).
+    - os.chdir('/tmp'): cwd away from app source so relative open() can't reach it.
+    - _install_seccomp_filter(): denies network egress (Linux; no-op elsewhere).
 
-    This runs on Linux/macOS only; on Windows os.setsid() is unavailable, but
-    the sandbox runs on Linux in production so the guard still applies where it
-    matters.
+    POSIX-guarded; on a non-POSIX CI host setsid/chdir fail open and the RLIMITs +
+    seccomp (where available) remain.
     """
     try:
         os.setsid()          # new process group → SIGKILL kills the entire tree
         os.chdir("/tmp")     # restrict cwd away from app source
     except OSError:
         pass  # non-POSIX (e.g., Windows CI): fail open, RLIMIT is still active
+    _install_seccomp_filter()
 
 
 def _spawn_harness(payload: dict, timeout: int = CODE_TIMEOUT_SECONDS) -> dict:

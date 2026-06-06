@@ -37,6 +37,10 @@ jobs:
         with:
           python-version: "3.11"
 
+      - name: Install libseccomp (sandbox egress filter)
+        # Ensures the seccomp block test runs (not skips) — pyseccomp binds to libseccomp.so.
+        run: sudo apt-get update && sudo apt-get install -y libseccomp2
+
       - name: Install dependencies
         run: pip install --upgrade pip && pip install -r requirements.txt
 
