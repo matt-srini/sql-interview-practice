@@ -21,6 +21,12 @@ from starlette.testclient import TestClient
 from main import app
 from tests.conftest import _make_user
 
+# Every test makes HTTP calls + registers users — isolate DB state and rate-limit
+# counters per test (resets the test DB before/after each), matching the other
+# HTTP suites. Without this the file passes only in the full suite (neighbours'
+# teardowns clean the DB) and is flaky when run alone.
+pytestmark = pytest.mark.usefixtures("isolated_state")
+
 
 # ---------------------------------------------------------------------------
 # helpers
