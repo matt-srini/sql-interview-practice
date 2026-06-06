@@ -49,8 +49,14 @@ def test_tc092_compile_error_returns_readable_message():
 
 
 def test_tc093_execution_timeout_enforced():
-    """TC-093: time.sleep(10) → timeout within ~7s wall-clock."""
-    code = "def solve(n):\n    import time\n    time.sleep(10)\n    return n"
+    """TC-093: a genuine infinite loop is killed by the wall timeout within ~7s.
+
+    Uses `while True: pass` — NOT `import time; sleep`, which the AST guard rejects
+    before any execution (making the old version pass for the wrong reason: it tested
+    guard rejection, not the timeout). A bare loop is guard-allowed, so only the
+    wall-clock timeout / RLIMIT_CPU stops it.
+    """
+    code = "def solve(n):\n    while True:\n        pass"
     with TestClient(app) as client:
         _make_user(client, plan="pro")
         start = time.time()

@@ -27,13 +27,31 @@ def _apply_sandbox_rlimits() -> None:
     """
     try:
         import resource
-        # Memory cap: 512 MB virtual address space
+        # Memory cap: 512 MB virtual address space. Stops memory bombs (a 600 MB
+        # bytearray raises MemoryError instead of OOM-killing the host).
         resource.setrlimit(resource.RLIMIT_AS, (512 * 1024 * 1024, 512 * 1024 * 1024))
-        # CPU cap: a backstop above the longest subprocess wall timeout (data mode's
-        # 12s, so 15s sits just above it). The per-mode wall timeout in python_evaluator
-        # is the primary guard and fires first; this only catches a tight CPU loop that
-        # slips past it.
-        resource.setrlimit(resource.RLIMIT_CPU, (15, 15))
+        # CPU cap: a backstop just above the longest wall timeout (data mode's 12s).
+        # The per-mode wall timeout in python_evaluator (now enforced with a
+        # process-GROUP kill) is the primary guard and fires first; this catches a
+        # tight CPU loop only if that path somehow fails.
+        resource.setrlimit(resource.RLIMIT_CPU, (14, 14))
+        # Process cap: stops a fork bomb. The limit is per-UID, and in production the
+        # app + sandbox share the `appuser` UID, so the value carries headroom for the
+        # app's own processes + numpy/BLAS threads while still bounding an exponential
+        # bomb (which hits the ceiling in a handful of generations, then fork() → EAGAIN).
+        # Paired with the process-group SIGKILL on timeout so the bomb can't outlive the
+        # wall limit either.
+        try:
+            resource.setrlimit(resource.RLIMIT_NPROC, (256, 256))
+        except (ValueError, OSError):
+            pass  # not enforceable on this platform/UID → rely on killpg + timeout
+        # File-size cap: a guard escape that reaches open() cannot fill the disk in /tmp
+        # (the one writable dir). The sandbox legitimately writes nothing to disk — results
+        # go to the stdout pipe — so 64 MB is generous headroom and a hard backstop.
+        try:
+            resource.setrlimit(resource.RLIMIT_FSIZE, (64 * 1024 * 1024, 64 * 1024 * 1024))
+        except (ValueError, OSError):
+            pass
     except Exception:
         pass
 

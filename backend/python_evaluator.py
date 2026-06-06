@@ -23,6 +23,7 @@ import json
 import logging
 import os
 import random as _random_module
+import signal
 import subprocess
 import sys
 import time
@@ -400,38 +401,66 @@ def _sandbox_preexec() -> None:
     _install_seccomp_filter()
 
 
+def _kill_process_group(proc: "subprocess.Popen") -> None:
+    """SIGKILL the sandbox's entire process group, not just the direct child.
+
+    The harness preexec calls os.setsid(), so the child is its own process-group
+    leader (PGID == PID). Killing the GROUP terminates any processes the sandbox
+    forked (a fork bomb, a spawned helper) — `subprocess`'s own timeout only does
+    proc.kill() on the single child PID, which would orphan forked grandchildren
+    to init and let them outlive the timeout. This is what makes setsid() effective.
+    """
+    try:
+        os.killpg(os.getpgid(proc.pid), signal.SIGKILL)
+    except (ProcessLookupError, PermissionError, OSError):
+        try:
+            proc.kill()  # fallback: at least kill the direct child (non-POSIX / no group)
+        except Exception:
+            pass
+
+
 def _spawn_harness(payload: dict, timeout: int = CODE_TIMEOUT_SECONDS) -> dict:
     """Run the harness subprocess, enforce timeout, parse stdout.
 
     Data (pandas) mode uses a longer timeout (DATA_CODE_TIMEOUT_SECONDS) because a
     correct answer over a large dataset serializes a multi-MB full result for the
     grade; algorithm mode keeps the tight 5s loop guard.
+
+    On timeout we SIGKILL the whole process GROUP (see _kill_process_group), so a
+    fork bomb or spawned helper cannot survive the wall limit. We use Popen +
+    communicate rather than subprocess.run because run() only kills the direct child.
     """
     start = time.time()
+    proc = subprocess.Popen(
+        [sys.executable, str(HARNESS_PATH)],
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+        env=_sandbox_env(),
+        preexec_fn=_sandbox_preexec,
+    )
     try:
-        proc = subprocess.run(
-            [sys.executable, str(HARNESS_PATH)],
-            input=json.dumps(payload),
-            capture_output=True,
-            text=True,
-            timeout=timeout,
-            env=_sandbox_env(),
-            preexec_fn=_sandbox_preexec,
-        )
+        stdout, stderr = proc.communicate(input=json.dumps(payload), timeout=timeout)
     except subprocess.TimeoutExpired:
+        _kill_process_group(proc)
+        try:
+            proc.communicate(timeout=5)  # reap the killed process tree
+        except Exception:
+            pass
         return {"error": f"Code timed out after {timeout} seconds. Check for infinite loops."}
 
     duration = time.time() - start
     logger.debug("Harness completed in %.3fs", duration)
 
     if proc.returncode != 0:
-        stderr = proc.stderr.strip()
+        stderr = (stderr or "").strip()
         return {"error": f"Runtime error:\n{stderr}" if stderr else "Code execution failed."}
 
     try:
-        return json.loads(proc.stdout)
+        return json.loads(stdout)
     except json.JSONDecodeError:
-        return {"error": f"Harness produced invalid output: {proc.stdout[:200]}"}
+        return {"error": f"Harness produced invalid output: {(stdout or '')[:200]}"}
 
 
 def run_python_code(code: str, question: dict[str, Any]) -> dict[str, Any]:

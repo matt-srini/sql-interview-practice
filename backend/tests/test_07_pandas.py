@@ -77,12 +77,13 @@ def test_tc103_wrong_dataframe_shape_returns_correct_false():
 
 
 def test_tc104_timeout_enforced_in_pandas_sandbox():
-    """TC-104: runaway pandas code is killed by the data-mode wall timeout (12s).
+    """TC-104: a genuine infinite loop in data mode is killed by the wall timeout.
 
-    sleep(20) exceeds the timeout, so the harness is terminated and the response
-    carries an error / not-passed, well under the sleep duration.
+    Uses `while True: pass` — NOT `import time; sleep`, which the pandas allowlist
+    rejects before execution (the old version tested guard rejection, not the
+    timeout). A bare loop is guard-allowed, so only the wall-clock timeout stops it.
     """
-    code = "import time\ndef solve(df_users):\n    time.sleep(20)\n    return df_users"
+    code = "def solve(df_users):\n    while True:\n        pass"
     with TestClient(app) as client:
         _make_user(client, plan="pro")
         start = time.time()

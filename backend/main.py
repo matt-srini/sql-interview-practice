@@ -61,8 +61,15 @@ init_sentry()
 # (benign or adversarial) can exhaust the event loop and delay ALL users.
 # The semaphore limits concurrent code-execution calls across SQL + Python +
 # Pandas tracks. Adjust MAX_CONCURRENT_EXECUTIONS via env if needed.
+#
+# Default = cores − 2: leaves headroom for the app + other requests instead of
+# oversubscribing every core with CPU-bound sandbox work, and bounds peak sandbox
+# memory (concurrency × RLIMIT_AS 512 MB) so the container memory cap can be sized
+# sensibly. On an 8-vCPU box this is 6 → ~3 GB peak sandbox memory, 2 cores free.
+import os as _os  # noqa: E402
 from config import _get_int  # noqa: E402
-_MAX_CONCURRENT_EXECUTIONS = _get_int("MAX_CONCURRENT_EXECUTIONS", "10")
+_DEFAULT_CONCURRENCY = max(2, (_os.cpu_count() or 4) - 2)
+_MAX_CONCURRENT_EXECUTIONS = _get_int("MAX_CONCURRENT_EXECUTIONS", str(_DEFAULT_CONCURRENCY))
 _execution_semaphore = asyncio.Semaphore(_MAX_CONCURRENT_EXECUTIONS)
 
 

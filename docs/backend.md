@@ -403,7 +403,16 @@ Solved questions remain solved permanently regardless of plan changes.
 - Config: `RATE_LIMIT_REQUESTS`, `RATE_LIMIT_WINDOW_SECONDS` in `config.py`
 - Localhost bypass: requests from `127.0.0.1` / `::1` skip rate limiting in non-prod mode — safe for local dev and Playwright e2e tests
 
-**Code-execution concurrency cap** — A global `asyncio.Semaphore` (default 10, configurable via `MAX_CONCURRENT_EXECUTIONS` env var) gates all 6 code-execution endpoints: SQL run-query + submit, Python run-code + submit, Pandas run-code + submit. The cap sits *after* the plan/lock checks (fast rejects don't consume a slot) and *around* the actual DuckDB/subprocess call only. This prevents a burst of simultaneous submits from exhausting the event loop and delaying all users — DuckDB is a single-process in-memory engine and each Python/Pandas submission spawns an OS subprocess; without a cap, N simultaneous submits can create N subprocesses.
+**Code-execution concurrency cap** — A global `asyncio.Semaphore` (default **cores − 2**, configurable via `MAX_CONCURRENT_EXECUTIONS` env var) gates all 6 code-execution endpoints: SQL run-query + submit, Python run-code + submit, Pandas run-code + submit. The cap sits *after* the plan/lock checks (fast rejects don't consume a slot) and *around* the actual DuckDB/subprocess call only. This prevents a burst of simultaneous submits from exhausting the event loop and delaying all users — DuckDB is a single-process in-memory engine and each Python/Pandas submission spawns an OS subprocess. The `cores − 2` default leaves CPU headroom for the app and bounds peak sandbox memory (concurrency × `RLIMIT_AS` 512 MB), which is what the Railway container RAM cap must be sized above.
+
+**Category-3 resource-exhaustion caps (sandbox).** Beyond the AST guard (which blocks *escapes*, not resource abuse — a bare `while True: pass` or `[0]*10**10` is correctly allowed), the runtime caps bound what abusive-but-guard-legal code can cost:
+- **Timeout with process-GROUP kill** — `_spawn_harness` uses `Popen` + `communicate(timeout=...)`; on expiry `_kill_process_group` sends `SIGKILL` to the whole group (`os.killpg`, the sandbox is its own group via `setsid()`). Plain `subprocess.run` only kills the direct child, so a forked grandchild would orphan to init and outlive the timeout — the group kill closes that. Wall limits: 5 s algorithm / 12 s data.
+- **`RLIMIT_NPROC` 256** — fork-bomb cap (per-UID; headroom for app + numpy/BLAS threads, bounds an exponential bomb).
+- **`RLIMIT_AS` 512 MB** — memory bomb → `MemoryError`, no host OOM.
+- **`RLIMIT_FSIZE` 64 MB** — disk-fill backstop in `/tmp`.
+- **`RLIMIT_CPU` 14 s** — CPU backstop just above the longest wall timeout.
+- Output caps: 64 KB stdout, 10k list items / 512 KB serialized result.
+Validated by `tests/test_sandbox_resource_limits.py` (Linux-gated tests run in CI).
 
 **CSRF mitigation** — In production, mutating API requests (`POST`, `PUT`, `PATCH`, `DELETE`) that include a session cookie must carry an `Origin` header matching configured app origins (`ALLOWED_ORIGINS`, `APP_BASE_URL`, `FRONTEND_BASE_URL`). External webhook paths are exempt.
 
