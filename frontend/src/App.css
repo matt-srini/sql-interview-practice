@@ -3104,7 +3104,8 @@ select {
    Question page layout (two-column on wide screens)
    ============================================================ */
 .question-page {
-  padding: 1.7rem 0 4rem;
+  padding-top: 1.7rem;
+  padding-bottom: 4rem;
 }
 
 .question-page-inner {
@@ -4938,7 +4939,8 @@ select {
    Track hub page
    ============================================================ */
 .track-hub-page {
-  padding: 1.7rem 0 4rem;
+  padding-top: 1.7rem;
+  padding-bottom: 4rem;
 }
 
 .track-hub-inner {
@@ -5729,7 +5731,8 @@ select {
    Dashboard (v2)
    ============================================================ */
 .db-page {
-  padding: 2.5rem 0 5rem;
+  padding-top: 2.5rem;
+  padding-bottom: 5rem;
   max-width: 900px;
 }
 
@@ -5805,6 +5808,7 @@ select {
   border-radius: var(--radius-md);
   padding: 1rem 1.25rem;
   margin-bottom: 2rem;
+  overflow: hidden;
 }
 .db-focus-content { flex: 1; min-width: 0; }
 .db-focus-title {
@@ -6434,7 +6438,12 @@ select {
     grid-template-columns: 1fr 1fr;
   }
   .db-track-stats-col { display: none; }
-  .db-track-right-col { min-width: auto; }
+  .db-track-right-col { min-width: auto; flex-shrink: 1; }
+  /* Hide readiness chip/gate on mobile — too wide, keep only the arrow */
+  .db-track-right-col .db-readiness-chip,
+  .db-track-right-col .db-readiness-gate { display: none; }
+  /* Allow focus subline to wrap on narrow screens */
+  .db-focus-subline { white-space: normal; }
 }
 
 /* ============================================================
