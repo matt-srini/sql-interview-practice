@@ -403,6 +403,8 @@ Solved questions remain solved permanently regardless of plan changes.
 - Config: `RATE_LIMIT_REQUESTS`, `RATE_LIMIT_WINDOW_SECONDS` in `config.py`
 - Localhost bypass: requests from `127.0.0.1` / `::1` skip rate limiting in non-prod mode — safe for local dev and Playwright e2e tests
 
+**Code-execution concurrency cap** — A global `asyncio.Semaphore` (default 10, configurable via `MAX_CONCURRENT_EXECUTIONS` env var) gates all 6 code-execution endpoints: SQL run-query + submit, Python run-code + submit, Pandas run-code + submit. The cap sits *after* the plan/lock checks (fast rejects don't consume a slot) and *around* the actual DuckDB/subprocess call only. This prevents a burst of simultaneous submits from exhausting the event loop and delaying all users — DuckDB is a single-process in-memory engine and each Python/Pandas submission spawns an OS subprocess; without a cap, N simultaneous submits can create N subprocesses.
+
 **CSRF mitigation** — In production, mutating API requests (`POST`, `PUT`, `PATCH`, `DELETE`) that include a session cookie must carry an `Origin` header matching configured app origins (`ALLOWED_ORIGINS`, `APP_BASE_URL`, `FRONTEND_BASE_URL`). External webhook paths are exempt.
 
 **Response timing** — All responses include `X-Response-Time-Ms` for baseline latency observability.

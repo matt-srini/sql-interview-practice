@@ -1,3 +1,4 @@
+import asyncio
 from typing import Any
 
 from fastapi import HTTPException, Request, Response
@@ -119,3 +120,15 @@ def _question_detail_payload(
             "mode": mode,
         },
     }
+
+
+def get_execution_semaphore() -> asyncio.Semaphore:
+    """FastAPI dependency returning the global code-execution semaphore.
+
+    Imported lazily from main to avoid the circular-import (main → routers →
+    deps → main). Every code-execution endpoint (SQL run-query/submit, Python
+    run-code/submit, Pandas run-code/submit) must include this as a Depends
+    parameter and wrap the actual execution call in `async with semaphore:`.
+    """
+    import main as _main  # lazy import; safe — main is fully loaded by the time a request arrives
+    return _main.get_execution_semaphore()

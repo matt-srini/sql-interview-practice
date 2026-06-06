@@ -361,6 +361,13 @@ Token values, full palette, typography, and component specs: [`docs/design/color
 
 **Python/Pandas:** `python_guard.py` → `python_evaluator.py` → subprocess harness. AST guard, 512 MB RLIMIT_AS; 5-second timeout (algorithm) / 12-second (pandas data mode — full-result grading serializes a larger result). Pandas grades on the full result and returns a 200-row display preview (`total_rows`/`truncated`); datetime columns are ISO-serialized + date-normalized (no hand-formatting needed).
 
+**Sandbox security layers (as of 2026-06-06):**
+1. **AST guard** (`python_guard.py`) — blocks dangerous bare names (`globals`, `locals`, `getattr`, `eval`, `exec`, `__builtins__`, `__import__`, etc. via `visit_Name`), dunder chains (`__class__`, `__globals__`, `__subclasses__`, frame/traceback walks via `visit_Attribute`), all imports except the per-track allowlist, and pandas/numpy filesystem methods. Red-teamed in `tests/test_guard_redteam.py` (34 escape attempts all BLOCKED, 13 legit snippets PASS).
+2. **Scrubbed subprocess env** (`python_evaluator._sandbox_env`) — the harness subprocess sees only `PATH/HOME/LANG/locale/TMPDIR/TZ` + Python encoding flags. Every production secret (`DATABASE_URL`, `RAZORPAY_KEY_SECRET`, OAuth secrets, `RESEND_API_KEY`, `SENTRY_DSN`) is absent. No `PYTHONPATH`, so user code cannot import backend modules. Tested in `tests/test_sandbox_env_isolation.py`.
+3. **In-process OS isolation** (`_sandbox_preexec`) — `os.setsid()` (new process group, SIGKILL kills the whole tree) + `os.chdir('/tmp')` (cwd away from app source). Dockerfile runs the app as non-root `appuser`.
+4. **Resource caps** — `RLIMIT_AS` 512 MB + `RLIMIT_CPU` 15s (backstop); wall-clock timeouts 5s/12s; output caps; global asyncio concurrency semaphore (default 10 concurrent executions, configurable via `MAX_CONCURRENT_EXECUTIONS`).
+5. **Infra-level hardening** (TODO on Railway) — egress block (P0), read-only filesystem (P1), seccomp profile (P1). See `docs/deployment.md` § Sandbox security hardening.
+
 **PySpark:** No execution. `selected_option` compared to `correct_option`. Explanation always returned.
 
 **Unlock model** (pure policy in `unlock.py`, applied independently per topic):

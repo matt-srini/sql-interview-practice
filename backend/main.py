@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import secrets
 import time
@@ -51,6 +52,23 @@ logger = logging.getLogger(__name__)
 
 
 init_sentry()
+
+# ---------------------------------------------------------------------------
+# Global code-execution concurrency cap
+# ---------------------------------------------------------------------------
+# DuckDB is a single-process in-memory engine, and each Python/Pandas submission
+# spawns an OS subprocess. Without a cap, a burst of simultaneous submits
+# (benign or adversarial) can exhaust the event loop and delay ALL users.
+# The semaphore limits concurrent code-execution calls across SQL + Python +
+# Pandas tracks. Adjust MAX_CONCURRENT_EXECUTIONS via env if needed.
+from config import _get_int  # noqa: E402
+_MAX_CONCURRENT_EXECUTIONS = _get_int("MAX_CONCURRENT_EXECUTIONS", "10")
+_execution_semaphore = asyncio.Semaphore(_MAX_CONCURRENT_EXECUTIONS)
+
+
+def get_execution_semaphore() -> asyncio.Semaphore:
+    """FastAPI dependency: yields the global code-execution semaphore."""
+    return _execution_semaphore
 
 
 @asynccontextmanager
