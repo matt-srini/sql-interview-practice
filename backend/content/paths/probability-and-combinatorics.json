@@ -1,0 +1,32 @@
+{
+  "slug": "probability-and-combinatorics",
+  "title": "Probability & Combinatorics",
+  "description": "Build the probability foundation every data-role interview probes: conditional probability, independence vs dependence, expected value, and the combinatorics behind sample-space counting.",
+  "topic": "statistics",
+  "questions": [
+    71006,
+    71007,
+    71009,
+    71010,
+    71011,
+    71018,
+    71019,
+    71020,
+    71023,
+    71024,
+    71025,
+    71027
+  ],
+  "tier": "free",
+  "role": "intermediate",
+  "patterns": [
+    "probability-and-combinatorics"
+  ],
+  "focus_concepts": [
+    "probability & combinatorics"
+  ],
+  "outcomes": "You'll reason fluently about conditional probability and independence, compute expected value for real scenarios, distinguish combinations from permutations, and ground sample-space counting in the right combinatorial primitives.",
+  "recommended_after": [
+    "stats-for-analysts"
+  ]
+}

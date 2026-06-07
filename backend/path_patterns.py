@@ -43,6 +43,7 @@ PATH_PATTERNS: dict[str, dict[str, str]] = {
         "cohort-analysis": "Cohort & Retention Analysis",
         "funnel-analysis": "Funnel & Event Analysis",
         "period-over-period": "Period-over-Period Analysis",
+        "pivot-and-unpivot": "Pivot & Conditional Aggregation",
     },
     "python": {
         "arrays-and-hashing": "Arrays & Hashing",
@@ -59,6 +60,7 @@ PATH_PATTERNS: dict[str, dict[str, str]] = {
         "reshape-and-pivot": "Reshape & Pivot",
         "time-series": "Time Series",
         "customer-analytics": "Customer Analytics Pipelines",
+        "data-cleaning": "Data Cleaning",
     },
     "pyspark": {
         "spark-basics": "Core Spark Concepts",
@@ -66,6 +68,7 @@ PATH_PATTERNS: dict[str, dict[str, str]] = {
         "query-optimization": "Catalyst & Query Optimization",
         "streaming": "Structured Streaming",
         "delta-lake": "Delta Lake",
+        "spark-joins-and-skew": "Spark Joins & Skew Handling",
     },
     "data-engineering": {
         "etl-elt": "ETL / ELT Design",
@@ -75,6 +78,7 @@ PATH_PATTERNS: dict[str, dict[str, str]] = {
         "backfill-design": "Backfill Design",
         "data-lineage": "Data Lineage",
         "pipeline-observability": "Pipeline Observability",
+        "data-quality-and-incident-response": "Data Quality & Incident Response",
     },
     "data-modeling": {
         "star-snowflake": "Star & Snowflake Schemas",
@@ -94,6 +98,7 @@ PATH_PATTERNS: dict[str, dict[str, str]] = {
         "hypothesis-testing": "Hypothesis Testing",
         "confidence-intervals": "Confidence Intervals",
         "regression": "Regression Analysis",
+        "probability-and-combinatorics": "Probability & Combinatorics",
     },
     "ml-fundamentals": {
         "supervised-unsupervised": "Supervised vs Unsupervised Framing",
@@ -104,6 +109,8 @@ PATH_PATTERNS: dict[str, dict[str, str]] = {
         "ensembles": "Ensemble Methods",
         "monitoring": "Model Monitoring & Drift",
         "missing-data": "Missing Data & Imputation",
+        "feature-engineering": "Feature Engineering",
+        "class-imbalance": "Class Imbalance Handling",
     },
     "experimentation": {
         "ab-test-basics": "A/B Test Mechanics",
@@ -112,6 +119,7 @@ PATH_PATTERNS: dict[str, dict[str, str]] = {
         "variance-reduction": "Variance Reduction (CUPED)",
         "causal-inference": "Causal Inference",
         "subgroup-analysis": "Subgroup Analysis & HTE",
+        "behavioral-effects-and-interference": "Behavioral Effects & Interference",
     },
 }
 

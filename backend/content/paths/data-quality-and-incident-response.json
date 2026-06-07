@@ -1,0 +1,30 @@
+{
+  "slug": "data-quality-and-incident-response",
+  "title": "Data Quality & Incident Response",
+  "description": "Build the on-call discipline that production data engineers live by: where to place quality checks, how to detect silent data loss and corruption, and how to contain a schema-drift incident under live load.",
+  "topic": "data-engineering",
+  "questions": [
+    51024,
+    51025,
+    52011,
+    53005,
+    53007,
+    53020,
+    53024
+  ],
+  "tier": "free",
+  "role": "advanced",
+  "patterns": [
+    "data-quality-and-incident-response"
+  ],
+  "focus_concepts": [
+    "DATA QUALITY",
+    "INCIDENT RESPONSE",
+    "LINEAGE & OBSERVABILITY",
+    "SCHEDULING & SLAS"
+  ],
+  "outcomes": "You'll place null and freshness checks where they catch problems early, distinguish silent data loss from late arrival, run incident response on data-corruption and schema-drift events without flying blind, and design statistical anomaly detection that scales beyond per-row asserts.",
+  "recommended_after": [
+    "lineage-and-observability"
+  ]
+}

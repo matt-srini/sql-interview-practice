@@ -1,0 +1,42 @@
+{
+  "slug": "data-cleaning",
+  "title": "Data Cleaning",
+  "description": "Master the cleaning patterns every Pandas practitioner reaches for daily: deduplication, missing-value strategies, categorical binning, type fixes, and the subtle Pandas gotchas that distort results when uncaught.",
+  "topic": "python-data",
+  "questions": [
+    31006,
+    31016,
+    31019,
+    31020,
+    31024,
+    31025,
+    31026,
+    32010,
+    32014,
+    32015,
+    32031,
+    32043,
+    32052,
+    33012,
+    33014,
+    33016,
+    33023,
+    33038
+  ],
+  "tier": "free",
+  "role": "intermediate",
+  "patterns": [
+    "data-cleaning"
+  ],
+  "focus_concepts": [
+    "MISSING VALUE STRATEGY",
+    "DEDUPLICATION LOGIC",
+    "CATEGORICAL & BINNING",
+    "BOOLEAN INDEXING & FILTERING",
+    "DEBUG PANDAS"
+  ],
+  "outcomes": "You'll choose imputation strategies that don't introduce bias, deduplicate with the right key choice, bin continuous values into useful categories, debug Pandas's silent gotchas (SettingWithCopyWarning, sort-before-cumsum), and reach for the right tool when data arrives messy.",
+  "recommended_after": [
+    "dataframe-fundamentals"
+  ]
+}

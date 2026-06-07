@@ -1,0 +1,27 @@
+{
+  "slug": "class-imbalance",
+  "title": "Class Imbalance",
+  "description": "Train the muscle that production classifiers demand: when accuracy misleads, when SMOTE helps vs hurts, how to tune classification thresholds against business objectives, and which metric tells the truth on an imbalanced multi-class problem.",
+  "topic": "ml-fundamentals",
+  "questions": [
+    81021,
+    82006,
+    82007,
+    82017,
+    82035,
+    83008
+  ],
+  "tier": "free",
+  "role": "intermediate",
+  "patterns": [
+    "class-imbalance"
+  ],
+  "focus_concepts": [
+    "CLASS IMBALANCE HANDLING",
+    "CLASSIFICATION METRICS"
+  ],
+  "outcomes": "You'll recognise where class imbalance silently invalidates accuracy, choose between SMOTE, class weights, and threshold tuning based on the production cost structure, and pick evaluation metrics that survive multi-class imbalance without misleading reporting.",
+  "recommended_after": [
+    "ml-model-evaluation"
+  ]
+}

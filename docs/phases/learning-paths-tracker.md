@@ -199,37 +199,37 @@ Orphan-count shown is recruitable practice questions (from Pass 2) — strong up
 | Track | Pattern | Orphans available | Likely action |
 |---|---|---:|---|
 | sql | `top-n-and-ranking` | 3 | New path |
-| sql | `pivot-and-unpivot` | 7 | New path |
+| sql | ~~`pivot-and-unpivot`~~ | ~~7~~ | ✅ **Done** (`pivot-and-conditional-aggregation.json` created 2026-XX) |
 | python | `heap-and-priority` | 4 | New path |
 | python | `string-and-text-processing` | 4 | New path |
 | python | `streaming-and-online` | 3 | New path |
-| python-data | `data-cleaning` | 18 | **New path (strong)** |
+| python-data | ~~`data-cleaning`~~ | ~~18~~ | ✅ **Done** (`data-cleaning.json` created 2026-XX) |
 | python-data | `top-n-and-ranking` | 7 | New path |
 | python-data | `window-and-rolling` | 2 | Merge into time-series or new |
-| pyspark | `spark-joins-and-skew` | 16 | **New path (strong)** |
+| pyspark | ~~`spark-joins-and-skew`~~ | ~~16~~ | ✅ **Done** (`spark-joins-and-skew.json` created 2026-XX) |
 | pyspark | `pyspark-windowing` | 5 | New path |
 | data-engineering | `streaming-vs-batch` | 6 | New path |
 | data-engineering | `cost-and-format-optimization` | 19 | **New path (strong)** — see F1 caveat (vendor-heavy) |
-| data-engineering | `data-quality-and-incident-response` | 7 | New path |
+| data-engineering | ~~`data-quality-and-incident-response`~~ | ~~7~~ | ✅ **Done** (`data-quality-and-incident-response.json` created 2026-XX) |
 | data-modeling | `surrogate-keys` | 2 | Merge or new |
 | data-modeling | `conformed-dimensions` | 1 | Defer (too thin) |
 | data-modeling | `data-vault` | 4 | New path or defer |
 | data-modeling | `aggregate-and-summary-design` | 4 | New path or defer |
 | data-modeling | `hierarchies-and-multipath` | 3 | Merge or new |
-| statistics | `probability-and-combinatorics` | 12 | **New path (strong)** |
+| statistics | ~~`probability-and-combinatorics`~~ | ~~12~~ | ✅ **Done** (`probability-and-combinatorics.json` created 2026-XX) |
 | statistics | `sampling-and-clt` | 1 | Defer |
 | statistics | `errors-and-power` | 5 | New path |
 | statistics | `variance-and-anova` | 3 | New path or defer |
 | statistics | `bayesian-reasoning` | 5 | New path (was F2-blocked; now viable at 5) |
 | statistics | `survival-analysis` | 3 | Defer |
-| ml-fundamentals | `feature-engineering` | 13 | **New path (strong)** |
-| ml-fundamentals | `class-imbalance` | 6 | New path |
+| ml-fundamentals | ~~`feature-engineering`~~ | ~~13~~ | ✅ **Done** (`feature-engineering.json` created 2026-XX) |
+| ml-fundamentals | ~~`class-imbalance`~~ | ~~6~~ | ✅ **Done** (`class-imbalance.json` created 2026-XX) |
 | ml-fundamentals | `model-interpretability` | 2 | Defer or merge with algorithmic-fairness |
 | ml-fundamentals | `unsupervised-methods` | 4 | New path |
 | ml-fundamentals | `neural-networks-and-gradients` | 4 | New path |
 | ml-fundamentals | `hyperparameter-tuning` | 6 | New path |
 | ml-fundamentals | `algorithmic-fairness` | 3 | Merge with model-interpretability as "Responsible ML" |
-| experimentation | `behavioral-effects-and-interference` | 5 | New path |
+| experimentation | ~~`behavioral-effects-and-interference`~~ | ~~5~~ | ✅ **Done** (`behavioral-effects-and-interference.json` created 2026-XX) |
 | experimentation | `sequential-and-bandits` | 4 | New path or defer |
 | experimentation | `experiment-platform-design` | 2 | Defer |
 
@@ -502,3 +502,4 @@ Most growth = honest splits of compound paths. New patterns filling genuine inte
 | 2026-XX | Routing fix (SQL only): introduced `ANALYTICAL_PRIORITY` in `audit_pattern_coverage.py`. When a question's tags hit multiple analytical patterns (e.g., SESSIONIZATION + COHORT RETENTION), priority order `cohort > funnel > top-n > period-over-period > pivot` breaks the tie. Fixes the q13015 case (was misrouted to funnel; now correctly cohort). No validator impact — audit script is separate from validator. |
 | 2026-XX | **Audit model refactor: live paths are now authoritative.** `audit_pattern_coverage.py` reads live path JSONs first; pattern coverage = sum of each path's `questions[]` aggregated under the path's `patterns[0]` (slug-normalised to canonical via `NORMALIZE_PATTERN`). Tag-routing demoted to a secondary tool used only for: (a) suggesting which pattern an orphan question could join, (b) flagging divergences (questions in path X whose tags suggest Y). `pattern-coverage-audit.md` now has Divergences and Orphans sections per track. **Pass 2 rebalance** rewritten to recommend orphan + divergent candidates per thin pattern. Headline: ~35 thin/empty patterns can become healthy via orphan recruitment alone (catalog already has the content; just not yet in paths). |
 | 2026-XX | **Orphan recruitment applied across all tracks.** `scripts/recruit_orphans.py` added 134 orphans into existing live paths whose `patterns[]` declares the orphan's tag-suggested pattern. Coverage shifts: data-modeling 31→65 in path; data-engineering 19→46; statistics 28→52; ml-fundamentals 40→55; python-data 29→50; python 29→35; experimentation 43→49; sql 58→59 (only ctes-and-recursion had a live target). Pattern classes: many thin patterns are now healthy or uneven. 34 thin/empty patterns were SKIPPED because no live path declares them — these are stage-2 new-path decisions (per the §F "Track-specific path additions" list, expanded below). Path-size guardrail in `test_paths_quality.py` widened to 4–30 (paths >15 are flagged for stage-2 splitting; tightens back once split). Focus_concepts auto-broadened on 2 paths (dimensional-modeling-deep-dive, pipeline-fundamentals) to satisfy validator rule 5 for recruited orphans. Validator + tests pass. |
+| 2026-XX | **8 new paths created for high-orphan thin patterns** (zero new questions authored — all 96 Qs drawn from existing catalog orphans). Adds: `data-cleaning` (python-data, 18 Qs), `spark-joins-and-skew` (pyspark, 16), `feature-engineering` (ml-fundamentals, 13), `probability-and-combinatorics` (statistics, 12), `data-quality-and-incident-response` (DE, 7), `pivot-and-conditional-aggregation` (sql, 7), `class-imbalance` (ml-fundamentals, 6), `behavioral-effects-and-interference` (experimentation, 5). `backend/path_patterns.py` registered 8 new pattern slugs. **Path count: 46 → 54.** Coverage: in-path questions 433 → 529; healthy patterns 18 → 23; empty patterns 35 → 26 (the remaining 26 are mostly patterns deferred per F3 — thin with low orphan availability). Validator + tests pass. |

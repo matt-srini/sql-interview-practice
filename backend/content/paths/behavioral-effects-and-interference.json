@@ -1,0 +1,29 @@
+{
+  "slug": "behavioral-effects-and-interference",
+  "title": "Behavioral Effects & Interference",
+  "description": "Run experiments where users don't behave like independent units: novelty effects that fade, network effects that contaminate control, and switchback designs that need careful temporal-autocorrelation handling.",
+  "topic": "experimentation",
+  "questions": [
+    92003,
+    92006,
+    92012,
+    92044,
+    93035
+  ],
+  "tier": "free",
+  "role": "advanced",
+  "patterns": [
+    "behavioral-effects-and-interference"
+  ],
+  "focus_concepts": [
+    "NOVELTY EFFECTS",
+    "NETWORK EFFECTS",
+    "SWITCHBACK EXPERIMENTS",
+    "EXPERIMENT DURATION",
+    "EXPERIMENT DESIGN"
+  ],
+  "outcomes": "You'll distinguish novelty from genuine treatment effects, recognise when network spillover contaminates A/B control, design switchback experiments that account for temporal autocorrelation, and reason about when short-duration tests miss two-sided marketplace steady-state effects.",
+  "recommended_after": [
+    "experiment-design-and-power"
+  ]
+}

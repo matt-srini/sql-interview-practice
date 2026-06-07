@@ -1,0 +1,37 @@
+{
+  "slug": "feature-engineering",
+  "title": "Feature Engineering",
+  "description": "Practitioner-grade feature engineering: when scaling matters, how regularization interacts with feature selection, how to choose filter vs wrapper vs embedded selection, and how to interpret feature-importance disagreements between methods.",
+  "topic": "ml-fundamentals",
+  "questions": [
+    81008,
+    81009,
+    81018,
+    82010,
+    82011,
+    82014,
+    82015,
+    82022,
+    82023,
+    82028,
+    82029,
+    83007,
+    83015
+  ],
+  "tier": "free",
+  "role": "intermediate",
+  "patterns": [
+    "feature-engineering"
+  ],
+  "focus_concepts": [
+    "FEATURE SCALING NECESSITY",
+    "FEATURE SELECTION STRATEGY",
+    "FEATURE IMPORTANCE INTERPRETATION",
+    "REGULARIZATION EFFECT",
+    "DIMENSIONALITY REDUCTION"
+  ],
+  "outcomes": "You'll diagnose when scaling matters and when it doesn't, reason about regularization's effect on correlated features, choose between filter/wrapper/embedded feature selection for real time-and-budget constraints, and reconcile feature-importance disagreements between impurity-based and permutation-based methods.",
+  "recommended_after": [
+    "ml-starter"
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "slug": "pivot-and-conditional-aggregation",
+  "title": "Pivot & Conditional Aggregation",
+  "description": "Master the CASE-WHEN-as-pivot pattern that BI dashboards and segment reports lean on: bucketing values into bands, cross-tab summaries by attribute, and pivot-style outputs without a native PIVOT operator.",
+  "topic": "sql",
+  "questions": [
+    11029,
+    12008,
+    12009,
+    12024,
+    12025,
+    12026,
+    12030
+  ],
+  "tier": "free",
+  "role": "intermediate",
+  "patterns": [
+    "pivot-and-unpivot"
+  ],
+  "focus_concepts": [
+    "CONDITIONAL LOGIC & CASE",
+    "GROUPED AGGREGATION",
+    "POST-AGGREGATION FILTERING",
+    "MULTI-TABLE ENTITY LINKING"
+  ],
+  "outcomes": "You'll fluently translate business-band requirements into CASE WHEN bucketing, build pivot-style cross-tab summaries when the engine has no native PIVOT, and combine conditional aggregation with joins to slice metrics by attribute.",
+  "recommended_after": [
+    "aggregation-patterns"
+  ]
+}
