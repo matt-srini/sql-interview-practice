@@ -4,6 +4,7 @@
   "description": "Build the muscle every on-call data engineer needs: trace data through pipelines, detect freshness regressions, distinguish pipeline failures from data-quality failures, and run incident response without flying blind.",
   "topic": "data-engineering",
   "questions": [
+    51018,
     51030,
     52003,
     52010,
@@ -11,7 +12,8 @@
     52026,
     52027,
     53006,
-    53008
+    53008,
+    53009
   ],
   "tier": "free",
   "level": "intermediate",

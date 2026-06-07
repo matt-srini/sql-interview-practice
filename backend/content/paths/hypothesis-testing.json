@@ -4,11 +4,17 @@
   "description": "Apply the hypothesis-testing reasoning every experimentation interview probes: A/B test sample sizing, t vs z choice, statistical power, sequential testing and the peeking problem, and guardrail-metric violations.",
   "topic": "statistics",
   "questions": [
+    72005,
+    72006,
+    72007,
     72008,
+    72009,
     72010,
     72014,
+    72027,
     72031,
-    72033
+    72033,
+    73034
   ],
   "tier": "pro",
   "level": "intermediate",

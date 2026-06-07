@@ -5,11 +5,17 @@
   "topic": "sql",
   "questions": [
     11025,
+    11026,
+    11031,
     12031,
+    12057,
+    13011,
     13012,
     13016,
     13018,
-    13020
+    13020,
+    13022,
+    13026
   ],
   "tier": "pro",
   "level": "advanced",
@@ -21,7 +27,7 @@
     "DATE BUCKET GROUPING",
     "TIME-SERIES AGGREGATION"
   ],
-  "outcomes": "You'll compare metrics across time periods \u2014 week-over-week, month-over-month \u2014 using SQL window functions and date bucketing.",
+  "outcomes": "You'll compare metrics across time periods — week-over-week, month-over-month — using SQL window functions and date bucketing.",
   "recommended_after": [
     "window-functions-mastery"
   ]

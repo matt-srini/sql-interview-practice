@@ -4,6 +4,8 @@
   "description": "Master the techniques that go beyond standard A/B tests: choose between difference-in-differences, regression discontinuity, and instrumental variables when randomization is impossible, design switchback and geo experiments for marketplace settings with spillover, decide when a multi-armed bandit beats a fixed allocation test, and reason about Bayesian sequential testing without inflating false positive rates.",
   "topic": "experimentation",
   "questions": [
+    92028,
+    92030,
     93001,
     93002,
     93003,
@@ -12,8 +14,11 @@
     93006,
     93008,
     93010,
+    93012,
     93014,
-    93015
+    93015,
+    93020,
+    93034
   ],
   "tier": "pro",
   "level": "advanced",

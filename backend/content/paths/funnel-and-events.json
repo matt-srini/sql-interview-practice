@@ -1,14 +1,19 @@
 {
   "slug": "funnel-and-events",
   "title": "Funnel & Event Analysis",
-  "description": "Work with event streams and conversion funnels \u2014 session analysis, step sequencing, drop-off detection, and funnel order enforcement.",
+  "description": "Work with event streams and conversion funnels — session analysis, step sequencing, drop-off detection, and funnel order enforcement.",
   "topic": "sql",
   "questions": [
     11017,
     11021,
+    12122,
     13007,
     13008,
-    13025
+    13010,
+    13014,
+    13025,
+    13027,
+    13029
   ],
   "tier": "pro",
   "level": "advanced",

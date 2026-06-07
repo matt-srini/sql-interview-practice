@@ -4,12 +4,21 @@
   "description": "Practice monthly and weekly trend analysis with rolling windows, growth rates, anomaly detection, and basic forecasting patterns.",
   "topic": "python-data",
   "questions": [
+    31010,
+    31017,
+    31018,
+    31022,
     32003,
+    32006,
+    32009,
+    32023,
     32026,
+    32046,
     33003,
     33006,
     33013,
-    33015
+    33015,
+    33018
   ],
   "tier": "free",
   "level": "advanced",

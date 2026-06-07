@@ -1,7 +1,7 @@
 {
   "slug": "sql-string-and-date",
   "title": "SQL String & Date Functions",
-  "description": "Master the string and date functions that appear constantly in real-world analytics queries \u2014 trimming and parsing text columns, extracting date parts, computing date differences, and handling timezone offsets.",
+  "description": "Master the string and date functions that appear constantly in real-world analytics queries — trimming and parsing text columns, extracting date parts, computing date differences, and handling timezone offsets.",
   "topic": "sql",
   "questions": [
     11033,
@@ -10,7 +10,8 @@
     11036,
     11037,
     12054,
-    12056
+    12056,
+    12064
   ],
   "tier": "pro",
   "level": "advanced",

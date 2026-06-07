@@ -4,14 +4,17 @@
   "description": "Read plans like an engineer: understand Catalyst phases, AQE behavior, partition pruning, and runtime join strategy improvements.",
   "topic": "pyspark",
   "questions": [
+    41027,
+    41037,
+    42013,
     42014,
     42015,
-    42013,
     42024,
     43003,
     43005,
     43014,
-    43020
+    43020,
+    43025
   ],
   "tier": "free",
   "level": "advanced",
