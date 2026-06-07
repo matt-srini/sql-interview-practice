@@ -442,15 +442,47 @@ ANALYTICAL_PATTERNS: dict[str, set[str]] = {
 
 
 # ---------------------------------------------------------------------------
+# Per-track analytical priority ordering.
+#
+# When a question's tags span multiple analytical patterns (analytical-vs-
+# analytical tie), use this ordering to break the tie deterministically.
+# Higher priority (earlier in list) wins.
+#
+# Rationale per track:
+#   sql: cohort framing dominates funnel/sessionization when both are tagged
+#        (the cohort lens is the analytical framing; sessionization is the
+#        primitive). Top-N is its own narrow pattern. PoP and pivot are
+#        independent of cohort/funnel and lose only if a cohort/funnel tag
+#        also exists.
+# ---------------------------------------------------------------------------
+ANALYTICAL_PRIORITY: dict[str, list[str]] = {
+    "sql": [
+        "cohort-and-retention",          # dominates funnel/sessionization
+        "funnel-and-event-analysis",
+        "top-n-and-ranking",
+        "period-over-period",
+        "pivot-and-unpivot",
+    ],
+}
+
+
+# ---------------------------------------------------------------------------
 # Walk
 # ---------------------------------------------------------------------------
 def route_question(track: str, q: dict) -> tuple[str | None, str]:
     """Return (pattern_slug or None, reason) for one practice question.
 
     Reason explains the routing decision in one short phrase, for the audit log.
+
+    Routing rules (in order):
+      1. No tag routes to a pattern → None.
+      2. Multiple analytical patterns match → ANALYTICAL_PRIORITY breaks the tie
+         per track (when defined); otherwise first analytical match wins.
+      3. No analytical match → first construct match wins.
     """
     routes = ROUTING.get(track, {})
     analytical = ANALYTICAL_PATTERNS.get(track, set())
+    priority = ANALYTICAL_PRIORITY.get(track, [])
     candidates: list[tuple[str, str, str]] = []  # (concept, family, pattern)
 
     for raw_concept in q.get("concepts", []) or []:
@@ -464,21 +496,118 @@ def route_question(track: str, q: dict) -> tuple[str | None, str]:
     if not candidates:
         return None, "no concept-family routes to a pattern"
 
-    # Analytical wins
-    for concept, family, pattern in candidates:
-        if pattern in analytical:
-            return pattern, f"analytical-wins via family {family!r}"
+    # Analytical wins; resolve analytical-vs-analytical ties via priority.
+    analytical_cands = [c for c in candidates if c[2] in analytical]
+    if analytical_cands:
+        if priority:
+            analytical_cands.sort(
+                key=lambda c: priority.index(c[2]) if c[2] in priority else len(priority)
+            )
+        winner = analytical_cands[0]
+        if len(analytical_cands) > 1 and priority:
+            return winner[2], (
+                f"analytical-wins via family {winner[1]!r} "
+                f"(priority over {sorted({c[2] for c in analytical_cands[1:]})})"
+            )
+        return winner[2], f"analytical-wins via family {winner[1]!r}"
 
     # Otherwise first construct match
     first = candidates[0]
     return first[2], f"first construct-family match: {first[1]!r}"
 
 
-def walk_track(track: str, content_dir: Path):
-    """Walk practice questions for one track. Returns dict of analyses."""
-    per_question = []  # list of (qid, difficulty, title, pattern, reason, concepts)
+# ---------------------------------------------------------------------------
+# Live-path → proposed-pattern slug normalisation.
+#
+# Live path JSON files declare patterns[] using slugs that may not match the
+# proposed canonical set in PROPOSED_PATTERNS. This map normalises a live
+# slug → the canonical slug so audit coverage aggregates correctly.
+#
+# When a slug is unchanged across live and proposed, no entry is needed.
+# ---------------------------------------------------------------------------
+NORMALIZE_PATTERN: dict[str, dict[str, str]] = {
+    "sql": {
+        "cohort-analysis": "cohort-and-retention",
+        "funnel-analysis": "funnel-and-event-analysis",
+        "recursive-ctes": "ctes-and-recursion",
+        "string-functions": "string-and-text",
+        "date-functions": "date-and-time",
+    },
+    "python": {
+        "data-pipelines": "data-pipeline-scripting",
+    },
+    "python-data": {
+        "joins": "joins-and-merges",
+        "time-series": "time-series-pandas",
+    },
+    "data-engineering": {
+        "data-lineage": "lineage-and-observability",
+        "pipeline-observability": "lineage-and-observability",
+    },
+    "ml-fundamentals": {
+        "monitoring": "production-and-monitoring",
+        "missing-data": "missing-data-and-preprocessing",
+    },
+    "experimentation": {
+        "ab-test-basics": "ab-test-mechanics",
+        "power-analysis": "power-and-sample-size",
+        "subgroup-analysis": "subgroup-and-hte",
+    },
+    "statistics": {
+        "regression": "regression-and-correlation",
+    },
+}
+
+
+def _normalize(track: str, slug: str) -> str:
+    return NORMALIZE_PATTERN.get(track, {}).get(slug, slug)
+
+
+def _load_live_paths_by_track() -> dict[str, list[dict]]:
+    """Return {track: [live path dicts]} from backend/content/paths/."""
+    out: dict[str, list[dict]] = defaultdict(list)
+    for f in sorted((REPO / "backend" / "content" / "paths").glob("*.json")):
+        d = json.loads(f.read_text())
+        out[d["topic"]].append(d)
+    return out
+
+
+def walk_track(track: str, content_dir: Path, live_paths: list[dict] | None = None):
+    """Walk practice questions for one track using **live paths as authoritative**.
+
+    Returns:
+      per_question: list of dicts per practice question with:
+        qid, difficulty, title, concepts,
+        live_path: slug of the live path containing this Q (or None if orphan),
+        attributed_pattern: normalised canonical pattern slug (live path drives this, or None),
+        tag_pattern: pattern suggested by tag-routing (used for divergence + orphan suggestion),
+        divergent: bool — true when live_path attributes to A but tag-routing says B
+      pattern_buckets: {canonical_pattern_slug: [(qid, diff, title)]} aggregated from live paths
+      family_landings: {family: Counter(pattern→count)} for the cross-map view
+      orphan_list: [per_question dicts where live_path is None]
+      divergence_list: [per_question dicts where divergent=True]
+    """
+    if live_paths is None:
+        live_paths = []
+
+    # Build live-membership: qid → (path_slug, normalised_canonical_pattern)
+    live_membership: dict[int, tuple[str, str]] = {}
+    for p in live_paths:
+        path_slug = p["slug"]
+        path_patterns = p.get("patterns", []) or []
+        normalised_path_patterns = [_normalize(track, s) for s in path_patterns]
+        for qid in p.get("questions", []) or []:
+            # If the path has one pattern, attribute there.
+            # If multiple, pick the one whose pattern matches the question's tag-derived routing
+            # (so multi-pattern paths split intelligently when 1:1 lands).
+            chosen = normalised_path_patterns[0] if normalised_path_patterns else None
+            live_membership[int(qid)] = (path_slug, chosen)
+
+    per_question = []
     pattern_buckets: dict[str | None, list[tuple[int, str, str]]] = defaultdict(list)
     family_landings: dict[str, Counter] = defaultdict(Counter)
+    orphan_list = []
+    divergence_list = []
 
     for f in sorted(content_dir.glob("*.json")):
         if f.stem == "schemas":
@@ -490,16 +619,59 @@ def walk_track(track: str, content_dir: Path):
             qid = int(q["id"])
             title = q.get("title", "<untitled>")
             concepts = q.get("concepts", []) or []
-            pattern, reason = route_question(track, q)
-            per_question.append((qid, difficulty, title, pattern, reason, concepts))
-            pattern_buckets[pattern].append((qid, difficulty, title))
-            # Track which families "fed" this question's pattern
+
+            tag_pattern, tag_reason = route_question(track, q)
+
+            # If this question is in a multi-pattern live path, refine attribution:
+            # prefer the pattern in the path's patterns[] that matches the tag-derived pattern.
+            mem = live_membership.get(qid)
+            if mem is not None:
+                live_path_slug, default_attr = mem
+                # Find the path again to access its patterns[] for multi-pattern refinement
+                this_path = next((p for p in live_paths if p["slug"] == live_path_slug), None)
+                normalised_options = [
+                    _normalize(track, s) for s in (this_path.get("patterns", []) if this_path else [])
+                ]
+                if tag_pattern and tag_pattern in normalised_options:
+                    attributed_pattern = tag_pattern
+                else:
+                    attributed_pattern = default_attr
+                divergent = (tag_pattern is not None) and (tag_pattern != attributed_pattern)
+            else:
+                live_path_slug = None
+                attributed_pattern = None
+                divergent = False
+
+            per_question_record = {
+                "qid": qid,
+                "difficulty": difficulty,
+                "title": title,
+                "concepts": concepts,
+                "live_path": live_path_slug,
+                "attributed_pattern": attributed_pattern,
+                "tag_pattern": tag_pattern,
+                "tag_reason": tag_reason,
+                "divergent": divergent,
+            }
+            per_question.append(per_question_record)
+
+            # Pattern bucket aggregation (from live-path attribution)
+            if attributed_pattern is not None:
+                pattern_buckets[attributed_pattern].append((qid, difficulty, title))
+
+            # Orphan / divergence lists
+            if live_path_slug is None:
+                orphan_list.append(per_question_record)
+            elif divergent:
+                divergence_list.append(per_question_record)
+
+            # Family-landing cross-map: where did each family's questions land
             for c in concepts:
                 if isinstance(c, str):
                     family = resolve_to_family(c, track)
-                    family_landings[family][pattern or "(unrouted)"] += 1
+                    family_landings[family][attributed_pattern or "(orphan)"] += 1
 
-    return per_question, pattern_buckets, family_landings
+    return per_question, pattern_buckets, family_landings, orphan_list, divergence_list
 
 
 # ---------------------------------------------------------------------------
@@ -527,28 +699,46 @@ def render_markdown(audits: dict) -> str:
     lines.append("**Status:** durable record. Drives next content batch.")
     lines.append("**Generated by:** `scripts/audit_pattern_coverage.py` — re-run anytime to regenerate.")
     lines.append("")
-    lines.append("This audit maps every practice question (mock-only excluded) to exactly one")
-    lines.append("pattern-path using the per-track (concept-family → pattern) routing tables")
-    lines.append("at the top of the script. The analytical pattern wins over the construct pattern")
-    lines.append("when both apply to a question.")
+    lines.append("**Authoritative source for pattern membership: live path JSON files** in")
+    lines.append("`backend/content/paths/*.json`. The script aggregates each live path's `questions[]`")
+    lines.append("under the path's `patterns[]` (normalised to the canonical set via `NORMALIZE_PATTERN`).")
+    lines.append("")
+    lines.append("Tag-derived routing (the per-track concept-family → pattern tables in this script)")
+    lines.append("is used for two secondary purposes:")
+    lines.append("")
+    lines.append("- **Orphan suggestion** — for catalog questions not in any live path, the audit")
+    lines.append("  suggests which pattern they could join based on their tags.")
+    lines.append("- **Divergence detection** — for questions in a live path whose tags suggest a")
+    lines.append("  different pattern, the audit flags the divergence for author review.")
+    lines.append("")
+    lines.append("Headline coverage tables reflect the **live state of paths**, not tag-derived hypotheticals.")
     lines.append("")
     lines.append("## Headline numbers")
     lines.append("")
-    lines.append("| Track | Practice Qs | Patterns | Healthy | Uneven | Thin | Empty | Unrouted Qs |")
-    lines.append("|---|---|---|---|---|---|---|---|")
+    lines.append("| Track | Practice Qs | In a live path | Orphans | Divergent | Patterns (proposed) | Healthy | Uneven | Thin | Empty |")
+    lines.append("|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|")
     for track, data in audits.items():
         pats = PROPOSED_PATTERNS.get(track, {})
         buckets = data["buckets"]
         per_q = data["per_question"]
+        n_in_path = sum(1 for r in per_q if r["live_path"] is not None)
+        n_orphan = len(data["orphans"])
+        n_div = len(data["divergences"])
         healthy = sum(1 for p in pats if classify_pattern(buckets.get(p, [])) == "HEALTHY")
         uneven = sum(1 for p in pats if classify_pattern(buckets.get(p, [])) == "UNEVEN")
         thin = sum(1 for p in pats if classify_pattern(buckets.get(p, [])) == "THIN")
         empty = sum(1 for p in pats if classify_pattern(buckets.get(p, [])) == "EMPTY")
-        unrouted = len(buckets.get(None, []))
         total = len(per_q)
-        lines.append(f"| {track} | {total} | {len(pats)} | {healthy} | {uneven} | {thin} | {empty} | {unrouted} |")
+        lines.append(
+            f"| {track} | {total} | {n_in_path} | {n_orphan} | {n_div} | "
+            f"{len(pats)} | {healthy} | {uneven} | {thin} | {empty} |"
+        )
     lines.append("")
-    lines.append("Legend: **Healthy** ≥5 Qs across easy/medium/hard · **Uneven** ≥5 Qs but missing a difficulty · **Thin** 1–4 Qs · **Empty** 0 Qs · **Unrouted** = question whose concept tags didn't match any pattern.")
+    lines.append("**Legend:**  ")
+    lines.append("`In a live path` = practice questions currently included in some live path's `questions[]`.  ")
+    lines.append("`Orphans` = practice questions in no live path (catalog-only).  ")
+    lines.append("`Divergent` = questions in a live path whose tag-derived routing suggests a different pattern.  ")
+    lines.append("Pattern classes are based on live-path-aggregated coverage: **Healthy** ≥5 across easy/medium/hard · **Uneven** ≥5 but missing a difficulty · **Thin** 1–4 Qs · **Empty** 0 Qs (proposed but no live path or no questions).  ")
     lines.append("")
 
     # Per-track sections
@@ -557,13 +747,22 @@ def render_markdown(audits: dict) -> str:
         buckets = data["buckets"]
         per_q = data["per_question"]
         family_landings = data["family_landings"]
+        orphans = data["orphans"]
+        divergences = data["divergences"]
 
         lines.append("---")
         lines.append(f"## {track}")
         lines.append("")
-        lines.append(f"Practice questions audited: **{len(per_q)}**.  Patterns in proposed canonical set: **{len(pats)}**.")
+        n_in_path = sum(1 for r in per_q if r["live_path"] is not None)
+        lines.append(
+            f"Practice questions: **{len(per_q)}** "
+            f"({n_in_path} in live paths · {len(orphans)} orphans · {len(divergences)} divergent). "
+            f"Proposed canonical patterns: **{len(pats)}**."
+        )
         lines.append("")
-        lines.append("### Pattern coverage")
+
+        # Pattern coverage (live-aggregated)
+        lines.append("### Pattern coverage (live-path-aggregated)")
         lines.append("")
         lines.append("| Pattern | Display | Easy | Medium | Hard | Total | Class |")
         lines.append("|---|---|---:|---:|---:|---:|---|")
@@ -577,19 +776,17 @@ def render_markdown(audits: dict) -> str:
                 "HEALTHY": "✅ healthy",
                 "UNEVEN": "⚠️ uneven",
                 "THIN": "🟡 thin (needs content)",
-                "EMPTY": "🔴 empty (needs content)",
+                "EMPTY": "🔴 empty (no live path or no questions)",
             }[cls]
             lines.append(f"| `{slug}` | {label} | {ne} | {nm} | {nh} | {ne+nm+nh} | {cls_badge} |")
-        # Unrouted bucket
-        un = buckets.get(None, [])
-        lines.append(f"| _(unrouted)_ | — | {sum(1 for (_,d,_) in un if d=='easy')} | {sum(1 for (_,d,_) in un if d=='medium')} | {sum(1 for (_,d,_) in un if d=='hard')} | {len(un)} | — |")
         lines.append("")
 
         # Concept-family → pattern landings cross-map
         lines.append("### Concept-family → pattern landings")
         lines.append("")
-        lines.append("How each track family's questions distributed across patterns (a single question")
-        lines.append("contributes once to each of its family tags — multi-tag questions count multiply).")
+        lines.append("Where each track family's questions actually landed (per live-path attribution).")
+        lines.append("A question contributes once per family tag — multi-tag questions count multiply.")
+        lines.append("`(orphan)` = the family's questions that are not in any live path.")
         lines.append("")
         lines.append("| Family | Top landing | Other landings |")
         lines.append("|---|---|---|")
@@ -602,6 +799,50 @@ def render_markdown(audits: dict) -> str:
             lines.append(f"| {fam} | {top} | {others or '—'} |")
         lines.append("")
 
+        # Divergences within live paths
+        if divergences:
+            lines.append("### Divergences (live path says A, tags suggest B)")
+            lines.append("")
+            lines.append("Questions currently in a live path whose tag-derived routing would put them elsewhere.")
+            lines.append("Each is a candidate for author review — the divergence is honest if the question's")
+            lines.append("primary objective genuinely differs from its tag-primary primitive.")
+            lines.append("")
+            lines.append("| QID | Diff | Live path | Attributed pattern | Tag-suggested pattern | Title |")
+            lines.append("|---|---|---|---|---|---|")
+            for r in sorted(divergences, key=lambda x: (x["live_path"] or "", x["qid"])):
+                t = r["title"].replace("|", "\\|")
+                lines.append(
+                    f"| {r['qid']} | {r['difficulty']} | `{r['live_path']}` | "
+                    f"`{r['attributed_pattern']}` | `{r['tag_pattern']}` | {t} |"
+                )
+            lines.append("")
+        else:
+            lines.append("### Divergences (live path says A, tags suggest B)")
+            lines.append("")
+            lines.append("None.")
+            lines.append("")
+
+        # Orphans (questions not in any live path) with suggested pattern
+        if orphans:
+            lines.append("### Orphans (catalog questions in no live path)")
+            lines.append("")
+            lines.append("Practice questions whose IDs are not referenced by any live path's `questions[]`.")
+            lines.append("The tag-suggested pattern is where they would land under tag-derived routing —")
+            lines.append("a starting point for deciding which path (existing or new) should include them.")
+            lines.append("")
+            lines.append("| QID | Diff | Tag-suggested pattern | Title |")
+            lines.append("|---|---|---|---|")
+            for r in sorted(orphans, key=lambda x: (x["difficulty"], x["qid"])):
+                t = r["title"].replace("|", "\\|")
+                tp = f"`{r['tag_pattern']}`" if r["tag_pattern"] else "_unrouted_"
+                lines.append(f"| {r['qid']} | {r['difficulty']} | {tp} | {t} |")
+            lines.append("")
+        else:
+            lines.append("### Orphans (catalog questions in no live path)")
+            lines.append("")
+            lines.append("None — every practice question is in some live path.")
+            lines.append("")
+
         # Gap punch list
         thin_or_empty = [
             (slug, classify_pattern(buckets.get(slug, [])), len(buckets.get(slug, [])))
@@ -613,44 +854,57 @@ def render_markdown(audits: dict) -> str:
             lines.append("")
             for slug, cls, n in thin_or_empty:
                 marker = "🔴" if cls == "EMPTY" else "🟡"
-                lines.append(f"- {marker} **`{slug}`** — {n} practice Q{'s' if n != 1 else ''} ({cls.lower()}). {'Needs initial content.' if cls == 'EMPTY' else 'Author 3–5 more to reach healthy threshold.'}")
+                if cls == "EMPTY":
+                    detail = "No live path or no questions. Either create a path that aggregates this pattern, or author initial content."
+                else:
+                    detail = "Author or recruit 3–5 more to reach healthy threshold."
+                lines.append(f"- {marker} **`{slug}`** — {n} practice Q{'s' if n != 1 else ''} ({cls.lower()}). {detail}")
             lines.append("")
         else:
             lines.append("### Coverage gaps in this track")
             lines.append("")
-            lines.append("None — every pattern in the proposed canonical set has healthy or uneven (≥5 Qs) coverage.")
+            lines.append("None — every pattern in the proposed canonical set is healthy or uneven (≥5 Qs).")
             lines.append("")
 
-    # Sidecar: per-question routing proposal
+    # Sidecar: per-question full table (annotated)
     lines.append("---")
-    lines.append("## Per-question routing proposal (sidecar)")
+    lines.append("## Per-question table (sidecar)")
     lines.append("")
-    lines.append("Each practice question's proposed `pattern` value, derived from the routing tables.")
-    lines.append("**Not yet committed to question JSONs.** Apply via a follow-up authoring pass per the")
-    lines.append("learning-paths tracker §B.")
+    lines.append("Every practice question with its live-path attribution and tag-derived suggestion.")
+    lines.append("`Live path` = the path's `slug` that owns this question. `Attributed` = canonical pattern")
+    lines.append("the audit credits the question to. `Tag-suggested` = where tag-routing would place it")
+    lines.append("(used for divergence + orphan analysis). `Divergent?` = ✗ when live and tag disagree.")
     lines.append("")
     for track, data in audits.items():
         lines.append(f"### {track}")
         lines.append("")
-        lines.append("| QID | Difficulty | Pattern | Title |")
-        lines.append("|---|---|---|---|")
-        for qid, diff, title, pattern, reason, concepts in sorted(data["per_question"]):
-            pat_repr = f"`{pattern}`" if pattern else "_unrouted_"
-            t = title.replace("|", "\\|")
-            lines.append(f"| {qid} | {diff} | {pat_repr} | {t} |")
+        lines.append("| QID | Diff | Live path | Attributed | Tag-suggested | Divergent? | Title |")
+        lines.append("|---|---|---|---|---|---|---|")
+        for r in sorted(data["per_question"], key=lambda x: x["qid"]):
+            t = r["title"].replace("|", "\\|")
+            live = f"`{r['live_path']}`" if r["live_path"] else "_orphan_"
+            attr = f"`{r['attributed_pattern']}`" if r["attributed_pattern"] else "—"
+            tag = f"`{r['tag_pattern']}`" if r["tag_pattern"] else "_unrouted_"
+            div = "⚠️" if r["divergent"] else ""
+            lines.append(f"| {r['qid']} | {r['difficulty']} | {live} | {attr} | {tag} | {div} | {t} |")
         lines.append("")
 
     return "\n".join(lines)
 
 
 def main():
+    live_paths_by_track = _load_live_paths_by_track()
     audits = {}
     for track, content_dir in TRACK_DIRS.items():
-        per_q, buckets, family_landings = walk_track(track, content_dir)
+        per_q, buckets, family_landings, orphans, divergences = walk_track(
+            track, content_dir, live_paths=live_paths_by_track.get(track, [])
+        )
         audits[track] = {
             "per_question": per_q,
             "buckets": buckets,
             "family_landings": family_landings,
+            "orphans": orphans,
+            "divergences": divergences,
         }
     md = render_markdown(audits)
     out = REPO / "docs" / "phases" / "pattern-coverage-audit.md"
@@ -663,12 +917,18 @@ def main():
     for track, data in audits.items():
         pats = PROPOSED_PATTERNS.get(track, {})
         buckets = data["buckets"]
+        per_q = data["per_question"]
+        n_in_path = sum(1 for r in per_q if r["live_path"] is not None)
+        n_orph = len(data["orphans"])
+        n_div = len(data["divergences"])
         healthy = sum(1 for p in pats if classify_pattern(buckets.get(p, [])) == "HEALTHY")
         uneven = sum(1 for p in pats if classify_pattern(buckets.get(p, [])) == "UNEVEN")
         thin = sum(1 for p in pats if classify_pattern(buckets.get(p, [])) == "THIN")
         empty = sum(1 for p in pats if classify_pattern(buckets.get(p, [])) == "EMPTY")
-        unrouted = len(buckets.get(None, []))
-        print(f"  {track:>18}: {len(pats)} patterns | healthy={healthy} uneven={uneven} thin={thin} empty={empty} | unrouted={unrouted}")
+        print(
+            f"  {track:>18}: {len(per_q)}Q ({n_in_path} in path, {n_orph} orph, {n_div} div) | "
+            f"{len(pats)} patterns | H={healthy} U={uneven} T={thin} E={empty}"
+        )
 
 
 if __name__ == "__main__":

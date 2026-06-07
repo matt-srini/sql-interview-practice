@@ -1,18 +1,20 @@
-"""Pass-2 rebalance audit.
+"""Pass-2 rebalance audit (path-authoritative).
 
-For each thin (1–4 Qs) or empty (0 Qs) pattern, find practice questions
-*currently routed elsewhere* that carry at least one concept-family tag
-which routes to the thin pattern. These are "recruitable" questions —
-the routing rule sent them to a high-coverage pattern via analytical-wins
-or first-construct-match, but a secondary tag suggests they could also
-honestly belong in the thin pattern.
+For each thin (1–4 Qs) or empty (0 Qs) proposed pattern, find practice
+questions that could honestly be recruited there:
 
-This is not an auto-reassignment. It's a per-pattern shortlist that an
-author reviews question-by-question to decide whether each candidate's
-*primary objective* is actually the thin pattern (in which case the
-routing in audit_pattern_coverage.py should be refined).
+  - **Orphans** — questions in no live path, whose tag-routing suggests
+    the thin pattern. Bringing them into the thin pattern's path (or a
+    new path for it) is a no-cost gain.
+  - **Divergent path members** — questions currently in some other live
+    path, but whose tags suggest the thin pattern. Moving them is a real
+    reassignment decision; the move is honest only if the question's
+    primary objective genuinely belongs in the thin pattern.
 
 Output: appends a "Pass 2 rebalance" section to pattern-coverage-audit.md.
+
+This is a routing-refinement tool, not auto-reassignment. No JSON or
+registry changes happen here.
 """
 from __future__ import annotations
 
@@ -27,17 +29,16 @@ sys.path.insert(0, str(REPO / "scripts"))
 
 from concept_families import resolve_to_family
 from audit_pattern_coverage import (
-    TRACK_DIRS, PROPOSED_PATTERNS, ROUTING, ANALYTICAL_PATTERNS,
-    route_question, walk_track, classify_pattern,
+    TRACK_DIRS, PROPOSED_PATTERNS, ROUTING,
+    walk_track, classify_pattern, _load_live_paths_by_track,
 )
 
 
-def find_recruitable(track: str, content_dir: Path, per_question, buckets) -> dict[str, list]:
-    """For each thin/empty pattern, return [(qid, diff, title, current_pattern, supporting_tag_count, alt_supporting_tags)].
+def find_recruitable(track: str, per_question, buckets, orphans, divergences) -> dict[str, dict]:
+    """For each thin/empty pattern in this track, return:
+        {pattern: {"orphans": [...], "divergents": [...]}}
 
-    A question is "recruitable" for target_pattern P_thin if:
-      - currently routed to P_current != P_thin
-      - has at least one concept tag whose family routes to P_thin
+    Each entry is a per-question record from the audit walk.
     """
     pats = PROPOSED_PATTERNS.get(track, {})
     routes = ROUTING.get(track, {})
@@ -53,185 +54,193 @@ def find_recruitable(track: str, content_dir: Path, per_question, buckets) -> di
         if classify_pattern(buckets.get(p, [])) in ("THIN", "EMPTY")
     ]
 
-    recruitable: dict[str, list] = {p: [] for p in thin_or_empty}
+    recruitable: dict[str, dict] = {
+        p: {"orphans": [], "divergents": []} for p in thin_or_empty
+    }
 
-    for qid, diff, title, current_pattern, _reason, concepts in per_question:
-        if current_pattern is None:
-            continue  # unrouted Q's — separate concern
-        # For each thin pattern, check if Q has any tag routing to it
-        q_families = [resolve_to_family(c, track) for c in (concepts or []) if isinstance(c, str)]
-        # Count how many of Q's tags support each candidate pattern
-        for thin in thin_or_empty:
-            if current_pattern == thin:
-                continue
-            target_families = pattern_to_families[thin]
-            supporting_tags = [
-                (c, resolve_to_family(c, track))
-                for c in (concepts or []) if isinstance(c, str)
-                and resolve_to_family(c, track) in target_families
-            ]
-            if supporting_tags:
-                # How many tags support the *current* pattern?
-                current_pattern_families = pattern_to_families[current_pattern]
-                current_supporting = sum(
-                    1 for f in q_families if f in current_pattern_families
-                )
-                recruitable[thin].append({
-                    "qid": qid,
-                    "diff": diff,
-                    "title": title,
-                    "current_pattern": current_pattern,
-                    "current_support": current_supporting,
-                    "alt_support": len(supporting_tags),
-                    "alt_tags": [t[0] for t in supporting_tags],
-                    "all_concepts": concepts,
-                })
+    # Orphan candidates: tag suggests the thin pattern
+    for r in orphans:
+        if r["tag_pattern"] in thin_or_empty:
+            recruitable[r["tag_pattern"]]["orphans"].append(r)
 
-    # Sort each pattern's candidates: weakest current-pattern attachment first
-    # (those are the easiest to move honestly)
+    # Divergent candidates: in some other path but tags suggest thin pattern
+    for r in divergences:
+        if r["tag_pattern"] in thin_or_empty:
+            recruitable[r["tag_pattern"]]["divergents"].append(r)
+
+    # Sort each pattern's candidates by easy→medium→hard for review order
+    diff_order = {"easy": 0, "medium": 1, "hard": 2}
     for thin in recruitable:
-        recruitable[thin].sort(key=lambda r: (r["current_support"], -r["alt_support"], r["qid"]))
+        recruitable[thin]["orphans"].sort(key=lambda r: (diff_order.get(r["difficulty"], 9), r["qid"]))
+        recruitable[thin]["divergents"].sort(key=lambda r: (diff_order.get(r["difficulty"], 9), r["qid"]))
 
     return recruitable
 
 
-def render_rebalance_markdown(rebalance_by_track: dict) -> str:
+def render_rebalance_markdown(rebalance_by_track: dict, pattern_current_counts: dict) -> str:
     lines: list[str] = []
     lines.append("---")
     lines.append("## Pass 2: Rebalance recommendations")
     lines.append("")
     lines.append("**Generated by:** `scripts/audit_pattern_rebalance.py`.")
     lines.append("")
-    lines.append("For each thin (1–4 Qs) or empty (0 Qs) pattern, this section lists")
-    lines.append("practice questions *currently routed elsewhere* that carry at least one")
-    lines.append("concept-family tag pointing to the thin pattern. These are **recruitable")
-    lines.append("candidates** — the audit's routing rule sent them elsewhere via")
-    lines.append("analytical-wins or first-construct-match, but a co-tag suggests their")
-    lines.append("primary objective might actually be the under-covered pattern.")
+    lines.append("For each **thin** (1–4 Qs) or **empty** (0 Qs) proposed pattern, this section")
+    lines.append("lists practice questions that could honestly be recruited into the pattern.")
+    lines.append("Two recruitment sources:")
+    lines.append("")
+    lines.append("- **Orphans** — questions in no live path whose tag-routing suggests the")
+    lines.append("  thin pattern. These are zero-cost gains: either add them to an existing")
+    lines.append("  path for the thin pattern, or use them as the seed for a new path.")
+    lines.append("- **Divergent path members** — questions currently in some other live path,")
+    lines.append("  whose tags suggest the thin pattern. Moving them is a real reassignment")
+    lines.append("  decision; the move is honest only if the question's *primary objective*")
+    lines.append("  genuinely belongs in the thin pattern.")
     lines.append("")
     lines.append("**How to use this section:**")
     lines.append("")
-    lines.append("1. Each candidate is sorted *weakest current-pattern attachment first* —")
-    lines.append("   questions with only one tag supporting their current pattern are")
-    lines.append("   easiest to move honestly.")
-    lines.append("2. Review each candidate's title and tag set. Ask: *is this question")
-    lines.append("   primarily about the thin pattern, or is the construct-overlap")
-    lines.append("   incidental?*")
-    lines.append("3. If moving the question would make its objective clearer, refine")
-    lines.append("   `scripts/audit_pattern_coverage.py::ROUTING` (typically by adding")
-    lines.append("   a more-specific tag → pattern mapping) and re-run the audit.")
+    lines.append("1. Review the orphan list first — these are easy wins.")
+    lines.append("2. For divergents, read each question and decide whether the move is honest")
+    lines.append("   (does the question's primary objective match the thin pattern, or is the")
+    lines.append("   tag-overlap incidental?).")
+    lines.append("3. If many honest moves exist, the thin pattern can become healthy with")
+    lines.append("   zero new authoring.")
     lines.append("4. If no candidates honestly fit, the thin pattern genuinely needs new")
-    lines.append("   content (`needs_content` stays).")
+    lines.append("   content authoring (the `needs_content` flag stays).")
     lines.append("")
-    lines.append("**This is a routing-refinement tool, not a question-reassignment script.**")
-    lines.append("No JSON or registry changes are made by running it.")
-    lines.append("")
-    lines.append("**Legend:** `current=N` is the count of question tags supporting its")
-    lines.append("current pattern; `alt=N` is the count of tags supporting the candidate")
-    lines.append("thin pattern. `current=1, alt=2` = strong case for move. `current=3,")
-    lines.append("alt=1` = weak case for move; current pattern is genuinely primary.")
+    lines.append("**This is a routing-refinement tool, not auto-reassignment.**")
+    lines.append("No JSON or registry changes happen by running it.")
     lines.append("")
 
-    # Headline impact: per-pattern current count + max-potential (if all candidates moved)
+    # Headline impact: per-pattern current count + max-potential if all candidates recruited
     lines.append("### Potential rebalance impact (upper bound)")
     lines.append("")
-    lines.append("If *every* recruitable candidate were honestly moved (which it won't be —")
-    lines.append("this is the upper bound), how each thin/empty pattern's count would change:")
+    lines.append("If *every* recruitable candidate (orphans + divergents) were honestly")
+    lines.append("recruited (upper bound — reality is lower), how each thin/empty pattern's")
+    lines.append("count would change. Divergents require more author scrutiny than orphans.")
     lines.append("")
-    lines.append("| Track | Pattern | Current | + Candidates | Max potential | Becomes |")
-    lines.append("|---|---|---:|---:|---:|---|")
+    lines.append("| Track | Pattern | Current | + Orphans | + Divergents | Max potential | Becomes |")
+    lines.append("|---|---|---:|---:|---:|---:|---|")
     for track in TRACK_DIRS:
         rec = rebalance_by_track.get(track, {})
-        if not any(rec.values()):
+        if not rec:
             continue
+        track_counts = pattern_current_counts.get(track, {})
         for thin_pattern in sorted(rec.keys()):
-            candidates = rec[thin_pattern]
-            current = 0  # will need to recompute
-            for p_track, p_data in _pattern_current_counts.items():
-                if p_track == track and thin_pattern in p_data:
-                    current = p_data[thin_pattern]
-                    break
-            n_cand = len(candidates)
-            max_pot = current + n_cand
+            entries = rec[thin_pattern]
+            n_orph = len(entries["orphans"])
+            n_div = len(entries["divergents"])
+            if n_orph == 0 and n_div == 0:
+                continue
+            current = track_counts.get(thin_pattern, 0)
+            max_pot = current + n_orph + n_div
             if max_pot >= 5:
                 becomes = "✅ healthy potential"
             elif max_pot > 0:
                 becomes = "🟡 still thin"
             else:
                 becomes = "🔴 still empty"
-            lines.append(f"| {track} | `{thin_pattern}` | {current} | {n_cand} | {max_pot} | {becomes} |")
-    lines.append("")
-    lines.append("Reality: roughly half of candidates have `alt >= current` (tie or strong");
-    lines.append("case for move), and an author judgment pass typically confirms ~30-50% of");
-    lines.append("the candidates. So treat \"max potential\" as the ceiling, not the forecast.");
+            lines.append(
+                f"| {track} | `{thin_pattern}` | {current} | {n_orph} | {n_div} | {max_pot} | {becomes} |"
+            )
     lines.append("")
 
+    # Per-pattern detail sections
     for track in TRACK_DIRS:
         rec = rebalance_by_track.get(track, {})
-        any_candidates = any(rec.values())
-        if not any_candidates:
+        if not rec:
+            continue
+        any_content = any(
+            entries["orphans"] or entries["divergents"]
+            for entries in rec.values()
+        )
+        if not any_content:
             continue
         lines.append(f"### {track}")
         lines.append("")
-        for thin_pattern, candidates in sorted(rec.items()):
-            if not candidates:
+        for thin_pattern in sorted(rec.keys()):
+            entries = rec[thin_pattern]
+            if not entries["orphans"] and not entries["divergents"]:
                 continue
             label = PROPOSED_PATTERNS.get(track, {}).get(thin_pattern, thin_pattern)
             lines.append(f"#### `{thin_pattern}` — {label}")
             lines.append("")
-            lines.append(f"_{len(candidates)} recruitable candidate{'s' if len(candidates) != 1 else ''}_")
+            n_orph = len(entries["orphans"])
+            n_div = len(entries["divergents"])
+            lines.append(f"_{n_orph} orphan candidate{'s' if n_orph != 1 else ''} · "
+                         f"{n_div} divergent candidate{'s' if n_div != 1 else ''}_")
             lines.append("")
-            lines.append("| QID | Diff | Current → Alt | Title | Supporting tags |")
-            lines.append("|---|---|---|---|---|")
-            for c in candidates[:25]:  # cap display at 25 per pattern
-                tags_repr = ", ".join(f"`{t}`" for t in c["alt_tags"])
-                title = c["title"].replace("|", "\\|")
-                support = f"`{c['current_pattern']}` (current={c['current_support']}) → `{thin_pattern}` (alt={c['alt_support']})"
-                lines.append(f"| {c['qid']} | {c['diff']} | {support} | {title} | {tags_repr} |")
-            if len(candidates) > 25:
-                lines.append(f"| _… {len(candidates)-25} more not shown_ | | | | |")
-            lines.append("")
+
+            if entries["orphans"]:
+                lines.append("**Orphans** (in no live path; zero-cost recruitment):")
+                lines.append("")
+                lines.append("| QID | Diff | Title | Concepts |")
+                lines.append("|---|---|---|---|")
+                for r in entries["orphans"][:30]:
+                    title = r["title"].replace("|", "\\|")
+                    concepts_repr = ", ".join(f"`{c}`" for c in r["concepts"])
+                    lines.append(f"| {r['qid']} | {r['difficulty']} | {title} | {concepts_repr} |")
+                if len(entries["orphans"]) > 30:
+                    lines.append(f"| _… {len(entries['orphans'])-30} more not shown_ | | | |")
+                lines.append("")
+
+            if entries["divergents"]:
+                lines.append("**Divergents** (in another live path; review per question):")
+                lines.append("")
+                lines.append("| QID | Diff | Currently in | Attributed pattern | Title |")
+                lines.append("|---|---|---|---|---|")
+                for r in entries["divergents"][:30]:
+                    title = r["title"].replace("|", "\\|")
+                    lines.append(
+                        f"| {r['qid']} | {r['difficulty']} | `{r['live_path']}` | "
+                        f"`{r['attributed_pattern']}` | {title} |"
+                    )
+                if len(entries["divergents"]) > 30:
+                    lines.append(f"| _… {len(entries['divergents'])-30} more not shown_ | | | | |")
+                lines.append("")
         lines.append("")
 
     return "\n".join(lines)
 
 
 def main():
+    live_paths_by_track = _load_live_paths_by_track()
     rebalance_by_track = {}
     pattern_current_counts: dict[str, dict[str, int]] = {}
+
     for track, content_dir in TRACK_DIRS.items():
-        per_q, buckets, _ = walk_track(track, content_dir)
-        recruitable = find_recruitable(track, content_dir, per_q, buckets)
+        per_q, buckets, _, orphans, divergences = walk_track(
+            track, content_dir, live_paths=live_paths_by_track.get(track, [])
+        )
+        recruitable = find_recruitable(track, per_q, buckets, orphans, divergences)
         rebalance_by_track[track] = recruitable
         pattern_current_counts[track] = {
             slug: len(buckets.get(slug, []))
             for slug in PROPOSED_PATTERNS.get(track, {})
         }
-    # Inject into module so render fn can use it
-    globals()["_pattern_current_counts"] = pattern_current_counts
 
-    rebalance_md = render_rebalance_markdown(rebalance_by_track)
+    rebalance_md = render_rebalance_markdown(rebalance_by_track, pattern_current_counts)
 
-    # Append to the existing audit doc
     audit_path = REPO / "docs" / "phases" / "pattern-coverage-audit.md"
     existing = audit_path.read_text()
-    # Remove any prior Pass 2 section
     marker = "---\n## Pass 2: Rebalance recommendations"
     if marker in existing:
         existing = existing.split(marker)[0].rstrip() + "\n"
     audit_path.write_text(existing + "\n" + rebalance_md)
     print(f"Appended Pass 2 section to {audit_path}")
 
-    # Headline summary to stdout
     print()
-    print("Rebalance headline (recruitable candidates per thin pattern):")
+    print("Rebalance headline (per thin pattern: orphans + divergents):")
     for track, rec in rebalance_by_track.items():
-        if not any(rec.values()):
+        any_content = any(e["orphans"] or e["divergents"] for e in rec.values())
+        if not any_content:
             continue
         print(f"\n  {track}:")
-        for thin, cands in sorted(rec.items(), key=lambda kv: -len(kv[1])):
-            if cands:
-                print(f"    {thin:>40}  {len(cands):>3} candidates")
+        for thin in sorted(rec.keys()):
+            entries = rec[thin]
+            n_o = len(entries["orphans"])
+            n_d = len(entries["divergents"])
+            if n_o or n_d:
+                print(f"    {thin:>40}  orph={n_o:>2}  div={n_d:>2}")
 
 
 if __name__ == "__main__":
