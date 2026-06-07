@@ -459,9 +459,30 @@ ANALYTICAL_PRIORITY: dict[str, list[str]] = {
     "sql": [
         "cohort-and-retention",          # dominates funnel/sessionization
         "funnel-and-event-analysis",
+        "period-over-period",             # 2026-XX: PoP wins over top-n
         "top-n-and-ranking",
-        "period-over-period",
         "pivot-and-unpivot",
+    ],
+    # 2026-XX: ML analytical priority derived from divergent audit B3 findings.
+    # production-and-monitoring dominates missing-data/feature-engineering when
+    # the question's framing is a production scenario (drift, SMOTE-in-prod, etc.).
+    "ml-fundamentals": [
+        "production-and-monitoring",
+        "missing-data-and-preprocessing",
+        "class-imbalance",
+        "feature-engineering",
+        "algorithmic-fairness",
+        "model-interpretability",
+    ],
+    # 2026-XX: Experimentation priority — causal/HTE methodology wins over
+    # platform/behavioral cross-tags.
+    "experimentation": [
+        "causal-inference",
+        "subgroup-and-hte",
+        "variance-reduction",
+        "behavioral-effects-and-interference",
+        "experiment-platform-design",
+        "sequential-and-bandits",
     ],
 }
 

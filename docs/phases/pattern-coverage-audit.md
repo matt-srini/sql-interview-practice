@@ -21,15 +21,15 @@ Headline coverage tables reflect the **live state of paths**, not tag-derived hy
 
 | Track | Practice Qs | In a live path | Orphans | Divergent | Patterns (proposed) | Healthy | Uneven | Thin | Empty |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| sql | 118 | 66 | 52 | 27 | 14 | 4 | 6 | 1 | 3 |
-| python | 79 | 35 | 44 | 7 | 9 | 1 | 4 | 1 | 3 |
+| sql | 118 | 66 | 52 | 24 | 14 | 4 | 6 | 1 | 3 |
+| python | 79 | 35 | 44 | 6 | 9 | 1 | 4 | 1 | 3 |
 | python-data | 92 | 68 | 24 | 16 | 9 | 2 | 5 | 0 | 2 |
 | pyspark | 127 | 50 | 77 | 7 | 7 | 1 | 5 | 0 | 1 |
 | data-engineering | 91 | 53 | 38 | 9 | 9 | 4 | 2 | 1 | 2 |
-| data-modeling | 81 | 65 | 16 | 3 | 14 | 6 | 1 | 2 | 5 |
+| data-modeling | 81 | 65 | 16 | 2 | 14 | 6 | 1 | 2 | 5 |
 | statistics | 100 | 64 | 36 | 11 | 11 | 1 | 5 | 0 | 5 |
-| ml-fundamentals | 100 | 74 | 26 | 24 | 15 | 3 | 7 | 0 | 5 |
-| experimentation | 87 | 54 | 33 | 29 | 9 | 1 | 6 | 0 | 2 |
+| ml-fundamentals | 100 | 74 | 26 | 21 | 15 | 3 | 7 | 0 | 5 |
+| experimentation | 87 | 54 | 33 | 26 | 9 | 1 | 6 | 0 | 2 |
 
 **Legend:**  
 `In a live path` = practice questions currently included in some live path's `questions[]`.  
@@ -40,7 +40,7 @@ Pattern classes are based on live-path-aggregated coverage: **Healthy** ≥5 acr
 ---
 ## sql
 
-Practice questions: **118** (66 in live paths · 52 orphans · 27 divergent). Proposed canonical patterns: **14**.
+Practice questions: **118** (66 in live paths · 52 orphans · 24 divergent). Proposed canonical patterns: **14**.
 
 ### Pattern coverage (live-path-aggregated)
 
@@ -111,9 +111,6 @@ primary objective genuinely differs from its tag-primary primitive.
 | 11017 | easy | `funnel-and-events` | `funnel-and-event-analysis` | `aggregation` | Checkout-related events |
 | 11021 | easy | `funnel-and-events` | `funnel-and-event-analysis` | `aggregation` | Events linked to a product |
 | 13024 | hard | `joins-and-filtering` | `joins` | `top-n-and-ranking` | Top 2 products per category without window functions |
-| 13012 | hard | `period-over-period-analysis` | `period-over-period` | `top-n-and-ranking` | Acquisition-channel rank improvements across months |
-| 13016 | hard | `period-over-period-analysis` | `period-over-period` | `top-n-and-ranking` | High-growth stable products among top revenue leaders |
-| 13018 | hard | `period-over-period-analysis` | `period-over-period` | `top-n-and-ranking` | Users whose top spending category changes from Q1 to Q2 |
 | 12061 | medium | `sql-advanced-patterns` | `set-operations` | `aggregation` | Revenue subtotals by category and status |
 | 12062 | medium | `sql-advanced-patterns` | `set-operations` | `aggregation` | Order payment breakdown with FILTER |
 | 12063 | medium | `sql-advanced-patterns` | `set-operations` | `period-over-period` | Monthly order counts with no-gap date spine |
@@ -200,7 +197,7 @@ a starting point for deciding which path (existing or new) should include them.
 ---
 ## python
 
-Practice questions: **79** (35 in live paths · 44 orphans · 7 divergent). Proposed canonical patterns: **9**.
+Practice questions: **79** (35 in live paths · 44 orphans · 6 divergent). Proposed canonical patterns: **9**.
 
 ### Pattern coverage (live-path-aggregated)
 
@@ -234,7 +231,7 @@ A question contributes once per family tag — multi-tag questions count multipl
 | HEAP & PRIORITY QUEUE | `(orphan)` (5) | `sliding-window` (1), `graph-traversal` (1) |
 | IN-PLACE TRANSFORMATION & SPACE OPTIMIZATION | `graph-traversal` (1) | `(orphan)` (1), `sliding-window` (1) |
 | INDEXED SEQUENCE REASONING | `(orphan)` (25) | `arrays-and-hashing` (2), `data-pipeline-scripting` (2), `dynamic-programming` (2), `sliding-window` (1) |
-| LIST & COLLECTION TRANSFORMATION | `(orphan)` (17) | `data-pipeline-scripting` (4), `arrays-and-hashing` (1) |
+| LIST & COLLECTION TRANSFORMATION | `(orphan)` (17) | `data-pipeline-scripting` (5), `arrays-and-hashing` (1) |
 | MODULAR ARITHMETIC & NUMBER THEORY | `(orphan)` (2) | — |
 | SLIDING WINDOW | `sliding-window` (6) | `stacks-and-queues` (1) |
 | STACK & MONOTONIC STRUCTURES | `stacks-and-queues` (4) | `sliding-window` (1) |
@@ -254,7 +251,6 @@ primary objective genuinely differs from its tag-primary primitive.
 |---|---|---|---|---|---|
 | 21007 | easy | `arrays-and-hashing` | `arrays-and-hashing` | `data-pipeline-scripting` | Deduplicate Record IDs |
 | 23012 | hard | `dynamic-programming` | `dynamic-programming` | `arrays-and-hashing` | Longest Increasing Subsequence |
-| 21032 | easy | `practical-data-python` | `data-pipeline-scripting` | `string-and-text-processing` | Extract Fields from a Log Line |
 | 21033 | easy | `practical-data-python` | `data-pipeline-scripting` | `string-and-text-processing` | Most Recent Date |
 | 21002 | easy | `sliding-window-patterns` | `sliding-window` | `string-and-text-processing` | Symmetric Code Validator |
 | 22002 | medium | `stacks-and-queues` | `stacks-and-queues` | `sliding-window` | Sliding Window Maximum |
@@ -707,7 +703,7 @@ a starting point for deciding which path (existing or new) should include them.
 ---
 ## data-modeling
 
-Practice questions: **81** (65 in live paths · 16 orphans · 3 divergent). Proposed canonical patterns: **14**.
+Practice questions: **81** (65 in live paths · 16 orphans · 2 divergent). Proposed canonical patterns: **14**.
 
 ### Pattern coverage (live-path-aggregated)
 
@@ -718,11 +714,11 @@ Practice questions: **81** (65 in live paths · 16 orphans · 3 divergent). Prop
 | `surrogate-keys` | Surrogate vs Natural Keys | 0 | 0 | 0 | 0 | 🔴 empty (no live path or no questions) |
 | `grain-definition` | Grain Definition | 1 | 4 | 2 | 7 | ✅ healthy |
 | `scd` | Slowly Changing Dimensions | 4 | 7 | 6 | 17 | ✅ healthy |
-| `normalization` | Normalization (1NF–3NF) | 3 | 0 | 0 | 3 | 🟡 thin (needs content) |
+| `normalization` | Normalization (1NF–3NF) | 4 | 0 | 0 | 4 | 🟡 thin (needs content) |
 | `referential-integrity` | Referential Integrity | 1 | 2 | 2 | 5 | ✅ healthy |
 | `bridge-tables` | Bridge Tables & Many-to-Many | 0 | 3 | 1 | 4 | 🟡 thin (needs content) |
 | `dbt-modeling` | dbt Layered Modeling | 1 | 3 | 2 | 6 | ✅ healthy |
-| `wide-tables` | Wide Tables & OBT | 3 | 3 | 2 | 8 | ✅ healthy |
+| `wide-tables` | Wide Tables & OBT | 2 | 3 | 2 | 7 | ✅ healthy |
 | `conformed-dimensions` | Conformed Dimensions | 0 | 0 | 0 | 0 | 🔴 empty (no live path or no questions) |
 | `data-vault` | Data Vault | 0 | 0 | 0 | 0 | 🔴 empty (no live path or no questions) |
 | `aggregate-and-summary-design` | Aggregate & Summary Design | 0 | 0 | 0 | 0 | 🔴 empty (no live path or no questions) |
@@ -743,14 +739,14 @@ A question contributes once per family tag — multi-tag questions count multipl
 | CONFORMED DIMENSIONS | `(orphan)` (2) | `scd` (1) |
 | DATA VAULT | `(orphan)` (4) | — |
 | DBT MODELING | `dbt-modeling` (6) | `wide-tables` (2), `referential-integrity` (1) |
-| DENORMALIZATION TRADEOFF | `wide-tables` (5) | `star-snowflake` (3), `scd` (2), `(orphan)` (2), `dbt-modeling` (2) |
+| DENORMALIZATION TRADEOFF | `wide-tables` (4) | `star-snowflake` (3), `scd` (2), `(orphan)` (2), `dbt-modeling` (2) |
 | DIMENSION DESIGN | `scd` (11) | `(orphan)` (4), `star-snowflake` (1), `referential-integrity` (1), `fact-table-design` (1) |
 | DIMENSIONAL MODELING | `scd` (9) | `star-snowflake` (6), `grain-definition` (4), `referential-integrity` (3), `bridge-tables` (2) |
 | DOUBLE-COUNTING & FAN-OUT | `grain-definition` (2) | `bridge-tables` (1) |
 | FACT TABLE DESIGN | `fact-table-design` (7) | `scd` (7), `grain-definition` (5), `bridge-tables` (4), `star-snowflake` (2) |
 | GRAIN DEFINITION | `grain-definition` (7) | `fact-table-design` (4), `star-snowflake` (1), `bridge-tables` (1), `(orphan)` (1) |
 | HIERARCHIES & MULTI-PATH | `(orphan)` (3) | — |
-| NORMALIZATION | `star-snowflake` (3) | `normalization` (3), `wide-tables` (3), `dbt-modeling` (2), `(orphan)` (1) |
+| NORMALIZATION | `normalization` (4) | `star-snowflake` (3), `wide-tables` (2), `dbt-modeling` (2), `(orphan)` (1) |
 | REFERENTIAL INTEGRITY | `referential-integrity` (5) | `star-snowflake` (1), `(orphan)` (1), `scd` (1) |
 | SCD STRUCTURE | `scd` (10) | `(orphan)` (1) |
 | SCHEMA EVOLUTION | `scd` (3) | — |
@@ -769,7 +765,6 @@ primary objective genuinely differs from its tag-primary primitive.
 |---|---|---|---|---|---|
 | 61010 | easy | `schema-design-basics` | `star-snowflake` | `surrogate-keys` | Surrogate Key vs Natural Key: Identity Source |
 | 61016 | easy | `schema-design-basics` | `star-snowflake` | `grain-definition` | Grain Definition: What One Row Represents |
-| 61021 | easy | `wide-tables-and-obt` | `wide-tables` | `normalization` | OLAP Schema Choice: Why Not Normalise Fully? |
 
 ### Orphans (catalog questions in no live path)
 
@@ -799,7 +794,7 @@ a starting point for deciding which path (existing or new) should include them.
 ### Coverage gaps in this track
 
 - 🔴 **`surrogate-keys`** — 0 practice Qs (empty). No live path or no questions. Either create a path that aggregates this pattern, or author initial content.
-- 🟡 **`normalization`** — 3 practice Qs (thin). Author or recruit 3–5 more to reach healthy threshold.
+- 🟡 **`normalization`** — 4 practice Qs (thin). Author or recruit 3–5 more to reach healthy threshold.
 - 🟡 **`bridge-tables`** — 4 practice Qs (thin). Author or recruit 3–5 more to reach healthy threshold.
 - 🔴 **`conformed-dimensions`** — 0 practice Qs (empty). No live path or no questions. Either create a path that aggregates this pattern, or author initial content.
 - 🔴 **`data-vault`** — 0 practice Qs (empty). No live path or no questions. Either create a path that aggregates this pattern, or author initial content.
@@ -925,7 +920,7 @@ a starting point for deciding which path (existing or new) should include them.
 ---
 ## ml-fundamentals
 
-Practice questions: **100** (74 in live paths · 26 orphans · 24 divergent). Proposed canonical patterns: **15**.
+Practice questions: **100** (74 in live paths · 26 orphans · 21 divergent). Proposed canonical patterns: **15**.
 
 ### Pattern coverage (live-path-aggregated)
 
@@ -977,12 +972,12 @@ A question contributes once per family tag — multi-tag questions count multipl
 | LOSS FUNCTION SELECTION | `metrics` (4) | `supervised-unsupervised` (1) |
 | MISSING DATA STRATEGY | `missing-data-and-preprocessing` (4) | — |
 | MODEL CALIBRATION | `metrics` (2) | `production-and-monitoring` (1) |
-| MODEL MONITORING | `(orphan)` (2) | `production-and-monitoring` (2) |
+| MODEL MONITORING | `production-and-monitoring` (3) | `(orphan)` (2) |
 | NEURAL NETWORK DESIGN | `(orphan)` (2) | `regularization` (1) |
 | OVERFITTING DIAGNOSIS | `bias-variance` (5) | `(orphan)` (4), `production-and-monitoring` (2), `supervised-unsupervised` (1), `regularization` (1) |
 | REGRESSION METRICS | `metrics` (3) | `supervised-unsupervised` (1) |
 | REGULARIZATION EFFECT | `feature-engineering` (4) | `(orphan)` (2), `regularization` (2), `supervised-unsupervised` (1), `bias-variance` (1) |
-| SUPERVISED VS UNSUPERVISED | `supervised-unsupervised` (1) | `(orphan)` (1) |
+| SUPERVISED VS UNSUPERVISED | `supervised-unsupervised` (2) | `(orphan)` (1) |
 | TRAINING-SERVING SKEW | `production-and-monitoring` (3) | `(orphan)` (1) |
 | TRANSFER LEARNING STRATEGY | `regularization` (1) | `production-and-monitoring` (1), `(orphan)` (1) |
 
@@ -994,7 +989,6 @@ primary objective genuinely differs from its tag-primary primitive.
 
 | QID | Diff | Live path | Attributed pattern | Tag-suggested pattern | Title |
 |---|---|---|---|---|---|
-| 82050 | medium | `missing-data-and-preprocessing-hygiene` | `missing-data-and-preprocessing` | `feature-engineering` | Feature Selection Before Train/Test Split: Implicit Test Target Leakage |
 | 82009 | medium | `ml-advanced-methods` | `regularization` | `feature-engineering` | Dimensionality Reduction: PCA Variance Retention |
 | 82013 | medium | `ml-advanced-methods` | `regularization` | `feature-engineering` | Regularisation Depth: L1 vs L2 Solution Geometry |
 | 82026 | medium | `ml-advanced-methods` | `regularization` | `hyperparameter-tuning` | Hyperparameter Sensitivity: Learning Rate as the Master Control |
@@ -1006,12 +1000,10 @@ primary objective genuinely differs from its tag-primary primitive.
 | 82008 | medium | `ml-model-evaluation` | `cross-validation` | `class-imbalance` | Class Imbalance: Choosing the Right Threshold for Fraud |
 | 82018 | medium | `ml-model-evaluation` | `cross-validation` | `ensembles` | Boosting Mechanics: What Each Tree Corrects |
 | 82019 | medium | `ml-model-evaluation` | `cross-validation` | `ensembles` | Boosting: n_estimators vs Learning Rate Interaction |
-| 82012 | medium | `ml-production` | `production-and-monitoring` | `feature-engineering` | Feature Importance: Identifying a Spurious Leader |
+| 82012 | medium | `ml-production` | `production-and-monitoring` | `missing-data-and-preprocessing` | Feature Importance: Identifying a Spurious Leader |
 | 82034 | medium | `ml-production` | `production-and-monitoring` | `ensembles` | Ensemble Depth: Why More Trees Don't Overfit in Random Forests |
-| 83004 | hard | `ml-production` | `production-and-monitoring` | `missing-data-and-preprocessing` | Identifying and Eliminating Data Leakage in a Pipeline |
 | 83006 | hard | `ml-production` | `production-and-monitoring` | `missing-data-and-preprocessing` | Choosing the Right Cross-Validation Strategy for Time-Series Data |
 | 83013 | hard | `ml-production` | `production-and-monitoring` | `missing-data-and-preprocessing` | Dimensionality Reduction Before vs After Train-Test Split |
-| 83020 | hard | `ml-production` | `production-and-monitoring` | `class-imbalance` | Class Imbalance in Production: When SMOTE Hurts |
 | 81007 | easy | `ml-starter` | `supervised-unsupervised` | `missing-data-and-preprocessing` | Data Splitting: Temporal Ordering |
 | 81010 | easy | `ml-starter` | `supervised-unsupervised` | `cross-validation` | Cross-Validation: Purpose and Motivation |
 | 81013 | easy | `ml-starter` | `supervised-unsupervised` | `metrics` | Loss Function Selection: Regression |
@@ -1036,7 +1028,7 @@ a starting point for deciding which path (existing or new) should include them.
 | 81028 | easy | `cross-validation` | Cross-Validation: Correct Usage with Test Set |
 | 81030 | easy | `regularization` | Regularisation: Effect on Model Complexity |
 | 83001 | hard | `production-and-monitoring` | Diagnosing a Production Model Degradation |
-| 83005 | hard | `model-interpretability` | Interpretability vs Accuracy Tradeoff Under Regulatory Constraints |
+| 83005 | hard | `production-and-monitoring` | Interpretability vs Accuracy Tradeoff Under Regulatory Constraints |
 | 83012 | hard | `hyperparameter-tuning` | Hyperparameter Sensitivity: Learning Rate Schedules |
 | 83017 | hard | `neural-networks-and-gradients` | Neural Network Architecture for Tabular Data |
 | 83019 | hard | `unsupervised-methods` | Clustering Evaluation When Ground Truth Is Unknown |
@@ -1051,7 +1043,7 @@ a starting point for deciding which path (existing or new) should include them.
 | 82031 | medium | `unsupervised-methods` | Clustering Evaluation: Silhouette Score Interpretation |
 | 82033 | medium | `missing-data-and-preprocessing` | Cross-Validation: Group K-Fold for Patient Data |
 | 82049 | medium | `unsupervised-methods` | K-Means Evaluation: Reconciling Elbow Method and Silhouette Score Disagreement |
-| 82051 | medium | `model-interpretability` | Local vs Global Model Explanations: Matching Method to Need |
+| 82051 | medium | `feature-engineering` | Local vs Global Model Explanations: Matching Method to Need |
 | 82105 | medium | `algorithmic-fairness` | Interpret disaggregated fraud-detection metrics for equalized-odds audit |
 
 ### Coverage gaps in this track
@@ -1065,7 +1057,7 @@ a starting point for deciding which path (existing or new) should include them.
 ---
 ## experimentation
 
-Practice questions: **87** (54 in live paths · 33 orphans · 29 divergent). Proposed canonical patterns: **9**.
+Practice questions: **87** (54 in live paths · 33 orphans · 26 divergent). Proposed canonical patterns: **9**.
 
 ### Pattern coverage (live-path-aggregated)
 
@@ -1124,9 +1116,8 @@ primary objective genuinely differs from its tag-primary primitive.
 |---|---|---|---|---|---|
 | 93001 | hard | `causal-inference-and-advanced-experimentation` | `causal-inference` | `behavioral-effects-and-interference` | Cluster Randomization and Network Interference |
 | 93003 | hard | `causal-inference-and-advanced-experimentation` | `causal-inference` | `behavioral-effects-and-interference` | Geo Switchback: Carryover Period Design |
-| 93004 | hard | `causal-inference-and-advanced-experimentation` | `causal-inference` | `sequential-and-bandits` | Bayesian Sequential Testing and Early Stopping |
+| 93004 | hard | `causal-inference-and-advanced-experimentation` | `causal-inference` | `behavioral-effects-and-interference` | Bayesian Sequential Testing and Early Stopping |
 | 93005 | hard | `causal-inference-and-advanced-experimentation` | `causal-inference` | `sequential-and-bandits` | Thompson Sampling Regret Under Non-Stationarity |
-| 93006 | hard | `causal-inference-and-advanced-experimentation` | `causal-inference` | `experiment-platform-design` | Long-Term Holdout Group Design |
 | 93010 | hard | `causal-inference-and-advanced-experimentation` | `causal-inference` | `variance-reduction` | CUPED with Correlated Pre-Experiment Covariates |
 | 93014 | hard | `causal-inference-and-advanced-experimentation` | `causal-inference` | `behavioral-effects-and-interference` | Two-Sided Marketplace Network Effects in A/B Tests |
 | 93015 | hard | `causal-inference-and-advanced-experimentation` | `causal-inference` | `experiment-platform-design` | Holdout Group: Cannibalization Detection |
@@ -1139,9 +1130,7 @@ primary objective genuinely differs from its tag-primary primitive.
 | 92010 | medium | `experiment-design-and-power` | `power-and-sample-size` | `experiment-platform-design` | Sample Ratio Mismatch from Logging Bug |
 | 92013 | medium | `experiment-design-and-power` | `power-and-sample-size` | `ab-test-mechanics` | Confidence Interval Interpretation |
 | 91007 | easy | `experimentation-starter` | `ab-test-mechanics` | `power-and-sample-size` | Statistical Power Definition |
-| 92017 | medium | `subgroup-analysis-and-hte` | `subgroup-and-hte` | `behavioral-effects-and-interference` | Novelty Effect Diagnosis via Cohort Analysis |
-| 93016 | hard | `subgroup-analysis-and-hte` | `subgroup-and-hte` | `behavioral-effects-and-interference` | Geo Experiment: Treatment Effect Estimation with Spillover |
-| 92014 | medium | `variance-reduction-and-behavioral-effects` | `variance-reduction` | `experiment-platform-design` | Holdout Groups for Long-Run Measurement |
+| 92014 | medium | `variance-reduction-and-behavioral-effects` | `variance-reduction` | `causal-inference` | Holdout Groups for Long-Run Measurement |
 | 92016 | medium | `variance-reduction-and-behavioral-effects` | `variance-reduction` | `experiment-platform-design` | Sample Ratio Mismatch from Eligibility Filter |
 | 92018 | medium | `variance-reduction-and-behavioral-effects` | `variance-reduction` | `subgroup-and-hte` | Multiple Testing with Sequential Feature Rollouts |
 | 92020 | medium | `variance-reduction-and-behavioral-effects` | `variance-reduction` | `behavioral-effects-and-interference` | Cluster Randomization for Network Features |
@@ -1179,14 +1168,14 @@ a starting point for deciding which path (existing or new) should include them.
 | 93017 | hard | `variance-reduction` | Variance Reduction: Stratified Randomization and CUPED Interaction |
 | 93018 | hard | `sequential-and-bandits` | Bayesian A/B Test: Posterior Probability vs Business Threshold |
 | 93020 | hard | `causal-inference` | Propensity Score Matching: Hidden Covariate Imbalance |
-| 93034 | hard | `experiment-platform-design` | Long-Run Holdout Group Decay: When the Counterfactual Diverges from Current Users |
+| 93034 | hard | `causal-inference` | Long-Run Holdout Group Decay: When the Counterfactual Diverges from Current Users |
 | 93036 | hard | `sequential-and-bandits` | Continuous monitoring with alpha spending: when can you stop early? |
 | 92002 | medium | `experiment-platform-design` | Sample Ratio Mismatch Detection |
 | 92009 | medium | `power-and-sample-size` | Experiment Duration and Weekly Seasonality |
 | 92011 | medium | `subgroup-and-hte` | Type I Error and Repeated Peeking |
 | 92019 | medium | `variance-reduction` | Variance Reduction via Metric Transformation |
 | 92021 | medium | `power-and-sample-size` | Minimum Detectable Effect and Business Threshold |
-| 92023 | medium | `sequential-and-bandits` | Bayesian Experimentation: Early Stopping |
+| 92023 | medium | `subgroup-and-hte` | Bayesian Experimentation: Early Stopping |
 | 92025 | medium | `variance-reduction` | Variance Reduction: Stratified Randomization |
 | 92027 | medium | `power-and-sample-size` | Power Calculation: Effect of Increasing Variance |
 | 92028 | medium | `causal-inference` | Quasi-Experimental Method Selection |
@@ -1309,13 +1298,13 @@ the audit credits the question to. `Tag-suggested` = where tag-routing would pla
 | 13009 | hard | _orphan_ | — | `window-functions` |  | Products contributing to the first 80% of completed revenue |
 | 13010 | hard | _orphan_ | — | `funnel-and-event-analysis` |  | Detect three-attempt decreasing payment sequences |
 | 13011 | hard | _orphan_ | — | `period-over-period` |  | Users whose order size drops after crossing a spend threshold |
-| 13012 | hard | `period-over-period-analysis` | `period-over-period` | `top-n-and-ranking` | ⚠️ | Acquisition-channel rank improvements across months |
+| 13012 | hard | `period-over-period-analysis` | `period-over-period` | `period-over-period` |  | Acquisition-channel rank improvements across months |
 | 13013 | hard | _orphan_ | — | `top-n-and-ranking` |  | Country-level order outcome mix using the latest payment attempt |
 | 13014 | hard | _orphan_ | — | `funnel-and-event-analysis` |  | Payment-method recovery summary after failed attempts |
 | 13015 | hard | `cohort-and-retention` | `cohort-and-retention` | `cohort-and-retention` |  | Reactivated users after a dormant period |
-| 13016 | hard | `period-over-period-analysis` | `period-over-period` | `top-n-and-ranking` | ⚠️ | High-growth stable products among top revenue leaders |
+| 13016 | hard | `period-over-period-analysis` | `period-over-period` | `period-over-period` |  | High-growth stable products among top revenue leaders |
 | 13017 | hard | `cohort-and-retention` | `cohort-and-retention` | `funnel-and-event-analysis` | ⚠️ | Returned users after 30-day order inactivity |
-| 13018 | hard | `period-over-period-analysis` | `period-over-period` | `top-n-and-ranking` | ⚠️ | Users whose top spending category changes from Q1 to Q2 |
+| 13018 | hard | `period-over-period-analysis` | `period-over-period` | `period-over-period` |  | Users whose top spending category changes from Q1 to Q2 |
 | 13019 | hard | _orphan_ | — | `top-n-and-ranking` |  | Resolve final order status from conflicting payment evidence |
 | 13020 | hard | `period-over-period-analysis` | `period-over-period` | `period-over-period` |  | Users whose monthly revenue declines after their peak month |
 | 13021 | hard | `subqueries-and-existence` | `subqueries` | `subqueries` |  | Users who bought one category, never bought another, but viewed it |
@@ -1357,7 +1346,7 @@ the audit credits the question to. `Tag-suggested` = where tag-routing would pla
 | 21029 | easy | _orphan_ | — | `data-pipeline-scripting` |  | Second Largest |
 | 21030 | easy | _orphan_ | — | `arrays-and-hashing` |  | Intersection of Two Lists |
 | 21031 | easy | `practical-data-python` | `data-pipeline-scripting` | `data-pipeline-scripting` |  | Parse CSV Rows into Records |
-| 21032 | easy | `practical-data-python` | `data-pipeline-scripting` | `string-and-text-processing` | ⚠️ | Extract Fields from a Log Line |
+| 21032 | easy | `practical-data-python` | `data-pipeline-scripting` | `data-pipeline-scripting` |  | Extract Fields from a Log Line |
 | 21033 | easy | `practical-data-python` | `data-pipeline-scripting` | `string-and-text-processing` | ⚠️ | Most Recent Date |
 | 21034 | easy | _orphan_ | — | `arrays-and-hashing` |  | Find Duplicate Values |
 | 21035 | easy | `practical-data-python` | `data-pipeline-scripting` | `data-pipeline-scripting` |  | Group Items by Category |
@@ -1763,7 +1752,7 @@ the audit credits the question to. `Tag-suggested` = where tag-routing would pla
 | 61018 | easy | `wide-tables-and-obt` | `wide-tables` | `wide-tables` |  | Denormalisation: Read Performance in OLAP |
 | 61019 | easy | `wide-tables-and-obt` | `wide-tables` | `wide-tables` |  | Denormalisation Cost: Update Anomalies |
 | 61020 | easy | `schema-design-basics` | `star-snowflake` | `star-snowflake` |  | OLTP vs OLAP: Optimisation Goals |
-| 61021 | easy | `wide-tables-and-obt` | `wide-tables` | `normalization` | ⚠️ | OLAP Schema Choice: Why Not Normalise Fully? |
+| 61021 | easy | `normalization-and-referential-integrity` | `normalization` | `normalization` |  | OLAP Schema Choice: Why Not Normalise Fully? |
 | 61022 | easy | `dbt-and-modern-analytics-modeling` | `dbt-modeling` | `dbt-modeling` |  | DBT: Staging Layer Purpose |
 | 61023 | easy | `dimensional-modeling-deep-dive` | `scd` | `scd` |  | Dimension Table: Descriptive Attributes |
 | 61024 | easy | `normalization-and-referential-integrity` | `referential-integrity` | `referential-integrity` |  | Referential Integrity: Orphaned Fact Rows |
@@ -1975,7 +1964,7 @@ the audit credits the question to. `Tag-suggested` = where tag-routing would pla
 | 82009 | medium | `ml-advanced-methods` | `regularization` | `feature-engineering` | ⚠️ | Dimensionality Reduction: PCA Variance Retention |
 | 82010 | medium | `feature-engineering` | `feature-engineering` | `feature-engineering` |  | Dimensionality Reduction: When PCA Hurts |
 | 82011 | medium | `feature-engineering` | `feature-engineering` | `feature-engineering` |  | Feature Importance: Impurity vs Permutation |
-| 82012 | medium | `ml-production` | `production-and-monitoring` | `feature-engineering` | ⚠️ | Feature Importance: Identifying a Spurious Leader |
+| 82012 | medium | `ml-production` | `production-and-monitoring` | `missing-data-and-preprocessing` | ⚠️ | Feature Importance: Identifying a Spurious Leader |
 | 82013 | medium | `ml-advanced-methods` | `regularization` | `feature-engineering` | ⚠️ | Regularisation Depth: L1 vs L2 Solution Geometry |
 | 82014 | medium | `feature-engineering` | `feature-engineering` | `feature-engineering` |  | Regularisation: Correlated Features and L1 vs L2 |
 | 82015 | medium | `feature-engineering` | `feature-engineering` | `feature-engineering` |  | Regularisation Path: Coefficient Behaviour as λ Increases |
@@ -2001,14 +1990,14 @@ the audit credits the question to. `Tag-suggested` = where tag-routing would pla
 | 82035 | medium | `class-imbalance` | `class-imbalance` | `class-imbalance` |  | Class Imbalance and Threshold Selection for Business Objectives |
 | 82048 | medium | `missing-data-and-preprocessing-hygiene` | `missing-data-and-preprocessing` | `missing-data-and-preprocessing` |  | Missing Value Imputation Before Split: Why Preprocessing Order Invalidates Evaluation |
 | 82049 | medium | _orphan_ | — | `unsupervised-methods` |  | K-Means Evaluation: Reconciling Elbow Method and Silhouette Score Disagreement |
-| 82050 | medium | `missing-data-and-preprocessing-hygiene` | `missing-data-and-preprocessing` | `feature-engineering` | ⚠️ | Feature Selection Before Train/Test Split: Implicit Test Target Leakage |
-| 82051 | medium | _orphan_ | — | `model-interpretability` |  | Local vs Global Model Explanations: Matching Method to Need |
+| 82050 | medium | `missing-data-and-preprocessing-hygiene` | `missing-data-and-preprocessing` | `missing-data-and-preprocessing` |  | Feature Selection Before Train/Test Split: Implicit Test Target Leakage |
+| 82051 | medium | _orphan_ | — | `feature-engineering` |  | Local vs Global Model Explanations: Matching Method to Need |
 | 82105 | medium | _orphan_ | — | `algorithmic-fairness` |  | Interpret disaggregated fraud-detection metrics for equalized-odds audit |
 | 83001 | hard | _orphan_ | — | `production-and-monitoring` |  | Diagnosing a Production Model Degradation |
 | 83002 | hard | `ml-advanced-methods` | `regularization` | `neural-networks-and-gradients` | ⚠️ | Gradient Pathology in Deep Networks |
 | 83003 | hard | `ml-advanced-methods` | `regularization` | `neural-networks-and-gradients` | ⚠️ | Transfer Learning Strategy for Small Medical Dataset |
-| 83004 | hard | `ml-production` | `production-and-monitoring` | `missing-data-and-preprocessing` | ⚠️ | Identifying and Eliminating Data Leakage in a Pipeline |
-| 83005 | hard | _orphan_ | — | `model-interpretability` |  | Interpretability vs Accuracy Tradeoff Under Regulatory Constraints |
+| 83004 | hard | `ml-production` | `production-and-monitoring` | `production-and-monitoring` |  | Identifying and Eliminating Data Leakage in a Pipeline |
+| 83005 | hard | _orphan_ | — | `production-and-monitoring` |  | Interpretability vs Accuracy Tradeoff Under Regulatory Constraints |
 | 83006 | hard | `ml-production` | `production-and-monitoring` | `missing-data-and-preprocessing` | ⚠️ | Choosing the Right Cross-Validation Strategy for Time-Series Data |
 | 83007 | hard | `feature-engineering` | `feature-engineering` | `feature-engineering` |  | Predicting the Effect of L1 vs L2 Regularization on Correlated Features |
 | 83008 | hard | `class-imbalance` | `class-imbalance` | `class-imbalance` |  | Selecting Evaluation Metrics for a Multi-Class Imbalanced Classifier |
@@ -2023,7 +2012,7 @@ the audit credits the question to. `Tag-suggested` = where tag-routing would pla
 | 83017 | hard | _orphan_ | — | `neural-networks-and-gradients` |  | Neural Network Architecture for Tabular Data |
 | 83018 | hard | `ml-production` | `production-and-monitoring` | `production-and-monitoring` |  | Training-Serving Skew from Feature Pipeline Divergence |
 | 83019 | hard | _orphan_ | — | `unsupervised-methods` |  | Clustering Evaluation When Ground Truth Is Unknown |
-| 83020 | hard | `ml-production` | `production-and-monitoring` | `class-imbalance` | ⚠️ | Class Imbalance in Production: When SMOTE Hurts |
+| 83020 | hard | `ml-production` | `production-and-monitoring` | `production-and-monitoring` |  | Class Imbalance in Production: When SMOTE Hurts |
 | 83021 | hard | `ml-advanced-methods` | `regularization` | `feature-engineering` | ⚠️ | Selecting Features Under Multicollinearity |
 | 83022 | hard | `ml-production` | `production-and-monitoring` | `production-and-monitoring` |  | Model Deployment Constraints: Latency vs Accuracy |
 | 83023 | hard | _orphan_ | — | `hyperparameter-tuning` |  | Hyperparameter Tuning: Grid Search vs Bayesian Optimization |
@@ -2082,16 +2071,16 @@ the audit credits the question to. `Tag-suggested` = where tag-routing would pla
 | 92011 | medium | _orphan_ | — | `subgroup-and-hte` |  | Type I Error and Repeated Peeking |
 | 92012 | medium | `behavioral-effects-and-interference` | `behavioral-effects-and-interference` | `behavioral-effects-and-interference` |  | Network Effects in Social Features |
 | 92013 | medium | `experiment-design-and-power` | `power-and-sample-size` | `ab-test-mechanics` | ⚠️ | Confidence Interval Interpretation |
-| 92014 | medium | `variance-reduction-and-behavioral-effects` | `variance-reduction` | `experiment-platform-design` | ⚠️ | Holdout Groups for Long-Run Measurement |
+| 92014 | medium | `variance-reduction-and-behavioral-effects` | `variance-reduction` | `causal-inference` | ⚠️ | Holdout Groups for Long-Run Measurement |
 | 92015 | medium | `subgroup-analysis-and-hte` | `subgroup-and-hte` | `subgroup-and-hte` |  | Segmentation Analysis: New vs. Returning Users |
 | 92016 | medium | `variance-reduction-and-behavioral-effects` | `variance-reduction` | `experiment-platform-design` | ⚠️ | Sample Ratio Mismatch from Eligibility Filter |
-| 92017 | medium | `subgroup-analysis-and-hte` | `subgroup-and-hte` | `behavioral-effects-and-interference` | ⚠️ | Novelty Effect Diagnosis via Cohort Analysis |
+| 92017 | medium | `subgroup-analysis-and-hte` | `subgroup-and-hte` | `subgroup-and-hte` |  | Novelty Effect Diagnosis via Cohort Analysis |
 | 92018 | medium | `variance-reduction-and-behavioral-effects` | `variance-reduction` | `subgroup-and-hte` | ⚠️ | Multiple Testing with Sequential Feature Rollouts |
 | 92019 | medium | _orphan_ | — | `variance-reduction` |  | Variance Reduction via Metric Transformation |
 | 92020 | medium | `variance-reduction-and-behavioral-effects` | `variance-reduction` | `behavioral-effects-and-interference` | ⚠️ | Cluster Randomization for Network Features |
 | 92021 | medium | _orphan_ | — | `power-and-sample-size` |  | Minimum Detectable Effect and Business Threshold |
 | 92022 | medium | `variance-reduction-and-behavioral-effects` | `variance-reduction` | `causal-inference` | ⚠️ | Debug: Carryover Bias in Sequential Testing |
-| 92023 | medium | _orphan_ | — | `sequential-and-bandits` |  | Bayesian Experimentation: Early Stopping |
+| 92023 | medium | _orphan_ | — | `subgroup-and-hte` |  | Bayesian Experimentation: Early Stopping |
 | 92024 | medium | `variance-reduction-and-behavioral-effects` | `variance-reduction` | `power-and-sample-size` | ⚠️ | Experiment Duration: Long-Run vs Short-Run Effects |
 | 92025 | medium | _orphan_ | — | `variance-reduction` |  | Variance Reduction: Stratified Randomization |
 | 92026 | medium | `experimentation-starter` | `metric-selection` | `metric-selection` |  | Guardrail Metrics and Ship Decisions |
@@ -2105,9 +2094,9 @@ the audit credits the question to. `Tag-suggested` = where tag-routing would pla
 | 93001 | hard | `causal-inference-and-advanced-experimentation` | `causal-inference` | `behavioral-effects-and-interference` | ⚠️ | Cluster Randomization and Network Interference |
 | 93002 | hard | `causal-inference-and-advanced-experimentation` | `causal-inference` | `causal-inference` |  | Difference-in-Differences with Parallel Trends Failure |
 | 93003 | hard | `causal-inference-and-advanced-experimentation` | `causal-inference` | `behavioral-effects-and-interference` | ⚠️ | Geo Switchback: Carryover Period Design |
-| 93004 | hard | `causal-inference-and-advanced-experimentation` | `causal-inference` | `sequential-and-bandits` | ⚠️ | Bayesian Sequential Testing and Early Stopping |
+| 93004 | hard | `causal-inference-and-advanced-experimentation` | `causal-inference` | `behavioral-effects-and-interference` | ⚠️ | Bayesian Sequential Testing and Early Stopping |
 | 93005 | hard | `causal-inference-and-advanced-experimentation` | `causal-inference` | `sequential-and-bandits` | ⚠️ | Thompson Sampling Regret Under Non-Stationarity |
-| 93006 | hard | `causal-inference-and-advanced-experimentation` | `causal-inference` | `experiment-platform-design` | ⚠️ | Long-Term Holdout Group Design |
+| 93006 | hard | `causal-inference-and-advanced-experimentation` | `causal-inference` | `causal-inference` |  | Long-Term Holdout Group Design |
 | 93007 | hard | `variance-reduction-and-behavioral-effects` | `variance-reduction` | `causal-inference` | ⚠️ | Instrumental Variable Validity in Platform Context |
 | 93008 | hard | `causal-inference-and-advanced-experimentation` | `causal-inference` | `causal-inference` |  | Regression Discontinuity: Density Manipulation |
 | 93009 | hard | `variance-reduction-and-behavioral-effects` | `variance-reduction` | `ab-test-mechanics` | ⚠️ | Experiment Platform Mutual Exclusivity |
@@ -2117,12 +2106,12 @@ the audit credits the question to. `Tag-suggested` = where tag-routing would pla
 | 93013 | hard | `variance-reduction-and-behavioral-effects` | `variance-reduction` | `sequential-and-bandits` | ⚠️ | Bayesian Prior Calibration with Historical Experiments |
 | 93014 | hard | `causal-inference-and-advanced-experimentation` | `causal-inference` | `behavioral-effects-and-interference` | ⚠️ | Two-Sided Marketplace Network Effects in A/B Tests |
 | 93015 | hard | `causal-inference-and-advanced-experimentation` | `causal-inference` | `experiment-platform-design` | ⚠️ | Holdout Group: Cannibalization Detection |
-| 93016 | hard | `subgroup-analysis-and-hte` | `subgroup-and-hte` | `behavioral-effects-and-interference` | ⚠️ | Geo Experiment: Treatment Effect Estimation with Spillover |
+| 93016 | hard | `subgroup-analysis-and-hte` | `subgroup-and-hte` | `subgroup-and-hte` |  | Geo Experiment: Treatment Effect Estimation with Spillover |
 | 93017 | hard | _orphan_ | — | `variance-reduction` |  | Variance Reduction: Stratified Randomization and CUPED Interaction |
 | 93018 | hard | _orphan_ | — | `sequential-and-bandits` |  | Bayesian A/B Test: Posterior Probability vs Business Threshold |
 | 93019 | hard | `subgroup-analysis-and-hte` | `subgroup-and-hte` | `subgroup-and-hte` |  | Segmentation Analysis and Multiple Comparisons |
 | 93020 | hard | _orphan_ | — | `causal-inference` |  | Propensity Score Matching: Hidden Covariate Imbalance |
-| 93034 | hard | _orphan_ | — | `experiment-platform-design` |  | Long-Run Holdout Group Decay: When the Counterfactual Diverges from Current Users |
+| 93034 | hard | _orphan_ | — | `causal-inference` |  | Long-Run Holdout Group Decay: When the Counterfactual Diverges from Current Users |
 | 93035 | hard | `behavioral-effects-and-interference` | `behavioral-effects-and-interference` | `behavioral-effects-and-interference` |  | Switchback Experiment Analysis: Temporal Autocorrelation Inflates the Test Statistic |
 | 93036 | hard | _orphan_ | — | `sequential-and-bandits` |  | Continuous monitoring with alpha spending: when can you stop early? |
 | 93037 | hard | `experimentation-starter` | `metric-selection` | `metric-selection` |  | Metric insensitivity: why your OEC hides a real treatment effect |
