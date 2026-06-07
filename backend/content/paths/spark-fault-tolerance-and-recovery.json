@@ -1,0 +1,26 @@
+{
+  "slug": "spark-fault-tolerance-and-recovery",
+  "title": "Spark Fault Tolerance & Recovery",
+  "description": "Master the recovery primitives that decide whether a long Spark job survives executor failures or duplicates writes on retry: checkpoint vs cache, speculative execution, and non-idempotent sink hazards.",
+  "topic": "pyspark",
+  "questions": [
+    41017,
+    41029,
+    42021,
+    43010,
+    43026
+  ],
+  "tier": "free",
+  "level": "advanced",
+  "patterns": [
+    "spark-fault-tolerance-and-recovery"
+  ],
+  "focus_concepts": [
+    "FAULT TOLERANCE & RECOVERY",
+    "EXECUTION MODEL REASONING"
+  ],
+  "outcomes": "You'll pick checkpoint vs cache for iterative ML training (lineage truncation vs in-memory reuse), configure speculative execution without duplicating writes to non-idempotent sinks, and avoid the unintended-append write mode that causes the worst on-call incidents.",
+  "recommended_after": [
+    "spark-execution-model-and-dag"
+  ]
+}

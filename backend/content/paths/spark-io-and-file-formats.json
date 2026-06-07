@@ -1,0 +1,26 @@
+{
+  "slug": "spark-io-and-file-formats",
+  "title": "Spark I/O & File Formats",
+  "description": "Choose between CSV / JSON / Parquet for the workload at hand, manage inferSchema's production cost, and avoid the silent write-mode surprises that overwrite or duplicate data.",
+  "topic": "pyspark",
+  "questions": [
+    41005,
+    41026,
+    41030,
+    42009,
+    43008
+  ],
+  "tier": "free",
+  "level": "intermediate",
+  "patterns": [
+    "spark-io-and-file-formats"
+  ],
+  "focus_concepts": [
+    "FILE FORMATS & READERS",
+    "SCHEMA & TYPE HANDLING"
+  ],
+  "outcomes": "You'll select CSV/JSON/Parquet based on read pattern and analytical workload, run inferSchema safely in production without runaway scans, debug multi-line JSON parsing failures, and avoid unintended write-mode appends.",
+  "recommended_after": [
+    "spark-execution-model-and-dag"
+  ]
+}

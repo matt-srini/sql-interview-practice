@@ -1,0 +1,31 @@
+{
+  "slug": "spark-schema-and-type-handling",
+  "title": "Spark Schema & Type Handling",
+  "description": "Master the schema and type behaviours that cause most production Spark surprises: column renames, alias scope, type cast failures, union column matching, lit() nullability, and the output schema of groupBy + agg.",
+  "topic": "pyspark",
+  "questions": [
+    41014,
+    41018,
+    41020,
+    41021,
+    41022,
+    41023,
+    41024,
+    41025,
+    41031,
+    42001,
+    42005
+  ],
+  "tier": "free",
+  "level": "intermediate",
+  "patterns": [
+    "spark-schema-and-type-handling"
+  ],
+  "focus_concepts": [
+    "SCHEMA & TYPE HANDLING"
+  ],
+  "outcomes": "You'll rename and alias columns without surprise, predict cast failure behaviour, reason about union column matching, derive the output schema of groupBy + agg before running it, and debug AnalysisException quickly.",
+  "recommended_after": [
+    "spark-execution-model-and-dag"
+  ]
+}

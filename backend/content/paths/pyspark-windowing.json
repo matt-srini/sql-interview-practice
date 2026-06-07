@@ -20,6 +20,6 @@
   ],
   "outcomes": "You'll choose RANK/DENSE_RANK/ROW_NUMBER correctly when ties matter, predict ROWS-vs-RANGE running-sum behaviour, and debug rangeBetween edge cases on integer dates and data gaps.",
   "recommended_after": [
-    "spark-core-concepts"
+    "spark-execution-model-and-dag"
   ]
 }

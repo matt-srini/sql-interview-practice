@@ -1,0 +1,36 @@
+{
+  "slug": "spark-execution-model-and-dag",
+  "title": "Spark Execution Model & DAG",
+  "description": "Build practitioner intuition for how Spark actually runs your code: lazy evaluation, action triggers, the Job/Stage/Task hierarchy, narrow vs wide transformations, and the DAG planning that turns DataFrame operations into physical work.",
+  "topic": "pyspark",
+  "questions": [
+    41001,
+    41002,
+    41003,
+    41006,
+    41007,
+    41008,
+    41009,
+    41012,
+    41015,
+    41016,
+    41039,
+    41041,
+    42018,
+    42020,
+    42037,
+    43042
+  ],
+  "tier": "free",
+  "level": "foundational",
+  "patterns": [
+    "spark-execution-model-and-dag"
+  ],
+  "focus_concepts": [
+    "EXECUTION MODEL REASONING",
+    "NARROW VS WIDE TRANSFORMATIONS",
+    "CATALYST OPTIMIZER"
+  ],
+  "outcomes": "You'll predict when an action triggers execution vs when transformations defer, distinguish narrow from wide transformations on shuffle grounds, trace Job → Stage → Task hierarchies through the DAG, and reason about how withColumn / when / SQL queries translate into Spark's execution plan.",
+  "recommended_after": []
+}

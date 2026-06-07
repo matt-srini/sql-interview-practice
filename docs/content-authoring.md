@@ -612,6 +612,11 @@ Level has no unlock semantics. Levels are used for sort order on TrackHub, the "
 4. **Focus-concept registry.** Every `focus_concepts[]` entry resolves to a registered family in `concept_families.py` (only enforced for tracks listed in `_TAXONOMY_VALIDATED_TRACKS` in `backend/scripts/validate_content.py` — currently `{sql, python}`; others get a presence-only check). **When a track joins the validated set, the path validator immediately enforces this rule strictly for it** — coordinate the concept-family registry completion + paths re-check in the same PR.
 5. **Question-tag alignment.** Every question in `questions[]` carries at least one concept tag that resolves to the same family as at least one of the path's `focus_concepts[]`. This is the mechanical guarantee that the path drills what it claims.
 6. **Prerequisite DAG.** Every `recommended_after[]` slug exists in the same track; the resulting graph is acyclic.
+7. **Path-length range.** `questions[]` must contain between 4 and 20 entries (hard floor and ceiling, validator-enforced). Paths below 4 are fragments; paths above 20 indicate an insufficiently split pattern.
+
+#### Path-size policy
+
+Paths should hold **5–9 questions** in the sweet spot, **4 minimum** (hard floor), **15 maximum** (default cap). Paths can grow to 16–20 questions only with **explicit per-path approval** — captured in the commit message that introduces the over-cap size. The validator enforces the hard 4–20 range; cap-15-vs-20 is curation discipline, not machine-enforced.
 
 #### What this section explicitly rejects (historical)
 

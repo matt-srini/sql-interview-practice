@@ -1,0 +1,27 @@
+{
+  "slug": "spark-memory-and-driver-executor",
+  "title": "Spark Memory & Driver/Executor Architecture",
+  "description": "Reason about Spark's memory model and the driver vs executor split: where data lives, what crashes the driver vs an executor, why collect() is dangerous, and how Tungsten's off-heap format changes the picture.",
+  "topic": "pyspark",
+  "questions": [
+    41004,
+    41028,
+    41036,
+    42025,
+    43006,
+    43011
+  ],
+  "tier": "free",
+  "level": "intermediate",
+  "patterns": [
+    "spark-memory-and-driver-executor"
+  ],
+  "focus_concepts": [
+    "MEMORY MANAGEMENT",
+    "EXECUTION MODEL REASONING"
+  ],
+  "outcomes": "You'll distinguish driver OOM from executor OOM by reading the trace, predict the memory cost of collect() / limit / cache, pick the right alternative when collect would crash the driver, and reason about Tungsten's off-heap binary format.",
+  "recommended_after": [
+    "spark-execution-model-and-dag"
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "slug": "spark-collections-and-arrays",
+  "title": "Spark Collections & Arrays",
+  "description": "Wield Spark's collection and array operations correctly: collect_list vs collect_set on ordering/dedup grounds, explode's silent drops on empty/null arrays, and the explode_outer vs explode trade-off when row preservation matters.",
+  "topic": "pyspark",
+  "questions": [
+    42049,
+    42053,
+    42056,
+    43049,
+    43052
+  ],
+  "tier": "free",
+  "level": "intermediate",
+  "patterns": [
+    "spark-collections-and-arrays"
+  ],
+  "focus_concepts": [
+    "COLLECTION & ARRAY OPERATIONS",
+    "DATA QUALITY SKEPTICISM"
+  ],
+  "outcomes": "You'll choose collect_list vs collect_set on ordering/dedup grounds, anticipate explode's silent row-drop on empty/null arrays, switch to explode_outer when row preservation matters, and predict pivot's null propagation through arithmetic.",
+  "recommended_after": [
+    "spark-schema-and-type-handling"
+  ]
+}

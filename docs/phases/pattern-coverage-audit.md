@@ -21,14 +21,14 @@ Headline coverage tables reflect the **live state of paths**, not tag-derived hy
 
 | Track | Practice Qs | In a live path | Orphans | Divergent | Patterns (proposed) | Healthy | Uneven | Thin | Empty |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| sql | 118 | 81 | 37 | 24 | 14 | 5 | 5 | 1 | 3 |
+| sql | 118 | 91 | 27 | 24 | 14 | 5 | 5 | 1 | 3 |
 | python | 79 | 44 | 35 | 6 | 9 | 1 | 4 | 3 | 1 |
 | python-data | 92 | 87 | 5 | 15 | 9 | 5 | 3 | 0 | 1 |
-| pyspark | 127 | 63 | 64 | 7 | 7 | 2 | 5 | 0 | 0 |
-| data-engineering | 91 | 77 | 14 | 10 | 9 | 5 | 4 | 0 | 0 |
-| data-modeling | 81 | 71 | 10 | 0 | 14 | 6 | 1 | 4 | 3 |
-| statistics | 100 | 81 | 19 | 4 | 11 | 0 | 9 | 0 | 2 |
-| ml-fundamentals | 100 | 96 | 4 | 19 | 15 | 3 | 9 | 1 | 2 |
+| pyspark | 127 | 106 | 21 | 20 | 7 | 2 | 4 | 0 | 1 |
+| data-engineering | 91 | 85 | 6 | 10 | 9 | 5 | 4 | 0 | 0 |
+| data-modeling | 81 | 73 | 8 | 0 | 14 | 6 | 1 | 4 | 3 |
+| statistics | 100 | 84 | 16 | 4 | 11 | 1 | 8 | 0 | 2 |
+| ml-fundamentals | 100 | 97 | 3 | 19 | 15 | 4 | 8 | 1 | 2 |
 | experimentation | 87 | 65 | 22 | 26 | 9 | 1 | 6 | 0 | 2 |
 
 **Legend:**  
@@ -40,14 +40,14 @@ Pattern classes are based on live-path-aggregated coverage: **Healthy** ≥5 acr
 ---
 ## sql
 
-Practice questions: **118** (81 in live paths · 37 orphans · 24 divergent). Proposed canonical patterns: **14**.
+Practice questions: **118** (91 in live paths · 27 orphans · 24 divergent). Proposed canonical patterns: **14**.
 
 ### Pattern coverage (live-path-aggregated)
 
 | Pattern | Display | Easy | Medium | Hard | Total | Class |
 |---|---|---:|---:|---:|---:|---|
 | `aggregation` | Aggregation | 3 | 4 | 0 | 7 | ⚠️ uneven |
-| `joins` | Joins | 2 | 4 | 1 | 7 | ✅ healthy |
+| `joins` | Joins | 2 | 14 | 1 | 17 | ✅ healthy |
 | `subqueries` | Subqueries & EXISTS | 0 | 4 | 2 | 6 | ⚠️ uneven |
 | `set-operations` | Set Operations (UNION / INTERSECT / EXCEPT) | 0 | 6 | 1 | 7 | ⚠️ uneven |
 | `window-functions` | Window Functions | 1 | 2 | 6 | 9 | ✅ healthy |
@@ -73,15 +73,15 @@ A question contributes once per family tag — multi-tag questions count multipl
 | CONDITIONAL LOGIC & CASE | `pivot-and-unpivot` (7) | `(orphan)` (2), `period-over-period` (1), `funnel-and-event-analysis` (1) |
 | CTE PIPELINE | `period-over-period` (3) | `funnel-and-event-analysis` (2), `ctes-and-recursion` (1), `set-operations` (1) |
 | DATA QUALITY SKEPTICISM | `(orphan)` (3) | `period-over-period` (1) |
-| DEDUPLICATION LOGIC | `(orphan)` (7) | `cohort-and-retention` (1), `aggregation` (1), `set-operations` (1) |
-| DOUBLE-COUNTING DETECTION | `(orphan)` (2) | `ctes-and-recursion` (1) |
+| DEDUPLICATION LOGIC | `joins` (6) | `cohort-and-retention` (1), `aggregation` (1), `set-operations` (1), `(orphan)` (1) |
+| DOUBLE-COUNTING DETECTION | `joins` (2) | `ctes-and-recursion` (1) |
 | FUNNEL ANALYSIS | `funnel-and-event-analysis` (3) | — |
-| GROUPED AGGREGATION | `(orphan)` (17) | `aggregation` (7), `pivot-and-unpivot` (7), `set-operations` (3), `joins` (2) |
+| GROUPED AGGREGATION | `(orphan)` (10) | `joins` (9), `aggregation` (7), `pivot-and-unpivot` (7), `set-operations` (3) |
 | METRIC RECONCILIATION | `joins` (1) | — |
-| MULTI-TABLE ENTITY LINKING | `(orphan)` (11) | `joins` (6), `pivot-and-unpivot` (5), `subqueries` (4), `aggregation` (3) |
+| MULTI-TABLE ENTITY LINKING | `joins` (16) | `pivot-and-unpivot` (5), `subqueries` (4), `aggregation` (3), `window-functions` (2) |
 | NULL HANDLING & COALESCE | `(orphan)` (4) | `joins` (2), `string-and-text` (1) |
-| POST-AGGREGATION FILTERING | `(orphan)` (9) | `pivot-and-unpivot` (5), `aggregation` (2), `subqueries` (2), `window-functions` (1) |
-| PRE-AGGREGATION FILTERING | `(orphan)` (18) | `cohort-and-retention` (2), `funnel-and-event-analysis` (2), `joins` (2), `period-over-period` (1) |
+| POST-AGGREGATION FILTERING | `pivot-and-unpivot` (5) | `joins` (5), `(orphan)` (4), `aggregation` (2), `subqueries` (2) |
+| PRE-AGGREGATION FILTERING | `(orphan)` (15) | `joins` (5), `cohort-and-retention` (2), `funnel-and-event-analysis` (2), `period-over-period` (1) |
 | RANKING & TOP-N PER GROUP | `period-over-period` (3) | `(orphan)` (3), `window-functions` (1), `joins` (1) |
 | RESULT SHAPING & ORDERING | `(orphan)` (8) | `aggregation` (1), `joins` (1), `string-and-text` (1) |
 | RUNNING TOTAL & MOVING WINDOW | `window-functions` (2) | `period-over-period` (1) |
@@ -156,20 +156,10 @@ a starting point for deciding which path (existing or new) should include them.
 | 13013 | hard | `top-n-and-ranking` | Country-level order outcome mix using the latest payment attempt |
 | 13019 | hard | `top-n-and-ranking` | Resolve final order status from conflicting payment evidence |
 | 13023 | hard | `top-n-and-ranking` | Completed orders contradicted by payment evidence |
-| 12002 | medium | `joins` | Products in refunded orders |
-| 12006 | medium | `joins` | Users with multiple paid payment methods |
-| 12012 | medium | `joins` | Brand reach in completed 2024 orders |
-| 12013 | medium | `joins` | Users with both orders and high-priority tickets |
 | 12017 | medium | `aggregation` | Country order outcome mix |
 | 12018 | medium | `aggregation` | Ticket resolution mix by issue type |
-| 12019 | medium | `joins` | Repeat large-order users in selected countries |
-| 12020 | medium | `joins` | High-volume brands in completed 2024 orders |
-| 12021 | medium | `joins` | Departments with no 2024 hires |
-| 12023 | medium | `joins` | Completed 2024 orders missing paid payments |
 | 12034 | medium | `aggregation` | Top revenue by country and plan tier |
 | 12055 | medium | `aggregation` | List active products per category |
-| 12065 | medium | `joins` | Category revenue from order line items |
-| 12066 | medium | `joins` | Distinct buyers per payment method |
 | 12123 | medium | `aggregation` | Sessions with duplicate product view events |
 
 ### Coverage gaps in this track
@@ -383,16 +373,16 @@ a starting point for deciding which path (existing or new) should include them.
 ---
 ## pyspark
 
-Practice questions: **127** (63 in live paths · 64 orphans · 7 divergent). Proposed canonical patterns: **7**.
+Practice questions: **127** (106 in live paths · 21 orphans · 20 divergent). Proposed canonical patterns: **7**.
 
 ### Pattern coverage (live-path-aggregated)
 
 | Pattern | Display | Easy | Medium | Hard | Total | Class |
 |---|---|---:|---:|---:|---:|---|
-| `spark-basics` | Core Spark Concepts | 6 | 0 | 0 | 6 | ⚠️ uneven |
+| `spark-basics` | Core Spark Concepts | 0 | 0 | 0 | 0 | 🔴 empty (no live path or no questions) |
 | `spark-performance` | Spark Performance | 0 | 4 | 2 | 6 | ⚠️ uneven |
 | `query-optimization` | Catalyst & Query Optimization | 2 | 4 | 5 | 11 | ✅ healthy |
-| `spark-joins-and-skew` | Joins & Skew Handling | 1 | 9 | 5 | 15 | ✅ healthy |
+| `spark-joins-and-skew` | Joins & Skew Handling | 1 | 9 | 6 | 16 | ✅ healthy |
 | `streaming` | Structured Streaming | 0 | 4 | 7 | 11 | ⚠️ uneven |
 | `delta-lake` | Delta Lake | 0 | 4 | 5 | 9 | ⚠️ uneven |
 | `pyspark-windowing` | Window Functions & Frames | 0 | 3 | 2 | 5 | ⚠️ uneven |
@@ -406,27 +396,27 @@ A question contributes once per family tag — multi-tag questions count multipl
 | Family | Top landing | Other landings |
 |---|---|---|
 | ADAPTIVE QUERY EXECUTION | `query-optimization` (5) | `spark-performance` (1), `spark-joins-and-skew` (1) |
-| CACHING & PERSISTENCE | `(orphan)` (3) | — |
-| CATALYST OPTIMIZER | `(orphan)` (11) | `query-optimization` (6), `delta-lake` (3), `spark-basics` (2) |
-| COLLECTION & ARRAY OPERATIONS | `(orphan)` (5) | — |
-| DATA QUALITY SKEPTICISM | `(orphan)` (11) | `streaming` (3), `delta-lake` (1), `pyspark-windowing` (1), `spark-joins-and-skew` (1) |
+| CACHING & PERSISTENCE | `(orphan)` (2) | `spark-memory-and-driver-executor` (1) |
+| CATALYST OPTIMIZER | `query-optimization` (6) | `spark-execution-model-and-dag` (5), `spark-schema-and-type-handling` (4), `delta-lake` (3), `(orphan)` (3) |
+| COLLECTION & ARRAY OPERATIONS | `spark-collections-and-arrays` (5) | — |
+| DATA QUALITY SKEPTICISM | `spark-collections-and-arrays` (5) | `streaming` (3), `spark-schema-and-type-handling` (2), `(orphan)` (2), `spark-execution-model-and-dag` (1) |
 | DATA SKEW & MITIGATION | `spark-joins-and-skew` (6) | `spark-performance` (1) |
-| DEBUG SPARK ERRORS | `(orphan)` (8) | `query-optimization` (1), `delta-lake` (1), `spark-joins-and-skew` (1) |
+| DEBUG SPARK ERRORS | `spark-execution-model-and-dag` (3) | `(orphan)` (3), `spark-io-and-file-formats` (1), `query-optimization` (1), `spark-schema-and-type-handling` (1) |
 | DELTA LAKE OPERATIONS | `delta-lake` (8) | — |
-| DOUBLE-COUNTING DETECTION | `spark-joins-and-skew` (3) | `(orphan)` (1) |
-| EXECUTION MODEL REASONING | `(orphan)` (28) | `spark-basics` (5), `streaming` (3), `spark-joins-and-skew` (2), `spark-performance` (1) |
-| FAULT TOLERANCE & RECOVERY | `(orphan)` (5) | `streaming` (2), `delta-lake` (1), `spark-joins-and-skew` (1) |
-| FILE FORMATS & READERS | `(orphan)` (6) | `delta-lake` (1), `query-optimization` (1) |
-| JOIN STRATEGY SELECTION | `spark-joins-and-skew` (13) | `(orphan)` (6), `query-optimization` (4), `spark-performance` (3) |
-| MEMORY MANAGEMENT | `(orphan)` (14) | `spark-joins-and-skew` (4), `spark-basics` (1), `streaming` (1), `spark-performance` (1) |
-| NARROW VS WIDE TRANSFORMATIONS | `(orphan)` (2) | `spark-basics` (1) |
-| OUTPUT SANITY VALIDATION | `(orphan)` (8) | `spark-joins-and-skew` (4), `pyspark-windowing` (1) |
-| PARTITIONING STRATEGY | `(orphan)` (5) | `query-optimization` (5), `spark-performance` (3), `delta-lake` (2), `spark-basics` (1) |
-| PERFORMANCE TUNING & TRADE-OFFS | `(orphan)` (9) | `query-optimization` (2), `spark-performance` (2), `spark-joins-and-skew` (1), `delta-lake` (1) |
-| SCHEMA & TYPE HANDLING | `(orphan)` (21) | `query-optimization` (2), `pyspark-windowing` (2), `spark-basics` (1), `delta-lake` (1) |
-| SHUFFLE REASONING | `(orphan)` (7) | `spark-performance` (5), `spark-joins-and-skew` (3), `query-optimization` (2), `spark-basics` (1) |
-| STRUCTURED STREAMING | `streaming` (11) | `delta-lake` (1), `(orphan)` (1) |
-| UDF & PYTHON BOUNDARY | `(orphan)` (7) | `spark-joins-and-skew` (1) |
+| DOUBLE-COUNTING DETECTION | `spark-joins-and-skew` (4) | — |
+| EXECUTION MODEL REASONING | `spark-execution-model-and-dag` (15) | `(orphan)` (7), `spark-memory-and-driver-executor` (6), `spark-fault-tolerance-and-recovery` (3), `streaming` (3) |
+| FAULT TOLERANCE & RECOVERY | `spark-fault-tolerance-and-recovery` (5) | `streaming` (2), `delta-lake` (1), `spark-joins-and-skew` (1) |
+| FILE FORMATS & READERS | `spark-io-and-file-formats` (4) | `(orphan)` (1), `spark-fault-tolerance-and-recovery` (1), `delta-lake` (1), `query-optimization` (1) |
+| JOIN STRATEGY SELECTION | `spark-joins-and-skew` (14) | `(orphan)` (4), `query-optimization` (4), `spark-performance` (3), `spark-collections-and-arrays` (1) |
+| MEMORY MANAGEMENT | `(orphan)` (9) | `spark-memory-and-driver-executor` (6), `spark-joins-and-skew` (4), `streaming` (1), `spark-performance` (1) |
+| NARROW VS WIDE TRANSFORMATIONS | `spark-execution-model-and-dag` (2) | `(orphan)` (1) |
+| OUTPUT SANITY VALIDATION | `spark-joins-and-skew` (5) | `(orphan)` (3), `spark-execution-model-and-dag` (2), `spark-schema-and-type-handling` (2), `pyspark-windowing` (1) |
+| PARTITIONING STRATEGY | `(orphan)` (5) | `query-optimization` (5), `spark-performance` (3), `delta-lake` (2), `spark-execution-model-and-dag` (1) |
+| PERFORMANCE TUNING & TRADE-OFFS | `(orphan)` (5) | `spark-io-and-file-formats` (2), `query-optimization` (2), `spark-performance` (2), `spark-memory-and-driver-executor` (1) |
+| SCHEMA & TYPE HANDLING | `spark-schema-and-type-handling` (11) | `spark-io-and-file-formats` (4), `spark-execution-model-and-dag` (3), `(orphan)` (3), `query-optimization` (2) |
+| SHUFFLE REASONING | `(orphan)` (7) | `spark-performance` (5), `spark-joins-and-skew` (3), `query-optimization` (2), `spark-execution-model-and-dag` (1) |
+| STRUCTURED STREAMING | `streaming` (11) | `delta-lake` (1), `spark-execution-model-and-dag` (1) |
+| UDF & PYTHON BOUNDARY | `(orphan)` (6) | `spark-execution-model-and-dag` (1), `spark-joins-and-skew` (1) |
 | WINDOW FUNCTIONS & FRAMES | `pyspark-windowing` (5) | — |
 
 ### Divergences (live path says A, tags suggest B)
@@ -440,10 +430,23 @@ primary objective genuinely differs from its tag-primary primitive.
 | 42012 | medium | `delta-lake-patterns` | `delta-lake` | `spark-performance` | Writing Partitioned Parquet Output |
 | 42024 | medium | `query-optimization` | `query-optimization` | `spark-performance` | Dynamic Partition Pruning |
 | 43003 | hard | `query-optimization` | `query-optimization` | `spark-performance` | Dynamic Partition Pruning Activation Requirements |
+| 41017 | easy | `spark-fault-tolerance-and-recovery` | `spark-fault-tolerance-and-recovery` | `spark-io-and-file-formats` | Write Mode: unintended append |
+| 41029 | easy | `spark-fault-tolerance-and-recovery` | `spark-fault-tolerance-and-recovery` | `spark-execution-model-and-dag` | Why Use checkpoint()? |
+| 43010 | hard | `spark-fault-tolerance-and-recovery` | `spark-fault-tolerance-and-recovery` | `spark-execution-model-and-dag` | Checkpoint vs Cache for Iterative ML Training |
+| 41026 | easy | `spark-io-and-file-formats` | `spark-io-and-file-formats` | `spark-schema-and-type-handling` | Debug: Malformed Output From Multi-Line JSON |
+| 41030 | easy | `spark-io-and-file-formats` | `spark-io-and-file-formats` | `spark-schema-and-type-handling` | inferSchema Performance Cost |
+| 42009 | medium | `spark-io-and-file-formats` | `spark-io-and-file-formats` | `spark-schema-and-type-handling` | inferSchema in Production Pipelines |
+| 41004 | easy | `spark-memory-and-driver-executor` | `spark-memory-and-driver-executor` | `spark-execution-model-and-dag` | Role of the Driver |
+| 41028 | easy | `spark-memory-and-driver-executor` | `spark-memory-and-driver-executor` | `spark-execution-model-and-dag` | limit() vs head() |
+| 41036 | easy | `spark-memory-and-driver-executor` | `spark-memory-and-driver-executor` | `spark-execution-model-and-dag` | Predict output: when cache() materializes |
+| 42025 | medium | `spark-memory-and-driver-executor` | `spark-memory-and-driver-executor` | `spark-execution-model-and-dag` | Driver OOM vs Executor OOM |
+| 43006 | hard | `spark-memory-and-driver-executor` | `spark-memory-and-driver-executor` | `spark-execution-model-and-dag` | collect() on a Large DataFrame |
+| 43011 | hard | `spark-memory-and-driver-executor` | `spark-memory-and-driver-executor` | `spark-execution-model-and-dag` | Tungsten Off-Heap Binary Format |
 | 42004 | medium | `spark-performance` | `spark-performance` | `spark-joins-and-skew` | Broadcast Join for Small Dimension Tables |
+| 42006 | medium | `spark-performance` | `spark-performance` | `spark-memory-and-driver-executor` | Executor OutOfMemoryError Diagnosis |
 | 43001 | hard | `spark-performance` | `spark-performance` | `spark-joins-and-skew` | Skewed Join Optimization with Salting |
 | 43004 | hard | `spark-performance` | `spark-performance` | `query-optimization` | Three AQE Runtime Optimizations |
-| 43018 | hard | `streaming-fundamentals` | `streaming` | `spark-basics` | Structured Streaming Exactly-Once Semantics |
+| 43018 | hard | `streaming-fundamentals` | `streaming` | `spark-fault-tolerance-and-recovery` | Structured Streaming Exactly-Once Semantics |
 
 ### Orphans (catalog questions in no live path)
 
@@ -453,85 +456,42 @@ a starting point for deciding which path (existing or new) should include them.
 
 | QID | Diff | Tag-suggested pattern | Title |
 |---|---|---|---|
-| 41005 | easy | `spark-basics` | Default Column Types When Reading CSV |
-| 41006 | easy | `spark-basics` | Immutable DataFrame: Pandas-Style Assignment |
-| 41009 | easy | `spark-basics` | SQL Query Without Registering a View |
 | 41010 | easy | `spark-performance` | What Does .cache() Do? |
 | 41011 | easy | `spark-performance` | What is a Spark Partition? |
-| 41012 | easy | `spark-basics` | count() vs show() |
 | 41013 | easy | `spark-performance` | orderBy vs sort: output comparison |
-| 41014 | easy | `spark-basics` | withColumnRenamed Usage |
-| 41015 | easy | `spark-basics` | dropDuplicates Scope |
-| 41016 | easy | `spark-basics` | getOrCreate: Two Calls, One Session? |
-| 41017 | easy | `spark-basics` | Write Mode: unintended append |
-| 41018 | easy | `spark-basics` | when().otherwise() Return Type |
 | 41019 | easy | `spark-performance` | Why Python UDFs Are Slow |
-| 41020 | easy | `spark-basics` | Cast Failure: What Happens to Invalid Rows? |
-| 41021 | easy | `spark-basics` | union() Column Matching |
-| 41022 | easy | `spark-basics` | distinct() vs dropDuplicates() |
-| 41023 | easy | `spark-basics` | lit() Column: Nullability in the Schema |
-| 41024 | easy | `spark-basics` | alias() Behavior |
-| 41025 | easy | `spark-basics` | Capturing printSchema() in a Variable |
-| 41026 | easy | `spark-basics` | Debug: Malformed Output From Multi-Line JSON |
-| 41028 | easy | `spark-basics` | limit() vs head() |
-| 41029 | easy | `spark-basics` | Why Use checkpoint()? |
-| 41030 | easy | `spark-basics` | inferSchema Performance Cost |
-| 41031 | easy | `spark-basics` | Predict output: auto-named arithmetic column |
-| 41032 | easy | `spark-performance` | Debug: Python len() on a DataFrame |
+| 41032 | easy | `spark-memory-and-driver-executor` | Debug: Python len() on a DataFrame |
 | 41033 | easy | `spark-performance` | Predict output: count vs countDistinct |
-| 41034 | easy | `spark-performance` | Debug: collect() on a large DataFrame |
+| 41034 | easy | `spark-memory-and-driver-executor` | Debug: collect() on a large DataFrame |
 | 41035 | easy | `spark-performance` | Debug: UDF return type mismatch |
-| 41036 | easy | `spark-basics` | Predict output: when cache() materializes |
-| 41039 | easy | `spark-basics` | F.expr(): SQL scope vs Python scope |
-| 41041 | easy | `spark-basics` | DataFrame vs Dataset[T]: Python type safety |
-| 43002 | hard | `spark-performance` | executor.memory vs memoryOverhead for Pandas UDFs |
-| 43006 | hard | `spark-basics` | collect() on a Large DataFrame |
+| 43002 | hard | `spark-memory-and-driver-executor` | executor.memory vs memoryOverhead for Pandas UDFs |
 | 43007 | hard | `spark-performance` | reduceByKey vs groupByKey Network Cost |
-| 43008 | hard | `spark-basics` | Parquet vs CSV for Analytical Workloads |
-| 43010 | hard | `spark-basics` | Checkpoint vs Cache for Iterative ML Training |
-| 43011 | hard | `spark-basics` | Tungsten Off-Heap Binary Format |
-| 43013 | hard | `spark-performance` | Bloom Filters for High-Cardinality Joins |
+| 43013 | hard | `spark-memory-and-driver-executor` | Bloom Filters for High-Cardinality Joins |
 | 43017 | hard | `spark-performance` | Guaranteeing Co-location with repartition by Column |
 | 43023 | hard | `spark-performance` | Dynamic Partition Pruning Absent on Left Join |
-| 43026 | hard | `spark-basics` | Speculative Execution Duplicates Non-Idempotent Sink Writes |
 | 43041 | hard | `spark-performance` | Pandas UDF: Predicting Output for Null and Zero Inputs |
-| 43042 | hard | `spark-basics` | Iterative PageRank Crashes with StackOverflowError During Planning |
-| 43046 | hard | `spark-performance` | 9× Slowdown After Halving Executor Memory Despite Identical Total RAM |
-| 43049 | hard | `spark-basics` | pivot() Missing Values: Null Propagation Through Arithmetic |
-| 43050 | hard | `spark-joins-and-skew` | Fan-Out Inflation in a CTR Pipeline: Finding the Correct Fix |
-| 43052 | hard | `spark-basics` | explode vs explode_outer: Which Preserves All Users in the Pipeline? |
-| 42001 | medium | `spark-basics` | AnalysisException on Column Access |
-| 42005 | medium | `spark-basics` | Output Schema of groupBy + agg |
-| 42009 | medium | `spark-basics` | inferSchema in Production Pipelines |
-| 42010 | medium | `spark-performance` | Kryo vs Java Serialization |
-| 42018 | medium | `spark-basics` | Spark SQL vs DataFrame API Performance |
+| 43046 | hard | `spark-memory-and-driver-executor` | 9× Slowdown After Halving Executor Memory Despite Identical Total RAM |
+| 42010 | medium | `spark-memory-and-driver-executor` | Kryo vs Java Serialization |
 | 42019 | medium | `spark-performance` | Caching Strategy: When to Cache |
-| 42020 | medium | `spark-basics` | Job vs Stage vs Task Hierarchy |
-| 42021 | medium | `spark-basics` | Speculative Execution |
 | 42022 | medium | `spark-performance` | mapPartitions vs map |
-| 42025 | medium | `spark-basics` | Driver OOM vs Executor OOM |
 | 42033 | medium | `spark-performance` | Debug: AttributeError in Python UDF on Nullable Column |
 | 42035 | medium | `spark-performance` | Aggregation Job Suddenly 5× Slower After Data Growth |
 | 42036 | medium | `spark-performance` | Delta MERGE Scanning the Entire Table |
-| 42037 | medium | `spark-basics` | Debug: Streaming Schema Mismatch After Code Change |
-| 42049 | medium | `spark-basics` | collect_list vs collect_set: ordering and deduplication guarantees |
-| 42053 | medium | `spark-basics` | explode() Silently Drops Empty and Null Arrays |
-| 42056 | medium | `spark-basics` | collect_list: Is the Element Order Deterministic? |
 
 ### Coverage gaps in this track
 
-None — every pattern in the proposed canonical set is healthy or uneven (≥5 Qs).
+- 🔴 **`spark-basics`** — 0 practice Qs (empty). No live path or no questions. Either create a path that aggregates this pattern, or author initial content.
 
 ---
 ## data-engineering
 
-Practice questions: **91** (77 in live paths · 14 orphans · 10 divergent). Proposed canonical patterns: **9**.
+Practice questions: **91** (85 in live paths · 6 orphans · 10 divergent). Proposed canonical patterns: **9**.
 
 ### Pattern coverage (live-path-aggregated)
 
 | Pattern | Display | Easy | Medium | Hard | Total | Class |
 |---|---|---:|---:|---:|---:|---|
-| `etl-elt` | ETL / ELT Design | 5 | 0 | 0 | 5 | ⚠️ uneven |
+| `etl-elt` | ETL / ELT Design | 11 | 2 | 0 | 13 | ⚠️ uneven |
 | `orchestration` | Pipeline Orchestration | 3 | 3 | 0 | 6 | ⚠️ uneven |
 | `schema-evolution` | Schema Evolution | 2 | 4 | 3 | 9 | ✅ healthy |
 | `delivery-semantics` | Delivery Semantics | 2 | 5 | 7 | 14 | ✅ healthy |
@@ -552,22 +512,22 @@ A question contributes once per family tag — multi-tag questions count multipl
 | BACKFILL DESIGN | `backfill-design` (5) | `cost-and-format-optimization` (2), `orchestration` (1), `data-quality-and-incident-response` (1) |
 | BACKPRESSURE | `streaming-vs-batch` (1) | — |
 | BATCH VS STREAMING | `streaming-vs-batch` (6) | `delivery-semantics` (4), `etl-elt` (1), `cost-and-format-optimization` (1) |
-| CDC & INGESTION | `(orphan)` (3) | `data-quality-and-incident-response` (1), `delivery-semantics` (1), `schema-evolution` (1), `backfill-design` (1) |
+| CDC & INGESTION | `etl-elt` (3) | `data-quality-and-incident-response` (1), `delivery-semantics` (1), `schema-evolution` (1), `backfill-design` (1) |
 | COST OPTIMIZATION | `cost-and-format-optimization` (10) | `delivery-semantics` (1) |
 | DATA CONTRACT | `schema-evolution` (6) | `(orphan)` (1), `data-quality-and-incident-response` (1) |
-| DATA GOVERNANCE | `(orphan)` (2) | — |
-| DATA QUALITY | `data-quality-and-incident-response` (5) | `lineage-and-observability` (4), `(orphan)` (3), `delivery-semantics` (2), `cost-and-format-optimization` (1) |
-| DELIVERY SEMANTICS | `delivery-semantics` (10) | `(orphan)` (2), `etl-elt` (1), `schema-evolution` (1) |
-| ETL VS ELT | `(orphan)` (3) | `etl-elt` (1) |
-| IDEMPOTENCY | `delivery-semantics` (7) | `backfill-design` (3), `(orphan)` (2), `etl-elt` (1), `cost-and-format-optimization` (1) |
+| DATA GOVERNANCE | `etl-elt` (1) | `(orphan)` (1) |
+| DATA QUALITY | `data-quality-and-incident-response` (5) | `lineage-and-observability` (4), `etl-elt` (3), `delivery-semantics` (2), `cost-and-format-optimization` (1) |
+| DELIVERY SEMANTICS | `delivery-semantics` (10) | `etl-elt` (2), `schema-evolution` (1), `(orphan)` (1) |
+| ETL VS ELT | `etl-elt` (4) | — |
+| IDEMPOTENCY | `delivery-semantics` (7) | `etl-elt` (3), `backfill-design` (3), `cost-and-format-optimization` (1) |
 | INCIDENT RESPONSE | `data-quality-and-incident-response` (3) | `lineage-and-observability` (3) |
-| LINEAGE & OBSERVABILITY | `lineage-and-observability` (10) | `data-quality-and-incident-response` (4), `orchestration` (1), `(orphan)` (1) |
+| LINEAGE & OBSERVABILITY | `lineage-and-observability` (10) | `data-quality-and-incident-response` (4), `orchestration` (1), `etl-elt` (1) |
 | ORCHESTRATION | `orchestration` (5) | `delivery-semantics` (2), `lineage-and-observability` (1) |
-| PARTITIONING & PRUNING | `cost-and-format-optimization` (8) | `backfill-design` (2), `(orphan)` (1), `etl-elt` (1) |
+| PARTITIONING & PRUNING | `cost-and-format-optimization` (8) | `etl-elt` (2), `backfill-design` (2) |
 | SCD OPERATIONS | `(orphan)` (2) | `etl-elt` (1), `lineage-and-observability` (1), `backfill-design` (1) |
 | SCHEDULING & SLAS | `orchestration` (5) | `streaming-vs-batch` (3), `lineage-and-observability` (3), `data-quality-and-incident-response` (2), `cost-and-format-optimization` (1) |
-| SCHEMA EVOLUTION | `schema-evolution` (9) | `lineage-and-observability` (2), `data-quality-and-incident-response` (1), `(orphan)` (1) |
-| STORAGE ARCHITECTURE | `(orphan)` (6) | `cost-and-format-optimization` (5), `etl-elt` (3), `streaming-vs-batch` (1) |
+| SCHEMA EVOLUTION | `schema-evolution` (9) | `lineage-and-observability` (2), `data-quality-and-incident-response` (1), `etl-elt` (1) |
+| STORAGE ARCHITECTURE | `(orphan)` (5) | `cost-and-format-optimization` (5), `etl-elt` (4), `streaming-vs-batch` (1) |
 | STORAGE LAYOUT & FILE FORMATS | `cost-and-format-optimization` (6) | `schema-evolution` (2), `etl-elt` (1), `(orphan)` (1) |
 | WATERMARKING | `delivery-semantics` (6) | `streaming-vs-batch` (1) |
 
@@ -598,19 +558,11 @@ a starting point for deciding which path (existing or new) should include them.
 
 | QID | Diff | Tag-suggested pattern | Title |
 |---|---|---|---|
-| 51002 | easy | `etl-elt` | ELT: Why Load Raw Data First? |
-| 51003 | easy | `etl-elt` | Choosing ETL vs ELT: Sensitive Data |
-| 51005 | easy | `etl-elt` | Making an Insert Idempotent |
-| 51006 | easy | `etl-elt` | Idempotency and Partition Overwrite |
 | 51017 | easy | `cost-and-format-optimization` | SCD Type 2: Surrogate Keys |
 | 51019 | easy | `cost-and-format-optimization` | Data Lake vs Data Warehouse |
 | 51020 | easy | `cost-and-format-optimization` | Lakehouse Architecture |
-| 51022 | easy | `etl-elt` | CDC: What Change Data Capture Detects |
-| 51023 | easy | `etl-elt` | CDC: Log-Based vs Query-Based |
 | 53010 | hard | `cost-and-format-optimization` | SCD Type 2 and Fact Table Joins |
 | 53018 | hard | `cost-and-format-optimization` | Lakehouse ACID and Concurrent Writes |
-| 52024 | medium | `etl-elt` | CDC: Handling DDL Changes |
-| 52030 | medium | `etl-elt` | ELT Transformation Layers: Debugging a Wrong Metric |
 | 52032 | medium | _unrouted_ | GDPR Erasure in an Immutable Data Lake: Crypto Shredding |
 
 ### Coverage gaps in this track
@@ -620,7 +572,7 @@ None — every pattern in the proposed canonical set is healthy or uneven (≥5 
 ---
 ## data-modeling
 
-Practice questions: **81** (71 in live paths · 10 orphans · 0 divergent). Proposed canonical patterns: **14**.
+Practice questions: **81** (73 in live paths · 8 orphans · 0 divergent). Proposed canonical patterns: **14**.
 
 ### Pattern coverage (live-path-aggregated)
 
@@ -630,7 +582,7 @@ Practice questions: **81** (71 in live paths · 10 orphans · 0 divergent). Prop
 | `fact-table-design` | Fact Table Design | 3 | 3 | 1 | 7 | ✅ healthy |
 | `surrogate-keys` | Surrogate vs Natural Keys | 0 | 0 | 0 | 0 | 🔴 empty (no live path or no questions) |
 | `grain-definition` | Grain Definition | 2 | 4 | 2 | 8 | ✅ healthy |
-| `scd` | Slowly Changing Dimensions | 4 | 7 | 4 | 15 | ✅ healthy |
+| `scd` | Slowly Changing Dimensions | 4 | 7 | 6 | 17 | ✅ healthy |
 | `normalization` | Normalization (1NF–3NF) | 4 | 0 | 0 | 4 | 🟡 thin (needs content) |
 | `referential-integrity` | Referential Integrity | 1 | 2 | 2 | 5 | ✅ healthy |
 | `bridge-tables` | Bridge Tables & Many-to-Many | 0 | 3 | 1 | 4 | 🟡 thin (needs content) |
@@ -653,12 +605,12 @@ A question contributes once per family tag — multi-tag questions count multipl
 | AGGREGATE & SUMMARY DESIGN | `aggregate-and-summary-design` (4) | `wide-tables` (2), `grain-definition` (1) |
 | BI-TEMPORAL MODELING | `scd` (1) | — |
 | BRIDGE & MANY-TO-MANY | `bridge-tables` (4) | `data-vault` (2), `(orphan)` (1) |
-| CONFORMED DIMENSIONS | `(orphan)` (3) | — |
+| CONFORMED DIMENSIONS | `(orphan)` (2) | `scd` (1) |
 | DATA VAULT | `data-vault` (4) | — |
 | DBT MODELING | `dbt-modeling` (6) | `wide-tables` (2), `referential-integrity` (1) |
 | DENORMALIZATION TRADEOFF | `wide-tables` (5) | `star-snowflake` (3), `scd` (2), `dbt-modeling` (2), `normalization` (1) |
-| DIMENSION DESIGN | `scd` (9) | `(orphan)` (5), `star-snowflake` (1), `aggregate-and-summary-design` (1), `referential-integrity` (1) |
-| DIMENSIONAL MODELING | `scd` (8) | `star-snowflake` (6), `grain-definition` (4), `referential-integrity` (3), `bridge-tables` (2) |
+| DIMENSION DESIGN | `scd` (11) | `(orphan)` (3), `star-snowflake` (1), `aggregate-and-summary-design` (1), `referential-integrity` (1) |
+| DIMENSIONAL MODELING | `scd` (9) | `star-snowflake` (6), `grain-definition` (4), `referential-integrity` (3), `bridge-tables` (2) |
 | DOUBLE-COUNTING & FAN-OUT | `grain-definition` (2) | `bridge-tables` (1) |
 | FACT TABLE DESIGN | `fact-table-design` (7) | `scd` (7), `grain-definition` (6), `bridge-tables` (4), `aggregate-and-summary-design` (2) |
 | GRAIN DEFINITION | `grain-definition` (8) | `fact-table-design` (4), `bridge-tables` (1), `(orphan)` (1) |
@@ -666,7 +618,7 @@ A question contributes once per family tag — multi-tag questions count multipl
 | NORMALIZATION | `normalization` (4) | `star-snowflake` (3), `wide-tables` (3), `dbt-modeling` (2) |
 | REFERENTIAL INTEGRITY | `referential-integrity` (5) | `(orphan)` (1), `data-vault` (1), `scd` (1) |
 | SCD STRUCTURE | `scd` (10) | `data-vault` (1) |
-| SCHEMA EVOLUTION | `(orphan)` (2) | `scd` (1) |
+| SCHEMA EVOLUTION | `scd` (3) | — |
 | SCHEMA FROM REQUIREMENTS | `dbt-modeling` (3) | `fact-table-design` (3), `wide-tables` (3), `data-vault` (2), `grain-definition` (2) |
 | SEMANTIC LAYER & METRIC GOVERNANCE | `(orphan)` (1) | — |
 | SURROGATE VS NATURAL KEYS | `(orphan)` (3) | `scd` (1), `data-vault` (1) |
@@ -689,8 +641,6 @@ a starting point for deciding which path (existing or new) should include them.
 | 61012 | easy | `surrogate-keys` | Surrogate Key: Integrating Multiple Source Systems |
 | 63014 | hard | `hierarchies-and-multipath` | Handling Hierarchy Ragged-Depth in an Organizational Dimension |
 | 63023 | hard | `hierarchies-and-multipath` | Cross-Hierarchy Reporting: Two Hierarchies in One Dimension |
-| 63032 | hard | `scd` | Schema Evolution: Adding a Compliance Column to a Shared Dimension Under a Regulatory Deadline |
-| 63033 | hard | `scd` | Schema Evolution Governance: Breaking-Change Strategy for a High-Fan-Out Shared Dimension |
 | 62022 | medium | `hierarchies-and-multipath` | Schema from Requirements: Product Hierarchy Rollup |
 | 62026 | medium | _unrouted_ | Semantic Layer: Centralized Metric Governance |
 | 62036 | medium | `conformed-dimensions` | Conformed Dimensions: Resolving Cross-Mart Inconsistency for a Shared Business Concept |
@@ -708,7 +658,7 @@ a starting point for deciding which path (existing or new) should include them.
 ---
 ## statistics
 
-Practice questions: **100** (81 in live paths · 19 orphans · 4 divergent). Proposed canonical patterns: **11**.
+Practice questions: **100** (84 in live paths · 16 orphans · 4 divergent). Proposed canonical patterns: **11**.
 
 ### Pattern coverage (live-path-aggregated)
 
@@ -716,7 +666,7 @@ Practice questions: **100** (81 in live paths · 19 orphans · 4 divergent). Pro
 |---|---|---:|---:|---:|---:|---|
 | `descriptive-stats` | Descriptive Statistics | 8 | 1 | 0 | 9 | ⚠️ uneven |
 | `probability-and-combinatorics` | Probability & Combinatorics | 13 | 0 | 0 | 13 | ⚠️ uneven |
-| `distributions` | Probability Distributions | 10 | 5 | 0 | 15 | ⚠️ uneven |
+| `distributions` | Probability Distributions | 10 | 6 | 2 | 18 | ✅ healthy |
 | `sampling-and-clt` | Sampling & CLT | 0 | 5 | 0 | 5 | ⚠️ uneven |
 | `hypothesis-testing` | Hypothesis Testing | 0 | 10 | 1 | 11 | ⚠️ uneven |
 | `confidence-intervals` | Confidence Intervals | 0 | 3 | 6 | 9 | ⚠️ uneven |
@@ -738,15 +688,15 @@ A question contributes once per family tag — multi-tag questions count multipl
 | confidence intervals & estimation | `confidence-intervals` (9) | `(orphan)` (2), `hypothesis-testing` (1), `regression-and-correlation` (1), `bayesian-reasoning` (1) |
 | correlation, regression & causality | `(orphan)` (10) | `regression-and-correlation` (7) |
 | descriptive statistics | `descriptive-stats` (9) | `(orphan)` (3), `distributions` (3) |
-| distributions | `distributions` (15) | `confidence-intervals` (4), `(orphan)` (4), `hypothesis-testing` (3), `bayesian-reasoning` (2) |
+| distributions | `distributions` (18) | `confidence-intervals` (4), `hypothesis-testing` (3), `bayesian-reasoning` (2), `descriptive-stats` (1) |
 | errors & power | `errors-and-power` (4) | `hypothesis-testing` (4), `regression-and-correlation` (2) |
 | experimental design (within stats) | `hypothesis-testing` (5) | `(orphan)` (1), `descriptive-stats` (1), `regression-and-correlation` (1) |
-| hypothesis testing | `hypothesis-testing` (7) | `(orphan)` (5), `errors-and-power` (4), `confidence-intervals` (1), `regression-and-correlation` (1) |
+| hypothesis testing | `hypothesis-testing` (7) | `errors-and-power` (4), `distributions` (3), `(orphan)` (2), `confidence-intervals` (1) |
 | multiple testing & correction | `errors-and-power` (4) | `hypothesis-testing` (1) |
-| probability & combinatorics | `probability-and-combinatorics` (13) | `distributions` (7), `bayesian-reasoning` (3), `(orphan)` (3), `sampling-and-clt` (2) |
+| probability & combinatorics | `probability-and-combinatorics` (13) | `distributions` (8), `bayesian-reasoning` (3), `(orphan)` (2), `sampling-and-clt` (2) |
 | sampling & central limit theorem | `sampling-and-clt` (5) | `confidence-intervals` (3), `hypothesis-testing` (3), `(orphan)` (1) |
 | survival analysis & time-to-event | `(orphan)` (3) | — |
-| variance decomposition & ANOVA | `(orphan)` (8) | — |
+| variance decomposition & ANOVA | `(orphan)` (7) | `distributions` (1) |
 
 ### Divergences (live path says A, tags suggest B)
 
@@ -773,20 +723,17 @@ a starting point for deciding which path (existing or new) should include them.
 | 73006 | hard | `regression-and-correlation` | R-Squared Interpretation |
 | 73007 | hard | `regression-and-correlation` | Computing R-Squared |
 | 73008 | hard | `regression-and-correlation` | Bias-Variance Tradeoff |
-| 73009 | hard | `distributions` | Chi-Squared Test Statistic |
 | 73012 | hard | `variance-and-anova` | Variance Decomposition — ANOVA Logic |
 | 73014 | hard | `survival-analysis` | Survival Analysis — Hazard Rate |
 | 73015 | hard | `survival-analysis` | Kaplan-Meier Survival Probability |
 | 73017 | hard | `variance-and-anova` | ANOVA F-Statistic |
 | 73018 | hard | `regression-and-correlation` | Regression — Bias-Variance Decomposition |
-| 73019 | hard | `distributions` | Chi-Squared Test of Independence |
 | 73023 | hard | `variance-and-anova` | Variance of a Linear Combination |
 | 73027 | hard | `regression-and-correlation` | MCAR, MAR, and MNAR Missingness Mechanisms |
 | 72011 | medium | `regression-and-correlation` | Pearson Correlation Coefficient |
 | 72012 | medium | `regression-and-correlation` | Correlation vs Causation |
 | 72013 | medium | `regression-and-correlation` | A/B Test — Identifying the Correct Setup |
 | 72023 | medium | `regression-and-correlation` | Effect of Outlier on Correlation |
-| 72030 | medium | `distributions` | F-Statistic and ANOVA |
 | 72043 | medium | `survival-analysis` | Kaplan-Meier: What Censored Observations Tell Us |
 
 ### Coverage gaps in this track
@@ -797,7 +744,7 @@ a starting point for deciding which path (existing or new) should include them.
 ---
 ## ml-fundamentals
 
-Practice questions: **100** (96 in live paths · 4 orphans · 19 divergent). Proposed canonical patterns: **15**.
+Practice questions: **100** (97 in live paths · 3 orphans · 19 divergent). Proposed canonical patterns: **15**.
 
 ### Pattern coverage (live-path-aggregated)
 
@@ -807,7 +754,7 @@ Practice questions: **100** (96 in live paths · 4 orphans · 19 divergent). Pro
 | `bias-variance` | Bias-Variance & Overfitting | 4 | 2 | 0 | 6 | ⚠️ uneven |
 | `cross-validation` | Cross-Validation | 3 | 3 | 0 | 6 | ⚠️ uneven |
 | `metrics` | Model Metrics | 5 | 3 | 2 | 10 | ✅ healthy |
-| `regularization` | Regularization | 0 | 3 | 3 | 6 | ⚠️ uneven |
+| `regularization` | Regularization | 1 | 3 | 3 | 7 | ✅ healthy |
 | `ensembles` | Ensemble Methods | 0 | 5 | 2 | 7 | ⚠️ uneven |
 | `missing-data-and-preprocessing` | Missing Data & Preprocessing Hygiene | 0 | 4 | 1 | 5 | ⚠️ uneven |
 | `feature-engineering` | Feature Engineering | 3 | 9 | 2 | 14 | ✅ healthy |
@@ -851,9 +798,9 @@ A question contributes once per family tag — multi-tag questions count multipl
 | MODEL CALIBRATION | `metrics` (2) | `production-and-monitoring` (1) |
 | MODEL MONITORING | `production-and-monitoring` (5) | — |
 | NEURAL NETWORK DESIGN | `neural-networks-and-gradients` (2) | `regularization` (1) |
-| OVERFITTING DIAGNOSIS | `bias-variance` (5) | `production-and-monitoring` (3), `cross-validation` (1), `neural-networks-and-gradients` (1), `supervised-unsupervised` (1) |
+| OVERFITTING DIAGNOSIS | `bias-variance` (5) | `production-and-monitoring` (3), `regularization` (2), `cross-validation` (1), `neural-networks-and-gradients` (1) |
 | REGRESSION METRICS | `metrics` (3) | `supervised-unsupervised` (1) |
-| REGULARIZATION EFFECT | `feature-engineering` (4) | `regularization` (2), `supervised-unsupervised` (1), `hyperparameter-tuning` (1), `(orphan)` (1) |
+| REGULARIZATION EFFECT | `feature-engineering` (4) | `regularization` (3), `supervised-unsupervised` (1), `hyperparameter-tuning` (1), `bias-variance` (1) |
 | SUPERVISED VS UNSUPERVISED | `supervised-unsupervised` (3) | — |
 | TRAINING-SERVING SKEW | `production-and-monitoring` (4) | — |
 | TRANSFER LEARNING STRATEGY | `regularization` (1) | `production-and-monitoring` (1), `neural-networks-and-gradients` (1) |
@@ -894,7 +841,6 @@ a starting point for deciding which path (existing or new) should include them.
 
 | QID | Diff | Tag-suggested pattern | Title |
 |---|---|---|---|
-| 81030 | easy | `regularization` | Regularisation: Effect on Model Complexity |
 | 83126 | hard | `algorithmic-fairness` | Demographic parity vs equalized odds in a lending approval model |
 | 83127 | hard | `algorithmic-fairness` | Diagnose root cause of hiring-model disparate impact from symptom data |
 | 82105 | medium | `algorithmic-fairness` | Interpret disaggregated fraud-detection metrics for equalized-odds audit |
@@ -1078,28 +1024,28 @@ the audit credits the question to. `Tag-suggested` = where tag-routing would pla
 | 11036 | easy | `sql-string-and-date` | `string-and-text` | `period-over-period` | ⚠️ | Days since user signup |
 | 11037 | easy | `sql-string-and-date` | `string-and-text` | `period-over-period` | ⚠️ | Monthly signup trend |
 | 12001 | medium | `joins-and-filtering` | `joins` | `joins` |  | Failed payments on completed orders |
-| 12002 | medium | _orphan_ | — | `joins` |  | Products in refunded orders |
+| 12002 | medium | `joins-and-filtering` | `joins` | `joins` |  | Products in refunded orders |
 | 12003 | medium | `joins-and-filtering` | `joins` | `joins` |  | Departments without employees |
 | 12004 | medium | `aggregation-patterns` | `aggregation` | `joins` | ⚠️ | Paid revenue by user country |
 | 12005 | medium | `aggregation-patterns` | `aggregation` | `joins` | ⚠️ | Country-plan segments with high average order value |
-| 12006 | medium | _orphan_ | — | `joins` |  | Users with multiple paid payment methods |
+| 12006 | medium | `joins-and-filtering` | `joins` | `joins` |  | Users with multiple paid payment methods |
 | 12007 | medium | `aggregation-patterns` | `aggregation` | `aggregation` |  | Slow resolved ticket groups |
 | 12008 | medium | `pivot-and-conditional-aggregation` | `pivot-and-unpivot` | `pivot-and-unpivot` |  | Order value bands |
 | 12009 | medium | `pivot-and-conditional-aggregation` | `pivot-and-unpivot` | `pivot-and-unpivot` |  | Salary bands by department region |
 | 12010 | medium | `subqueries-and-existence` | `subqueries` | `subqueries` |  | Users with chargeback orders |
 | 12011 | medium | `aggregation-patterns` | `aggregation` | `joins` | ⚠️ | Paid completed orders by country |
-| 12012 | medium | _orphan_ | — | `joins` |  | Brand reach in completed 2024 orders |
-| 12013 | medium | _orphan_ | — | `joins` |  | Users with both orders and high-priority tickets |
+| 12012 | medium | `joins-and-filtering` | `joins` | `joins` |  | Brand reach in completed 2024 orders |
+| 12013 | medium | `joins-and-filtering` | `joins` | `joins` |  | Users with both orders and high-priority tickets |
 | 12014 | medium | `window-functions-mastery` | `window-functions` | `ctes-and-recursion` | ⚠️ | Employees above their department average |
 | 12015 | medium | `cohort-and-retention` | `cohort-and-retention` | `joins` | ⚠️ | Early signups with no completed orders |
 | 12016 | medium | `window-functions-mastery` | `window-functions` | `subqueries` | ⚠️ | Brands above average completed-order revenue |
 | 12017 | medium | _orphan_ | — | `aggregation` |  | Country order outcome mix |
 | 12018 | medium | _orphan_ | — | `aggregation` |  | Ticket resolution mix by issue type |
-| 12019 | medium | _orphan_ | — | `joins` |  | Repeat large-order users in selected countries |
-| 12020 | medium | _orphan_ | — | `joins` |  | High-volume brands in completed 2024 orders |
-| 12021 | medium | _orphan_ | — | `joins` |  | Departments with no 2024 hires |
+| 12019 | medium | `joins-and-filtering` | `joins` | `joins` |  | Repeat large-order users in selected countries |
+| 12020 | medium | `joins-and-filtering` | `joins` | `joins` |  | High-volume brands in completed 2024 orders |
+| 12021 | medium | `joins-and-filtering` | `joins` | `joins` |  | Departments with no 2024 hires |
 | 12022 | medium | `cohort-and-retention` | `cohort-and-retention` | `joins` | ⚠️ | Selected-country users without 2024 orders |
-| 12023 | medium | _orphan_ | — | `joins` |  | Completed 2024 orders missing paid payments |
+| 12023 | medium | `joins-and-filtering` | `joins` | `joins` |  | Completed 2024 orders missing paid payments |
 | 12024 | medium | `pivot-and-conditional-aggregation` | `pivot-and-unpivot` | `pivot-and-unpivot` |  | Category launch-date completeness snapshot |
 | 12025 | medium | `pivot-and-conditional-aggregation` | `pivot-and-unpivot` | `pivot-and-unpivot` |  | Country and plan tier order mix |
 | 12026 | medium | `pivot-and-conditional-aggregation` | `pivot-and-unpivot` | `pivot-and-unpivot` |  | Department hiring cohort summary |
@@ -1122,8 +1068,8 @@ the audit credits the question to. `Tag-suggested` = where tag-routing would pla
 | 12062 | medium | `sql-advanced-patterns` | `set-operations` | `aggregation` | ⚠️ | Order payment breakdown with FILTER |
 | 12063 | medium | `sql-advanced-patterns` | `set-operations` | `period-over-period` | ⚠️ | Monthly order counts with no-gap date spine |
 | 12064 | medium | `sql-string-and-date` | `string-and-text` | `string-and-text` |  | Build and parse a composite user key |
-| 12065 | medium | _orphan_ | — | `joins` |  | Category revenue from order line items |
-| 12066 | medium | _orphan_ | — | `joins` |  | Distinct buyers per payment method |
+| 12065 | medium | `joins-and-filtering` | `joins` | `joins` |  | Category revenue from order line items |
+| 12066 | medium | `joins-and-filtering` | `joins` | `joins` |  | Distinct buyers per payment method |
 | 12121 | medium | `cohort-and-retention` | `cohort-and-retention` | `cohort-and-retention` |  | Purchase rate by 2024 signup cohort |
 | 12122 | medium | `funnel-and-events` | `funnel-and-event-analysis` | `funnel-and-event-analysis` |  | Order placement and completion funnel by plan tier |
 | 12123 | medium | _orphan_ | — | `aggregation` |  | Sessions with duplicate product view events |
@@ -1344,56 +1290,56 @@ the audit credits the question to. `Tag-suggested` = where tag-routing would pla
 
 | QID | Diff | Live path | Attributed | Tag-suggested | Divergent? | Title |
 |---|---|---|---|---|---|---|
-| 41001 | easy | `spark-core-concepts` | `spark-basics` | `spark-basics` |  | Transformations vs Actions: return types |
-| 41002 | easy | `spark-core-concepts` | `spark-basics` | `spark-basics` |  | Lazy Evaluation: When Does the AnalysisException Fire? |
-| 41003 | easy | `spark-core-concepts` | `spark-basics` | `spark-basics` |  | RDD vs DataFrame: optimizer impact |
-| 41004 | easy | `spark-core-concepts` | `spark-basics` | `spark-basics` |  | Role of the Driver |
-| 41005 | easy | _orphan_ | — | `spark-basics` |  | Default Column Types When Reading CSV |
-| 41006 | easy | _orphan_ | — | `spark-basics` |  | Immutable DataFrame: Pandas-Style Assignment |
-| 41007 | easy | `spark-core-concepts` | `spark-basics` | `spark-basics` |  | How Many Jobs Does This Chain Trigger? |
-| 41008 | easy | `spark-core-concepts` | `spark-basics` | `spark-basics` |  | Wide vs Narrow Transformations |
-| 41009 | easy | _orphan_ | — | `spark-basics` |  | SQL Query Without Registering a View |
+| 41001 | easy | `spark-execution-model-and-dag` | `spark-execution-model-and-dag` | `spark-execution-model-and-dag` |  | Transformations vs Actions: return types |
+| 41002 | easy | `spark-execution-model-and-dag` | `spark-execution-model-and-dag` | `spark-execution-model-and-dag` |  | Lazy Evaluation: When Does the AnalysisException Fire? |
+| 41003 | easy | `spark-execution-model-and-dag` | `spark-execution-model-and-dag` | `spark-execution-model-and-dag` |  | RDD vs DataFrame: optimizer impact |
+| 41004 | easy | `spark-memory-and-driver-executor` | `spark-memory-and-driver-executor` | `spark-execution-model-and-dag` | ⚠️ | Role of the Driver |
+| 41005 | easy | `spark-io-and-file-formats` | `spark-io-and-file-formats` | `spark-io-and-file-formats` |  | Default Column Types When Reading CSV |
+| 41006 | easy | `spark-execution-model-and-dag` | `spark-execution-model-and-dag` | `spark-execution-model-and-dag` |  | Immutable DataFrame: Pandas-Style Assignment |
+| 41007 | easy | `spark-execution-model-and-dag` | `spark-execution-model-and-dag` | `spark-execution-model-and-dag` |  | How Many Jobs Does This Chain Trigger? |
+| 41008 | easy | `spark-execution-model-and-dag` | `spark-execution-model-and-dag` | `spark-execution-model-and-dag` |  | Wide vs Narrow Transformations |
+| 41009 | easy | `spark-execution-model-and-dag` | `spark-execution-model-and-dag` | `spark-execution-model-and-dag` |  | SQL Query Without Registering a View |
 | 41010 | easy | _orphan_ | — | `spark-performance` |  | What Does .cache() Do? |
 | 41011 | easy | _orphan_ | — | `spark-performance` |  | What is a Spark Partition? |
-| 41012 | easy | _orphan_ | — | `spark-basics` |  | count() vs show() |
+| 41012 | easy | `spark-execution-model-and-dag` | `spark-execution-model-and-dag` | `spark-execution-model-and-dag` |  | count() vs show() |
 | 41013 | easy | _orphan_ | — | `spark-performance` |  | orderBy vs sort: output comparison |
-| 41014 | easy | _orphan_ | — | `spark-basics` |  | withColumnRenamed Usage |
-| 41015 | easy | _orphan_ | — | `spark-basics` |  | dropDuplicates Scope |
-| 41016 | easy | _orphan_ | — | `spark-basics` |  | getOrCreate: Two Calls, One Session? |
-| 41017 | easy | _orphan_ | — | `spark-basics` |  | Write Mode: unintended append |
-| 41018 | easy | _orphan_ | — | `spark-basics` |  | when().otherwise() Return Type |
+| 41014 | easy | `spark-schema-and-type-handling` | `spark-schema-and-type-handling` | `spark-schema-and-type-handling` |  | withColumnRenamed Usage |
+| 41015 | easy | `spark-execution-model-and-dag` | `spark-execution-model-and-dag` | `spark-execution-model-and-dag` |  | dropDuplicates Scope |
+| 41016 | easy | `spark-execution-model-and-dag` | `spark-execution-model-and-dag` | `spark-execution-model-and-dag` |  | getOrCreate: Two Calls, One Session? |
+| 41017 | easy | `spark-fault-tolerance-and-recovery` | `spark-fault-tolerance-and-recovery` | `spark-io-and-file-formats` | ⚠️ | Write Mode: unintended append |
+| 41018 | easy | `spark-schema-and-type-handling` | `spark-schema-and-type-handling` | `spark-schema-and-type-handling` |  | when().otherwise() Return Type |
 | 41019 | easy | _orphan_ | — | `spark-performance` |  | Why Python UDFs Are Slow |
-| 41020 | easy | _orphan_ | — | `spark-basics` |  | Cast Failure: What Happens to Invalid Rows? |
-| 41021 | easy | _orphan_ | — | `spark-basics` |  | union() Column Matching |
-| 41022 | easy | _orphan_ | — | `spark-basics` |  | distinct() vs dropDuplicates() |
-| 41023 | easy | _orphan_ | — | `spark-basics` |  | lit() Column: Nullability in the Schema |
-| 41024 | easy | _orphan_ | — | `spark-basics` |  | alias() Behavior |
-| 41025 | easy | _orphan_ | — | `spark-basics` |  | Capturing printSchema() in a Variable |
-| 41026 | easy | _orphan_ | — | `spark-basics` |  | Debug: Malformed Output From Multi-Line JSON |
+| 41020 | easy | `spark-schema-and-type-handling` | `spark-schema-and-type-handling` | `spark-schema-and-type-handling` |  | Cast Failure: What Happens to Invalid Rows? |
+| 41021 | easy | `spark-schema-and-type-handling` | `spark-schema-and-type-handling` | `spark-schema-and-type-handling` |  | union() Column Matching |
+| 41022 | easy | `spark-schema-and-type-handling` | `spark-schema-and-type-handling` | `spark-schema-and-type-handling` |  | distinct() vs dropDuplicates() |
+| 41023 | easy | `spark-schema-and-type-handling` | `spark-schema-and-type-handling` | `spark-schema-and-type-handling` |  | lit() Column: Nullability in the Schema |
+| 41024 | easy | `spark-schema-and-type-handling` | `spark-schema-and-type-handling` | `spark-schema-and-type-handling` |  | alias() Behavior |
+| 41025 | easy | `spark-schema-and-type-handling` | `spark-schema-and-type-handling` | `spark-schema-and-type-handling` |  | Capturing printSchema() in a Variable |
+| 41026 | easy | `spark-io-and-file-formats` | `spark-io-and-file-formats` | `spark-schema-and-type-handling` | ⚠️ | Debug: Malformed Output From Multi-Line JSON |
 | 41027 | easy | `query-optimization` | `query-optimization` | `query-optimization` |  | What explain() Shows |
-| 41028 | easy | _orphan_ | — | `spark-basics` |  | limit() vs head() |
-| 41029 | easy | _orphan_ | — | `spark-basics` |  | Why Use checkpoint()? |
-| 41030 | easy | _orphan_ | — | `spark-basics` |  | inferSchema Performance Cost |
-| 41031 | easy | _orphan_ | — | `spark-basics` |  | Predict output: auto-named arithmetic column |
-| 41032 | easy | _orphan_ | — | `spark-performance` |  | Debug: Python len() on a DataFrame |
+| 41028 | easy | `spark-memory-and-driver-executor` | `spark-memory-and-driver-executor` | `spark-execution-model-and-dag` | ⚠️ | limit() vs head() |
+| 41029 | easy | `spark-fault-tolerance-and-recovery` | `spark-fault-tolerance-and-recovery` | `spark-execution-model-and-dag` | ⚠️ | Why Use checkpoint()? |
+| 41030 | easy | `spark-io-and-file-formats` | `spark-io-and-file-formats` | `spark-schema-and-type-handling` | ⚠️ | inferSchema Performance Cost |
+| 41031 | easy | `spark-schema-and-type-handling` | `spark-schema-and-type-handling` | `spark-schema-and-type-handling` |  | Predict output: auto-named arithmetic column |
+| 41032 | easy | _orphan_ | — | `spark-memory-and-driver-executor` |  | Debug: Python len() on a DataFrame |
 | 41033 | easy | _orphan_ | — | `spark-performance` |  | Predict output: count vs countDistinct |
-| 41034 | easy | _orphan_ | — | `spark-performance` |  | Debug: collect() on a large DataFrame |
+| 41034 | easy | _orphan_ | — | `spark-memory-and-driver-executor` |  | Debug: collect() on a large DataFrame |
 | 41035 | easy | _orphan_ | — | `spark-performance` |  | Debug: UDF return type mismatch |
-| 41036 | easy | _orphan_ | — | `spark-basics` |  | Predict output: when cache() materializes |
+| 41036 | easy | `spark-memory-and-driver-executor` | `spark-memory-and-driver-executor` | `spark-execution-model-and-dag` | ⚠️ | Predict output: when cache() materializes |
 | 41037 | easy | `query-optimization` | `query-optimization` | `query-optimization` |  | Catalyst optimizer: predicate pushdown |
-| 41039 | easy | _orphan_ | — | `spark-basics` |  | F.expr(): SQL scope vs Python scope |
+| 41039 | easy | `spark-execution-model-and-dag` | `spark-execution-model-and-dag` | `spark-execution-model-and-dag` |  | F.expr(): SQL scope vs Python scope |
 | 41040 | easy | `spark-joins-and-skew` | `spark-joins-and-skew` | `spark-joins-and-skew` |  | Cross join: Cartesian product size |
-| 41041 | easy | _orphan_ | — | `spark-basics` |  | DataFrame vs Dataset[T]: Python type safety |
-| 42001 | medium | _orphan_ | — | `spark-basics` |  | AnalysisException on Column Access |
+| 41041 | easy | `spark-execution-model-and-dag` | `spark-execution-model-and-dag` | `spark-execution-model-and-dag` |  | DataFrame vs Dataset[T]: Python type safety |
+| 42001 | medium | `spark-schema-and-type-handling` | `spark-schema-and-type-handling` | `spark-schema-and-type-handling` |  | AnalysisException on Column Access |
 | 42002 | medium | `spark-performance` | `spark-performance` | `spark-performance` |  | repartition vs coalesce Tradeoffs |
 | 42003 | medium | `spark-performance` | `spark-performance` | `spark-performance` |  | How Many Output Partitions After groupBy? |
 | 42004 | medium | `spark-performance` | `spark-performance` | `spark-joins-and-skew` | ⚠️ | Broadcast Join for Small Dimension Tables |
-| 42005 | medium | _orphan_ | — | `spark-basics` |  | Output Schema of groupBy + agg |
-| 42006 | medium | `spark-performance` | `spark-performance` | `spark-performance` |  | Executor OutOfMemoryError Diagnosis |
+| 42005 | medium | `spark-schema-and-type-handling` | `spark-schema-and-type-handling` | `spark-schema-and-type-handling` |  | Output Schema of groupBy + agg |
+| 42006 | medium | `spark-performance` | `spark-performance` | `spark-memory-and-driver-executor` | ⚠️ | Executor OutOfMemoryError Diagnosis |
 | 42007 | medium | `pyspark-windowing` | `pyspark-windowing` | `pyspark-windowing` |  | RANK vs DENSE_RANK vs ROW_NUMBER |
 | 42008 | medium | `spark-joins-and-skew` | `spark-joins-and-skew` | `spark-joins-and-skew` |  | Broadcast Variable vs Accumulator |
-| 42009 | medium | _orphan_ | — | `spark-basics` |  | inferSchema in Production Pipelines |
-| 42010 | medium | _orphan_ | — | `spark-performance` |  | Kryo vs Java Serialization |
+| 42009 | medium | `spark-io-and-file-formats` | `spark-io-and-file-formats` | `spark-schema-and-type-handling` | ⚠️ | inferSchema in Production Pipelines |
+| 42010 | medium | _orphan_ | — | `spark-memory-and-driver-executor` |  | Kryo vs Java Serialization |
 | 42011 | medium | `spark-joins-and-skew` | `spark-joins-and-skew` | `spark-joins-and-skew` |  | Salting for Skewed Joins |
 | 42012 | medium | `delta-lake-patterns` | `delta-lake` | `spark-performance` | ⚠️ | Writing Partitioned Parquet Output |
 | 42013 | medium | `query-optimization` | `query-optimization` | `query-optimization` |  | AQE Auto-Broadcast Join Threshold |
@@ -1401,14 +1347,14 @@ the audit credits the question to. `Tag-suggested` = where tag-routing would pla
 | 42015 | medium | `query-optimization` | `query-optimization` | `query-optimization` |  | Predicate Pushdown in Parquet |
 | 42016 | medium | `streaming-fundamentals` | `streaming` | `streaming` |  | Structured Streaming vs Batch Processing |
 | 42017 | medium | `streaming-fundamentals` | `streaming` | `streaming` |  | foreachBatch vs foreach in Structured Streaming |
-| 42018 | medium | _orphan_ | — | `spark-basics` |  | Spark SQL vs DataFrame API Performance |
+| 42018 | medium | `spark-execution-model-and-dag` | `spark-execution-model-and-dag` | `spark-execution-model-and-dag` |  | Spark SQL vs DataFrame API Performance |
 | 42019 | medium | _orphan_ | — | `spark-performance` |  | Caching Strategy: When to Cache |
-| 42020 | medium | _orphan_ | — | `spark-basics` |  | Job vs Stage vs Task Hierarchy |
-| 42021 | medium | _orphan_ | — | `spark-basics` |  | Speculative Execution |
+| 42020 | medium | `spark-execution-model-and-dag` | `spark-execution-model-and-dag` | `spark-execution-model-and-dag` |  | Job vs Stage vs Task Hierarchy |
+| 42021 | medium | `spark-fault-tolerance-and-recovery` | `spark-fault-tolerance-and-recovery` | `spark-fault-tolerance-and-recovery` |  | Speculative Execution |
 | 42022 | medium | _orphan_ | — | `spark-performance` |  | mapPartitions vs map |
 | 42023 | medium | `spark-joins-and-skew` | `spark-joins-and-skew` | `spark-joins-and-skew` |  | Identifying Skewed Joins in Spark UI |
 | 42024 | medium | `query-optimization` | `query-optimization` | `spark-performance` | ⚠️ | Dynamic Partition Pruning |
-| 42025 | medium | _orphan_ | — | `spark-basics` |  | Driver OOM vs Executor OOM |
+| 42025 | medium | `spark-memory-and-driver-executor` | `spark-memory-and-driver-executor` | `spark-execution-model-and-dag` | ⚠️ | Driver OOM vs Executor OOM |
 | 42026 | medium | `delta-lake-patterns` | `delta-lake` | `delta-lake` |  | Delta Lake MERGE for upsert |
 | 42027 | medium | `delta-lake-patterns` | `delta-lake` | `delta-lake` |  | Delta Lake time travel recovery |
 | 42028 | medium | `streaming-fundamentals` | `streaming` | `streaming` |  | Structured Streaming output modes |
@@ -1420,33 +1366,33 @@ the audit credits the question to. `Tag-suggested` = where tag-routing would pla
 | 42034 | medium | `spark-joins-and-skew` | `spark-joins-and-skew` | `spark-joins-and-skew` |  | Debug: Ambiguous Column Reference After Join |
 | 42035 | medium | _orphan_ | — | `spark-performance` |  | Aggregation Job Suddenly 5× Slower After Data Growth |
 | 42036 | medium | _orphan_ | — | `spark-performance` |  | Delta MERGE Scanning the Entire Table |
-| 42037 | medium | _orphan_ | — | `spark-basics` |  | Debug: Streaming Schema Mismatch After Code Change |
+| 42037 | medium | `spark-execution-model-and-dag` | `spark-execution-model-and-dag` | `spark-execution-model-and-dag` |  | Debug: Streaming Schema Mismatch After Code Change |
 | 42038 | medium | `spark-joins-and-skew` | `spark-joins-and-skew` | `spark-joins-and-skew` |  | Straggler Task Holding Entire Stage Hostage |
-| 42049 | medium | _orphan_ | — | `spark-basics` |  | collect_list vs collect_set: ordering and deduplication guarantees |
+| 42049 | medium | `spark-collections-and-arrays` | `spark-collections-and-arrays` | `spark-collections-and-arrays` |  | collect_list vs collect_set: ordering and deduplication guarantees |
 | 42051 | medium | `spark-joins-and-skew` | `spark-joins-and-skew` | `spark-joins-and-skew` |  | One-to-Many Join: Predicting the Output Row Count |
 | 42052 | medium | `pyspark-windowing` | `pyspark-windowing` | `pyspark-windowing` |  | ROWS vs RANGE: Running Sum with Tied Salary Values |
-| 42053 | medium | _orphan_ | — | `spark-basics` |  | explode() Silently Drops Empty and Null Arrays |
+| 42053 | medium | `spark-collections-and-arrays` | `spark-collections-and-arrays` | `spark-collections-and-arrays` |  | explode() Silently Drops Empty and Null Arrays |
 | 42054 | medium | `spark-joins-and-skew` | `spark-joins-and-skew` | `spark-joins-and-skew` |  | Debug: Revenue Sum Double-Counts After a One-to-Many Join |
 | 42055 | medium | `pyspark-windowing` | `pyspark-windowing` | `pyspark-windowing` |  | RANK vs DENSE_RANK vs ROW_NUMBER with Salary Ties |
-| 42056 | medium | _orphan_ | — | `spark-basics` |  | collect_list: Is the Element Order Deterministic? |
+| 42056 | medium | `spark-collections-and-arrays` | `spark-collections-and-arrays` | `spark-collections-and-arrays` |  | collect_list: Is the Element Order Deterministic? |
 | 43001 | hard | `spark-performance` | `spark-performance` | `spark-joins-and-skew` | ⚠️ | Skewed Join Optimization with Salting |
-| 43002 | hard | _orphan_ | — | `spark-performance` |  | executor.memory vs memoryOverhead for Pandas UDFs |
+| 43002 | hard | _orphan_ | — | `spark-memory-and-driver-executor` |  | executor.memory vs memoryOverhead for Pandas UDFs |
 | 43003 | hard | `query-optimization` | `query-optimization` | `spark-performance` | ⚠️ | Dynamic Partition Pruning Activation Requirements |
 | 43004 | hard | `spark-performance` | `spark-performance` | `query-optimization` | ⚠️ | Three AQE Runtime Optimizations |
 | 43005 | hard | `query-optimization` | `query-optimization` | `query-optimization` |  | Identify the Bottleneck in an Explain Plan |
-| 43006 | hard | _orphan_ | — | `spark-basics` |  | collect() on a Large DataFrame |
+| 43006 | hard | `spark-memory-and-driver-executor` | `spark-memory-and-driver-executor` | `spark-execution-model-and-dag` | ⚠️ | collect() on a Large DataFrame |
 | 43007 | hard | _orphan_ | — | `spark-performance` |  | reduceByKey vs groupByKey Network Cost |
-| 43008 | hard | _orphan_ | — | `spark-basics` |  | Parquet vs CSV for Analytical Workloads |
+| 43008 | hard | `spark-io-and-file-formats` | `spark-io-and-file-formats` | `spark-io-and-file-formats` |  | Parquet vs CSV for Analytical Workloads |
 | 43009 | hard | `spark-joins-and-skew` | `spark-joins-and-skew` | `spark-joins-and-skew` |  | Diagnosing a Suddenly Slow Spark Job |
-| 43010 | hard | _orphan_ | — | `spark-basics` |  | Checkpoint vs Cache for Iterative ML Training |
-| 43011 | hard | _orphan_ | — | `spark-basics` |  | Tungsten Off-Heap Binary Format |
+| 43010 | hard | `spark-fault-tolerance-and-recovery` | `spark-fault-tolerance-and-recovery` | `spark-execution-model-and-dag` | ⚠️ | Checkpoint vs Cache for Iterative ML Training |
+| 43011 | hard | `spark-memory-and-driver-executor` | `spark-memory-and-driver-executor` | `spark-execution-model-and-dag` | ⚠️ | Tungsten Off-Heap Binary Format |
 | 43012 | hard | `delta-lake-patterns` | `delta-lake` | `delta-lake` |  | Z-Ordering in Delta Lake |
-| 43013 | hard | _orphan_ | — | `spark-performance` |  | Bloom Filters for High-Cardinality Joins |
+| 43013 | hard | _orphan_ | — | `spark-memory-and-driver-executor` |  | Bloom Filters for High-Cardinality Joins |
 | 43014 | hard | `query-optimization` | `query-optimization` | `query-optimization` |  | AQE Partition Coalescing: Predicting Output Count |
 | 43015 | hard | `streaming-fundamentals` | `streaming` | `streaming` |  | Stream–Stream Join Watermarks and Late Data |
 | 43016 | hard | `streaming-fundamentals` | `streaming` | `streaming` |  | mapGroupsWithState Memory Leak |
 | 43017 | hard | _orphan_ | — | `spark-performance` |  | Guaranteeing Co-location with repartition by Column |
-| 43018 | hard | `streaming-fundamentals` | `streaming` | `spark-basics` | ⚠️ | Structured Streaming Exactly-Once Semantics |
+| 43018 | hard | `streaming-fundamentals` | `streaming` | `spark-fault-tolerance-and-recovery` | ⚠️ | Structured Streaming Exactly-Once Semantics |
 | 43019 | hard | `delta-lake-patterns` | `delta-lake` | `delta-lake` |  | Delta Lake Write Amplification from Row-Level Updates |
 | 43020 | hard | `query-optimization` | `query-optimization` | `query-optimization` |  | AQE Runtime Join Strategy Switch |
 | 43021 | hard | `streaming-fundamentals` | `streaming` | `streaming` |  | Watermark and late data drop |
@@ -1454,34 +1400,34 @@ the audit credits the question to. `Tag-suggested` = where tag-routing would pla
 | 43023 | hard | _orphan_ | — | `spark-performance` |  | Dynamic Partition Pruning Absent on Left Join |
 | 43024 | hard | `spark-joins-and-skew` | `spark-joins-and-skew` | `spark-joins-and-skew` |  | Driver OOM During Broadcast Relation Construction |
 | 43025 | hard | `query-optimization` | `query-optimization` | `query-optimization` |  | AQE Over-coalescing Kills Downstream Join Parallelism |
-| 43026 | hard | _orphan_ | — | `spark-basics` |  | Speculative Execution Duplicates Non-Idempotent Sink Writes |
+| 43026 | hard | `spark-fault-tolerance-and-recovery` | `spark-fault-tolerance-and-recovery` | `spark-fault-tolerance-and-recovery` |  | Speculative Execution Duplicates Non-Idempotent Sink Writes |
 | 43037 | hard | `spark-joins-and-skew` | `spark-joins-and-skew` | `spark-joins-and-skew` |  | AQE Skew Join: How Many Tasks Process the Hot Partition? |
 | 43038 | hard | `spark-joins-and-skew` | `spark-joins-and-skew` | `spark-joins-and-skew` |  | Salted Join: What Does result.count() Return? |
 | 43039 | hard | `streaming-fundamentals` | `streaming` | `streaming` |  | Watermark Boundary: Which Incoming Events Are Dropped? |
 | 43040 | hard | `streaming-fundamentals` | `streaming` | `streaming` |  | foreachBatch Driver Crash Mid-Write: What Is in the Output on Restart? |
 | 43041 | hard | _orphan_ | — | `spark-performance` |  | Pandas UDF: Predicting Output for Null and Zero Inputs |
-| 43042 | hard | _orphan_ | — | `spark-basics` |  | Iterative PageRank Crashes with StackOverflowError During Planning |
+| 43042 | hard | `spark-execution-model-and-dag` | `spark-execution-model-and-dag` | `spark-execution-model-and-dag` |  | Iterative PageRank Crashes with StackOverflowError During Planning |
 | 43043 | hard | `streaming-fundamentals` | `streaming` | `streaming` |  | Streaming Windows Always Emitted One Full Trigger Cycle Late |
 | 43044 | hard | `delta-lake-patterns` | `delta-lake` | `delta-lake` |  | Delta MERGE Fails on Large Batch After Consumer Offset Reset |
 | 43045 | hard | `delta-lake-patterns` | `delta-lake` | `delta-lake` |  | MERGE Scans 798 of 800 Files After 30 Days of Good Pruning |
-| 43046 | hard | _orphan_ | — | `spark-performance` |  | 9× Slowdown After Halving Executor Memory Despite Identical Total RAM |
+| 43046 | hard | _orphan_ | — | `spark-memory-and-driver-executor` |  | 9× Slowdown After Halving Executor Memory Despite Identical Total RAM |
 | 43047 | hard | `spark-joins-and-skew` | `spark-joins-and-skew` | `spark-joins-and-skew` |  | Many-to-Many Join Fan-Out: Row Count and OOM Risk |
 | 43048 | hard | `pyspark-windowing` | `pyspark-windowing` | `pyspark-windowing` |  | rangeBetween with Numeric Interval: Which Rows Enter the Frame? |
-| 43049 | hard | _orphan_ | — | `spark-basics` |  | pivot() Missing Values: Null Propagation Through Arithmetic |
-| 43050 | hard | _orphan_ | — | `spark-joins-and-skew` |  | Fan-Out Inflation in a CTR Pipeline: Finding the Correct Fix |
+| 43049 | hard | `spark-collections-and-arrays` | `spark-collections-and-arrays` | `spark-collections-and-arrays` |  | pivot() Missing Values: Null Propagation Through Arithmetic |
+| 43050 | hard | `spark-joins-and-skew` | `spark-joins-and-skew` | `spark-joins-and-skew` |  | Fan-Out Inflation in a CTR Pipeline: Finding the Correct Fix |
 | 43051 | hard | `pyspark-windowing` | `pyspark-windowing` | `pyspark-windowing` |  | Debug: rangeBetween on Integer Dates Fails with Data Gaps |
-| 43052 | hard | _orphan_ | — | `spark-basics` |  | explode vs explode_outer: Which Preserves All Users in the Pipeline? |
+| 43052 | hard | `spark-collections-and-arrays` | `spark-collections-and-arrays` | `spark-collections-and-arrays` |  | explode vs explode_outer: Which Preserves All Users in the Pipeline? |
 
 ### data-engineering
 
 | QID | Diff | Live path | Attributed | Tag-suggested | Divergent? | Title |
 |---|---|---|---|---|---|---|
 | 51001 | easy | `pipeline-fundamentals` | `etl-elt` | `etl-elt` |  | ETL vs ELT: Two Pipeline Designs Compared |
-| 51002 | easy | _orphan_ | — | `etl-elt` |  | ELT: Why Load Raw Data First? |
-| 51003 | easy | _orphan_ | — | `etl-elt` |  | Choosing ETL vs ELT: Sensitive Data |
+| 51002 | easy | `pipeline-fundamentals` | `etl-elt` | `etl-elt` |  | ELT: Why Load Raw Data First? |
+| 51003 | easy | `pipeline-fundamentals` | `etl-elt` | `etl-elt` |  | Choosing ETL vs ELT: Sensitive Data |
 | 51004 | easy | `pipeline-fundamentals` | `etl-elt` | `etl-elt` |  | Idempotent Jobs: The Core Property |
-| 51005 | easy | _orphan_ | — | `etl-elt` |  | Making an Insert Idempotent |
-| 51006 | easy | _orphan_ | — | `etl-elt` |  | Idempotency and Partition Overwrite |
+| 51005 | easy | `pipeline-fundamentals` | `etl-elt` | `etl-elt` |  | Making an Insert Idempotent |
+| 51006 | easy | `pipeline-fundamentals` | `etl-elt` | `etl-elt` |  | Idempotency and Partition Overwrite |
 | 51007 | easy | `pipeline-fundamentals` | `orchestration` | `orchestration` |  | DAG Orchestration: Why Cycles Are Rejected |
 | 51008 | easy | `pipeline-fundamentals` | `orchestration` | `orchestration` |  | Task Dependencies in a DAG |
 | 51009 | easy | `pipeline-fundamentals` | `orchestration` | `orchestration` |  | Orchestration: Retry vs Backfill |
@@ -1497,8 +1443,8 @@ the audit credits the question to. `Tag-suggested` = where tag-routing would pla
 | 51019 | easy | _orphan_ | — | `cost-and-format-optimization` |  | Data Lake vs Data Warehouse |
 | 51020 | easy | _orphan_ | — | `cost-and-format-optimization` |  | Lakehouse Architecture |
 | 51021 | easy | `cost-and-format-optimization` | `cost-and-format-optimization` | `cost-and-format-optimization` |  | OLAP vs OLTP Storage |
-| 51022 | easy | _orphan_ | — | `etl-elt` |  | CDC: What Change Data Capture Detects |
-| 51023 | easy | _orphan_ | — | `etl-elt` |  | CDC: Log-Based vs Query-Based |
+| 51022 | easy | `pipeline-fundamentals` | `etl-elt` | `etl-elt` |  | CDC: What Change Data Capture Detects |
+| 51023 | easy | `pipeline-fundamentals` | `etl-elt` | `etl-elt` |  | CDC: Log-Based vs Query-Based |
 | 51024 | easy | `data-quality-and-incident-response` | `data-quality-and-incident-response` | `data-quality-and-incident-response` |  | Data Quality: Where to Place a Null Check |
 | 51025 | easy | `data-quality-and-incident-response` | `data-quality-and-incident-response` | `data-quality-and-incident-response` |  | Data Quality: Freshness Checks |
 | 51026 | easy | `schema-evolution` | `schema-evolution` | `schema-evolution` |  | Schema Evolution: Full Compatibility |
@@ -1529,13 +1475,13 @@ the audit credits the question to. `Tag-suggested` = where tag-routing would pla
 | 52021 | medium | `cost-and-format-optimization` | `cost-and-format-optimization` | `cost-and-format-optimization` |  | Data Skew in Partitioned Joins |
 | 52022 | medium | `cost-and-format-optimization` | `cost-and-format-optimization` | `cost-and-format-optimization` |  | Parquet vs Avro: Choosing a File Format |
 | 52023 | medium | `cost-and-format-optimization` | `cost-and-format-optimization` | `cost-and-format-optimization` |  | Compaction: Solving the Small File Problem |
-| 52024 | medium | _orphan_ | — | `etl-elt` |  | CDC: Handling DDL Changes |
+| 52024 | medium | `pipeline-fundamentals` | `etl-elt` | `etl-elt` |  | CDC: Handling DDL Changes |
 | 52025 | medium | `backfill-design` | `backfill-design` | `etl-elt` | ⚠️ | CDC: Initial Load Sequencing |
 | 52026 | medium | `lineage-and-observability` | `lineage-and-observability` | `lineage-and-observability` |  | Data Lineage: Column-Level Tracking |
 | 52027 | medium | `lineage-and-observability` | `lineage-and-observability` | `lineage-and-observability` |  | Observability: Freshness Monitoring |
 | 52028 | medium | `cost-and-format-optimization` | `cost-and-format-optimization` | `cost-and-format-optimization` |  | Cost Optimization: Format and Partition Impact |
 | 52029 | medium | `cost-and-format-optimization` | `cost-and-format-optimization` | `cost-and-format-optimization` |  | Cost Optimization: Tiered Storage |
-| 52030 | medium | _orphan_ | — | `etl-elt` |  | ELT Transformation Layers: Debugging a Wrong Metric |
+| 52030 | medium | `pipeline-fundamentals` | `etl-elt` | `etl-elt` |  | ELT Transformation Layers: Debugging a Wrong Metric |
 | 52031 | medium | `streaming-vs-batch` | `streaming-vs-batch` | `streaming-vs-batch` |  | Backpressure in a Streaming Pipeline |
 | 52032 | medium | _orphan_ | — | _unrouted_ |  | GDPR Erasure in an Immutable Data Lake: Crypto Shredding |
 | 52033 | medium | `schema-evolution` | `schema-evolution` | `schema-evolution` |  | Operationalizing Data Contracts: Schema Registry and CI Enforcement |
@@ -1651,8 +1597,8 @@ the audit credits the question to. `Tag-suggested` = where tag-routing would pla
 | 63022 | hard | `scd` | `scd` | `scd` |  | Bi-Temporal Queries: Correct Predicates for Both Time Axes |
 | 63023 | hard | _orphan_ | — | `hierarchies-and-multipath` |  | Cross-Hierarchy Reporting: Two Hierarchies in One Dimension |
 | 63024 | hard | `grain-definition` | `grain-definition` | `grain-definition` |  | Fact-to-Fact Join: Avoiding Fan-Out Row Multiplication |
-| 63032 | hard | _orphan_ | — | `scd` |  | Schema Evolution: Adding a Compliance Column to a Shared Dimension Under a Regulatory Deadline |
-| 63033 | hard | _orphan_ | — | `scd` |  | Schema Evolution Governance: Breaking-Change Strategy for a High-Fan-Out Shared Dimension |
+| 63032 | hard | `scd` | `scd` | `scd` |  | Schema Evolution: Adding a Compliance Column to a Shared Dimension Under a Regulatory Deadline |
+| 63033 | hard | `scd` | `scd` | `scd` |  | Schema Evolution Governance: Breaking-Change Strategy for a High-Fan-Out Shared Dimension |
 
 ### statistics
 
@@ -1718,7 +1664,7 @@ the audit credits the question to. `Tag-suggested` = where tag-routing would pla
 | 72027 | medium | `hypothesis-testing` | `hypothesis-testing` | `hypothesis-testing` |  | Selecting the Right Hypothesis Test |
 | 72028 | medium | `sampling-and-clt` | `sampling-and-clt` | `sampling-and-clt` |  | CLT Sampling Distribution Mean |
 | 72029 | medium | `distributions` | `distributions` | `distributions` |  | Log-Normal Distribution and Log Transformation |
-| 72030 | medium | _orphan_ | — | `distributions` |  | F-Statistic and ANOVA |
+| 72030 | medium | `distributions` | `distributions` | `distributions` |  | F-Statistic and ANOVA |
 | 72031 | medium | `hypothesis-testing` | `hypothesis-testing` | `errors-and-power` | ⚠️ | Sequential Testing and the Peeking Problem |
 | 72032 | medium | `descriptive-stats` | `descriptive-stats` | `descriptive-stats` |  | Metric Sensitivity — Mean vs Median Under Treatment |
 | 72033 | medium | `hypothesis-testing` | `hypothesis-testing` | `hypothesis-testing` |  | Guardrail Metric Violation |
@@ -1740,7 +1686,7 @@ the audit credits the question to. `Tag-suggested` = where tag-routing would pla
 | 73006 | hard | _orphan_ | — | `regression-and-correlation` |  | R-Squared Interpretation |
 | 73007 | hard | _orphan_ | — | `regression-and-correlation` |  | Computing R-Squared |
 | 73008 | hard | _orphan_ | — | `regression-and-correlation` |  | Bias-Variance Tradeoff |
-| 73009 | hard | _orphan_ | — | `distributions` |  | Chi-Squared Test Statistic |
+| 73009 | hard | `distributions` | `distributions` | `distributions` |  | Chi-Squared Test Statistic |
 | 73010 | hard | `errors-and-power` | `errors-and-power` | `errors-and-power` |  | Multiple Comparisons — FWER |
 | 73011 | hard | `errors-and-power` | `errors-and-power` | `errors-and-power` |  | Power Analysis — Effect Size |
 | 73012 | hard | _orphan_ | — | `variance-and-anova` |  | Variance Decomposition — ANOVA Logic |
@@ -1750,7 +1696,7 @@ the audit credits the question to. `Tag-suggested` = where tag-routing would pla
 | 73016 | hard | `confidence-intervals` | `confidence-intervals` | `confidence-intervals` |  | Method of Moments for Normal Distribution |
 | 73017 | hard | _orphan_ | — | `variance-and-anova` |  | ANOVA F-Statistic |
 | 73018 | hard | _orphan_ | — | `regression-and-correlation` |  | Regression — Bias-Variance Decomposition |
-| 73019 | hard | _orphan_ | — | `distributions` |  | Chi-Squared Test of Independence |
+| 73019 | hard | `distributions` | `distributions` | `distributions` |  | Chi-Squared Test of Independence |
 | 73020 | hard | `bayesian-reasoning` | `bayesian-reasoning` | `bayesian-reasoning` |  | Posterior Update with Conjugate Prior |
 | 73021 | hard | `bayesian-reasoning` | `bayesian-reasoning` | `bayesian-reasoning` |  | Posterior Mean Computation |
 | 73022 | hard | `errors-and-power` | `errors-and-power` | `errors-and-power` |  | Bonferroni Correction Power Loss |
@@ -1792,7 +1738,7 @@ the audit credits the question to. `Tag-suggested` = where tag-routing would pla
 | 81027 | easy | `ml-starter` | `supervised-unsupervised` | `feature-engineering` | ⚠️ | Feature Scaling: SVM and Neural Networks |
 | 81028 | easy | `cross-validation` | `cross-validation` | `cross-validation` |  | Cross-Validation: Correct Usage with Test Set |
 | 81029 | easy | `metrics` | `metrics` | `metrics` |  | Classification Metrics: F1 Score |
-| 81030 | easy | _orphan_ | — | `regularization` |  | Regularisation: Effect on Model Complexity |
+| 81030 | easy | `ml-advanced-methods` | `regularization` | `regularization` |  | Regularisation: Effect on Model Complexity |
 | 82001 | medium | `ml-starter` | `bias-variance` | `bias-variance` |  | Bias-Variance Tradeoff as a Complexity Dial |
 | 82002 | medium | `ml-starter` | `bias-variance` | `bias-variance` |  | Choosing the Right Intervention from a Learning Curve |
 | 82003 | medium | `ml-advanced-methods` | `ensembles` | `ensembles` |  | Ensemble Strategy: Bagging vs Boosting |

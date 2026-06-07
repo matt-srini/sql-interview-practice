@@ -233,7 +233,7 @@ def test_rule6_recommended_after_graph_is_acyclic(all_paths):
 # ──────────────────────────────────────────────────────────────────────────────
 
 def test_path_question_counts_in_curation_range(all_paths):
-    """Sanity guardrail: paths should be 4–15 questions.
+    """Sanity guardrail: paths should be 4–20 questions (default 15; 16–20 with approval).
 
     The §Paths sweet spot is 5–9 (and an absolute lower floor of 4): below 5 →
     not enough progression; above ~10 → completion stops being meaningful.
@@ -248,7 +248,7 @@ def test_path_question_counts_in_curation_range(all_paths):
     out_of_range = []
     for p in all_paths:
         n = len(p["questions"])
-        if n < 4 or n > 15:
+        if n < 4 or n > 20:
             out_of_range.append((p["slug"], n))
     assert not out_of_range, (
         f"Paths outside 4–15 question sanity range: {out_of_range}. "

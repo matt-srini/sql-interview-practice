@@ -5,16 +5,24 @@
   "topic": "data-engineering",
   "questions": [
     51001,
+    51002,
+    51003,
     51004,
+    51005,
+    51006,
     51007,
     51008,
     51009,
     51010,
     51013,
     51016,
+    51022,
+    51023,
     52014,
     52015,
-    52017
+    52017,
+    52024,
+    52030
   ],
   "tier": "free",
   "level": "foundational",
@@ -29,7 +37,8 @@
     "BATCH VS STREAMING",
     "PARTITIONING & PRUNING",
     "SCD OPERATIONS",
-    "SCHEDULING & SLAS"
+    "SCHEDULING & SLAS",
+    "CDC & INGESTION"
   ],
   "outcomes": "You will be able to explain the ETL/ELT distinction, design idempotent jobs, describe DAG execution, and choose between batch and streaming for common scenarios.",
   "recommended_after": []
