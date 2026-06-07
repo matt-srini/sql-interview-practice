@@ -563,7 +563,7 @@
     "options": [
       "`distinct()` is significantly faster than `dropDuplicates()` in all cases",
       "`distinct()` removes rows that contain any NULL value",
-      "`df.distinct()` always considers all columns; `df.dropDuplicates(subset=[...])` lets you specify a subset of columns to consider — without a subset argument the two are equivalent",
+      "Both deduplicate rows; `dropDuplicates()` also accepts a column subset",
       "`dropDuplicates()` is deprecated in Spark 3.x and should be avoided"
     ],
     "correct_option": 2,
@@ -672,7 +672,7 @@
     "options": [
       "The JSON file is corrupted — the records should be re-exported from the source system",
       "Spark read.json does not support the curly-brace format — the files must be converted to CSV first",
-      "By default, Spark's JSON reader expects one JSON object per line; pretty-printed records span multiple lines, so each line is parsed as a separate incomplete object. Fix: add .option('multiLine', True)",
+      "Spark's JSON reader is line-oriented; each line is parsed separately. Fix: .option('multiLine', True)",
       "The schema inference failed because the file is too small — add inferSchema=True to force type detection"
     ],
     "correct_option": 2,
@@ -751,7 +751,7 @@
     "options": [
       "Checkpoint caches the DataFrame in executor memory, equivalent to calling `.cache()`",
       "Checkpoint saves the result to the Spark Driver so it can be reused across multiple jobs",
-      "Checkpoint truncates the RDD lineage by saving the current result to reliable distributed storage — the plan is restarted from that point, preventing StackOverflow errors in deeply nested DAGs",
+      "Checkpoint materializes results to distributed storage and breaks the lineage",
       "Checkpoint compresses the DataFrame before writing it to output storage"
     ],
     "correct_option": 2,
@@ -909,7 +909,7 @@
     "code_snippet": "from pyspark.sql.functions import udf\nfrom pyspark.sql.types import IntegerType\n\n@udf(returnType=IntegerType())\ndef name_length(name):\n    return str(len(name))  # returns string!\n\nresult = df.withColumn('length', name_length('name'))\nresult.show()",
     "options": [
       "The `@udf` decorator validates the return type at decoration time; change `returnType=IntegerType()` to `returnType=StringType()` to match what the function returns",
-      "The UDF's `returnType` is a contract with Spark's JVM serializer; returning `str` when `IntegerType` is declared bypasses safe conversion and produces nulls or serialization errors — fix by returning `len(name)` (a Python `int`) instead of `str(len(name))`",
+      "The UDF's `returnType` is a JVM serializer contract; returning `str` when `IntegerType` is declared produces nulls — fix: return `len(name)`, not `str(len(name))`",
       "Spark automatically coerces the Python string return value to int using the declared `returnType` — no fix is needed",
       "Python UDFs cannot be registered with scalar types like `IntegerType()`; wrap the return in a single-element list and use `ArrayType(IntegerType())` instead"
     ],
