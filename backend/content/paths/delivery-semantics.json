@@ -1,0 +1,36 @@
+{
+  "slug": "delivery-semantics",
+  "title": "Delivery Semantics",
+  "description": "Master the at-least-once vs at-most-once vs exactly-once decisions that decide whether your pipeline silently loses or duplicates data: watermarks, producer-side EO, consumer-side state, fan-out sinks, and CDC watermark tuning for late events.",
+  "topic": "data-engineering",
+  "questions": [
+    51028,
+    51029,
+    52007,
+    52008,
+    52009,
+    52012,
+    52013,
+    53001,
+    53002,
+    53003,
+    53004,
+    53016,
+    53017,
+    53025
+  ],
+  "tier": "pro",
+  "level": "intermediate",
+  "patterns": [
+    "delivery-semantics"
+  ],
+  "focus_concepts": [
+    "DELIVERY SEMANTICS",
+    "WATERMARKING",
+    "IDEMPOTENCY"
+  ],
+  "outcomes": "You'll choose the right delivery guarantee for the failure mode, design producer-side exactly-once that survives transactional boundaries, tune watermarks for out-of-order event storms and multi-source joins, and prevent silent CDC drops.",
+  "recommended_after": [
+    "pipeline-fundamentals"
+  ]
+}

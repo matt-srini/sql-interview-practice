@@ -1,0 +1,32 @@
+{
+  "slug": "joins-and-merges",
+  "title": "DataFrame Joins & Merges",
+  "description": "Master multi-DataFrame entity linking in Pandas: inner/left/outer merges, three-table joins, fan-out detection, and the double-counting gotchas that silently inflate revenue when joins multiply rows.",
+  "topic": "python-data",
+  "questions": [
+    32001,
+    32002,
+    32004,
+    32011,
+    32018,
+    32020,
+    32024,
+    32042,
+    32050,
+    32051,
+    33008
+  ],
+  "tier": "free",
+  "level": "intermediate",
+  "patterns": [
+    "joins"
+  ],
+  "focus_concepts": [
+    "MULTI-DATAFRAME ENTITY LINKING",
+    "DOUBLE-COUNTING DETECTION"
+  ],
+  "outcomes": "You'll choose the right merge type from the question shape, detect and fix fan-out double-counting, design three-table joins without losing rows, and reason about merge keys when entities don't line up cleanly.",
+  "recommended_after": [
+    "groupby"
+  ]
+}

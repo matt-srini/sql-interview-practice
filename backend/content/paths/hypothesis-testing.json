@@ -1,0 +1,27 @@
+{
+  "slug": "hypothesis-testing",
+  "title": "Hypothesis Testing",
+  "description": "Apply the hypothesis-testing reasoning every experimentation interview probes: A/B test sample sizing, t vs z choice, statistical power, sequential testing and the peeking problem, and guardrail-metric violations.",
+  "topic": "statistics",
+  "questions": [
+    72008,
+    72010,
+    72014,
+    72031,
+    72033
+  ],
+  "tier": "pro",
+  "level": "intermediate",
+  "patterns": [
+    "hypothesis-testing"
+  ],
+  "focus_concepts": [
+    "hypothesis testing",
+    "errors & power",
+    "experimental design (within stats)"
+  ],
+  "outcomes": "You'll size A/B tests for a target MDE, choose between t and z distributions correctly, reason about statistical power and Type I/II error trade-offs, recognise sequential testing peeking, and detect guardrail-metric violations.",
+  "recommended_after": [
+    "distributions"
+  ]
+}

@@ -233,25 +233,24 @@ def test_rule6_recommended_after_graph_is_acyclic(all_paths):
 # ──────────────────────────────────────────────────────────────────────────────
 
 def test_path_question_counts_in_curation_range(all_paths):
-    """Sanity guardrail: paths should be 4–30 questions.
+    """Sanity guardrail: paths should be 4–15 questions.
 
     The §Paths sweet spot is 5–9 (and an absolute lower floor of 4): below 5 →
     not enough progression; above ~10 → completion stops being meaningful.
 
-    The upper bound is currently 30, deliberately loose, to accommodate paths
-    that grew via orphan recruitment (Pass 2 batch, 2026-XX). Paths >15 are
-    flagged for stage-2 splitting in docs/phases/learning-paths-tracker.md
-    §B; once split, this upper bound tightens back to 15.
+    The upper bound is 15. Paths that grew beyond this during orphan recruitment
+    have been split (B5 splits, 2026-06). Any path exceeding 15 questions is a
+    candidate for further splitting.
 
-    This test catches only egregious violations (1–3 or 31+). The 5–9 sweet
+    This test catches only egregious violations (1–3 or 16+). The 5–9 sweet
     spot is enforced by author judgment, not by the validator.
     """
     out_of_range = []
     for p in all_paths:
         n = len(p["questions"])
-        if n < 4 or n > 30:
+        if n < 4 or n > 15:
             out_of_range.append((p["slug"], n))
     assert not out_of_range, (
-        f"Paths outside 4–30 question sanity range: {out_of_range}. "
+        f"Paths outside 4–15 question sanity range: {out_of_range}. "
         f"See docs/content-authoring.md §Paths."
     )

@@ -26,6 +26,6 @@
   ],
   "outcomes": "You'll design a dbt project layer structure from staging through marts, choose between view, table, and incremental materializations based on query patterns and freshness requirements, select an incremental merge strategy for late-arriving event data with backfill constraints, and decide when a wide one-big-table outperforms a normalized star schema for BI tools or ML feature generation.",
   "recommended_after": [
-    "dimensional-modeling-deep-dive"
+    "star-snowflake"
   ]
 }

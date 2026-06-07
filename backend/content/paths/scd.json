@@ -1,0 +1,38 @@
+{
+  "slug": "scd",
+  "title": "Slowly Changing Dimensions",
+  "description": "Master the SCD type choices that every dimensional-modeling interview probes: Type 1 vs 2 vs 3 vs 6, performance-vs-storage trade-offs, conformed vs role-playing dimensions, and bi-temporal modeling under regulatory deadlines.",
+  "topic": "data-modeling",
+  "questions": [
+    61013,
+    61014,
+    61015,
+    61023,
+    62002,
+    62003,
+    62010,
+    62011,
+    62012,
+    62024,
+    62035,
+    63002,
+    63011,
+    63016,
+    63022
+  ],
+  "tier": "pro",
+  "level": "intermediate",
+  "patterns": [
+    "scd"
+  ],
+  "focus_concepts": [
+    "SCD STRUCTURE",
+    "DIMENSION DESIGN",
+    "SCHEMA EVOLUTION",
+    "BI-TEMPORAL MODELING"
+  ],
+  "outcomes": "You'll pick the right SCD type for the business question, design conformed and role-playing dimensions correctly, reason about junk/degenerate dimensions, handle schema evolution on shared dimensions under deadline pressure, and write bi-temporal queries with both time axes.",
+  "recommended_after": [
+    "star-snowflake"
+  ]
+}

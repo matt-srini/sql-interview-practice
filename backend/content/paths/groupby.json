@@ -1,0 +1,37 @@
+{
+  "slug": "groupby",
+  "title": "GroupBy Aggregation",
+  "description": "Master the GroupBy patterns every Pandas analyst reaches for: aggregation, transform-vs-aggregate, named aggregation, multi-level grouping, pipeline composition, and the subtle pitfalls of group-then-rank.",
+  "topic": "python-data",
+  "questions": [
+    31002,
+    31005,
+    31011,
+    31013,
+    31014,
+    31015,
+    31027,
+    32008,
+    32021,
+    32025,
+    32029,
+    32045,
+    32049,
+    33004,
+    33007
+  ],
+  "tier": "free",
+  "level": "intermediate",
+  "patterns": [
+    "groupby"
+  ],
+  "focus_concepts": [
+    "GROUPED AGGREGATION",
+    "TRANSFORM VS AGGREGATE",
+    "METHOD CHAINING & PIPELINE STYLE"
+  ],
+  "outcomes": "You'll choose between aggregate and transform fluently, name aggregations clearly with .agg, group-then-rank without breaking the index, and compose multi-step grouping pipelines with .pipe.",
+  "recommended_after": [
+    "dataframe-fundamentals"
+  ]
+}

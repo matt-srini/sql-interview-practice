@@ -1,0 +1,28 @@
+{
+  "slug": "cross-validation",
+  "title": "Cross-Validation",
+  "description": "Master the cross-validation choices that decide whether your evaluation is honest: stratified k-fold for imbalanced data, group k-fold for grouped observations, time-series split for temporal data, and the leakage gotchas that invalidate CV silently.",
+  "topic": "ml-fundamentals",
+  "questions": [
+    81006,
+    81010,
+    81022,
+    81028,
+    82032,
+    82027,
+    82033
+  ],
+  "tier": "free",
+  "level": "intermediate",
+  "patterns": [
+    "cross-validation"
+  ],
+  "focus_concepts": [
+    "CROSS-VALIDATION DESIGN",
+    "DATA SPLITTING STRATEGY"
+  ],
+  "outcomes": "You'll pick between standard k-fold, stratified k-fold, group k-fold, and time-series split based on the data's structure, and avoid the splits that silently leak target signal across folds.",
+  "recommended_after": [
+    "ml-starter"
+  ]
+}

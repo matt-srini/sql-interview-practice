@@ -1,0 +1,26 @@
+{
+  "slug": "star-snowflake",
+  "title": "Star & Snowflake Schemas",
+  "description": "Build the foundational mental model for data-warehouse schema design: star vs snowflake trade-offs, OLTP vs OLAP optimization goals, identifying facts vs dimensions, and choosing between lake/warehouse/lakehouse for mixed ML+BI workloads.",
+  "topic": "data-modeling",
+  "questions": [
+    61001,
+    61002,
+    61003,
+    61020,
+    61025,
+    63010
+  ],
+  "tier": "free",
+  "level": "foundational",
+  "patterns": [
+    "star-snowflake"
+  ],
+  "focus_concepts": [
+    "DIMENSIONAL MODELING",
+    "DENORMALIZATION TRADEOFF",
+    "NORMALIZATION"
+  ],
+  "outcomes": "You'll distinguish star from snowflake schemas on storage + join trade-offs, identify facts vs dimensions from a business description, and pick the right storage architecture (lake/warehouse/lakehouse) for ML + BI workloads.",
+  "recommended_after": []
+}

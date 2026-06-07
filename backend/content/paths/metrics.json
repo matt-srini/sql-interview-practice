@@ -1,0 +1,33 @@
+{
+  "slug": "metrics",
+  "title": "Model Metrics",
+  "description": "Master the metric choices that decide whether your model gets the right thing right: precision vs recall for imbalanced fraud, F1 for multi-class, ROC-AUC interpretation, MSE vs MAE for skewed regression, and model calibration when high AUC isn't enough.",
+  "topic": "ml-fundamentals",
+  "questions": [
+    81011,
+    81012,
+    81014,
+    81023,
+    81029,
+    82016,
+    82020,
+    82021,
+    83016,
+    83025
+  ],
+  "tier": "free",
+  "level": "intermediate",
+  "patterns": [
+    "metrics"
+  ],
+  "focus_concepts": [
+    "CLASSIFICATION METRICS",
+    "REGRESSION METRICS",
+    "MODEL CALIBRATION",
+    "LOSS FUNCTION SELECTION"
+  ],
+  "outcomes": "You'll pick precision/recall/F1/ROC-AUC for the right scenario, choose between MSE and MAE based on outlier behavior, recognise when a high-AUC model is still mis-calibrated and apply Platt scaling, and debug regression models with heteroscedastic residuals.",
+  "recommended_after": [
+    "ml-starter"
+  ]
+}

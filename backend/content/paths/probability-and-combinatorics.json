@@ -6,6 +6,7 @@
   "questions": [
     71006,
     71007,
+    71008,
     71009,
     71010,
     71011,
@@ -27,6 +28,6 @@
   ],
   "outcomes": "You'll reason fluently about conditional probability and independence, compute expected value for real scenarios, distinguish combinations from permutations, and ground sample-space counting in the right combinatorial primitives.",
   "recommended_after": [
-    "stats-for-analysts"
+    "descriptive-stats"
   ]
 }

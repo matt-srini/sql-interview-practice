@@ -1,0 +1,29 @@
+{
+  "slug": "confidence-intervals",
+  "title": "Confidence Intervals & Estimation",
+  "description": "Construct and interpret confidence intervals correctly \u2014 frequentist coverage, sample-size sensitivity, MLE and method-of-moments estimation, bootstrap CIs, and the trade-offs between bootstrap and parametric methods.",
+  "topic": "statistics",
+  "questions": [
+    72003,
+    72004,
+    72019,
+    73003,
+    73004,
+    73005,
+    73013,
+    73016,
+    73024
+  ],
+  "tier": "pro",
+  "level": "intermediate",
+  "patterns": [
+    "confidence-intervals"
+  ],
+  "focus_concepts": [
+    "confidence intervals & estimation"
+  ],
+  "outcomes": "You'll construct and interpret 95% confidence intervals, derive MLE for Bernoulli and exponential parameters, apply method-of-moments estimation, build bootstrap percentile CIs, and reason about when bootstrap beats parametric CI.",
+  "recommended_after": [
+    "distributions"
+  ]
+}

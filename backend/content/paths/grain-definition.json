@@ -1,0 +1,30 @@
+{
+  "slug": "grain-definition",
+  "title": "Grain Definition",
+  "description": "Build the discipline that prevents the silent fan-out, mixed-granularity, and accumulating-snapshot bugs that haunt every dimensional model: choose the right grain for transaction, snapshot, and accumulating fact tables, and translate ambiguous business requirements into a single declared grain.",
+  "topic": "data-modeling",
+  "questions": [
+    61016,
+    61017,
+    62001,
+    62009,
+    62020,
+    62021,
+    63003,
+    63024
+  ],
+  "tier": "pro",
+  "level": "intermediate",
+  "patterns": [
+    "grain-definition"
+  ],
+  "focus_concepts": [
+    "GRAIN DEFINITION",
+    "FACT TABLE DESIGN",
+    "SCHEMA FROM REQUIREMENTS"
+  ],
+  "outcomes": "You'll declare grain explicitly on every fact table, distinguish transaction from periodic-snapshot from accumulating-snapshot grain, avoid fact-to-fact fan-out, and translate ambiguous funnel/subscription requirements into a single defensible grain.",
+  "recommended_after": [
+    "fact-table-design"
+  ]
+}

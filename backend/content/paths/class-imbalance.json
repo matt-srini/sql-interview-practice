@@ -7,6 +7,7 @@
     81021,
     82006,
     82007,
+    82008,
     82017,
     82035,
     83008
@@ -22,6 +23,6 @@
   ],
   "outcomes": "You'll recognise where class imbalance silently invalidates accuracy, choose between SMOTE, class weights, and threshold tuning based on the production cost structure, and pick evaluation metrics that survive multi-class imbalance without misleading reporting.",
   "recommended_after": [
-    "ml-model-evaluation"
+    "metrics"
   ]
 }

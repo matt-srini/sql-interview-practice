@@ -1,0 +1,35 @@
+{
+  "slug": "distributions",
+  "title": "Probability Distributions",
+  "description": "Master the distributions every data role interview probes: Bernoulli, binomial, Poisson, normal (68-95-99.7), uniform, geometric, log-normal, F-statistic, and chi-squared tests of independence.",
+  "topic": "statistics",
+  "questions": [
+    71012,
+    71013,
+    71014,
+    71015,
+    71016,
+    71017,
+    71026,
+    71028,
+    71030,
+    71031,
+    72016,
+    72020,
+    72021,
+    72026,
+    72029
+  ],
+  "tier": "free",
+  "level": "intermediate",
+  "patterns": [
+    "distributions"
+  ],
+  "focus_concepts": [
+    "distributions"
+  ],
+  "outcomes": "You'll pick the right distribution for a discrete or continuous scenario, compute Bernoulli/Binomial/Poisson probabilities, reason about normal-distribution z-scores and the 68-95-99.7 rule, and apply chi-squared tests of independence.",
+  "recommended_after": [
+    "descriptive-stats"
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "slug": "descriptive-stats",
+  "title": "Descriptive Statistics",
+  "description": "Build the descriptive-stats foundation every data role assumes: mean vs median under skew, standard deviation reasoning, interquartile range, and the basic shape of a sample.",
+  "topic": "statistics",
+  "questions": [
+    71001,
+    71002,
+    71003,
+    71004,
+    71005
+  ],
+  "tier": "free",
+  "level": "foundational",
+  "patterns": [
+    "descriptive-stats"
+  ],
+  "focus_concepts": [
+    "descriptive statistics"
+  ],
+  "outcomes": "You'll choose between mean and median based on distribution shape, compute and interpret standard deviation and IQR, and describe a sample's central tendency and spread clearly.",
+  "recommended_after": []
+}

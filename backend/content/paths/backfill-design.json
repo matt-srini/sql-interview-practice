@@ -1,0 +1,28 @@
+{
+  "slug": "backfill-design",
+  "title": "Backfill Design",
+  "description": "Design backfills that survive late-arriving dimensions, partition-aware reruns, and idempotency requirements without corrupting downstream consumers.",
+  "topic": "data-engineering",
+  "questions": [
+    51009,
+    52018,
+    52019,
+    52025,
+    52035,
+    53011
+  ],
+  "tier": "pro",
+  "level": "intermediate",
+  "patterns": [
+    "backfill-design"
+  ],
+  "focus_concepts": [
+    "BACKFILL DESIGN",
+    "IDEMPOTENCY",
+    "SCD OPERATIONS"
+  ],
+  "outcomes": "You'll design partition-aware backfills, make jobs backfill-safe through idempotency, and reason about SCD Type 2 behavior under late-arriving dimension changes.",
+  "recommended_after": [
+    "pipeline-fundamentals"
+  ]
+}

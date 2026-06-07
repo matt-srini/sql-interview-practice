@@ -30,6 +30,6 @@
   ],
   "outcomes": "You'll identify temporal, preprocessing, and feature-level leakage in ML pipelines, diagnose training-serving skew from divergent feature computation, interpret PSI-based drift alerts and distinguish covariate shift from concept drift, apply post-hoc calibration to fix probability miscalibration in production, and select between ANN retrieval, model distillation, and GPU batching given a hard latency SLA.",
   "recommended_after": [
-    "ml-model-evaluation"
+    "metrics"
   ]
 }

@@ -1,0 +1,25 @@
+{
+  "slug": "bridge-tables",
+  "title": "Bridge Tables & Many-to-Many",
+  "description": "Resolve the many-to-many dimensional modeling problems where a simple star schema breaks: student-course, multi-valued promotions, weighting-factor edge cases, and bridge-table designs that preserve correct aggregation.",
+  "topic": "data-modeling",
+  "questions": [
+    62004,
+    62005,
+    62028,
+    63008
+  ],
+  "tier": "pro",
+  "level": "intermediate",
+  "patterns": [
+    "bridge-tables"
+  ],
+  "focus_concepts": [
+    "BRIDGE & MANY-TO-MANY",
+    "DIMENSION DESIGN"
+  ],
+  "outcomes": "You'll design bridge tables that resolve student-course-style many-to-many relationships without distorting aggregations, apply weighting-factor patterns for multi-valued dimensions, and recognise when a bridge is the right tool vs an outrigger or junk dimension.",
+  "recommended_after": [
+    "star-snowflake"
+  ]
+}

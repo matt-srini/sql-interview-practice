@@ -1,0 +1,30 @@
+{
+  "slug": "schema-evolution",
+  "title": "Schema Evolution",
+  "description": "Survive the schema changes that production pipelines accumulate: backward/forward compatibility, schema-registry CI enforcement, breaking changes with active consumers, and columnar-storage merge gotchas across Parquet sources.",
+  "topic": "data-engineering",
+  "questions": [
+    51026,
+    51027,
+    52001,
+    52002,
+    52033,
+    52034,
+    53012,
+    53013,
+    53027
+  ],
+  "tier": "pro",
+  "level": "intermediate",
+  "patterns": [
+    "schema-evolution"
+  ],
+  "focus_concepts": [
+    "SCHEMA EVOLUTION",
+    "DATA CONTRACT"
+  ],
+  "outcomes": "You'll reason about backward vs forward compatibility under live consumers, operationalise data contracts via schema-registry CI, contain breaking-change rollouts, and resolve Parquet schema-merge upcasting issues without losing data.",
+  "recommended_after": [
+    "pipeline-fundamentals"
+  ]
+}

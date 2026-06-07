@@ -22,6 +22,6 @@
   ],
   "outcomes": "You'll pivot, melt, stack, and unstack DataFrames to reshape data from long to wide form and back.",
   "recommended_after": [
-    "groupby-and-joins"
+    "groupby"
   ]
 }

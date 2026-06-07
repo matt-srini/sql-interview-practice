@@ -1,0 +1,29 @@
+{
+  "slug": "fact-table-design",
+  "title": "Fact Table Design",
+  "description": "Master the fact-table type choices that decide how the rest of the warehouse must be queried: transaction, periodic snapshot, accumulating snapshot, semi-additive facts, and multi-currency requirements that drive the model.",
+  "topic": "data-modeling",
+  "questions": [
+    61007,
+    61008,
+    61009,
+    62019,
+    62023,
+    62027,
+    63020
+  ],
+  "tier": "free",
+  "level": "intermediate",
+  "patterns": [
+    "fact-table-design"
+  ],
+  "focus_concepts": [
+    "FACT TABLE DESIGN",
+    "SCHEMA FROM REQUIREMENTS",
+    "ADDITIVE VS NON-ADDITIVE"
+  ],
+  "outcomes": "You'll pick the right fact-table type from the business event shape, distinguish additive from semi-additive measures (and avoid double-counting account balances), and translate healthcare-event-style requirements into a defensible fact-table design.",
+  "recommended_after": [
+    "star-snowflake"
+  ]
+}
