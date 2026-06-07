@@ -549,6 +549,32 @@ A path's pattern is usually one slug (a focused mastery walk); some paths legiti
 
 **Planned evolution to 1:1 mapping:** the current `patterns[]` array is a transitional shape. The committed direction is a **1 pattern → 1 path** model in which each question carries a single `pattern` tag and path `questions[]` is auto-derived from the catalog. Migration tracked in [`docs/phases/learning-paths-tracker.md`](./phases/learning-paths-tracker.md) §B (B1–B7). Until that lands, paths may declare multiple patterns when the content genuinely spans them.
 
+#### Parallel-systems design (locked 2026-XX)
+
+Pattern-paths and concept-families are **two separate taxonomies** that serve two non-overlapping surfaces. They do not bridge:
+
+| Axis | Drives | Surfaces |
+|---|---|---|
+| **Patterns** | Practitioner subject-matter mastery | Practice (learning paths only) |
+| **Concept families** | Reasoning diagnostic | Mock (`focus_concepts` filter) + Dashboard (weak-concept detection + recommended-path lookup) |
+
+There is no Practice→Path→Mock loop. There is no `pattern` filter on mock. There is no concept-family field on patterns. The closest thing to a bridge is the dashboard's "weak concept → recommended path" recommendation, which only works because every path declares `focus_concepts` *in addition to* `patterns` — and that link is concept-family driven, not pattern driven.
+
+#### Question-to-pattern routing (locked 2026-XX)
+
+Every practice question routes to exactly one pattern-path (or `null` if no pattern fits). The routing rule:
+
+1. **Strict 1:1.** A question belongs to *exactly one* pattern-path. Never two. If a question's tags span multiple candidate patterns, apply the tie-breaker below.
+2. **Route by objective, not by construct.** Inspect the question's concept-family tags. Map each family to its canonical pattern via the per-track routing table (see `scripts/audit_pattern_coverage.py::ROUTING`). The pattern that matches the question's *primary objective* wins.
+3. **Analytical wins.** When a question's tags span both an analytical pattern (e.g., `cohort-and-retention`, `funnel-and-event-analysis`, `feature-engineering`) and a construct pattern (e.g., `window-functions`, `aggregation`, `cross-validation`), the analytical pattern wins. Rationale: "Monthly cohort retention" *uses* window functions but its *objective* is cohort analysis. The construct is the tool; the analytical pattern is the lesson.
+4. **Mock-only is excluded.** Pattern-paths contain *only* practice questions. Mock-only questions (`mock_only: true`) are never in any pattern-path. They live in the mock pool, indexed by concept-family.
+5. **Realism families never route.** Mock-only realism families (`DATA QUALITY SKEPTICISM`, `DOUBLE-COUNTING DETECTION`, `METRIC INTERPRETATION & DENOMINATOR CHOICE`, `OUTPUT SANITY VALIDATION`, `PERFORMANCE-AWARE ANALYTICS`) are co-tags only, never primary. They do not influence routing.
+6. **Cross-cutting families may route to `None`.** Some families (`NULL HANDLING & COALESCE`, `RESULT SHAPING & ORDERING`, `GREEDY CHOICE`) are intentionally cross-cutting — they appear on many questions but rarely as the *objective*. Questions tagged only with these stay unrouted (catalog-only).
+
+**Easy → hard ordering.** Within each pattern-path's `questions[]`, the order is deterministic: difficulty (`easy < medium < hard`) then question ID. Authors do not hand-order; the loader sorts.
+
+**Where this is exercised.** `scripts/audit_pattern_coverage.py` is the canonical implementation. It walks the catalog, applies the routing rule end-to-end, and emits [`docs/phases/pattern-coverage-audit.md`](./phases/pattern-coverage-audit.md). Re-run anytime to refresh.
+
 #### Path schema
 
 | Field | Required | Notes |

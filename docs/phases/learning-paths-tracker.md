@@ -88,7 +88,15 @@ API-contract note: this is a breaking change for any external consumer of `/api/
 
 ### B. Curriculum spine + 1-question-1-path model
 
-**Picked up after question-bank expansion completes.** Sequence: (1) expansion lands, (2) map every question to a pattern, (3) audit lean patterns and decide which need targeted authoring vs. registry removal.
+**Question-bank expansion is complete (2026-XX).** Coverage audit has been run end-to-end — see [`docs/phases/pattern-coverage-audit.md`](./pattern-coverage-audit.md) for the per-question pattern proposal, per-track pattern coverage matrices, and concept-family → pattern landings.
+
+**Locked rules (B-series final):**
+- **1:1 mapping.** Each practice question routes to exactly one pattern-path. No multi-membership.
+- **Routing by objective.** Match on the question's *primary objective* (captured by its concept-family tag). Construct usage doesn't override objective.
+- **Analytical wins.** When a question's tags span both an analytical pattern (e.g., `cohort-and-retention`) and a construct pattern (e.g., `window-functions`), the analytical pattern wins.
+- **Mock-only excluded.** Pattern-paths contain *only* practice questions. Mock-only questions stay strictly out.
+- **Easy → hard ordering** within each path's `questions[]`. Stable sort: difficulty → ID.
+- **Mock + dashboard stay concept-family driven.** Pattern-paths are practice-only. No bridge ever (see §C).
 
 **B1. Define canonical pattern registry per track**
 Per-track canonical patterns proposed in the 2026-05-23 analysis (saved in this tracker — see "Canonical pattern set per track" notes below in the chat log; will move into `backend/path_patterns.py` at execution time). Each pattern becomes a path; each question maps to exactly one pattern.
@@ -133,32 +141,22 @@ Add a "Pattern registry and 1:1 mapping" subsection covering the curriculum-spin
 **B7. Update `.github/agents/question-authoring.agent.md`**
 Add a step: pick the question's primary pattern (or null) during authoring, with the selection rule.
 
-### C. Concept-mastery loop wiring (front-end)
+### C. Concept-mastery loop wiring (front-end) — **DEFERRED INDEFINITELY (2026-XX)**
 
-The product differentiator: Practice → Dashboard diagnoses weakness → recommend mastery PATH → after completion, mock drill on the same concept-family benchmarks the mastery. Loop.
+**Decision (2026-XX):** Pattern-paths and mock are an explicit *two-system* design. Patterns drive practice. Concept-families drive mock + dashboard diagnostics. They **do not loop into each other.** C1–C5 are kept below as the audit trail for what was considered and why it's not being pursued.
 
-**Blocker to resolve first:**
+**What stays live (was always concept-family driven, doesn't depend on patterns):**
+- Dashboard `weakest_concepts` → recommended path via `focus_concepts` (family-aware via `_path_for_concept` in `insights.py`). Shipped 2026-05.
+- Mock `focus_concepts` filter (Elite only). Shipped.
 
-**C1. Resolve the pattern↔concept-family axis mismatch in Mock**
-Mock filters by `focus_concepts` (concept families). Paths now declare `patterns` (practitioner skills). A "drill this path with a focused mock" CTA needs either (a) Mock to accept patterns as a filter, or (b) explicit pattern → concept-family translation, or (c) a `focus_patterns` field on paths that maps to the equivalent concept families. Pick one and design before any UI lands.
+**What's dropped (originally proposed, no longer planned):**
+- **C1.** Resolve pattern↔concept-family axis mismatch in Mock — *not pursued.* Axes stay parallel by design.
+- **C2.** MockHub `?focus=` URL deep-link parsing — *not pursued.*
+- **C3.** "Benchmark with focused drill" CTA on path completion — *not pursued.*
+- **C4.** "Drill in mock" CTA on dashboard weak-concept cards — *not pursued.*
+- **C5.** Tier-gating UX for the dropped CTAs — *not applicable.*
 
-**Once C1 lands:**
-
-**C2. MockHub URL deep-link parsing**
-[`frontend/src/pages/MockHub.js`](../../frontend/src/pages/MockHub.js) — add `useSearchParams` extraction for `?focus=A,B&track=sql&mode=custom&difficulty=medium` alongside the existing `location.state.mockPreset` handler.
-
-**C3. "Benchmark this with a focused drill" CTA on path completion**
-[`frontend/src/pages/LearningPath.js:150-159`](../../frontend/src/pages/LearningPath.js#L150) — add a secondary CTA next to "What's next →" in the completion banner. Links to the deep-link URL built from the path's focus mapping (per C1).
-
-**C4. "Drill in mock" CTA on dashboard weak-concept cards**
-[`frontend/src/pages/ProgressDashboard.js:444-460`](../../frontend/src/pages/ProgressDashboard.js#L444) — secondary CTA beside the existing `Study: <path>` link.
-
-**C5. Tier-gating UX**
-`focus_concepts` is Elite-only on the backend. Options for non-Elite users:
-- (A) Don't render CTA — clean, no upsell pressure
-- (B) Render in muted style with "Elite" badge, click → `/pricing` — upsell at moment of highest intent
-- (C) Render CTA, route to unfocused mock — confusing
-Decision deferred — depends on C1 outcome.
+If the loop ever becomes a product direction again, the items above are the starting list. Reopening requires a fresh product decision because the parallel-systems shape is now load-bearing across `§Paths` SoT, `pattern-coverage-audit.md`, and the active content authoring direction.
 
 ### D. DAG-aware UX (`recommended_after[]` is currently backend-only)
 
@@ -208,6 +206,56 @@ Blocked — would need ≥5 more Bayesian questions in the catalog before a dedi
 3. **Should `pattern` on a question be required, or optional?** Required forces every question into the curriculum spine but rejects "general practice" questions that don't fit. Optional allows orphans. Current proposal: optional, with periodic audits flagging orphan counts per track.
 
 4. **Path completion semantics for the loop.** Today path is "complete" when all its questions are solved (via path UI or directly from practice). For the loop's "you've mastered this — now benchmark" moment, is solved-via-practice enough, or do we want a "path completed flow" event (user actually walked through the path UI)? Affects how the C-series CTAs fire.
+
+---
+
+## Coverage audit results (2026-XX)
+
+Headline from [`pattern-coverage-audit.md`](./pattern-coverage-audit.md):
+
+| Track | Practice Qs | Patterns | Healthy | Uneven | Thin | Empty | Unrouted |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| sql | 118 | 14 | 3 | 5 | 4 | 2 | 2 |
+| python | 79 | 9 | 3 | 2 | 4 | 0 | 0 |
+| python-data | 92 | 9 | 5 | 3 | 0 | 1 | 0 |
+| pyspark | 127 | 7 | 4 | 3 | 0 | 0 | 0 |
+| data-engineering | 91 | 9 | 5 | 3 | 1 | 0 | 1 |
+| data-modeling | 81 | 14 | 6 | 1 | 7 | 0 | 1 |
+| statistics | 100 | 11 | 1 | 8 | 2 | 0 | 0 |
+| ml-fundamentals | 100 | 15 | 5 | 4 | 6 | 0 | 0 |
+| experimentation | 87 | 9 | 2 | 7 | 0 | 0 | 0 |
+| **Total** | **875** | **97** | **34** | **36** | **24** | **3** | **4** |
+
+Legend: **Healthy** = ≥5 Qs across easy/medium/hard. **Uneven** = ≥5 Qs but missing a difficulty band. **Thin** = 1–4 Qs (needs content). **Empty** = 0 Qs (needs initial content). **Unrouted** = practice question whose tags don't route to any pattern.
+
+### Per-track gap punch list (patterns needing content)
+
+**SQL — 2 empty + 4 thin:**
+- 🔴 `grouping-extensions` (0 Qs) — no questions on ROLLUP/CUBE/GROUPING SETS exist; needs initial authoring + a `GROUPING EXTENSIONS` concept-family.
+- 🔴 `date-and-time` (0 Qs) — TIME-SERIES BUCKETING family routes to period-over-period (analytical-wins). No questions on pure date arithmetic / date functions distinct from period analysis. Either drop the pattern *(deferred to user)* or author basic date-function content.
+- 🟡 `subqueries` (4 Qs), `set-operations` (3), `ctes-and-recursion` (2), `cohort-and-retention` (2) — all need 3–5 more questions for healthy depth.
+
+**Python-data — 1 empty:**
+- 🔴 `customer-analytics` (0 Qs) — the existing path's questions route to `groupby` / `reshape-and-pivot` / `time-series-pandas` because no concept-family in the pandas registry maps to customer-analytics. Either author a `CUSTOMER ANALYTICS PIPELINE` family or accept the pattern doesn't survive the 1:1 model.
+
+**Data Engineering — 1 thin:**
+- 🟡 `streaming-vs-batch` (7 Qs, uneven — missing hard) — needs 2–3 hard architectural decision Qs.
+
+**Data Modeling — 7 thin:**
+- 🟡 `surrogate-keys` (5), `bridge-tables` (7), `referential-integrity` (8), `conformed-dimensions` (3), `data-vault` (4), `aggregate-and-summary-design` (7), `hierarchies-and-multipath` (3) — most are uneven on difficulty mix; need targeted hard-tier authoring.
+
+**Statistics — 2 thin:**
+- 🟡 `bayesian-reasoning` (6 Qs, uneven) and `survival-analysis` (3 Qs).
+
+**ML Fundamentals — 6 thin:**
+- 🟡 `supervised-unsupervised` (2), `unsupervised-methods` (8 — at threshold but uneven), `model-interpretability` (6 — uneven), `algorithmic-fairness` (3), `neural-networks-and-gradients` (11 — uneven), `production-and-monitoring` (11 — uneven). Several are at the threshold; needs hard-tier coverage.
+
+**Patterns with no concept-family routing source** (registry gaps to consider):
+- SQL: `grouping-extensions` (no family for ROLLUP/CUBE)
+- SQL: `date-and-time` (TIME-SERIES BUCKETING is captured under period-over-period)
+- python-data: `customer-analytics` (no analytics-pipeline family)
+
+These are not bugs in the audit — they're real findings about where the registry and the proposed pattern set don't yet match. Decisions in stage 2 (do we author new families + questions, or drop these patterns?).
 
 ---
 
@@ -379,3 +427,4 @@ Most growth = honest splits of compound paths. New patterns filling genuine inte
 | 2026-05-23 | Initial tracker. Captures Phase 2 deferred items from the 2026-05 paths refactor. |
 | 2026-05-23 | A1 rename scope finalised: `role` → `level`, `starter` → `foundational`. Other two values (`intermediate`, `advanced`) unchanged. |
 | 2026-05-23 | Canonical pattern proposals per track (82 total proposed vs 46 today) saved into reference section. Triggered after question-bank expansion completes. |
+| 2026-XX | Coverage audit complete. 97 patterns proposed across 9 tracks (up from 82 after family-inventory revealed additional gaps); 875 practice questions routed; 3 empty / 24 thin / 36 uneven / 34 healthy. Gap punch list documented per track. C-series (concept-mastery loop) deferred indefinitely — patterns and concept-families are explicit two-system parallel design. |
