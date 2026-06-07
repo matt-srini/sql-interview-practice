@@ -135,7 +135,7 @@
       "Nothing — the validation set was held out from training, so the estimate is unbiased",
       "The model should have been evaluated on the test set after each iteration to track progress",
       "The validation set should have been used as the test set to maximise the data available for final evaluation",
-      "The validation estimate is optimistically biased — selecting the best of 40 configurations implicitly overfits to the validation set; a separate held-out test set, evaluated only once after all selection is final, is needed for an honest performance estimate"
+      "The validation estimate is biased — picking the best of 40 runs implicitly overfits to the validation set"
     ],
     "correct_option": 3,
     "explanation": "By cycling through 40 configurations and selecting the one with the best validation score, the team has implicitly optimised for the validation distribution. Each iteration uses the validation set as a selection signal — effectively, the validation set has been used 40 times as a criterion. This is validation overfitting: the winning configuration may have gotten lucky on the particular validation examples rather than being genuinely better.\n\nThe correct practice is to reserve a completely separate test set that is never touched during any selection decision. Once all tuning and model selection is complete, evaluate on the test set exactly once — that number is the honest final estimate.\n\nOption A is wrong: the validation set was held out from gradient descent, but it was used directly as the selection criterion 40 times. ‘Not used in training’ is necessary but not sufficient for an unbiased estimate.\n\nOption B is wrong: evaluating on the test set repeatedly would make things worse, not better — that directly leaks test information into model selection.\n\nOption C is wrong: the validation set has a distinct role (iterative selection) that differs from a test set (final, one-shot evaluation). Merging them removes the only honest final estimate.",
@@ -231,7 +231,7 @@
     "description": "A data scientist trains a model on 80% of their data and evaluates it on the remaining 20%. A colleague argues they should use 5-fold cross-validation instead. What is the primary advantage cross-validation provides that a single train/validation split does not?",
     "options": [
       "Cross-validation uses more data for training because each fold uses 80% of the data across all iterations",
-      "Cross-validation provides a performance estimate that is less sensitive to the particular random split chosen, by averaging across multiple held-out sets",
+      "Cross-validation reduces sensitivity to any particular random split by averaging over k held-out folds",
       "Cross-validation prevents overfitting by ensuring the model never sees the same data twice",
       "Cross-validation is faster than a single split because the model is trained on smaller subsets of data"
     ],
@@ -358,7 +358,7 @@
       "The colleague — 0.5% AUC differences are within noise; more experiments across larger datasets would reveal that entropy produces consistently deeper trees and meaningfully different feature rankings",
       "The colleague — Gini consistently outperforms entropy by a small margin; the <0.5% gaps reflect Gini's systematic advantage, not random variation",
       "Neither — the result is entirely implementation-specific; different scikit-learn versions produce completely different feature rankings between Gini and entropy",
-      "The engineer — Gini and entropy are monotonically related measures of node impurity and almost always select the same feature at each split; the negligible performance difference reflects this mathematical relationship, not insufficient experimentation"
+      "The engineer — Gini and entropy are monotonically related impurity measures and almost always select the same feature at each split; the negligible difference reflects this"
     ],
     "correct_option": 3,
     "explanation": "Gini impurity (1 − Σp²) and information gain / entropy (−Σp log p) are both measures of node impurity that reach their minimum at purity and maximum at maximum uncertainty. Because they are monotonically related, they rank candidate features nearly identically at each node — the feature that maximally reduces Gini almost always also maximally reduces entropy. Empirically, less than 1% of splits produce a different result between the two criteria, and structural differences deeper in the tree are even rarer. The engineer is correct: the negligible performance difference reflects a mathematical property, not insufficient experimentation.\n\nOption A is wrong: information gain does not produce consistently deeper trees. Tree depth is governed by stopping criteria (max_depth, min_samples_split) and the data — not by the impurity measure. More experiments would continue to show negligible differences.\n\nOption B is wrong: neither criterion is systematically superior. The <0.5% AUC variation is within normal stochastic noise from random feature subsampling and training variance, not a signal of Gini's advantage.\n\nOption C is wrong: while minor implementation details can introduce numerical differences, the fundamental property — that Gini and entropy rank features nearly identically — holds across correct implementations. This is a mathematical consequence of their monotonic relationship, not an implementation artifact.",
@@ -457,7 +457,7 @@
     "options": [
       "The colleague is correct — deeper trees can capture more complex patterns and reduce the validation gap",
       "The model is underfitting — 74.1% validation accuracy indicates the model lacks capacity, confirming the colleague's suggestion",
-      "The model is overfitting and the correct action is regularisation (e.g. reducing max_depth, increasing min_samples_leaf, or adding early stopping), not increasing complexity",
+      "The model is overfitting — the correct action is regularisation (reduce max_depth or add early stopping), not more complexity",
       "The colleague is correct — increasing max_depth will reduce training accuracy slightly, which will in turn pull validation accuracy upward"
     ],
     "correct_option": 2,
@@ -480,7 +480,7 @@
     "title": "Hyperparameter Sensitivity: Does max_iter Affect Learned Weights?",
     "description": "You train a logistic regression model with max_iter=500. The loss converges after approximately 200 iterations — the gradient norm drops to near zero well before step 500. You then retrain with max_iter=50, keeping all other settings identical. What is the most likely effect on the learned coefficients?",
     "options": [
-      "The coefficients will likely differ and the model will perform worse — max_iter=50 halts the optimiser before convergence, leaving the weights at a suboptimal point on the loss surface",
+      "The coefficients will likely differ and the model will perform worse — max_iter=50 halts the optimiser well before convergence",
       "The coefficients will be identical — the model converged at ~200 iterations, so stopping at 50 versus 500 produces the same final weights",
       "The coefficients will all be zero — stopping training too early prevents the model from learning any pattern from the data",
       "Only the regularisation penalty changes — max_iter controls how strongly the penalty is applied, not the gradient updates to the coefficients"
@@ -507,7 +507,7 @@
     "description": "A colleague concludes this is a good baseline. What is wrong with this reasoning?",
     "options": [
       "Nothing — 95% accuracy is a genuinely strong baseline and any model that cannot beat it on accuracy is not useful",
-      "Accuracy is misleading on imbalanced data; a model that catches zero fraud has no practical utility, and the correct baseline metric is precision-recall or F1 on the minority class",
+      "Accuracy is misleading on imbalanced data; a model predicting 'legitimate' for every transaction catches zero fraud",
       "The colleague is correct that this is a baseline, but accuracy should be computed on a balanced subset of the data to be meaningful",
       "The model predicts correctly 95% of the time, so it must have learned something — the colleague's reasoning is sound"
     ],
@@ -531,7 +531,7 @@
     "title": "Cross-Validation: Stratified K-Fold",
     "description": "You have a binary classification dataset where 8% of examples are positive. You apply standard k-fold cross-validation (without stratification). A colleague warns this could be problematic. In which scenario would the colleague's concern be most valid?",
     "options": [
-      "When the dataset is small, because a random fold might contain very few or zero positive examples, making the fold's evaluation uninformative or undefined",
+      "When the dataset is small, because random folds may contain too few positives, making per-fold metrics unreliable",
       "When k is large (e.g. k=10), because smaller validation sets have higher variance regardless of class distribution",
       "When the model is a decision tree, because trees are more sensitive to class imbalance than linear models",
       "When features are correlated, because stratification is primarily designed to handle multicollinearity"
@@ -581,7 +581,7 @@
     "title": "Bias-Variance Tradeoff: Diagnosing from Curves",
     "description": "You plot learning curves for a model: as training set size increases from 1,000 to 50,000 examples, training accuracy decreases slightly from 96% to 91%, and validation accuracy increases slightly from 65% to 72%. After 50,000 examples, both curves have stabilised and stopped moving. What is the correct diagnosis?",
     "options": [
-      "The model has high variance (overfitting) — training accuracy is high while validation lags significantly, and the gap narrows as more data is added; the fix is to reduce model complexity or add regularisation, not to add more data",
+      "The model has high variance (overfitting) — training accuracy is high while validation lags, and the gap narrows with more data but has now stabilised",
       "The model needs more training data — the validation curve has not yet reached training accuracy",
       "The model is converging correctly and more data will eventually close the training-validation gap",
       "The model has high bias — the stabilised gap and low absolute validation accuracy suggest the model lacks capacity, and more data alone will not close the gap"
@@ -659,7 +659,7 @@
       "No — SVMs are kernel-based and the kernel computation makes them inherently scale-invariant",
       "No — the binary flag (0 or 1) will anchor the feature space and prevent scale issues in the other features",
       "Yes — but only if using a non-linear kernel; linear SVMs are scale-invariant by definition",
-      "Yes — SVMs rely on distance-based margin maximisation; features with larger scale dominate the margin calculation and distort the decision boundary"
+      "Yes — SVMs maximise a distance-based margin, so large-scale features dominate and distort the boundary"
     ],
     "correct_option": 3,
     "explanation": "SVMs are fundamentally scale-sensitive because they work by finding the maximum-margin hyperplane between classes. The margin is measured in the feature space using Euclidean distance. A feature with range 0–5,000 contributes millions of times more to the distance calculation than a binary 0/1 feature, effectively making the SVM's decision depend almost entirely on the transaction count feature while ignoring the others.\n\nThe RBF (Gaussian) kernel, which computes distances between points, is also scale-dependent. Feature scaling is essential for SVMs with any kernel that uses distance.\n\nOption A is wrong: kernels transform the feature space but still operate on distances or dot products. Scale differences in the original feature space are preserved through most kernel computations (including RBF and polynomial).\n\nOption B is wrong: the binary flag being bounded does not 'anchor' anything — the large-scale features still dominate the margin calculation.\n\nOption C is wrong: linear SVMs also use distance-based margin maximisation and are equally sensitive to feature scale. The scale invariance claim for linear SVMs is incorrect.",
@@ -682,7 +682,7 @@
     "options": [
       "5-fold cross-validation is too few folds — at least 10 folds are needed to produce a reliable estimate after model selection",
       "There is no problem — cross-validation produces an unbiased estimate regardless of how many models were compared",
-      "The cross-validation score is biased upward because it was used for model selection, not just estimation — a separate held-out test set should be used for the final reported number",
+      "The cross-validation score is biased — it was used for model selection, so it is not a valid final performance estimate",
       "The problem is that 10 candidate models were evaluated — cross-validation is only valid when comparing 2–3 models"
     ],
     "correct_option": 2,
