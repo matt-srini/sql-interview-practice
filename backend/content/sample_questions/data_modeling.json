@@ -18,7 +18,9 @@
       "Read the scenario description carefully — how many rows does each order produce, and what does each row capture in time? Use that pattern to identify which Kimball fact table type matches.",
       "Accumulating snapshots are for multi-stage processes where all stages end up on the same row."
     ],
-    "concepts": ["FACT TABLE DESIGN"]
+    "concepts": [
+      "FACT TABLE DESIGN"
+    ]
   },
   {
     "id": 612,
@@ -39,7 +41,10 @@
       "Before finalising the grain, think through the analytical questions the team might need to answer in the future — what specific metrics or breakdowns would this proposed design make difficult or impossible?",
       "You can always roll up from fine grain to coarse grain — you cannot drill down from coarse grain."
     ],
-    "concepts": ["GRAIN DEFINITION", "FACT TABLE DESIGN"]
+    "concepts": [
+      "GRAIN DEFINITION",
+      "FACT TABLE DESIGN"
+    ]
   },
   {
     "id": 613,
@@ -60,7 +65,10 @@
       "Consider two scenarios: the source system migrates and reformats all product SKUs overnight; and you need to preserve a product's old and new attribute values as separate rows. What property would a primary key need to handle both situations correctly?",
       "SCD Type 2 requires multiple rows for the same business entity — surrogate keys give each version a unique identity."
     ],
-    "concepts": ["SURROGATE VS NATURAL KEYS", "SCD STRUCTURE"]
+    "concepts": [
+      "SURROGATE VS NATURAL KEYS",
+      "SCD STRUCTURE"
+    ]
   },
   {
     "id": 621,
@@ -82,7 +90,10 @@
       "This correction touches two different layers of the data model — not just the dimension. What are the two layers, and why does fixing the dimension alone leave the data in an inconsistent state?",
       "Ask: which surrogate key did the historical fact rows join to? That determines the cost of a retroactive correction."
     ],
-    "concepts": ["SCD STRUCTURE", "GRAIN DEFINITION"]
+    "concepts": [
+      "SCD STRUCTURE",
+      "GRAIN DEFINITION"
+    ]
   },
   {
     "id": 622,
@@ -103,7 +114,10 @@
       "Think about who will be using this mart and what they care about — what does each schema make easier, and what does each one cost? Consider query ergonomics and data storage as two separate dimensions.",
       "For reporting, fewer joins = simpler SQL = faster analyst iteration. Star schema prioritises query ergonomics."
     ],
-    "concepts": ["DIMENSIONAL MODELING", "GRAIN DEFINITION"]
+    "concepts": [
+      "DIMENSIONAL MODELING",
+      "GRAIN DEFINITION"
+    ]
   },
   {
     "id": 623,
@@ -125,7 +139,10 @@
       "The current design places `loyalty_tier` as a single column on the customer dimension. Walk through what happens when a customer holds two tiers simultaneously — where does the model break down, and what structural change addresses it?",
       "Include a weight_factor (1/n) in the bridge to prevent double-counting when aggregating additive metrics across all tiers."
     ],
-    "concepts": ["BRIDGE & MANY-TO-MANY", "GRAIN DEFINITION"]
+    "concepts": [
+      "BRIDGE & MANY-TO-MANY",
+      "GRAIN DEFINITION"
+    ]
   },
   {
     "id": 631,
@@ -147,7 +164,10 @@
       "Before writing any SQL, look at the grain of each fact table — one row per order line-item, one row per support ticket. When you join them on customer_id, what does each row from one table match against from the other?",
       "The fix is always: aggregate each fact to the shared grain first, then join the pre-aggregated results."
     ],
-    "concepts": ["GRAIN DEFINITION", "FACT TABLE DESIGN"]
+    "concepts": [
+      "GRAIN DEFINITION",
+      "FACT TABLE DESIGN"
+    ]
   },
   {
     "id": 632,
@@ -169,7 +189,10 @@
       "Two teams use the same word — 'category' — but mean completely different things. A cross-BU report joining on that attribute will conflate two unrelated hierarchies. What shared object in the data model would give both teams a common definition to reference?",
       "When two marts use the same word ('category') to mean different things, you have a semantic incongruence that must be resolved in the model, not in reports."
     ],
-    "concepts": ["CONFORMED DIMENSIONS", "DIMENSIONAL MODELING"]
+    "concepts": [
+      "CONFORMED DIMENSIONS",
+      "DIMENSIONAL MODELING"
+    ]
   },
   {
     "id": 633,
@@ -191,6 +214,10 @@
       "SCD Type 2 gives each row a record of when the data changed in the system. Consider whether that single time reference is sufficient to answer both questions in the scenario — or whether each question requires a different kind of temporal reference.",
       "Bi-temporal tables store both axes on every row, enabling independent point-in-time queries on either timeline."
     ],
-    "concepts": ["BI-TEMPORAL MODELING", "SCD STRUCTURE", "GRAIN DEFINITION"]
+    "concepts": [
+      "BI-TEMPORAL MODELING",
+      "SCD STRUCTURE",
+      "GRAIN DEFINITION"
+    ]
   }
 ]

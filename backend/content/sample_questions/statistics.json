@@ -19,7 +19,9 @@
       "\"At least one\" is often easier to compute via its complement: what is the probability that neither service introduces a regression?",
       "For independent events, P(neither) = P(not A) × P(not B). Then subtract from 1."
     ],
-    "concepts": ["probability & combinatorics"]
+    "concepts": [
+      "probability & combinatorics"
+    ]
   },
   {
     "id": 712,
@@ -35,13 +37,36 @@
     "explanation": "`statistics.mean` and `statistics.stdev` implement the sample mean and sample standard deviation (ddof=1) directly. Sample stdev divides by n-1 (Bessel's correction) rather than n, giving an unbiased estimator of the population variance.",
     "test_cases": [
       {
-        "input": [[2.0, 4.0, 4.0, 4.0, 5.0, 5.0, 7.0, 9.0]],
-        "expected": [5.0, 2.0],
+        "input": [
+          [
+            2.0,
+            4.0,
+            4.0,
+            4.0,
+            5.0,
+            5.0,
+            7.0,
+            9.0
+          ]
+        ],
+        "expected": [
+          5.0,
+          2.0
+        ],
         "tolerance": 0.001
       },
       {
-        "input": [[1.0, 2.0, 3.0]],
-        "expected": [2.0, 1.0],
+        "input": [
+          [
+            1.0,
+            2.0,
+            3.0
+          ]
+        ],
+        "expected": [
+          2.0,
+          1.0
+        ],
         "tolerance": 0.001
       }
     ],
@@ -49,7 +74,9 @@
       "Use `statistics.stdev` for sample standard deviation (ddof=1), not population standard deviation.",
       "Return both values as a tuple rounded to 4 decimal places."
     ],
-    "concepts": ["descriptive statistics"]
+    "concepts": [
+      "descriptive statistics"
+    ]
   },
   {
     "id": 713,
@@ -71,7 +98,10 @@
       "The analyst says the count is '2.5 standard deviations above the mean.' What unit does a z-score use, and how does that connect to a position in the normal distribution's percentile table?",
       "z = (observation − mean) / standard deviation. Once you have z, the standard normal table maps it to the fraction of the distribution that falls below that point — what does z = 2.5 correspond to?"
     ],
-    "concepts": ["distributions", "descriptive statistics"]
+    "concepts": [
+      "distributions",
+      "descriptive statistics"
+    ]
   },
   {
     "id": 721,
@@ -93,7 +123,10 @@
       "The manager says revenue 'isn't normally distributed.' Before agreeing or disagreeing, identify exactly which distribution must be approximately normal for the 1.96 multiplier to be valid — is it the distribution of individual revenue values, or something derived from them?",
       "Once you've named which distribution the CLT acts on, ask: what property of the 400 orders does the CLT quietly require in order to work? Think about what changes if all orders came from the same burst event rather than randomly across time."
     ],
-    "concepts": ["sampling & central limit theorem", "confidence intervals & estimation"]
+    "concepts": [
+      "sampling & central limit theorem",
+      "confidence intervals & estimation"
+    ]
   },
   {
     "id": 722,
@@ -109,13 +142,25 @@
     "explanation": "The Wald interval uses the normal approximation to the binomial. p̂ = k/n is the sample proportion. The standard error is √(p̂(1−p̂)/n). Multiply by z = 1.96 for 95% confidence. Clamping ensures the interval stays within valid probability bounds.",
     "test_cases": [
       {
-        "input": [50, 200],
-        "expected": [0.1913, 0.3087],
+        "input": [
+          50,
+          200
+        ],
+        "expected": [
+          0.1913,
+          0.3087
+        ],
         "tolerance": 0.001
       },
       {
-        "input": [10, 100],
-        "expected": [0.0412, 0.1588],
+        "input": [
+          10,
+          100
+        ],
+        "expected": [
+          0.0412,
+          0.1588
+        ],
         "tolerance": 0.001
       }
     ],
@@ -123,7 +168,10 @@
       "p̂ = k/n, then SE = sqrt(p̂*(1-p̂)/n), and the interval is p̂ ± 1.96*SE.",
       "Clamp both bounds to [0, 1] — the formula can produce negative lower bounds when p̂ is close to 0."
     ],
-    "concepts": ["confidence intervals & estimation", "distributions"]
+    "concepts": [
+      "confidence intervals & estimation",
+      "distributions"
+    ]
   },
   {
     "id": 723,
@@ -145,7 +193,10 @@
       "Think carefully about the difference between 'I found no evidence of X' and 'I found evidence that X is false.' Are those two statements saying the same thing?",
       "Power tells you the probability of detecting a true effect of a given size. Failing to detect doesn't mean the effect doesn't exist."
     ],
-    "concepts": ["hypothesis testing", "errors & power"]
+    "concepts": [
+      "hypothesis testing",
+      "errors & power"
+    ]
   },
   {
     "id": 731,
@@ -167,7 +218,9 @@
       "The correlation of 0.82 is measured across countries, not across individuals. When you average income and life expectancy to the country level, think about what else varies systematically between high- and low-income countries — and whether all of that co-variation gets absorbed into the aggregate correlation.",
       "Ecological correlations are typically stronger than the equivalent individual-level correlations, not weaker — group averaging suppresses within-group noise. What level of data would you actually need to measure the relationship the economist is claiming exists?"
     ],
-    "concepts": ["correlation, regression & causality"]
+    "concepts": [
+      "correlation, regression & causality"
+    ]
   },
   {
     "id": 732,
@@ -183,12 +236,20 @@
     "explanation": "Bonferroni correction divides the overall α by k, raising the per-test critical value. Power = P(reject H₀ | H₁ is true) = P(Z > z_crit - ncp) where ncp = effect_size × √(n/2) is the non-centrality parameter for the two-sample z-test. As k increases, z_crit rises and power falls — the multiple-testing cost.",
     "test_cases": [
       {
-        "input": [1, 0.5, 100],
+        "input": [
+          1,
+          0.5,
+          100
+        ],
         "expected": 0.6946,
         "tolerance": 0.01
       },
       {
-        "input": [10, 0.5, 100],
+        "input": [
+          10,
+          0.5,
+          100
+        ],
         "expected": 0.2831,
         "tolerance": 0.01
       }
@@ -197,7 +258,11 @@
       "Bonferroni raises the critical value from z_{0.025} to z_{α_bonf/2} where α_bonf = 0.05/k.",
       "ncp = effect_size × √(n_per_arm/2) is the non-centrality parameter for a two-sample z-test."
     ],
-    "concepts": ["errors & power", "multiple testing & correction", "sampling & central limit theorem"]
+    "concepts": [
+      "errors & power",
+      "multiple testing & correction",
+      "sampling & central limit theorem"
+    ]
   },
   {
     "id": 733,
@@ -219,6 +284,9 @@
       "The core problem is that customers with complex issues both experience slower responses and are more likely to churn — making it impossible to isolate response time's effect from OLS alone. What two properties would a third variable need in order to break this confounding and let you estimate the causal effect of response time?",
       "Check workload against each condition separately: (1) Is workload correlated with response time? (2) Does workload have any path to churn that does not run through response time? Both conditions must hold — and the second one is an assumption, not something you can verify from the data alone."
     ],
-    "concepts": ["correlation, regression & causality", "experimental design (within stats)"]
+    "concepts": [
+      "correlation, regression & causality",
+      "experimental design (within stats)"
+    ]
   }
 ]

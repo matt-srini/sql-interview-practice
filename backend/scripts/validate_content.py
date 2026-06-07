@@ -1690,6 +1690,231 @@ def _validate_no_embedded_option_labels() -> None:
         )
 
 
+# ---------------------------------------------------------------------------
+# MCQ answer-key debiasing validators (Phase 1 + Phase 2 tooling)
+# ---------------------------------------------------------------------------
+
+# The 6 MCQ-capable tracks.  Statistics participates only for its conceptual
+# subtype (questions that have both int correct_option and list options).
+_MCQ_DEBIAS_TRACKS: frozenset[str] = frozenset({
+    "data-engineering",
+    "data-modeling",
+    "pyspark",
+    "ml-fundamentals",
+    "experimentation",
+    "statistics",
+})
+
+
+def _collect_mcq_groups() -> dict[tuple, list[dict]]:
+    """Build the group mapping used by both debias validators.
+
+    Group key schema
+    ----------------
+    Practice/mock files  : (track, difficulty, pool)
+                           where pool = "mock" | "practice"
+    Sample files         : ("sample", track, "all")
+
+    Only questions that are MCQ (have int correct_option + list options with
+    len >= 2) are included.  Statistics numerical subtype questions (no
+    correct_option / no options) are automatically excluded by the MCQ
+    predicate.
+    """
+    from collections import defaultdict
+
+    groups: dict[tuple, list[dict]] = defaultdict(list)
+
+    # ---- practice/mock files -----------------------------------------------
+    for track, file_path in _iter_question_files():
+        if track not in _MCQ_DEBIAS_TRACKS:
+            continue
+        # Skip sample files in this loop; handle them below.
+        if file_path.parent.name == "sample_questions":
+            continue
+
+        with file_path.open("r", encoding="utf-8") as fh:
+            questions = json.load(fh)
+
+        for q in questions:
+            if not isinstance(q.get("correct_option"), int):
+                continue
+            opts = q.get("options")
+            if not isinstance(opts, list) or len(opts) < 2:
+                continue
+            difficulty = q.get("difficulty") or file_path.stem
+            pool = "mock" if q.get("mock_only") else "practice"
+            key = (track, difficulty, pool)
+            groups[key].append(q)
+
+    # ---- sample files -------------------------------------------------------
+    for track, file_path in _iter_question_files():
+        if track not in _MCQ_DEBIAS_TRACKS:
+            continue
+        if file_path.parent.name != "sample_questions":
+            continue
+
+        with file_path.open("r", encoding="utf-8") as fh:
+            questions = json.load(fh)
+
+        for q in questions:
+            if not isinstance(q.get("correct_option"), int):
+                continue
+            opts = q.get("options")
+            if not isinstance(opts, list) or len(opts) < 2:
+                continue
+            key = ("sample", track, "all")
+            groups[key].append(q)
+
+    return dict(groups)
+
+
+def _validate_answer_position_balance() -> None:
+    """ERROR-level: detect answer-key position bias in MCQ question groups.
+
+    Two checks per qualifying group (n >= 10 for practice/mock; n >= 6 for
+    samples):
+
+    (a) CONCENTRATION — any single position holds > 40% of the group's correct
+        answers.  A perfectly uniform 4-option bank would land at 25%; 40% is
+        a generous tolerance that still catches the severe authoring bias
+        documented in the Phase 1 audit (some groups: 80–100% position A or B).
+
+    (b) RUN — the questions sorted by their `order` field contain a run of >= 5
+        consecutive identical correct_option values.  A run this long is visible
+        to test-takers scanning the answer key and degrades the diagnostic value
+        of the bank.
+
+    Group definition:
+      Practice/mock  — grouped by (track, difficulty, pool=mock|practice).
+      Sample         — grouped by (track) across all difficulties.
+
+    Only MCQ questions (int correct_option + list options len >= 2) are
+    considered.  Statistics numerical-subtype questions are excluded because
+    they have no correct_option.
+    """
+    MIN_N_PRACTICE = 10
+    MIN_N_SAMPLE = 6
+    MAX_POSITION_SHARE = 0.40
+    MAX_RUN = 5  # runs of THIS length or longer are flagged
+
+    groups = _collect_mcq_groups()
+    errors: list[str] = []
+
+    for key, qs in sorted(groups.items()):
+        is_sample = key[0] == "sample"
+        min_n = MIN_N_SAMPLE if is_sample else MIN_N_PRACTICE
+        if len(qs) < min_n:
+            continue
+
+        n = len(qs)
+        from collections import Counter
+        position_counts: Counter = Counter(q["correct_option"] for q in qs)
+
+        # (a) concentration check
+        for pos, cnt in position_counts.items():
+            share = cnt / n
+            if share > MAX_POSITION_SHARE:
+                label = chr(ord("A") + pos) if pos < 26 else str(pos)
+                key_str = "/".join(str(k) for k in key)
+                errors.append(
+                    f"POSITION CONCENTRATION [{key_str}]: position {label} holds "
+                    f"{cnt}/{n} ({share:.1%}) of answers — exceeds {MAX_POSITION_SHARE:.0%} cap"
+                )
+
+        # (b) run check — sort by order, then scan
+        sorted_qs = sorted(qs, key=lambda q: (q.get("order") or 0))
+        run_len = 1
+        run_pos = sorted_qs[0]["correct_option"] if sorted_qs else None
+        for i in range(1, len(sorted_qs)):
+            cur = sorted_qs[i]["correct_option"]
+            if cur == run_pos:
+                run_len += 1
+                if run_len >= MAX_RUN:
+                    label = chr(ord("A") + run_pos) if run_pos < 26 else str(run_pos)
+                    key_str = "/".join(str(k) for k in key)
+                    errors.append(
+                        f"POSITION RUN [{key_str}]: run of {run_len}+ consecutive "
+                        f"position {label} starting near order "
+                        f"{sorted_qs[i - run_len + 1].get('order')!r}"
+                    )
+                    # Only report the first trigger of each run to avoid spam
+                    run_pos = None  # reset to avoid re-flagging same run
+            else:
+                run_len = 1
+                run_pos = cur
+
+    if errors:
+        joined = "\n".join(f"- {item}" for item in errors[:200])
+        remaining = len(errors) - min(len(errors), 200)
+        if remaining:
+            joined += f"\n- ... and {remaining} more"
+        raise ValueError(f"MCQ answer-position balance check failed:\n{joined}")
+
+
+def _validate_answer_length_balance() -> None:
+    """ERROR-level: detect answer-key length bias in MCQ question groups.
+
+    For each qualifying group (same definition as _validate_answer_position_balance),
+    computes the fraction of questions where the correct option is the UNIQUE
+    LONGEST option (i.e. its char length is strictly greater than every other
+    option's char length).  If that fraction exceeds 55%, raises an error.
+
+    Unique-longest definition: len(correct_text) > len(opt_text) for ALL other
+    options.  If two or more options share the maximum length, neither is the
+    unique longest — those questions contribute 0 to the fraction.
+
+    55% threshold: a bank of well-crafted distractors should not allow a
+    test-taker to identify the correct answer purely by picking the longest
+    option more than ~50% of the time.  55% gives a small buffer above pure
+    chance for plausibly-authored content before flagging.
+    """
+    MIN_N_PRACTICE = 10
+    MIN_N_SAMPLE = 6
+    MAX_LONGEST_SHARE = 0.55
+
+    groups = _collect_mcq_groups()
+    errors: list[str] = []
+
+    for key, qs in sorted(groups.items()):
+        is_sample = key[0] == "sample"
+        min_n = MIN_N_SAMPLE if is_sample else MIN_N_PRACTICE
+        if len(qs) < min_n:
+            continue
+
+        n = len(qs)
+        unique_longest_count = 0
+        for q in qs:
+            opts = q.get("options", [])
+            correct = q["correct_option"]
+            if correct >= len(opts):
+                continue
+            correct_len = len(opts[correct])
+            other_lens = [len(opts[i]) for i in range(len(opts)) if i != correct]
+            if other_lens and correct_len > max(other_lens):
+                unique_longest_count += 1
+
+        share = unique_longest_count / n
+        if share > MAX_LONGEST_SHARE:
+            key_str = "/".join(str(k) for k in key)
+            errors.append(
+                f"LENGTH BIAS [{key_str}]: correct option is the unique longest in "
+                f"{unique_longest_count}/{n} ({share:.1%}) of questions — "
+                f"exceeds {MAX_LONGEST_SHARE:.0%} cap"
+            )
+
+    if errors:
+        joined = "\n".join(f"- {item}" for item in errors[:200])
+        remaining = len(errors) - min(len(errors), 200)
+        if remaining:
+            joined += f"\n- ... and {remaining} more"
+        raise ValueError(f"MCQ answer-length balance check failed:\n{joined}")
+
+
+# ---------------------------------------------------------------------------
+# End of debias validators
+# ---------------------------------------------------------------------------
+
+
 def _load_json_file(path: Path) -> None:
     with path.open("r", encoding="utf-8") as handle:
         json.load(handle)
@@ -1730,6 +1955,8 @@ def main() -> None:
     _validate_hint_numbers_in_stem()
     _validate_no_numeric_option_references()
     _validate_no_embedded_option_labels()
+    # TODO(debias): enable after Phase 1 lands
+    # _validate_answer_position_balance()
 
     print("Content validation passed")
 

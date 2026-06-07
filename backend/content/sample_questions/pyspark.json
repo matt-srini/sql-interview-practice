@@ -19,7 +19,9 @@
       "Scan the code snippet and ask yourself: for each line, does Spark need to produce any output right then, or could it postpone the computation?",
       "Count the number of actions in the code — that's how many Spark jobs will run."
     ],
-    "concepts": ["EXECUTION MODEL REASONING"]
+    "concepts": [
+      "EXECUTION MODEL REASONING"
+    ]
   },
   {
     "id": 412,
@@ -41,7 +43,10 @@
       "Think about what has to happen physically to the data when each operation runs — does every row stay on the machine it's currently on, or does data need to travel somewhere else?",
       "Shuffles happen when rows need to be redistributed across partitions — that is the defining trait of a wide transformation."
     ],
-    "concepts": ["NARROW VS WIDE TRANSFORMATIONS", "SHUFFLE REASONING"]
+    "concepts": [
+      "NARROW VS WIDE TRANSFORMATIONS",
+      "SHUFFLE REASONING"
+    ]
   },
   {
     "id": 413,
@@ -63,7 +68,10 @@
       "There are two places in this code where a name appears — one inside the column expression, one outside it. Which one does Spark use when defining the output column name?",
       "When the first argument matches an existing column name, that column is replaced."
     ],
-    "concepts": ["SCHEMA & TYPE HANDLING", "EXECUTION MODEL REASONING"]
+    "concepts": [
+      "SCHEMA & TYPE HANDLING",
+      "EXECUTION MODEL REASONING"
+    ]
   },
   {
     "id": 421,
@@ -85,7 +93,10 @@
       "Consider what happens internally when you change the partition count — does this operation need all data to be perfectly redistributed, or can it work by consolidating what's already nearby?",
       "For moving from 400 to 20 partitions before a write, ask whether you need perfect balance or just fewer files."
     ],
-    "concepts": ["SHUFFLE REASONING", "PERFORMANCE TUNING & TRADE-OFFS"]
+    "concepts": [
+      "SHUFFLE REASONING",
+      "PERFORMANCE TUNING & TRADE-OFFS"
+    ]
   },
   {
     "id": 422,
@@ -107,7 +118,10 @@
       "Start with the size difference — 500 GB versus 15 MB. For each join approach, ask what data movement it requires and how that cost scales with each table's size.",
       "The key question: is the small table small enough to fit comfortably in executor memory?"
     ],
-    "concepts": ["JOIN STRATEGY SELECTION", "SHUFFLE REASONING"]
+    "concepts": [
+      "JOIN STRATEGY SELECTION",
+      "SHUFFLE REASONING"
+    ]
   },
   {
     "id": 423,
@@ -129,7 +143,10 @@
       "An aggregation like `avg` produces one value per group — but when it's used inside `withColumn`, what group of rows is Spark supposed to compute it over?",
       "Add `.over(Window.partitionBy(...).orderBy(...))` to define the window frame, or move the aggregation to `.agg()` with a `groupBy`."
     ],
-    "concepts": ["WINDOW FUNCTIONS & FRAMES", "SCHEMA & TYPE HANDLING"]
+    "concepts": [
+      "WINDOW FUNCTIONS & FRAMES",
+      "SCHEMA & TYPE HANDLING"
+    ]
   },
   {
     "id": 431,
@@ -151,7 +168,10 @@
       "Before concluding there's a MERGE bug, check whether the CDF documentation describes what rows a single UPDATE operation emits. Does 'recording a change' require capturing only the new state, or does it require capturing both the old and new states?",
       "The `_change_type` column in CDF output takes values from the set: insert, update_preimage, update_postimage, delete. For an update to one row, how many distinct `_change_type` values does CDF emit?"
     ],
-    "concepts": ["DELTA LAKE OPERATIONS", "EXECUTION MODEL REASONING"]
+    "concepts": [
+      "DELTA LAKE OPERATIONS",
+      "EXECUTION MODEL REASONING"
+    ]
   },
   {
     "id": 432,
@@ -173,7 +193,10 @@
       "The latency percentile data gives you two reference points — 8 minutes at 95p and 25 minutes at 99p. Think about what each watermark setting means for late events you'll capture versus the memory your job will consume.",
       "Set the watermark high enough to capture the tail of your latency distribution, but not so high that state becomes operationally unmanageable."
     ],
-    "concepts": ["STRUCTURED STREAMING", "PERFORMANCE TUNING & TRADE-OFFS"]
+    "concepts": [
+      "STRUCTURED STREAMING",
+      "PERFORMANCE TUNING & TRADE-OFFS"
+    ]
   },
   {
     "id": 433,
@@ -195,6 +218,9 @@
       "The key question is: for each Python invocation, how much data is transferred across the JVM–Python boundary? Think about how many times Python is called in Version A versus Version B for a partition of 1 million rows.",
       "Apache Arrow is a columnar in-memory format designed for zero-copy batch transfers. How does transferring a batch of 10,000 rows as one Arrow buffer compare to transferring 10,000 individual rows one at a time via Py4J?"
     ],
-    "concepts": ["UDF & PYTHON BOUNDARY", "PERFORMANCE TUNING & TRADE-OFFS"]
+    "concepts": [
+      "UDF & PYTHON BOUNDARY",
+      "PERFORMANCE TUNING & TRADE-OFFS"
+    ]
   }
 ]
