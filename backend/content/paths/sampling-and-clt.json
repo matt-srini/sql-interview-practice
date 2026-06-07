@@ -1,0 +1,26 @@
+{
+  "slug": "sampling-and-clt",
+  "title": "Sampling & CLT",
+  "description": "Master the sampling-theory foundation every inferential statistics interview assumes: CLT applicability, standard error of the mean, the law of large numbers, and the sampling distribution of a proportion that A/B tests are built on.",
+  "topic": "statistics",
+  "questions": [
+    72001,
+    72002,
+    72015,
+    72022,
+    72028
+  ],
+  "tier": "pro",
+  "level": "intermediate",
+  "patterns": [
+    "sampling-and-clt"
+  ],
+  "focus_concepts": [
+    "sampling & central limit theorem",
+    "probability & combinatorics"
+  ],
+  "outcomes": "You'll reason about when CLT applies (and when it doesn't), compute standard error of the mean correctly, distinguish LLN from CLT, and derive the sampling distribution of a proportion for A/B test design.",
+  "recommended_after": [
+    "distributions"
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "slug": "unsupervised-methods",
+  "title": "Unsupervised Methods",
+  "description": "Master the clustering evaluation challenges that have no ground truth: elbow method limitations, silhouette score interpretation, reconciling disagreement between the two, and evaluating clusters when you have no labels to compare against.",
+  "topic": "ml-fundamentals",
+  "questions": [
+    82030,
+    82031,
+    82049,
+    83019
+  ],
+  "tier": "free",
+  "level": "intermediate",
+  "patterns": [
+    "unsupervised-methods"
+  ],
+  "focus_concepts": [
+    "CLUSTERING EVALUATION",
+    "DIMENSIONALITY REDUCTION",
+    "HYPERPARAMETER SENSITIVITY"
+  ],
+  "outcomes": "You'll apply elbow method critically (knowing its limits), interpret silhouette scores correctly, reconcile when elbow and silhouette disagree, and design evaluation strategies for clustering when ground truth is unknown.",
+  "recommended_after": [
+    "ml-starter"
+  ]
+}

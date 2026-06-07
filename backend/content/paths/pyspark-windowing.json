@@ -1,0 +1,25 @@
+{
+  "slug": "pyspark-windowing",
+  "title": "Window Functions & Frames",
+  "description": "Master PySpark's window functions and frame semantics: RANK vs DENSE_RANK vs ROW_NUMBER under ties, ROWS vs RANGE behaviour with tied values, and the rangeBetween gotchas that silently change output when dates have gaps.",
+  "topic": "pyspark",
+  "questions": [
+    42007,
+    42052,
+    42055,
+    43048,
+    43051
+  ],
+  "tier": "free",
+  "level": "intermediate",
+  "patterns": [
+    "pyspark-windowing"
+  ],
+  "focus_concepts": [
+    "WINDOW FUNCTIONS & FRAMES"
+  ],
+  "outcomes": "You'll choose RANK/DENSE_RANK/ROW_NUMBER correctly when ties matter, predict ROWS-vs-RANGE running-sum behaviour, and debug rangeBetween edge cases on integer dates and data gaps.",
+  "recommended_after": [
+    "spark-core-concepts"
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "slug": "heap-and-priority",
+  "title": "Heaps & Priority Queues",
+  "description": "Master the heap and priority-queue patterns every senior algorithm interview probes: Top-K from a stream, median maintenance with dual heaps, and minimum-resource scheduling under tight constraints.",
+  "topic": "python",
+  "questions": [
+    22012,
+    22050,
+    23015,
+    23035
+  ],
+  "tier": "free",
+  "level": "advanced",
+  "patterns": [
+    "heap-and-priority"
+  ],
+  "focus_concepts": [
+    "HEAP & PRIORITY QUEUE",
+    "GREEDY CHOICE"
+  ],
+  "outcomes": "You'll reach for heaps fluently when the problem hints at Top-K or rolling-extremes, design dual-heap median maintenance, and solve minimum-resource scheduling problems with the right greedy + priority-queue combination.",
+  "recommended_after": [
+    "arrays-and-hashing"
+  ]
+}

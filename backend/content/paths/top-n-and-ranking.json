@@ -1,0 +1,28 @@
+{
+  "slug": "top-n-and-ranking",
+  "title": "Top-N & Ranking",
+  "description": "Master the Top-N-per-group pattern that dominates Pandas analytics interviews: rank-within-group, percentile rank, latest-row-per-key, and the multi-table top-N that production dashboards depend on.",
+  "topic": "python-data",
+  "questions": [
+    31008,
+    31012,
+    32007,
+    32019,
+    32022,
+    32028,
+    33002
+  ],
+  "tier": "free",
+  "level": "intermediate",
+  "patterns": [
+    "top-n-and-ranking"
+  ],
+  "focus_concepts": [
+    "RANKING & TOP-N PER GROUP",
+    "GROUPED AGGREGATION"
+  ],
+  "outcomes": "You'll fluently rank rows within groups, compute percentile ranks, pick the latest row per key, and build Top-N-per-category queries that survive ties and edge cases.",
+  "recommended_after": [
+    "groupby"
+  ]
+}

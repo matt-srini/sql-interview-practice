@@ -1,0 +1,28 @@
+{
+  "slug": "neural-networks-and-gradients",
+  "title": "Neural Networks & Gradient Behaviour",
+  "description": "Build practitioner intuition for the gradient-flow patterns every senior-ML interview probes: learning-rate effects, convergence indicators, NN architecture choice for tabular data, transfer-learning misalignment, and diagnosing vanishing gradients from activation saturation.",
+  "topic": "ml-fundamentals",
+  "questions": [
+    81016,
+    81017,
+    83017,
+    83039,
+    83041
+  ],
+  "tier": "pro",
+  "level": "advanced",
+  "patterns": [
+    "neural-networks-and-gradients"
+  ],
+  "focus_concepts": [
+    "GRADIENT DESCENT BEHAVIOR",
+    "NEURAL NETWORK DESIGN",
+    "GRADIENT PATHOLOGY",
+    "TRANSFER LEARNING STRATEGY"
+  ],
+  "outcomes": "You'll reason about learning rate effects on convergence vs divergence, decide when a neural network beats a boosted tree on tabular data, diagnose domain-adaptation failures in transfer learning, and recognise vanishing gradients from activation-saturation patterns.",
+  "recommended_after": [
+    "ml-starter"
+  ]
+}

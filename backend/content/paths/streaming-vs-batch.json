@@ -1,0 +1,28 @@
+{
+  "slug": "streaming-vs-batch",
+  "title": "Streaming vs Batch Architecture",
+  "description": "Master the architectural decision every production data team eventually faces: when streaming actually wins over batch, micro-batch vs true streaming latency, Lambda architecture trade-offs, and how to handle backpressure when the source outpaces the sink.",
+  "topic": "data-engineering",
+  "questions": [
+    51011,
+    51012,
+    52004,
+    52005,
+    52006,
+    52031
+  ],
+  "tier": "pro",
+  "level": "intermediate",
+  "patterns": [
+    "streaming-vs-batch"
+  ],
+  "focus_concepts": [
+    "BATCH VS STREAMING",
+    "SCHEDULING & SLAS",
+    "BACKPRESSURE"
+  ],
+  "outcomes": "You'll justify when streaming actually wins over batch, distinguish micro-batch from true streaming on latency grounds, design Lambda-architecture trade-offs honestly, and handle backpressure without dropping events.",
+  "recommended_after": [
+    "pipeline-fundamentals"
+  ]
+}

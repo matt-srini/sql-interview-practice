@@ -1,0 +1,27 @@
+{
+  "slug": "data-vault",
+  "title": "Data Vault Modeling",
+  "description": "Master the Hub-Link-Satellite methodology that enterprise data warehouses use to integrate multi-source data without losing source-system fidelity: Hub design for multi-source IDs, Satellite design for attribute conflicts, and Link design for multi-party financial relationships.",
+  "topic": "data-modeling",
+  "questions": [
+    62077,
+    63001,
+    63006,
+    63012
+  ],
+  "tier": "pro",
+  "level": "advanced",
+  "patterns": [
+    "data-vault"
+  ],
+  "focus_concepts": [
+    "DATA VAULT",
+    "SURROGATE VS NATURAL KEYS",
+    "BRIDGE & MANY-TO-MANY",
+    "SCHEMA FROM REQUIREMENTS"
+  ],
+  "outcomes": "You'll design Hubs that resolve multi-source customer-ID conflicts, model Satellites that preserve source-system attribute conflicts, and structure Links that carry multi-party financial relationships without losing audit fidelity.",
+  "recommended_after": [
+    "star-snowflake"
+  ]
+}

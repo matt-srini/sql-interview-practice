@@ -1,0 +1,26 @@
+{
+  "slug": "aggregate-and-summary-design",
+  "title": "Aggregate & Summary Design",
+  "description": "Decide when to materialize aggregates vs query raw fact tables live: pre-aggregation trade-offs for high-cardinality dashboards, partitioning strategy for billion-row event facts, customer-lifetime-value modeling, and the cost-vs-freshness curve you sit on.",
+  "topic": "data-modeling",
+  "questions": [
+    62025,
+    63005,
+    63013,
+    63017
+  ],
+  "tier": "pro",
+  "level": "advanced",
+  "patterns": [
+    "aggregate-and-summary-design"
+  ],
+  "focus_concepts": [
+    "AGGREGATE & SUMMARY DESIGN",
+    "FACT TABLE DESIGN",
+    "DENORMALIZATION TRADEOFF"
+  ],
+  "outcomes": "You'll decide when to pre-aggregate vs query live based on dashboard cardinality, partition + cluster billion-row event facts, model CLV in a dimensional schema, and navigate the cost-vs-freshness trade-offs that drive summary-table architecture.",
+  "recommended_after": [
+    "fact-table-design"
+  ]
+}

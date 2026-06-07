@@ -1,0 +1,27 @@
+{
+  "slug": "errors-and-power",
+  "title": "Errors, Power & Multiple Testing",
+  "description": "Master the discipline that decides whether your hypothesis-testing pipeline is honest: Type I vs Type II trade-offs, statistical power calculation, family-wise error rate under multiple comparisons, and the Bonferroni power loss that surprises analysts who 'just adjust p-values'.",
+  "topic": "statistics",
+  "questions": [
+    72024,
+    72025,
+    73010,
+    73011,
+    73022
+  ],
+  "tier": "pro",
+  "level": "intermediate",
+  "patterns": [
+    "errors-and-power"
+  ],
+  "focus_concepts": [
+    "errors & power",
+    "multiple testing & correction",
+    "hypothesis testing"
+  ],
+  "outcomes": "You'll compute power for a target effect size, apply Bonferroni or other corrections to multiple comparisons, predict the power loss your correction incurs, and design tests that survive the multiple-testing problem without sacrificing detectability.",
+  "recommended_after": [
+    "hypothesis-testing"
+  ]
+}

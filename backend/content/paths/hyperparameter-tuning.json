@@ -1,0 +1,27 @@
+{
+  "slug": "hyperparameter-tuning",
+  "title": "Hyperparameter Tuning",
+  "description": "Master the hyperparameter discipline every applied-ML role assumes: which hyperparameters move the model and which don't (criterion vs depth, max_iter vs C), learning-rate schedules, and choosing between grid search and Bayesian optimization for the search budget you have.",
+  "topic": "ml-fundamentals",
+  "questions": [
+    81015,
+    81020,
+    81026,
+    83012,
+    83023
+  ],
+  "tier": "free",
+  "level": "intermediate",
+  "patterns": [
+    "hyperparameter-tuning"
+  ],
+  "focus_concepts": [
+    "HYPERPARAMETER SENSITIVITY",
+    "REGULARIZATION EFFECT",
+    "GRADIENT DESCENT BEHAVIOR"
+  ],
+  "outcomes": "You'll predict which hyperparameters move predictions and which don't, design learning-rate schedules for convergence behaviour, choose between grid search and Bayesian optimization based on the search budget, and reason about regularization hyperparameters (C, λ) without misinterpreting their direction of effect.",
+  "recommended_after": [
+    "cross-validation"
+  ]
+}

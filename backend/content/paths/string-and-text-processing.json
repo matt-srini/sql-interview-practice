@@ -1,0 +1,25 @@
+{
+  "slug": "string-and-text-processing",
+  "title": "String & Text Processing",
+  "description": "Master the string and text patterns every data-Python role probes: character counting, compression, prefix matching, and trie-based search — the practical scaffolding behind log parsing, deduplication, and autocomplete.",
+  "topic": "python",
+  "questions": [
+    21004,
+    21021,
+    21024,
+    23020
+  ],
+  "tier": "free",
+  "level": "intermediate",
+  "patterns": [
+    "string-and-text-processing"
+  ],
+  "focus_concepts": [
+    "STRING PATTERN REASONING",
+    "INDEXED SEQUENCE REASONING"
+  ],
+  "outcomes": "You'll process strings character-by-character with intent, design compression and prefix-matching algorithms, and build trie structures for fast prefix queries — the patterns behind real log-parsing and autocomplete code.",
+  "recommended_after": [
+    "arrays-and-hashing"
+  ]
+}

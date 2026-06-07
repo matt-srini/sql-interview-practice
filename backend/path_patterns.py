@@ -52,6 +52,8 @@ PATH_PATTERNS: dict[str, dict[str, str]] = {
         "dynamic-programming": "Dynamic Programming",
         "graph-traversal": "Graph & Tree Traversal",
         "data-pipelines": "Data Pipeline Scripting",
+        "string-and-text-processing": "String & Text Processing",
+        "heap-and-priority": "Heaps & Priority Queues",
     },
     "python-data": {
         "dataframe-basics": "DataFrame Basics",
@@ -61,6 +63,7 @@ PATH_PATTERNS: dict[str, dict[str, str]] = {
         "time-series": "Time Series",
         "customer-analytics": "Customer Analytics Pipelines",
         "data-cleaning": "Data Cleaning",
+        "top-n-and-ranking": "Top-N & Ranking",
     },
     "pyspark": {
         "spark-basics": "Core Spark Concepts",
@@ -69,6 +72,7 @@ PATH_PATTERNS: dict[str, dict[str, str]] = {
         "streaming": "Structured Streaming",
         "delta-lake": "Delta Lake",
         "spark-joins-and-skew": "Spark Joins & Skew Handling",
+        "pyspark-windowing": "Window Functions & Frames",
     },
     "data-engineering": {
         "etl-elt": "ETL / ELT Design",
@@ -79,6 +83,8 @@ PATH_PATTERNS: dict[str, dict[str, str]] = {
         "data-lineage": "Data Lineage",
         "pipeline-observability": "Pipeline Observability",
         "data-quality-and-incident-response": "Data Quality & Incident Response",
+        "cost-and-format-optimization": "Cost & Format Optimization",
+        "streaming-vs-batch": "Streaming vs Batch Architecture",
     },
     "data-modeling": {
         "star-snowflake": "Star & Snowflake Schemas",
@@ -91,6 +97,8 @@ PATH_PATTERNS: dict[str, dict[str, str]] = {
         "bridge-tables": "Bridge Tables & Many-to-Many",
         "dbt-modeling": "dbt Layered Modeling",
         "wide-tables": "Wide Tables & OBT",
+        "data-vault": "Data Vault Modeling",
+        "aggregate-and-summary-design": "Aggregate & Summary Design",
     },
     "statistics": {
         "descriptive-stats": "Descriptive Statistics",
@@ -99,6 +107,9 @@ PATH_PATTERNS: dict[str, dict[str, str]] = {
         "confidence-intervals": "Confidence Intervals",
         "regression": "Regression Analysis",
         "probability-and-combinatorics": "Probability & Combinatorics",
+        "bayesian-reasoning": "Bayesian Reasoning",
+        "errors-and-power": "Errors, Power & Multiple Testing",
+        "sampling-and-clt": "Sampling & CLT",
     },
     "ml-fundamentals": {
         "supervised-unsupervised": "Supervised vs Unsupervised Framing",
@@ -111,6 +122,9 @@ PATH_PATTERNS: dict[str, dict[str, str]] = {
         "missing-data": "Missing Data & Imputation",
         "feature-engineering": "Feature Engineering",
         "class-imbalance": "Class Imbalance Handling",
+        "hyperparameter-tuning": "Hyperparameter Tuning",
+        "neural-networks-and-gradients": "Neural Networks & Gradient Behaviour",
+        "unsupervised-methods": "Unsupervised Methods",
     },
     "experimentation": {
         "ab-test-basics": "A/B Test Mechanics",

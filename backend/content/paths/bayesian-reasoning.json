@@ -1,0 +1,27 @@
+{
+  "slug": "bayesian-reasoning",
+  "title": "Bayesian Reasoning",
+  "description": "Master the Bayesian reasoning every senior DS/ML interview probes: Bayes' theorem application, prior-likelihood-posterior reasoning, conjugate priors (beta-binomial), and posterior mean computation that production A/B systems depend on.",
+  "topic": "statistics",
+  "questions": [
+    72017,
+    72018,
+    72042,
+    73001,
+    73020,
+    73021
+  ],
+  "tier": "pro",
+  "level": "intermediate",
+  "patterns": [
+    "bayesian-reasoning"
+  ],
+  "focus_concepts": [
+    "bayesian inference",
+    "probability & combinatorics"
+  ],
+  "outcomes": "You'll apply Bayes' theorem fluently in diagnostic settings, distinguish Bayesian from frequentist framings, compute beta-binomial conjugate-prior posteriors, and update a posterior under new evidence without re-running the whole analysis.",
+  "recommended_after": [
+    "probability-and-combinatorics"
+  ]
+}

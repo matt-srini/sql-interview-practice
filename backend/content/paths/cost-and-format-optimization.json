@@ -1,0 +1,38 @@
+{
+  "slug": "cost-and-format-optimization",
+  "title": "Cost & Format Optimization",
+  "description": "Master the storage, format, and partitioning decisions that decide whether your pipeline costs $200/month or $20K/month: partition key choice, small-file problem, Parquet vs Avro, compaction, scan-cost optimization, and tiered storage.",
+  "topic": "data-engineering",
+  "questions": [
+    51014,
+    51015,
+    51021,
+    52020,
+    52021,
+    52022,
+    52023,
+    52028,
+    52029,
+    53014,
+    53015,
+    53019,
+    53022,
+    53023,
+    53026
+  ],
+  "tier": "pro",
+  "level": "intermediate",
+  "patterns": [
+    "cost-and-format-optimization"
+  ],
+  "focus_concepts": [
+    "COST OPTIMIZATION",
+    "STORAGE LAYOUT & FILE FORMATS",
+    "PARTITIONING & PRUNING",
+    "STORAGE ARCHITECTURE"
+  ],
+  "outcomes": "You'll pick a partition key that avoids the small-file problem, choose between Parquet and Avro from the read pattern, apply compaction strategies, design tiered storage for cold data, and reduce warehouse scan costs through filter pushdown and materialization decisions.",
+  "recommended_after": [
+    "pipeline-fundamentals"
+  ]
+}
