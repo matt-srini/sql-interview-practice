@@ -756,7 +756,7 @@
     "type": "conceptual",
     "description": "An analyst runs a one-way ANOVA across five product categories and obtains an F-statistic of 4.8 with p = 0.002. What does the F-statistic represent, and where does the F-distribution come from?",
     "options": [
-      "It is the ratio of between-group variance to within-group variance; it follows an F-distribution because it is the ratio of two independent chi-squared variables each scaled by their degrees of freedom",
+      "It is the ratio of between-group to within-group variance; the F-distribution arises from a ratio of chi-squared variables.",
       "It is the ratio of the largest group mean to the smallest; it follows an F-distribution because means are normally distributed",
       "It is the pooled standard deviation across all five groups, standardised by total sample size",
       "It is the sum of squared z-scores for all observations, divided by the number of groups minus one"
@@ -835,7 +835,7 @@
     "options": [
       "The result is a clear win: primary metrics determine launch decisions, and guardrail metrics are informational only",
       "The guardrail drop is expected because click-through rate and session duration are always negatively correlated by experimental design",
-      "The improvement in click-through rate likely comes at the cost of a degraded user experience captured by the session duration drop; the team should investigate before shipping",
+      "The CTR improvement may come at the cost of user experience as captured by the session duration drop; investigate before shipping.",
       "The test should be re-run with a different randomisation unit to separate the two metric effects"
     ],
     "correct_option": 2,
@@ -884,7 +884,7 @@
       "Confounding: there is an unmeasured third variable (age) that independently causes both smoking and obesity",
       "Reverse causation: obesity causes patients to smoke more to manage weight",
       "Measurement error: hospital self-reported smoking rates are systematically lower than true rates, attenuating a positive correlation toward negative",
-      "Berkson's bias: both conditions increase the probability of hospitalisation, so the hospital sample over-represents patients with at least one condition, creating a spurious negative association between them within the sample"
+      "Berkson's bias: both conditions raise hospitalisation risk, over-representing patients with either, creating a spurious negative correlation."
     ],
     "correct_option": 3,
     "explanation": "Berkson's bias (a form of collider bias) arises when a study sample is drawn from a population that is itself selected based on having at least one of the conditions under study. Both smoking and obesity independently increase the chance of hospitalisation. Conditional on being hospitalised, someone with one condition is less likely to also have the other — because either condition alone was sufficient for admission. This creates a negative correlation within the hospital that does not exist in the general population. Avoiding Berkson's bias requires sampling from the general population, not from a selected sub-population like hospital admissions.",
@@ -955,7 +955,7 @@
     "description": "An analyst wants to understand why users who reach step 3 of a 5-step sign-up funnel convert at only 40%. She surveys 1,000 users who reached step 3 about their motivations and friction points. Why is this sample not representative of all users who started the funnel at step 1?",
     "options": [
       "The sample is too small: at least 10,000 step-3 users are needed for the survey to be statistically valid",
-      "Users who reached step 3 are a self-selected, higher-intent subset; their experiences cannot explain why users who dropped off at step 1 or step 2 did not continue",
+      "Users who reached step 3 are self-selected; their responses cannot explain dropout at steps 1 or 2.",
       "A/B testing at step 3 requires simultaneously randomising steps 1 and 2, otherwise the test is confounded",
       "The conversion rate formula is undefined when users can re-enter the funnel multiple times"
     ],
@@ -1004,7 +1004,7 @@
     "options": [
       "Yes: an odds ratio of 0.5 always equals a relative risk of 0.5, so the risk is exactly halved in all cases",
       "No: the relative risk is always larger than the odds ratio when the baseline rate exceeds 50%, not 40%",
-      "No: odds ratio and relative risk diverge when baseline rates are high; with a 40% baseline the actual relative risk reduction is less than 50%, so the journalist's statement overstates the benefit",
+      "No: at a 40% baseline, odds ratio and relative risk diverge; the actual risk reduction is less than 50%.",
       "Yes: the odds ratio is a conservative estimate of relative risk, so the journalist is understating the drug's benefit"
     ],
     "correct_option": 2,
@@ -1125,7 +1125,7 @@
       "40% overestimates churn because censored users didn't churn; Kaplan-Meier corrects by ignoring censored observations entirely and computing churn only over users who reached day 30.",
       "40% underestimates churn because censored users are likely to have churned after dropping out; Kaplan-Meier adjusts upward by imputing churn events for each censored observation.",
       "Censoring does not bias the estimate as long as it is random; the 40% is unbiased by definition when users drop out independently, and Kaplan-Meier adds no correction in this case.",
-      "40% is biased because it treats censored users as confirmed survivors for the full 30-day window, when we only know they survived until the censoring time. Kaplan-Meier removes censored users from the risk set at the time of censoring, using partial information rather than ignoring it."
+      "40% is biased because it treats censored users as confirmed survivors for the full 30-day window. Kaplan-Meier removes censored users from the risk set at their censoring time."
     ],
     "correct_option": 3,
     "explanation": "Option D — correct: treating 3 censored users as definite 30-day survivors overstates the denominator of survivors and understates the churn probability. Kaplan-Meier's product-limit approach removes each censored user from the risk set at their censoring time — they were 'at risk' up to that point, which is valuable information, but they are not counted as survivors past that point. Option A — wrong: ignoring censored observations discards the information they do provide (they survived up to the censoring time). Option B — wrong: imputing churn events introduces bias; KM relies on observed events only and makes no assumptions about post-censoring outcomes. Option C — wrong: even random censoring biases a naive count-based estimate (4/10) because censored users had less time at risk; Kaplan-Meier is still needed to account for this.",
@@ -1635,7 +1635,7 @@
     "description": "A product team evaluates whether Feature F increases purchase conversion:\n\n| Group | With Feature F | Without Feature F |\n|---|---|---|\n| Overall | 8.0% conversion | 12.0% conversion |\n| Power users | 20.0% | 15.0% |\n| Casual users | 5.0% | 4.0% |\n\nIn every user segment, Feature F is associated with higher conversion. Yet in the overall population, Feature F is associated with lower conversion (8% vs. 12%).\n\nWhat is the correct explanation, and what should the PM do?",
     "options": [
       "The data is internally inconsistent; numbers that show a reversal across groups and overall cannot both be correct and should be re-pulled",
-      "Simpson's Paradox: the overall reversal is caused by a confounding variable (user type) that is correlated with both Feature F adoption and conversion. Because casual users dominate the Feature F group (lower baseline conversion) and power users dominate the non-Feature-F group (higher baseline conversion), the aggregate comparison is confounded by user type. The correct within-segment results show F is beneficial; the PM should report segment-level results and consider user type as a covariate in any further analysis",
+      "Simpson's Paradox: user type confounds Feature F adoption and conversion, reversing the aggregate. Segment-level results are the correct causal comparison.",
       "Feature F has a negative overall effect that somehow disappears in segments; this is a sign of a measurement error in the segment data",
       "The overall result (8% vs. 12%) is the correct causal estimate because it uses the full sample; segment-level analyses always introduce bias by splitting the data"
     ],
@@ -1840,7 +1840,7 @@
     "description": "The onboarding A/B test concludes. Day-7 retention (pre-registered primary metric): +2.1pp, p = 0.07.\n\nBefore unblinding, the PM had seen a competitor's case study using day-14 retention as the primary metric. After unblinding, the PM says: 'Our day-7 missed significance. Let's re-run the analysis with day-14 retention as the primary metric — it's a better business measure anyway.'\n\nWhat is the correct response?",
     "options": [
       "Switching to day-14 retention is acceptable because it was motivated by a legitimate business reason (competitor best practice) identified before the experiment started",
-      "Switching the primary metric after observing the outcome violates the pre-registration contract. Regardless of the business rationale, choosing the metric whose result is more favorable after unblinding is HARKing (Hypothesising After Results are Known) and inflates the true Type I error rate. Day-7 retention p = 0.07 is the valid answer: the experiment did not meet its pre-specified threshold",
+      "Switching the primary metric after seeing results is HARKing — it inflates Type I error. The pre-specified threshold was not met; p=0.07 stands.",
       "p = 0.07 is close enough to 0.05 that the PM should ship the feature; the exact metric choice is a detail",
       "Pre-registration is only required for academic research; in product experimentation you may freely change the primary metric as long as the sample size does not change"
     ],
@@ -1897,10 +1897,10 @@
     "title": "SUTVA Violation in a Social Marketplace",
     "description": "A marketplace (think: Etsy) tests a new product recommendation algorithm by randomly assigning 50% of buyers to see recommendations (treatment) and 50% to see the default browse experience (control).\n\nBuyers in the treatment group click through to sellers' item pages at a higher rate. Some of those buyers share item links with friends via message or social media. Some of the friends receiving links are assigned to the control group.\n\nA data scientist flags that this violates an important assumption. What assumption is violated, and what is the consequence for the experiment?",
     "options": [
-      "SUTVA (Stable Unit Treatment Value Assumption): SUTVA requires that a unit's outcome depends only on that unit's treatment assignment, not on other units' assignments. Here, control users receive item links generated by the treatment algorithm through social sharing — a direct interference between treated and control units. This inflates apparent control-group engagement, compressing the measured treatment effect (the treatment effect is underestimated)",
+      "SUTVA violation: control users receive treatment-algorithm links via social sharing, creating direct interference. This inflates control engagement and underestimates the treatment effect.",
       "Randomisation balance: the sharing behavior means the treatment and control groups are no longer equal in size, invalidating the random assignment",
       "The Central Limit Theorem no longer applies when social sharing exists, so hypothesis tests using normal approximations are invalid",
-      "SUTVA only applies to physical experiments; digital product experiments are not subject to spillover concerns because online behavior is individually tracked"
+      "SUTVA only applies to physical experiments; digital product experiments are not subject to spillover concerns because online behavior is individually tracked and interference cannot occur between users."
     ],
     "correct_option": 0,
     "explanation": "Option A correctly identifies the SUTVA violation.\n\nSUTVA is one of the core assumptions of the potential outcomes framework for causal inference. It states: the potential outcome for unit i under treatment t depends only on unit i's assignment, not on the assignments of other units. When control users receive socially-shared links generated by the treatment algorithm, their engagement is partially influenced by treatment-arm behavior — a direct SUTVA violation.\n\nThe consequence here is attenuation bias on the treatment effect: the control group experiences some of the treatment's benefits indirectly (via shared links), making them more engaged than they would be in a world without the treatment. The measured gap between treatment and control understates the true treatment effect.\n\nIn severe cases — e.g., viral social products, marketplace supply-demand spillovers, or pricing experiments — SUTVA violations can even reverse the sign of the measured effect.\n\nCommon solutions include: geo-based randomisation (treatment and control assigned to non-overlapping geographic markets), time-based switchback designs (alternating treatment/control periods), or network-cluster randomisation (assigning connected users to the same arm).\n\nOption B is wrong: random assignment is still valid (50/50 split), and unequal group sizes are not the issue here (the groups remain equal in assignment; it is the interference that is the problem).\n\nOption C is wrong: the CLT is not threatened by sharing behavior; it is a property of sampling distributions regardless of within-sample interactions.\n\nOption D is a misconception: SUTVA violations are particularly common and important in digital experiments precisely because digital products facilitate rapid user-to-user interactions, viral loops, and network effects.",
@@ -1924,8 +1924,8 @@
     "title": "Novelty Effect: Week 1 Engagement Spike That Dissipates",
     "description": "A new interface design is A/B tested. Results by week:\n\n| Week | Treatment engagement | Control engagement | Lift |\n|---|---|---|---|\n| 1 | 68% | 52% | +16pp |\n| 2 | 61% | 53% | +8pp |\n| 3 | 56% | 53% | +3pp |\n| 4 | 54% | 54% | 0pp |\n\nThe PM sees the week-1 result and says: 'We have a 16pp improvement — ship it.' The data scientist argues the experiment should run longer.\n\nWhich interpretation best describes what the data shows, and what should the team do?",
     "options": [
-      "The data shows a classic novelty effect: users explore and engage more with any changed interface in the early period (treatment is 'new'), but engagement returns to baseline as the novelty wears off. The true steady-state effect appears to be near zero. Shipping based on week-1 data would overestimate the lasting value of the change; the experiment should run until engagement stabilizes",
-      "The 16pp lift is the true treatment effect; later weeks are contaminated by control users learning about the new design, which suppresses the week-4 comparison",
+      "Classic novelty effect: early engagement is inflated while the interface is new, then returns to baseline. The true steady-state effect appears near zero; week-1 data overstates lasting impact.",
+      "The 16pp lift is the true treatment effect; later weeks are contaminated by control users learning about the new design through word-of-mouth, which suppresses the week-4 comparison and makes the decline spurious.",
       "The experiment is invalid because the lift declined monotonically; a well-designed A/B test should show stable effects across all weeks",
       "Novelty effects are only relevant for physical product experiments; digital interface changes do not exhibit novelty effects because users adapt instantly"
     ],
@@ -2024,8 +2024,8 @@
     "title": "What Does a 95% Confidence Interval Actually Claim?",
     "description": "Your team ran 500 visitors through a landing page. 35 converted (7% conversion rate). A frequentist analysis yields a 95% confidence interval of [4.9%, 9.3%] for the true conversion rate.\n\nThe PM says: 'So we're 95% confident the true rate is somewhere in that range, right?'\n\nWhich of the following most accurately explains what the interval means?",
     "options": [
-      "Yes — it means there is a 95% probability that the true conversion rate falls between 4.9% and 9.3% given this data",
-      "The interval is a frequentist construct: if we repeated this experiment under identical conditions many times and computed an interval each time, 95% of those intervals would contain the true (fixed, unknown) conversion rate. This specific interval either contains the true rate or it doesn't — frequentist inference doesn't assign a probability to a fixed parameter",
+      "Yes — it means there is a 95% probability that the true conversion rate falls between 4.9% and 9.3% given this data; this is exactly the correct interpretation, matching how a Bayesian with a flat prior would describe it.",
+      "Frequentist CI: if we repeated this experiment many times, 95% of resulting intervals would contain the true rate. This specific interval either does or doesn't — no probability is assigned to a fixed parameter.",
       "The 95% refers to the confidence in the statistical software, not in the result itself",
       "It means we are 95% sure the sample estimate of 7% is unbiased and therefore within 5% of the true value"
     ],
@@ -2053,10 +2053,10 @@
     "title": "Bayesian Credible Interval: What Claim Does It Make?",
     "description": "Continuing from the landing page experiment (35/500 conversions). A Bayesian analyst uses a Beta(1, 1) prior — encoding no prior knowledge about the conversion rate — and observes 35 successes from 500 trials.\n\nThe Bayesian posterior is Beta(36, 466), and the 95% highest-density interval (credible interval) is approximately [5.0%, 9.4%].\n\nThe PM asks: 'This range is almost the same as the frequentist CI. So they mean the same thing, right?'\n\nWhich response is most accurate?",
     "options": [
-      "Yes — when the prior is uniform and the sample is large, the two intervals converge numerically and conceptually",
+      "Yes — when the prior is uniform and the sample is large, the two intervals converge both numerically and conceptually; a 95% Bayesian credible interval is fully equivalent to a 95% frequentist confidence interval in all practical respects.",
       "The Bayesian interval is always wider than the frequentist CI because it accounts for prior uncertainty",
       "The two intervals are unrelated; the Bayesian result is only valid if the prior is informed by historical data",
-      "The intervals are numerically similar here, but they mean different things. The Bayesian credible interval directly answers: 'Given the data and the uniform prior, there is a 95% probability the true conversion rate lies between 5.0% and 9.4%.' The frequentist CI cannot make this statement. The conceptual difference is real even when the numbers agree"
+      "Numerically similar but conceptually different. Bayesian credible interval directly assigns 95% probability to the parameter; frequentist CI only describes repeated sampling. The difference is real even when numbers agree."
     ],
     "correct_option": 3,
     "explanation": "Option D is correct. The numerical similarity is a well-known result (related to the Bernstein-von Mises theorem), but the conceptual difference is fundamental.\n\nThe Bayesian credible interval is a statement about the posterior distribution of the parameter: it says 'given this data and this prior, there is a 95% posterior probability that θ lies in this interval.' This is exactly the statement the PM intuitively wanted from the frequentist CI — and it is now valid to make, because in the Bayesian framework θ is treated as a random variable with a probability distribution.\n\nThe frequentist CI [4.9%, 9.3%] means 'this procedure, if repeated many times, would produce intervals covering the true θ 95% of the time.' It does NOT mean 'P(θ ∈ [4.9%, 9.3%] | data) = 0.95.'\n\nKey insight: the conceptual choice between frameworks determines what question you're answering. With a uniform prior and 500 data points, the answers happen to be numerically close. But with a small sample (say n = 20) or an informative prior, the two intervals would diverge both numerically and conceptually.\n\nOption A is wrong because the conceptual difference persists even when the numbers converge. Numerical agreement doesn't make the interpretations equivalent.\n\nOption B is wrong — there is no general rule that Bayesian intervals are wider. With an informative prior that concentrates mass near the true value, Bayesian intervals can be narrower.\n\nOption C is wrong: using a uniform prior with observational data is a valid choice. It encodes 'I have no prior information' — a reasonable starting point when no historical data exists.",
@@ -2110,9 +2110,9 @@
     "title": "Prior Strength: How Quickly Does Data Overcome a Prior?",
     "description": "Two analysts model the same experiment — 50 conversions out of 200 visits (25% rate):\n\n- Analyst A uses a Beta(1, 1) prior (uniform, no prior knowledge)\n- Analyst B uses a Beta(40, 160) prior (encoding strong prior belief that conversion is ~20%)\n\nBoth compute the posterior distribution.\n\nAnalyst B's posterior mean is 22.5%, while Analyst A's posterior mean is 25.1%. The PM says 'Analyst A is right — your data shows 25%, so Analyst B must be wrong to put it at 22.5%.'\n\nWhat is the most accurate characterisation of what is happening?",
     "options": [
-      "Both analysts are applying Bayes' rule correctly. Analyst B's prior is equivalent to having seen 200 additional observations with a 20% rate; it takes substantial data to overcome. With only 200 new observations and a strong prior encoding 200 pseudo-observations, the posterior is pulled toward the midpoint between prior and data. Neither posterior is 'biased' — they represent different prior states of knowledge",
+      "Both apply Bayes' rule correctly. Analyst B's prior encodes 200 pseudo-observations; with only 200 new data points, the posterior is pulled midway. Neither is biased — they reflect different prior knowledge.",
       "The PM is right: with 200 observations, the data should completely override any prior. Analyst B's prior is introducing bias",
-      "Analyst A's posterior is correct and Analyst B's prior is invalid because it encodes a specific numerical belief without empirical evidence",
+      "Analyst A's posterior is correct and Analyst B's prior is invalid because it encodes a specific numerical belief without empirical evidence; priors should always be noninformative unless based on replicated prior studies.",
       "Analyst B should use a Jeffreys prior instead of Beta(40,160) to avoid subjectivity"
     ],
     "correct_option": 0,
@@ -2232,8 +2232,8 @@
     "title": "Confidence Interval for a Conversion Rate",
     "description": "A product runs 500 landing page visits, observing 35 conversions (7%). A data scientist computes a 95% Wald confidence interval:\n\np̂ ± z_{0.025} × √(p̂(1−p̂)/n) = [4.8%, 9.2%]\n\nThe PM says: 'The lower bound is under 5%, which is our minimum viable threshold. We shouldn't launch.'\n\nA statistician responds: 'That interpretation is too strong — this is not what the CI tells you to do.'\n\nWho is closer to correct, and why?",
     "options": [
-      "The statistician is closer to correct. The CI width reflects uncertainty about the true rate — not a decision criterion. A proper launch decision requires pre-specifying what evidence level would trigger launch vs. hold, and ideally a one-sided test against the 5% threshold. The CI lower bound being below 5% means the data is 'consistent with' rates below 5%, but that's not the same as saying the true rate is probably below 5%",
-      "The PM is correct: if the CI lower bound is below the threshold, the data are consistent with a failure scenario and the product should not launch",
+      "The statistician is closer to correct. A CI lower bound below 5% means data is 'consistent with' rates below 5%, not that the true rate is probably below 5%. A proper decision requires pre-specified evidence thresholds.",
+      "The PM is correct: if the CI lower bound is below the acceptance threshold, the data are consistent with a failure scenario and the product should not launch without additional supporting evidence or a pre-specified waiver.",
       "Both are wrong: a CI cannot be used to make launch decisions; only Bayesian inference can answer this question",
       "The PM's reasoning is valid: any CI that includes values below the threshold means the experiment failed to demonstrate viability"
     ],
@@ -2262,9 +2262,9 @@
     "title": "Data Quality: When Is the Wald CI Unreliable?",
     "description": "Continuing from the conversion rate study (35/500, 7%). The data scientist used the Wald CI: p̂ ± z × √(p̂(1−p̂)/n) = [4.8%, 9.2%].\n\nA colleague mentions: 'The Wald CI performs poorly in some common situations. When should you use a different CI method for proportions?'\n\nThe data scientist asks: 'What cases break the Wald CI?'\n\nWhich best characterises when the Wald CI is unreliable for proportions?",
     "options": [
-      "The Wald CI is always reliable for n > 30, regardless of the proportion; the Central Limit Theorem guarantees accuracy",
+      "The Wald CI is always reliable for n > 30, regardless of the proportion; the Central Limit Theorem guarantees accuracy for the sample proportion just as it does for the sample mean in any large sample.",
       "The Wald CI is unreliable only when the sample is not drawn randomly; any non-random sample invalidates it",
-      "The Wald CI is unreliable when p̂ is near 0 or 1 (rare events or near-certain events), when n is small (say n < 50), or when the expected cell counts np̂ or n(1−p̂) fall below ~5. In these cases, the normal approximation to the Binomial is poor and the Wald CI has poor coverage — it nominally claims 95% but actually covers the true rate only 80–90% of the time. Wilson or Clopper-Pearson intervals are better alternatives",
+      "The Wald CI is unreliable when p̂ is near 0 or 1 or when np̂ < ~5. The normal approximation is then poor, and actual coverage falls to 80–90% instead of 95%. Wilson or Clopper-Pearson are preferred.",
       "The Wald CI always undercovers; the correct CI for proportions is always the Bayesian credible interval"
     ],
     "correct_option": 2,
@@ -2294,9 +2294,9 @@
     "title": "Bootstrap CI vs Parametric CI: When to Bootstrap",
     "description": "A data scientist computes the 95% confidence interval for **median** session duration from 200 observations. Session duration is highly right-skewed (most sessions are short; a few are very long).\n\nThe parametric-CI approach: mean ± z × σ/√n  \nThe bootstrap-CI approach: bootstrap percentile CI with 2,000 resamples\n\nThe analyst uses the parametric-CI approach. A colleague argues the bootstrap-CI approach is better here. Who is right and why?",
     "options": [
-      "The parametric-CI approach is always correct when n ≥ 30 because the CLT guarantees the sampling distribution of any statistic is normal",
+      "The parametric-CI approach is always correct when n ≥ 30 because the CLT guarantees the sampling distribution of any statistic — including the median — is approximately normal for sufficiently large samples.",
       "Both intervals are equivalent; the CLT makes the parametric-CI approach exact for any sample size above 30",
-      "The bootstrap-CI approach is better here for two reasons: (1) the target statistic is the **median**, not the mean — the CLT applies to the mean but not automatically to other statistics; (2) session duration is highly skewed, so the normal approximation may be poor for small/moderate samples. The bootstrap makes no distributional assumption and directly estimates the sampling distribution of the median empirically",
+      "Bootstrap-CI is better: CLT applies to the mean but not automatically to the median, and session duration is highly skewed. Bootstrap makes no distributional assumption.",
       "The parametric-CI approach is better because bootstrapping introduces randomness that reduces the validity of the CI"
     ],
     "correct_option": 2,
@@ -2323,9 +2323,9 @@
     "title": "Bootstrap CI Width and Resample Count Trade-off",
     "description": "Continuing from the bootstrap CI analysis: the analyst runs two versions of the bootstrap for the same dataset:\n- Version 1: 200 resamples → 95% CI: [42s, 118s]\n- Version 2: 5,000 resamples → 95% CI: [44s, 112s]\n\nA PM asks: 'Why does the CI change slightly between 200 and 5,000 resamples? And should we always use 5,000?'\n\nWhich response is most accurate?",
     "options": [
-      "The CI changes because more resamples always produce a narrower (more accurate) CI, so you should always use the maximum resamples computationally feasible",
+      "The CI changes because more resamples always produce a narrower (more accurate) CI, so you should always use the maximum resamples computationally feasible — this is standard bootstrap best practice for any CI computation.",
       "The CI narrows because more resamples mean more data, which reduces statistical uncertainty",
-      "The CI changes because 200 resamples is insufficient to estimate the percentiles of the bootstrap distribution stably — there's Monte Carlo variance in the percentile estimates. With 5,000 resamples, the 2.5th and 97.5th percentile estimates stabilize. However, more resamples do NOT narrow the CI itself; they reduce the Monte Carlo noise in estimating the CI endpoints. The CI width reflects sampling variability in the original data, not the number of resamples",
+      "200 resamples is too few — Monte Carlo variance makes the percentile estimates unstable. More resamples reduce that noise but do NOT narrow the CI itself; CI width reflects sampling variability in the data.",
       "200 resamples is statistically sufficient for any bootstrap CI; the width change is due to numerical precision differences, not Monte Carlo variance"
     ],
     "correct_option": 2,
@@ -2352,8 +2352,8 @@
     "title": "Bootstrap CI Reliability at Very Small and Very Large n",
     "description": "The analyst now considers using the same bootstrap percentile CI in two new contexts:\n\n- **Context A:** n = 15 observations of session duration (very small)\n- **Context B:** n = 100,000 observations of session duration (very large)\n\nFor which context is the bootstrap percentile CI most reliable, and what is the key concern in each?",
     "options": [
-      "Context B is more reliable. At small n (Context A), the bootstrap CI can be unreliable because the bootstrap assumes the sample is a good approximation of the population — with n = 15 from a right-skewed distribution, extreme values in the tail are likely underrepresented or absent. This causes the bootstrap distribution to underestimate tail uncertainty and produce CIs that undercover. At large n (Context B), the sample more fully represents the population and the bootstrap is reliable; the main concern is computational cost",
-      "Context A: the bootstrap is more reliable at small n because it makes no distributional assumptions, which is especially valuable when normality can't be verified",
+      "Context B is more reliable. At small n with a skewed distribution, extreme tail values are underrepresented, causing the bootstrap to underestimate tail uncertainty and undercover.",
+      "Context A: the bootstrap is more reliable at small n because it makes no distributional assumptions, which is especially valuable when normality can't be verified and the normal approximation would be invalid.",
       "Neither is reliable; the bootstrap requires n ≥ 1,000 to give valid CIs",
       "Both are equally reliable; the bootstrap has perfect coverage guarantees regardless of sample size"
     ],
@@ -2384,9 +2384,9 @@
     "description": "A product team tests a redesigned onboarding flow with n = 500 users per arm. Baseline conversion: 10%. Expected conversion for the new flow: 15% (5pp lift).\n\nThe result: p = 0.09 (not significant at α = 0.05). The team concludes: 'No effect — the redesign doesn't work.'\n\nA statistician says: 'You may have committed a Type II error. This conclusion is premature.'\n\nWhy might the statistician be right?",
     "options": [
       "The statistician is wrong: p = 0.09 proves the null is true, so the conclusion is correct",
-      "A Type II error is failing to reject a false null hypothesis (missing a real effect). With only 500 users per arm and a 5pp effect size, the experiment may be underpowered — there is a meaningful probability of getting p > 0.05 even if the 5pp lift is real. The experiment cannot distinguish 'no effect' from 'effect too small to detect at this sample size'",
+      "Type II error: failing to reject a false null. With 500 users per arm, the experiment is underpowered — p > 0.05 is plausible even if the 5pp lift is real. Can't distinguish 'no effect' from 'undetected effect'.",
       "Type II errors only occur when α > 0.05; at α = 0.05 there are no Type II errors",
-      "Type II errors are impossible in randomised experiments; only observational studies can commit them"
+      "Type II errors are impossible in randomised experiments; only observational studies can commit them, as randomisation guarantees that any observed non-significance must reflect true absence of a treatment effect."
     ],
     "correct_option": 1,
     "explanation": "Option B is correct. A Type II error (false negative, missed effect) occurs when a real effect exists but the test fails to reach the significance threshold. The probability of a Type II error is 1 − power.\n\nWith n = 500 per arm, baseline p₁ = 10%, and true effect p₂ = 15%, the power of a two-sided two-proportion z-test is approximately 67%. This means there is roughly a 33% chance of getting p > 0.05 even if the 5pp lift is real. The team has a significant risk of a Type II error.\n\nThe correct interpretation of p = 0.09 is: 'We found insufficient evidence to conclude the new flow is better at this sample size and significance level.' This is very different from 'the new flow has no effect.'\n\nThe experiment can distinguish between two scenarios: (a) there truly is no effect, and (b) there is a real effect of ~5pp but the experiment was underpowered to detect it. Without computing power, you cannot know which scenario is more likely.\n\nOption A is the fundamental misinterpretation of hypothesis testing: failing to reject the null does not prove the null is true.\n\nOption C is wrong: α = 0.05 determines the Type I error rate (false positives), not the presence or absence of Type II errors.\n\nOption D is wrong: Type II errors are properties of any hypothesis test, randomised or observational. Randomisation eliminates confounding but does not affect the power of the test.",
@@ -2486,8 +2486,8 @@
     "title": "Statistically Significant but Practically Meaningless",
     "description": "The team scales the onboarding experiment to n = 50,000 per arm. Result: conversion increases from 10.0% to 10.2% (0.2pp lift), p = 0.003.\n\nThe PM declares: 'Highly significant! Ship it.'\n\nA data scientist says: 'Wait — significance doesn't mean the effect is worth shipping.'\n\nWho is right, and what should happen next?",
     "options": [
-      "The data scientist is right. With 50,000 users per arm, the test has extremely high power — it can detect even tiny effects. A 0.2pp lift may be statistically significant but practically negligible (e.g., if the feature adds user friction, costs engineering resources, or the lift is too small to justify opportunity cost). Statistical significance answers 'is the effect reliably non-zero?' — not 'is the effect big enough to matter?'",
-      "The PM is right: p = 0.003 is well below any reasonable threshold, so the effect is both statistically and practically meaningful",
+      "The data scientist is right. With 50,000 users per arm, the test detects even tiny effects. A 0.2pp lift may be statistically significant but practically negligible — significance asks 'reliably non-zero?' not 'big enough to matter?'",
+      "The PM is right: p = 0.003 is well below any reasonable threshold, so the effect is both statistically and practically meaningful; with 50,000 users per arm, statistical and practical significance always align and a 0.2pp lift is actionable.",
       "Neither: a p-value of 0.003 means the effect size is 0.3pp, not 0.2pp",
       "The data scientist is wrong: in large-scale product experiments, statistical significance always implies practical significance"
     ],
@@ -2516,8 +2516,8 @@
     "options": [
       "There is no problem: p = 0.04 is p = 0.04 regardless of when you look",
       "The Type I error rate is unaffected by peeking as long as the final decision uses p < 0.05",
-      "The p = 0.04 on Day 8 is invalid because the sample size keeps changing; a fixed sample size is required for any p-value to be valid",
-      "Optional stopping inflates Type I error. Each daily check is an implicit hypothesis test. With 8 tests at α = 0.05, the probability of spuriously hitting p < 0.05 at least once under the null is approximately 1 − (0.95)⁸ ≈ 34%. The analyst has not truly run a single 5% test — they've run a sequential procedure without adjusting the stopping rule or the significance threshold, which inflates the false positive rate far beyond 5%"
+      "The p = 0.04 on Day 8 is invalid because the sample size keeps changing; a fixed sample size decided before data collection is required for any p-value to be statistically valid and interpretable.",
+      "Optional stopping inflates Type I error. Each daily check is an implicit hypothesis test. With 8 tests at α=0.05, P(spurious significance) ≈ 1−(0.95)⁸ ≈ 34%."
     ],
     "correct_option": 3,
     "explanation": "Option D correctly identifies the optional stopping problem, also called 'peeking' or 'data dredging.'\n\nEach time the analyst looks at the p-value and considers stopping, they are implicitly running a hypothesis test. Under the null hypothesis (no effect), the p-value follows a uniform distribution — but the minimum of K uniform [0,1] values is systematically below any threshold. The more times you look, the higher the probability that the p-value dips below 0.05 at some point by chance.\n\nWith 8 independent checks at α = 0.05 each, the family-wise Type I error rate is approximately 1 − (1 − 0.05)⁸ ≈ 34% (this is an upper bound, as checks are not truly independent — the p-value on day 8 is correlated with day 7). More rigorous sequential analysis shows the actual inflation is somewhat less but still substantial.\n\nSolutions:\n- **Pre-specify the sample size** before running, and look only once at the end\n- **Sequential probability ratio test (SPRT)** or always-valid confidence sequences: statistical methods designed for continuous monitoring that control error rates at every look\n- **Group sequential methods** (e.g., O'Brien-Fleming): pre-specified interim looks with adjusted significance thresholds at each look\n\nOption A is the intuitive but incorrect belief: p = 0.04 computed after 8 looks does not have the same interpretation as p = 0.04 from a pre-planned single analysis.\n\nOption B is wrong and restates Option A's error.\n\nOption C is incorrect: a single pre-planned analysis with a fixed sample size is what's needed, not a changing n per se. The p-value on day 8 uses a specific n — the problem is the multiple looks, not the sample size changing.",
@@ -2542,10 +2542,10 @@
     "title": "Absence of Evidence Is Not Evidence of Absence",
     "description": "A team powers an experiment to detect a 2pp conversion lift with 80% power. The experiment runs to full sample size. Result: +0.8pp, p = 0.31 (not significant).\n\nA stakeholder says: 'We proved the feature has no effect. Let's kill it.'\n\nWhat is the correct statistical response?",
     "options": [
-      "The experiment was powered only for effects ≥ 2pp. A 0.8pp effect would likely not be detected at this sample size — the test has low power against the alternative of +0.8pp. The correct conclusion is: 'We found no evidence of an effect ≥ 2pp' — not 'there is no effect.' The feature may still have a real but smaller-than-expected effect below the detection threshold",
+      "Experiment was powered for effects ≥ 2pp. A 0.8pp effect likely won't be detected. Correct conclusion: 'no evidence of effect ≥ 2pp,' not 'no effect.' The feature may have a real but smaller-than-powered effect.",
       "The stakeholder is correct: a non-significant result proves the null hypothesis is true",
       "Since p = 0.31 is larger than 0.05, it means there is a 31% chance the null is true",
-      "A larger sample would have given a smaller p-value, so the team should increase n and re-run without changing α"
+      "A larger sample would have given a smaller p-value, so the team should increase n and re-run the experiment without changing α; the non-significant result is solely an artifact of insufficient sample size and power."
     ],
     "correct_option": 0,
     "explanation": "Option A states the correct inference. This is the principle that 'absence of evidence is not evidence of absence.'\n\nThe experiment was designed with 80% power to detect a 2pp effect. This means:\n- If the true effect is 2pp, there is an 80% chance of getting p < 0.05\n- If the true effect is 0.8pp (much smaller), the power against this smaller alternative is substantially less than 80% — perhaps 20–30%\n- Getting p = 0.31 with +0.8pp observed is entirely consistent with a real 0.8pp effect that this experiment was not designed to detect\n\nThe experiment can rule out effects ≥ 2pp (if the true effect were 2pp, we had 80% chance to detect it and didn't). It cannot rule out effects below 2pp.\n\nFor a more defensible conclusion that there's 'no meaningful effect,' the team would need to:\n1. Pre-specify an equivalence margin (e.g., '±0.5pp is clinically/practically equivalent to zero')\n2. Run an equivalence test or compute a confidence interval and check whether the CI falls entirely within the equivalence margin\n\nOption B is the fundamental frequentist error: failing to reject H₀ does not imply H₀ is true.\n\nOption C misinterprets the p-value as the probability the null is true. The p-value is P(data this extreme | H₀ is true) — not P(H₀ is true | data). These are different conditional probabilities.\n\nOption D describes a form of optional stopping: increasing n and re-running after seeing p = 0.31 would inflate the Type I error rate if the same α = 0.05 threshold is used without correction.",
@@ -2769,8 +2769,8 @@
     "options": [
       "The analyst is right: by the law of large numbers, if the average wait is 10 minutes, a 10-minute wait makes the next arrival imminent",
       "Both are right: the law of large numbers guarantees that after waiting longer than the mean, the next event must come sooner",
-      "The data scientist is right. A Poisson process has the memoryless property: the distribution of the time until the next event does not depend on how long you have already been waiting. After 10 minutes without a ticket, the remaining wait time has exactly the same exponential distribution as it did at time 0. The 10-minute wait provides no information about when the next ticket arrives",
-      "The memoryless property only applies to continuous distributions; since tickets arrive discretely (Poisson), the waiting time is not memoryless"
+      "The data scientist is right. A Poisson process is memoryless: remaining wait time is independent of elapsed wait. After 10 minutes without a ticket, the remaining wait has the same exponential distribution as at time 0.",
+      "The memoryless property only applies to continuous distributions; since tickets arrive in discrete Poisson events, the waiting time accumulates and the probability of a ticket arriving in the next minute increases with every elapsed minute."
     ],
     "correct_option": 2,
     "explanation": "Option C is correct. The exponential distribution (which models inter-arrival times in a Poisson process) has the memoryless property: P(T > t + s | T > t) = P(T > s). The remaining wait after t minutes without an arrival has the same distribution as the original wait time — no 'overdue' effect exists.\n\nIntuition: at each moment in a Poisson process, the next event has the same fixed probability of occurring in the next dt seconds, regardless of how long ago the last event occurred. This is a consequence of the independence of disjoint intervals in a Poisson process.\n\nConsequences for the analyst's reasoning:\n- 'Overdue' is a concept that only applies to deterministic or negatively correlated sequences\n- Waiting 10 minutes without a ticket is consistent with normal Poisson behavior — it is simply one of the longer inter-arrival intervals in the distribution\n- The correct response is: the next ticket will still arrive with the same exponential distribution as always\n\nOption A confuses the law of large numbers (the average over many arrivals approaches λ) with what happens to a specific wait time. LLN applies to long-run averages, not to individual intervals.\n\nOption B makes the same error — LLN does not guarantee that long waits are 'compensated' by shorter future waits.\n\nOption D is wrong: the memoryless property in continuous time comes from the exponential distribution (the inter-arrival time distribution of a Poisson process), which is continuous. The Poisson process itself counts discrete events, but the inter-arrival times are continuous and exponentially distributed.",
@@ -2849,10 +2849,10 @@
     "title": "t-Distribution vs Normal: The Role of Known vs. Unknown Variance",
     "description": "A team runs a small experiment: n = 12 users in the treatment arm, n = 12 in control. They estimate the sample standard deviation from the data.\n\nA junior analyst says: 'We have 12 observations — that's large enough to use the Normal distribution for inference.'\n\nA senior analyst says: 'We should use the t-distribution.'\n\nWho is correct, and why does it matter?",
     "options": [
-      "The junior analyst is correct: n = 12 is sufficient for the CLT to make inference normally distributed, and the distinction between t and normal is only theoretical",
+      "The junior analyst is correct: n=12 is sufficient for the CLT to make inference normally distributed; the t-distribution is a theoretical refinement that makes no practical difference for any n above 10.",
       "The t-distribution is only needed when n < 5; at n = 12 the normal and t-distribution are identical",
       "The choice between t and normal depends on the shape of the outcome distribution, not the sample size",
-      "The senior analyst is correct. The t-distribution is appropriate when estimating the population variance from the sample (which is always the case in practice). With n = 12 per arm, the t-distribution with 22 degrees of freedom has substantially heavier tails than the standard normal — using z-scores from the normal would understate uncertainty and produce narrower CIs and smaller p-values than are appropriate"
+      "The senior analyst is correct. Whenever σ² is estimated from the sample, the t-distribution is appropriate. With n=12 per arm (22 df), the t has heavier tails — using z-scores understates uncertainty."
     ],
     "correct_option": 3,
     "explanation": "Option D is correct. The t-distribution is appropriate whenever the population variance is estimated from the sample — which is almost always in practice.\n\nWhy the t-distribution exists: when the true population variance σ² is known, z = (x̄ − μ) / (σ/√n) follows a standard normal. When σ² is estimated by s² (the sample variance), the statistic t = (x̄ − μ) / (s/√n) follows a t-distribution with n−1 degrees of freedom. The t-distribution has heavier tails than normal to account for the additional uncertainty from estimating σ.\n\nWith n = 12 per arm and a two-sample comparison, the degrees of freedom ≈ 22. The t-distribution at 22 df is noticeably wider than the standard normal: the 97.5th percentile is t ≈ 2.074 vs. z ≈ 1.960. Using z = 1.96 would give a CI that's slightly too narrow (about 5–6% too narrow), understating uncertainty.\n\nFor n → ∞, the t-distribution converges to the standard normal — so for n = 200+, the difference is negligible. For n = 12, the difference is material.\n\nOption A is wrong: the CLT applies to the sampling distribution of the mean, but the t vs. z distinction is about estimating variance, not about whether the mean is approximately normal.\n\nOption B is wrong: even at n = 100, using t instead of z is technically correct (just nearly equivalent numerically). The t-distribution is always appropriate when variance is estimated.\n\nOption C partially right — the outcome distribution's shape matters for checking CLT applicability — but the primary criterion for t vs. z is whether σ is known or estimated.",
@@ -2949,8 +2949,8 @@
     "options": [
       "The Poisson approximation is invalid because 0.3% is not small enough; you need p < 0.01% for Poisson to apply",
       "Poisson approximation is always worse than Binomial; there is no reason to use it",
-      "The Poisson approximation is valid only if the 50,000 impressions are served to different users; if any user sees multiple impressions, Binomial applies",
-      "The Poisson approximation is valid and well-justified: n = 50,000 is large, p = 0.003 is small, and λ = np = 150 is moderate. The Binomial variance = np(1-p) = 149.55 ≈ 150 ≈ λ, confirming close agreement. The key limitation: Poisson assumes variance equals mean (equidispersion), while the Binomial has variance < mean. For ad click data, overdispersion (variance > mean) is common, making neither model ideal, but Poisson is a reasonable starting approximation"
+      "The Poisson approximation is valid only if the 50,000 impressions are served to different users; if any user sees multiple impressions, the independence assumption fails and Binomial must be used instead.",
+      "The Poisson approximation is valid: n=50,000 large, p=0.003 small, λ=150 moderate; Binomial variance ≈ λ. Key limitation: Poisson assumes equidispersion, but ad click data commonly shows overdispersion."
     ],
     "correct_option": 3,
     "explanation": "Option D correctly evaluates the approximation.\n\nThe Poisson approximation to the Binomial is valid when:\n- n is large (n ≥ 50, commonly)\n- p is small (p ≤ 0.05 or ideally ≤ 0.01)\n- λ = np is moderate (not too large)\n\nWith n = 50,000 and p = 0.003, all conditions are met. The Binomial(50000, 0.003) and Poisson(150) will produce virtually identical probabilities for any value of the number of clicks.\n\nComparison:\n- Binomial variance = np(1-p) = 50,000 × 0.003 × 0.997 = 149.55\n- Poisson variance = λ = 150\nDifference: < 0.3% — negligible in practice.\n\nThe main reasons to use Poisson over Binomial in this context:\n1. Computational convenience (no need to evaluate C(50000, k))\n2. Theoretical interpretability as a 'rate process' (arrivals per day)\n\nThe real practical concern: ad click data often exhibits overdispersion — variance > mean due to heterogeneity in user intent, correlated behavior, and time-of-day effects. In that case, a Negative Binomial model (which generalises Poisson to allow overdispersion) may be more appropriate than either Binomial or Poisson.\n\nOption A is too restrictive: p = 0.003 = 0.3% is well within the range where Poisson approximation is excellent.\n\nOption B is wrong: Poisson is useful for computational and theoretical reasons even when Binomial is exact. The Poisson limit theorem is one of the most important results in probability theory.\n\nOption C: the i.i.d. assumption is relevant for both Binomial and Poisson. Whether impressions go to the same or different users affects the independence assumption for both models.",
@@ -2980,8 +2980,8 @@
     "options": [
       "The CLT is wrong in this case — skewed individual data always produces a skewed mean regardless of sample size",
       "The average is normally distributed only if the median equals the mean in the underlying distribution",
-      "The CLT applies only to symmetric distributions; for skewed session data, the Lognormal distribution should be used for the average",
-      "The Central Limit Theorem (CLT) states that the distribution of the sample mean converges to Normal as n increases, regardless of the shape of the individual observations' distribution. With n = 500 users per day, the CLT applies well: the daily average session time will follow approximately N(μ, σ²/n), where μ and σ² are the population mean and variance. The averaging process smooths out skewness"
+      "The CLT applies only to symmetric distributions; for skewed session data, the Lognormal distribution must be used for the daily average because skewness is preserved through the averaging operation.",
+      "The CLT states the sample mean converges to Normal regardless of individual distribution shape. With n=500, the daily average ≈ N(μ, σ²/n). Averaging smooths out skewness."
     ],
     "correct_option": 3,
     "explanation": "Option D correctly explains the Central Limit Theorem.\n\nThe CLT is one of the most important results in statistics: given n independent, identically distributed random variables X₁, X₂, ..., Xₙ with mean μ and finite variance σ², the sample mean X̄ = (ΣXᵢ)/n has a distribution that converges to N(μ, σ²/n) as n → ∞, regardless of the shape of the original distribution.\n\nWith session times:\n- Individual session times: right-skewed, far from normal\n- Average of 500 session times per day: approximately N(μ, σ²/500)\n\nThe standard error of the daily mean is σ/√500, which is much smaller than σ. The averaging process creates symmetry because the large values are 'diluted' by the many small values — no single extreme session dominates the average of 500.\n\nPractical rule of thumb for skewed data: n ≥ 30–50 is often sufficient for CLT to apply; for highly skewed distributions (like session times with very heavy tails), n ≥ 100–200 may be needed.\n\nOption A is wrong: this is precisely what the CLT refutes. The CLT is one of the most thoroughly verified theorems in probability theory.\n\nOption B is wrong: the CLT doesn't require the mean to equal the median. Skewed distributions can have very different means and medians, and the CLT applies to the mean's sampling distribution regardless.\n\nOption C is wrong: the CLT does not require symmetric distributions. It applies to any distribution with finite mean and variance — and for the purposes of the daily mean, even right-skewed session-time distributions satisfy this requirement.",
@@ -3007,9 +3007,9 @@
     "title": "Missing Data and CLT: What If 30% of Session Times Are Unrecorded?",
     "description": "Continuing from the session-time analysis: the data team discovers that 30% of sessions are truncated in the database — the session-end event fails to log for mobile users, resulting in session durations recorded as exactly 0 minutes.\n\nThe true distribution: 70% of sessions are correctly measured (right-skewed, 2–30 min), 30% are logged as 0 min due to the bug.\n\nThe team has been computing daily average session time using all records. A data scientist says the CLT still applies, so the daily mean is still approximately Normal.\n\nIs the data scientist right? What is the key concern?",
     "options": [
-      "The data scientist is correct: the CLT applies to any mixture of distributions, and 0-values are legitimate data points",
+      "The data scientist is fully correct: the CLT applies to any mixture of distributions, and 0-values are legitimate data points representing true non-engagement; the mean estimator is unbiased and converges normally.",
       "The CLT fails when there are exact zeros in the data; the distribution must be continuous for CLT to apply",
-      "The data scientist is correct that the sample mean of 500 users is approximately Normal in distribution (CLT holds). However, the mean it converges to is the wrong population mean: E[recorded time] = 0.7 × E[true time] + 0.3 × 0, which systematically underestimates the true mean session time. The CLT describes the shape of the sampling distribution around a biased estimator",
+      "The CLT holds for shape. But the mean converges to a biased value: E[recorded time] = 0.7×E[true time], systematically underestimating true session time. CLT describes sampling around a biased estimator.",
       "The 30% zeros make the distribution bimodal, and CLT never applies to bimodal distributions"
     ],
     "correct_option": 2,
@@ -3037,8 +3037,8 @@
     "description": "After fixing the logging bug, the team scales up their daily active user count from 500 to 500,000. A PM says: 'Now that we have 500,000 users per day, the Law of Large Numbers guarantees our daily average session time is exactly equal to the true mean — no more variability.'\n\nA data scientist disagrees. Who is right?",
     "options": [
       "The PM is right: with 500,000 observations, the LLN ensures the sample mean equals the population mean exactly",
-      "The PM is wrong for the opposite reason: the LLN only applies when n < 1,000; for large n, the sample mean does not approach the population mean",
-      "The PM overstates the LLN. The Law of Large Numbers guarantees the sample mean *converges* to the true mean as n → ∞ — meaning the probability of a large error becomes arbitrarily small. But with finite n (even n = 500,000), the daily average is still a random variable with variance σ²/n > 0. The CLT gives the precise distribution: N(μ, σ²/500,000). The standard error is much smaller than at n = 500, but never exactly zero",
+      "The PM is wrong for the opposite reason: the LLN applies only for n below some threshold, after which the sample variance grows again, meaning large n does not guarantee convergence to the population mean.",
+      "The PM overstates the LLN. At finite n, the daily average has variance σ²/n > 0. The CLT gives N(μ, σ²/500,000) — standard error is small but never exactly zero.",
       "Both the LLN and CLT guarantee exactly zero variability for n ≥ 100,000"
     ],
     "correct_option": 2,
@@ -3062,10 +3062,10 @@
     "title": "Standard Error vs Standard Deviation: Common Confusion",
     "description": "A junior analyst reports: 'The average conversion rate is 7.2% with a standard deviation of 2.1%.'\n\nA senior analyst asks: 'Are you reporting the standard deviation of the conversion rate across users, or the standard error of your mean estimate?'\n\nThe junior analyst says: 'Aren't they the same thing?'\n\nWhat is the correct distinction?",
     "options": [
-      "They are the same: standard deviation and standard error both measure spread in the data and are computed identically",
+      "They are the same: standard deviation and standard error both measure spread in the data and are computed identically; the term 'standard error' is simply an alternative name for standard deviation of a sample.",
       "Standard error is the standard deviation divided by n (not √n); standard deviation divided by √n is the variance",
       "Standard error applies to population parameters; standard deviation applies to samples",
-      "Standard deviation (σ or s) measures spread in the individual observations — how much individual conversion rates vary across users. Standard error (SE = s/√n) measures precision of the mean estimate — how much the sample mean would vary across different samples of the same size. SE answers 'how uncertain is the mean?' while SD answers 'how spread out are individuals?'"
+      "Standard deviation measures spread in individual observations. Standard error (SE = s/√n) measures precision of the mean estimate. SE: 'how uncertain is the mean?'; SD: 'how spread out are individuals?'"
     ],
     "correct_option": 3,
     "explanation": "Option D correctly distinguishes the two concepts.\n\n**Standard deviation (σ or s):** measures the spread of individual values around the mean. A conversion rate SD of 2.1% means individual users' conversion rates vary substantially around the 7.2% average. This quantifies heterogeneity in the population.\n\n**Standard error of the mean (SE = s/√n):** measures how precisely the sample mean estimates the population mean. With n users, SE = 2.1% / √n. This quantifies uncertainty about the mean estimate.\n\nFor n = 1,000 users: SE = 2.1%/√1000 ≈ 0.066% — the mean is estimated very precisely.\nFor n = 10 users: SE = 2.1%/√10 ≈ 0.66% — the mean estimate is much less certain.\n\nThe confusion is common because both are 'measures of spread,' but they answer different questions:\n- SD: 'How variable are individual users?'\n- SE: 'How confident should I be in this mean estimate?'\n\nConfidence intervals use SE (not SD): CI = mean ± z × SE\nDescriptive statistics use SD: 'typical spread in the data'\n\nOption A is wrong: the formulas differ (σ vs. σ/√n) and they answer different questions.\n\nOption B is wrong: SE = s/√n (not s/n). Dividing by n would give something very different and non-standard.\n\nOption C inverts the typical usage. Standard deviation is commonly applied to both samples and populations; SE specifically refers to the precision of a sample statistic.",
@@ -3308,8 +3308,8 @@
     "title": "Bonferroni vs FDR at Scale: Which Correction to Use?",
     "description": "The team scales their testing from 10 simultaneous tests to 200 simultaneous tests (a full platform-wide experiment round). Two statisticians disagree on the correction:\n\n- **Statistician A:** 'Apply Bonferroni: use α/200 = 0.00025 per test.'\n- **Statistician B:** 'At 200 tests, Bonferroni is too conservative — most null hypotheses are probably false. Use Benjamini-Hochberg FDR at 5%.'\n\nWho is right, and in what circumstances does each approach apply?",
     "options": [
-      "Statistician A is always right: Bonferroni is the gold standard and should always be applied",
-      "Both can be appropriate depending on the goal. Bonferroni controls the FWER (probability of ANY false positive) at 5% — extremely conservative at k=200, making it hard to detect any effects. FDR (Benjamini-Hochberg) controls the expected fraction of false discoveries among all rejected hypotheses. At 200 tests, FDR is often preferred in exploratory contexts: you accept that some fraction (~5%) of 'significant' findings are false positives, but you can still discover many real effects that Bonferroni would miss",
+      "Statistician A is always right: Bonferroni is the gold standard and should always be applied, as controlling the family-wise probability of any false positive is the primary goal in hypothesis testing.",
+      "Both can be appropriate: Bonferroni controls FWER — very conservative at k=200. FDR controls the expected fraction of false discoveries among findings, often preferred in exploratory contexts.",
       "Statistician B is always right: Bonferroni should never be used at k > 50",
       "At k = 200 tests, neither correction is needed because the tests average out statistically"
     ],
@@ -3338,8 +3338,8 @@
     "description": "After applying Benjamini-Hochberg at FDR = 5% to 200 tests, the team identifies 40 significant features.\n\nThe PM says: 'FDR = 5% means each of the 40 findings individually has a 5% chance of being a false positive.'\n\nA statistician says the PM's interpretation is incorrect.\n\nWhat does FDR control actually guarantee?",
     "options": [
       "The PM is right: FDR = 5% means each finding has a 5% false positive rate",
-      "FDR = 5% means 5% of the 200 tested hypotheses are expected to be false positives regardless of how many were significant",
-      "FDR = 5% controls the expected proportion of false discoveries among all discoveries: E[false positives / total positives] ≤ 5%. With 40 findings, the expected number of false positives is ~2 (5% × 40), but individual findings do not have a guaranteed 5% error rate. Some findings may have very low posterior probability of being false; others may be borderline. The FDR is a property of the procedure as a whole, not of individual discoveries",
+      "FDR = 5% means 5% of the 200 tested hypotheses are expected to be false positives regardless of how many were rejected — effectively giving each individual test a 5% error rate by another name.",
+      "FDR = 5% controls E[FP / discoveries] ≤ 5%. With 40 findings, ~2 expected false positives — but individual findings have no guaranteed 5% error rate. FDR is a procedure-level property.",
       "FDR = 5% applies to the experiment family, not individual tests; it is equivalent to running each test at α = 5%"
     ],
     "correct_option": 2,
