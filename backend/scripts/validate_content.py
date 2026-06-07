@@ -1956,6 +1956,7 @@ def main() -> None:
     _validate_no_numeric_option_references()
     _validate_no_embedded_option_labels()
     _validate_answer_position_balance()
+    _validate_answer_length_balance()
 
     print("Content validation passed")
 

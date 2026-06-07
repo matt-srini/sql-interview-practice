@@ -35,6 +35,12 @@ Keep entries to 4–6 lines. Friction kills logs; if it's longer than the change
 
 ## Entries
 
+## 2026-06-07 — Debias MCQ answer keys on two axes (position + length), in content, gated by a blind re-audit
+**Area:** content · **Status:** accepted
+**Decision:** Removed two answer-key tells across every MCQ group (practice/mock/sample): correct-option **position** (was up to 100% one letter — fixed to ≤40% via a deterministic permutation + explanation "Option X" letter-remap) and correct-option **length** (was 82–96% "pick the longest" — fixed to ≤45% by trimming over-detailed correct options to mid-pack). Two new ERROR validators (`_validate_answer_position_balance`, `_validate_answer_length_balance`) enforce both forever.
+**Rejected:** (a) **Serve-time option shuffle** — 79–97% of explanations reference "Option X" by letter, so runtime shuffling needs fragile prose surgery across 3 submit paths and desyncs on non-canonical phrasing; chose stored re-key. (b) **Wholesale de-letter of explanations** — would blind the `_validate_correct_option_explanation_consistency` key-inversion guard bank-wide; chose mechanical letter-remap that keeps it working. (c) **Forcing length to uniform 25% / lengthening distractors first** — risks answer-uniqueness. Governing rule: **uniqueness beats debiasing** — trim the correct option first (can't create a 2nd correct answer), re-pass every changed question through a GPT-5 blind re-audit, revert any trim-induced flip to audited text, leave-and-flag anything not debiasable safely.
+**Affects:** backend/scripts/validate_content.py (2 validators + main()), backend/scripts/rebalance_phase1_positions.py, backend/scripts/audit_blind_answer_openai.py (sample support), docs/content-authoring.md, .github/agents/question-authoring.agent.md, CLAUDE.md.
+
 ## 2026-06-05 — Raise SQL guard MAX_JOINS 5 → 9
 **Area:** architecture · **Status:** accepted
 **Decision:** Raise `sql_guard.MAX_JOINS` from 5 to 9 (allow up to 8 joins anywhere in a query). The join *count* is not the cost driver on the small committed datasets (≤45k rows) — cost is already bounded by the 3s query timeout, the cartesian-join check, and the result caps. A cap of 5 wrongly rejected legitimately-hard analytics questions *and the platform's own reference solutions* (13018/13021/13024), and blocked the natural EXISTS-cohort approach entirely.
