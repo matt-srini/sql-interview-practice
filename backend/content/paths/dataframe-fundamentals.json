@@ -13,7 +13,7 @@
     31023
   ],
   "tier": "free",
-  "role": "starter",
+  "level": "foundational",
   "patterns": [
     "dataframe-basics"
   ],

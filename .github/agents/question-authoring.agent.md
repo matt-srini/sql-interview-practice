@@ -288,3 +288,9 @@ Track-specific runtime checks live in each track doc's "Verification before comm
 - [ ] If `mock_only`: no unseen concept families (every family already taught in practice at that difficulty or lower); recombines learned concepts in a fresh business scenario, not a clone of a practice question's framing; any mock-only realism family co-occurs with ≥1 practice-grounded family (never sole tag); chain rules satisfied (dimensions, atomicity, length, ordering); reverse / debug / scenario rules satisfied; **track-level mock-only inventory tracks toward the Stage A target inside the 1.0×–1.5× contract band, landing within `target ± ~5pp`, never below the 1.10× operational floor; if the anti-duplication rule binds before the band's lower bound, stop and document — do not pad with near-clones**
 - [ ] Verification commands above pass clean
 - [ ] Output is valid JSON only (improvements: JSON + a short change-rationale list after it)
+- [ ] **Path applicability** — after authoring or editing a question:
+  1. Read the question's primary concept-family tag.
+  2. Look up which pattern that family routes to in `scripts/audit_pattern_coverage.py::ROUTING` for this track.
+  3. If a live path in `backend/content/paths/` declares that pattern in its `patterns[]`, add the new question ID to the path's `questions[]` (preserving easy → hard order). If the path's `focus_concepts` doesn't already cover the question's tags, broaden it.
+  4. If no live path declares the pattern, leave the question catalog-only. The next coverage audit (`scripts/audit_pattern_coverage.py`) will surface it as an orphan candidate.
+  5. Run `.venv/bin/python scripts/audit_pattern_coverage.py` to confirm the new question lands correctly.

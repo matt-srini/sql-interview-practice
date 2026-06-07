@@ -35,7 +35,7 @@ export default function LearningPath() {
   const firstLockedIdx = path ? path.questions.findIndex(q => q.state === 'locked') : -1;
   const firstLockedDiff = firstLockedIdx >= 0 ? path.questions[firstLockedIdx].difficulty : null;
   const plan = user?.plan ?? 'free';
-  const role = path?.role;
+  const level = path?.level;
   const accessible = path?.accessible !== false;
 
   // Determine unlock hint messaging (threshold-based only — no path shortcuts)
@@ -95,7 +95,7 @@ export default function LearningPath() {
           "inLanguage": "en",
           "teaches": path.focus_concepts ?? [],
           "numberOfItems": path.questions?.length ?? path.question_count,
-          "educationalLevel": path.role,
+          "educationalLevel": ({foundational: "Beginner", intermediate: "Intermediate", advanced: "Advanced"})[path.level] || path.level,
           "hasCourseInstance": { "@type": "CourseInstance", "courseMode": "online" },
           "isPartOf": {
             "@type": "Course",

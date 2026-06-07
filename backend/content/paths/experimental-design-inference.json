@@ -26,7 +26,7 @@
     73024
   ],
   "tier": "pro",
-  "role": "intermediate",
+  "level": "intermediate",
   "patterns": [
     "hypothesis-testing",
     "confidence-intervals"
@@ -34,9 +34,9 @@
   "focus_concepts": [
     "hypothesis testing",
     "a/b testing",
-    "Type I error",
+    "type i error",
     "central limit theorem",
-    "Bayesian inference",
+    "bayesian inference",
     "sample size",
     "multiple testing",
     "confidence intervals",

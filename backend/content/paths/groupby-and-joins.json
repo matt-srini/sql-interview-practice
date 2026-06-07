@@ -33,7 +33,7 @@
     33008
   ],
   "tier": "free",
-  "role": "intermediate",
+  "level": "intermediate",
   "patterns": [
     "groupby",
     "joins"

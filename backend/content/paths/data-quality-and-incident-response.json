@@ -13,7 +13,7 @@
     53024
   ],
   "tier": "free",
-  "role": "advanced",
+  "level": "advanced",
   "patterns": [
     "data-quality-and-incident-response"
   ],

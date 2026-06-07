@@ -12,7 +12,7 @@
     13020
   ],
   "tier": "pro",
-  "role": "advanced",
+  "level": "advanced",
   "patterns": [
     "period-over-period"
   ],

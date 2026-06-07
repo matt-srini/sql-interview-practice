@@ -30,7 +30,7 @@
     73019
   ],
   "tier": "free",
-  "role": "starter",
+  "level": "foundational",
   "patterns": [
     "descriptive-stats",
     "distributions"

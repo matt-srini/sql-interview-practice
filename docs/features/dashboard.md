@@ -127,7 +127,7 @@ A concept appears in `weakest_concepts` if it is tagged on a question the user h
 
 Each entry is enriched with:
 - `summary` — a deterministic one-sentence coaching note keyed to accuracy bucket (< 30% → "highest-priority gap"; < 50% → "pattern isn't sticking"; < 70% → "breaks under new angles"; ≥ 70% → "not fully consistent yet").
-- `recommended_path_slug` / `recommended_path_title` — the most foundational accessible learning path that covers this concept (starter paths preferred over intermediate / advanced). Matching is **family-aware** — both the weak concept and the path's `focus_concepts` are resolved to their canonical concept family before comparison (same resolver Mock's `focus_concepts` filter uses). Only present when a matching path exists and its tier is accessible under the user's plan.
+- `recommended_path_slug` / `recommended_path_title` — the most foundational accessible learning path that covers this concept (foundational paths preferred over intermediate / advanced). Matching is **family-aware** — both the weak concept and the path's `focus_concepts` are resolved to their canonical concept family before comparison (same resolver Mock's `focus_concepts` filter uses). Only present when a matching path exists and its tier is accessible under the user's plan.
 - `recommended_question_ids` — up to 2 unsolved question IDs on this concept, easiest-first. Free users only get easy questions; Pro/Elite get any difficulty.
 
 ### Interview readiness score (Elite only)

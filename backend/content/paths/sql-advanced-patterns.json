@@ -14,7 +14,7 @@
     13050
   ],
   "tier": "pro",
-  "role": "advanced",
+  "level": "advanced",
   "patterns": [
     "set-operations",
     "recursive-ctes",

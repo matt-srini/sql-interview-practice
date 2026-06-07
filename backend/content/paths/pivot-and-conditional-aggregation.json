@@ -13,7 +13,7 @@
     12030
   ],
   "tier": "free",
-  "role": "intermediate",
+  "level": "intermediate",
   "patterns": [
     "pivot-and-unpivot"
   ],

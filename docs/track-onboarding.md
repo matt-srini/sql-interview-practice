@@ -128,13 +128,13 @@ Also define **first-hint leak patterns** — regex patterns for answer-revealing
 
 ### 1.7 Learning paths
 
-**Canonical reference: [`docs/content-authoring.md`](./content-authoring.md) §Paths.** That section defines the path model (patterns vs concepts), the role enum, the schema, and the validator integrity rules. This subsection only summarises the per-track minimums for onboarding.
+**Canonical reference: [`docs/content-authoring.md`](./content-authoring.md) §Paths.** That section defines the path model (patterns vs concepts), the level enum, the schema, and the validator integrity rules. This subsection only summarises the per-track minimums for onboarding.
 
 Every track requires:
 
-- Exactly **one `starter` path** (validator-enforced; UX entry point — gets the "Start here" pill on TrackHub).
+- Exactly **one `foundational` path** (validator-enforced; UX entry point — gets the "Start here" pill on TrackHub).
 - At least **one `intermediate` path** (covers a mid-tier pattern cluster). Multiple intermediates allowed when a track has parallel mid-tier clusters.
-- At least **one `advanced` path** for tracks with 80+ practice questions. Tracks below that may launch with starter + intermediate only and add advanced paths as the catalog grows.
+- At least **one `advanced` path** for tracks with 80+ practice questions. Tracks below that may launch with foundational + intermediate only and add advanced paths as the catalog grows.
 
 Each path:
 
@@ -377,7 +377,7 @@ Create one JSON file per path in `backend/content/paths/`. Naming convention: `<
   "description": "<1–2 sentence description shown in PathProgressCard>",
   "topic": "<track-slug>",
   "tier": "free",
-  "role": "starter",
+  "level": "foundational",
   "questions": [<id1>, <id2>, ...],
   "focus_concepts": ["CONCEPT ONE", "CONCEPT TWO"],
   "outcomes": "You'll be able to...",
@@ -443,7 +443,7 @@ Run every item before pushing the launch commit.
 - [ ] `/api/sample/<slug>/hard` returns a sample question
 - [ ] `/api/mock/access` returns correct `can_start` / `block_reason` for the new track
 - [ ] Unlock logic works: Free user sees easy unlocked, medium/hard locked at start
-- [ ] At least one `starter` path exists for the new track (validator-enforced)
+- [ ] At least one `foundational` path exists for the new track (validator-enforced)
 - [ ] Every path declares `patterns[]` from `backend/path_patterns.py` and `focus_concepts[]` that resolve to a track concept family
 
 ### Frontend

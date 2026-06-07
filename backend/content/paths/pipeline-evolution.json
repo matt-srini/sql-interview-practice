@@ -33,7 +33,7 @@
     53027
   ],
   "tier": "pro",
-  "role": "intermediate",
+  "level": "intermediate",
   "patterns": [
     "schema-evolution",
     "delivery-semantics",

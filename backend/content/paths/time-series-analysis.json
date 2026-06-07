@@ -12,7 +12,7 @@
     33015
   ],
   "tier": "free",
-  "role": "advanced",
+  "level": "advanced",
   "patterns": [
     "time-series"
   ],

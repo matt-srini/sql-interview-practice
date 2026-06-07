@@ -16,7 +16,7 @@
     23017
   ],
   "tier": "free",
-  "role": "intermediate",
+  "level": "intermediate",
   "patterns": [
     "sliding-window"
   ],

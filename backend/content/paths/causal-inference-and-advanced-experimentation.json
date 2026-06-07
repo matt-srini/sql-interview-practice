@@ -16,7 +16,7 @@
     93015
   ],
   "tier": "pro",
-  "role": "advanced",
+  "level": "advanced",
   "patterns": [
     "causal-inference"
   ],

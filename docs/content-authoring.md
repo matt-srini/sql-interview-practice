@@ -573,7 +573,7 @@ Every practice question routes to exactly one pattern-path (or `null` if no patt
 
 **Easy → hard ordering.** Within each pattern-path's `questions[]`, the order is deterministic: difficulty (`easy < medium < hard`) then question ID. Authors do not hand-order; the loader sorts.
 
-**Where this is exercised.** `scripts/audit_pattern_coverage.py` is the canonical implementation. It walks the catalog, applies the routing rule end-to-end, and emits [`docs/phases/pattern-coverage-audit.md`](./phases/pattern-coverage-audit.md). Re-run anytime to refresh.
+**Where this is exercised.** `scripts/audit_pattern_coverage.py` is the canonical implementation. It walks the catalog, applies the routing rule end-to-end, and emits [`docs/phases/pattern-coverage-audit.md`](./phases/pattern-coverage-audit.md). Re-run anytime to refresh. The question-authoring agent's final checklist includes this path-applicability step — see [`.github/agents/question-authoring.agent.md`](../.github/agents/question-authoring.agent.md).
 
 #### Path schema
 
@@ -584,29 +584,29 @@ Every practice question routes to exactly one pattern-path (or `null` if no patt
 | `description` | ✓ | 1–2 sentences |
 | `topic` | ✓ | Must match a track slug |
 | `tier` | ✓ | `free` or `pro` — controls **path-listing visibility only** (the questions inside follow practice unlock thresholds regardless) |
-| `role` | ✓ | `starter` \| `intermediate` \| `advanced` — defined below |
+| `level` | ✓ | `foundational` \| `intermediate` \| `advanced` — defined below |
 | `patterns` | ✓ | Non-empty array; every entry must resolve in `path_patterns.py` for the track |
 | `focus_concepts` | ✓ | Non-empty array; every entry must resolve to a registered family in `concept_families.py` for taxonomy-validated tracks (others: presence check only until registries are complete) |
 | `questions` | ✓ | Ordered array of catalog question IDs (easy → hard within the pattern). Every ID must exist in the track catalog. Every question must carry at least one concept tag in the same family as one of the path's `focus_concepts[]` (mechanical guarantee that the path drills what it claims). |
 | `outcomes` | ✓ | 1–2 sentences starting with "You'll…" describing capability gained |
-| `recommended_after` | ✓ | Prerequisite path slugs (same track). Empty array `[]` for starter paths. The resulting graph must be acyclic. |
+| `recommended_after` | ✓ | Prerequisite path slugs (same track). Empty array `[]` for foundational paths. The resulting graph must be acyclic. |
 
-#### Role definition
+#### Level definition
 
-**Role describes where the path sits in the track's pattern arc — not the difficulty mix of its questions.** Difficulty mix is whatever the catalog naturally supports for the patterns the path drills.
+**Level describes where the path sits in the track's pattern arc — not the difficulty mix of its questions.** Difficulty mix is whatever the catalog naturally supports for the patterns the path drills.
 
-- **`starter`** — Covers the foundational patterns of the track: the building blocks every other path assumes. **Exactly one per track** (validator-enforced). UX promise: every track has one obvious entry point ("Start here").
+- **`foundational`** — Covers the foundational patterns of the track: the building blocks every other path assumes. **Exactly one per track** (validator-enforced). UX promise: every track has one obvious entry point ("Start here").
 - **`intermediate`** — Mid-tier patterns sitting on top of the foundational layer. **One or more per track.** When a track has parallel mid-tier clusters (e.g. data-modeling: normalization vs dimensional), each gets its own intermediate path — they are not forced to compete for a singleton slot.
 - **`advanced`** — Advanced patterns assuming both foundations and some mid-tier exposure. **Zero or more per track.**
 
-Role has no unlock semantics. Roles are used for sort order on TrackHub, the "Start here" pill on the singleton starter, and Schema.org metadata. **Path completion does not unlock any practice questions** — unlocks follow the standard practice thresholds (see `docs/backend.md` for the unlock-state computation).
+Level has no unlock semantics. Levels are used for sort order on TrackHub, the "Start here" pill on the singleton foundational path, and Schema.org metadata. **Path completion does not unlock any practice questions** — unlocks follow the standard practice thresholds (see `docs/backend.md` for the unlock-state computation).
 
 #### Validator integrity rules
 
 `backend/scripts/validate_content.py::_validate_paths` enforces:
 
 1. **Schema completeness.** All required fields present; slug unique; matches filename.
-2. **Singleton starter.** Exactly one `role=starter` per track. No upper bound on `intermediate` or `advanced`.
+2. **Singleton foundational.** Exactly one `level=foundational` per track. No upper bound on `intermediate` or `advanced`.
 3. **Pattern registry.** Every `patterns[]` entry resolves in `path_patterns.py` for the path's track.
 4. **Focus-concept registry.** Every `focus_concepts[]` entry resolves to a registered family in `concept_families.py` (only enforced for tracks listed in `_TAXONOMY_VALIDATED_TRACKS` in `backend/scripts/validate_content.py` — currently `{sql, python}`; others get a presence-only check). **When a track joins the validated set, the path validator immediately enforces this rule strictly for it** — coordinate the concept-family registry completion + paths re-check in the same PR.
 5. **Question-tag alignment.** Every question in `questions[]` carries at least one concept tag that resolves to the same family as at least one of the path's `focus_concepts[]`. This is the mechanical guarantee that the path drills what it claims.
@@ -614,7 +614,7 @@ Role has no unlock semantics. Roles are used for sort order on TrackHub, the "St
 
 #### What this section explicitly rejects (historical)
 
-The platform previously had a "path-completion unlock shortcut" mechanic (completing a starter path unlocked all medium; completing intermediate unlocked the hard cap). **That mechanic was removed.** If you find a doc still describing it, that doc is stale — fix it and link here. The current model is: practice thresholds gate question unlocking; paths are curated walks that respect those gates.
+The platform previously had a "path-completion unlock shortcut" mechanic (completing a foundational path unlocked all medium; completing intermediate unlocked the hard cap). **That mechanic was removed.** If you find a doc still describing it, that doc is stale — fix it and link here. The current model is: practice thresholds gate question unlocking; paths are curated walks that respect those gates.
 
 ---
 

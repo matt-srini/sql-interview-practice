@@ -35,10 +35,10 @@ _insights_cache: dict[str, dict[str, Any]] = {}
 # variation like "GROUPED AGGREGATION" vs "GROUP BY AGGREGATION" still finds
 # the right path as long as both resolve to the same family.
 def _build_concept_path_index() -> dict[tuple[str, str], tuple[str, str, str]]:
-    role_order = {"starter": 0, "intermediate": 1, "advanced": 2}
+    level_order = {"foundational": 0, "intermediate": 1, "advanced": 2}
     paths = sorted(
         get_all_paths(),
-        key=lambda p: role_order.get(p.get("role", "advanced"), 2),
+        key=lambda p: level_order.get(p.get("level", "advanced"), 2),
     )
     index: dict[tuple[str, str], tuple[str, str, str]] = {}
     for path in paths:

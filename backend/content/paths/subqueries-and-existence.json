@@ -12,7 +12,7 @@
     13021
   ],
   "tier": "pro",
-  "role": "advanced",
+  "level": "advanced",
   "patterns": [
     "subqueries"
   ],

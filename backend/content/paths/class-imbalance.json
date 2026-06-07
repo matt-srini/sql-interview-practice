@@ -12,7 +12,7 @@
     83008
   ],
   "tier": "free",
-  "role": "intermediate",
+  "level": "intermediate",
   "patterns": [
     "class-imbalance"
   ],

@@ -53,7 +53,7 @@ def valid_topics() -> set[str]:
 
 REQUIRED_FIELDS = {
     "slug", "title", "description", "topic", "questions",
-    "tier", "role", "patterns", "focus_concepts",
+    "tier", "level", "patterns", "focus_concepts",
 }
 
 
@@ -76,26 +76,26 @@ def test_rule1_slug_matches_filename(all_paths):
 
 
 # ──────────────────────────────────────────────────────────────────────────────
-# Rule 2 — Singleton starter per track; valid role enum
+# Rule 2 — Singleton foundational per track; valid level enum
 # ──────────────────────────────────────────────────────────────────────────────
 
-VALID_ROLES = {"starter", "intermediate", "advanced"}
+VALID_LEVELS = {"foundational", "intermediate", "advanced"}
 
 
-def test_rule2_role_enum(all_paths):
+def test_rule2_level_enum(all_paths):
     for path in all_paths:
-        assert path["role"] in VALID_ROLES, f"{path['slug']}: invalid role {path['role']!r}"
+        assert path["level"] in VALID_LEVELS, f"{path['slug']}: invalid level {path['level']!r}"
 
 
-def test_rule2_exactly_one_starter_per_track(all_paths, valid_topics):
-    starter_counts: dict[str, int] = defaultdict(int)
+def test_rule2_exactly_one_foundational_per_track(all_paths, valid_topics):
+    foundational_counts: dict[str, int] = defaultdict(int)
     for path in all_paths:
-        if path["role"] == "starter":
-            starter_counts[path["topic"]] += 1
+        if path["level"] == "foundational":
+            foundational_counts[path["topic"]] += 1
     for topic in valid_topics:
-        assert starter_counts[topic] == 1, (
-            f"Track {topic} must have exactly one starter path "
-            f"(found {starter_counts[topic]})"
+        assert foundational_counts[topic] == 1, (
+            f"Track {topic} must have exactly one foundational path "
+            f"(found {foundational_counts[topic]})"
         )
 
 
@@ -103,7 +103,7 @@ def test_rule2_intermediate_and_advanced_are_uncapped(all_paths):
     """Sanity: multiple intermediate or advanced is allowed (no validator gate)."""
     counts: dict[str, dict[str, int]] = defaultdict(lambda: defaultdict(int))
     for path in all_paths:
-        counts[path["topic"]][path["role"]] += 1
+        counts[path["topic"]][path["level"]] += 1
     # At least one track demonstrates the relaxed cap (post-refactor invariant)
     multi_intermediate = [t for t, c in counts.items() if c["intermediate"] > 1]
     multi_advanced = [t for t, c in counts.items() if c["advanced"] > 1]

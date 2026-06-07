@@ -10,7 +10,7 @@
     22015
   ],
   "tier": "free",
-  "role": "advanced",
+  "level": "advanced",
   "patterns": [
     "stacks-and-queues"
   ],

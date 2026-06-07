@@ -995,7 +995,7 @@ def _validate_paths(paths: list[dict], catalogs_by_topic: dict[str, dict[str, li
 
     Rules:
       1. Required schema fields present; slug unique; file matches slug.
-      2. ``role`` in {starter, intermediate, advanced}; exactly one ``starter``
+      2. ``level`` in {foundational, intermediate, advanced}; exactly one ``foundational``
          per track (UX promise: every track has one obvious entry point).
          No upper bound on intermediate or advanced.
       3. ``patterns[]`` non-empty; each entry resolves to the track's registry
@@ -1015,16 +1015,16 @@ def _validate_paths(paths: list[dict], catalogs_by_topic: dict[str, dict[str, li
 
     valid_topics = {t.slug for t in TRACKS}
     valid_tiers = {"free", "pro"}
-    valid_roles = {"starter", "intermediate", "advanced"}
+    valid_levels = {"foundational", "intermediate", "advanced"}
 
     required_fields = {
         "slug", "title", "description", "topic", "questions",
-        "tier", "role", "patterns", "focus_concepts",
+        "tier", "level", "patterns", "focus_concepts",
     }
 
     path_files = {p.stem for p in (BACKEND_ROOT / "content" / "paths").glob("*.json")}
     slugs = set()
-    starter_counts: dict[str, int] = {topic: 0 for topic in valid_topics}
+    foundational_counts: dict[str, int] = {topic: 0 for topic in valid_topics}
 
     # Build question lookup by topic for tag inspection (rule 5).
     questions_by_id: dict[str, dict[int, dict]] = {}
@@ -1052,14 +1052,14 @@ def _validate_paths(paths: list[dict], catalogs_by_topic: dict[str, dict[str, li
 
         topic = path["topic"]
         tier = path["tier"]
-        role = path["role"]
+        level = path["level"]
 
         if topic not in valid_topics:
             raise ValueError(f"Invalid topic for path {slug}: {topic}")
         if tier not in valid_tiers:
             raise ValueError(f"Invalid tier for path {slug}: {tier}")
-        if role not in valid_roles:
-            raise ValueError(f"Invalid role for path {slug}: {role}")
+        if level not in valid_levels:
+            raise ValueError(f"Invalid level for path {slug}: {level}")
 
         # Rule 3: patterns
         patterns = path["patterns"]
@@ -1123,17 +1123,17 @@ def _validate_paths(paths: list[dict], catalogs_by_topic: dict[str, dict[str, li
                     f"Question concepts: {q_concepts}. Path focus_concepts: {focus_concepts}"
                 )
 
-        # Rule 2 (continued): track starter count
-        if role == "starter":
-            starter_counts[topic] += 1
+        # Rule 2 (continued): track foundational count
+        if level == "foundational":
+            foundational_counts[topic] += 1
 
         paths_by_topic[topic][slug] = path
 
-    # Rule 2: exactly one starter per track
+    # Rule 2: exactly one foundational per track
     for topic in valid_topics:
-        if starter_counts[topic] != 1:
+        if foundational_counts[topic] != 1:
             raise ValueError(
-                f"Topic {topic} must have exactly one starter path (found {starter_counts[topic]})"
+                f"Topic {topic} must have exactly one foundational path (found {foundational_counts[topic]})"
             )
 
     # Rule 6: recommended_after references + acyclic

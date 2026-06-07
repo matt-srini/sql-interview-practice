@@ -119,14 +119,14 @@ export default function TrackHubPage() {
     api.get('/paths').then(r => setTopicPaths(r.data.filter(p => p.topic === topic))).catch(() => {});
   }, [topic]);
 
-  // Sort paths: incomplete starter first, then intermediate, then advanced; complete paths last.
+  // Sort paths: incomplete foundational first, then intermediate, then advanced; complete paths last.
   const sortedPaths = useMemo(() => {
-    const roleOrder = { starter: 0, intermediate: 1, advanced: 2 };
+    const levelOrder = { foundational: 0, intermediate: 1, advanced: 2 };
     return [...topicPaths].sort((a, b) => {
       const aComplete = a.question_count > 0 && a.solved_count === a.question_count;
       const bComplete = b.question_count > 0 && b.solved_count === b.question_count;
       if (aComplete !== bComplete) return aComplete ? 1 : -1;
-      return (roleOrder[a.role] ?? 3) - (roleOrder[b.role] ?? 3);
+      return (levelOrder[a.level] ?? 3) - (levelOrder[b.level] ?? 3);
     });
   }, [topicPaths]);
 
@@ -137,8 +137,8 @@ export default function TrackHubPage() {
 
   function getPathLabel(path) {
     if (!path) return null;
-    if (path.role === 'starter' && path.solved_count === 0) return 'Start here';
-    if (path.role === 'starter') return 'Continue';
+    if (path.level === 'foundational' && path.solved_count === 0) return 'Start here';
+    if (path.level === 'foundational') return 'Continue';
     if (path.solved_count > 0) return 'Continue';
     return 'Recommended next';
   }

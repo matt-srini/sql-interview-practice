@@ -14,7 +14,7 @@
     53008
   ],
   "tier": "free",
-  "role": "intermediate",
+  "level": "intermediate",
   "patterns": [
     "data-lineage",
     "pipeline-observability"

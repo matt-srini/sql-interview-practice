@@ -13,7 +13,7 @@
     43022
   ],
   "tier": "pro",
-  "role": "advanced",
+  "level": "advanced",
   "patterns": [
     "delta-lake"
   ],

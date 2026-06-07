@@ -14,7 +14,7 @@
     43020
   ],
   "tier": "free",
-  "role": "advanced",
+  "level": "advanced",
   "patterns": [
     "query-optimization"
   ],

@@ -941,7 +941,7 @@ PySpark, Data Engineering, and Data Modeling all share the same MCQ profile thre
 - Tier: all
 
 **TC-120 · GET /api/paths/{slug} returns question list with per-question state**
-- Preconditions: free user; any starter path slug
+- Preconditions: free user; any foundational path slug
 - Expected: 200; `questions` array; each question has `state` field; `completed` field present
 - Tier: Free
 
@@ -1675,9 +1675,9 @@ content-authoring.md rule set.
 - All slugs are unique across the entire bank
 - Each slug matches its JSON filename stem
 
-**Rule 2 — Type and starter invariants**
+**Rule 2 — Type and foundational invariants**
 - `role` is one of `"data_analyst"`, `"data_engineer"`, `"analytics_engineer"`, `"data_scientist"`, `"generalist"`
-- Each track has exactly one path of type `"starter"`
+- Each track has exactly one path of type `"foundational"`
 - `"intermediate"` and `"advanced"` types are uncapped
 
 **Rule 3 — Patterns non-empty and registered**
@@ -1704,9 +1704,9 @@ content-authoring.md rule set.
 - Note: test does NOT assert a hardcoded total — it verifies the structural properties above.
   The 46 breakdown is: SQL 9, Python 6, Pandas 5, PySpark 5, DE 3, DM 5, Stats 3, ML 5, Exp 5.
 
-**TC-292 · Each of the 9 tracks has exactly one starter path**
-- Steps: group paths by `(topic, type)` where `type == "starter"`
-- Expected: exactly one entry per track for the starter type; 9 starter paths total
+**TC-292 · Each of the 9 tracks has exactly one foundational path**
+- Steps: group paths by `(topic, level)` where `level == "foundational"`
+- Expected: exactly one entry per track for the foundational level; 9 foundational paths total
 
 ---
 

@@ -19,7 +19,7 @@
     82002
   ],
   "tier": "free",
-  "role": "starter",
+  "level": "foundational",
   "patterns": [
     "supervised-unsupervised",
     "bias-variance"

@@ -95,7 +95,7 @@ Per-track landing rendered by `Outlet` when no question is active:
 - Per-difficulty breakdown (easy/medium/hard bars)
 - Mixed-form reasoning tracks now show a compact `What you'll practice` strip in the header with the most common question-form labels for that catalog, so users can see variants like `Scenario`, `Debug`, `Predict output`, or `Numerical` before entering the workspace.
 - "Continue where I left off" button → navigates to next unlocked question
-- Learning paths section: paths are sorted by role order (starter → intermediate → advanced) with incomplete paths before complete ones. The first incomplete accessible path gets a contextual `recommendationLabel` ("Start here" for an unstarted starter, "Continue" for an in-progress path, "Recommended next" for any other). Up to 2 paths shown; "View all N →" link to `/learn/:topic` when there are more.
+- Learning paths section: paths are sorted by level order (foundational → intermediate → advanced) with incomplete paths before complete ones. The first incomplete accessible path gets a contextual `recommendationLabel` ("Start here" for an unstarted foundational path, "Continue" for an in-progress path, "Recommended next" for any other). Up to 2 paths shown; "View all N →" link to `/learn/:topic` when there are more.
 
 Uses `useCatalog()` for question/progress data.
 

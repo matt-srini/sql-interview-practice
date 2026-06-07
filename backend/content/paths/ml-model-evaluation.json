@@ -25,7 +25,7 @@
     83025
   ],
   "tier": "free",
-  "role": "intermediate",
+  "level": "intermediate",
   "patterns": [
     "cross-validation",
     "metrics"

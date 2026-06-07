@@ -13,7 +13,7 @@
     12056
   ],
   "tier": "pro",
-  "role": "advanced",
+  "level": "advanced",
   "patterns": [
     "string-functions",
     "date-functions"

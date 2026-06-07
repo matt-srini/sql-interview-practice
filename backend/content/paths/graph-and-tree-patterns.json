@@ -12,7 +12,7 @@
     23034
   ],
   "tier": "pro",
-  "role": "advanced",
+  "level": "advanced",
   "patterns": [
     "graph-traversal"
   ],

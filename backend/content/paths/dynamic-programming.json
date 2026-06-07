@@ -11,7 +11,7 @@
     23033
   ],
   "tier": "pro",
-  "role": "advanced",
+  "level": "advanced",
   "patterns": [
     "dynamic-programming"
   ],

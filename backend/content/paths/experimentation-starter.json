@@ -20,7 +20,7 @@
     93037
   ],
   "tier": "free",
-  "role": "starter",
+  "level": "foundational",
   "patterns": [
     "ab-test-basics",
     "metric-selection"

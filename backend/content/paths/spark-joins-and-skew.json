@@ -22,7 +22,7 @@
     43050
   ],
   "tier": "free",
-  "role": "advanced",
+  "level": "advanced",
   "patterns": [
     "spark-joins-and-skew"
   ],

@@ -17,7 +17,7 @@
     83021
   ],
   "tier": "pro",
-  "role": "advanced",
+  "level": "advanced",
   "patterns": [
     "regularization",
     "ensembles"

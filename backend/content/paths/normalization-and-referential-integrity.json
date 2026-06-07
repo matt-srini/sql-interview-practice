@@ -18,7 +18,7 @@
     63015
   ],
   "tier": "free",
-  "role": "intermediate",
+  "level": "intermediate",
   "patterns": [
     "normalization",
     "referential-integrity"

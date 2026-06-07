@@ -17,7 +17,7 @@
     52017
   ],
   "tier": "free",
-  "role": "starter",
+  "level": "foundational",
   "patterns": [
     "etl-elt",
     "orchestration"

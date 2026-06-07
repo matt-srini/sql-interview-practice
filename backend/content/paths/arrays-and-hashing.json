@@ -11,7 +11,7 @@
     22006
   ],
   "tier": "free",
-  "role": "starter",
+  "level": "foundational",
   "patterns": [
     "arrays-and-hashing"
   ],

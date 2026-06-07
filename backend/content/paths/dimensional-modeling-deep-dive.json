@@ -34,7 +34,7 @@
     63033
   ],
   "tier": "pro",
-  "role": "intermediate",
+  "level": "intermediate",
   "patterns": [
     "scd",
     "bridge-tables",

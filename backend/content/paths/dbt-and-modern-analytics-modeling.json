@@ -16,7 +16,7 @@
     63019
   ],
   "tier": "pro",
-  "role": "advanced",
+  "level": "advanced",
   "patterns": [
     "dbt-modeling"
   ],

@@ -19,7 +19,7 @@
     83015
   ],
   "tier": "free",
-  "role": "intermediate",
+  "level": "intermediate",
   "patterns": [
     "feature-engineering"
   ],

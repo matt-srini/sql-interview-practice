@@ -12,7 +12,7 @@
     43004
   ],
   "tier": "free",
-  "role": "intermediate",
+  "level": "intermediate",
   "patterns": [
     "spark-performance"
   ],

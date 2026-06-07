@@ -22,7 +22,7 @@
     63020
   ],
   "tier": "free",
-  "role": "starter",
+  "level": "foundational",
   "patterns": [
     "star-snowflake",
     "fact-table-design",
