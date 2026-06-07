@@ -57,7 +57,7 @@
     "options": [
       "Star schemas require more joins than snowflake schemas because their fact tables are larger",
       "Snowflake schemas always outperform star schemas for analytical queries because normalised data is smaller",
-      "Star schemas use more storage due to repeated dimension data but require fewer joins; snowflake schemas save storage by normalising dimensions but require more joins",
+      "Star schemas use more storage but need fewer joins; snowflake schemas normalise but require more joins",
       "Star schemas and snowflake schemas are functionally identical; the difference is only cosmetic naming"
     ],
     "correct_option": 2,
@@ -270,7 +270,7 @@
     "options": [
       "Surrogate keys allow the warehouse to delete duplicate customers automatically on load",
       "Natural keys from source systems are never allowed in a data warehouse, making surrogate keys mandatory",
-      "Customer IDs from both systems collide (both start at 1), so a warehouse-generated surrogate key provides a unique identifier across all sources",
+      "Customer IDs from both systems collide, so a surrogate key gives a unique identifier across all sources",
       "A surrogate key allows analysts to trace a customer record back to its original source system"
     ],
     "correct_option": 2,
@@ -315,7 +315,7 @@
     "description": "A sales analyst needs to report revenue by the sales region a customer belonged to at the time of each purchase — not their current region. The customer may have moved between regions over time. Which dimension handling strategy supports this requirement?",
     "options": [
       "Overwrite the region column each time it changes and recalculate all historical reports using the current region",
-      "Add a new dimension row each time the region changes, with effective start and end dates, and link fact rows to the row that was current at purchase time",
+      "Add a new dimension row per change with start/end dates; link each fact row to the row active at purchase time",
       "Add a previous_region column to the customer dimension to track the single most recent change",
       "Store region in the fact table instead of the dimension so it is captured at the time of purchase"
     ],
@@ -364,7 +364,7 @@
     "description": "A fact table is being designed for retail sales. A team member says: 'The grain is one row per order.' Another says: 'The grain is one row per line item within an order.' Why does this distinction matter?",
     "options": [
       "The grain is just a documentation convention; it has no impact on the physical structure or query results",
-      "The grain determines what facts and dimensions can be associated with each row — a finer grain (line item) allows tracking individual products but creates more rows than an order-level grain",
+      "The grain defines what one row represents — finer grain allows product tracking but produces more rows",
       "A coarser grain (order-level) always produces more accurate analytics than a finer grain (line item)",
       "The grain must match the granularity of the source system exactly and cannot be changed during modelling"
     ],
@@ -389,7 +389,7 @@
     "options": [
       "The monthly target cannot be stored numerically in a line-item fact table and must be a text field",
       "Adding any column to an existing fact table is not allowed; a new table must always be created",
-      "The monthly target value would be repeated on every line item for that salesperson that month, making aggregation produce inflated totals",
+      "The monthly target repeats on every line item that month, so summing it inflates the total",
       "The monthly target would cause the grain to become ambiguous only if it is NULL for some rows"
     ],
     "correct_option": 2,
@@ -487,7 +487,7 @@
       "Normalised OLTP databases do not support SQL, so analytical queries cannot be run on them",
       "OLTP databases automatically delete historical records to save space, making trend analysis impossible",
       "Fully normalised schemas cannot store numeric measures, so aggregations like SUM and AVG are unavailable",
-      "Analytical queries on a normalised OLTP schema require many joins and scan large volumes of rows, degrading performance and competing with live transaction writes"
+      "Analytical queries on a normalised schema require many joins and large scans, competing with live writes"
     ],
     "correct_option": 3,
     "explanation": "OLTP schemas are normalised for write efficiency — data is split across many tables to minimise redundancy. Analytical queries need to rejoin those tables repeatedly and scan large row volumes, which is slow and locks rows needed by live transactions. A separate OLAP system (with denormalised schemas, columnar storage, and no write contention) is optimised for this workload. Option A is wrong: normalised databases absolutely support SQL and aggregation queries. Option B is wrong: OLTP systems retain historical records unless explicitly purged. Option C is wrong: numeric measures can be stored in any relational schema.",
@@ -531,10 +531,10 @@
     "type": "conceptual",
     "description": "In a dimensional model for an airline, which of the following is most appropriate to store as a dimension table rather than as a column in the fact table?",
     "options": [
-      "Aircraft details — model, manufacturer, seat capacity, and cabin class configuration",
-      "Number of passengers on a flight",
-      "Revenue collected for a flight",
-      "Duration of the flight in minutes"
+      "Aircraft model, manufacturer, and capacity",
+      "Number of passengers booked on a given flight",
+      "Total revenue collected for a single flight",
+      "Actual flight duration in minutes per trip"
     ],
     "correct_option": 0,
     "explanation": "Dimension tables store descriptive, often textual attributes used to filter, group, and label facts. Aircraft model, manufacturer, seat capacity, and cabin configuration are all stable descriptive properties of an aircraft — exactly what a dimension is for. Options B, C, and D are numeric measures that change per flight event: passenger count, revenue, and duration are facts to be stored in the fact table alongside the foreign key to the aircraft dimension. A simple rule: if it answers 'how many / how much', it is likely a fact; if it answers 'what kind / which one', it is likely a dimension attribute.",
@@ -559,7 +559,7 @@
       "The fact table is automatically updated to set customer_key to NULL for affected rows",
       "The deleted dimension rows are moved to an archive table and all fact joins continue to work transparently",
       "Deleting dimension rows has no effect on the fact table since dimension keys are denormalised into the fact",
-      "Fact rows that referenced the deleted customers become orphaned — they have a customer_key with no matching dimension row, breaking lookups and joins"
+      "Orphaned fact rows result — each has a customer_key with no matching dimension row, breaking all joins"
     ],
     "correct_option": 3,
     "explanation": "Referential integrity means every foreign key in the fact table must have a corresponding row in the referenced dimension table. Deleting dimension rows without first handling the dependent fact rows creates orphaned fact rows — joins to the customer dimension will return no results for those customers, silently dropping data from reports. Option A is wrong: most data warehouses do not automatically NULL out foreign keys on dimension deletes. Option B is wrong: there is no automatic transparent archive-and-redirect mechanism. Option C is wrong: the fact table stores the key reference, not the full denormalised attributes — the join is still required.",
@@ -583,7 +583,7 @@
       "Facts: song_title, artist_name, genre, user_country, subscription_tier; Dimensions: play_duration_seconds, was_skipped",
       "Facts: play_duration_seconds, was_skipped, genre, subscription_tier; Dimensions: song_id, user_id, play_timestamp",
       "Facts: all columns in a single wide fact table with no separate dimension tables",
-      "Facts: play_duration_seconds, was_skipped (per play event); Dimensions: Song (song_id, title, artist, genre), User (user_id, country, subscription_tier), Date (from play_timestamp)"
+      "Facts: play_duration_seconds, was_skipped; Dimensions: Song (title, artist, genre), User (country, tier), Date"
     ],
     "correct_option": 3,
     "explanation": "In a star schema, facts are numeric measures of a business event (duration streamed, skip flag), and dimensions are descriptive attributes used to filter and group those measures (song metadata, user profile, date). Option D correctly identifies play_duration_seconds and was_skipped as event-level measures, and groups descriptive attributes into Song, User, and Date dimensions — enabling queries like 'minutes per genre per month' by joining fact to Date and Song dimensions. Option A inverts the design: text attributes like song_title and genre are dimensions, not facts. Option B mixes descriptive attributes (genre, subscription_tier) into the fact table, which creates the grain-mixing problem. Option C (a single wide table) works at small scale but abandons the dimensional model entirely, making it hard to add new dimensions or reuse dimension tables.",
