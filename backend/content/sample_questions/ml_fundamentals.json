@@ -86,7 +86,7 @@
       "The model is overfitting — 97% AUC on test data is always a sign of overfitting and gradient boosted trees should be replaced with logistic regression",
       "The production data has a different distribution (covariate shift) — retrain the model on recent data to fix the gap",
       "97% AUC cannot occur without mislabeling — audit the target labels before investigating the pipeline",
-      "Feature leakage: a feature computed from the full dataset (including test rows) was used before the train/test split — for example, a support ticket count that includes future tickets the churned users generated after their churn event. The test set was 'contaminated' by information that would not exist at prediction time, making the offline metric unrealistically optimistic"
+      "Feature leakage: ticket join includes post-churn events (future data unavailable at prediction time), contaminating the test set and inflating the AUC"
     ],
     "correct_option": 3,
     "explanation": "A large offline-to-online performance gap combined with an unrealistically high test AUC is the canonical signature of feature leakage. Here, the support ticket join likely includes tickets created after the churn event — data a real-time model wouldn't have at prediction time. Because the scaling (step 2) was applied before the split (step 3), it also used test-set statistics, which is a secondary leakage. Fix: split first, then compute any aggregations or scalers on training data only, and apply them to the test set. Option A conflates overfitting (which shows on a properly constructed test set) with leakage. Option B (covariate shift) could cause a gap but doesn't explain a 36-point drop from an unrealistically high baseline. Option C misdiagnoses the root cause.",
@@ -111,7 +111,7 @@
       "The base models are too diverse — XGBoost, logistic regression, and SVM are incompatible architectures for stacking; the meta-learner cannot combine predictions from models with fundamentally different output scales",
       "The validation set was contaminated — both the base models and the meta-learner overfit to it, and the test drop is simply standard overfitting from lack of a true holdout",
       "The meta-learner (logistic regression) is too simple to combine the outputs of three diverse models; switching to a tree-based meta-learner would eliminate the test gap",
-      "The meta-learner trains on in-sample base model predictions. Because the base models memorised the training labels, their training-set predictions are nearly perfect — the meta-learner learns to trust these overly optimistic signals. At test time, base model predictions are noisier and the meta-learner fails to generalise. The fix is out-of-fold (OOF) prediction: for each training example, generate its meta-feature using a base model trained on the other folds, ensuring the meta-learner trains on held-out predictions"
+      "In-sample predictions are inflated (base models memorised training labels), so the meta-learner overfits to them. Fix: out-of-fold (OOF) stacking — produce each example's meta-feature from a held-out fold"
     ],
     "correct_option": 3,
     "explanation": "Stacking requires the meta-learner to train on base model predictions on data those base models did NOT train on. When base models predict on their own training data, they exploit memorisation — a base XGBoost that overfit to training labels predicts those labels with near-certainty, producing confident 'meta-features' that are actually close to the labels themselves. The meta-learner learns to rely on this spuriously strong signal, which collapses at test time when base model predictions become genuine probability estimates rather than near-label outputs. Out-of-fold (OOF) construction fixes this: use k-fold CV to train each base model on k-1 folds and generate predictions for the left-out fold. Concatenating all fold predictions gives each training example a meta-feature from a base model that never trained on it. The meta-learner then trains on these realistic, held-out predictions and generalises correctly. Option A is wrong: diverse model families are desirable in stacking, and output scales are typically calibrated to [0,1] probabilities for all three. Option B misidentifies the mechanism — the issue is the training-time meta-feature construction, not a contaminated validation set. Option C is wrong: meta-learner complexity is not the root cause; a simple logistic regression trained on OOF predictions generalises well.",
@@ -134,7 +134,7 @@
     "description": "A binary classifier for rare disease detection has 1% positive class prevalence. A data scientist considers two strategies: (A) SMOTE to oversample the minority class in training data, or (B) setting `class_weight='balanced'` in the model. A colleague argues that SMOTE is always superior for medical data. Is the colleague correct?",
     "options": [
       "Yes — SMOTE generates realistic synthetic samples and should always be used for medical data to increase minority class representation",
-      "Not necessarily — SMOTE and class weights address the same imbalance problem but have different failure modes. SMOTE can introduce synthetic samples that interpolate across decision boundaries, potentially adding noise; it is also more complex to implement correctly (must be applied only to training data, not validation). Class weights adjust the loss function without touching the data. The choice depends on the model, data geometry, and whether synthetic points are meaningful in the feature space",
+      "Not necessarily — both handle imbalance but have different failure modes; the right choice depends on the data geometry and model",
       "Yes — class weights only work with linear models and are ineffective for tree-based or neural network classifiers",
       "No — neither works for 1% prevalence; the only correct approach is to collect more positive samples"
     ],
@@ -157,7 +157,7 @@
     "title": "Production Gap: High Eval Accuracy, Low Production Performance",
     "description": "A recommendation model achieves 91% hit-rate@10 in offline evaluation. After deployment, the observed hit-rate@10 is 58%. The team verifies there is no obvious data leakage, the test set held out correctly, and there are no bugs in the serving code. What is the most likely remaining cause and the correct investigation path?",
     "options": [
-      "Training-serving skew or distribution shift: the offline evaluation uses historical user-item interactions as ground truth, but production behaviour is dynamic — users may interact differently with recommendations in real time than the offline logs suggest. Investigate by (a) checking feature distributions between training data and serving requests, (b) auditing how offline labels were created (e.g., did historical clicks define 'hit'?), and (c) measuring the gap between offline and online metrics over time to assess drift",
+      "Training-serving skew: offline click logs reflect the previous recommendation policy (feedback loop bias), not raw user preferences. Audit feature distributions",
       "The model is overfitting — reduce model capacity and re-evaluate",
       "The serving latency is too high, causing requests to time out and fall back to a default recommendation list",
       "The evaluation metric is wrong — replace hit-rate@10 with NDCG@10 for a more accurate offline estimate"
@@ -182,7 +182,7 @@
     "title": "Vanishing Gradients: Cause, Symptom, and Fix",
     "description": "A 20-layer feedforward neural network is trained on a tabular dataset. After 100 epochs, training loss plateaus at a high value. Inspecting gradients reveals that gradients in layers 1–5 (near the input) are near zero while layers 16–20 (near the output) have normal gradient magnitudes. What is happening and what is the correct fix?",
     "options": [
-      "Vanishing gradients: during backpropagation, gradient magnitudes shrink exponentially as they propagate toward earlier layers because sigmoid/tanh activations have gradients < 1. Fixes: (a) use ReLU or variants (Leaky ReLU, ELU) which have gradients of 0 or 1 rather than compressing to near-zero; (b) add residual (skip) connections which provide gradient highways; (c) use batch normalisation to normalise activations and stabilise gradient flow",
+      "Vanishing gradients: chained derivatives < 1 multiply to near-zero over 20 layers, starving early layers. Fixes: ReLU, skip connections, batch norm",
       "The network is overfitting — reduce the number of layers to improve generalisation",
       "The network is too large — remove layers 1–5 since they have near-zero gradients and contribute nothing",
       "The learning rate is too high — near-zero gradients in early layers mean those layers are being updated too aggressively and have converged to a flat region"
@@ -208,7 +208,7 @@
     "description": "A team has a large transformer model (2B parameters) that achieves 94% accuracy on a document classification task. Production SLA requires responses within 50 ms. The large model takes 800 ms per inference. A lighter model (50M parameters) achieves 88% accuracy with 45 ms latency. Which deployment strategy is most appropriate, and what considerations justify it?",
     "options": [
       "Deploy the large model — accuracy is always the primary constraint in production ML; SLA can be relaxed to accommodate higher accuracy",
-      "The 6% accuracy gap must be quantified in business terms before deciding; a reasonable approach is to deploy the 50M model to meet the SLA while investigating (a) distillation to compress the large model's knowledge into a smaller architecture, (b) model quantisation to reduce inference cost while retaining accuracy, or (c) caching for frequent inputs. The deployment decision should be driven by the business cost of a 6% accuracy reduction relative to the operational infeasibility of 800 ms latency",
+      "Quantify the 6% gap in business terms; deploy the 50M model to meet the SLA while pursuing distillation or quantisation to close the gap",
       "Deploy the large model with horizontal scaling — adding more servers reduces per-request latency proportionally to the number of instances",
       "Deploy the 50M model permanently — a 6% accuracy difference is within noise for any production model and should not block deployment"
     ],

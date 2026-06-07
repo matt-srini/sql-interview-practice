@@ -8,7 +8,7 @@
     "title": "Formulating a Testable Hypothesis",
     "description": "A product team wants to test whether changing the checkout button color from grey to green increases purchase conversion. Which hypothesis formulation is correct for an A/B test?",
     "options": [
-      "H₀: there is no difference in purchase conversion rate between the grey button (control) and green button (treatment). H₁: there is a difference. Define the primary metric, significance level, and minimum detectable effect before running the test",
+      "H₀: no conversion rate difference between buttons. H₁: there is a difference. Pre-specify metric, α, and MDE before starting",
       "H₀: the green button is better. H₁: the grey button is better. Run the test until we get p < 0.05",
       "H₀: conversion will improve by at least 5%. H₁: conversion will not improve. Run until we have 1,000 conversions",
       "H₀: users prefer the green button. H₁: users prefer the grey button. Survey users and use their preference as the test metric"
@@ -84,7 +84,7 @@
     "options": [
       "This is normal variance in random assignment — small imbalances are expected and the test results are still valid",
       "This is a power issue — the test is under-powered because the treatment arm is smaller. Collect more data until both arms reach the original target sample size",
-      "This is a Sample Ratio Mismatch (SRM): the observed allocation (60% / 40%) significantly deviates from the intended 50/50 split. SRM invalidates all metric comparisons in the experiment because the two groups are no longer exchangeable — there may be self-selection or instrumentation bias in who ended up in treatment. The team should pause the experiment, diagnose the root cause (e.g., bot filtering applied only to one arm, client-side logging loss, assignment bug), fix it, and re-run",
+      "Sample Ratio Mismatch (SRM): 60/40 vs 50/50 intended. Both groups are no longer exchangeable, so all metric results are unreliable. Pause, diagnose, and re-run",
       "This is acceptable if the primary metric shows a strong effect (p < 0.01) — the assignment imbalance does not affect metric significance calculations"
     ],
     "correct_option": 2,
@@ -107,7 +107,7 @@
     "title": "Novelty Effect: Separating Real Lift from Temporary Excitement",
     "description": "A new recommendation widget is launched in an A/B test. In week 1, treatment shows a 12% lift in click-through rate. In weeks 2–3, the lift narrows to 4%, then 2%. The team is deciding whether to ship. How should they interpret this pattern?",
     "options": [
-      "The declining lift is consistent with a novelty effect: users in treatment initially engage more due to the novelty of a new UI element, not because the widget provides durable value. The 2% long-run lift may be real but is much smaller than week 1 suggested. The team should wait until the treatment effect stabilises before making a ship decision, and evaluate the long-run (week 3+) lift against the business threshold",
+      "Novelty effect — the decaying lift pattern (12% → 2%) signals that initial gains are from newness, not durable value. Base the ship decision on the stabilised lift",
       "Ship immediately — week 1's 12% lift is real and the decline is due to the control group catching up",
       "The test has low power — the declining lift means the sample size was insufficient and the initial 12% was noise",
       "Ship at the week 3 result — 2% lift is small but still positive and any positive metric movement justifies shipping"
@@ -135,7 +135,7 @@
       "The analyst is right — a sub-group showing p < 0.05 is statistically significant by definition",
       "Both are right — the primary metric was null but sub-group analysis always yields valid separate conclusions",
       "The analyst is right — power users are a pre-specified segment so no correction is needed",
-      "The data scientist is right — running 15 sub-group tests without correction inflates the false positive rate. With 15 independent tests at α = 0.05, the probability of at least one false positive is 1 − 0.95^15 ≈ 54%. The 'power user' finding must be treated as exploratory and hypothesis-generating, not a confirmatory result, unless a Bonferroni or Benjamini-Hochberg correction is applied and the corrected p-value is still significant"
+      "The data scientist is right — 15 un-corrected tests inflate FWER to ≈54%. The power-user result is exploratory; confirm with Bonferroni correction or a pre-registered follow-up test"
     ],
     "correct_option": 3,
     "explanation": "Running 15 sub-group tests is a multiple comparisons problem. Without correction, FWER = 1 − 0.95^15 ≈ 54% — over half the time, at least one 'significant' result will appear by chance even when there are no true effects. The correct response is to apply a correction (Bonferroni: α = 0.05/15 = 0.0033 per test) — 0.03 doesn't survive. Alternatively, treat the power-user finding as exploratory and pre-register a confirmatory test. Option A ignores multiple testing entirely. Option B incorrectly treats sub-group and primary metric tests as independent. Option C grants exemption from correction based on segment importance — not a valid statistical rule. Pre-specification must happen before data collection, not after seeing the results.",
@@ -161,7 +161,7 @@
       "CUPED is only needed when randomisation fails (e.g., SRM) — with valid randomisation it provides no benefit",
       "CUPED corrects for user heterogeneity bias — without it, high-revenue users in the treatment arm will skew the results even with randomisation",
       "CUPED is equivalent to stratified sampling and should only be applied when the team can pre-stratify users before experiment assignment",
-      "Randomisation ensures unbiasedness but does not minimise variance. CUPED reduces the residual variance of the metric by regressing out the pre-experiment covariate (prior revenue), which is correlated with the post-experiment outcome. This reduces the standard error of the treatment effect estimate, increasing the test's effective power — allowing detection of smaller effects or reaching significance faster with the same sample size. The PM should think of CUPED as increasing sensitivity without changing sample size"
+      "Randomisation ensures unbiasedness, not low variance. CUPED uses the pre-experiment covariate to reduce metric variance and boost power"
     ],
     "correct_option": 3,
     "explanation": "Randomisation guarantees that the expected value of the treatment effect estimate is unbiased — but the variance of that estimate depends on the metric's noise level. Revenue per user is typically high-variance because it depends on persistent user-level factors (some users always spend more). CUPED (Controlled-experiment Using Pre-Experiment Data) exploits this correlation: it adjusts each user's outcome by their pre-experiment value, removing the portion of variance explained by their historical behaviour. The adjusted outcome has lower variance, so the standard error shrinks, and the same data provides more statistical power. This is equivalent to analysis of covariance (ANCOVA) with the pre-experiment covariate. Option A conflates bias and variance. Option B misidentifies the issue — randomisation already handles heterogeneity bias in expectation; CUPED is about variance, not bias correction. Option C conflates CUPED with stratified sampling.",
@@ -185,7 +185,7 @@
     "description": "A two-sided marketplace team wants to A/B test a dynamic pricing algorithm. They plan a standard user-level randomisation: treatment users see the new pricing, control users see the old pricing. A senior scientist raises a concern. What is the concern and what is the correct experimental design?",
     "options": [
       "The test will be underpowered because pricing experiments require very large sample sizes — increase the traffic allocation to 80/20",
-      "Standard user-level randomisation violates the Stable Unit Treatment Value Assumption (SUTVA): treatment users' pricing affects supply availability for control users (e.g., surges that clear more drivers reduces availability for control-side riders). This interference biases both arms. The correct design is a geo-based or time-based experiment: randomise by geography or time period so treated and control units do not interact",
+      "SUTVA violation — treatment pricing contaminates control via shared supply. User-level randomisation is invalid; use geo-holdout or switchback tests",
       "The dynamic pricing algorithm will overfit to the treatment group — use a hold-out set to evaluate generalisation",
       "Standard user randomisation is valid — marketplace interference is a theoretical concern but does not affect the primary conversion metric in practice"
     ],
@@ -211,7 +211,7 @@
     "options": [
       "The team is correct — pre-specifying α = 0.05 means the false positive rate is controlled at 5% regardless of how many times you look at the data",
       "Both are correct — the pre-specified α controls the experiment-level error; daily peeking is a monitoring practice that does not affect the final test",
-      "The data scientist is correct — repeatedly testing a null experiment until p < 0.05 inflates FWER substantially above 5%. With daily peeking over a 30-day experiment, the actual false positive rate can reach 40–50%. Pre-specifying α = 0.05 controls the error for a single test at a fixed sample size, not for sequential testing. Solutions include Group Sequential methods, alpha spending functions (O'Brien-Fleming), or always-valid confidence sequences",
+      "The data scientist is correct — peeking inflates the actual FWER above 5%. α = 0.05 only controls error for a single pre-planned fixed-sample test",
       "The team is correct only if they stop as soon as p < 0.05 — stopping early at the first significant result controls the family-wise error rate"
     ],
     "correct_option": 2,

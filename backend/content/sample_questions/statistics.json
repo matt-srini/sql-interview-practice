@@ -112,7 +112,7 @@
     "subtype": "conceptual",
     "description": "A data scientist builds a 95% CI for mean order value: x̄ ± 1.96·(s/√n) with n = 400 orders drawn from a heavily right-skewed revenue distribution. Her manager asks: 'Why use 1.96 from the normal table if revenue isn't normally distributed?' She replies: 'The CLT justifies it.' Which answer best explains what the CLT actually guarantees here — and where the real remaining assumption could still break down?",
     "options": [
-      "The CLT guarantees that the sampling distribution of x̄ — not individual revenue values — is approximately normal for large n regardless of the population distribution's shape. With n = 400 this approximation is reliable. The real remaining assumption is that the 400 orders are an independent random sample; strong dependence across orders would undermine the CLT approximation even at large n",
+      "The CLT applies to the sampling distribution of x̄ — not revenue values — regardless of skewness; it's reliable at n = 400. The real remaining assumption is independence across orders",
       "The CLT transforms the revenue distribution itself into a normal distribution once n ≥ 30, so individual revenue values become approximately normal and the 1.96 multiplier applies directly to them",
       "The CLT only applies when the population is symmetric; for heavily right-skewed revenue a bootstrap CI is always required regardless of sample size",
       "The CLT guarantees normality of x̄ only when the population variance σ² is known; since s is estimated from the sample, the t-distribution must be used and the CLT justification does not apply"
@@ -209,7 +209,7 @@
     "options": [
       "The objection is excessive — a correlation of 0.82 across 180 countries is so strong that the individual-level relationship must exist; ecological correlations reliably bound the individual-level effect from below",
       "The correlation is invalid because GDP per capita is a mean and ignores within-country inequality; once adjusted for Gini coefficients the aggregate relationship disappears entirely",
-      "This is an ecological fallacy: a correlation measured at the group (country) level cannot be directly extrapolated to the individual level. High-income countries also differ in healthcare infrastructure, sanitation, education, and nutrition — these confounders are collapsed into the aggregate, making the aggregate correlation much stronger than any individual-level signal. The individual-level relationship between personal income and longevity may be weaker, or could even run in the opposite direction in specific subpopulations. The required evidence is individual-level microdata with income, mortality, and controls for confounders",
+      "Ecological fallacy: country-level r = 0.82 cannot be extrapolated to individuals. High-income countries co-vary with healthcare and education, inflating the aggregate r. Individual microdata is required",
       "The ecological correlation is valid evidence for the causal claim, but establishes only correlation, not causation — the economist's error is the causal language, not the use of aggregate data"
     ],
     "correct_option": 2,
@@ -274,7 +274,7 @@
     "description": "A company wants to estimate the causal effect of customer support response time on churn. Response time is not randomly assigned — customers with complex issues get slower responses and are also more likely to churn, confounding any observational comparison. A data scientist proposes using support agent workload as an instrumental variable. Which statement correctly identifies what makes workload a valid (or invalid) instrument and what the estimate would represent?",
     "options": [
       "Workload is valid as long as it correlates with response time — the only requirement for a valid instrument is relevance. The exclusion restriction is a theoretical assumption that holds automatically whenever the instrument is determined by the firm rather than by the customer",
-      "A valid instrument requires two conditions: (1) relevance — workload must be correlated with response time; and (2) the exclusion restriction — workload must affect churn only through its effect on response time, not through any other direct path. If both hold, the IV estimate recovers the causal effect of response time on churn for customers whose response time changes due to workload variation. The key threat: if high-workload periods coincide with product outages or peak user frustration, workload affects churn through a path that bypasses response time, violating the exclusion restriction and biasing the IV estimate",
+      "Valid IV requires relevance (workload correlates with response time) and exclusion restriction (workload affects churn only via response time). Threat: high-workload periods may coincide with outages, creating a direct workload→churn path that violates exclusion",
       "Workload is valid because it is determined by staffing decisions external to the customer, which eliminates all confounding between response time and churn by design",
       "Instrumental variable estimation is only necessary when the dataset is small — with thousands of churn records, OLS regression on response time directly recovers the causal effect"
     ],

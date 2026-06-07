@@ -9,7 +9,7 @@
     "options": [
       "No problem — 'skipped' is treated as 'success' by all modern orchestrators, so `load` runs normally when `validate` skips",
       "The pipeline should be redesigned so `validate` never marks itself as skipped — it should return an empty result set instead, which signals success to downstream tasks",
-      "When `validate` is skipped, `load` will not run because 'skipped' is not the same state as 'success'. To allow `load` to proceed when `validate` legitimately skips, the trigger rule for `load` must be changed from 'all upstream succeeded' to 'all upstream completed' (treating success, skip, and failure all as satisfying the completion condition)",
+      "When `validate` skips, `load` stalls — 'skipped' is not 'success'. Change `load`'s trigger rule to 'all upstream completed' so success and skip both allow it to proceed",
       "`load` should be split into two tasks: one that depends only on `extract` for no-data days, and one that depends on both `extract` and `validate` for days with new data"
     ],
     "correct_option": 2,
@@ -30,7 +30,7 @@
     "type": "conceptual",
     "description": "A daily pipeline ingests sales data and has an SLA: complete within 45 minutes of its 6:00 AM scheduled start — i.e., finish by 6:45 AM — so analysts have fresh data before their 7:00 AM standup. On Monday, the pipeline ran for 52 minutes, finishing at 6:52 AM. An analyst says: 'The data was ready 8 minutes before the standup — no SLA breach.' A data engineer disagrees. Who is right?",
     "options": [
-      "The data engineer is right — the SLA specifies a concrete deadline of 6:45 AM. The pipeline finished at 6:52 AM, which is 7 minutes past that deadline. That is an SLA breach regardless of whether downstream users happened to be unaffected on this particular run",
+      "The data engineer is right — the SLA deadline is 6:45 AM; finishing at 6:52 AM is a 7-minute breach, regardless of downstream impact on this run",
       "The analyst is right — no downstream user was impacted, the report was ready before 7:00 AM, and SLA compliance should be interpreted in terms of actual business impact",
       "The analyst is right — SLA compliance is measured over a rolling 30-day window; a single run that exceeds the threshold is a minor deviation, not a formal breach",
       "Neither — the 6:45 AM deadline is a target, not a hard limit; SLAs always carry an implicit tolerance band unless explicitly stated otherwise"
@@ -79,7 +79,7 @@
     "options": [
       "Exactly-once — the idempotent write to the database ensures no duplicates regardless of offset commit timing",
       "At-most-once — because the consumer crashed before committing, the event is permanently lost",
-      "At-least-once — the offset was not committed, so the consumer will re-read and re-process the last event on restart, potentially writing a duplicate to the database unless the write is idempotent",
+      "At-least-once — uncommitted offset causes re-read on restart, risking a duplicate write if the write is not idempotent",
       "Exactly-once — Kafka guarantees exactly-once delivery to any downstream system when transactional producers are enabled"
     ],
     "correct_option": 2,
@@ -128,7 +128,7 @@
     "description": "What is the root cause of the small-file problem and what is the most effective fix?",
     "options": [
       "The file format is wrong — switch from Parquet to ORC, which automatically compacts small files during writes",
-      "The partition cardinality is too high — the combination of (event_date × event_type) creates many partition combinations, each receiving a small number of records. Fix by reducing partition granularity and/or compacting files periodically with a MERGE INTO or INSERT OVERWRITE that reads the existing small files and rewrites them as fewer, larger files",
+      "High partition cardinality — (event_date × event_type) creates many combinations each receiving few records. Reduce granularity and run periodic compaction",
       "Increase Spark executor memory — small files are created when executors run out of memory and flush early",
       "The S3 consistency model causes small files — switch to a consistent object store like HDFS to fix the listing performance"
     ],
@@ -152,7 +152,7 @@
     "scenario_context": "A data engineering team maintains a Kafka topic with an Avro schema registered in a schema registry under BACKWARD compatibility mode. The current schema has fields: user_id (string), event_ts (long), amount (double). A producer team wants to add a required field checkout_channel (string, no default) to capture a new business attribute.",
     "description": "Can the schema change proceed as described? If not, what is the correct approach?",
     "options": [
-      "No — BACKWARD compatibility requires that new schemas can read data written with the old schema. A required field with no default cannot be read from old messages (which don't have it), violating BACKWARD compatibility. Add checkout_channel with a default value (e.g., null or 'unknown') so old messages can still be deserialised",
+      "No — a required field with no default breaks BACKWARD compatibility: old messages lack the value and cannot be deserialised. Add a default (e.g., null)",
       "Yes — adding a new field in BACKWARD mode is always safe because consumers receive all fields",
       "No — any schema change under BACKWARD mode requires a major version bump in the registry and a consumer-side upgrade before the producer can write new messages",
       "Yes — the schema registry will automatically infer a null default for new fields under BACKWARD mode, so no explicit default is needed"
@@ -177,7 +177,7 @@
     "scenario_context": "An analyst reports that the 'daily active users' metric in the BI dashboard dropped 30% last Tuesday but recovered the next day. No pipeline failures were logged. A data engineer investigates and finds the raw event log on S3 has correct row counts for Tuesday, the Spark job that processes it completed successfully with no errors, and the downstream metrics table shows the anomaly.",
     "description": "Given that the pipeline succeeded and raw data is intact, what is the most likely silent failure category and the correct investigation approach?",
     "options": [
-      "A schema-level or join-level silent failure: the Spark job processed without errors but may have silently dropped rows (e.g., a join key mismatch, a filter on a column that changed data type, or a partition that was skipped). Investigate by comparing row counts at each pipeline stage on Tuesday vs a normal day",
+      "A silent failure — dropped rows from a join mismatch, over-restrictive filter, or skipped partition. Audit per-stage counts",
       "Network partition between S3 and the Spark cluster caused partial reads — check CloudTrail for S3 GetObject errors on Tuesday",
       "The BI tool is caching stale data — clear the BI cache for Tuesday's date range and the metric will correct itself",
       "Tuesday's data was a genuine traffic anomaly — a 30% drop is within normal variance for daily active user counts"

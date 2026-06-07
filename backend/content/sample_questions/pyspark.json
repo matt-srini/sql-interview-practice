@@ -34,7 +34,7 @@
     "options": [
       "Both are narrow — they each read from a single input partition and write to a single output partition",
       "A is wide because filtering changes the number of output rows; B is narrow because it only counts values",
-      "A is narrow (each output partition depends on exactly one input partition); B is wide (output requires reading across multiple input partitions, causing a shuffle)",
+      "A is narrow (filter processes each partition locally, no shuffle); B is wide (groupBy must shuffle to aggregate across partitions)",
       "Both are wide — any operation involving aggregation or filtering requires a shuffle in Spark"
     ],
     "correct_option": 2,
@@ -83,7 +83,7 @@
     "description": "A Spark job produces a DataFrame with 400 partitions and needs to write it as 20 Parquet files to cloud storage. A junior engineer proposes two options:\n\n- **The repartition approach:** `df.repartition(20).write.parquet(...)`\n- **The coalesce approach:** `df.coalesce(20).write.parquet(...)`\n\nWhich approach is preferable and why?",
     "options": [
       "The repartition approach is preferable — repartition always produces exactly 20 uniform files; coalesce can produce uneven files so it should be avoided",
-      "The coalesce approach is preferable — coalesce reduces partitions without a full shuffle by merging partitions on the same executor; it is lower-cost than repartition for reducing partition count, though it may produce slightly uneven file sizes",
+      "The coalesce approach is preferable — it merges partitions locally without a full shuffle, lower-cost than repartition, though file sizes may be uneven",
       "Both are equivalent — Spark internally converts coalesce to repartition before writing",
       "The repartition approach is preferable — coalesce cannot reduce partitions below the original number, so it would have no effect here"
     ],
@@ -109,7 +109,7 @@
     "options": [
       "Sort-merge join is always preferable — broadcast joins are only valid when both tables are under 10 MB",
       "Broadcast join increases network traffic proportionally to the large table's size, making it more expensive than sort-merge for tables over 100 GB",
-      "Broadcast join is preferable here: the 15 MB table comfortably fits in memory, eliminating the shuffle on the large table; this is the primary use case for broadcast joins",
+      "Broadcast join is preferable: at 15 MB the dimension fits in executor memory, eliminating the expensive shuffle on the 500 GB table",
       "Both produce identical execution plans — Spark's AQE automatically converts sort-merge to broadcast when it detects a small table"
     ],
     "correct_option": 2,
@@ -133,7 +133,7 @@
     "description": "A Spark job fails with:\n```\nAnalysisException: Window function avg(amount) requires an OVER clause\n```\n\nThe offending code:\n```python\nfrom pyspark.sql.functions import avg\ndf.withColumn('avg_amount', avg('amount'))\n```\n\nWhat is the root cause and how do you fix it?",
     "options": [
       "avg is not available as a PySpark column function — use df.agg(avg('amount')) instead",
-      "avg used as a column expression requires a Window specification via .over(window); without it Spark cannot resolve the aggregation scope",
+      "avg in withColumn is a window function — it requires .over(windowSpec) to define the aggregation's scope",
       "The column 'amount' does not exist — the AnalysisException is a column-not-found error, not a window error",
       "withColumn cannot accept aggregation functions — use groupBy().agg() instead for any aggregation"
     ],
@@ -160,7 +160,7 @@
       "Yes — a correct MERGE should produce exactly one output row per modified record in the CDF; 100,000 rows for 50,000 updates indicates the MERGE matched each source row twice",
       "Yes — the doubled row count is a known CDF bug when the table is partitioned; applying `OPTIMIZE` after the MERGE will deduplicate the pre-image rows automatically",
       "No — Delta CDF always emits two rows per change regardless of operation type; INSERT and DELETE operations also produce a pre-image and post-image row, so 100,000 rows from 50,000 inserts would also be expected",
-      "No — Delta CDF intentionally emits two rows per UPDATE operation: one with `_change_type = 'update_preimage'` (the row's values before the update) and one with `_change_type = 'update_postimage'` (the row's values after). This allows downstream consumers to compute deltas, reconstruct exact before/after state, or audit changes. Downstream consumers must filter to `update_postimage` if they only want the current values"
+      "No — Delta CDF intentionally emits two rows per UPDATE: `update_preimage` (before) and `update_postimage` (after). Consumers filter to `update_postimage` for current values, or join both to compute deltas"
     ],
     "correct_option": 3,
     "explanation": "Delta Lake's Change Data Feed records the full before-and-after state of every row changed by a write operation. For UPDATE operations, CDF emits two rows: `update_preimage` (the row's values immediately before the update) and `update_postimage` (the row's values immediately after). This 2× output is by design — it is not a MERGE bug. The `_change_type` column distinguishes them. Downstream pipelines that want only current values should filter to `update_postimage`; those computing column-level deltas can join preimage and postimage on the row key. In contrast, INSERT operations produce one row (`insert`) and DELETE operations produce one row (`delete`) — so the doubling is specific to updates. Option A mistakes correct CDF behaviour for a MERGE condition error. Option B invents a partitioning bug — OPTIMIZE does not remove CDF records. Option C is wrong: INSERT produces 1 row and DELETE produces 1 row, not 2; only UPDATE produces both pre- and post-image.",
@@ -208,7 +208,7 @@
     "description": "A team benchmarks three implementations of the same string normalisation on a 10 TB `description` column:\n\n- **Version A:** `@udf(StringType())` Python UDF calling a custom Python function\n- **Version B:** `@pandas_udf(StringType())` vectorised UDF processing batches via Apache Arrow\n- **Version C:** Native Spark expressions: `F.lower(F.regexp_replace(col, pattern, replacement))`\n\nAll produce identical output. Version C completes in 12 minutes. Version B completes in 18 minutes. Version A takes over 3 hours. A junior engineer asks: 'Version A and B are both Python — why is there a 10× gap between them?'",
     "options": [
       "There is no fundamental serialisation difference — Python UDFs and pandas UDFs both invoke Python once per row; the 10× gap must come from Version A's regex implementation being slower than pandas string methods",
-      "Python UDFs (Version A) serialise each individual row across the JVM–Python boundary via Py4J: one round-trip per row. Pandas UDFs (Version B) use Apache Arrow to transfer entire columnar batches in a single serialisation step: one round-trip per batch (default 10,000 rows). For 10 TB, per-row serialisation produces billions of Py4J round-trips, while batch serialisation produces orders of magnitude fewer. Version C runs entirely inside the JVM Tungsten engine with zero Python overhead",
+      "Python UDFs (A) cross the JVM–Python boundary once per row via Py4J — billions of round-trips for 10 TB. Pandas UDFs (B) use Apache Arrow to transfer columnar batches: one serialisation per batch (~10,000 rows). Version C runs natively in the JVM Tungsten engine with no Python overhead",
       "Pandas UDFs run on the driver node with a faster CPython interpreter; Python UDFs run inside executor JVMs under the slower Py4J bridge, creating the gap regardless of data volume",
       "The gap is primarily from Python UDFs triggering an extra shuffle to redistribute rows before invoking Python, while pandas UDFs process each partition in-place without data movement"
     ],

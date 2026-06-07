@@ -10,7 +10,7 @@
       "Periodic snapshot fact table — because orders accumulate over time and the team wants to see counts at regular intervals",
       "Accumulating snapshot fact table — because an order passes through multiple status stages and all stages should be on one row",
       "Factless fact table — because the primary key of an order is the order_id and no numeric measures are needed",
-      "Transaction fact table — each row records one business event (one order) at a specific moment in time; the most natural model for event-level data"
+      "Transaction fact table — one row per business event at a specific point in time; the natural model for event-level data"
     ],
     "correct_option": 3,
     "explanation": "A transaction fact table has one row per discrete business event. An individual order placed at a specific timestamp is the canonical example. Periodic snapshots accumulate measures at fixed intervals (e.g., inventory level at end of day) — not appropriate for individual events. Accumulating snapshots track a process with multiple lifecycle stages in a single row (e.g., order → shipped → delivered), useful when you want all milestones on one fact row. A factless fact table records the occurrence of events without measures — but orders typically include measures (revenue, quantity). Option D is the right foundation for event-level, single-timestamp data.",
@@ -79,7 +79,7 @@
     "scenario_context": "A customer dimension uses SCD Type 2 to track changes. The `customer_segment` attribute changes when customers cross spend thresholds. A customer was in segment 'Bronze' from Jan 1 to Mar 31, moved to 'Silver' on Apr 1, and is currently in 'Silver'. On May 1, the business retroactively changes the segmentation rules: all customers who spent ≥ $5,000 in Q1 should have been classified 'Silver' during Q1 (the Bronze customer qualified).",
     "description": "How should the SCD Type 2 dimension handle this retroactive rule change?",
     "options": [
-      "Insert a new Type 2 row covering Jan 1–Mar 31 with segment = 'Silver', close the existing Bronze row (or delete it), and re-etl any fact rows that joined to the Bronze surrogate key during Q1 to join to the Silver surrogate key instead — retroactive corrections are expensive because fact-to-dimension joins must be repaired",
+      "Insert a Silver Type 2 row for Q1, close the Bronze row, and re-ETL Q1 fact rows to point to the Silver surrogate key",
       "Update the existing 'Bronze' row in-place — Type 2 only tracks natural changes, not retroactive corrections",
       "SCD Type 2 cannot handle retroactive corrections — switch to SCD Type 3 which stores both old and new values on a single row",
       "Add a new effective_end_date to the Silver row and leave the Bronze row unchanged — analysts can filter by the correction date"
@@ -128,7 +128,7 @@
     "scenario_context": "A marketing data mart needs to capture that customers can belong to multiple loyalty tiers simultaneously (a customer can hold 'Gold' and 'VIP Partner' status at the same time). The initial design placed a single `loyalty_tier` column in the customer dimension.",
     "description": "How should the schema be redesigned to correctly represent the many-to-many relationship?",
     "options": [
-      "Introduce a bridge table: customer_loyalty_bridge with columns (customer_surr_key, loyalty_tier_surr_key, weight_factor). The fact table joins to customer; to get tier information, analysts join customer to the bridge then to the loyalty_tier dimension. Set weight_factor = 1/n (where n = number of tiers) to avoid double-counting in additive metrics",
+      "Add a bridge table (customer_loyalty_bridge) with (customer_surr_key, tier_surr_key, weight_factor = 1/n). The fact table joins to customer, then through the bridge to the tier dimension to avoid double-counting",
       "Add additional columns: loyalty_tier_1, loyalty_tier_2, loyalty_tier_3 — this handles up to three tiers per customer without schema changes",
       "Flatten multiple tiers into a comma-separated string in the loyalty_tier column and parse it at query time",
       "Create a separate fact table for loyalty tier assignments — many-to-many relationships cannot be modelled in a dimension and must be treated as facts"
@@ -156,7 +156,7 @@
       "There is no problem — joining fact tables on dimension keys is a standard Kimball pattern called a fact-to-fact join",
       "The join is only problematic if the two facts have different date granularities — use a FULL OUTER JOIN to avoid row loss",
       "Joining across fact tables requires a conformed dimension — create a new customer_activity dimension that combines orders and tickets before joining",
-      "Directly joining two fact tables produces a Cartesian product at the row level: a customer with 5 orders and 3 tickets produces 15 combined rows, inflating every metric. The correct approach is to aggregate each fact to the shared grain (customer + date range) independently, then join the two aggregated results"
+      "Direct fact-to-fact join creates a Cartesian product: 5 orders × 3 tickets = 15 rows. Aggregate each fact to the shared grain first, then join"
     ],
     "correct_option": 3,
     "explanation": "Fact-to-fact joins produce a Cartesian product at the unaggregated level: every order row joins to every ticket row for the same customer, multiplying both counts. The solution is to aggregate each fact to the shared query grain (customer over the 30-day window) independently, then join the two single-row-per-customer aggregates. This is the standard approach: `WITH orders_agg AS (SELECT customer_id, SUM(revenue) ...), tickets_agg AS (SELECT customer_id, COUNT(*) ...) SELECT ... FROM dim_customers LEFT JOIN orders_agg USING (customer_id) LEFT JOIN tickets_agg USING (customer_id)`. Option A misstates Kimball guidance — Kimball explicitly warns against fact-to-fact joins. Option B is wrong — the grain mismatch problem is not solved by join type. Option C introduces unnecessary schema complexity.",
@@ -180,7 +180,7 @@
     "options": [
       "Add a product_id foreign key to both marts — matching on a shared product_id resolves the category definition conflict automatically",
       "Use a UNION ALL of both marts' product dimensions and let analysts filter by data_source column to separate Retail vs Wholesale categories",
-      "The category attributes are incongruent across marts — they describe different things. Resolution requires a conformed product dimension: a shared dimension table agreed upon by both BUs that provides a common attribute hierarchy (e.g., department → brand → product). Both fact tables reference this shared dimension via a surrogate key, enabling drill-across queries without conflating the two category definitions",
+      "Semantic incongruence: 'category' means different things. Create a conformed dimension with a shared hierarchy both marts reference",
       "This is a reporting tool problem — configure the BI tool to map Retail categories to Wholesale categories at the visualisation layer"
     ],
     "correct_option": 2,
@@ -203,7 +203,7 @@
     "scenario_context": "A financial services company must store loan records in a way that supports two questions: (1) 'What was the loan status as of December 31, 2023, according to what the system believed at that time?' (system time query) and (2) 'What was the actual loan status on December 31, 2023, corrected for any retroactive amendments made since?' (valid time query). Standard SCD Type 2 only tracks one time dimension.",
     "description": "Which modeling approach satisfies both requirements?",
     "options": [
-      "Bi-temporal modeling: store two time dimensions on every row — valid_time (when the fact was true in the real world) and transaction_time (when the record was written to the system). This allows point-in-time queries on either axis independently, satisfying both audit requirements",
+      "Bi-temporal modeling: two time axes per row — valid_time and transaction_time — allowing independent point-in-time queries on either dimension",
       "Use SCD Type 2 with an additional 'correction_date' column — filter on correction_date to answer retroactive questions",
       "Store corrections as new fact table rows with negative amounts — this is the standard append-only correction pattern for financial data",
       "SCD Type 4 history tables solve this: the main dimension holds current data and the history table holds all previous versions with transaction timestamps"
