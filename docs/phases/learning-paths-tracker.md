@@ -250,6 +250,23 @@ Legend: **Healthy** = ≥5 Qs across easy/medium/hard. **Uneven** = ≥5 Qs but 
 **ML Fundamentals — 6 thin:**
 - 🟡 `supervised-unsupervised` (2), `unsupervised-methods` (8 — at threshold but uneven), `model-interpretability` (6 — uneven), `algorithmic-fairness` (3), `neural-networks-and-gradients` (11 — uneven), `production-and-monitoring` (11 — uneven). Several are at the threshold; needs hard-tier coverage.
 
+**Pass 2 — rebalance recommendations (2026-XX):**
+`scripts/audit_pattern_rebalance.py` walks the audit output and, for each thin/empty pattern, finds practice questions *currently routed elsewhere* that have a co-tag pointing to the thin pattern. These are "recruitable candidates" — the analytical-wins rule sent them to a high-coverage pattern, but a secondary tag suggests their primary objective might actually be the thin pattern. Pass 2 output is appended to [`pattern-coverage-audit.md`](./pattern-coverage-audit.md) §"Pass 2: Rebalance recommendations".
+
+Upper-bound impact (if *every* candidate were honestly moved — reality will be lower):
+- **~15 thin patterns** could shift to healthy potential with zero new authoring.
+- **3 empty patterns + ~10 thin patterns with no candidates** stay genuinely under-covered and need new questions.
+
+Notably recruitable:
+- SQL `ctes-and-recursion`: 2 → up to 9 (7 candidates, mostly weak-attached `period-over-period` Qs with `CTE PIPELINE` tags)
+- SQL `subqueries`: 4 → up to 10 (6 candidates)
+- DM `normalization`: 4 → up to 12 (8 candidates)
+- ML `regularization`: 4 → up to 12 (8 candidates)
+- ML `cross-validation`: 4 → up to 10 (6 candidates)
+- DE `backfill-design`: 3 → up to 9 (6 candidates)
+
+The rebalance section is a *routing-refinement tool*, not an auto-reassignment script. Stage 2 review confirms per-question which moves are honest, then refines `scripts/audit_pattern_coverage.py::ROUTING` (typically by tightening the analytical-wins rule or adding more-specific family→pattern mappings).
+
 **Patterns with no concept-family routing source** (registry gaps to consider):
 - SQL: `grouping-extensions` (no family for ROLLUP/CUBE)
 - SQL: `date-and-time` (TIME-SERIES BUCKETING is captured under period-over-period)
@@ -428,3 +445,4 @@ Most growth = honest splits of compound paths. New patterns filling genuine inte
 | 2026-05-23 | A1 rename scope finalised: `role` → `level`, `starter` → `foundational`. Other two values (`intermediate`, `advanced`) unchanged. |
 | 2026-05-23 | Canonical pattern proposals per track (82 total proposed vs 46 today) saved into reference section. Triggered after question-bank expansion completes. |
 | 2026-XX | Coverage audit complete. 97 patterns proposed across 9 tracks (up from 82 after family-inventory revealed additional gaps); 875 practice questions routed; 3 empty / 24 thin / 36 uneven / 34 healthy. Gap punch list documented per track. C-series (concept-mastery loop) deferred indefinitely — patterns and concept-families are explicit two-system parallel design. |
+| 2026-XX | Pass 2 rebalance complete. `scripts/audit_pattern_rebalance.py` produced recruitable-candidate lists per thin pattern. Upper bound: ~15 patterns can shift thin → healthy via rebalance alone (no new authoring). 3 empty + ~10 thin patterns remain genuine authoring gaps. |
