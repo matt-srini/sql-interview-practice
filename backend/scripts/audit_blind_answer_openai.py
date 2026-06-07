@@ -17,6 +17,9 @@ sidecar checkpointing, verdict classifier) is identical; this file adds:
     (c) a deterministic ~10% survivor-class sample of Pass-1 agreements per track.
   * Token accounting → meta.token_usage for a real cost report.
   * phase12_cross_reference: per-question note from BOTH Phase 1 and Phase 2.
+  * --sample flag: audit sample questions from content/sample_questions/<track>.json
+    instead of the practice/mock pool.  Sample files contain all difficulties in a
+    single file; difficulty is read from each question's own "difficulty" field.
 
 Usage examples
 --------------
@@ -32,11 +35,20 @@ python backend/scripts/audit_blind_answer_openai.py --track <t> --difficulty <d>
 python backend/scripts/audit_blind_answer_openai.py --track experimentation \\
     --difficulty hard --pass2-force-ids 93019,93045
 
+# Audit sample questions for a track (all difficulties in one file)
+python backend/scripts/audit_blind_answer_openai.py --sample --track data-engineering
+
+# Audit sample questions + force Pass-2 on specific ids
+python backend/scripts/audit_blind_answer_openai.py --sample --track data-engineering \\
+    --pass2-force-ids 511,512
+
 Notes
 -----
 - OPENAI_API_KEY (or NVIDIA_API_KEY for --provider nvidia) is loaded from backend/.env.
 - A checkpoint sidecar (<output>.partial.jsonl) makes re-runs resume without
   duplicate API calls. Only error-free results are checkpointed.
+- Sample runs produce a distinct output file (audit_gpt5_sample_<track>.json) so
+  they never collide with practice/mock run outputs.
 """
 
 from __future__ import annotations
@@ -76,6 +88,18 @@ TRACKS: dict[str, str] = {
     "ml-fundamentals":   "content/ml_fundamentals_questions",
     "experimentation":   "content/experimentation_questions",
 }
+
+# Sample questions: one file per track; difficulty is embedded per-question.
+# Keys match TRACKS keys; values are relative paths from BACKEND_DIR.
+SAMPLE_TRACK_FILES: dict[str, str] = {
+    "pyspark":           "content/sample_questions/pyspark.json",
+    "data-engineering":  "content/sample_questions/data_engineering.json",
+    "data-modeling":     "content/sample_questions/data_modeling.json",
+    "statistics":        "content/sample_questions/statistics.json",
+    "ml-fundamentals":   "content/sample_questions/ml_fundamentals.json",
+    "experimentation":   "content/sample_questions/experimentation.json",
+}
+
 DIFFICULTY_ORDER = ["easy", "medium", "hard"]
 TRACK_ORDER = list(TRACKS.keys())
 
@@ -281,6 +305,55 @@ def load_questions(tracks: list[str], difficulties: list[str]) -> list[dict[str,
                 q["_track"] = track
                 q["_difficulty"] = diff
                 questions.append(q)
+    return questions
+
+
+def load_sample_questions(track: str, difficulties: list[str]) -> list[dict[str, Any]]:
+    """Load MCQ-eligible questions from the sample pool for a single track.
+
+    Sample files live at content/sample_questions/<slug>.json (one file per track,
+    all difficulties mixed).  The per-question ``difficulty`` field is used for
+    ``_difficulty``; the filename-based diff loop used by load_questions does not
+    apply here.
+
+    The same MCQ filter as load_questions is applied:
+    - correct_option must be an int
+    - options must be a list with ≥ 2 entries
+    - statistics numerical subtype is skipped (no options/correct_option anyway)
+    - questions whose difficulty is not in *difficulties* are skipped (so
+      --difficulty still works as a filter when --sample is set)
+    """
+    if track not in SAMPLE_TRACK_FILES:
+        print(f"ERROR: --sample is not supported for track '{track}'. "
+              f"Supported: {sorted(SAMPLE_TRACK_FILES.keys())}", file=sys.stderr)
+        sys.exit(1)
+
+    file_path = BACKEND_DIR / SAMPLE_TRACK_FILES[track]
+    if not file_path.exists():
+        print(f"ERROR: Sample file not found: {file_path}", file=sys.stderr)
+        sys.exit(1)
+
+    with open(file_path, encoding="utf-8") as fh:
+        data = json.load(fh)
+
+    questions: list[dict[str, Any]] = []
+    for q in data:
+        diff = q.get("difficulty", "")
+        if diff not in difficulties:
+            continue
+        if not isinstance(q.get("correct_option"), int):
+            continue
+        opts = q.get("options")
+        if not isinstance(opts, list) or len(opts) < 2:
+            continue
+        if track == "statistics" and q.get("subtype") == "numerical":
+            continue
+        q["_track"] = track
+        q["_difficulty"] = diff
+        questions.append(q)
+
+    print(f"[sample] Loaded {len(questions)} eligible MCQ questions from {file_path}",
+          file=sys.stderr, flush=True)
     return questions
 
 
@@ -675,7 +748,7 @@ def _cost_usd(u: dict[str, int]) -> float:
 
 
 def write_report(results, output_path, provider, tracks, difficulties,
-                 pass1_model, pass2_model, pass2_all):
+                 pass1_model, pass2_model, pass2_all, *, is_sample: bool = False):
     now = datetime.now(timezone.utc)
     verdict_counts = {VERDICT_CONSISTENT: 0, VERDICT_INVERTED: 0,
                       VERDICT_BROKEN: 0, VERDICT_INCONSISTENT: 0}
@@ -696,6 +769,7 @@ def write_report(results, output_path, provider, tracks, difficulties,
             "generated_at_utc": now.isoformat(),
             "api": provider,
             "phase": "phase3-openai",
+            "pool": "sample" if is_sample else "practice_mock",
             "tracks": tracks,
             "difficulties": difficulties,
             "pass1_model": pass1_model,
@@ -761,6 +835,12 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--provider", choices=list(PROVIDERS.keys()), default=DEFAULT_PROVIDER)
     p.add_argument("--track", choices=list(TRACKS.keys()), default=None)
     p.add_argument("--difficulty", choices=DIFFICULTY_ORDER, default=None)
+    p.add_argument("--sample", action="store_true", default=False,
+                   help=(
+                       "Audit sample questions (content/sample_questions/<track>.json) "
+                       "instead of the practice/mock pool.  Requires --track.  "
+                       "Output defaults to audit_gpt5_sample_<track>.json."
+                   ))
     p.add_argument("--output", default=None)
     p.add_argument("--pass2-only", action="store_true")
     p.add_argument("--input", default=None)
@@ -783,6 +863,9 @@ def main() -> None:
     args = parse_args()
     if args.pass2_only and not args.input:
         print("ERROR: --pass2-only requires --input <prior_report.json>", file=sys.stderr)
+        sys.exit(1)
+    if args.sample and not args.track:
+        print("ERROR: --sample requires --track <track>.", file=sys.stderr)
         sys.exit(1)
 
     provider_cfg = PROVIDERS[args.provider]
@@ -808,17 +891,28 @@ def main() -> None:
 
     if args.output:
         output_path = Path(args.output)
+    elif args.sample:
+        # Distinct filename so sample runs never collide with practice/mock outputs.
+        output_path = SCRIPT_DIR / f"audit_gpt5_sample_{args.track}.json"
     elif args.track and args.difficulty:
         output_path = SCRIPT_DIR / f"audit_gpt5_{args.track}_{args.difficulty}.json"
     else:
         ts = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
         output_path = SCRIPT_DIR / f"audit_gpt5_{ts}.json"
 
+    # -----------------------------------------------------------------------
+    # Question loading — sample pool vs practice/mock pool
+    # -----------------------------------------------------------------------
+    def _load_all() -> list[dict[str, Any]]:
+        if args.sample:
+            return load_sample_questions(args.track, difficulties)
+        return load_questions(tracks, difficulties)
+
     pass1_results_map: dict[int, dict[str, Any]] | None = None
     if args.pass2_only:
         with open(Path(args.input), encoding="utf-8") as fh:
             prior = json.load(fh)
-        all_questions = load_questions(tracks, difficulties)
+        all_questions = _load_all()
         q_by_id = {q.get("id"): q for q in all_questions}
         pass1_results_map = {}
         questions_to_audit = []
@@ -836,7 +930,7 @@ def main() -> None:
         if args.limit:
             questions_to_audit = questions_to_audit[: args.limit]
     else:
-        all_questions = load_questions(tracks, difficulties)
+        all_questions = _load_all()
         if args.limit:
             all_questions = all_questions[: args.limit]
         questions_to_audit = all_questions
@@ -849,10 +943,12 @@ def main() -> None:
     sidecar_path = Path(str(output_path) + ".partial.jsonl")
     mode_str = "pass2-all" if args.pass2_all else (
         f"gated (disagree + hold{sorted(force_ids)} + sample id%10=={sample_residue})")
+    pool_label = f"SAMPLE ({args.track})" if args.sample else f"{tracks} × {difficulties}"
     print(
         f"\n{'='*64}\n"
         f"  Provider:    {args.provider}\n"
-        f"  Audit scope: {tracks} × {difficulties}\n"
+        f"  Pool:        {'sample' if args.sample else 'practice/mock'}\n"
+        f"  Audit scope: {pool_label}\n"
         f"  Questions:   {total}\n"
         f"  Pass-2 mode: {mode_str}\n"
         f"  Pass 1:      {pass1_model} (budget {pass1_budget})\n"
@@ -870,7 +966,7 @@ def main() -> None:
         workers=args.workers, output_path=output_path, pass1_results=pass1_results_map,
     )
     write_report(results, output_path, args.provider, tracks, difficulties,
-                 pass1_model, pass2_model, args.pass2_all)
+                 pass1_model, pass2_model, args.pass2_all, is_sample=args.sample)
     print_summary(results)
     print(f"\nFinal report: {output_path}", file=sys.stderr, flush=True)
 
