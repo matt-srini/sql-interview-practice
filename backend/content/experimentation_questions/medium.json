@@ -115,7 +115,7 @@
     "options": [
       "Open rate is too easy to manipulate and will give the treatment an unfair advantage",
       "Open rate directly measures the treatment's mechanism, so it is the ideal metric",
-      "Notification open rate measures intermediate engagement with the digest but may miss downstream user value metrics like session starts or content consumption, and it is mechanically altered by the feature itself",
+      "Open rate misses downstream value and is mechanically distorted by the digest consolidation.",
       "Open rate is not a ratio metric and should be converted to an absolute count before analysis"
     ],
     "correct_option": 2,
@@ -139,7 +139,7 @@
     "scenario_context": "A ride-sharing marketplace is testing a new driver incentive program that offers bonuses for completing rides in high-demand zones. The experiment assigns 50% of drivers to the treatment (incentive) and 50% to control. After three weeks, treatment drivers complete 8% more rides. However, the data team suspects the true effect is overstated.",
     "description": "What is the most likely cause?",
     "options": [
-      "The incentive causes treatment drivers to cluster in high-demand zones, reducing ride availability for control drivers — the control group is harmed by the treatment, inflating the measured effect",
+      "Treatment drivers crowd control out of high-demand zones, inflating the measured 8% lift.",
       "Treatment drivers tend to have newer vehicles, introducing a confound",
       "Three weeks is too short to observe the full effect of an incentive program",
       "Drivers who opt into the incentive are self-selected, so the experiment is not randomized"
@@ -218,7 +218,7 @@
     "description": "What is the most valid concern?",
     "options": [
       "Seven days is always too short to observe any statistically significant effect",
-      "A seven-day test starting on Tuesday ends on Monday — the measurement window does not align to a standard calendar week (Mon–Sun). When the primary metric is WAU, this means the experiment captures Tue–Mon activity while historical and post-ship WAU is computed over Mon–Sun windows, making the measured 4% lift harder to compare against pre-experiment baselines or validate after launch. Best practice for weekly-period metrics is to run experiments in whole-week increments that start and end on the reporting-week boundary.",
+      "Tue-Mon misaligns with Mon-Sun WAU reporting, making the 4% lift hard to validate.",
       "Seven-day tests always suffer from novelty effects and should be extended to 30 days",
       "The test should have started on a Monday to align with standard business reporting cycles"
     ],
@@ -243,7 +243,7 @@
     "scenario_context": "A social media platform runs a 50/50 A/B test on a new video autoplay feature. After one week, the analytics dashboard shows 210,000 users in control and 163,000 in treatment. The engineer explains that the logging pipeline for treatment events had a 5-hour outage on day 3 but otherwise worked fine. The product manager suggests proceeding with the analysis using available data.",
     "description": "What is the primary risk of this approach?",
     "options": [
-      "Users whose events were lost during the outage are systematically missing from treatment data — if these users have different engagement patterns, the treatment group is biased and results are not comparable to control",
+      "Users lost in the outage are absent from treatment — if they behave differently, the treatment group is biased.",
       "The 5-hour outage means the test ran for only 6.5 days instead of 7, reducing power slightly",
       "Logging outages only affect impression data, not conversion data, so the analysis can proceed on conversion metrics",
       "The analysis should be restricted to users who joined the experiment before the outage began"
@@ -322,7 +322,7 @@
     "options": [
       "Yes — the 95% confidence interval directly gives a 95% probability that the true effect falls in that range",
       "No — the 95% refers to the power of the test, not the probability the true effect is in range",
-      "No — the interval is a frequentist construct meaning that if the experiment were repeated many times, 95% of such intervals would contain the true fixed effect; we cannot make probabilistic statements about the specific interval",
+      "No — the 95% describes the long-run procedure, not the probability this interval contains the true effect.",
       "Yes, but only if the data is normally distributed, which revenue data typically is not"
     ],
     "correct_option": 2,
@@ -372,7 +372,7 @@
     "scenario_context": "A consumer app tests a redesigned home screen. Overall, the test shows a neutral result (p=0.31). An analyst segments by user type and finds that new users (first 7 days) show a statistically significant 9% increase in D7 retention in treatment, while returning users (>30 days tenure) show a non-significant -2% change. The team debates whether to ship to new users only.",
     "description": "What is the most important statistical caveat before acting on this segment finding?",
     "options": [
-      "Because the segment analysis was not pre-registered as a primary analysis, it may be a false positive inflated by multiple subgroup tests — it should be treated as a hypothesis to validate in a targeted follow-up experiment",
+      "Post-hoc segment analysis may be a false positive — treat it as a hypothesis to validate in a pre-specified follow-up.",
       "Segment findings are always reliable if the segment-level p-value is below 0.05",
       "The -2% change for returning users confirms there is no effect for that segment, so shipping to new users only is safe",
       "The 9% lift for new users is too large to be real — it should be discarded as an outlier"
@@ -401,7 +401,7 @@
       "The eligibility filter would increase both arms proportionally and would not cause a mismatch",
       "Post-randomization filters always cause sample ratio mismatches and should never be used",
       "The 7.4% surplus is within acceptable variance for session-level randomization",
-      "If the filter criteria correlate with treatment assignment — for example, if the filter uses a feature that is only triggered by the treatment experience — then treatment and control lose different proportions of sessions, breaking balance"
+      "If the filter only triggers in treatment, the arms lose different session proportions."
     ],
     "correct_option": 3,
     "explanation": "A sample ratio mismatch caused by a post-randomization filter arises when the filter's inclusion/exclusion criteria are correlated with the assignment. For example, if the new checkout button triggers a page reload that changes the session ID, or if the eligibility check itself is only shown to users who interact with the button (treatment users), then a higher proportion of treatment sessions pass the filter compared to control. The filter must be truly independent of treatment assignment to be safe. Option A is correct only if the filter is perfectly independent of assignment — which may not hold in practice. Option B is too strong — post-randomization filters are valid when designed carefully, but they require scrutiny. Option C is wrong — at ~200,000 total sessions, a 7,000-session imbalance is statistically impossible from random chance and must be investigated.",
@@ -424,7 +424,7 @@
     "scenario_context": "A productivity SaaS tool ships a new AI writing assistant in an A/B test. Week-over-week, the treatment group shows declining engagement uplift: +18% in week 1, +11% in week 2, +6% in week 3, +3% in week 4. Control engagement is flat across all four weeks. The product manager argues the feature is still positive (still above zero) and should be shipped. The data scientist is less confident.",
     "description": "Which analysis would most directly help diagnose whether this is a novelty effect?",
     "options": [
-      "Look at treatment users who have been in the experiment for 4+ weeks and measure their engagement trend compared to equivalent long-tenure control users — if the gap is converging toward zero, novelty decay is likely",
+      "Track long-tenure treatment users vs. control — if their engagement gap converges to zero, it's novelty.",
       "Segment treatment users by engagement level in week 1 — high engagers will show more novelty effect decay",
       "Extend the test to 8 weeks to see if the positive effect stabilizes or reaches zero",
       "Compare the week 4 engagement level in treatment to the week 1 engagement level in control as the baseline"
@@ -478,7 +478,7 @@
     "options": [
       "The data scientist is correct — log transformation always reduces variance and should always be applied to revenue metrics",
       "The data scientist is correct because log revenue is equivalent to revenue when the effect is small",
-      "The colleague is more correct — transforming the metric changes the estimand from mean revenue to mean log-revenue, which may not align with the business objective, and a better approach is to use robust variance estimation or winsorization",
+      "Log transformation changes the estimand from mean revenue to mean log-revenue; winsorization preserves the original goal.",
       "Both are wrong — the correct solution is to exclude the top 1% of users as outliers before analysis"
     ],
     "correct_option": 2,
@@ -502,7 +502,7 @@
     "scenario_context": "A professional social network wants to test a new 'mutual connection recommendations' feature. Individual-level randomization is proposed: 50% of users see the feature, 50% do not. A senior researcher argues that individual-level randomization is inappropriate for this feature.",
     "description": "What is the primary reason, and what is the better design?",
     "options": [
-      "Individual randomization causes interference: a treatment user may recommend someone who is in control, and the control user benefits from the recommendation without being in treatment — inflating or deflating measured effects. Randomizing at the network cluster level (e.g., geographic region or community) would isolate spillovers",
+      "Individual-level randomization causes interference through shared social connections — cluster randomization is needed.",
       "Individual randomization is appropriate because it maximizes statistical power by treating each user independently",
       "The feature is too complex to test in an A/B framework and should be evaluated using surveys",
       "Individual randomization is fine but the test should run for 60 days to reduce novelty effects from recommendation novelty"
@@ -530,7 +530,7 @@
     "options": [
       "Run the 21-day test — if p > 0.05, conclude the feature does not work",
       "Run the test for 7 days at a higher alpha (e.g., α=0.15) to increase power",
-      "The test is underpowered for the expected effect size — options include increasing traffic allocation, extending duration, or accepting that the expected 1% lift cannot be reliably measured with current traffic",
+      "Underpowered: 3% MDE exceeds the expected 1% lift — the effect will likely go undetected.",
       "Use a one-tailed test to effectively double the power for detecting positive effects only"
     ],
     "correct_option": 2,
@@ -555,7 +555,7 @@
     "options": [
       "Random reassignment between tests is unnecessary and introduces statistical noise",
       "Using the same users repeatedly increases statistical power because the variance is lower for a panel than a cross-section",
-      "Users who experienced the treatment in test 1 may have permanently changed their behavior (e.g., upgraded their plan or changed usage patterns), so their baseline in tests 2 and 3 differs from users who were always in control — causing carryover contamination",
+      "Prior treatment may permanently change user behavior (e.g., plan upgrades), so re-randomized users carry carryover bias.",
       "The tests should have been run simultaneously to avoid seasonal confounds"
     ],
     "correct_option": 2,
@@ -582,7 +582,7 @@
       "Bayesian frameworks are always equivalent to frequentist ones, so early stopping is equally problematic in both",
       "Because the posterior is 97%, the team can be 97% confident the true effect is positive and stop immediately",
       "Early stopping is invalid in all experimental frameworks and the test must always run to the planned sample size",
-      "Bayesian methods that use proper stopping rules (e.g., stopping when the posterior exceeds a threshold) can be valid under optional stopping, unlike frequentist p-values which inflate under repeated testing — but the Bayesian conclusion still depends on the prior and may overstate certainty with small samples"
+      "Bayesian stopping rules can be valid under optional stopping — but conclusions depend on the prior."
     ],
     "correct_option": 3,
     "explanation": "Bayesian inference has the technical property of being coherent under optional stopping — the posterior probability at any point is a valid statement of belief given the data seen so far, without the multiple-testing inflation that afflicts frequentist p-values. However, this does not mean stopping is without risk: with small samples, the posterior can be heavily influenced by the prior, and if the prior is misspecified, the 97% credibility may overstate true confidence. Additionally, practical issues like novelty effects and seasonality still apply. The frequentist concern (option A) about p-value inflation does not directly transfer to Bayesian posteriors, so they are not equivalent in this regard. Option B is the common misinterpretation of Bayesian credible intervals as probability statements about the true parameter — while more defensible in a Bayesian framework than in frequentist, it still requires careful wording. Option C is too absolute — sequential and Bayesian designs explicitly allow for principled early stopping.",
@@ -608,7 +608,7 @@
       "The two-week test was statistically underpowered and the activation lift was a false positive",
       "The six-month retention data is confounded by external market changes, making comparison to historical rates invalid",
       "The onboarding checklist should have been tested on a smaller cohort to reduce the impact of potential negative effects",
-      "The test measured short-run activation but did not measure long-run retention — a feature that drives early engagement through friction (completing a checklist) may not create genuine long-term value, and the proxy metric of activation misled the team"
+      "Short-run activation measured checklist completion, not durable value — the proxy metric misled the ship decision."
     ],
     "correct_option": 3,
     "explanation": "This is a metric selection and experiment duration problem. The team chose a short-run proxy metric (feature activation) that was easy to measure quickly, but it did not reflect the true business goal (long-run retention). Onboarding checklists can inflate early activation by creating structured tasks that users complete but do not find intrinsically valuable — leading to higher feature usage in the first weeks but lower retention later because the engagement was compliance-driven rather than value-driven. The experimental fix is to either run the test long enough to observe retention directly, or to validate that the short-run metric predicts long-run outcomes. Option A (underpowered) is less likely — the 15% lift is large and would have been detectable at most reasonable sample sizes. Option B (external confounds) is possible but is a weaker explanation without evidence of market changes. Option C (smaller cohort) does not address the core issue of metric selection.",
@@ -631,7 +631,7 @@
     "scenario_context": "A marketplace is testing a new fee structure for sellers. Seller revenue is highly variable — some sellers earn $500/month, others earn $50,000/month. The team uses simple random assignment. A data scientist recommends stratified randomization by seller revenue tier instead.",
     "description": "Why would stratified randomization help in this context?",
     "options": [
-      "By ensuring that high-revenue and low-revenue sellers are proportionally balanced between treatment and control, stratified randomization reduces the chance that one arm accidentally contains more top sellers — decreasing variance in the treatment effect estimate",
+      "Stratification balances high- and low-revenue sellers across arms, reducing variance in the effect estimate.",
       "Stratified randomization increases the sample size by duplicating observations within strata",
       "Stratification is only useful when there are fewer than 1,000 participants, not for large marketplace experiments",
       "Stratified randomization prevents novelty effects by ensuring user segments are equally exposed to the new fee structure"
@@ -660,7 +660,7 @@
       "Ship — the primary metric is what matters and a 1.8% retention drop is within acceptable noise",
       "Run the test longer to see if the retention drop recovers",
       "Segment by user type to check if the retention drop is concentrated in low-value users who can be excluded",
-      "Do not ship — any statistically significant deterioration in a guardrail metric should block shipping until the root cause is understood and the tradeoff is explicitly evaluated by stakeholders"
+      "Do not ship — significant guardrail deterioration must block shipping until the root cause is understood."
     ],
     "correct_option": 3,
     "explanation": "Guardrail metrics exist precisely to catch cases where optimizing a primary metric creates harmful side effects. A statistically significant 1.8% drop in 7-day retention is not noise — it signals that users exposed to the new ad format are churning at a higher rate. The responsible decision is to block shipping, investigate the mechanism (is the ad format intrusive? is it degrading the core experience?), and escalate the tradeoff to stakeholders who can make a business decision about whether the revenue from ad clicks outweighs the retention cost. Option A uses the primary metric to override a significant guardrail violation, which defeats the purpose of having guardrails. Running longer (option C) is unlikely to make the retention drop disappear if users genuinely dislike the experience. Segmenting to find 'acceptable' users to exclude (option D) is rationalizing the harm rather than addressing it.",
@@ -735,7 +735,7 @@
     "description": "What is the most important trade-off?",
     "options": [
       "Multi-armed bandits are always inferior to A/B tests because they cannot handle more than two arms",
-      "A multi-armed bandit optimizes for short-run performance by exploiting the best-performing arm early, but this exploration-exploitation trade-off means the losing arms get less traffic — which reduces the statistical precision of estimates for those arms and makes it harder to definitively determine which algorithm is best",
+      "MABs exploit the best arm, starving losing arms of traffic — reducing their estimate precision.",
       "Multi-armed bandits require more total traffic than A/B tests to reach the same confidence level",
       "Multi-armed bandits are only valid when all arms have the same baseline conversion rate"
     ],
@@ -760,7 +760,7 @@
     "scenario_context": "A SaaS company runs two simultaneous A/B tests on the same users: one testing a new pricing page (Experiment P) and one testing a new email sequence (Experiment E). Both experiments use independent randomization. The pricing page test shows a significant 8% conversion lift. Six months later, an analyst discovers that users in the treatment arm of Experiment P were twice as likely to also be in the treatment arm of Experiment E due to a hash collision in the randomization code.",
     "description": "What problem does this create?",
     "options": [
-      "The hash collision creates correlation between experiment assignments — users who saw both treatments simultaneously cannot be distinguished from users who only saw the pricing page treatment, making it impossible to cleanly attribute the 8% lift to the pricing page alone",
+      "The hash collision correlates both assignments — users in both treatments cannot be separated.",
       "The two experiments are still valid — independent randomization guarantees they cannot interact",
       "This is only a problem if the email experiment also showed a significant result",
       "The experiments should be combined into a single factorial design to measure the interaction effect"
@@ -790,7 +790,7 @@
       "FWER control is more appropriate because it guarantees zero false positives among the discoveries",
       "Both approaches produce identical results when applied to the same dataset",
       "FWER is more appropriate because it is easier to explain to non-technical stakeholders than FDR",
-      "FDR control is more appropriate — when testing a large number of hypotheses where some true effects are expected, FDR control targets the proportion of false positives among discoveries, preserving more true positives while still bounding the error rate. FWER control would be overly conservative and discard too many real findings"
+      "FDR is appropriate — it bounds false discovery rate and preserves more true positives than FWER."
     ],
     "correct_option": 3,
     "explanation": "FWER control (e.g., using a Bonferroni-type correction) bounds the probability of even one false positive. This is appropriate when any single false positive is unacceptable — for example, clinical trials or high-stakes regulatory decisions. However, with 50 hypotheses, FWER control divides alpha by 50, requiring p < 0.001 for significance, which is extremely conservative and will discard many true effects. When you expect several true effects and can tolerate some false discoveries as long as the overall false discovery rate is controlled (e.g., at 10%), FDR control methods are far more powerful. In this scenario with ~5 expected true effects, FDR control recovers most of them while FWER would suppress nearly all of them. Option A overstates FWER — it controls the probability of any false positive but does not guarantee zero. Option B is wrong — FDR and FWER corrections produce different rejection sets. Option C prioritizes communication over statistical appropriateness, which is backwards.",
@@ -815,7 +815,7 @@
     "description": "Which argument best captures the correct approach to defining the 'family' for multiple testing correction?",
     "options": [
       "All experiments across the company should always be corrected together because they share the same database",
-      "The appropriate 'family' for correction is determined by the shared inferential context — experiments addressing independent business questions in separate product areas generally do not require cross-area correction, but metrics tested within a single experiment do. Correction should be applied within a test's metric family, not across unrelated tests",
+      "The family is the shared inferential context — within-experiment metrics do; cross-area tests don't.",
       "No correction is needed as long as each experiment uses p < 0.05 individually",
       "All experiments in a calendar month should be corrected together regardless of product area"
     ],
@@ -869,7 +869,7 @@
     "description": "Which consideration should drive the choice between the two approaches?",
     "options": [
       "Winsorization is always preferred because it is simpler to implement and explain",
-      "The choice depends on the goal: winsorization changes the estimand by capping extreme values — the result represents average effect excluding top sellers — while covariate adjustment preserves the full estimand and reduces variance by explaining pre-existing differences. If top sellers are a target user segment, winsorization may produce misleading business conclusions",
+      "Choice depends on goal: winsorization changes the estimand; covariate adjustment preserves it.",
       "Covariate adjustment is always superior because winsorization introduces bias by removing data",
       "Both approaches produce equivalent results when the covariate is revenue from the prior period"
     ],
@@ -897,7 +897,7 @@
     "options": [
       "City-level randomization increases statistical power because each city is a larger unit of observation",
       "The design is invalid because cities are not randomly selected from a larger population",
-      "City-level randomization dramatically reduces the effective sample size — the number of independent units is now 40 cities, not thousands of couriers. High intra-cluster correlation means couriers within the same city behave similarly, so each additional courier adds little independent information",
+      "City-level randomization shrinks effective n to 40 clusters due to high intra-cluster correlation.",
       "City-level randomization is only appropriate when all cities have the same number of couriers"
     ],
     "correct_option": 2,
@@ -923,7 +923,7 @@
     "description": "Why?",
     "options": [
       "The 20% lift is a biased estimate because cashback incentives always create novelty effects",
-      "The individual-level test captures a partial equilibrium effect — when only 50% of buyers have the incentive, there is sufficient seller capacity for all of them. At full rollout, all buyers compete for the same seller inventory simultaneously, potentially creating supply constraints that reduce the per-buyer benefit below the measured 20%",
+      "At 50% rollout, seller capacity holds. At full rollout all buyers compete, potentially reducing the benefit below 20%.",
       "The test should have been run on sellers, not buyers, to measure the true marketplace impact",
       "The 20% lift overestimates the effect because control buyers are contaminated by seeing treatment buyers' cashback badges"
     ],
@@ -1005,7 +1005,7 @@
     "options": [
       "The positive point estimate of 7.2% is above the MDE, so stopping early is statistically valid",
       "The confidence interval is irrelevant — only the p-value matters for the stop decision",
-      "The wide confidence interval spanning zero at day 10 shows that the test lacks sufficient precision to support a confident conclusion — the estimate is noisy and the true effect could plausibly be near zero or negative. Stopping early based on the point estimate risks acting on noise",
+      "The wide CI spanning zero shows insufficient precision — early stopping risks acting on noise.",
       "A 10-day interim result is always valid as long as the point estimate exceeds the pre-registered MDE"
     ],
     "correct_option": 2,
@@ -1059,7 +1059,7 @@
     "options": [
       "Run the test anyway — 300,000 users per arm is close enough to detect a 0.5pp lift",
       "Lower the alpha to 0.01 to compensate for the lower sample size",
-      "The test is fundamentally underpowered at current traffic levels for the required MDE. Options include accepting a larger MDE (e.g., 1pp), accumulating users over multiple months, accepting lower power, or making the ship decision without a controlled experiment given the traffic constraint",
+      "Underpowered — the 420K per arm required exceeds the platform's 300K MAU.",
       "The platform should recruit new users to the test to reach the required sample size"
     ],
     "correct_option": 2,
@@ -1087,7 +1087,7 @@
       "Never pre-register segment analyses — they should always be exploratory to preserve flexibility",
       "Run the overall test first, and if it is null, then look at segments to find where the effect might be hiding",
       "Segment results are only valid if the segments are of equal size, so the analysis should use a balanced sample",
-      "Pre-register the primary metric at the overall level and also pre-register the new-player and veteran segments as pre-specified subgroup analyses with appropriately adjusted alpha levels — this provides confirmatory power for the hypothesized segment effects while acknowledging the additional comparisons"
+      "Pre-register both the overall metric and the new-player/veteran segments with adjusted alpha levels."
     ],
     "correct_option": 3,
     "explanation": "Pre-registering segment analyses when there is a strong a priori hypothesis — grounded in product logic and user behavior theory — is the correct scientific approach. By committing to the segments and their expected directions before seeing the data, the team preserves the confirmatory nature of the analysis and can apply appropriate alpha adjustments (e.g., testing at α=0.025 per segment to maintain an overall 5% error rate). This is superior to purely exploratory post-hoc segmentation, which inflates false positive risk, and it is also superior to option A's blanket prohibition on pre-registered segments. Option A loses the ability to make confirmatory claims about important subgroups. Option B is the post-hoc exploration pattern that risks false discoveries — using segment analysis to 'rescue' a null overall result is exactly the wrong way to use subgroup analysis. Option C is incorrect — pre-specified segment analyses do not require equal segment sizes; statistical tests account for different sample sizes.",
@@ -1112,7 +1112,7 @@
     "options": [
       "68% variance reduction is correct and desirable — high variance reduction confirms CUPED is working well; the +0.3% lift is likely the true effect, and prior tests showing 1–2% lifts should be re-examined for methodology errors rather than assuming the current result is wrong",
       "The variance reduction formula has a sign error: Y_cuped should add the adjustment term (Y + theta * (X − E[X])) rather than subtract it; the subtraction artificially deflates treatment group adjusted outcomes, making the lift appear smaller than the true effect",
-      "X is measured during the same experiment window as Y, so treatment group users' X values are influenced by the treatment itself; the contaminated covariate inflates theta and causes the CUPED adjustment to over-correct treatment group outcomes toward the control mean — the lift is underestimated and the variance reduction is overstated; X must be computed from a pre-experiment window (e.g., checkout rate during the 14 days before day 0) when it cannot be affected by treatment assignment",
+      "X is measured during the experiment window, so treatment users' X is influenced by the treatment; the contaminated covariate causes CUPED to over-correct treatment outcomes — lift is underestimated. X must come from a pre-experiment window.",
       "Using the same metric for both Y and X creates circular adjustment regardless of time window — CUPED requires the covariate to be a different metric from the outcome variable; the fix is to use a proxy metric such as page views or session count as X instead of checkout rate"
     ],
     "correct_option": 2,
@@ -1137,7 +1137,7 @@
     "description": "Why did the 14-day read produce a null result while the six-week holdout revealed a meaningful positive effect?",
     "options": [
       "The experiment was underpowered at 14 days: with 50,000 sellers per arm the minimum detectable effect was larger than 4.3%, so the 14-day read was always statistically unable to detect the true effect; running the same experiment for 14 days with a larger sample would have shown significance",
-      "Two-sided marketplace interventions require an equilibration period: sellers must discover and experiment with the pricing tool over days to weeks, and buyers must discover and respond to the resulting price competition over additional weeks — the full steady-state effect only emerges after both sides have adapted; at day 14, early seller adoption was incomplete and buyer behavioral response had barely begun, making the GMV lift near zero at that horizon",
+      "Two-sided marketplace interventions need an equilibration period: sellers need time to adopt the tool, buyers need time to respond. At day 14 both sides had barely adapted — the near-zero GMV lift reflects incomplete equilibration, not a true null.",
       "The six-week holdout is confounded by network spillovers: holdout buyers who interacted with treated sellers received partial treatment through price competition, inflating the apparent treatment-vs-holdout gap; the true incremental lift from the tool is smaller than 4.3% once spillover is corrected",
       "The null result at day 14 reflects over-aggressive initial pricing: sellers first set prices too high using the new tool, suppressing buyer demand; by week 6 they had settled on rational prices, producing the observed lift; the 14-day read captured a temporary pricing overshoot rather than a stable effect"
     ],
@@ -1165,7 +1165,7 @@
       "The experiment ran for too short a time — extend to 28 days to double the sample and narrow the CI to significance.",
       "The pre-experiment power calc was wrong — redo it with the observed σ and rerun the experiment at the corrected sample size.",
       "The lift is real but marginally underpowered; apply CUPED using pre-experiment revenue to recover the 20% variance reduction and push to significance.",
-      "Revenue per session is a low-sensitivity metric for this treatment: extreme high-spend sessions dominate variance, burying the effect even if it's real. Run a complementary analysis on a tighter metric (e.g., conversion rate) and pre-commit to a sensitivity-adjusted metric definition for the next experiment."
+      "Revenue per session has low sensitivity here due to extreme outliers. Use conversion rate as the primary metric instead."
     ],
     "correct_option": 3,
     "explanation": "The root problem is metric sensitivity: revenue per session has fat-tailed variance that makes it structurally under-powered for moderate-effect-size treatments. Adding more time (Option A) gives more data but doesn't change the fundamental signal-to-noise ratio — if the metric variance is 3.8× the pre-calc estimate, you'd need ~14× more data to hit the original power, which is operationally infeasible. Re-doing the calc and rerunning (Option B) is the right long-term fix but ignores the data already collected on conversion rate, which directly measures the treatment's intended effect and has far lower variance. CUPED (Option C) helps but a 20% variance reduction against a 3.8× underestimate means you'd still be ~13× underpowered — CUPED doesn't rescue a fundamentally wrong metric choice. The correct action is to run a sensitivity diagnosis: which metric definition is tight enough to be detectable at this sample, what does conversion rate show (it's a legitimate guardrail), and re-anchor the primary metric for future experiments on this feature.",
@@ -1299,7 +1299,7 @@
     "options": [
       "Daily re-randomization increases statistical power because more users cycle through the treatment arm, giving more exposure data for the analysis.",
       "The only issue is that the sample size calculation assumed a fixed group size; re-randomization changes the effective n per arm and the standard error calculation is wrong.",
-      "Daily re-randomization causes treatment contamination: users who were in control on early days but treatment on later days — or vice versa — carry behavioral spillover between arms. The last-day assignment groups are not comparable because assignment history differs systematically. Long-latency metrics (e.g., 7-day retention) are most affected.",
+      "Daily re-randomization contaminates arms: users in control early but treatment later carry spillover — long-latency metrics like 7-day retention are most affected.",
       "Daily re-randomization is equivalent to a crossover design, which is more efficient; the analysis should use a paired t-test instead of an independent-samples test."
     ],
     "correct_option": 2,
@@ -1325,7 +1325,7 @@
     "description": "What is the direction and likely magnitude of bias in Experiment B's results?",
     "options": [
       "No bias — the discount from Experiment A has ended and its effects should have dissipated in 3 days; Experiment B's control arm is unaffected.",
-      "Experiment B's control arm is enriched with users who received a recent discount (trained to expect lower prices). These users may purchase more in the short run (satisfying discount-trained behavior) or churn faster (disappointed by returned pricing). The control arm is not comparable to a fresh random sample; lift estimates on conversion or revenue are biased in an unknown direction.",
+      "Experiment B's control arm has discount-trained users who aren't comparable to fresh random controls — lift estimates are biased in an unknown direction.",
       "Experiment B's treatment arm is contaminated, not the control arm; the segmentation overlap only affects the treatment group.",
       "The bias is always upward: control users who received a prior discount have higher baseline conversion, making the treatment effect look smaller than it actually is."
     ],
@@ -1352,7 +1352,7 @@
     "description": "Predict the primary validity problem with session-level randomization in this setup.",
     "options": [
       "Session-level randomization is valid; each session is an independent observation and the conversion rate per session is a correct denominator. No bias is introduced.",
-      "Heavy users who have many sessions are more likely to experience both arms within the experiment period. Their sessions contribute cross-contamination: the same user's behavior in the control condition is influenced by prior treatment exposure (and vice versa), violating the independence assumption and biasing the treatment effect estimate toward zero.",
+      "Heavy users experience both arms, introducing cross-contamination: their control behavior is influenced by prior treatment exposure, violating independence and biasing the effect toward zero.",
       "The bias is that high-frequency users skew the session count but not the metric — since conversion rate is computed per session, the heavy-user concentration doesn't affect validity.",
       "The bias direction is upward: heavy users convert at higher rates, and since they dominate the session count, they inflate both arms' conversion rates, making the lift estimate appear larger."
     ],
@@ -1489,7 +1489,7 @@
       "Ship — a 3.6% imbalance is operationally minor, the lift is significant, and the SRM is unlikely to affect the direction of the result.",
       "Run the experiment for 7 more days and recheck; the SRM may be a transient artifact from the first week and will correct itself with more data.",
       "Apply a 3.6% weighting correction to the treatment arm metrics to normalize for the sample imbalance, then ship if the corrected lift is still significant.",
-      "Investigate the SRM root cause before reading any metric. An imbalance this large (chi-squared p = 4 × 10^-8) indicates something systematic is wrong with the randomization — the treatment and control groups may differ on characteristics correlated with the primary metric, making the +2.8% lift estimate unreliable."
+      "Investigate the SRM root cause before reading any metric. Chi-squared p = 4 × 10^-8 signals systematic randomization failure — the lift is unreliable."
     ],
     "correct_option": 3,
     "explanation": "A chi-squared p-value of 4 × 10^-8 is not routing noise — it is a 8-sigma deviation from the expected 50/50 split. This level of imbalance requires systematic investigation before trusting any metric. Common SRM causes include: assignment service bugs (e.g., sticky sessions overriding random assignment), bot traffic filtered differently between arms, aggressive caching of assignment decisions, or mobile vs desktop traffic routing disparities. Any of these can create selection bias — the 518K control users and 482K treatment users differ not just in count but potentially in composition (e.g., mobile users systematically excluded from treatment). If the groups differ on characteristics correlated with the outcome, the +2.8% lift estimate is biased in an unknown direction. Option A normalizes the problem by calling it 'minor' — a 36K-user imbalance at chi-squared p < 10^-7 is not minor. Option B extends the experiment without addressing the cause — running longer with a broken assignment mechanism produces more biased data. Option C applies a naive weighting correction that addresses the count imbalance but not the compositional bias (if treatment users differ in quality, not just quantity, reweighting by count doesn't fix it).",
@@ -1514,7 +1514,7 @@
     "description": "Trace how this bug creates SRM and predict the direction of bias in the primary metric.",
     "options": [
       "ITP users get re-randomized each day, which increases their total session count across both arms equally — the SRM is caused by a different factor unrelated to ITP.",
-      "ITP users who are re-randomized after cookie expiry are more likely to land in control on each re-randomization (50/50 each time), but their re-randomization events inflate the denominator of the control arm count since control users are counted again. The treatment arm underrepresents ITP users relative to their true population share, biasing any iOS-correlated metric toward the control arm.",
+      "ITP users re-randomize after cookie expiry (50/50), inflating the control arm count and underrepresenting them in treatment — biasing iOS metrics toward control.",
       "ITP users re-randomize to treatment at a higher rate because ITP deletion selectively affects the control arm's tracking cookies. This inflates treatment counts.",
       "Re-randomized ITP users appear in both arms simultaneously, creating a within-user crossover that inflates both arms equally."
     ],
@@ -1596,7 +1596,7 @@
     "options": [
       "Yes — the restricted analysis avoids the contaminated period and the balanced post-day-4 data gives a valid estimate. Ship based on the restricted result.",
       "Neither analysis is valid — any SRM, regardless of cause or magnitude, invalidates all analyses from that experiment.",
-      "The restricted analysis reduces bias from the cookie bug, but it is a post-hoc choice driven by the SRM finding. Pre-specifying an analysis window after identifying an SRM-inflating bug is a legitimate recovery technique only if the window was defined independently of the metric outcomes — here, the window that happens to produce significance was selected after seeing both full-period (p = 0.08) and restricted (p = 0.031) results.",
+      "Bias is reduced by restricting the window, but the window was chosen after seeing p = 0.08 and p = 0.031 — post-hoc selection undermines the analysis.",
       "Use the full 14-day result. The restricted analysis has lower sample and is therefore less reliable despite the lower p-value."
     ],
     "correct_option": 2,
@@ -1623,7 +1623,7 @@
     "options": [
       "Asymmetric stratification does not cause SRM — the 50/50 splits are specified correctly in each arm. The imbalance must come from a different source.",
       "Stratification in one arm and global randomization in the other always produces upward bias in the treatment arm because stratification selects higher-value users into treatment.",
-      "Asymmetric stratification can cause SRM because global randomization (control) does not guarantee the same device-type proportions as stratified randomization (treatment). If mobile users are assigned slightly differently between the two mechanisms, the arm totals diverge. The direction of bias on conversion depends on which arm has more mobile users: if treatment is under-mobile, it underestimates conversion relative to a balanced sample.",
+      "Asymmetric stratification can cause SRM: global and stratified randomization don't guarantee matching device-type proportions between arms, causing arm totals to diverge.",
       "The SRM is caused by mobile users refreshing more frequently, which re-randomizes them more often in the global-randomization (control) arm."
     ],
     "correct_option": 2,
@@ -1651,7 +1651,7 @@
       "Whether the day-14 lift is large enough to be practically significant — +1.5% at p = 0.03 clears the significance bar, so statistical and practical significance are both satisfied.",
       "Whether the experiment has been running long enough — 14 days captures 2 weekends; a further 7-day extension would confirm whether the +1.5% holds.",
       "Whether the p = 0.03 result on day 14 survives a Bonferroni correction for the 14 daily checks.",
-      "Whether the decay pattern is consistent with a novelty effect (users initially curious about the new feed, settling to a lower equilibrium) versus a genuine sustained improvement settling from a volatile launch. A sharp early spike followed by steady decay is the classic novelty signature; if the equilibrium is still declining at day 14, the true long-run effect may be closer to zero or negative."
+      "Sharp early spike followed by steady decay is the novelty signature; continued decline at day 14 suggests the long-run effect is not a genuine sustained improvement."
     ],
     "correct_option": 3,
     "explanation": "The monotonic decay pattern (8.1% → 5.2% → 3.1% → 1.5%) is the hallmark signature of a novelty effect: users engage more intensely with the new feed initially because it is different, and engagement decays as the novelty wears off. The critical question is whether the decay has stabilised or is still declining at day 14. If the trend extrapolates to ~0% by day 21, the day-14 +1.5% is an artifact of the novelty plateau rather than a durable causal effect. A sustained experiment (days 21–28) or a segment analysis comparing new vs returning users would help distinguish novelty from genuine improvement. Option A conflates statistical significance with the absence of a novelty confound — p = 0.03 doesn't tell you whether the effect is real or a diminishing novelty artifact. Option B proposes extending the experiment without identifying why — the extension is only useful if you're looking for decay pattern stabilisation, which should be articulated. Option C raises a valid multiple-testing concern (14 daily looks at p-values) but is secondary to the novelty-effect question; the day-14 read is a pre-specified endpoint, so the daily-look multiple-testing concern is mitigated if the experiment was designed with a single endpoint.",
@@ -1702,7 +1702,7 @@
     "scenario_context": "A team tests a new homepage design. Segment analysis: New users (first 7 days on platform): +6.1% conversion lift (p = 0.002). Returning users (>30 days on platform): +0.2% conversion lift (p = 0.71). The team has 60K new users and 300K returning users per arm.",
     "description": "Predict which segment is most likely to be contaminated by novelty effects, and what the HTE tells you about the decision.",
     "options": [
-      "Returning users show the real long-run effect — the +0.2% represents the treatment's steady-state causal impact after the novelty has worn off. The new-user +6.1% reflects novelty: new users find any new design more engaging than the status quo because they lack a baseline to compare against. The HTE pattern is directionally consistent with a novelty effect dominating the new-user estimate.",
+      "Returning users show the steady-state effect (+0.2%) after novelty wears off. New users' +6.1% reflects novelty — any new design is engaging when you lack a prior reference point.",
       "New users show the real treatment effect — they haven't formed habits around the old design, so they give a cleaner signal. The returning-user result is attenuated by habit formation.",
       "The new-user segment is too small (60K vs 300K) to be reliable; the returning-user result is the only statistically valid estimate and should drive the decision.",
       "The +6.1% in new users is a real long-run effect because new users will constitute the future user base; the returning-user signal should be discounted."
@@ -1730,7 +1730,7 @@
     "description": "How many false positives should you expect from 12 simultaneous tests under the null, and what does that imply about the 2 observed results?",
     "options": [
       "You should expect 0 false positives if the team pre-specified the metrics. Pre-registration eliminates the multiple-testing problem.",
-      "Under the global null (all metrics truly null), you expect 12 × 0.05 = 0.6 false positives on average. With FWER across 12 tests ≈ 46%, observing 2 results at p < 0.05 is consistent with 0 true positives — both could be false positives. The Bonferroni threshold (p < 0.004 each) is the correct bar for family-wise error control.",
+      "With 12 tests at α = 0.05, FWER ≈ 46% — observing 2 at p < 0.05 is consistent with zero true effects. The Bonferroni threshold (p < 0.004) is the correct bar.",
       "2 significant results from 12 tests is strong evidence of true effects — random chance would produce only 0.6, so observing 2 is highly improbable under the null.",
       "The two results are reliable because both p-values are well below 0.05 (0.038 and 0.041); false positives typically appear only near the 0.05 boundary."
     ],
@@ -1756,7 +1756,7 @@
     "scenario_context": "A team designs an experiment to test a new medical-device calibration algorithm. A false positive (shipping a mis-calibrated algorithm) creates a patient safety risk estimated at $10M. A false negative (failing to ship a genuinely better algorithm) costs $1M in forgone improvement. The team sets α = 0.05 and power = 80% by default.",
     "description": "What is wrong with the default α = 0.05 choice, and how should it be adjusted?",
     "options": [
-      "The asymmetric cost structure requires a lower α than 0.05. The cost of a false positive ($10M) is 10× the cost of a false negative ($1M), which argues for a much more conservative threshold (e.g., α = 0.005 or 0.001) to make false positives proportionally rarer. The flip side: a lower α at fixed sample size reduces power, so the team must decide whether to increase sample size to recover power or accept lower power explicitly.",
+      "A $10M false positive (10× the $1M false negative) requires α well below 0.05 — e.g., α = 0.005. Tradeoff: lower α at fixed sample reduces power.",
       "Nothing is wrong — α = 0.05 is the industry standard and is appropriate for all experimental contexts regardless of the cost asymmetry.",
       "The right response is to lower power (to 50%), not α — since the cost of missing a true effect is low ($1M), it is acceptable to accept high false-negative risk and reduce sample size.",
       "The cost structure calls for a one-tailed test, which halves the effective α and gives conservative control of false positives without requiring a larger sample."
@@ -1784,7 +1784,7 @@
     "description": "Predict what the CI width tells you about experiment power, and whether the PM's conclusion is correct.",
     "options": [
       "The CI is mostly positive so shipping is justified — the lower bound is only slightly negative.",
-      "A CI of [−50, +2000] with an MDE of +500 tells you the experiment is severely underpowered: the CI is 4× wider than the MDE. The estimate is too imprecise to distinguish a null effect (+0) from a 4× overperformance (+2000). Shipping based on 'mostly positive CI' ignores that the CI lower bound includes meaningful negative territory and the width reflects a very noisy estimate.",
+      "A CI of [−50, +2000] is 4× wider than the +500 MDE — severely underpowered. The estimate can't distinguish null from 4× overperformance.",
       "The CI width is fine — CI width depends on variance, and DAU naturally has high variance; the team just needs to accept the imprecision.",
       "The CI shows the experiment has sufficient precision because the upper bound (+2000) is 4× the MDE — this indicates the treatment has strong upside potential."
     ],
@@ -1813,7 +1813,7 @@
       "The CI hasn't narrowed because the sample size is still insufficient — add more users per arm and the CI will narrow proportionally.",
       "The CI is correct and reflects that the true effect is small — the CI is converging on the true effect and will stabilize near zero.",
       "The CI width reflects measurement error in the renewal tracking system — fix the tracking pipeline first.",
-      "The CI hasn't narrowed enough because 3 weeks is insufficient to observe quarterly renewal events — users renew on a 3-month cycle, so most users in the experiment haven't reached their renewal date yet. More data over a longer time period (not more users over the same time) is the solution."
+      "3 weeks is insufficient to observe quarterly renewal events — most users haven't hit their renewal date. A longer window is needed."
     ],
     "correct_option": 3,
     "explanation": "Quarterly renewal is a low-frequency event: in a 3-week window, most users have not yet reached their renewal date. The CI is wide not because of insufficient users (80K per arm is substantial) but because the metric has very low occurrence rate — most observations are zeros. Adding more users to a 3-week window doesn't help if those users also haven't reached their renewal date. The solution is to extend the experiment duration until a meaningful fraction of users reach their renewal cycle (12+ weeks). This is a metric-frequency problem: the relevant event hasn't happened yet for most users, so the effective sample size on the metric is a small fraction of the enrolled users. Option A incorrectly diagnoses the problem as sample size — adding users helps when variance is the bottleneck; here, the bottleneck is event occurrence rate, which is fixed by time, not user count. Option B would be correct if the metric had high occurrence rate and the CI were stable — but here the CI is still wide because there's almost no observed outcome data yet. Option C (tracking error) is possible in general but is not supported by the scenario description and is secondary to the event-frequency diagnosis.",
@@ -1840,7 +1840,7 @@
       "The PM is right — the center of the CI (+3.1%) is above the MDE and the result is significant. Statistical significance plus a meaningful point estimate is the correct ship criterion.",
       "Neither is right — you need to extend the experiment until the CI lower bound exceeds the MDE to confirm the effect is above the minimum bar.",
       "The data science lead is right — if the CI overlaps with values below the MDE, you cannot confirm the effect size meets the bar set for shipping.",
-      "The data science lead is applying the MDE incorrectly. MDE is a power-analysis input — the smallest effect you could reliably detect — not a minimum effect required for shipping. The correct ship criterion is whether the effect is statistically significant (yes, p = 0.003) and practically meaningful (yes, +3.1% CTR lift is the expected OEC response). The CI lower bound being below the MDE is not a no-ship signal."
+      "MDE is a power-analysis input, not a ship threshold. The result is significant (p = 0.003) and meaningful (+3.1% CTR) — the CI lower bound falling below MDE is not a no-ship signal."
     ],
     "correct_option": 3,
     "explanation": "MDE is a design parameter, not a minimum-effect-size requirement for shipping. It answers the question 'what is the smallest effect we would want to reliably detect given our sample size?' — it is the power-analysis input used to size the experiment. It does not set a minimum effect required to be present for the ship decision. The correct ship criteria are: (1) statistically significant (p = 0.003 — yes), (2) directionally positive (yes), (3) practically meaningful (the team must define this based on business impact — +3.1% CTR is large by industry norms). The CI lower bound (+1%) being below the MDE (3%) tells you that the true effect could be as small as +1% — but if +1% CTR is still worthwhile to ship (even if smaller than what you powered for), it's not a reason to hold. The data science lead is correct that the lower bound is below the MDE, but the conclusion 'therefore don't ship' is wrong — that confuses MDE with a minimum-required-effect. Option A is partially right but the reasoning ('center above MDE') is not the canonical framing. Option B imposes a non-standard bar (CI lower bound > MDE) that would require unnecessarily large experiments. Option C correctly states the CI lower bound issue but incorrectly applies it as a no-ship rule.",
@@ -1894,7 +1894,7 @@
       "Ship to mobile — p = 0.021 is below 0.05, and the mobile segment is 60% of traffic. The segment result is statistically valid.",
       "The segment finding is valid — Bonferroni correction only applies to unrelated hypotheses; mobile and desktop segments are naturally complementary, so no correction is needed.",
       "The non-significant overall result means the experiment is underpowered; the mobile segment result may be detecting a true effect that the full-population analysis missed.",
-      "The mobile segment finding is a post-hoc subgroup analysis. With at least 2 segments tested (mobile and desktop), the family-wise error rate is inflated. Bonferroni-corrected threshold for 2 subgroups is p < 0.025; p = 0.021 barely clears this but the overall result is non-significant — this pattern is inconsistent with a real effect and is likely a false positive. The correct action is to pre-specify mobile as the primary population in a follow-up experiment and replicate."
+      "Post-hoc subgroup. Bonferroni for 2 segments = p < 0.025; p = 0.021 barely passes while overall is non-significant — inconsistent with a real effect. Pre-specify mobile."
     ],
     "correct_option": 3,
     "explanation": "Subgroup analyses on non-pre-specified segments require multiple-testing correction even when the segments are 'complementary.' Mobile and desktop are 2 tests on the same data; the FWER across 2 tests at α = 0.05 is 1 − 0.95^2 ≈ 9.75%. The Bonferroni threshold for 2 tests is 0.025. p = 0.021 barely passes this threshold, but the pattern raises further concern: the overall result is non-significant (p = 0.09) while a subgroup is significant. This is an inconsistency — if the overall population has no detectable effect, a subgroup detection is more likely to reflect a false positive (one of the segments happened to go positive by noise). The correct response is to treat the mobile segment as a hypothesis and pre-register it for a follow-up focused experiment. Option A applies uncorrected per-segment α = 0.05, which does not control FWER. Option B is wrong: the correction applies regardless of whether segments are complementary — the correlation structure between tests affects the precision of the FWER estimate, not whether correction is needed at all. Option C conflates underpowering with subgroup signal: a non-significant overall result with a significant subgroup is a flag for HTE, but the statistical validity of the subgroup result still depends on proper correction.",
@@ -1919,7 +1919,7 @@
     "description": "Identify the core problem and the correct way to handle the add-to-cart finding.",
     "options": [
       "No problem — the team can add metrics at any time during an experiment. Adding metrics that show significance is standard exploratory analysis.",
-      "Adding metrics after observing early trending data is HARKing: the new metrics were added because the original primary metric was not moving, which means they were selected with implicit knowledge of the data. The add-to-cart p = 0.032 is not a pre-registered result and should not be treated as a confirmatory finding. It is a hypothesis for a follow-up experiment.",
+      "Adding metrics after observing trending data is HARKing. The add-to-cart p = 0.032 was not pre-registered — it was selected with knowledge of the data direction and should not be treated as confirmatory.",
       "The problem is that add-to-cart rate and session-to-purchase time were not in the original pre-registration, so they should have been excluded from the analysis entirely — they cannot be reported at all.",
       "The only issue is multiple testing: apply Bonferroni to all 5 metrics (3 original + 2 added) and the threshold becomes 0.01; since neither new metric clears 0.01, they are non-significant."
     ],
@@ -1974,7 +1974,7 @@
     "options": [
       "Nothing needs to change — 7 days is sufficient as long as the experiment reaches significance before the deadline.",
       "Run for 7 days but use a one-tailed test instead of two-tailed — this effectively halves the alpha and compensates for the reduced sample size.",
-      "Halving the duration halves the sample size, which reduces power. To maintain 80% power in 7 days, the MDE must increase to approximately 2√2 ≈ 2.83% — you can only detect effects that are 41% larger than originally planned. Alternatively, accept lower power (e.g., 60%) at the original 2% MDE and accept higher false-negative risk. The PM must choose between a wider MDE or lower power — there is no free compression.",
+      "Halving duration halves sample, requiring MDE to grow to ~2.83% for 80% power — 41% larger. Choose a wider MDE or accept lower power.",
       "7 days is fine — extend the analysis to include a 7-day pre-period as pseudo-control data to double the effective sample."
     ],
     "correct_option": 2,
@@ -1999,7 +1999,7 @@
     "scenario_context": "An e-commerce platform tests a post-purchase survey prompt. Primary metric: survey completion rate (overall: 0.3% of sessions). After 60 days and 2M sessions per arm, the CI on lift is [−0.04%, +0.12%]. A parallel experiment on a high-frequency metric (session_start: 95% of sessions) with the same 2M sessions per arm shows CI [−0.8%, +2.1%]. The team says: 'The survey experiment was underpowered; we need more time.'",
     "description": "Is 'underpowered' the correct diagnosis for the survey metric, or is there a more precise characterisation?",
     "options": [
-      "The more precise diagnosis is low metric sensitivity due to low event frequency. Survey completion at 0.3% means the metric has very low occurrence rate — even at 2M sessions, you observe only ~6,000 survey completions per arm. The variance of a rare-event metric is dominated by the scarcity of events, not by session count. Adding more sessions without increasing the event rate adds mostly uninformative zeros. The correct fix is to either change the metric definition (e.g., survey impressions) or accept that this metric is structurally undetectable at reasonable sample sizes.",
+      "Rare-event sensitivity: at 0.3% completion, only ~6K per arm from 2M sessions. Scarcity dominates variance — more sessions adds zeros. Change the metric.",
       "Underpowered is correct — the 60-day experiment hasn't accumulated enough events for the survey metric. More time will fix it.",
       "Underpowered and low event frequency are the same diagnosis — both are fixed by more data.",
       "The experiment is correctly powered — the CI [−0.04%, +0.12%] is narrow and any true effect would be detected. The treatment simply has no effect on survey completion."
@@ -2054,7 +2054,7 @@
     "description": "What should the team choose as primary metric, and how should the high-variance metric be used?",
     "options": [
       "Use revenue per session (A) as primary — it directly measures business impact; conversion rate is a proxy.",
-      "Use conversion rate (B) as primary and revenue per session as a guardrail. The 28× difference in required sample (1.8M vs 65K per arm) is driven by revenue's fat-tailed distribution (CV = 5.1 vs 1.4). The team can reach 80% power in under 1 week on conversion rate, versus 9+ days on revenue. Revenue should still be monitored as a guardrail to confirm no revenue degradation.",
+      "Use conversion rate (B) as primary and revenue as guardrail — the 28× sample gap is driven by revenue's fat tail.",
       "Run two separate experiments — one powered for each metric — to get independent reads.",
       "Apply a log transformation to revenue per session; log-revenue has much lower variance and would close most of the sample size gap."
     ],

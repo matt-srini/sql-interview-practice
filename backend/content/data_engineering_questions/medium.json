@@ -11,7 +11,7 @@
       "The schema registry is misconfigured; renaming a field in Avro is always backward-compatible because field names are cosmetic metadata",
       "The correct fix is to switch the schema registry to FULL compatibility mode, which allows field renames without breaking consumers",
       "Consumers should be updated first to use `customer_id`, then the schema can be pushed to the registry; this order of operations satisfies BACKWARD compatibility",
-      "Renaming a field removes the old name from the schema, which breaks existing consumers that still reference `user_id`; the safe path is to add `customer_id` as an alias or new optional field first, migrate consumers, then deprecate `user_id`"
+      "Renaming removes the field name, breaking consumers reading `user_id`; add `customer_id` as alias or optional field, migrate consumers, then remove `user_id`."
     ],
     "correct_option": 3,
     "explanation": "BACKWARD compatibility means a consumer using the new schema can read data that was produced under the previous schema. When `user_id` is renamed to `customer_id`, a consumer deserializing with the new v2 schema looks for a field called `customer_id` — but old messages only contain `user_id`. The new reader cannot find the expected field, so BACKWARD compatibility is violated and the registry rejects the change. The safe migration is additive: add `customer_id` as a new optional field (keeping `user_id` in place), migrate all consumers to read `customer_id`, then remove `user_id` in a final breaking-change release with a version bump. Option A is wrong — field names are part of the schema contract in Avro, not cosmetic metadata. Option B is incorrect — FULL compatibility still prohibits field renames; it enforces both BACKWARD and FORWARD simultaneously, making it stricter, not looser. Option C reverses the correct deployment order and does not address the schema structure problem — updating consumers before the new field exists in the schema still leaves old messages unreadable.",
@@ -34,7 +34,7 @@
     "options": [
       "FORWARD compatibility guarantees old consumers can handle any schema change transparently, so no consumer changes are needed.",
       "The producer's schema would be rejected by the registry because removing fields always violates compatibility.",
-      "Old consumers that still define `payment_method` as required will fail when reading new events — FORWARD compatibility only allows deleting optional fields (per the Confluent compatibility matrix), so removing a required field is a FORWARD violation. The registry's NONE mode let the change through without checking, and the violation manifests at runtime: Avro raises a missing-required-field error when an old reader expects the field but new data omits it.",
+      "Old consumers requiring `payment_method` fail — FORWARD allows only optional-field deletions; this is a violation; NONE mode let it through unchecked.",
       "Old consumers will automatically substitute NULL for the missing `payment_method` field, preserving deserialization of all other fields without errors."
     ],
     "correct_option": 2,
@@ -59,7 +59,7 @@
     "options": [
       "Ask the application team to announce changes in a shared Slack channel at least one week in advance before modifying source tables",
       "Add a schema cache to the pipeline so it uses the last-known-good schema and ignores upstream changes until a manual refresh is triggered",
-      "Establish a data contract between producer and consumer specifying the schema, nullable constraints, and SLA; add automated schema validation tests that run on every pipeline trigger and alert on drift",
+      "Establish a data contract (schema, nullability, SLA) and add automated schema validation on every trigger that alerts and halts on drift.",
       "Switch to schema-on-read so the pipeline accepts any upstream format and applies transformations dynamically at query time"
     ],
     "correct_option": 2,
@@ -131,7 +131,7 @@
     "scenario_context": "A team runs a Lambda architecture with a batch layer (overnight recomputation of all history) and a speed layer (real-time streaming for recent data). Business users query a serving layer that merges both. The team is spending significant engineering effort maintaining two separate codebases that must produce identical results.",
     "description": "A senior engineer proposes migrating to a Kappa architecture. Which statement accurately describes the trade-off the team should consider?",
     "options": [
-      "Kappa eliminates the batch layer by replaying events through the streaming system for both real-time and historical computation, reducing codebase duplication at the cost of requiring the streaming system to handle full historical replay efficiently",
+      "Kappa eliminates the batch layer: a single streaming system handles both real-time and historical computation via event replay.",
       "Kappa replaces the speed layer with a batch layer that runs every 5 minutes, achieving the same latency with simpler infrastructure",
       "Kappa is identical to Lambda but with automated code synchronization between the batch and streaming codebases",
       "Kappa eliminates the serving layer by pushing results directly to application databases, simplifying the query path"
@@ -232,7 +232,7 @@
     "options": [
       "Validate only the required fields on each run and ignore all other fields; type changes in optional fields will not break required-field logic",
       "Store raw JSON as-is without any schema validation; apply type casting in the transformation layer where errors can be caught per-field",
-      "Implement automated schema inference on each ingestion run and compare against a stored baseline schema; alert and halt on type changes while allowing new optional fields to pass through with logging",
+      "Infer the schema on each ingestion run and compare against a stored baseline schema; alert and halt on type changes, log new optional fields.",
       "Request the API provider to implement a schema registry; until then, accept all changes and fix downstream queries manually when they break"
     ],
     "correct_option": 2,
@@ -306,7 +306,7 @@
     "options": [
       "The framework resends all messages in the window from the beginning of the stream, then deduplicates the output table using the primary key before final commit",
       "The framework discards all state after a crash and reprocesses only the messages that arrived after the restart, accepting loss of in-flight messages as a trade-off for consistency",
-      "The framework checkpoints consumer offsets and output state atomically; on restart, it re-reads from the last committed offset and overwrites any partial output written before the crash, ensuring each message's effect appears exactly once",
+      "The framework checkpoints offsets and output state atomically; on restart re-reads from the last offset and overwrites partial outputs — each message's effect appears exactly once.",
       "The framework marks crashed messages as dead letters and processes them separately to avoid double-counting in the main pipeline"
     ],
     "correct_option": 2,
@@ -330,7 +330,7 @@
     "description": "Which orchestration pattern reduces wall-clock time most effectively for this workload?",
     "options": [
       "Chunked batching: group files into 5 batches of 10 and process each batch sequentially, reducing time by 5x compared to individual sequential processing",
-      "Fan-out parallelism: spawn 50 parallel tasks (one per file), each completing independently, then a single fan-in task aggregates results — reduces wall-clock time to roughly the duration of the slowest single file plus aggregation",
+      "Fan-out: spawn 50 parallel tasks (one per file), then a fan-in task aggregates — wall-clock time becomes the slowest single file plus aggregation.",
       "Dynamic task mapping with a global lock: process all 50 files concurrently but acquire a database lock before each write to prevent conflicts",
       "Increase the compute resources of the single sequential task until it runs fast enough to meet the 6 AM deadline"
     ],
@@ -403,7 +403,7 @@
     "description": "A pipeline has an end-to-end SLA of 60 minutes. It has three sequential stages: ingestion (10 min), transformation (35 min), and serving (10 min). The total is 55 minutes, giving only a 5-minute SLA buffer. How should the team improve resilience against occasional stage overruns?",
     "options": [
       "Add a 15-minute sleep step between ingestion and transformation to create a buffer for slow ingestion days",
-      "Set stage-level SLOs (e.g., ingestion ≤12 min, transformation ≤38 min, serving ≤10 min) with automated alerts when any stage exceeds its budget, enabling early intervention before end-to-end SLA is breached",
+      "Set stage-level SLOs with automated alerts so teams can intervene before the end-to-end SLA is breached.",
       "Reduce the end-to-end SLA from 60 minutes to 45 minutes to force the team to optimize each stage",
       "Merge the three stages into a single monolithic job so the scheduler overhead between stages is eliminated"
     ],
@@ -428,7 +428,7 @@
     "options": [
       "Run all 5 days in parallel simultaneously to recover as fast as possible and minimize the total wall-clock recovery time",
       "Reprocess only the most recent day and use it to extrapolate the missing values for the other 4 days",
-      "Run one day at a time in chronological order, validating each partition's output before triggering the next, to catch any residual issues early without contaminating multiple days at once",
+      "Run one day at a time; validate each partition before the next — limits damage to one day if the fix is incomplete.",
       "Skip the backfill and process only from today forward, accepting the 5-day gap as historical data loss"
     ],
     "correct_option": 2,
@@ -501,7 +501,7 @@
     "scenario_context": "A distributed join processes orders partitioned by `customer_id`. The top 0.1% of customers (enterprise accounts) generate 60% of all orders. During the join, a few worker nodes are overloaded while most are idle.",
     "description": "This is a data skew problem. Which technique most effectively addresses it?",
     "options": [
-      "Salting the skewed keys: append a random integer suffix (e.g., 0–9) to enterprise customer IDs before partitioning, then aggregate the salted partitions in a second step — this distributes the hot key's data across multiple workers",
+      "Salting: add a random suffix (0–9) to enterprise IDs before partitioning, then aggregate salted results — distributes hot keys across workers.",
       "Repartition the orders table by `order_date` instead of `customer_id` before the join to avoid skewed key distribution",
       "Filter out enterprise customers before the join and process them in a separate sequential pipeline to prevent overloading the distributed workers",
       "Increase the memory allocation for the overloaded worker nodes so they can handle the disproportionate data volume"
@@ -553,7 +553,7 @@
       "Increase the streaming trigger interval to 1 hour to produce fewer, larger files and avoid the small-file problem entirely",
       "Enable delta compression in the streaming framework so each new file stores only the difference from the previous file, reducing file count",
       "Switch from Parquet to CSV for the data lake table, which handles many small files more efficiently due to its simpler format",
-      "Schedule a periodic compaction job that merges small files into larger target sizes (e.g., 128–512 MB each), reducing file count while preserving data — run compaction asynchronously so streaming ingestion is not blocked"
+      "Schedule a background compaction job to merge small files into 128–512 MB targets — streaming is unaffected, query speed is restored."
     ],
     "correct_option": 3,
     "explanation": "Compaction is the standard solution: a background job reads many small files and rewrites them as fewer large files without changing the data. This restores sequential read performance and reduces file system metadata overhead. Modern table formats (Iceberg, Delta Lake) support transactional compaction that doesn't interrupt live queries. Option A (increasing streaming interval) changes the ingestion SLA, which may be unacceptable. Option B (delta compression) is a different concept and doesn't reduce file count. Option C is wrong — CSV has no advantage for many small files.",
@@ -647,7 +647,7 @@
     "scenario_context": "A data team maintains 40 pipelines feeding 200 downstream tables. Last month, three SLA breaches went undetected for over 6 hours because no one noticed the dashboard was stale. The team has no centralized monitoring for pipeline completion or data freshness.",
     "description": "Which observability setup provides the strongest early warning for future SLA breaches?",
     "options": [
-      "Implement table-level freshness monitoring that checks the MAX(updated_at) timestamp against expected SLA thresholds, and send alerts when a table hasn't been updated within its expected window — integrate with an on-call rotation for SLA-critical tables",
+      "Implement freshness monitoring: check MAX(updated_at) against the SLA threshold per table and alert on-call when a table is stale.",
       "Add logging to each pipeline that prints 'Pipeline complete' to stdout, then manually grep logs when users report stale data",
       "Require all pipeline owners to send a Slack message when their pipeline completes, and create a shared checklist for the on-call team to verify",
       "Build a custom web dashboard that displays the last-run time for each pipeline; have the on-call team check it every 30 minutes"
@@ -674,7 +674,7 @@
       "Move the table to cold storage (e.g., archive tier) to reduce storage costs, and restore it on demand when queries are needed",
       "Add a materialized view with pre-aggregated daily totals so analysts query the summary rather than raw data",
       "Increase the warehouse's concurrency capacity so more queries run in parallel, reducing per-query wait time and overall cost",
-      "Convert to columnar Parquet with Snappy compression and partition by `event_date` — this combines column pruning, compression, and partition pruning to reduce bytes scanned by 90%+"
+      "Convert to Parquet (Snappy) partitioned by `event_date` — column+partition pruning+compression cut bytes scanned by 90%+."
     ],
     "correct_option": 3,
     "explanation": "Converting from CSV to columnar Parquet with date partitioning attacks compute cost at the root: (1) partitioning by `event_date` prunes irrelevant date ranges before any data is read; (2) columnar format reads only `event_date` and `revenue`, skipping all other columns; (3) Snappy compression reduces bytes transferred. Together, these can reduce scanned bytes by 90%+ for typical analytics queries, directly cutting compute costs. Option A reduces storage cost, not compute. Option B (materialized view) helps for specific pre-defined aggregations but doesn't help ad-hoc queries. Option C (more concurrency) increases cost, not reduces it.",
@@ -821,7 +821,7 @@
     "options": [
       "BACKWARD compatibility mode allows adding fields only when they have a default value; schema v2 passed the registry's check because the registry's BACKWARD validator has a bug that omits the default-value requirement — the fix is to switch to FULL compatibility mode, which enforces stricter bidirectional validation",
       "The consumer is caching an outdated schema ID; restarting consumer instances forces them to re-fetch schema v2 from the registry and the deserialization error resolves without any schema change",
-      "The registry's BACKWARD validator should have rejected v2 because BACKWARD requires added fields to have defaults — v2 readers reading older data need a fallback. The check passed due to a bug. When the upgraded consumer replays older v1 messages, the v2 reader looks for loyalty_tier in v1 data, finds it absent, and has no default — Avro signals the missing-required-field error. Fix: add a default value to loyalty_tier (e.g. 'unknown') so v2 readers can substitute the default when deserializing older v1 messages.",
+      "The registry's BACKWARD validator should have rejected v2 because BACKWARD requires added fields to have defaults so v2 readers can substitute when reading v1 data — it had a bug. On v1 replay, loyalty_tier is absent with no default — Avro raises a missing-required-field error. Fix: add a default (e.g. 'unknown').",
       "Avro BACKWARD compatibility guarantees that consumers on any prior schema version can always read messages encoded with the new schema; the error indicates a network partition between the consumer and the schema registry, preventing schema resolution"
     ],
     "correct_option": 2,
@@ -847,7 +847,7 @@
       "The backfill ran compute_daily_metrics in parallel across dates; concurrent Spark writers racing to write the same partition directory created duplicate Parquet files — adding .repartition(1) before the write serializes output and prevents the race condition",
       "The partitionBy(\"date\") clause caused Spark to write each day's output as a new Parquet file inside the existing date directory rather than replacing the existing file; enabling overwrite mode without DYNAMIC partition mode would have deleted the entire table, so append was the correct choice",
       "The doubling is caused by compute_daily_metrics including both the original and corrected logic in the same DataFrame due to a union left in the code; the write mode is correct and the fix is to remove the union from the aggregation function",
-      "mode(\"append\") adds new rows alongside existing rows in each date partition without checking whether data for that date already exists; since the original data was already present from the first pipeline run, the backfill appended a second full copy of each day. The correct mode for replacing existing partition data is mode(\"overwrite\") combined with spark.conf.set(\"spark.sql.sources.partitionOverwriteMode\", \"DYNAMIC\") so that only the backfilled date partitions are replaced, leaving other partitions untouched."
+      "mode(\"append\") added new rows to existing partitions, creating 2× row count for each date. Fix: mode(\"overwrite\") with spark.conf.set(\"spark.sql.sources.partitionOverwriteMode\", \"DYNAMIC\") replaces only the target partitions, leaving other dates untouched."
     ],
     "correct_option": 3,
     "explanation": "The root cause is using `mode(\"append\")` on a table that already contains data for those date partitions. Spark's `append` mode adds new files to the existing partition directories without any awareness of existing data — it never reads or deduplicates against what is already there. After the backfill, every date partition contains both the original run's Parquet files and a new set of files from the backfill run; all downstream readers see both sets as part of the same partition, producing 2× row counts and 2× revenue totals. The correct approach is `mode(\"overwrite\")` with `spark.sql.sources.partitionOverwriteMode=DYNAMIC`. DYNAMIC overwrite mode tells Spark to replace only the partitions present in the current DataFrame, leaving all other date partitions untouched. STATIC overwrite (the default) would replace the entire table root, deleting all date partitions not in the current write — also wrong. Option A is wrong — concurrent writes to a partitioned S3 path do not cause row duplication (different dates write to different S3 prefixes); the issue is sequential append, not a race condition. Option B is wrong — `partitionBy` writes into the partition subdirectory; Spark never automatically replaces existing files unless overwrite mode is specified. Option C is wrong — the doubling matches exactly 2× the expected count for all 30 dates, which is the fingerprint of a double-write, not a union bug.",
@@ -952,7 +952,7 @@
     "mock_only": true,
     "description": "A Snowflake table stores 500 million rows of e-commerce order events. The table is queried in two patterns: (A) analysts running ad-hoc queries filtered by `order_date` (date-range queries, 1–30 days), and (B) a nightly Spark job that appends ~5 million new rows per day. The team is deciding between: partitioning by `order_date` vs clustering by `order_date`. Which statement best describes the trade-off for this mixed workload?",
     "options": [
-      "Snowflake does not support explicit partitioning by a user-defined column; micro-partitions are created automatically and immutable. Clustering keys define a maintenance target that Automatic Clustering reorganizes over time — scans benefit from natural data ordering via micro-partition pruning, but clustering incurs continuous re-clustering credit costs as new rows are appended. For a table with 5M daily appends, the cost of re-clustering after each append must be weighed against the query scan savings; for columns with moderate cardinality like a date column, the benefit is usually high and the cost is predictable.",
+      "Snowflake uses automatic micro-partitions; no user-defined partitioning. A clustering key is a maintenance target that Automatic Clustering reorganizes over time, enabling micro-partition pruning — but each nightly append partially disrupts clustering, and re-clustering consumes credits to weigh against savings.",
       "Partitioning by order_date physically separates data into independent storage units that Snowflake prunes at partition scan time; clustering is a secondary index that speeds up scans within partitions but does not enable partition pruning — so partitioning always provides stronger read performance than clustering",
       "Clustering keys in Snowflake work like B-tree indexes and are updated synchronously on every INSERT; for a nightly append of 5 million rows, each row triggers an index update, making clustering unsuitable for append-heavy workloads",
       "Because analysts filter on order_date and the nightly job appends by order_date, both workloads align on the same key; clustering and partitioning are functionally identical in Snowflake for date columns, and the choice is purely cosmetic"
@@ -982,7 +982,7 @@
     "scenario_context": "A payment platform publishes transaction events to a central Kafka topic. The upstream team adds a required Avro field `payment_currency` (no default) and registers the new schema version with FORWARD compatibility. The registry accepts the registration. On deploy, 3 of 8 consumer teams start failing with deserialization errors; the other 5 continue normally. Investigation reveals the 3 failing consumers use an older Avro client library (v1.8.x); the 5 working consumers all use a modern client (v1.11+).",
     "description": "Which statement correctly explains why 5 consumers are unaffected and what is the most robust remediation for the 3 failing consumers?",
     "options": [
-      "The schema registry correctly accepted the change: per the Confluent FORWARD rule, adding a field is always forward-compatible regardless of whether it has a default. Per the Avro spec, old readers must ignore fields the writer has that they don't — so old readers should succeed. The 3 failures are a client library bug: the v1.8.x resolver violates the spec by erroring on writer-schema fields not present in the reader schema instead of ignoring them. The 5 modern clients implement the spec correctly. The most robust remediation is to upgrade the 3 failing consumers to a spec-compliant Avro client library version (v1.11+). Adding a default to `payment_currency` does not fix a buggy old client — the old reader uses its own v1 schema and never consults the writer's defaults; the buggy resolver still encounters the writer-extra field and still errors.",
+      "The registry correctly accepted the change: Confluent FORWARD permits adding fields regardless of default presence. Per Avro spec, old readers must ignore writer-extra fields. The 3 failures are a v1.8.x client bug that errors on writer-extra fields; the 5 modern clients are spec-compliant. Canonical fix: upgrade the 3 failing consumers to v1.11+ — adding a producer default does not fix the reader-side bug.",
       "The schema registry correctly accepted the change under FORWARD mode, and the 5 working consumers succeed because they already upgraded their schema stubs to include `payment_currency`. The 3 failing teams must immediately update their schema stubs and redeploy their consumers before message backlog grows further.",
       "Add a default value to `payment_currency` in the v2 schema, upgrading the change to FULL compatibility. An optional field with a default is handled differently by all resolver implementations — the v1.8.x strict resolver only errors on truly required unknown fields, so making `payment_currency` optional with a default eliminates the unknown-field edge case and protects all consumer library versions, including buggy ones.",
       "The schema registry should have rejected this change at registration time — FORWARD compatibility requires that old readers can read new data, and a required field with no default breaks that guarantee. The 5 consumers work by coincidence. Fix: roll back the schema version and add `payment_currency` as an optional field with a default before re-registering."
@@ -1012,7 +1012,7 @@
       "The deleted-flag approach fully satisfies GDPR because the regulation only requires that data is not accessible to end users, not that it is physically deleted from storage — the flag ensures BI dashboards and APIs exclude deleted records, which meets the erasure standard.",
       "The correct long-term fix is to change the partition key from `payment_currency` to `user_id`, so each user's records are isolated in a single partition and future erasures require dropping only that partition.",
       "Store all PII in a separate erasable metadata table while keeping aggregated facts in Parquet; the one-time full partition rewrite is unavoidable for current data but future records are structured to avoid PII in partition keys.",
-      "A deleted-flag side table satisfies GDPR erasure only if every downstream system — dashboards, ML training jobs, APIs — guarantees it excludes flagged records from all outputs. This is an indefinite enforcement burden. The defensible approach is crypto-shredding: encrypt each user's PII fields with a per-user key stored in a secrets vault, then destroy the key at erasure time. This makes records cryptographically inaccessible without rewriting Parquet files, satisfying erasure semantics while preserving partition structure."
+      "A deleted-flag table requires downstream systems to indefinitely exclude flagged records. The defensible approach is crypto-shredding: encrypt each user's PII with a per-user key, then destroy the key — the ciphertext becomes inaccessible without rewriting files."
     ],
     "correct_option": 3,
     "explanation": "GDPR Article 17 requires personal data to be 'erased without undue delay.' A deleted-flag approach creates a compliance grey area: PII physically persists and must be excluded by every downstream consumer indefinitely. Regulators increasingly treat 'physically present and queryable' as 'not erased.' Crypto-shredding is the industry-standard solution to the immutable-storage vs. erasure-requirement tension: encrypt PII fields with per-user keys, store keys in a secrets vault, and key deletion is the legally defensible erasure event — no Parquet files need to be rewritten. Option A overstates what a flag accomplishes: physical persistence is the legal issue, not UI-level access. Option B addresses future erasures cheaply but doesn't solve the 6 months of existing data with PII embedded in partition keys. Option C splits PII correctly going forward but still doesn't address the existing data.",
@@ -1097,7 +1097,7 @@
     "follow_up_dimension": "ambiguity",
     "description": "After the SLA breach, the product manager requests that the revenue dashboard switch from nightly batch to 'real-time.' The data engineering team needs to clarify what 'real-time' means before committing to an architecture change. Four interpretations are on the table: (A) sub-second query latency on the dashboard, (B) event-time freshness within 15 minutes of the event occurring, (C) processing-time window closed within 5 minutes of batch job completion, (D) data available to BI within 1 business hour of the event.",
     "options": [
-      "'Real-time' in BI contexts almost always means low data-freshness lag, not sub-second query latency. The disambiguating question is: 'What is the maximum acceptable delay between a payment occurring and its appearance in the dashboard?' Interpretations B and D are both plausible depending on the use case (fraud response vs. daily reporting); the answer determines whether a streaming pipeline or an accelerated hourly batch is the right solution.",
+      "'Real-time' in BI almost always means low data-freshness lag. Disambiguate: 'What is the maximum delay between an event and its appearance in the dashboard?' — the answer determines streaming vs. batch.",
       "'Real-time' requires sub-second query latency (interpretation A); anything slower is batch. The team should build a Kafka → Flink → materialized-view pipeline and replace the current dbt batch entirely.",
       "'Real-time' means interpretation C: run the current batch every 5 minutes instead of nightly. No architectural change is needed — only a schedule configuration change in the orchestrator.",
       "The four interpretations are operationally equivalent in practice; the choice should be driven by engineering cost, not by clarifying the business requirement. Select the cheapest option."
@@ -1129,7 +1129,7 @@
     "options": [
       "Design 2 (Lambda → DynamoDB) is optimal because DynamoDB's single-digit millisecond reads outperform Redis under high concurrency, and Lambda auto-scaling eliminates cluster management. Cold starts average <1 second and affect only the first invocation per instance.",
       "Design 3 (micro-batch Spark) is acceptable because the 3-second requirement applies to the average latency across all events, not to individual ones; switching to 5-second windows reduces average latency to <3 seconds.",
-      "Only design 1 (Kafka → Flink → Redis) reliably achieves sub-3-second freshness. Flink processes events as they arrive with no fixed window delay. At-least-once delivery can cause status regressions (e.g., a replayed 'shipped' event arriving after 'delivered' has already been applied) — Flink's stateful keyed processing prevents this by maintaining keyed state per order_id that enforces a monotonic status progression and rejects retrograde transitions from replayed events (simply deduplicating on order_id alone would be wrong, since legitimate transitions share the same order_id). Design 2 has Lambda cold-start latency that can exceed 3 seconds under spiky load. Design 3 structurally cannot meet a 3-second SLA with a 30-second batch window.",
+      "Flink → Redis (design 1) alone meets the 3 s SLA with no fixed delay. At-least-once risks status regressions; stateful keyed processing enforces monotonic progression. Lambda cold starts exceed 3 s; design 3 cannot meet a 3 s SLA with a 30-second window.",
       "The at-least-once delivery semantic is irrelevant to the latency choice — it only affects data integrity (deduplication) and should be handled separately from the architecture decision."
     ],
     "correct_option": 2,
@@ -1158,7 +1158,7 @@
       "The 40-minute-watermark proposal is correct — Flink watermarks are specifically designed for late data, and a 40-minute watermark ensures all events within the connectivity SLA are processed before any window closes. The 3-second freshness SLA was aspirational for rural-connected devices.",
       "The rural-exclusion proposal is correct — the 3-second SLA was defined for the standard delivery network. Rural mobile connectivity is an external constraint outside the pipeline's control; document the SLA boundary clearly and exclude edge cases.",
       "The status-pending-UI proposal is the best operational compromise: it communicates uncertainty to the customer without making architectural changes to the pipeline, and it resolves automatically when the late event arrives.",
-      "The last-known-status-with-correction proposal is correct. The 40-minute-watermark proposal would hold ALL events — not just the 2% late ones — for 40 minutes before emitting any output, destroying the 3-second SLA for the 98% of on-time events. The rural-exclusion proposal ignores a real customer impact. The status-pending-UI proposal adds user-visible complexity. The right design: use a short watermark (e.g., 10 seconds) to emit promptly for on-time events, and route late arrivals through a side output that applies corrections to the current dashboard state. This is a designed property of streaming systems, not a failure."
+      "The last-known-status-with-correction approach is correct. A 40-minute watermark holds ALL events for 40 minutes, destroying the 3-second SLA for on-time events. Rural-exclusion ignores real impact. Correct: use a short watermark; route late arrivals through a Flink side output."
     ],
     "correct_option": 3,
     "explanation": "The critical insight: watermark depth affects ALL events in a Flink window, not just the late ones. A 40-minute watermark means no window closes until the watermark passes — every event waits 40 minutes before its result is emitted. For a 3-second freshness SLA on 98% of events, this is catastrophic. The correct design uses two paths: a short watermark (10 seconds) for the main on-time stream, and a Flink side output for late arrivals that applies correction events to the live dashboard state. The 40-minute-watermark proposal restates the watermark-hold-all approach with no mitigation for on-time latency — the fundamental watermark mechanics are wrong regardless. The rural-exclusion proposal creates a two-tier customer experience with no SLA for rural users. The status-pending-UI proposal avoids the core design problem and requires indefinite 'pending' display for rural users who may never receive their event within a predictable window.",
@@ -1243,7 +1243,7 @@
     "options": [
       "All three failures are expected artifacts of BigQuery partition table enforcement — partitioned tables apply stricter constraints than unpartitioned ones, including automatic NOT NULL enforcement on partition columns and implicit data expiry for the most recent partitions.",
       "The data quality suite is comparing the new partitioned table against a pre-migration snapshot of the original. New data written to the original during the migration explains the row count gap. Re-run the suite against a fresh snapshot of the original rather than the migration snapshot.",
-      "Each failure has a distinct root cause tied to the INSERT SELECT migration: (1) rows inserted to the original during the multi-hour migration window were not captured — supplement with a CDC catch-up or re-run the migration as a one-shot atomic snapshot; (2) an inadvertent WHERE user_id IS NOT NULL clause in the INSERT SELECT silently excluded NULL rows from being migrated; (3) a date-range predicate in the INSERT SELECT excluded the last 3 days of data, or a partition expiry setting trimmed recent partitions. Diff the two tables partition-by-partition before cutting over.",
+      "Each failure has a distinct root cause: (1) rows written during migration not captured — add CDC catch-up; (2) WHERE user_id IS NOT NULL excluded NULL-user rows; (3) a date predicate or partition expiry excluded the last 3 days. Diff both tables partition-by-partition before cutover.",
       "A row count difference of <5% is within acceptable migration tolerance for a 3.2 TB table; only the max event_date gap warrants immediate investigation since it may indicate missing recent data affecting SLAs."
     ],
     "correct_option": 2,
@@ -1271,7 +1271,7 @@
     "description": "What is the most effective fix for the query planning latency?",
     "options": [
       "The query planning latency is caused by BigQuery's External Table metadata cache not being warm — run BQ UPDATE --refresh_metadata to force BigQuery to re-scan and cache the GCS file listing; subsequent queries will plan in <1 second.",
-      "The problem is the small-file explosion: 138 K files/day creates metadata enumeration overhead that dwarfs actual query execution. Fix: periodic compaction merges small Parquet files into analytics-friendly sizes (128 MB–1 GB). Table formats like Apache Iceberg, Delta Lake, or Apache Hudi provide built-in compaction with transaction logs for atomic multi-file writes and concurrent reads. Alternatively, increase the micro-batch window from 30 seconds to 5–10 minutes to produce fewer, larger files.",
+      "138 K files/day creates metadata enumeration overhead dominating planning. Periodic compaction merges small files into 128–1,024 MB targets — Iceberg, Delta Lake, and Hudi provide transactional compaction safe for concurrent reads.",
       "Reduce the number of Kafka partitions from 48 to 4, decreasing the file write rate from 138 K/day to 11,520/day; at that file count, query planning time returns to <1 second without changing the streaming architecture.",
       "Switch from GCS External Tables to BigQuery Managed Tables via a daily bq load import; managed tables store metadata internally and do not suffer from external file enumeration overhead."
     ],
@@ -1352,7 +1352,7 @@
     "options": [
       "Immediate: extend the Kafka topic retention window from 24 hours to 72 hours so the consumer has more time to catch up. Long-term: profile the consumer to identify the bottleneck and optimize the single-threaded processing logic.",
       "Immediate: reset the consumer group offset to the latest offset (skip unprocessed messages) to immediately eliminate the lag. Long-term: add a dead-letter topic to route any future overflow events that cannot be processed in time.",
-      "Immediate: increase consumer parallelism by adding consumer instances to the consumer group (each instance owns a subset of Kafka partitions), restoring throughput close to the production rate and halting lag growth. Long-term: right-size the consumer fleet based on peak throughput, add lag monitoring with alert thresholds well below the retention window (e.g., alert at 2-hour lag, page at 4-hour lag), and evaluate whether the retention window is sufficient for the expected max-lag scenario.",
+      "Immediate: add consumer instances to the group (each owns a subset of partitions), restoring throughput. Long-term: right-size the fleet for peak throughput; add lag monitoring with alert thresholds well below the retention window.",
       "Immediate: pause all upstream producers to prevent further lag growth, giving the consumer time to catch up. Long-term: introduce a Kafka Streams application to pre-aggregate events before they reach the consumer, reducing the per-event processing load."
     ],
     "correct_option": 2,
@@ -1404,7 +1404,7 @@
     "description": "What is the most likely root cause of the connector failure, and how should the schema change workflow be modified to prevent recurrence?",
     "options": [
       "Debezium does not support NOT NULL columns with defaults — the column must be defined as nullable in MySQL before Debezium can stream it. Alter the column to be nullable first, then add the NOT NULL constraint after the consumer schema is updated.",
-      "Debezium captures the DDL event from the binlog and emits a schema-change event to Kafka. If the downstream schema registry or consumer schema does not include the new column, deserialization fails because the consumer tries to read a field it has no schema definition for. The correct workflow: update the downstream consumer schema (add `subscription_tier` as optional or with default) before the DDL is applied to MySQL, then re-deploy the consumer, then apply the ALTER TABLE.",
+      "Debezium emits a schema-change event for each DDL in the binlog. If the consumer schema lacks the new column, deserialization fails. Safe workflow: add the column (optional with default) to the consumer schema before ALTER TABLE, then re-deploy.",
       "The Debezium connector lost its binlog position due to the DDL event and needs to be restarted from the beginning of the binlog to re-sync the full table state. Set snapshot.mode=initial and restart the connector.",
       "Kafka's schema registry is rejecting the new schema because adding a NOT NULL column violates BACKWARD compatibility — downgrade the column to have a default value and retry the schema registration."
     ],
@@ -1433,7 +1433,7 @@
       "Switch to processing-time windowing: aggregate events as they arrive rather than by event time. This guarantees all events are counted in the window they are received, with zero late-event exclusion, and eliminates the need for watermarks entirely.",
       "Add a reprocessing job that runs at T+60 minutes for each hour window, re-reading all events from the source and re-computing the aggregate including any late arrivals. Replace the streaming aggregate with the batch result.",
       "Increase the hourly window to a 2-hour window so that late events arriving 45 minutes after the event time fall within the extended window and are naturally included.",
-      "Use event-time windowing with an allowed-lateness budget of 45 minutes (matching the maximum observed lateness). Emit an early, provisional result at the hour boundary so on-time event consumers receive a result immediately; as late events arrive within the 45-minute budget, emit updated results for the window. The final, authoritative result is published once the lateness budget is exhausted — late clicks are included in the correct hour without making on-time consumers wait."
+      "Use event-time windowing with 45-minute allowed lateness. Emit a provisional result at the hour boundary; emit updates as late events arrive. Publish when the budget is exhausted — late clicks land in the correct hour, on-time consumers unblocked."
     ],
     "correct_option": 3,
     "explanation": "Option D is the standard streaming solution: event-time windowing with an allowed-lateness budget calibrated to the maximum observed lateness, combined with early-firing (accumulating-mode) triggers. At the hour boundary, an initial provisional result is emitted immediately — on-time consumers are not forced to wait 45 minutes. As late events arrive within the budget, updated results are emitted for the same window. The final authoritative result is published once the lateness budget is exhausted, at which point the window closes. This preserves event-time semantics (clicks are counted in the hour they occurred, not the hour they arrived) while accommodating late mobile batches and satisfying the stem's constraint that on-time consumers must not wait. Option A (processing-time windowing) solves the lateness problem but breaks event-time semantics — a click that happened at 2:58 PM but arrived at 3:10 PM would be counted in the 3 PM hour instead of the 2 PM hour, distorting per-hour campaign analytics. Option B (batch reprocessing) is correct in principle but adds 60-minute latency to every aggregate and is operationally complex (managing two computation paths for the same metric). Option C (2-hour window) changes the business metric — hourly click counts are no longer hourly if the window spans 2 hours.",
@@ -1458,7 +1458,7 @@
     "description": "Why does adding a required field without a default value violate BACKWARD compatibility, and what is the correct fix?",
     "options": [
       "The schema registry is misconfigured. BACKWARD compatibility explicitly allows adding required fields because new fields cannot affect records that already exist. Submit a bug report to the registry team and override the compatibility check for this deployment.",
-      "BACKWARD compatibility means that a consumer using the new schema (v4) must be able to read data written under the old schema (v3). Old v3 records do not contain `loyalty_tier`. Because the field is required and has no default, a v4 consumer deserializing a v3 record has no value to substitute — deserialization fails. The fix is to add a default value (e.g., `\"unspecified\"`) to `loyalty_tier`, making it optional from the old reader's perspective. With a default in place, v4 consumers can safely read v3 data by substituting the default when the field is absent.",
+      "BACKWARD means a v4 consumer must read v3 data. v3 records lack `loyalty_tier`. Because it is required with no default, the v4 deserializer has nothing to substitute — deserialization fails. Fix: add a default (e.g., \"unspecified\") so v4 can substitute when absent.",
       "The BACKWARD compatibility violation can be bypassed by setting the producer's `schema.compatibility.level` to NONE for this specific version, then reverting to BACKWARD for v5. This is the standard procedure for introducing new required fields.",
       "The field should be marked required with a sentinel value of an empty string (`loyalty_tier: ''`) in the default producer configuration rather than defining a schema-level default. This satisfies BACKWARD compatibility because the field is always present in new records."
     ],
@@ -1566,7 +1566,7 @@
       "The performance regression is caused by partition skew: some hours have many more events than others, causing some partitions to be much larger than the target file size. Re-partition using a hash on event_id to distribute data evenly across partitions.",
       "Over-partitioning is not the cause — the 40% slowdown is due to the query planner not recognizing the composite partition key. Rewrite queries to always filter on both event_date AND event_hour; the planner will then prune correctly and the slowdown will disappear.",
       "Reduce the number of hourly partitions by grouping events into 4-hour buckets (event_block = FLOOR(event_hour / 4)); this reduces partition count from 168 to 42 for a weekly scan while preserving sub-daily granularity.",
-      "Over-partitioning creates too many small files (one file per partition per write batch). The overhead of opening, reading metadata for, and planning across 168 partitions (vs. 7 daily) exceeds the savings from scanning fewer bytes. Partition granularity should match the most common query filter, not the finest possible granularity. If 90% of queries filter on event_date, partition by event_date only. Use clustering keys or Z-ordering on event_hour within daily partitions if hourly pruning is needed without multiplying partition count."
+      "Over-partitioning (date × hour = 168 vs. 7 daily partitions) creates per-file metadata overhead exceeding scan savings when queries only filter on event_date. Partition by event_date only; use clustering or Z-ordering within daily partitions for sub-daily pruning."
     ],
     "correct_option": 3,
     "explanation": "Option D correctly identifies the over-partitioning problem: each partition has a file system cost (open, read metadata, validate) that accumulates per partition. Splitting by both date and hour multiplies partition count by 24 — a weekly query now touches 168 partitions instead of 7. If hourly queries are only a small fraction of workload, the extra partition overhead is never recouped. The correct strategy matches partition granularity to the dominant query filter. Clustering or Z-ordering can provide pruning within a coarser partition without multiplying file count. Option A (hash partitioning) distributes writes evenly but destroys date-based pruning entirely — date queries would scan all hash partitions. Option B (rewrite queries to filter on both dimensions) forces application-level changes and does not address the fundamental metadata overhead issue. Option C (4-hour buckets) reduces overhead by ~75% vs. hourly but is an ad-hoc compromise that trades correctness for a specific access pattern rather than addressing the design principle.",
@@ -1590,7 +1590,7 @@
     "description": "What design pattern would have prevented the double-update, and what is the immediate remediation?",
     "options": [
       "Disable orchestrator retries for any pipeline step that calls an external API — retries on non-idempotent external calls are inherently unsafe. All API failures must require manual operator review.",
-      "The API call should have used an idempotency key: a deterministic identifier (e.g., hash of customer_id + update_type + run_id) included as a request header. If the CRM supports idempotency keys, a duplicate call with the same key is a no-op. For CRMs that do not support idempotency keys natively, the pattern is: record the API call as 'in-progress' in a side table before calling, record 'completed' after; on retry, check the side table and skip if already completed. Immediate remediation: audit the affected customer records and reverse the duplicate increments.",
+      "Use an idempotency key (hash of customer_id + update_type + run_id) — if the CRM supports it, a duplicate call is a no-op. If not, record 'in-progress' before calling, 'completed' after; skip on retry. Audit and reverse the duplicates.",
       "Implement a circuit breaker pattern: if the API call fails, pause the pipeline for 60 minutes before retrying; this gives the CRM time to process and commit the original call before the retry is issued, eliminating the duplicate.",
       "Switch from synchronous API calls to an asynchronous queue (e.g., SQS) between the pipeline and the CRM. The CRM worker dequeues and processes one update per message. Use SQS FIFO with deduplication IDs to prevent duplicate processing."
     ],
@@ -1617,7 +1617,7 @@
     "description": "What cost and architecture trade-offs should the team evaluate before committing to continuous streaming?",
     "options": [
       "Continuous streaming always reduces cost compared to micro-batch because the cluster never idles — Spark uses only the compute needed for the current event rate, and idle workers are automatically de-allocated. No trade-offs exist; the switch is straightforward.",
-      "Continuous streaming eliminates fixed micro-batch scheduling overhead but does not reduce cluster cost proportionally — the cluster must still be running to process the continuous stream. Cost savings come from right-sizing the cluster for steady-state throughput rather than peak micro-batch burst capacity. The critical trade-off: the S3 user-segment lookup becomes a bottleneck in continuous mode (S3 reads per event vs. per batch); the lookup must be replaced with an in-memory broadcast join or a low-latency store (Redis) to maintain throughput. Validate that the enrichment latency and throughput match continuous mode requirements before switching.",
+      "Continuous streaming does not reduce cluster cost proportionally — the cluster runs 24/7; savings come from right-sizing for steady throughput. Critical trade-off: the per-batch S3 join becomes per-event in continuous mode; replace with an in-memory broadcast or Redis cache.",
       "Switching to continuous streaming mode is not possible for pipelines that include table lookups — lookups require a batch context that continuous streaming cannot provide. Keep the micro-batch trigger and reduce cost by shortening the trigger interval from 5 minutes to 1 minute.",
       "The cost savings from continuous streaming are realized through reduced driver overhead — the driver spins up and down for each micro-batch, and continuous mode eliminates this. Continuous streaming is recommended whenever the pipeline's SLA is below 5 minutes."
     ],
@@ -1669,7 +1669,7 @@
     "scenario_context": "A data engineering team ingests a daily JSON feed from a third-party vendor. Two weeks ago, the vendor added a new nested field `payment.details.installment_count` to the payload without notification. The team's JSON parser uses strict mode — unrecognized fields raise no error and are silently ignored. Two weeks later, the finance team notices installment payment revenue is understated by 11% because `installment_count` was never captured.",
     "description": "What detection mechanism would have caught this within 24 hours, and what contract change prevents recurrence?",
     "options": [
-      "Add a schema fingerprint or structural hash check to the ingestion pipeline: compute the set of top-level and nested keys in the first record of each daily feed, compare against the last known schema hash, and alert on any addition or removal. This detects new fields (vendor additions) and removed fields (vendor deprecations) within one pipeline run. Complement this with a formal data contract requiring the vendor to notify at least 5 business days before any schema change, with test payloads for validation.",
+      "Add a schema fingerprint check: compute the key set from each incoming record, compare against a stored hash, and alert on change. This detects field additions or removals within one run. Pair with a contract requiring 5 days' notice.",
       "Switch from strict JSON parsing to schema validation using JSON Schema with 'additionalProperties: false' — any payload with unrecognized fields will fail validation immediately, surfacing the new field as a parsing error within one run.",
       "Configure the JSON parser to log a warning for any unrecognized fields at the DEBUG level — a weekly review of parser logs would catch new fields before they affect revenue metrics.",
       "The fix is to enable 'additionalProperties' in the schema registry and automatically infer new columns from incoming data — the pipeline would dynamically add `installment_count` to the destination schema without manual intervention."
@@ -1696,7 +1696,7 @@
     "description": "Which approach is correct for this use case, and what does the analysis reveal about the downstream consumers?",
     "options": [
       "The backpressure approach is always correct for payment pipelines. Dropping payment events, even stale ones, creates unrecoverable data loss in a regulated industry and should be prohibited by policy for any consumer processing financial data.",
-      "The drop-backlog approach is appropriate only for the fraud detection path: a fraud model using 90-minute-old authorization data is already stale beyond usefulness. However, dropping messages for the reconciliation table is unacceptable — financial auditing requires every payment event. The correct architecture: separate these two consumers into independent consumer groups. The fraud consumer can use a shorter retention window and reset to latest when it falls behind; the reconciliation consumer must maintain offset commit discipline and never drop messages.",
+      "Drop-backlog is appropriate only for the fraud consumer: 90-minute-old fraud signals are stale. Dropping messages for the reconciliation consumer is unacceptable — financial auditing requires every event. Correct: separate consumer groups. The fraud consumer can reset to latest; the reconciliation consumer must never drop messages.",
       "The drop-backlog approach (resetting to latest) is correct for both consumers because a 90-minute lag in a real-time payment pipeline represents a system failure — the backlog will never be recovered in time to be useful. The financial auditing system must be designed to tolerate event loss and use alternative reconciliation sources.",
       "The correct approach is to add more consumer instances to the consumer group, which will reduce the lag to below 5 minutes without dropping any messages or applying backpressure. Both the drop-backlog and backpressure approaches are last-resort options that should only be considered after horizontal scaling fails."
     ],
@@ -1724,7 +1724,7 @@
     "options": [
       "Protobuf's field reservation prevents the field number from being reused but does not affect deserialization — reserved fields deserialize normally from old wire-format data. The consumer is seeing stale data from cached proto files, not zero values from the new schema.",
       "The consumer should have added a NOT NULL assertion on `product_sku` after deserialization — an empty string would then raise a downstream validation error, surfacing the schema change immediately.",
-      "Protobuf's design treats missing fields as zero/default values — a removed field deserializes to its type's default (empty string for string, 0 for int) rather than raising an error. This is by design for Protobuf's forward-compatibility model. The producer's change process should have: (1) sent a breaking-change notification to all consumers before removing the field; (2) required consumers to confirm they no longer read `product_sku`; (3) kept the field in the schema (marked deprecated) for at least one full release cycle before removing it.",
+      "Protobuf treats missing fields as zero/default values (empty string, 0) with no error — by design. The producer should have: notified consumers before removal; confirmed they no longer read `product_sku`; kept the field deprecated for at least one release cycle.",
       "This is expected Protobuf behavior and is by design — producers should remove deprecated fields without consulting consumers. Consumers are responsible for implementing null-checks on all optional fields they depend on."
     ],
     "correct_option": 2,
@@ -1751,7 +1751,7 @@
     "options": [
       "The fastest approach is to export the Git commit history for all pipeline code and present it as the lineage audit trail — commits show who changed what and when, which satisfies the 'transformation provenance' requirement without any pipeline instrumentation.",
       "Pause the revenue_fact pipeline for the 6-week audit period and rebuild it from scratch with formal lineage tracking built in from the start — the audit will have complete lineage documentation, and the existing non-lineage-tracked data can be retroactively documented by manual inspection.",
-      "Pragmatic 6-week approach: instrument each pipeline step to write a lineage_audit record (source table, destination table, row count, run_id, author, timestamp) to a dedicated Postgres audit table before and after each transformation. For the audit, produce a lineage report showing the transformation chain for revenue_fact: source system → staging → transformed → fact. Longer-term: adopt a data catalog or lineage tool (e.g., dbt's exposures + lineage graph, Apache Atlas, or OpenLineage) that auto-generates lineage from pipeline metadata without manual documentation.",
+      "Instrument each pipeline step to write a lineage_audit record (source, destination, row count, run_id, author, timestamp) to a Postgres audit table and produce a transformation-chain report. Longer-term: adopt OpenLineage or dbt exposures to auto-generate lineage.",
       "Engage a third-party data governance vendor to deploy a commercial lineage tool that automatically maps data flows by scanning SQL queries in the data warehouse. Most enterprise-grade tools can produce an audit-ready lineage map in 1–2 weeks."
     ],
     "correct_option": 2,
