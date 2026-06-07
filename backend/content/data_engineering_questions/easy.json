@@ -32,13 +32,13 @@
     "type": "conceptual",
     "description": "A team migrates from an on-premise ETL system to a cloud data warehouse with massive parallel processing. They start loading raw data first and running transformations inside the warehouse. Which primary advantage motivates this ELT approach?",
     "options": [
-      "The cloud warehouse's compute power makes in-warehouse transformation faster and more scalable than a separate processing layer",
       "Loading raw data first guarantees stronger data quality because the warehouse validates every record on arrival",
       "ELT eliminates the need for schema definitions since the warehouse infers all column types automatically",
-      "The ELT pattern reduces storage costs because raw data is automatically compressed and deduplicated on load"
+      "The ELT pattern reduces storage costs because raw data is automatically compressed and deduplicated on load",
+      "The cloud warehouse's compute power makes in-warehouse transformation faster and more scalable than a separate processing layer"
     ],
-    "correct_option": 0,
-    "explanation": "ELT exploits the elastic, massively parallel compute of modern cloud warehouses (e.g., BigQuery, Snowflake, Redshift). Transforming inside the warehouse is often faster and cheaper than running a separate processing cluster. Option B is wrong — loading raw data first actually defers quality checks; they must be added explicitly. Option C is false — ELT still requires schema definitions for structured formats. Option D is incorrect — storage compression is a separate feature unrelated to the ETL/ELT distinction.",
+    "correct_option": 3,
+    "explanation": "ELT exploits the elastic, massively parallel compute of modern cloud warehouses (e.g., BigQuery, Snowflake, Redshift). Transforming inside the warehouse is often faster and cheaper than running a separate processing cluster. Option A is wrong — loading raw data first actually defers quality checks; they must be added explicitly. Option B is false — ELT still requires schema definitions for structured formats. Option C is incorrect — storage compression is a separate feature unrelated to the ETL/ELT distinction.",
     "hints": [
       "Consider why cloud data warehouses are architecturally different from traditional on-premise databases in terms of compute scaling.",
       "The key advantage of ELT is leveraging the warehouse's own parallel processing rather than a separate transformation cluster."
@@ -81,13 +81,13 @@
     "type": "conceptual",
     "description": "What does it mean for a data pipeline job to be idempotent?",
     "options": [
-      "Running the job multiple times with the same inputs produces the same output state as running it once",
       "The job completes in constant time regardless of input size",
       "The job can process data from multiple sources simultaneously without conflicts",
-      "The job retries automatically on failure without any manual intervention"
+      "The job retries automatically on failure without any manual intervention",
+      "Running the job multiple times with the same inputs produces the same output state as running it once"
     ],
-    "correct_option": 0,
-    "explanation": "Idempotency means repeated executions with identical inputs yield identical results — no duplicates, no data corruption, no state drift. This is critical for safe retries and backfills. Option B describes time complexity, which is unrelated. Option C describes parallelism, not idempotency. Option D describes automatic retry logic, which is a related but distinct property — a non-idempotent job that auto-retries will produce incorrect results.",
+    "correct_option": 3,
+    "explanation": "Idempotency means repeated executions with identical inputs yield identical results — no duplicates, no data corruption, no state drift. This is critical for safe retries and backfills. Option A describes time complexity, which is unrelated. Option B describes parallelism, not idempotency. Option C describes automatic retry logic, which is a related but distinct property — a non-idempotent job that auto-retries will produce incorrect results.",
     "hints": [
       "Think about what property makes it safe to re-run a job after a failure without worrying about corrupted or duplicated data.",
       "The word shares a root with 'idem' (same) — the job produces the same result no matter how many times it runs."
@@ -105,13 +105,13 @@
     "type": "debug",
     "description": "A daily job loads yesterday's sales records using `INSERT INTO sales_fact SELECT * FROM staging WHERE event_date = CURRENT_DATE - 1`. The job retries automatically on failure. After a server crash mid-run, the retry completed — but row counts in the fact table for that date are exactly double what the staging table contains. Which change is the minimum fix?",
     "options": [
-      "Replace the INSERT with an UPSERT (INSERT ... ON CONFLICT UPDATE) keyed on a natural unique identifier",
       "Add a retry counter column so duplicate rows can be identified and removed later",
       "Schedule the job to run only once per day so restarts cannot occur during the window",
-      "Wrap the insert in a transaction so partial inserts are automatically rolled back"
+      "Wrap the insert in a transaction so partial inserts are automatically rolled back",
+      "Replace the INSERT with an UPSERT (INSERT ... ON CONFLICT UPDATE) keyed on a natural unique identifier"
     ],
-    "correct_option": 0,
-    "explanation": "The bare INSERT has no conflict guard: on retry, every staging row is inserted again regardless of whether it already exists in the fact table, producing the doubled row count. Replacing it with an UPSERT (INSERT ... ON CONFLICT UPDATE) keyed on a natural unique identifier ensures that re-inserting a row with an existing key updates rather than creates a new row, producing an identical outcome whether the job ran once or ten times. Option B defers the problem — it adds cleanup work without preventing the re-insertion. Option C does not prevent restarts; a crash can happen at any time. Option D prevents partial writes but does not prevent full duplicate inserts on retry.",
+    "correct_option": 3,
+    "explanation": "The bare INSERT has no conflict guard: on retry, every staging row is inserted again regardless of whether it already exists in the fact table, producing the doubled row count. Replacing it with an UPSERT (INSERT ... ON CONFLICT UPDATE) keyed on a natural unique identifier ensures that re-inserting a row with an existing key updates rather than creates a new row, producing an identical outcome whether the job ran once or ten times. Option A defers the problem — it adds cleanup work without preventing the re-insertion. Option B does not prevent restarts; a crash can happen at any time. Option C prevents partial writes but does not prevent full duplicate inserts on retry.",
     "hints": [
       "Think about what database operation lets you insert a row that might already exist without creating a duplicate.",
       "An operation that 'insert or update' on a unique key guarantees the same final state regardless of how many times it runs."
@@ -129,13 +129,13 @@
     "type": "conceptual",
     "description": "A Hive-style data lake job writes daily partitions (e.g., `dt=2024-01-15`). When the job reruns, it appends new files to the existing partition rather than replacing it. What is the safest fix?",
     "options": [
-      "Use a partition overwrite strategy: delete and rewrite the entire partition on each run",
       "Deduplicate the partition after each run by reading it back and filtering duplicates",
+      "Use a partition overwrite strategy: delete and rewrite the entire partition on each run",
       "Add a job-run UUID to each row so downstream queries can filter to the latest run",
       "Lock the partition during the job so concurrent runs cannot append simultaneously"
     ],
-    "correct_option": 0,
-    "explanation": "Overwriting the partition atomically (delete + rewrite) guarantees the partition always contains exactly the output of one successful run, making the job idempotent. Option B is fragile — it requires extra reads, is expensive at scale, and the deduplication step itself could fail. Option C adds complexity downstream and does not fix the root problem. Option D prevents concurrent duplication but does not prevent serial reruns from still appending duplicates.",
+    "correct_option": 1,
+    "explanation": "Overwriting the partition atomically (delete + rewrite) guarantees the partition always contains exactly the output of one successful run, making the job idempotent. Option A is fragile — it requires extra reads, is expensive at scale, and the deduplication step itself could fail. Option C adds complexity downstream and does not fix the root problem. Option D prevents concurrent duplication but does not prevent serial reruns from still appending duplicates.",
     "hints": [
       "Consider what happens to the partition contents if you replace them entirely on each run versus adding to them.",
       "A write strategy that completely replaces a partition leaves no trace of previous runs, so the outcome is always the same."
@@ -153,13 +153,13 @@
     "type": "conceptual",
     "description": "A data engineer defines a new pipeline in an orchestrator (Airflow, Dagster, Prefect) as task A → task B → task C, and then adds an edge from task C back to task A so the work \"can loop until it's done.\" The orchestrator rejects the pipeline definition at registration time. Which answer best explains the operational reason for the rejection?",
     "options": [
-      "The edge from C back to A creates a cycle: every task in the loop is waiting for an upstream task that itself depends on something downstream, so the orchestrator has no valid starting point and no topological execution order exists",
       "The orchestrator only rejects the pipeline if the cycle contains more than three tasks; shorter cycles are silently allowed and capped by a default retry limit",
       "The cycle is allowed by the graph engine, but the orchestrator refuses to register pipelines that produce non-deterministic task order at runtime",
+      "The edge from C back to A creates a cycle: every task in the loop is waiting for an upstream task that itself depends on something downstream, so the orchestrator has no valid starting point and no topological execution order exists",
       "The rejection happens because A, B, and C use different execution operators; cycles are accepted when all tasks in the loop share the same operator type"
     ],
-    "correct_option": 0,
-    "explanation": "Adding C → A creates a dependency cycle: A waits for C (via the new edge), C waits for B, and B waits for A — every task in the loop has an upstream dependency that itself depends on something downstream. The orchestrator cannot produce a topological order (a linear sequence in which every task's dependencies appear before it), so it has no valid task to start with. This is exactly the property the \"acyclic\" in DAG enforces, and it is why Airflow, Dagster, and Prefect reject cyclic pipeline definitions at registration time. (Option B) Cycle length is irrelevant — even a 2-task cycle has no valid start. (Option C) Non-determinism isn't the issue; the issue is that no execution order exists at all. (Option D) Operator type has nothing to do with graph structure; uniform operators don't dissolve a dependency cycle.",
+    "correct_option": 2,
+    "explanation": "Adding C → A creates a dependency cycle: A waits for C (via the new edge), C waits for B, and B waits for A — every task in the loop has an upstream dependency that itself depends on something downstream. The orchestrator cannot produce a topological order (a linear sequence in which every task's dependencies appear before it), so it has no valid task to start with. This is exactly the property the \"acyclic\" in DAG enforces, and it is why Airflow, Dagster, and Prefect reject cyclic pipeline definitions at registration time. (Option A) Cycle length is irrelevant — even a 2-task cycle has no valid start. (Option B) Non-determinism isn't the issue; the issue is that no execution order exists at all. (Option D) Operator type has nothing to do with graph structure; uniform operators don't dissolve a dependency cycle.",
     "hints": [
       "Picture each task as a worker who refuses to start until its listed upstream task has finished. What happens when the chain of \"waiting for...\" eventually loops back to a task that is itself waiting on someone in the loop?",
       "Orchestrators need to pick a first task to run. What property of the graph guarantees that such a first task always exists?"
@@ -177,13 +177,13 @@
     "type": "conceptual",
     "description": "A pipeline has three tasks: (1) extract raw data, (2) validate schema, (3) load into warehouse. Tasks 2 and 3 must each wait for task 1, but task 3 also waits for task 2. Which execution pattern does this create?",
     "options": [
-      "Sequential chain: extract → validate → load, with each step depending on the previous",
       "Fully parallel: all three tasks run simultaneously since they share the same input",
       "Fan-out: extract runs first, then validate and load run in parallel",
+      "Sequential chain: extract → validate → load, with each step depending on the previous",
       "Fan-in: validate and load both run first, then extract aggregates their results"
     ],
-    "correct_option": 0,
-    "explanation": "Because task 3 (load) depends on task 2 (validate), and task 2 depends on task 1 (extract), the execution is a linear chain: extract → validate → load. This is a sequential dependency, not a fan-out. Option C (fan-out) would apply if validate and load could both start immediately after extract with no dependency between them. Option D describes an inverted and incorrect dependency graph.",
+    "correct_option": 2,
+    "explanation": "Because task 3 (load) depends on task 2 (validate), and task 2 depends on task 1 (extract), the execution is a linear chain: extract → validate → load. This is a sequential dependency, not a fan-out. Option B (fan-out) would apply if validate and load could both start immediately after extract with no dependency between them. Option D describes an inverted and incorrect dependency graph.",
     "hints": [
       "Draw the dependency arrows: 1→2, 1→3, 2→3. Which node has no predecessors? Which has no successors?",
       "When task 3 must wait for both task 1 and task 2, and task 2 already waits for task 1, the effective order is strictly serial."
@@ -201,13 +201,13 @@
     "type": "conceptual",
     "description": "A nightly pipeline failed silently for three days because of a network timeout. The team discovers the gap and needs to process the missing three days. What is this operation called?",
     "options": [
-      "Backfill — re-running the pipeline for historical date ranges that were missed or failed",
       "Retry — automatically re-executing the most recent failed task attempt",
       "Catchup — the scheduler automatically detects and fills gaps on the next scheduled run",
-      "Replay — streaming the raw events again through the pipeline in real time"
+      "Replay — streaming the raw events again through the pipeline in real time",
+      "Backfill — re-running the pipeline for historical date ranges that were missed or failed"
     ],
-    "correct_option": 0,
-    "explanation": "Backfilling is the deliberate reprocessing of historical time ranges. It is manually triggered (or configured) to recover from gaps. Option B (retry) refers to re-executing a single failed attempt of a recent task — not historical recovery. Option C is partially true in some orchestrators (catchup mode), but that term describes an automated behavior; manually triggering gap recovery is still called a backfill. Option D describes event replay in streaming contexts, which is a different concept.",
+    "correct_option": 3,
+    "explanation": "Backfilling is the deliberate reprocessing of historical time ranges. It is manually triggered (or configured) to recover from gaps. Option A (retry) refers to re-executing a single failed attempt of a recent task — not historical recovery. Option B is partially true in some orchestrators (catchup mode), but that term describes an automated behavior; manually triggering gap recovery is still called a backfill. Option C describes event replay in streaming contexts, which is a different concept.",
     "hints": [
       "Think about what term describes intentionally re-processing past time periods that a scheduled job missed.",
       "This operation fills in historical gaps — the name reflects the direction: going back to fill data that was skipped."
@@ -225,13 +225,13 @@
     "type": "conceptual",
     "description": "What is the fundamental difference between batch processing and stream processing?",
     "options": [
-      "Batch processes bounded, finite datasets at scheduled intervals; streaming processes unbounded data continuously as it arrives",
       "Batch processing is always faster than streaming because it can apply optimizations across the full dataset",
+      "Batch processes bounded, finite datasets at scheduled intervals; streaming processes unbounded data continuously as it arrives",
       "Streaming is simply batch processing with a very short interval, so the two are functionally identical",
       "Batch processing requires more infrastructure than streaming because it needs to store all data before processing"
     ],
-    "correct_option": 0,
-    "explanation": "The core distinction is bounded vs unbounded data. Batch jobs operate on a finite, known dataset collected over a period (e.g., a day's worth of orders). Stream processing handles data as it arrives, with no defined end — the dataset is unbounded. Option B is false; batch can be slower for latency-sensitive use cases and streaming has its own optimizations. Option C is partially true for micro-batch architectures, but real streaming (event-by-event or small windows) has fundamentally different semantics. Option D is incorrect — streaming requires stateful infrastructure; batch can be stateless.",
+    "correct_option": 1,
+    "explanation": "The core distinction is bounded vs unbounded data. Batch jobs operate on a finite, known dataset collected over a period (e.g., a day's worth of orders). Stream processing handles data as it arrives, with no defined end — the dataset is unbounded. Option A is false; batch can be slower for latency-sensitive use cases and streaming has its own optimizations. Option C is partially true for micro-batch architectures, but real streaming (event-by-event or small windows) has fundamentally different semantics. Option D is incorrect — streaming requires stateful infrastructure; batch can be stateless.",
     "hints": [
       "Think about whether the dataset has a known end point at the time processing begins.",
       "One approach waits until data accumulates to a boundary (like midnight); the other starts processing the moment data arrives."
@@ -250,13 +250,13 @@
     "scenario_context": "A financial services company is designing a fraud detection system for credit card transactions. The risk team requires that suspicious transactions be flagged before they are approved — delays of more than a few seconds are unacceptable.",
     "description": "Which processing paradigm is most appropriate?",
     "options": [
-      "Stream processing — fraud detection requires decisions within seconds of a transaction, not hours later",
       "Batch processing — analyzing a full day's transactions at once allows better statistical models",
       "Either approach works because fraud rules can be applied equally well to historical and live data",
+      "Stream processing — fraud detection requires decisions within seconds of a transaction, not hours later",
       "Batch processing — streaming cannot handle the high volume of transactions during peak hours"
     ],
-    "correct_option": 0,
-    "explanation": "Fraud detection is a latency-sensitive use case: a fraudulent transaction must be flagged before it is approved, which requires real-time or near-real-time processing. Batch processing (Option B) would delay detection by hours, allowing fraud to go unblocked. Option C ignores the latency requirement — the timing of the detection is critical. Option D is incorrect — high-throughput streaming systems are specifically designed to handle high-velocity data.",
+    "correct_option": 2,
+    "explanation": "Fraud detection is a latency-sensitive use case: a fraudulent transaction must be flagged before it is approved, which requires real-time or near-real-time processing. Batch processing (Option A) would delay detection by hours, allowing fraud to go unblocked. Option B ignores the latency requirement — the timing of the detection is critical. Option D is incorrect — high-throughput streaming systems are specifically designed to handle high-velocity data.",
     "hints": [
       "Consider the business requirement: at what point does flagging a transaction as fraudulent become too late to be useful?",
       "Real-time decisions require a processing approach that acts on data as it arrives rather than waiting for a scheduled window."
@@ -274,13 +274,13 @@
     "type": "conceptual",
     "description": "A streaming framework processes data in small batches every 30 seconds rather than event-by-event. What is this pattern called, and what latency trade-off does it make?",
     "options": [
-      "Micro-batch — offers lower latency than hourly batch jobs but higher latency than true event-by-event streaming",
       "Mini-streaming — processes events in real time with the same latency guarantees as native streaming",
+      "Micro-batch — offers lower latency than hourly batch jobs but higher latency than true event-by-event streaming",
       "Windowed batch — equivalent to hourly batch jobs but with a shorter accumulation window",
       "Pseudo-streaming — inherently unreliable because batching events introduces data loss between windows"
     ],
-    "correct_option": 0,
-    "explanation": "Micro-batch is a hybrid approach: data is accumulated for a short interval (seconds to minutes) then processed as a small batch. This gives lower latency than traditional hourly/daily batch jobs but slightly higher latency than true event-by-event streaming. Many production systems use micro-batch as a practical compromise. Option B is incorrect — mini-streaming is not a standard term, and micro-batch does not match native streaming latency. Option C understates the improvement over hourly batch. Option D is wrong — micro-batch is a reliable, widely used pattern.",
+    "correct_option": 1,
+    "explanation": "Micro-batch is a hybrid approach: data is accumulated for a short interval (seconds to minutes) then processed as a small batch. This gives lower latency than traditional hourly/daily batch jobs but slightly higher latency than true event-by-event streaming. Many production systems use micro-batch as a practical compromise. Option A is incorrect — mini-streaming is not a standard term, and micro-batch does not match native streaming latency. Option C understates the improvement over hourly batch. Option D is wrong — micro-batch is a reliable, widely used pattern.",
     "hints": [
       "Think about where micro-batch falls on the spectrum between a nightly job and processing one event at a time.",
       "The trade-off is latency versus throughput: grouping events into small batches adds minimal delay but greatly improves efficiency."
@@ -298,13 +298,13 @@
     "type": "conceptual",
     "description": "A query filters orders by `order_date = '2024-01-15'`. The orders table has 5 billion rows spanning 3 years. Why does date-based partitioning dramatically speed up this query?",
     "options": [
-      "The query engine skips entire partitions that don't match the filter, scanning only the matching day's files",
       "Partitioning compresses data so each file is smaller, reducing the bytes read for any query",
       "Partitioning sorts rows within each file so the engine can use binary search on the date column",
+      "The query engine skips entire partitions that don't match the filter, scanning only the matching day's files",
       "The partition column is stored as an index that the engine loads entirely into memory for fast lookups"
     ],
-    "correct_option": 0,
-    "explanation": "Partition pruning is the key mechanism: the query engine reads the partition metadata and skips all partitions whose key doesn't match the filter. Instead of scanning 5 billion rows, the engine reads only the files for `2024-01-15`, which is typically a tiny fraction of the table. Option B (compression) is a separate optimization. Option C describes sorting/clustering, not partitioning. Option D describes a traditional B-tree index, not data lake partitioning.",
+    "correct_option": 2,
+    "explanation": "Partition pruning is the key mechanism: the query engine reads the partition metadata and skips all partitions whose key doesn't match the filter. Instead of scanning 5 billion rows, the engine reads only the files for `2024-01-15`, which is typically a tiny fraction of the table. Option A (compression) is a separate optimization. Option B describes sorting/clustering, not partitioning. Option D describes a traditional B-tree index, not data lake partitioning.",
     "hints": [
       "Think about how a file system organized by date folders would let you skip entire folders when looking for one specific day.",
       "The benefit comes not from what is read, but from how much data the engine avoids reading entirely."
@@ -371,13 +371,13 @@
     "type": "conceptual",
     "description": "A customer changes their email address. Your data warehouse stores customer dimension data. What is the difference between SCD Type 1 and SCD Type 2 for handling this update?",
     "options": [
-      "SCD Type 1 overwrites the old value with no history; SCD Type 2 inserts a new row and marks the old row as expired so history is preserved",
       "SCD Type 1 inserts a new row for the change; SCD Type 2 overwrites the old row so only the current value is kept",
+      "SCD Type 1 overwrites the old value with no history; SCD Type 2 inserts a new row and marks the old row as expired so history is preserved",
       "SCD Type 1 stores all history in a separate audit table; SCD Type 2 stores history in the same row using array columns",
       "SCD Type 1 applies only to numeric columns; SCD Type 2 applies only to string columns like email"
     ],
-    "correct_option": 0,
-    "explanation": "SCD Type 1 (overwrite) is the simplest approach: the old value is replaced and history is lost. SCD Type 2 (versioned rows) preserves history by inserting a new row with the updated value while marking the previous row as inactive (commonly with an `is_current` flag and `effective_to` date). Option B has the definitions reversed. Option C describes a custom audit pattern, not standard SCD types. Option D is incorrect — both types apply to any attribute type.",
+    "correct_option": 1,
+    "explanation": "SCD Type 1 (overwrite) is the simplest approach: the old value is replaced and history is lost. SCD Type 2 (versioned rows) preserves history by inserting a new row with the updated value while marking the previous row as inactive (commonly with an `is_current` flag and `effective_to` date). Option A has the definitions reversed. Option C describes a custom audit pattern, not standard SCD types. Option D is incorrect — both types apply to any attribute type.",
     "hints": [
       "Consider which type of question the stakeholder is asking: 'What is the current value?' vs 'What was the value at a specific point in time?'",
       "One approach gives you a single row per customer always; the other accumulates one row per version of the customer."
@@ -395,13 +395,13 @@
     "type": "conceptual",
     "description": "In a SCD Type 2 dimension table, why is a surrogate key used instead of the natural business key as the primary key?",
     "options": [
-      "A customer can have multiple rows (one per version), so a unique system-generated surrogate key distinguishes each version row",
       "Surrogate keys are shorter than natural keys, reducing storage costs for the dimension table",
+      "A customer can have multiple rows (one per version), so a unique system-generated surrogate key distinguishes each version row",
       "Natural keys cannot be joined to fact tables because they contain non-numeric characters",
       "Surrogate keys automatically encode the effective date, eliminating the need for separate date columns"
     ],
-    "correct_option": 0,
-    "explanation": "In SCD Type 2, a single customer may have many rows — one per historical version. The natural business key (e.g., customer_id = 42) appears on multiple rows. A surrogate key (e.g., an auto-increment integer) provides a unique identifier for each version row, allowing fact tables to point to the exact version of the dimension that was current at transaction time. Option B is a coincidental benefit, not the primary reason. Option C is false — natural keys can be any data type. Option D is wrong — surrogate keys do not encode dates.",
+    "correct_option": 1,
+    "explanation": "In SCD Type 2, a single customer may have many rows — one per historical version. The natural business key (e.g., customer_id = 42) appears on multiple rows. A surrogate key (e.g., an auto-increment integer) provides a unique identifier for each version row, allowing fact tables to point to the exact version of the dimension that was current at transaction time. Option A is a coincidental benefit, not the primary reason. Option C is false — natural keys can be any data type. Option D is wrong — surrogate keys do not encode dates.",
     "hints": [
       "Think about what happens when a customer has three version rows: which value can uniquely identify each individual row?",
       "The natural business key repeats across all version rows for the same customer, so it cannot serve as a unique row identifier."
@@ -419,13 +419,13 @@
     "type": "conceptual",
     "description": "A SCD Type 2 customer dimension table has `effective_from` and `effective_to` columns. A row with `effective_to = NULL` represents what?",
     "options": [
-      "The currently active version of the record — NULL effective_to means 'this row is still current with no expiry'",
       "A deleted record — NULL effective_to marks rows that have been soft-deleted from the dimension",
+      "The currently active version of the record — NULL effective_to means 'this row is still current with no expiry'",
       "A record with a data quality error — effective_to should always be populated and NULL indicates missing data",
       "The original version of the record — the first row inserted always has a NULL effective_to until it is updated"
     ],
-    "correct_option": 0,
-    "explanation": "The standard SCD Type 2 pattern uses NULL (or a far-future sentinel date like `9999-12-31`) in `effective_to` to mark the current active record. When a change occurs, the current row's `effective_to` is set to the change date, and a new row is inserted with `effective_from` = change date and `effective_to` = NULL. Option B describes soft deletes, a different pattern. Option C is incorrect — NULL is intentional here. Option D is wrong — the original row's `effective_to` is updated when a new version is created.",
+    "correct_option": 1,
+    "explanation": "The standard SCD Type 2 pattern uses NULL (or a far-future sentinel date like `9999-12-31`) in `effective_to` to mark the current active record. When a change occurs, the current row's `effective_to` is set to the change date, and a new row is inserted with `effective_from` = change date and `effective_to` = NULL. Option A describes soft deletes, a different pattern. Option C is incorrect — NULL is intentional here. Option D is wrong — the original row's `effective_to` is updated when a new version is created.",
     "hints": [
       "Think about what value you would use to indicate 'this record has not yet been superseded by a newer version'.",
       "NULL in an expiry date column conventionally means 'open-ended' — there is no end to this record's validity yet."
@@ -443,13 +443,13 @@
     "type": "conceptual",
     "description": "Your team is designing storage for a new analytics platform that will ingest a mix of structured CRM exports, semi-structured event JSON, and raw image/PDF regulatory-archive files. An engineer asks whether to land everything in a data lake or load it through ETL into a traditional data warehouse. Which statement correctly describes the architectural distinction that should drive the choice?",
     "options": [
-      "A data lake stores raw data in its native format (schema-on-read); a warehouse enforces a schema on write before data is stored",
       "A data lake only stores structured relational data; a warehouse stores unstructured files like logs and images",
       "A data lake fully replaces a data warehouse — organizations migrating to a lake decommission the warehouse because the lake serves all the same query workloads identically",
-      "A data lake infers and enforces a schema automatically at write time, while a warehouse leaves the data unstructured until query time"
+      "A data lake infers and enforces a schema automatically at write time, while a warehouse leaves the data unstructured until query time",
+      "A data lake stores raw data in its native format (schema-on-read); a warehouse enforces a schema on write before data is stored"
     ],
-    "correct_option": 0,
-    "explanation": "The defining distinction is schema-on-read vs schema-on-write. A data lake accepts data in any format (JSON, CSV, Parquet, images, logs) and applies structure only when a query reads the data. A warehouse requires data to conform to a defined schema before storage. This makes lakes more flexible to ingest into but pushes the cost of structure onto the analyst at query time. (Option B) inverts what each system stores — lakes are the system that handles unstructured/semi-structured data; warehouses are the structured-only system. (Option C) is a common strategic misconception: lakes complement warehouses (the lakehouse pattern combines them) but do not replace them — warehouses still win on low-latency SQL analytics and governance. (Option D) inverts the schema-enforcement axis: lakes do *not* enforce a schema at write time; warehouses do.",
+    "correct_option": 3,
+    "explanation": "The defining distinction is schema-on-read vs schema-on-write. A data lake accepts data in any format (JSON, CSV, Parquet, images, logs) and applies structure only when a query reads the data. A warehouse requires data to conform to a defined schema before storage. This makes lakes more flexible to ingest into but pushes the cost of structure onto the analyst at query time. (Option A) inverts what each system stores — lakes are the system that handles unstructured/semi-structured data; warehouses are the structured-only system. (Option B) is a common strategic misconception: lakes complement warehouses (the lakehouse pattern combines them) but do not replace them — warehouses still win on low-latency SQL analytics and governance. (Option C) inverts the schema-enforcement axis: lakes do *not* enforce a schema at write time; warehouses do.",
     "hints": [
       "One side of the choice imposes structure when data is written; the other defers structure until data is read. Which side does each system pick?",
       "Think about which side of the pipeline pays the cost of imposing structure: the team writing the data, or the analyst reading it?"
@@ -515,13 +515,13 @@
     "type": "conceptual",
     "description": "What does Change Data Capture (CDC) do, and what is the most common source it reads from in relational databases?",
     "options": [
-      "CDC captures INSERT, UPDATE, and DELETE events — in relational databases it typically reads the database write-ahead log (WAL)",
       "CDC captures full table snapshots at scheduled intervals and computes row-level diffs to detect changes",
       "CDC monitors network traffic between the application and the database to intercept write operations",
+      "CDC captures INSERT, UPDATE, and DELETE events — in relational databases it typically reads the database write-ahead log (WAL)",
       "CDC relies on application code to emit change events to a message queue when it performs database writes"
     ],
-    "correct_option": 0,
-    "explanation": "Log-based CDC reads the database's write-ahead log (WAL) or transaction log — an internal record of every write operation. This is the most reliable and low-latency approach because it captures all changes without modifying the source tables or adding application code. Option B describes snapshot-based diffing, a simpler but more expensive approach. Option C describes network interception, which is fragile and rarely used. Option D describes application-level event sourcing, a different pattern.",
+    "correct_option": 2,
+    "explanation": "Log-based CDC reads the database's write-ahead log (WAL) or transaction log — an internal record of every write operation. This is the most reliable and low-latency approach because it captures all changes without modifying the source tables or adding application code. Option A describes snapshot-based diffing, a simpler but more expensive approach. Option B describes network interception, which is fragile and rarely used. Option D describes application-level event sourcing, a different pattern.",
     "hints": [
       "Think about where a database already records every write operation as part of its durability guarantee.",
       "Most relational databases maintain an internal log for crash recovery — this same log can be read to capture changes without touching the source tables."
@@ -539,13 +539,13 @@
     "type": "conceptual",
     "description": "A team is choosing between log-based CDC and query-based CDC (polling a `updated_at` timestamp column). Which statement correctly describes a key advantage of log-based CDC?",
     "options": [
-      "Log-based CDC captures hard DELETEs, which query-based polling cannot detect since deleted rows no longer exist to query",
       "Log-based CDC requires less database configuration than query-based because it does not need access to system internals",
+      "Log-based CDC captures hard DELETEs, which query-based polling cannot detect since deleted rows no longer exist to query",
       "Query-based CDC has higher latency than log-based but captures more types of changes including schema alterations",
       "Log-based CDC works without any database privileges because it reads files from the operating system directly"
     ],
-    "correct_option": 0,
-    "explanation": "The critical limitation of query-based CDC is that it polls existing rows — a deleted row is gone and cannot be detected by a SELECT query. Log-based CDC reads the transaction log, which records DELETE operations as events. This makes log-based CDC essential for use cases where deletions must be propagated. Option B is wrong — log-based CDC requires replication privileges and log access configuration. Option C is partially backwards — log-based typically has lower latency. Option D is incorrect — reading database logs requires elevated database credentials.",
+    "correct_option": 1,
+    "explanation": "The critical limitation of query-based CDC is that it polls existing rows — a deleted row is gone and cannot be detected by a SELECT query. Log-based CDC reads the transaction log, which records DELETE operations as events. This makes log-based CDC essential for use cases where deletions must be propagated. Option A is wrong — log-based CDC requires replication privileges and log access configuration. Option C is partially backwards — log-based typically has lower latency. Option D is incorrect — reading database logs requires elevated database credentials.",
     "hints": [
       "Think about what happens to a database row when it is deleted: what evidence remains that the deletion occurred?",
       "A row that no longer exists cannot be found by a SELECT statement — only the database's internal change log records that it was deleted."
@@ -564,13 +564,13 @@
     "scenario_context": "Your pipeline ingests customer records from a third-party SaaS API that your team cannot modify. The customer_id field should never be NULL, but the API has occasionally delivered records with missing IDs.",
     "description": "Where in your pipeline is the best place to add a null-check assertion?",
     "options": [
-      "Immediately after ingestion, before the data reaches downstream transformation or serving layers",
       "In the serving layer, just before users query the data, to catch any nulls that slipped through",
       "In a weekly batch quality dashboard that reviews the previous week's loaded records",
-      "At the end of the pipeline after all transformations, to check the final output only"
+      "At the end of the pipeline after all transformations, to check the final output only",
+      "Immediately after ingestion, before the data reaches downstream transformation or serving layers"
     ],
-    "correct_option": 0,
-    "explanation": "Data quality checks should run as early as possible — right after ingestion. Catching nulls at the entry point prevents bad data from propagating into transformations that may silently produce incorrect results (joins on NULL keys match nothing, aggregations skip records, downstream tables fail constraints). Because the source is a third-party API you cannot modify, the earliest place *you control* is immediately after ingestion. (Option B) The serving layer catches problems too late — every downstream step has already run on bad data. (Option C) A weekly batch dashboard is an after-the-fact audit, not a guard; by the time it surfaces a problem, a week of decisions have already been made on bad data. (Option D) Final-output checks miss errors introduced mid-pipeline and still don't prevent damage to intermediate tables.",
+    "correct_option": 3,
+    "explanation": "Data quality checks should run as early as possible — right after ingestion. Catching nulls at the entry point prevents bad data from propagating into transformations that may silently produce incorrect results (joins on NULL keys match nothing, aggregations skip records, downstream tables fail constraints). Because the source is a third-party API you cannot modify, the earliest place *you control* is immediately after ingestion. (Option A) The serving layer catches problems too late — every downstream step has already run on bad data. (Option B) A weekly batch dashboard is an after-the-fact audit, not a guard; by the time it surfaces a problem, a week of decisions have already been made on bad data. (Option C) Final-output checks miss errors introduced mid-pipeline and still don't prevent damage to intermediate tables.",
     "hints": [
       "Think about how far bad data can travel between the point where it enters your pipeline and the point where you first notice it.",
       "A check that runs once a week tells you what already happened; a check at the entry point prevents the problem from spreading at all."
@@ -588,13 +588,13 @@
     "type": "conceptual",
     "description": "A dashboard shows sales data that should update every hour. Analysts complain the numbers are stale. Which data quality dimension is failing?",
     "options": [
-      "Freshness — the data is not arriving or being processed within the expected time window",
       "Accuracy — the data values are incorrect compared to the source of truth",
+      "Freshness — the data is not arriving or being processed within the expected time window",
       "Completeness — records are missing from the dataset",
       "Consistency — the same metric shows different values in different reports"
     ],
-    "correct_option": 0,
-    "explanation": "Freshness is the quality dimension that measures whether data is up-to-date within its expected SLA. If the dashboard should refresh hourly but data is hours old, freshness has failed. Accuracy (Option B) refers to values being wrong, not late. Completeness (Option C) refers to missing rows or columns. Consistency (Option D) refers to the same fact producing different values across systems — a different problem.",
+    "correct_option": 1,
+    "explanation": "Freshness is the quality dimension that measures whether data is up-to-date within its expected SLA. If the dashboard should refresh hourly but data is hours old, freshness has failed. Accuracy (Option A) refers to values being wrong, not late. Completeness (Option C) refers to missing rows or columns. Consistency (Option D) refers to the same fact producing different values across systems — a different problem.",
     "hints": [
       "Think about which quality dimension is about time: when was this data last updated relative to when it should have been?",
       "The complaint is not that the numbers are wrong — it's that they're old. Which quality dimension describes timeliness?"
@@ -660,13 +660,13 @@
     "type": "conceptual",
     "description": "A message queue delivers events with at-least-once semantics. What does this guarantee, and what risk does it introduce?",
     "options": [
-      "Every event is delivered at least once, but network retries may cause duplicate deliveries that consumers must handle",
       "Every event is delivered exactly once with no duplicates, making consumer deduplication unnecessary",
       "Some events may be dropped if the broker crashes, but delivered events are guaranteed to be duplicate-free",
+      "Every event is delivered at least once, but network retries may cause duplicate deliveries that consumers must handle",
       "Events are delivered in strict order with at most one duplicate per event window"
     ],
-    "correct_option": 0,
-    "explanation": "At-least-once delivery guarantees that no event is lost — every message will be delivered at least one time. However, on retry (e.g., after a network timeout where the acknowledgment was lost), the same message may be delivered again, creating duplicates. Consumers must implement deduplication logic to handle this. Option B describes exactly-once semantics. Option C describes at-most-once (potential loss, no duplicates). Option D is not a standard delivery guarantee.",
+    "correct_option": 2,
+    "explanation": "At-least-once delivery guarantees that no event is lost — every message will be delivered at least one time. However, on retry (e.g., after a network timeout where the acknowledgment was lost), the same message may be delivered again, creating duplicates. Consumers must implement deduplication logic to handle this. Option A describes exactly-once semantics. Option B describes at-most-once (potential loss, no duplicates). Option D is not a standard delivery guarantee.",
     "hints": [
       "Consider what happens when a message is sent but the delivery acknowledgment is lost in transit — what does the broker do next?",
       "The guarantee ensures no message is ever skipped, but the cost of that guarantee is the possibility of seeing the same message more than once."
@@ -684,13 +684,13 @@
     "type": "conceptual",
     "description": "A metrics aggregation pipeline uses at-most-once delivery semantics. Under what condition would this be an acceptable choice?",
     "options": [
-      "When occasional data loss is tolerable and duplicate processing is more harmful than missing a small percentage of events",
       "When data integrity is critical and every event must be counted exactly once in the final aggregate",
       "When the pipeline must guarantee ordered delivery for sequence-sensitive operations like CDC",
-      "When events are very large and the system cannot afford the storage overhead of deduplication"
+      "When events are very large and the system cannot afford the storage overhead of deduplication",
+      "When occasional data loss is tolerable and duplicate processing is more harmful than missing a small percentage of events"
     ],
-    "correct_option": 0,
-    "explanation": "At-most-once semantics: a message is delivered zero or one times — it may be lost but will never be duplicated. This is acceptable for best-effort metrics (e.g., approximate click counts, monitoring heartbeats) where a small loss rate is tolerable and simplicity is valued over completeness. Option B requires exactly-once semantics. Option C is about ordering, which is a separate concern. Option D conflates deduplication storage with delivery guarantees.",
+    "correct_option": 3,
+    "explanation": "At-most-once semantics: a message is delivered zero or one times — it may be lost but will never be duplicated. This is acceptable for best-effort metrics (e.g., approximate click counts, monitoring heartbeats) where a small loss rate is tolerable and simplicity is valued over completeness. Option A requires exactly-once semantics. Option B is about ordering, which is a separate concern. Option C conflates deduplication storage with delivery guarantees.",
     "hints": [
       "Think about use cases where dropping a small percentage of events has minimal business impact — approximate counts versus exact financial records.",
       "Fire-and-forget message delivery is simpler and faster; the trade-off is that some messages may never arrive."

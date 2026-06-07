@@ -9,12 +9,12 @@
     "description": "A PySpark job runs this sequence:\n\n```python\ndf = spark.read.parquet('events/')\nfiltered = df.filter(col('status') == 'active')\nselected = filtered.select('user_id', 'event_ts')\nselected.write.parquet('output/')\n```\n\nHow many Spark jobs are triggered?",
     "options": [
       "Three jobs — one for filter, one for select, one for write",
-      "One job — triggered only by the write action; filter and select are lazy transformations",
       "Two jobs — read triggers one job, write triggers another",
-      "Zero jobs until an explicit `.cache()` is called"
+      "Zero jobs until an explicit `.cache()` is called",
+      "One job — triggered only by the write action; filter and select are lazy transformations"
     ],
-    "correct_option": 1,
-    "explanation": "PySpark uses lazy evaluation: transformations (`filter`, `select`) build a logical plan but do not execute. Only an **action** — here `.write.parquet(...)` — triggers a Spark job. The entire plan (read → filter → select → write) executes as a single job when the action fires. Option A misidentifies transformations as job-triggering. Option C is wrong: `spark.read.parquet` builds a scan plan but triggers no job by itself. Option D invents a `.cache()` requirement — caching is optional and persists results for reuse, not a prerequisite for execution.",
+    "correct_option": 3,
+    "explanation": "PySpark uses lazy evaluation: transformations (`filter`, `select`) build a logical plan but do not execute. Only an **action** — here `.write.parquet(...)` — triggers a Spark job. The entire plan (read → filter → select → write) executes as a single job when the action fires. Option A misidentifies transformations as job-triggering. Option B is wrong: `spark.read.parquet` builds a scan plan but triggers no job by itself. Option C invents a `.cache()` requirement — caching is optional and persists results for reuse, not a prerequisite for execution.",
     "hints": [
       "Scan the code snippet and ask yourself: for each line, does Spark need to produce any output right then, or could it postpone the computation?",
       "Count the number of actions in the code — that's how many Spark jobs will run."
@@ -33,12 +33,12 @@
     "description": "A data engineer runs two operations on a 200-partition DataFrame:\n\n- **Operation A:** `.filter(col('amount') > 100)`\n- **Operation B:** `.groupBy('country').agg(sum('amount'))`\n\nWhich statement correctly classifies these operations?",
     "options": [
       "Both are narrow — they each read from a single input partition and write to a single output partition",
-      "A is narrow (each output partition depends on exactly one input partition); B is wide (output requires reading across multiple input partitions, causing a shuffle)",
       "A is wide because filtering changes the number of output rows; B is narrow because it only counts values",
+      "A is narrow (each output partition depends on exactly one input partition); B is wide (output requires reading across multiple input partitions, causing a shuffle)",
       "Both are wide — any operation involving aggregation or filtering requires a shuffle in Spark"
     ],
-    "correct_option": 1,
-    "explanation": "A narrow transformation's output partitions each depend on at most one input partition — no shuffle is needed. `filter` is narrow: each partition is independently filtered and the partition layout is unchanged. A wide transformation requires data from multiple input partitions — a shuffle. `groupBy` is wide: rows with the same `country` may live in different partitions and must be co-located before aggregation. Option A is wrong about B. Option C inverts the classification. Option D overgeneralises — filtering is narrow in the standard Spark model.",
+    "correct_option": 2,
+    "explanation": "A narrow transformation's output partitions each depend on at most one input partition — no shuffle is needed. `filter` is narrow: each partition is independently filtered and the partition layout is unchanged. A wide transformation requires data from multiple input partitions — a shuffle. `groupBy` is wide: rows with the same `country` may live in different partitions and must be co-located before aggregation. Option A is wrong about B. Option B inverts the classification. Option D overgeneralises — filtering is narrow in the standard Spark model.",
     "hints": [
       "Think about what has to happen physically to the data when each operation runs — does every row stay on the machine it's currently on, or does data need to travel somewhere else?",
       "Shuffles happen when rows need to be redistributed across partitions — that is the defining trait of a wide transformation."
@@ -58,11 +58,11 @@
     "description": "Given:\n```python\nfrom pyspark.sql.functions import col\ndf = spark.createDataFrame([(1, 'a'), (2, 'b')], ['id', 'val'])\ndf2 = df.withColumn('val', col('val').cast('string').alias('upper_val'))\ndf2.printSchema()\n```\nWhat does `df2` look like after this code?",
     "options": [
       "df2 has three columns: id, val, upper_val — withColumn adds a new column named by the alias",
-      "df2 has two columns: id, val — withColumn with an existing column name replaces that column; the alias inside cast is ignored for the output column name",
       "The code raises an AnalysisException because you cannot alias a column inside withColumn",
+      "df2 has two columns: id, val — withColumn with an existing column name replaces that column; the alias inside cast is ignored for the output column name",
       "df2 has two columns: id, upper_val — the alias renames the column and the original val is dropped"
     ],
-    "correct_option": 1,
+    "correct_option": 2,
     "explanation": "`withColumn(name, expr)` always uses the first argument (`'val'`) as the output column name — the `.alias('upper_val')` inside the expression is ignored for naming purposes. Since `'val'` already exists, it is replaced in place. The DataFrame has exactly two columns: `id` and `val`. Option A is wrong — `withColumn` does not add a third column when the name matches an existing column. Options 2 and 3 misrepresent the Spark API: there is no AnalysisException, and the alias does not propagate to the output schema.",
     "hints": [
       "There are two places in this code where a name appears — one inside the column expression, one outside it. Which one does Spark use when defining the output column name?",
@@ -108,12 +108,12 @@
     "description": "A Spark job joins a 500 GB fact table with a 15 MB dimension table. The engineer tests two approaches:\n\n- **Sort-merge join (default):** both tables are sorted and shuffled before joining\n- **Broadcast join:** the small table is sent in full to every executor\n\nWhich statement correctly captures the trade-off?",
     "options": [
       "Sort-merge join is always preferable — broadcast joins are only valid when both tables are under 10 MB",
-      "Broadcast join is preferable here: the 15 MB table comfortably fits in memory, eliminating the shuffle on the large table; this is the primary use case for broadcast joins",
       "Broadcast join increases network traffic proportionally to the large table's size, making it more expensive than sort-merge for tables over 100 GB",
+      "Broadcast join is preferable here: the 15 MB table comfortably fits in memory, eliminating the shuffle on the large table; this is the primary use case for broadcast joins",
       "Both produce identical execution plans — Spark's AQE automatically converts sort-merge to broadcast when it detects a small table"
     ],
-    "correct_option": 1,
-    "explanation": "A broadcast join ships the small table to every executor, avoiding the expensive shuffle of the large table entirely. At 15 MB, the dimension table fits comfortably in executor memory — but note that 15 MB exceeds the default `spark.sql.autoBroadcastJoinThreshold` of 10 MB, so Spark would not auto-broadcast it without a configuration change. In practice, an engineer would either raise the threshold (e.g., `spark.conf.set('spark.sql.autoBroadcastJoinThreshold', '50m')`) or apply an explicit `broadcast()` hint (`F.broadcast(dim_df)`) to force it. Either way, the broadcast approach eliminates the shuffle on the large table, making it the clear winner here. The small table is sent once per executor, not once per row or proportional to the large table's size. Option A is wrong that broadcast joins are only valid under 10 MB — the threshold is configurable and a 15 MB table is well within practical broadcast range. Option C mischaracterises broadcast cost — it scales with the small table, not the large one. Option D is close but not fully correct: AQE can convert some joins post-shuffle, but that is distinct from an explicit broadcast of a pre-known small table.",
+    "correct_option": 2,
+    "explanation": "A broadcast join ships the small table to every executor, avoiding the expensive shuffle of the large table entirely. At 15 MB, the dimension table fits comfortably in executor memory — but note that 15 MB exceeds the default `spark.sql.autoBroadcastJoinThreshold` of 10 MB, so Spark would not auto-broadcast it without a configuration change. In practice, an engineer would either raise the threshold (e.g., `spark.conf.set('spark.sql.autoBroadcastJoinThreshold', '50m')`) or apply an explicit `broadcast()` hint (`F.broadcast(dim_df)`) to force it. Either way, the broadcast approach eliminates the shuffle on the large table, making it the clear winner here. The small table is sent once per executor, not once per row or proportional to the large table's size. Option A is wrong that broadcast joins are only valid under 10 MB — the threshold is configurable and a 15 MB table is well within practical broadcast range. Option B mischaracterises broadcast cost — it scales with the small table, not the large one. Option D is close but not fully correct: AQE can convert some joins post-shuffle, but that is distinct from an explicit broadcast of a pre-known small table.",
     "hints": [
       "Start with the size difference — 500 GB versus 15 MB. For each join approach, ask what data movement it requires and how that cost scales with each table's size.",
       "The key question: is the small table small enough to fit comfortably in executor memory?"
@@ -158,12 +158,12 @@
     "description": "A team enables Delta Lake's Change Data Feed (`delta.enableChangeDataFeed = true`) on a `user_events` table and reads changes via `spark.readStream.format('delta').option('readChangeFeed', 'true')`. They run a MERGE that updates 50,000 rows. Inspecting the CDF output, they find 100,000 rows — exactly double. A junior engineer says: 'We must have a bug in the MERGE condition that's creating duplicate updates.' Is the junior engineer right?",
     "options": [
       "Yes — a correct MERGE should produce exactly one output row per modified record in the CDF; 100,000 rows for 50,000 updates indicates the MERGE matched each source row twice",
-      "No — Delta CDF intentionally emits two rows per UPDATE operation: one with `_change_type = 'update_preimage'` (the row's values before the update) and one with `_change_type = 'update_postimage'` (the row's values after). This allows downstream consumers to compute deltas, reconstruct exact before/after state, or audit changes. Downstream consumers must filter to `update_postimage` if they only want the current values",
       "Yes — the doubled row count is a known CDF bug when the table is partitioned; applying `OPTIMIZE` after the MERGE will deduplicate the pre-image rows automatically",
-      "No — Delta CDF always emits two rows per change regardless of operation type; INSERT and DELETE operations also produce a pre-image and post-image row, so 100,000 rows from 50,000 inserts would also be expected"
+      "No — Delta CDF always emits two rows per change regardless of operation type; INSERT and DELETE operations also produce a pre-image and post-image row, so 100,000 rows from 50,000 inserts would also be expected",
+      "No — Delta CDF intentionally emits two rows per UPDATE operation: one with `_change_type = 'update_preimage'` (the row's values before the update) and one with `_change_type = 'update_postimage'` (the row's values after). This allows downstream consumers to compute deltas, reconstruct exact before/after state, or audit changes. Downstream consumers must filter to `update_postimage` if they only want the current values"
     ],
-    "correct_option": 1,
-    "explanation": "Delta Lake's Change Data Feed records the full before-and-after state of every row changed by a write operation. For UPDATE operations, CDF emits two rows: `update_preimage` (the row's values immediately before the update) and `update_postimage` (the row's values immediately after). This 2× output is by design — it is not a MERGE bug. The `_change_type` column distinguishes them. Downstream pipelines that want only current values should filter to `update_postimage`; those computing column-level deltas can join preimage and postimage on the row key. In contrast, INSERT operations produce one row (`insert`) and DELETE operations produce one row (`delete`) — so the doubling is specific to updates. Option A mistakes correct CDF behaviour for a MERGE condition error. Option C invents a partitioning bug — OPTIMIZE does not remove CDF records. Option D is wrong: INSERT produces 1 row and DELETE produces 1 row, not 2; only UPDATE produces both pre- and post-image.",
+    "correct_option": 3,
+    "explanation": "Delta Lake's Change Data Feed records the full before-and-after state of every row changed by a write operation. For UPDATE operations, CDF emits two rows: `update_preimage` (the row's values immediately before the update) and `update_postimage` (the row's values immediately after). This 2× output is by design — it is not a MERGE bug. The `_change_type` column distinguishes them. Downstream pipelines that want only current values should filter to `update_postimage`; those computing column-level deltas can join preimage and postimage on the row key. In contrast, INSERT operations produce one row (`insert`) and DELETE operations produce one row (`delete`) — so the doubling is specific to updates. Option A mistakes correct CDF behaviour for a MERGE condition error. Option B invents a partitioning bug — OPTIMIZE does not remove CDF records. Option C is wrong: INSERT produces 1 row and DELETE produces 1 row, not 2; only UPDATE produces both pre- and post-image.",
     "hints": [
       "Before concluding there's a MERGE bug, check whether the CDF documentation describes what rows a single UPDATE operation emits. Does 'recording a change' require capturing only the new state, or does it require capturing both the old and new states?",
       "The `_change_type` column in CDF output takes values from the set: insert, update_preimage, update_postimage, delete. For an update to one row, how many distinct `_change_type` values does CDF emit?"
@@ -184,10 +184,10 @@
     "options": [
       "No watermark — Spark will automatically manage state and discard old data when memory pressure is detected",
       "Watermark of 10 minutes — matches the window size, which is the standard pairing; any smaller watermark drops events that should be in the current window",
-      "Watermark of 15 minutes — captures 95%+ of late events while keeping state bounded and discarding data that is almost certainly too late to matter",
-      "Watermark of 30 minutes — captures all events including the 99th percentile, guaranteeing correctness at the cost of slightly larger state"
+      "Watermark of 30 minutes — captures all events including the 99th percentile, guaranteeing correctness at the cost of slightly larger state",
+      "Watermark of 15 minutes — captures 95%+ of late events while keeping state bounded and discarding data that is almost certainly too late to matter"
     ],
-    "correct_option": 2,
+    "correct_option": 3,
     "explanation": "A watermark tells Spark how late an event can arrive before its window is finalised and dropped from state. With no watermark (Option A), state grows unboundedly — Spark never discards old windows. A 10-minute watermark (Option B) would drop events that arrive 10–25 minutes late, missing the 95th and 99th percentile traffic. A 15-minute watermark captures 95%+ of events, bounds state to roughly 25 minutes of windows in memory, and accepts that the 1% tail (>25 minutes late) will be dropped — a reasonable engineering trade-off. A 30-minute watermark captures the 99th percentile but increases state by 50% for events that are highly unlikely to arrive. The right answer weighs business requirements (what late-event loss is acceptable) against operational cost (state size = memory).",
     "hints": [
       "The latency percentile data gives you two reference points — 8 minutes at 95p and 25 minutes at 99p. Think about what each watermark setting means for late events you'll capture versus the memory your job will consume.",

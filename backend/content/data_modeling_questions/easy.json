@@ -7,13 +7,13 @@
     "type": "conceptual",
     "description": "An analytics team needs fast, simple queries across a sales dataset. They can choose between a star schema and a fully normalised relational schema. Which statement best explains why a star schema is preferred for analytical queries?",
     "options": [
-      "A star schema denormalises dimension data into flat tables, reducing the number of joins needed and speeding up analytical queries",
       "A star schema stores data in a single giant table with no joins at all, making reads as fast as possible",
       "A star schema enforces strict third normal form across all tables, which improves query optimiser performance",
+      "A star schema denormalises dimension data into flat tables, reducing the number of joins needed and speeding up analytical queries",
       "A star schema is preferred because it compresses data more aggressively than a normalised schema"
     ],
-    "correct_option": 0,
-    "explanation": "A star schema places a central fact table surrounded by denormalised dimension tables. Because each dimension is already flat (not further broken into sub-tables), most queries require only a single join between the fact table and one or more dimensions — far fewer joins than a fully normalised schema. Option B is wrong: a star schema still uses joins; it is not a single flat table. Option C is wrong: star schemas typically violate 3NF intentionally by denormalising. Option D is wrong: compression is a storage-layer concern unrelated to schema shape.",
+    "correct_option": 2,
+    "explanation": "A star schema places a central fact table surrounded by denormalised dimension tables. Because each dimension is already flat (not further broken into sub-tables), most queries require only a single join between the fact table and one or more dimensions — far fewer joins than a fully normalised schema. Option A is wrong: a star schema still uses joins; it is not a single flat table. Option B is wrong: star schemas typically violate 3NF intentionally by denormalising. Option D is wrong: compression is a storage-layer concern unrelated to schema shape.",
     "hints": [
       "Think about how many tables a typical analytical query must touch in each schema design.",
       "Star schemas intentionally flatten dimension data to trade storage for fewer joins."
@@ -55,13 +55,13 @@
     "type": "conceptual",
     "description": "A team debates whether to use a star schema or a snowflake schema for a new data mart. Which trade-off correctly describes the difference between the two?",
     "options": [
-      "Star schemas use more storage due to repeated dimension data but require fewer joins; snowflake schemas save storage by normalising dimensions but require more joins",
       "Star schemas require more joins than snowflake schemas because their fact tables are larger",
       "Snowflake schemas always outperform star schemas for analytical queries because normalised data is smaller",
+      "Star schemas use more storage due to repeated dimension data but require fewer joins; snowflake schemas save storage by normalising dimensions but require more joins",
       "Star schemas and snowflake schemas are functionally identical; the difference is only cosmetic naming"
     ],
-    "correct_option": 0,
-    "explanation": "The classic star vs snowflake trade-off is storage efficiency versus query simplicity. Star schemas repeat dimension attributes (e.g., country name) across many rows, wasting space, but queries hit fewer tables. Snowflake schemas normalise those repeated values into sub-tables, saving storage, but queries need additional joins. Option B is backwards — star schemas have fewer joins, not more. Option C is wrong: fewer joins often means faster analytical queries even if individual tables are smaller. Option D is wrong: the structural difference has real performance implications.",
+    "correct_option": 2,
+    "explanation": "The classic star vs snowflake trade-off is storage efficiency versus query simplicity. Star schemas repeat dimension attributes (e.g., country name) across many rows, wasting space, but queries hit fewer tables. Snowflake schemas normalise those repeated values into sub-tables, saving storage, but queries need additional joins. Option A is backwards — star schemas have fewer joins, not more. Option B is wrong: fewer joins often means faster analytical queries even if individual tables are smaller. Option D is wrong: the structural difference has real performance implications.",
     "hints": [
       "Think about what happens to duplicated text values in a dimension when you normalise versus when you flatten.",
       "Fewer joins typically mean simpler and faster analytical queries for end users."
@@ -103,13 +103,13 @@
     "type": "conceptual",
     "description": "An `order_items` table has a composite primary key of (`order_id`, `product_id`). The table also includes a `product_name` column. The product name depends only on `product_id`, not on the full composite key. Which normal form is violated?",
     "options": [
-      "Second Normal Form, because product_name depends on only part of the composite primary key",
       "First Normal Form, because product_name contains text values rather than numeric identifiers",
       "Third Normal Form, because product_name transitively depends on order_id through product_id",
-      "No normal form is violated; this is a standard and acceptable table design"
+      "No normal form is violated; this is a standard and acceptable table design",
+      "Second Normal Form, because product_name depends on only part of the composite primary key"
     ],
-    "correct_option": 0,
-    "explanation": "Second Normal Form (2NF) requires that every non-key column is fully functionally dependent on the entire primary key. Here the primary key is (`order_id`, `product_id`), but `product_name` depends only on `product_id` — a partial dependency. The fix is to move `product_name` to a separate Products table keyed by `product_id`. Option B is wrong: 1NF is about atomic values, not data types. Option C is wrong: a transitive dependency would involve a non-key column depending on another non-key column. Option D is wrong: this is a genuine 2NF violation.",
+    "correct_option": 3,
+    "explanation": "Second Normal Form (2NF) requires that every non-key column is fully functionally dependent on the entire primary key. Here the primary key is (`order_id`, `product_id`), but `product_name` depends only on `product_id` — a partial dependency. The fix is to move `product_name` to a separate Products table keyed by `product_id`. Option A is wrong: 1NF is about atomic values, not data types. Option B is wrong: a transitive dependency would involve a non-key column depending on another non-key column. Option C is wrong: this is a genuine 2NF violation.",
     "hints": [
       "Check whether every non-key column needs both parts of the composite key to be uniquely identified.",
       "Ask: could you look up `product_name` knowing only `product_id`, without needing `order_id` at all? If yes, the column does not depend on the whole composite key — think about which normal form governs that requirement."
@@ -173,13 +173,13 @@
     "type": "conceptual",
     "description": "A finance team needs a table that captures the total account balance for every bank account at the end of each business day, regardless of whether any transactions occurred that day. Which fact table type fits this requirement?",
     "options": [
-      "A periodic snapshot fact table, which records the state of a measure at regular, predefined time intervals",
       "A transaction fact table, which inserts a new row for every individual debit or credit event",
       "An accumulating snapshot fact table, which tracks multi-stage milestones for each account",
+      "A periodic snapshot fact table, which records the state of a measure at regular, predefined time intervals",
       "A dimension table with a date attribute capturing balance history"
     ],
-    "correct_option": 0,
-    "explanation": "A periodic snapshot fact table records the state of one or more measures at fixed time intervals (daily, weekly, monthly). Daily account balances are a classic use case: a row exists for every account for every day, even if no transactions occurred. Option B (transaction fact) only records events; if no transaction happened, nothing is stored, leaving gaps. Option C (accumulating snapshot) tracks process milestones like loan approval stages, not time-periodic balances. Option D is wrong: balance history over time is a fact, not a dimension attribute.",
+    "correct_option": 2,
+    "explanation": "A periodic snapshot fact table records the state of one or more measures at fixed time intervals (daily, weekly, monthly). Daily account balances are a classic use case: a row exists for every account for every day, even if no transactions occurred. Option A (transaction fact) only records events; if no transaction happened, nothing is stored, leaving gaps. Option B (accumulating snapshot) tracks process milestones like loan approval stages, not time-periodic balances. Option D is wrong: balance history over time is a fact, not a dimension attribute.",
     "hints": [
       "Think about whether you need to capture a point-in-time measurement on a schedule, or only when something changes.",
       "Periodic snapshots ensure a row exists for every period — even quiet days with no activity."
@@ -197,13 +197,13 @@
     "type": "conceptual",
     "description": "An e-commerce company tracks orders through five stages: placed, payment confirmed, warehoused, shipped, and delivered. Each order has a single row that gets updated as it moves through each stage, recording the date each milestone is reached. Which fact table type is this?",
     "options": [
-      "An accumulating snapshot fact table, which tracks the progress of a business process through defined milestones",
       "A transaction fact table, which records a new row at each individual stage transition",
       "A periodic snapshot fact table, which records order state at the end of each business day",
+      "An accumulating snapshot fact table, which tracks the progress of a business process through defined milestones",
       "A slowly changing dimension, which records historical changes to order attributes over time"
     ],
-    "correct_option": 0,
-    "explanation": "An accumulating snapshot fact table is designed for business processes that have a well-defined lifecycle with multiple milestone dates. Each entity (here, each order) gets one row, and that row is updated as milestones are reached — date columns are filled in as stages complete. Option B describes a transaction fact table, which would create a new row per stage transition. Option C describes a periodic snapshot, which records fixed-interval snapshots independent of process stages. Option D is wrong: slowly changing dimensions track attribute history for dimension records, not process milestones.",
+    "correct_option": 2,
+    "explanation": "An accumulating snapshot fact table is designed for business processes that have a well-defined lifecycle with multiple milestone dates. Each entity (here, each order) gets one row, and that row is updated as milestones are reached — date columns are filled in as stages complete. Option A describes a transaction fact table, which would create a new row per stage transition. Option B describes a periodic snapshot, which records fixed-interval snapshots independent of process stages. Option D is wrong: slowly changing dimensions track attribute history for dimension records, not process milestones.",
     "hints": [
       "Consider whether each entity gets one row that is updated, or whether every event creates a new row.",
       "Accumulating snapshots are ideal when a process has a fixed number of known stages and you want to track how long each stage takes."
@@ -221,13 +221,13 @@
     "type": "conceptual",
     "description": "A customer dimension table uses the customer's email address as its primary key. A colleague suggests replacing it with a system-generated integer key. What is the primary benefit of the system-generated integer key?",
     "options": [
-      "It remains stable even if the customer's email address changes, preventing broken references in fact tables",
       "It is more human-readable, making it easier for analysts to look up individual customers",
+      "It remains stable even if the customer's email address changes, preventing broken references in fact tables",
       "It guarantees uniqueness across the source system, because email addresses can collide",
       "It improves data security by making it impossible to identify customers from the key alone"
     ],
-    "correct_option": 0,
-    "explanation": "A system-generated (surrogate) key is a stable, internally assigned identifier that does not change when business attributes change. If a customer changes their email, a surrogate key keeps all fact table references intact. Option B is wrong: integer keys are less readable than email addresses — readability is an argument for natural keys. Option C is wrong: surrogate keys do not improve source-system uniqueness guarantees; that is an application-level concern. Option D is wrong: while surrogate keys do obscure identity, security is a side benefit, not the primary purpose.",
+    "correct_option": 1,
+    "explanation": "A system-generated (surrogate) key is a stable, internally assigned identifier that does not change when business attributes change. If a customer changes their email, a surrogate key keeps all fact table references intact. Option A is wrong: integer keys are less readable than email addresses — readability is an argument for natural keys. Option C is wrong: surrogate keys do not improve source-system uniqueness guarantees; that is an application-level concern. Option D is wrong: while surrogate keys do obscure identity, security is a side benefit, not the primary purpose.",
     "hints": [
       "Ask what happens to the fact table rows if a customer updates their email and the email is the primary key.",
       "Surrogate keys are generated by the warehouse, so they stay constant regardless of changes to source system data."
@@ -268,13 +268,13 @@
     "type": "conceptual",
     "description": "A company merges with a competitor. Both companies had their own CRM systems, each numbering customers starting from 1. The data warehouse must integrate both customer datasets. Why is a surrogate key essential in this situation?",
     "options": [
-      "Customer IDs from both systems collide (both start at 1), so a warehouse-generated surrogate key provides a unique identifier across all sources",
       "Surrogate keys allow the warehouse to delete duplicate customers automatically on load",
       "Natural keys from source systems are never allowed in a data warehouse, making surrogate keys mandatory",
+      "Customer IDs from both systems collide (both start at 1), so a warehouse-generated surrogate key provides a unique identifier across all sources",
       "A surrogate key allows analysts to trace a customer record back to its original source system"
     ],
-    "correct_option": 0,
-    "explanation": "When two source systems use overlapping ID sequences (both starting at customer_id = 1), the same natural key value refers to different customers. A warehouse-generated surrogate key — unique within the warehouse — resolves the collision and allows both datasets to coexist without ambiguity. Option B is wrong: surrogate keys do not deduplicate records; that requires explicit matching logic. Option C is wrong: natural keys can and often do appear in warehouses as attributes alongside a surrogate key. Option D is a real capability of the source system code (often stored alongside the surrogate), but it is not why surrogate keys are essential here.",
+    "correct_option": 2,
+    "explanation": "When two source systems use overlapping ID sequences (both starting at customer_id = 1), the same natural key value refers to different customers. A warehouse-generated surrogate key — unique within the warehouse — resolves the collision and allows both datasets to coexist without ambiguity. Option A is wrong: surrogate keys do not deduplicate records; that requires explicit matching logic. Option B is wrong: natural keys can and often do appear in warehouses as attributes alongside a surrogate key. Option D is a real capability of the source system code (often stored alongside the surrogate), but it is not why surrogate keys are essential here.",
     "hints": [
       "Consider what happens when two source systems produce the same ID number for completely different customers.",
       "Surrogate keys are assigned by the warehouse, so they are always unique within the warehouse regardless of source system values."
@@ -291,13 +291,13 @@
     "type": "conceptual",
     "description": "A customer moves to a new city. The data warehouse team updates the `city` column in the customer dimension to the new city name, overwriting the old value. No record of the previous city is kept. Which slowly changing dimension strategy is being used?",
     "options": [
-      "Type 1 — overwrite the old value; historical values are lost",
       "Type 2 — add a new row for the new city; the old row is expired with an end date",
+      "Type 1 — overwrite the old value; historical values are lost",
       "Type 3 — add a new column (previous_city) to store the old value alongside the current value",
       "Type 0 — the value is fixed at load and never updated regardless of changes in the source"
     ],
-    "correct_option": 0,
-    "explanation": "SCD Type 1 simply overwrites the attribute with the new value. No history is preserved — the old city is gone. This is appropriate when historical accuracy of the attribute is not needed (e.g., correcting a data entry error). Option B describes Type 2, which preserves history by versioning rows. Option C describes Type 3, which adds a column for the most recent previous value. Option D describes Type 0 (or 'fixed'), where the attribute never changes once loaded.",
+    "correct_option": 1,
+    "explanation": "SCD Type 1 simply overwrites the attribute with the new value. No history is preserved — the old city is gone. This is appropriate when historical accuracy of the attribute is not needed (e.g., correcting a data entry error). Option A describes Type 2, which preserves history by versioning rows. Option C describes Type 3, which adds a column for the most recent previous value. Option D describes Type 0 (or 'fixed'), where the attribute never changes once loaded.",
     "hints": [
       "Think about whether any historical record of the old city would remain after the update.",
       "The simplest strategy overwrites the existing value directly — no new rows, no extra columns."
@@ -314,13 +314,13 @@
     "type": "conceptual",
     "description": "A sales analyst needs to report revenue by the sales region a customer belonged to at the time of each purchase — not their current region. The customer may have moved between regions over time. Which dimension handling strategy supports this requirement?",
     "options": [
-      "Add a new dimension row each time the region changes, with effective start and end dates, and link fact rows to the row that was current at purchase time",
       "Overwrite the region column each time it changes and recalculate all historical reports using the current region",
+      "Add a new dimension row each time the region changes, with effective start and end dates, and link fact rows to the row that was current at purchase time",
       "Add a previous_region column to the customer dimension to track the single most recent change",
       "Store region in the fact table instead of the dimension so it is captured at the time of purchase"
     ],
-    "correct_option": 0,
-    "explanation": "When you need to report historical facts against the dimension value that was accurate at the time of the transaction, you need row versioning — the defining feature of SCD Type 2. Each version gets a surrogate key and effective date range; fact rows reference the surrogate key of the current version at the time of the event. Option B (Type 1) destroys the historical region, making accurate historical reporting impossible. Option C (Type 3) only remembers one previous value and cannot handle multiple changes. Option D places the attribute in the fact table, which works for a single attribute but is not a scalable or standard dimensional modeling approach.",
+    "correct_option": 1,
+    "explanation": "When you need to report historical facts against the dimension value that was accurate at the time of the transaction, you need row versioning — the defining feature of SCD Type 2. Each version gets a surrogate key and effective date range; fact rows reference the surrogate key of the current version at the time of the event. Option A (Type 1) destroys the historical region, making accurate historical reporting impossible. Option C (Type 3) only remembers one previous value and cannot handle multiple changes. Option D places the attribute in the fact table, which works for a single attribute but is not a scalable or standard dimensional modeling approach.",
     "hints": [
       "Consider which approach lets you look at a fact row and determine exactly which region was active when that sale occurred.",
       "Row versioning with effective dates means every historical state of the dimension is preserved as a separate record."
@@ -339,13 +339,13 @@
     "type": "conceptual",
     "description": "A data team is updating the customer dimension. For `email_address`, history is irrelevant — the team only needs the current contact information. For `customer_segment` (e.g., Gold, Silver), historical accuracy matters for revenue attribution. Which combination is correct?",
     "options": [
-      "Type 1 for email_address (overwrite); Type 2 for customer_segment (add versioned rows)",
       "Type 2 for email_address (add versioned rows); Type 1 for customer_segment (overwrite)",
       "Type 1 for both columns, since overwriting is simpler and analytics rarely require history",
-      "Type 2 for both columns, since preserving all history is always safer and more flexible"
+      "Type 2 for both columns, since preserving all history is always safer and more flexible",
+      "Type 1 for email_address (overwrite); Type 2 for customer_segment (add versioned rows)"
     ],
-    "correct_option": 0,
-    "explanation": "Different attributes in the same dimension can — and should — use different SCD strategies based on business need. Email address is a contact detail where only the current value matters (Type 1). Customer segment directly affects revenue attribution and reporting accuracy, so historical versions must be preserved (Type 2). Option B reverses the logic. Option C sacrifices the analytics accuracy that segment history provides. Option D applies Type 2 to everything including email, which inflates row counts unnecessarily for attributes where history has no analytical value.",
+    "correct_option": 3,
+    "explanation": "Different attributes in the same dimension can — and should — use different SCD strategies based on business need. Email address is a contact detail where only the current value matters (Type 1). Customer segment directly affects revenue attribution and reporting accuracy, so historical versions must be preserved (Type 2). Option A reverses the logic. Option B sacrifices the analytics accuracy that segment history provides. Option C applies Type 2 to everything including email, which inflates row counts unnecessarily for attributes where history has no analytical value.",
     "hints": [
       "Ask for each attribute: does a historical report ever need to know what this value was in the past?",
       "Mixing Type 1 and Type 2 within the same dimension is a common and valid pattern in practice."
@@ -363,13 +363,13 @@
     "type": "conceptual",
     "description": "A fact table is being designed for retail sales. A team member says: 'The grain is one row per order.' Another says: 'The grain is one row per line item within an order.' Why does this distinction matter?",
     "options": [
-      "The grain determines what facts and dimensions can be associated with each row — a finer grain (line item) allows tracking individual products but creates more rows than an order-level grain",
       "The grain is just a documentation convention; it has no impact on the physical structure or query results",
+      "The grain determines what facts and dimensions can be associated with each row — a finer grain (line item) allows tracking individual products but creates more rows than an order-level grain",
       "A coarser grain (order-level) always produces more accurate analytics than a finer grain (line item)",
       "The grain must match the granularity of the source system exactly and cannot be changed during modelling"
     ],
-    "correct_option": 0,
-    "explanation": "Grain defines the level of detail represented by a single row in a fact table. Choosing order-level grain means one row per order: you can store order-level facts (total amount, discount) but cannot track which specific products were purchased. Line-item grain allows product-level facts (quantity, unit price per product) but results in many more rows. The grain decision drives which dimensions and measures are meaningful. Option B is wrong: grain is a structural decision with real consequences. Option C is wrong: finer grain is often more flexible and accurate, not less. Option D is wrong: the modeller chooses grain based on analytical needs, not source system structure.",
+    "correct_option": 1,
+    "explanation": "Grain defines the level of detail represented by a single row in a fact table. Choosing order-level grain means one row per order: you can store order-level facts (total amount, discount) but cannot track which specific products were purchased. Line-item grain allows product-level facts (quantity, unit price per product) but results in many more rows. The grain decision drives which dimensions and measures are meaningful. Option A is wrong: grain is a structural decision with real consequences. Option C is wrong: finer grain is often more flexible and accurate, not less. Option D is wrong: the modeller chooses grain based on analytical needs, not source system structure.",
     "hints": [
       "Ask what a single row in the fact table represents — can an order-level row tell you how many units of a specific product were sold?",
       "The level of detail in a fact table — what one row represents — is the single most important design decision and must be declared explicitly before adding columns."
@@ -387,13 +387,13 @@
     "type": "conceptual",
     "description": "A fact table is defined at the grain of one row per sales order line item. A new requirement asks to add a `monthly_sales_target` column that is set once per salesperson per month. What problem does adding this column directly to the line-item fact table cause?",
     "options": [
-      "The monthly target value would be repeated on every line item for that salesperson that month, making aggregation produce inflated totals",
       "The monthly target cannot be stored numerically in a line-item fact table and must be a text field",
       "Adding any column to an existing fact table is not allowed; a new table must always be created",
+      "The monthly target value would be repeated on every line item for that salesperson that month, making aggregation produce inflated totals",
       "The monthly target would cause the grain to become ambiguous only if it is NULL for some rows"
     ],
-    "correct_option": 0,
-    "explanation": "Adding a coarser-grained measure (monthly target, set once per month per salesperson) to a finer-grained fact table (per line item) causes fan-out inflation: if a salesperson has 50 line items in a month, the monthly target appears on all 50 rows. SUM(monthly_sales_target) would return 50x the actual target. The correct approach is to store the target in a separate fact table at the correct grain (month/salesperson) and join when needed. Option B is wrong: data type is unrelated to this issue. Option C is wrong: adding columns is allowed but must preserve grain integrity. Option D is wrong: the problem exists even without NULLs.",
+    "correct_option": 2,
+    "explanation": "Adding a coarser-grained measure (monthly target, set once per month per salesperson) to a finer-grained fact table (per line item) causes fan-out inflation: if a salesperson has 50 line items in a month, the monthly target appears on all 50 rows. SUM(monthly_sales_target) would return 50x the actual target. The correct approach is to store the target in a separate fact table at the correct grain (month/salesperson) and join when needed. Option A is wrong: data type is unrelated to this issue. Option B is wrong: adding columns is allowed but must preserve grain integrity. Option D is wrong: the problem exists even without NULLs.",
     "hints": [
       "Consider what SUM(monthly_sales_target) would return if the target value appears on every line item for the month.",
       "Each measure in a fact table should be naturally defined at the declared grain — not at a coarser or finer level."
@@ -412,13 +412,13 @@
     "type": "conceptual",
     "description": "An analytics team frequently runs reports that join a sales fact table to a customer dimension and then to a region table linked from customer. Response times are slow. A colleague suggests merging the region table into the customer dimension. What is the primary benefit of this denormalisation?",
     "options": [
-      "Queries need one fewer join, reducing query complexity and improving read performance",
       "Denormalising the region into the customer table enforces that each customer can belong to only one region",
       "Merging the tables reduces storage cost by eliminating duplicate region rows",
-      "Denormalisation improves write performance by reducing the number of tables that must be updated on insert"
+      "Denormalisation improves write performance by reducing the number of tables that must be updated on insert",
+      "Queries need one fewer join, reducing query complexity and improving read performance"
     ],
-    "correct_option": 0,
-    "explanation": "The primary driver for denormalisation in an analytical (OLAP) context is read performance: fewer joins means simpler query plans and faster execution, especially at scale. Merging region into the customer dimension eliminates one join from every query that uses region. Option B is wrong: the cardinality constraint (one region per customer) is a business rule, not a result of denormalisation. Option C is wrong: merging actually duplicates region text across many customer rows, increasing storage. Option D is wrong: denormalisation typically harms write performance because updates to the redundant data must touch more rows.",
+    "correct_option": 3,
+    "explanation": "The primary driver for denormalisation in an analytical (OLAP) context is read performance: fewer joins means simpler query plans and faster execution, especially at scale. Merging region into the customer dimension eliminates one join from every query that uses region. Option A is wrong: the cardinality constraint (one region per customer) is a business rule, not a result of denormalisation. Option B is wrong: merging actually duplicates region text across many customer rows, increasing storage. Option C is wrong: denormalisation typically harms write performance because updates to the redundant data must touch more rows.",
     "hints": [
       "Count how many tables a typical region-level sales report must join before and after the merge.",
       "In analytical workloads, reads vastly outnumber writes, so optimising for read speed is usually worth the storage trade-off."
@@ -436,13 +436,13 @@
     "type": "conceptual",
     "description": "A team denormalises the `region_name` into the customer dimension, so every customer row directly contains their region's display name. The company later renames a region from 'North-East' to 'Northeast'. What risk does this denormalisation create?",
     "options": [
-      "Every customer row in that region must be updated individually; if any row is missed, the dimension contains inconsistent region names",
       "Renaming a region is impossible once data has been denormalised into the dimension table",
+      "Every customer row in that region must be updated individually; if any row is missed, the dimension contains inconsistent region names",
       "The surrogate key for the region must be regenerated, breaking all fact table references",
       "Denormalised tables use immutable storage, so the region name column is read-only after the first load"
     ],
-    "correct_option": 0,
-    "explanation": "When a value is denormalised into many rows, any change to that value must be applied to every row that holds it. If any row is missed — due to a partial update, race condition, or ETL error — the dimension contains inconsistent data. This is an update anomaly, one of the classic downsides of denormalisation. Option B is wrong: renaming is possible, just risky and expensive. Option C is wrong: the region_name is stored as an attribute, not a key; surrogates are unaffected. Option D is wrong: there is no immutability constraint on denormalised tables.",
+    "correct_option": 1,
+    "explanation": "When a value is denormalised into many rows, any change to that value must be applied to every row that holds it. If any row is missed — due to a partial update, race condition, or ETL error — the dimension contains inconsistent data. This is an update anomaly, one of the classic downsides of denormalisation. Option A is wrong: renaming is possible, just risky and expensive. Option C is wrong: the region_name is stored as an attribute, not a key; surrogates are unaffected. Option D is wrong: there is no immutability constraint on denormalised tables.",
     "hints": [
       "Think about how many rows would need to change if a region name is updated, versus how many rows would change in a fully normalised design.",
       "Update anomalies are the main data quality risk introduced by denormalisation."
@@ -460,13 +460,13 @@
     "type": "conceptual",
     "description": "A company runs two database systems: one that processes thousands of short customer transactions per second (order placements, inventory updates), and one used exclusively by analysts to run long-running aggregation queries across years of historical data. Which statement correctly matches each system to its optimisation goal?",
     "options": [
-      "The transaction system is OLTP, optimised for fast, concurrent writes; the analytics system is OLAP, optimised for fast reads over large datasets",
       "The transaction system is OLAP, because it handles many operations; the analytics system is OLTP, because queries are longer",
+      "The transaction system is OLTP, optimised for fast, concurrent writes; the analytics system is OLAP, optimised for fast reads over large datasets",
       "Both systems are OLTP; the analytics system simply uses slower hardware",
       "OLAP systems are used for both workloads; the distinction is only in the query language used"
     ],
-    "correct_option": 0,
-    "explanation": "OLTP (Online Transaction Processing) systems are designed for high-throughput, low-latency individual writes (inserts, updates, deletes) with strong consistency. OLAP (Online Analytical Processing) systems are designed for complex, aggregated reads over large historical datasets. They typically use columnar storage, relaxed normalisation, and partitioning to speed up analytical queries. Option B swaps the definitions. Option C is wrong: analytical systems are architecturally distinct from OLTP, not just slower hardware. Option D is wrong: OLAP and OLTP are distinct architectural patterns, not just different query languages.",
+    "correct_option": 1,
+    "explanation": "OLTP (Online Transaction Processing) systems are designed for high-throughput, low-latency individual writes (inserts, updates, deletes) with strong consistency. OLAP (Online Analytical Processing) systems are designed for complex, aggregated reads over large historical datasets. They typically use columnar storage, relaxed normalisation, and partitioning to speed up analytical queries. Option A swaps the definitions. Option C is wrong: analytical systems are architecturally distinct from OLTP, not just slower hardware. Option D is wrong: OLAP and OLTP are distinct architectural patterns, not just different query languages.",
     "hints": [
       "Consider which system needs to handle many small writes per second vs. few but very wide analytical reads.",
       "The 'O' in both stands for Online, but the 'T' (Transactional) vs 'A' (Analytical) captures the fundamental difference in workload."
@@ -484,13 +484,13 @@
     "type": "conceptual",
     "description": "A backend engineer proposes running all business analytics directly on the fully normalised OLTP database to avoid maintaining a separate data warehouse. A data engineer objects. What is the strongest argument against using the OLTP schema for analytics?",
     "options": [
-      "Analytical queries on a normalised OLTP schema require many joins and scan large volumes of rows, degrading performance and competing with live transaction writes",
       "Normalised OLTP databases do not support SQL, so analytical queries cannot be run on them",
       "OLTP databases automatically delete historical records to save space, making trend analysis impossible",
-      "Fully normalised schemas cannot store numeric measures, so aggregations like SUM and AVG are unavailable"
+      "Fully normalised schemas cannot store numeric measures, so aggregations like SUM and AVG are unavailable",
+      "Analytical queries on a normalised OLTP schema require many joins and scan large volumes of rows, degrading performance and competing with live transaction writes"
     ],
-    "correct_option": 0,
-    "explanation": "OLTP schemas are normalised for write efficiency — data is split across many tables to minimise redundancy. Analytical queries need to rejoin those tables repeatedly and scan large row volumes, which is slow and locks rows needed by live transactions. A separate OLAP system (with denormalised schemas, columnar storage, and no write contention) is optimised for this workload. Option B is wrong: normalised databases absolutely support SQL and aggregation queries. Option C is wrong: OLTP systems retain historical records unless explicitly purged. Option D is wrong: numeric measures can be stored in any relational schema.",
+    "correct_option": 3,
+    "explanation": "OLTP schemas are normalised for write efficiency — data is split across many tables to minimise redundancy. Analytical queries need to rejoin those tables repeatedly and scan large row volumes, which is slow and locks rows needed by live transactions. A separate OLAP system (with denormalised schemas, columnar storage, and no write contention) is optimised for this workload. Option A is wrong: normalised databases absolutely support SQL and aggregation queries. Option B is wrong: OLTP systems retain historical records unless explicitly purged. Option C is wrong: numeric measures can be stored in any relational schema.",
     "hints": [
       "Think about what happens to live order processing when a long-running analytical query scans the same tables.",
       "The more joins a query needs, the more expensive it becomes — and normalised schemas maximise the number of joins."
@@ -556,13 +556,13 @@
     "type": "conceptual",
     "description": "A fact table references a customer dimension via `customer_key`. A batch process deletes several inactive customer rows from the dimension table. What problem does this create for the fact table?",
     "options": [
-      "Fact rows that referenced the deleted customers become orphaned — they have a customer_key with no matching dimension row, breaking lookups and joins",
       "The fact table is automatically updated to set customer_key to NULL for affected rows",
       "The deleted dimension rows are moved to an archive table and all fact joins continue to work transparently",
-      "Deleting dimension rows has no effect on the fact table since dimension keys are denormalised into the fact"
+      "Deleting dimension rows has no effect on the fact table since dimension keys are denormalised into the fact",
+      "Fact rows that referenced the deleted customers become orphaned — they have a customer_key with no matching dimension row, breaking lookups and joins"
     ],
-    "correct_option": 0,
-    "explanation": "Referential integrity means every foreign key in the fact table must have a corresponding row in the referenced dimension table. Deleting dimension rows without first handling the dependent fact rows creates orphaned fact rows — joins to the customer dimension will return no results for those customers, silently dropping data from reports. Option B is wrong: most data warehouses do not automatically NULL out foreign keys on dimension deletes. Option C is wrong: there is no automatic transparent archive-and-redirect mechanism. Option D is wrong: the fact table stores the key reference, not the full denormalised attributes — the join is still required.",
+    "correct_option": 3,
+    "explanation": "Referential integrity means every foreign key in the fact table must have a corresponding row in the referenced dimension table. Deleting dimension rows without first handling the dependent fact rows creates orphaned fact rows — joins to the customer dimension will return no results for those customers, silently dropping data from reports. Option A is wrong: most data warehouses do not automatically NULL out foreign keys on dimension deletes. Option B is wrong: there is no automatic transparent archive-and-redirect mechanism. Option C is wrong: the fact table stores the key reference, not the full denormalised attributes — the join is still required.",
     "hints": [
       "Think about what a JOIN between the fact table and the dimension table would return for a customer_key that no longer exists in the dimension.",
       "Before deleting dimension rows, check whether any fact rows still reference them."
@@ -580,13 +580,13 @@
     "scenario_context": "A streaming music company wants to build a data warehouse to analyse listening behaviour. Their source system records: song_id, song_title, artist_name, genre, user_id, user_country, subscription_tier, play_timestamp, play_duration_seconds, and was_skipped (boolean). The analytics team needs to answer questions like: how many minutes were streamed per genre per month, and which subscription tier has the highest skip rate?",
     "description": "Given the streaming company's analytics requirements, which design correctly separates facts from dimensions in a star schema?",
     "options": [
-      "Facts: play_duration_seconds, was_skipped (per play event); Dimensions: Song (song_id, title, artist, genre), User (user_id, country, subscription_tier), Date (from play_timestamp)",
       "Facts: song_title, artist_name, genre, user_country, subscription_tier; Dimensions: play_duration_seconds, was_skipped",
       "Facts: play_duration_seconds, was_skipped, genre, subscription_tier; Dimensions: song_id, user_id, play_timestamp",
-      "Facts: all columns in a single wide fact table with no separate dimension tables"
+      "Facts: all columns in a single wide fact table with no separate dimension tables",
+      "Facts: play_duration_seconds, was_skipped (per play event); Dimensions: Song (song_id, title, artist, genre), User (user_id, country, subscription_tier), Date (from play_timestamp)"
     ],
-    "correct_option": 0,
-    "explanation": "In a star schema, facts are numeric measures of a business event (duration streamed, skip flag), and dimensions are descriptive attributes used to filter and group those measures (song metadata, user profile, date). Option A correctly identifies play_duration_seconds and was_skipped as event-level measures, and groups descriptive attributes into Song, User, and Date dimensions — enabling queries like 'minutes per genre per month' by joining fact to Date and Song dimensions. Option B inverts the design: text attributes like song_title and genre are dimensions, not facts. Option C mixes descriptive attributes (genre, subscription_tier) into the fact table, which creates the grain-mixing problem. Option D (a single wide table) works at small scale but abandons the dimensional model entirely, making it hard to add new dimensions or reuse dimension tables.",
+    "correct_option": 3,
+    "explanation": "In a star schema, facts are numeric measures of a business event (duration streamed, skip flag), and dimensions are descriptive attributes used to filter and group those measures (song metadata, user profile, date). Option D correctly identifies play_duration_seconds and was_skipped as event-level measures, and groups descriptive attributes into Song, User, and Date dimensions — enabling queries like 'minutes per genre per month' by joining fact to Date and Song dimensions. Option A inverts the design: text attributes like song_title and genre are dimensions, not facts. Option B mixes descriptive attributes (genre, subscription_tier) into the fact table, which creates the grain-mixing problem. Option C (a single wide table) works at small scale but abandons the dimensional model entirely, making it hard to add new dimensions or reuse dimension tables.",
     "hints": [
       "Separate the event's measurements (what was counted or measured) from the entities that describe who, what, and when the event involved.",
       "Dimensions are reusable across multiple fact tables; facts change with every event."

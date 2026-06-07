@@ -7,11 +7,11 @@
     "description": "A dataset of household incomes in a city is heavily right-skewed due to a small number of billionaires. Which measure of central tendency best represents the 'typical' household income, and why?",
     "options": [
       "The mean, because it uses all data points and is mathematically unbiased for any distribution",
-      "The median, because it is resistant to extreme values and reflects the income of the middle household",
       "The mode, because it identifies the single most common income level in the dataset",
+      "The median, because it is resistant to extreme values and reflects the income of the middle household",
       "The range, because it captures the full spread of incomes from lowest to highest"
     ],
-    "correct_option": 1,
+    "correct_option": 2,
     "explanation": "The median splits the sorted dataset in half, so extreme values (billionaires) do not distort it. The mean is pulled toward the high tail in right-skewed data, making it unrepresentative of the typical household. The mode and range are not measures of central tendency suited for this purpose.",
     "hints": [
       "Think about how a few very large values affect the arithmetic average compared to the middle value.",
@@ -318,12 +318,12 @@
     "type": "conceptual",
     "description": "A bag contains 3 red and 2 blue balls. Two balls are drawn **with replacement**. Are the two draws independent, and what is P(both red)?",
     "options": [
-      "Not independent; P(both red) = (3/5) × (2/4) = 0.30 because removing the first ball changes the composition",
       "Independent; P(both red) = (3/5) × (3/5) = 0.36 because replacement restores the original composition",
+      "Not independent; P(both red) = (3/5) × (2/4) = 0.30 because removing the first ball changes the composition",
       "Independent; P(both red) = (3/5) + (3/5) = 1.20, found by adding individual probabilities",
       "Not independent; P(both red) = (3/5) × (3/5) = 0.36 regardless of replacement status"
     ],
-    "correct_option": 1,
+    "correct_option": 0,
     "explanation": "With replacement, the composition is reset after each draw, so the outcome of the first draw does not affect the second. The events are independent. P(both red) = P(red) × P(red) = 3/5 × 3/5 = 9/25 = 0.36.",
     "hints": [
       "Ask: does the first draw change the pool from which the second draw is made?",
@@ -404,11 +404,11 @@
     "description": "Which of the following is the best example of a Bernoulli trial?",
     "options": [
       "Rolling a standard six-sided die and recording which number (1–6) comes up on each roll",
-      "Flipping a fair coin once and recording whether the outcome is heads or tails",
       "Drawing cards from a deck without replacement until an ace appears, recording the draw number",
+      "Flipping a fair coin once and recording whether the outcome is heads or tails",
       "Measuring the exact height of 50 randomly selected adults in centimetres"
     ],
-    "correct_option": 1,
+    "correct_option": 2,
     "explanation": "A Bernoulli trial has exactly two outcomes (success/failure), a fixed probability of success, and each trial is independent. Flipping a coin once perfectly satisfies all three conditions. The die has 6 outcomes; drawing without replacement violates independence; height is continuous.",
     "hints": [
       "A Bernoulli trial has exactly two possible outcomes, often labelled success and failure.",
@@ -548,11 +548,11 @@
     "description": "IQ scores follow a normal distribution with mean 100 and standard deviation 15. Approximately what percentage of people have an IQ between 70 and 130?",
     "options": [
       "Approximately 68%, because 70 and 130 are each one standard deviation from the mean of 100",
-      "Approximately 95%, because 70 and 130 are each two standard deviations from the mean of 100",
       "Approximately 99.7%, because 70 and 130 span the full range of the normal distribution",
-      "Approximately 50%, because the normal distribution is symmetric and we are taking one side only"
+      "Approximately 50%, because the normal distribution is symmetric and we are taking one side only",
+      "Approximately 95%, because 70 and 130 are each two standard deviations from the mean of 100"
     ],
-    "correct_option": 1,
+    "correct_option": 3,
     "explanation": "70 = 100 − 2×15 and 130 = 100 + 2×15, so the interval spans ±2 standard deviations. By the empirical (68-95-99.7) rule, approximately 95% of observations fall within ±2σ. The ±1σ range captures ~68% and ±3σ captures ~99.7%.",
     "hints": [
       "First determine how many standard deviations 70 and 130 are from the mean.",
@@ -623,11 +623,11 @@
     "description": "A lottery ticket costs $5. The prize distribution gives E[prize] = $3.50. What does this expected value tell you about playing the lottery?",
     "options": [
       "Playing is profitable because the expected prize ($3.50) is close to the cost ($5.00) and variance makes individual wins possible",
-      "Playing loses $1.50 on average per ticket because the expected net gain is $3.50 − $5.00 = −$1.50",
       "The expected value guarantees you will receive exactly $3.50 if you play the lottery once",
+      "Playing loses $1.50 on average per ticket because the expected net gain is $3.50 − $5.00 = −$1.50",
       "The expected value is irrelevant since lottery outcomes are random and cannot be predicted in advance"
     ],
-    "correct_option": 1,
+    "correct_option": 2,
     "explanation": "The expected net gain per ticket is $3.50 − $5.00 = −$1.50. This means if you play many times, you lose $1.50 on average per ticket. Expected value is not a guarantee for a single trial; it reflects the long-run average outcome.",
     "hints": [
       "Net gain equals prize minus cost. Compute the expected net gain.",
@@ -647,11 +647,11 @@
     "description": "A team of 3 must be selected from 8 candidates. How many different teams are possible, and which formula applies?",
     "options": [
       "8 × 7 × 6 = 336 teams, using permutations because we care about who is team captain",
-      "C(8,3) = 56 teams, using combinations because order within the team does not matter",
       "8^3 = 512 teams, because each of the 3 spots can be filled by any of the 8 candidates independently",
-      "8! = 40320 teams, because all possible orderings of all candidates must be enumerated"
+      "8! = 40320 teams, because all possible orderings of all candidates must be enumerated",
+      "C(8,3) = 56 teams, using combinations because order within the team does not matter"
     ],
-    "correct_option": 1,
+    "correct_option": 3,
     "explanation": "Since the team members are interchangeable (no roles), order does not matter, so we use combinations: C(8,3) = 8!/(3!×5!) = 56. Permutations (P(8,3)=336) would apply if roles were assigned. 8^3 incorrectly allows repetition.",
     "hints": [
       "Ask: does the order in which people are selected matter for the final outcome?",
@@ -812,11 +812,11 @@
     "description": "A restaurant menu offers 3 starters, 4 mains, and 2 desserts. If a customer chooses exactly one from each course, how many distinct full meals are possible?",
     "options": [
       "9 distinct meals, computed by adding 3 + 4 + 2 since each choice is made independently",
-      "24 distinct meals, computed as 3 × 4 × 2 using the multiplication rule for independent choices",
       "12 distinct meals, computed as 3 × 4 because dessert choice is considered optional by default",
+      "24 distinct meals, computed as 3 × 4 × 2 using the multiplication rule for independent choices",
       "48 distinct meals, computed by doubling the product to account for order of eating the courses"
     ],
-    "correct_option": 1,
+    "correct_option": 2,
     "explanation": "When making sequential independent choices, the total number of outcomes is the product of the options at each step — the multiplication rule (fundamental counting principle). 3 × 4 × 2 = 24. Addition would apply only if choosing exactly one course total.",
     "hints": [
       "When choices are made from independent categories, use multiplication, not addition.",
@@ -1021,12 +1021,12 @@
     "type": "conceptual",
     "description": "A distribution is described as having high positive excess kurtosis (leptokurtic). Which statement best describes this distribution compared to a normal distribution with the same mean and variance?",
     "options": [
-      "It has a flatter peak and lighter tails, so extreme values are rarer than under normality",
       "It has a sharper peak and heavier tails, so extreme values occur more often than under normality",
+      "It has a flatter peak and lighter tails, so extreme values are rarer than under normality",
       "It has the same peak height as a normal distribution but wider tails to accommodate the extra variance",
       "It is bimodal, with two distinct peaks symmetrically placed around the mean"
     ],
-    "correct_option": 1,
+    "correct_option": 0,
     "explanation": "Excess kurtosis measures how much probability mass sits in the tails relative to a normal distribution. Positive excess kurtosis (leptokurtic) means a sharper central peak and heavier tails — extreme values are more likely than normality predicts. Financial return distributions are a classic example: large moves (crashes or spikes) happen more often than a normal model expects. Negative excess kurtosis (platykurtic) describes flatter distributions with lighter tails.",
     "hints": [
       "Kurtosis describes the shape of the tails, not the spread — a high-kurtosis distribution can have the same variance as a normal one yet produce far more outliers.",
@@ -1047,11 +1047,11 @@
     "description": "Which statement correctly describes the relationship between the Bernoulli and Binomial distributions?",
     "options": [
       "The Binomial distribution is a special case of the Bernoulli where the success probability p = 0.5",
-      "The Bernoulli distribution is a special case of the Binomial where the number of trials n = 1",
       "They are identical distributions described using different parameterisations for computational convenience",
-      "The Bernoulli distribution models continuous outcomes, while the Binomial models discrete counts"
+      "The Bernoulli distribution models continuous outcomes, while the Binomial models discrete counts",
+      "The Bernoulli distribution is a special case of the Binomial where the number of trials n = 1"
     ],
-    "correct_option": 1,
+    "correct_option": 3,
     "explanation": "A Bernoulli(p) random variable models a single trial with two outcomes (success or failure). A Binomial(n, p) random variable counts the total number of successes in n independent Bernoulli(p) trials. Setting n = 1 in the Binomial reduces it exactly to a Bernoulli — so Bernoulli is the n = 1 special case. Both are discrete distributions.",
     "hints": [
       "Think about what a Binomial variable counts: the sum of n independent coin flips, each of which is a single Bernoulli trial.",
@@ -1070,12 +1070,12 @@
     "type": "conceptual",
     "description": "You flip a fair coin repeatedly until you get the first heads. The number of flips follows a Geometric distribution. Which property of the Geometric distribution is unique among discrete distributions?",
     "options": [
-      "Its mean always equals its variance for any value of the success probability p",
       "It is memoryless: given that no success has occurred in the first k trials, the distribution of the remaining wait time is identical to starting fresh",
+      "Its mean always equals its variance for any value of the success probability p",
       "It is the only discrete distribution defined on the positive integers with a finite expected value for all p > 0",
       "Its probability mass function is symmetric around the mean for all values of p"
     ],
-    "correct_option": 1,
+    "correct_option": 0,
     "explanation": "The Geometric distribution is the unique discrete distribution with the memoryless property: P(X > k + m | X > k) = P(X > m). Intuitively, past failures carry no information about future success — each trial is independent. This mirrors the exponential distribution's memorylessness in continuous time. The mean of Geometric(p) is 1/p and the variance is (1−p)/p², so they are not equal in general. The distribution is also right-skewed, not symmetric.",
     "hints": [
       "The memoryless property says that 'forgetting' how long you have already waited leaves the distribution unchanged. Which other common distribution (continuous) shares this property?",
