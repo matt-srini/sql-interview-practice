@@ -8,7 +8,7 @@
     "title": "Randomization Unit: Users vs Sessions",
     "description": "A product team wants to test a redesigned onboarding flow. They are debating whether to randomize at the user level or the session level, since a single user may open multiple sessions during the experiment. Which randomization unit is more appropriate, and what is the primary reason?",
     "options": [
-      "User level, because it prevents the same person from experiencing both variants and contaminating the effect estimate",
+      "User level, because it prevents the same person experiencing both variants and contaminating the estimate",
       "Session level, because it generates more data points and shortens the experiment duration",
       "Session level, because session IDs are easier to track in the analytics pipeline",
       "User level, because it guarantees perfectly balanced group sizes"
@@ -35,7 +35,7 @@
     "options": [
       "Number of page scrolls, because it reflects deeper engagement with content",
       "Time spent on page, because more time indicates users find the content interesting",
-      "Downstream purchase rate, because it most directly captures whether the recommendation led to real user value",
+      "Downstream purchase rate, because it captures whether the recommendation created real user value",
       "Click-through rate on the widget, because it is the most immediate signal of whether users noticed it"
     ],
     "correct_option": 2,
@@ -58,7 +58,7 @@
     "description": "Before launching an experiment to test whether a faster search results page increases query submission rate, a data scientist must specify hypotheses. Which of the following correctly frames the null and alternative hypotheses for this test?",
     "options": [
       "Null: the faster page increases query submission rate. Alternative: it has no effect.",
-      "Null: the faster page has no effect on query submission rate. Alternative: the faster page increases query submission rate.",
+      "Null: the faster page has no effect on query submission rate. Alternative: it raises that rate.",
       "Null: the faster page reduces query submission rate. Alternative: it has no effect.",
       "Null: query submission rate is unmeasurable. Alternative: it can be measured after the experiment."
     ],
@@ -81,7 +81,7 @@
     "title": "What a p-Value Actually Tells You",
     "description": "An experiment yields a p-value of 0.03 at a significance threshold of 0.05. A junior analyst says this means there is a 97% probability that the treatment effect is real. A senior analyst disagrees. Which interpretation of the p-value is correct?",
     "options": [
-      "The p-value is the probability of observing data at least as extreme as what was collected, if the null hypothesis were true",
+      "The p-value is the probability of results this extreme if the null hypothesis were true",
       "The p-value is the probability that the null hypothesis is true given the observed data",
       "The p-value is the probability that the experiment was conducted correctly",
       "The p-value is the probability that the alternative hypothesis is false"
@@ -106,7 +106,7 @@
     "description": "A team runs an A/B test on a notification feature and sets their significance threshold (alpha) at 0.05. They observe a statistically significant result and ship the feature. Six weeks later, they find no improvement in the long-term metric. Which type of error most likely occurred, and what does it mean?",
     "options": [
       "Type II error — they failed to detect a real effect that existed",
-      "Type I error — they concluded there was an effect when there was actually none",
+      "Type I error — they acted on a false positive and shipped a feature with no real effect",
       "Type I error — they set alpha too low, missing true positives",
       "Type II error — their sample size was too large, inflating false negatives"
     ],
@@ -132,7 +132,7 @@
       "Type I error, caused by setting alpha too high",
       "Type I error, caused by not correcting for multiple comparisons",
       "Type II error, caused by setting alpha too low, making the test too conservative",
-      "Type II error, caused by insufficient statistical power to detect the true effect"
+      "Type II error, caused by too little power to detect the true effect"
     ],
     "correct_option": 3,
     "explanation": "A Type II error (false negative) occurs when the team fails to reject the null hypothesis even though a real effect exists. This is caused by insufficient statistical power — the experiment did not have enough participants or observations to reliably detect the 1.5% improvement. Option A is incorrect because a Type I error means concluding there is an effect when there is none. Option B (multiple comparisons correction) is unrelated to a single-metric test with one result. Option C confuses Type II errors with alpha level; a lower alpha makes the test harder to pass but does not cause false negatives by itself — low power does.",
@@ -203,7 +203,7 @@
     "description": "An experiment on a new pricing page yields a 95% confidence interval for the lift in conversion rate of [+0.2%, +1.8%]. A stakeholder says this means there is a 95% probability that the true effect is between 0.2% and 1.8%. Is the stakeholder correct, and why?",
     "options": [
       "Yes — by definition, a 95% confidence interval contains the true parameter with 95% probability",
-      "No — the true parameter is fixed; the 95% refers to the procedure: 95% of such intervals constructed from repeated samples would contain the true value",
+      "No — the true parameter is fixed; the 95% means 95% of such intervals would contain the true value",
       "No — the confidence interval only tells us that the null hypothesis can be rejected at alpha = 0.05",
       "Yes — the interval is centered on the sample estimate, which is the most probable true value"
     ],
@@ -227,7 +227,7 @@
     "description": "A team is testing a new feed-ranking algorithm. They believe the new algorithm can only improve or stay neutral — it cannot harm engagement. A colleague suggests using a one-sided test. What is the main trade-off of this choice compared to a two-sided test?",
     "options": [
       "A one-sided test requires a larger sample size to achieve the same power",
-      "A one-sided test is more powerful at detecting an effect in the predicted direction but will not flag harm if the metric moves the other way",
+      "A one-sided test gains power in the predicted direction but cannot detect harm in the other",
       "A one-sided test is always preferred because it halves the p-value, making results easier to achieve",
       "A one-sided test removes the need for a significance threshold entirely"
     ],
@@ -253,7 +253,7 @@
       "Session length is not a valid metric for measuring feature success",
       "The experiment should have been run for longer than one week",
       "They should have measured daily active users instead of session length",
-      "There is no concurrent control group, so any change in session length could be caused by factors other than the feature"
+      "Without a concurrent control group, any observed change may be due to confounders"
     ],
     "correct_option": 3,
     "explanation": "Without a concurrent control group, it is impossible to isolate the feature's effect from other simultaneous changes — seasonality, external events, product changes, or traffic mix shifts could all explain the observed difference. This is a confounding problem, not a metric problem. Option A is wrong because session length is a reasonable engagement metric. Option B may or may not be true but is secondary to the structural flaw of having no control. Option C is a metric preference and does not address the causal identification problem.",
@@ -275,7 +275,7 @@
     "scenario_context": "A team launches a 50/50 A/B test on a new onboarding flow. After two days, they check the assignment counts: control has 5,800 users and treatment has 4,200 users. The assignment code was supposed to split traffic equally.",
     "description": "What should the team do first?",
     "options": [
-      "Investigate whether the assignment mechanism is working correctly before reading any results",
+      "Investigate whether the assignment mechanism is working correctly before reading results",
       "Proceed with analysis — a 58/42 split is close enough to 50/50 for practical purposes",
       "Extend the experiment until the treatment group catches up in size",
       "Reweight the treatment group observations to match the control group size, then analyze"
@@ -302,7 +302,7 @@
     "options": [
       "The sample size is large enough at week one, so there is no statistical risk",
       "Stopping early guarantees a Type II error because the effect estimate will be too small",
-      "Stopping early because the result looks significant inflates the Type I error rate beyond the planned alpha",
+      "Stopping when results look promising inflates the actual Type I error beyond the planned alpha",
       "There is no risk as long as the team re-runs the full experiment afterward"
     ],
     "correct_option": 2,
@@ -327,7 +327,7 @@
       "The experiment is a success because the primary metric improved significantly",
       "The drop in session length is expected for ad experiments and can be ignored",
       "Session length is irrelevant because it was not pre-specified as the primary metric",
-      "The result is mixed — the primary metric improved, but a guardrail metric suggests user experience may be degrading"
+      "Mixed — revenue rose, but the session-length drop signals the guardrail metric was breached"
     ],
     "correct_option": 3,
     "explanation": "Guardrail metrics exist to detect harm that primary metrics might miss. A significant drop in session length suggests users are leaving earlier, possibly due to ad intrusiveness — this is a meaningful signal even if revenue per user went up. Shipping the feature ignores the possibility of long-term user attrition. Option A is dangerously narrow; optimizing one metric while harming another can destroy long-term value. Option B is an unfounded assumption — the drop should be investigated, not dismissed. Option C is incorrect; pre-specified guardrail metrics are standard practice precisely because they are not the primary metric but still matter.",
@@ -351,7 +351,7 @@
       "30-day user retention, because it captures the full downstream effect on loyalty",
       "Quarterly revenue, because revenue is the ultimate business outcome",
       "Daily active users, because it is a well-understood and widely tracked metric",
-      "Mean reciprocal rank of the first clicked result, because it directly reflects search quality and responds quickly"
+      "Mean reciprocal rank of the first clicked result, because it directly reflects ranking quality"
     ],
     "correct_option": 3,
     "explanation": "Mean reciprocal rank (MRR) of the first clicked result is a behavioral signal that changes immediately as users interact with the new ranking — it is tightly coupled to the intervention and responds within the two-week window. Retention (option A) and quarterly revenue (option B) are lagging indicators that take weeks or months to reflect ranking quality changes, making them insensitive for short experiments. Daily active users (option C) is a coarse metric that aggregates far too many factors to be sensitive to a ranking change in two weeks.",
@@ -374,7 +374,7 @@
     "options": [
       "Ship immediately — statistical significance proves the feature is worth building",
       "Discard the result — confidence intervals above zero are not meaningful",
-      "Investigate whether the lift is large enough to justify the cost, since statistical significance does not imply practical significance",
+      "Assess whether the effect size warrants the cost — significance alone does not imply practical value",
       "Increase the sample size to widen the confidence interval before deciding"
     ],
     "correct_option": 2,
@@ -398,7 +398,7 @@
     "options": [
       "Two days is always too short because regulatory compliance requires longer experiments",
       "The team should only end experiments on Fridays to avoid data pipeline issues",
-      "The early results may reflect Monday–Tuesday user behavior only, which may not be representative of the full weekly cycle",
+      "The early data covers Monday–Tuesday only, which may not represent the full weekly cycle",
       "Two days of data always means an underpowered test regardless of traffic volume"
     ],
     "correct_option": 2,
@@ -421,7 +421,7 @@
     "description": "Before running a major product experiment, a data scientist recommends running an A/A test — splitting users into two identical experiences with no actual treatment difference. The engineering team questions the value of this. What is the primary purpose of an A/A test?",
     "options": [
       "To measure the baseline metric before the real experiment begins",
-      "To verify that the experimentation infrastructure assigns users randomly and produces expected false positive rates",
+      "To confirm that user assignment is random and the false positive rate matches the stated alpha",
       "To train the model used by the experiment's analysis pipeline",
       "To identify which users should be excluded from the real experiment"
     ],
@@ -447,7 +447,7 @@
     "options": [
       "Switch to a two-sided test instead of a one-sided test",
       "Reduce the minimum detectable effect to a smaller number",
-      "Raise the significance threshold from 0.05 to 0.10, accepting more false positives to reduce false negatives",
+      "Raise alpha to 0.10, gaining power at the cost of a higher false positive rate",
       "Run fewer metrics to simplify the analysis"
     ],
     "correct_option": 2,
@@ -470,7 +470,7 @@
     "scenario_context": "A team is designing an A/B test on a redesigned checkout flow. They plan to measure whether the new design increases overall purchase completion rate. A data scientist recommends also logging which step each user abandons — payment details, shipping confirmation, or review page.",
     "description": "What is the primary benefit of logging at the step level?",
     "options": [
-      "It enables the team to understand where in the funnel the treatment effect concentrates, which helps diagnose whether a lift is genuine and why it occurred",
+      "It shows where in the funnel the treatment concentrates, so the team can diagnose what drove the result",
       "Step-level logging reduces the variance of the primary metric, making the experiment more powerful",
       "Step-level logging replaces the need for a primary metric because it captures all user behavior",
       "It allows the team to run separate statistical tests on each step without inflating the false positive rate"
@@ -497,7 +497,7 @@
     "options": [
       "Randomizing at the user level is incorrect for notification features — session-level randomization is required",
       "The experiment should only launch when at least 80% of the user base is on mobile to ensure adequate power",
-      "Desktop users assigned to treatment receive no exposure to the feature, diluting the measured effect and reducing the experiment's sensitivity",
+      "Desktop users in the treatment arm never see the feature, diluting the measured effect toward zero",
       "Including non-mobile users inflates the false positive rate by introducing uncontrolled variance from a non-target segment"
     ],
     "correct_option": 2,
@@ -522,7 +522,7 @@
       "Users cannot be randomized a second time once they have participated in a previous experiment",
       "The statistical power of the new experiment is permanently reduced because the eligible pool is now smaller",
       "Running two experiments in the same calendar quarter violates standard industry experiment-governance rules",
-      "Users who experienced the previous treatment may still be behaviorally influenced by it, so their baseline in the new experiment is not clean"
+      "Prior-treatment users may still carry changed behaviors, making their baseline non-independent"
     ],
     "correct_option": 3,
     "explanation": "When a treatment is shipped, users who were exposed to it may carry changed behaviors, expectations, or habits into the next experiment. If a new experiment starts immediately, those users are not at a clean behavioral baseline — their responses may still reflect the prior change rather than their natural state. This carryover contamination can bias the new experiment's measured effect in either direction. The standard mitigation is a washout period or restricting the new experiment to users who were not exposed to the prior treatment. Option A is incorrect: users can be re-randomized, but their behavioral baseline may not be independent. Option B is wrong: pool size is not the issue here. Option C invents a governance rule that does not exist.",
@@ -543,7 +543,7 @@
     "title": "Defining the Minimum Detectable Effect",
     "description": "A team is planning a sample size calculation and needs to specify a minimum detectable effect (MDE). A stakeholder asks why they cannot just set the MDE to 0.01% to be maximally sensitive. What is the most important practical consequence of setting an extremely small MDE?",
     "options": [
-      "A smaller MDE requires a much larger sample size, which may be infeasible given traffic levels and time constraints",
+      "A smaller MDE requires a much larger sample, which may be infeasible given traffic constraints",
       "A smaller MDE always reduces statistical power, making the test less reliable",
       "A smaller MDE increases the Type I error rate regardless of alpha setting",
       "Setting MDE below 0.1% makes statistical testing mathematically undefined"
@@ -568,7 +568,7 @@
     "description": "A team wants to measure the impact of a new pricing page on revenue per user. The metric has very high variance: most users spend nothing, but a small number of users make purchases worth hundreds of dollars. What is the most direct consequence of this metric's variance on the experiment?",
     "options": [
       "High variance systematically biases the p-value upward, increasing the likelihood of a false positive",
-      "The team will need a much larger sample size to detect a real effect because the noise in the metric swamps the expected signal",
+      "The team needs a far larger sample because high metric variance drowns out the expected signal",
       "High variance is only a concern for non-normal distributions and can be ignored if the overall sample is large enough",
       "The team should cap revenue at a maximum value per user, which will eliminate the need for a larger sample"
     ],
@@ -591,7 +591,7 @@
     "title": "Predicting CI Width After Quadrupling Sample Size",
     "description": "An experiment with 10,000 users produces a 95% confidence interval for conversion rate lift of [−0.5%, +2.1%], with a point estimate of +0.8%. The team reruns the experiment with 40,000 users under identical conditions. Assuming the true effect is unchanged, which of the following best describes the expected new confidence interval?",
     "options": [
-      "The confidence interval narrows to roughly half its original width, and the point estimate remains close to +0.8%, giving an interval near [+0.15%, +1.45%]",
+      "The CI narrows to roughly half its original width; the point estimate stays near +0.8%",
       "The confidence interval width stays the same — more data improves accuracy of the point estimate but not the interval width",
       "The confidence interval widens because a larger sample surfaces more variability in user behavior",
       "The confidence interval collapses to a single point equal to the true effect because 40,000 users is a sufficiently large sample"
@@ -616,7 +616,7 @@
     "description": "An experiment on a new feature returns a p-value of 0.18, and the team concludes 'the feature has no effect.' A senior analyst challenges this conclusion. What is the most precise objection the analyst could make?",
     "options": [
       "A p-value above 0.05 proves the null hypothesis is true, so the analyst is correct to conclude no effect",
-      "Failing to reject the null hypothesis does not prove there is no effect — it may mean the experiment lacked power to detect one",
+      "Failing to reject the null does not prove no effect — the experiment may have been underpowered",
       "A non-significant result means the experiment failed and should be discarded entirely",
       "The team should re-run the experiment with a higher alpha to obtain a significant result"
     ],
@@ -643,7 +643,7 @@
       "Users without items in their cart will dilute the treatment group and bias the result toward zero",
       "Including ineligible users violates GDPR and should be avoided for compliance reasons",
       "The experiment platform cannot handle users with empty carts",
-      "Users who never reach the checkout have no exposure to the feature, so including them adds noise and reduces sensitivity"
+      "Users with no cart never encounter the feature, so including them dilutes the measured effect"
     ],
     "correct_option": 3,
     "explanation": "Including users who never reach the checkout page means including many people for whom the treatment effect is mechanically zero — they never saw the new experience. These null-exposure users dilute the measured effect and increase noise without contributing signal, reducing the sensitivity of the test. Restricting to cart-holders focuses the experiment on the population that actually matters for the question being asked. Option A describes a real consequence but uses imprecise language ('bias'); the issue is noise inflation and reduced power, not systematic bias. Option B is not applicable here. Option C is a fictional platform constraint.",
@@ -665,7 +665,7 @@
     "description": "A team runs a two-week experiment on a new feature and computes a 95% confidence interval for conversion rate lift of [−3%, +4%]. They want a more precise estimate. Which of the following approaches would most reliably narrow the confidence interval?",
     "options": [
       "Switch from a 95% confidence level to a 90% confidence level and recompute",
-      "Increase the experiment's sample size by running it for a longer period or on more traffic",
+      "Increase sample size by running longer or on more traffic",
       "Remove outlier users from the analysis post-hoc",
       "Change the primary metric to one with a higher absolute value"
     ],
@@ -691,7 +691,7 @@
       "Pre-registration is required by the experimentation platform and cannot be skipped",
       "Pre-registration guarantees that the experiment will produce a statistically significant result",
       "Pre-registration allows the team to skip the analysis step if the results match the hypothesis",
-      "Pre-registration prevents the team from changing hypotheses, metrics, or thresholds after seeing the data, which would inflate false positive rates"
+      "Pre-registration locks the analysis plan before data is seen, blocking post-hoc changes that inflate false positives"
     ],
     "correct_option": 3,
     "explanation": "Pre-registration creates a commitment to a specific analysis plan before the data are collected. Without it, teams may unconsciously (or consciously) change the primary metric, adjust the significance threshold, or switch from two-sided to one-sided tests after seeing results — all of which inflate the true false positive rate beyond the stated alpha. This practice is sometimes called 'HARKing' (hypothesizing after results are known). Option A invents a technical requirement that does not exist. Option B is wrong; pre-registration constrains analysis choices but has no effect on the underlying probability of a true effect. Option C is the opposite of good practice — pre-registration mandates rigorous analysis, not a shortcut past it.",
@@ -714,7 +714,7 @@
     "options": [
       "The second run is statistically valid because it used an independent sample with no overlap from the first run",
       "Running the experiment twice doubles the required sample size, which violates the original power assumptions",
-      "Each run independently carries a 5% chance of a false positive, so running twice inflates the cumulative false positive rate to approximately 9.75%, nearly double the stated alpha",
+      "Running twice raises the cumulative false positive rate to ~9.75%, since each run contributes its own 5% risk",
       "The second run is only valid if the first run had at least 80% power to detect the true effect"
     ],
     "correct_option": 2,
