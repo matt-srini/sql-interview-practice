@@ -9,7 +9,7 @@
     "description": "As you increase a regularisation parameter λ from 0 to infinity in a ridge regression model, which of the following accurately describes the trajectory of bias, variance, and total test error?",
     "options": [
       "Bias decreases monotonically, variance increases monotonically, and test error has a U-shaped curve with minimum at λ=0",
-      "Bias increases monotonically, variance decreases monotonically, and test error has a U-shaped curve with a minimum at an intermediate λ value",
+      "Bias increases monotonically, variance decreases monotonically, and test error has a U-shaped curve with a minimum at",
       "Both bias and variance decrease as λ increases, meaning total test error always benefits from maximum regularisation",
       "Bias and variance both increase with λ because the model becomes increasingly constrained and loses information"
     ],
@@ -62,7 +62,7 @@
       "Bagging reduces bias by training trees on different subsets of features; boosting reduces variance by averaging independently trained models",
       "Both methods primarily reduce variance; the difference is that bagging uses decision trees while boosting can use any base learner",
       "Boosting reduces variance by adding trees that focus on hard examples; bagging reduces bias by training multiple high-complexity trees and averaging",
-      "Bagging reduces variance by training trees in parallel on bootstrap samples; boosting reduces bias by training trees sequentially where each corrects the previous ensemble's residual errors"
+      "Bagging reduces variance by training trees in parallel on bootstrap samples; boosting reduces bias by training trees sequentially where each"
     ],
     "correct_option": 3,
     "explanation": "This distinction is fundamental: bagging targets variance, boosting targets bias.\n\nBagging (bootstrap aggregation) trains multiple full-depth trees on random subsets of the training data, then averages their predictions. Each tree is a high-variance, low-bias learner (deep trees overfit). Averaging multiple independent trees cancels out their individual variance without changing their expected prediction (bias). Random forests add feature subsampling to further decorrelate trees.\n\nBoosting trains trees sequentially. Each tree fits the residuals of the current ensemble — the errors the previous trees made. This iteratively reduces bias: the ensemble learns to correct patterns it missed. Boosting can overfit (increase variance) if run too long without regularisation.\n\nOption A is wrong: bagging does not primarily reduce bias, and the feature subset claim conflates random forests with bagging in general. Averaging reduces variance, not bias.\n\nOption B is wrong: both methods can use any base learner, not just decision trees (though trees are most common). More importantly, they reduce different types of error.\n\nOption C is wrong: boosting does not primarily focus on hard examples in the variance-reduction sense (that is more like AdaBoost's weighting mechanism). The core boosting principle is residual correction, which reduces bias.",
@@ -86,7 +86,7 @@
     "options": [
       "The colleague is correct — excluding strong features reduces accuracy, and random forests are actually inferior to fully-featured bagged trees on most problems",
       "Feature subsampling is done only for computational efficiency, not for predictive quality — on large feature sets it saves time without hurting accuracy",
-      "Feature subsampling decorrelates trees so their errors are not correlated, which makes averaging more effective at reducing variance than if all trees used the same dominant feature",
+      "Feature subsampling decorrelates trees so their errors are not correlated, which makes averaging more effective at reducing variance than if all trees used the same",
       "Excluding feature A forces the other trees to discover A's effect through proxy features, which ultimately improves generalisation by learning redundant representations"
     ],
     "correct_option": 2,
@@ -111,7 +111,7 @@
     "description": "Given the current model's behaviour, which is more likely to produce the larger improvement?",
     "options": [
       "Random forest (A) — parallel ensemble methods are always safer and less likely to overfit than sequential boosting",
-      "Gradient boosting (B) — the near-identical train and validation scores indicate high bias; boosting's sequential bias correction is directly suited to this problem",
+      "Gradient boosting (B) — the near-identical train and validation scores indicate high bias; boosting's sequential bias correction is",
       "Random forest (A) — bagging provides implicit feature selection, which will address the high number of irrelevant features in CLV data",
       "Both would produce similar improvements — the choice between random forest and gradient boosting does not depend on bias-variance diagnosis"
     ],
@@ -136,7 +136,7 @@
     "description": "A dataset has 99% negative and 1% positive class examples. You are comparing two approaches: (A) SMOTE oversampling to create synthetic positive examples until the classes are balanced, and (B) setting class_weight='balanced' in the classifier to upweight the minority class in the loss function. A senior engineer says approach B is generally preferred for initial experiments. Why?",
     "options": [
       "Class weights are preferred because SMOTE is computationally infeasible at this level of imbalance and cannot generate enough synthetic examples to balance the classes",
-      "Class weights adjust the loss directly without modifying the data distribution, avoiding the risk of synthetic examples introducing artificial patterns that do not represent real positive cases",
+      "Class weights adjust the loss directly without modifying the data distribution, avoiding the risk of synthetic examples introducing artificial patterns that do not",
       "SMOTE is only valid for binary classification, while class weights generalise to multi-class problems, making B more generally applicable",
       "Class weights are preferred because they increase precision on the minority class, while SMOTE increases recall, and precision is more important for imbalanced problems"
     ],
@@ -161,7 +161,7 @@
     "description": "A binary classifier outputs probability scores. At threshold=0.5, it achieves precision=0.72 and recall=0.60. A team decides to lower the threshold from 0.5 to 0.3, meaning they flag any example with predicted probability ≥ 0.3 as positive. What happens to precision and recall?",
     "options": [
       "Precision increases and recall decreases — lowering the threshold makes the model more selective",
-      "Precision decreases and recall increases — more examples are flagged, catching more true positives but also more false positives",
+      "Precision decreases and recall increases — more examples are flagged, catching more true positives but also",
       "Both precision and recall decrease — the model flags too many negatives, reducing the quality of all predictions",
       "Precision and recall both increase — a lower threshold captures more of the signal the model has learned"
     ],
@@ -186,7 +186,7 @@
     "scenario_context": "A fraud detection model has been trained with class_weight='balanced'. At threshold=0.5, it achieves precision=0.31 and recall=0.89. The fraud operations team says each investigation costs $50 in analyst time, and each missed fraud case costs $800 on average.",
     "description": "Given these economics, should the team raise the threshold, lower it, or leave it as-is?",
     "options": [
-      "Lower the threshold to improve recall — each missed fraud case costs $800, far exceeding the $50 cost of a false positive, so catching more fraud is economically justified",
+      "Lower the threshold to improve recall — each missed fraud case costs $800, far exceeding the $50 cost of a false positive, so",
       "Raise the threshold to improve precision — fewer false positives reduces the investigation cost burden on the operations team",
       "Leave it at 0.5 — balanced class weights already optimise the precision-recall balance for this problem",
       "Raise the threshold significantly until precision exceeds 0.80, which is the industry standard for fraud models to be cost-effective"
@@ -238,7 +238,7 @@
     "description": "Beyond interpretability, what is a substantive modelling concern with this pipeline?",
     "options": [
       "PCA assumes linear relationships between features, so it will fail to capture non-linear credit risk patterns that logistic regression would otherwise handle well",
-      "PCA mixes continuous and binary features into the same principal components, and the resulting components have no interpretable meaning while potentially distorting the feature space in ways that harm the model",
+      "PCA mixes continuous and binary features into the same principal components, and the resulting components have no interpretable meaning while potentially distorting the feature space in",
       "PCA components cannot be used as inputs to logistic regression because both methods assume Gaussian feature distributions and double-applying that assumption violates statistical validity",
       "There is no substantive modelling concern — PCA is a valid preprocessing step for any linear model, and the interpretability issue is a business concern, not a technical one"
     ],
@@ -264,7 +264,7 @@
     "options": [
       "Feature A is genuinely more important; permutation importance is unreliable when features are correlated with each other",
       "Both importance measures are equivalent; the discrepancy indicates a bug in the implementation rather than a meaningful difference",
-      "Feature A is likely a high-cardinality continuous feature that creates many splits but contributes less true predictive signal; Feature B's high permutation importance better reflects genuine predictive value",
+      "Feature A is likely a high-cardinality continuous feature that creates many splits but contributes less true predictive signal; Feature",
       "Permutation importance always understates the importance of continuous features, so Feature A's true importance is between its two rankings"
     ],
     "correct_option": 2,
@@ -288,7 +288,7 @@
     "description": "A data scientist builds a gradient boosted model to predict employee attrition. After training, they inspect feature importances and find 'employee_id' (a unique integer identifier) ranks 3rd most important. They conclude that employee IDs contain structural patterns about which employees tend to leave. What is the actual problem and what should be done?",
     "options": [
       "Employee IDs being important is expected — sequential IDs encode hire date order, which is correlated with tenure and therefore predictive of attrition",
-      "Employee ID is a unique identifier with no predictive meaning; its high importance indicates data leakage or that the model is memorising training examples through their IDs, and it should be removed",
+      "Employee ID is a unique identifier with no predictive meaning; its high importance indicates data leakage or that the model is memorising training examples through",
       "The feature importance algorithm is broken — unique identifiers always report zero importance in correctly implemented gradient boosting",
       "Employee ID importance should be validated using permutation importance on the validation set; if it remains high there, it is genuinely predictive and should be kept"
     ],
@@ -313,7 +313,7 @@
     "title": "Regularisation Depth: L1 vs L2 Solution Geometry",
     "description": "A dataset has 100 features, of which you believe approximately 15 are genuinely predictive and the rest are noise. You want to train a logistic regression model that performs well and can be inspected to understand which features matter. Which regularisation approach and why?",
     "options": [
-      "L1 (Lasso) — it produces sparse solutions where noise features are driven to exactly zero, effectively performing feature selection and giving you a model with 15 interpretable non-zero coefficients",
+      "L1 (Lasso) — it produces sparse solutions where noise features are driven to exactly zero, effectively performing feature selection and giving you a model with 15",
       "L2 (Ridge) — it produces numerically stable solutions and distributes weight across all features, making the model robust to which specific features you identify as important",
       "L2 (Ridge) — it always outperforms L1 on high-dimensional data because the L2 penalty is differentiable at zero, making optimisation more stable",
       "L1 (Lasso) — it produces smaller coefficients than L2 for the same regularisation strength, which always improves generalisation regardless of feature count"
@@ -391,7 +391,7 @@
     "options": [
       "The predicted probability is approximately 0.99, and the gradient is large — the model is very confident and will update weights aggressively",
       "The predicted probability is 4.8 / (1 + 4.8) ≈ 0.83, and the gradient is moderate — log-odds near 5 places the model in a confident but not saturated region",
-      "The predicted probability is approximately 0.99, and the gradient approaches zero — the sigmoid is saturated and the model updates weights very slowly in this region",
+      "The predicted probability is approximately 0.99, and the gradient approaches zero — the sigmoid is saturated and the model updates weights very slowly in",
       "The predicted probability is approximately 0.99, but the gradient sign is reversed — the model is in the overconfident zone where updates worsen calibration"
     ],
     "correct_option": 2,
@@ -417,7 +417,7 @@
     "options": [
       "The model has overfit to the negative class — the solution is to collect more positive class examples until the dataset is balanced at 50%/50%",
       "Logistic regression cannot handle class imbalance at any ratio — a tree-based model should be used instead",
-      "The loss function is dominated by the majority class — the model learned to predict zero for everything because this minimises cross-entropy given 98% negatives, so the correct fix is to use class weighting or threshold adjustment",
+      "The loss function is dominated by the majority class — the model learned to predict zero for everything because this minimises cross-entropy given 98% negatives, so the",
       "The model's weights converged to all zeros during training — this is a numerical instability from the imbalanced gradient signal and requires using a smaller learning rate"
     ],
     "correct_option": 2,
@@ -440,7 +440,7 @@
     "title": "Boosting Mechanics: What Each Tree Corrects",
     "description": "In gradient boosting, after training the first tree, the algorithm computes residuals (the difference between actual values and predictions) and trains the second tree on these residuals. After 100 trees, the ensemble makes its final prediction. What does the ensemble's final prediction look like?",
     "options": [
-      "The sum (or weighted sum) of all 100 trees' predictions — the ensemble is additive, with each tree contributing a correction to the previous predictions",
+      "The sum (or weighted sum) of all 100 trees' predictions — the ensemble is additive, with each tree contributing a correction to the previous",
       "The prediction of the 100th tree alone — gradient boosting progressively improves the model and only the final tree represents the learned function",
       "The average prediction across all 100 trees — gradient boosting is a form of bagging where trees vote equally",
       "The prediction of the majority-vote tree among those 100 trees that correctly predicted the training examples"
@@ -468,7 +468,7 @@
       "Configuration A is strictly better because fewer estimators means faster training and inference with no loss in quality",
       "The configurations are mathematically equivalent because n_estimators × learning_rate = 30 in both cases, producing identical models",
       "Configuration A will always overfit because the high learning rate prevents the model from finding the global minimum of the loss",
-      "Configuration B (more trees, smaller learning rate) is generally more robust to overfitting and tends to generalise better, at the cost of longer training time"
+      "Configuration B (more trees, smaller learning rate) is generally more robust to overfitting and tends to generalise better, at the"
     ],
     "correct_option": 3,
     "explanation": "While n_estimators × learning_rate is similar across configurations (100 × 0.3 = 30 and 500 × 0.05 = 25), the models are not mathematically equivalent — they just tend to reach similar total effect. Configuration B (more trees, smaller step) generally generalises better for several reasons:\n\n1. Smaller steps with early stopping: with 500 trees and a small learning rate, you can use early stopping on a validation set to stop at the optimal point before overfitting. With 100 trees, early stopping has fewer opportunities to find the sweet spot.\n\n2. Smoother function: 500 small corrections produce a smoother learned function than 100 large corrections. The smaller learning rate acts as shrinkage regularisation.\n\n3. Ensemble diversity: more trees, each correcting only a small fraction of the residual, creates a more diverse ensemble.\n\nOption A is wrong: while Config A is faster, 'no loss in quality' is incorrect. Config B's lower learning rate is a form of regularisation and generally produces slightly better generalisation.\n\nOption B is wrong: they are not mathematically equivalent even though n × lr is similar. The path taken (step sizes, which residuals are corrected at each step) differs. The claim of 'identical models' is incorrect.\n\nOption C is wrong: a high learning rate does not prevent finding a minimum — it may overshoot, but gradient boosting is not gradient descent in the same sense as neural networks. Config A can achieve good validation performance; it just has fewer opportunities for fine-grained early stopping.",
@@ -493,7 +493,7 @@
       "No problem — AUC of 0.91 confirms the model ranks customers correctly, which is all a credit risk model needs",
       "The model is overfitting — the discrepancy between predicted and observed rates indicates the model memorised training defaults rather than learning generalisable patterns",
       "The model has a threshold problem — setting the classification threshold at 0.15 instead of 0.30 would fix the miscalibration",
-      "The model is miscalibrated — its predicted probabilities do not match observed default rates, which will cause the risk team to systematically underprovision capital reserves for high-risk customers"
+      "The model is miscalibrated — its predicted probabilities do not match observed default rates, which will cause the risk team to systematically underprovision capital"
     ],
     "correct_option": 3,
     "explanation": "This is a calibration failure. The model ranks customers correctly (AUC=0.91 means it orders them well — high-probability customers do default more than low-probability ones), but the absolute probability values are wrong. Customers predicted at 30% actually default at only 8% — the model significantly overstates default risk.\n\nFor ranking tasks (who is most likely to default?), AUC is sufficient. For tasks that use probabilities directly — capital provisioning, pricing, limit-setting — calibration is essential. If a risk model says 30% but the true rate is 8%, the bank provisions capital for ~4× more losses than will actually occur, tying up capital unnecessarily.\n\nPost-hoc calibration methods (Platt scaling, isotonic regression) can adjust the probability outputs to match observed rates without retraining the model.\n\nOption A is wrong: AUC measures ranking quality, not probability accuracy. A well-ranked model can still be severely miscalibrated. For a risk team using probabilities as inputs to financial calculations, calibration matters as much as ranking.\n\nOption B is wrong: miscalibration is not the same as overfitting. An overfitting model performs worse on validation than training. This model's AUC of 0.91 suggests good validation performance — the issue is probability calibration, not generalisation.\n\nOption C is wrong: threshold adjustment changes the classification cutoff, not the probability values. The probabilities are used directly (not just for classification), so changing the threshold does not fix the underlying probability miscalibration.",
@@ -517,7 +517,7 @@
     "description": "What is the recommended approach?",
     "options": [
       "Retrain the model with a logistic loss function instead of the default, which will produce calibrated probability outputs by construction",
-      "Apply Platt scaling: train a logistic regression model on the raw scores from a held-out calibration set, with the true labels as targets, to learn a mapping from raw scores to calibrated probabilities",
+      "Apply Platt scaling: train a logistic regression model on the raw scores from a held-out calibration set, with the true labels as targets, to learn a",
       "Use the raw scores directly — gradient boosted trees produce well-calibrated probabilities by default since they are trained with cross-entropy loss",
       "Apply temperature scaling: divide all predicted scores by a constant T to spread the distribution, choosing T based on visual inspection of the histogram"
     ],
@@ -570,7 +570,7 @@
       "Wrapper method — it produces better features for the gradient boosting model because it evaluates features in the context of the actual downstream model",
       "Wrapper method — recursive feature elimination with gradient boosting is always superior to filter methods regardless of constraints, so the constraints should be relaxed if needed",
       "Neither — with 300 features and limited compute, the correct approach is PCA to reduce to 50 components, which is faster than either feature selection method",
-      "Filter method — given the compute and time constraints, mutual information scores can be computed quickly across all 300 features, and the filter approach provides a good-enough starting point that does not block deployment"
+      "Filter method — given the compute and time constraints, mutual information scores can be computed quickly across all 300 features, and the filter approach provides a good-enough"
     ],
     "correct_option": 3,
     "explanation": "Given the constraints (5 days, one machine), the filter method is appropriate. Mutual information scores are computed once per feature, independently, and can be parallelised. For 300 features, this takes minutes, not days.\n\nWrapper methods (recursive feature elimination with cross-validated gradient boosting) require training the gradient boosting model many times — once per feature elimination step, multiplied by cross-validation folds. With 300 features and 5-fold CV, this could require 300+ model training runs before convergence. On one machine with a 5-day deadline, this is likely infeasible or would leave no time for model development itself.\n\nThe filter method's result will not be perfect (it evaluates features independently, ignoring interactions) but is often 80–90% as effective as wrapper methods for initial feature selection. For a startup under time pressure, 'good enough to ship' beats 'optimal but missed deadline'.\n\nOption A is wrong: while the wrapper method does evaluate features in context of the actual model, the quality advantage does not justify missing the deployment deadline.\n\nOption B is wrong: ignoring real constraints in favour of a theoretically superior method is a poor engineering decision. Constraints exist and must be respected.\n\nOption C is wrong: PCA reduces dimensions but does not produce interpretable features. A startup deploying a production model typically needs features that can be explained to stakeholders. Also, PCA's assumption of linear structure may not hold for 300 mixed features.",
@@ -617,7 +617,7 @@
     "scenario_context": "A survey collects self-reported annual income. 25% of respondents skipped the income question. Investigation shows that non-response rates are highest among respondents at the top and bottom income extremes — high-income respondents tend to consider disclosure private, and very low-income respondents feel embarrassed. A data scientist proposes mean imputation: replace all missing values with the average income of respondents who answered.",
     "description": "What is the fundamental problem?",
     "options": [
-      "The data is MNAR — missingness depends on the income value itself. Mean imputation will pull extreme values toward the middle, systematically biasing the income distribution and any model trained on it",
+      "The data is MNAR — missingness depends on the income value itself. Mean imputation will pull extreme values toward the middle, systematically biasing the income distribution and",
       "Mean imputation adds too many examples with the same value, which reduces the feature's variance and inflates model confidence incorrectly",
       "The data is MAR — the missingness depends on respondent characteristics (privacy preferences), so mean imputation is valid if those characteristics are included as model features",
       "Mean imputation is invalid because the missing rate (25%) exceeds the recommended maximum of 10% for any imputation method to be valid"
@@ -641,7 +641,7 @@
     "title": "Hyperparameter Sensitivity: Learning Rate as the Master Control",
     "description": "You are tuning a gradient boosting model and have budget for 100 hyperparameter configurations. Your hyperparameters include learning_rate, max_depth, min_samples_leaf, subsample, and colsample_bytree. A senior engineer says: 'If you have limited compute, do a grid search over learning_rate first and fix it before tuning anything else.' Why?",
     "options": [
-      "Learning rate is the most sensitive hyperparameter in gradient boosting — it interacts with n_estimators to control the total model complexity, and other hyperparameters' optimal values shift dramatically depending on learning rate",
+      "Learning rate is the most sensitive hyperparameter in gradient boosting — it interacts with n_estimators to control the total model complexity, and",
       "Learning rate affects training time more than any other hyperparameter — fixing it first prevents wasting compute on configurations that take too long",
       "Learning rate is the easiest hyperparameter to tune because its optimal value is always between 0.01 and 0.3 regardless of dataset",
       "Learning rate must be fixed first because its optimal value is independent of all other hyperparameters, making it the only safe starting point"
@@ -667,7 +667,7 @@
     "scenario_context": "You run a grid search with the following results for a random forest on a validation set. The parameter grid explored max_depth ∈ {3, 6, 10} and min_samples_leaf ∈ {1, 5, 10}. The best configurations are: depth=6, min_leaf=5 (AUC=0.881), depth=6, min_leaf=1 (AUC=0.878), depth=3, min_leaf=5 (AUC=0.843), depth=10, min_leaf=1 (AUC=0.861).",
     "description": "What should you investigate next?",
     "options": [
-      "Explore finer granularity around depth=6 and min_leaf=5, and check whether depth=8 or min_leaf=3 or min_leaf=7 further improves performance, since the best result is at an interior point of the grid",
+      "Explore finer granularity around depth=6 and min_leaf=5, and check whether depth=8 or min_leaf=3 or min_leaf=7 further improves performance, since the best",
       "Deploy the best configuration (depth=6, min_leaf=5) immediately — grid search has found the optimal hyperparameters within the search space",
       "Conclude that max_depth=6 is globally optimal across all datasets since it consistently outperforms 3 and 10 in this search",
       "Reduce min_samples_leaf to 1 and increase max_depth to 15 to give the model maximum capacity — the grid search confirms deeper trees are better than shallow ones"
@@ -694,7 +694,7 @@
     "options": [
       "The engineer is correct — standardization is monotonic and cannot change the geometric relationship between classes in kernel space",
       "Scaling changes the kernel type: unscaled inputs use an RBF kernel; scaled inputs implicitly switch to a linear kernel",
-      "The RBF kernel computes K(x,y) = exp(−γ‖x−y‖²); because income spans ~180,000 units and age spans ~60 units, ‖x−y‖² is almost entirely determined by income differences — the kernel treats age as irrelevant regardless of its predictive value. Standardization equalizes each feature's contribution to the Euclidean distance.",
+      "The RBF kernel computes K(x,y) = exp(−γ‖x−y‖²); because income spans ~180,000 units and age spans ~60 units, ‖x−y‖² is almost",
       "The real fix is γ, not scaling — a small enough γ would make the kernel ignore the scale imbalance without any preprocessing"
     ],
     "correct_option": 2,
@@ -718,7 +718,7 @@
     "description": "Why is the colleague's explanation wrong, and what actually caused the improvement?",
     "options": [
       "The colleague is correct — gradient descent converges faster with scaled features, which is why the RBF SVM trains more accurately",
-      "SVMs do not use gradient descent — they solve a convex quadratic program. Scaling helped because the RBF kernel uses Euclidean distances: `lab_result_score` (range 100) can contribute up to 10,000 per pair to ‖x−y‖², while `num_diagnoses` (range 15) contributes at most 225. Without scaling, large-range features dominate the kernel, suppressing the contribution of predictive small-range features. Standardization equalizes all six dimensions.",
+      "SVMs do not use gradient descent — they solve a convex quadratic program. Scaling helped because the RBF kernel uses Euclidean",
       "Scaling converts the RBF kernel into a linear kernel, which is more appropriate for medical data with correlated features",
       "The improvement is coincidental — scaling cannot affect SVM accuracy because the dual formulation is scale-invariant"
     ],
@@ -744,7 +744,7 @@
     "options": [
       "Yes — the elbow method is the gold standard for k selection and if no elbow appears, k-means is not appropriate for this dataset",
       "No — the correct k is always the one that minimises WCSS, which is k equal to the number of data points (every point is its own cluster)",
-      "Partially — the elbow method often fails to produce a clear elbow, particularly when true clusters are not well-separated. Complementary methods like silhouette scores or domain knowledge should be used",
+      "Partially — the elbow method often fails to produce a clear elbow, particularly when true clusters are not well-separated.",
       "No — the absence of an elbow means k=2 is always the correct choice because the first split accounts for the largest drop in WCSS"
     ],
     "correct_option": 2,
@@ -768,7 +768,7 @@
     "description": "After running k-means with k=4, you compute silhouette scores for each data point. You find: Cluster 1 has average silhouette score 0.72, Cluster 2 has 0.68, Cluster 3 has 0.41, Cluster 4 has -0.12. The overall average silhouette is 0.44. What do these scores indicate about the clustering quality?",
     "options": [
       "The clustering is high quality — an overall score of 0.44 exceeds the typical threshold of 0.25 for a valid clustering",
-      "Clusters 1 and 2 are well-separated and internally compact, Cluster 3 is questionable with points on the boundary between clusters, and Cluster 4 is likely misclustered — its points may belong to a different cluster",
+      "Clusters 1 and 2 are well-separated and internally compact, Cluster 3 is questionable with points on the boundary between clusters, and Cluster 4",
       "The silhouette score only measures internal compactness, not separation — to evaluate separation, you need to use WCSS, which is a different metric",
       "All four clusters are good — silhouette scores above 0 are always acceptable, and -0.12 indicates only a slight boundary effect in Cluster 4"
     ],
@@ -792,7 +792,7 @@
     "title": "Cross-Validation: Time-Series Split",
     "description": "You are evaluating a model that predicts next-week sales based on 3 years of weekly data (156 weeks). You apply standard 5-fold cross-validation, randomly shuffling weeks across folds. A colleague argues you should use time-series cross-validation (walk-forward validation) instead. Beyond the data leakage concern, what is a second practical reason to prefer time-series CV for this problem?",
     "options": [
-      "Random shuffling breaks temporal autocorrelation, so the model trained on shuffled data may not learn the dynamics relevant to the deployment scenario where it always predicts the next period",
+      "Random shuffling breaks temporal autocorrelation, so the model trained on shuffled data may not learn the dynamics relevant to the deployment",
       "Time-series CV uses more data for training since each fold is larger than a random fold of the same size",
       "Time-series CV prevents the model from seeing the same week in both training and validation, which standard k-fold allows",
       "Random k-fold is invalid for sales data because sales values are always positive, and cross-validation requires normally distributed target values"
@@ -818,7 +818,7 @@
     "scenario_context": "A healthcare model predicts patient readmission risk. The dataset has 50,000 rows representing individual hospital visits, but only 8,000 unique patients — many patients have multiple visits. A data scientist applies standard 5-fold cross-validation at the visit level (each row is assigned to a fold randomly). A senior ML engineer flags this as a serious problem.",
     "description": "Why?",
     "options": [
-      "Random visit-level splitting allows the same patient's data to appear in both training and validation folds. The model learns patient-specific patterns and its performance on validation visits from known patients overestimates true generalisation to new patients",
+      "Random visit-level splitting allows the same patient's data to appear in both training and validation folds. The model learns patient-specific",
       "5-fold cross-validation is too few folds for a dataset with only 8,000 unique patients — at least 10 folds are needed for stable estimates",
       "Healthcare data requires stratified cross-validation to ensure equal readmission rates across folds — the issue is class balance, not patient overlap",
       "The problem is that 50,000 rows is too large for cross-validation — a simple holdout split is more computationally appropriate at this scale"
@@ -846,7 +846,7 @@
       "Random forests are trained with cross-validation internally, preventing individual trees from overfitting; gradient boosting is not",
       "Random forests use deeper trees that are individually more accurate, so adding more improves performance without variance risk",
       "Gradient boosting overfits because it uses the entire training set for each tree, while random forests use bootstrap samples that prevent any single pattern from dominating",
-      "Random forest trees are independent and averaged — adding more independent averaged predictions reduces variance monotonically without increasing bias; gradient boosted trees are sequential and each new tree introduces a small bias correction that accumulates into overfitting if continued too long"
+      "Random forest trees are independent and averaged — adding more independent averaged predictions reduces variance monotonically without increasing bias; gradient boosted"
     ],
     "correct_option": 3,
     "explanation": "The key difference is the nature of averaging in random forests vs sequential fitting in gradient boosting.\n\nRandom forest: each tree is trained independently on a bootstrap sample. Adding more trees is equivalent to taking a larger average of independent, identically distributed estimates. By the law of large numbers, a larger average has lower variance. Crucially, adding more trees does not change the expected value (bias) of the estimate — only its variance. So the ensemble improves monotonically (lower variance) until it plateaus at the irreducible variance floor.\n\nGradient boosting: each tree is a correction to the previous ensemble's residuals. With a fixed learning rate, adding more trees continues to correct smaller and smaller residuals — eventually fitting the noise in the residuals. This is genuine overfitting: the new trees are learning the specific noise of the training set rather than generalisable patterns.\n\nOption A is wrong: random forests are not trained with internal cross-validation. Individual trees are allowed to overfit their bootstrap samples — it is the averaging that reduces overall variance.\n\nOption B is wrong: random forests typically use shallower trees than fully grown unpruned trees, and depth is not the reason adding trees helps.\n\nOption C is wrong: gradient boosting also typically uses subsampling (stochastic gradient boosting), which partially addresses this. The fundamental difference is sequential vs independent fitting, not bootstrap sampling.",
@@ -871,7 +871,7 @@
     "description": "What is the correct approach?",
     "options": [
       "Lower the threshold to 0.1 to maximise recall — catching more churners at any precision is always better than missing them",
-      "Set the threshold to flag the top 500 highest-probability customers, not based on a fixed probability cutoff, since the constraint is a fixed capacity, not a probability threshold",
+      "Set the threshold to flag the top 500 highest-probability customers, not based on a fixed probability cutoff, since the constraint",
       "Keep threshold at 0.5 — this is the mathematically correct threshold for balanced precision-recall and changing it would be arbitrary",
       "Raise the threshold to improve precision — the retention team should only contact customers the model is highly confident about"
     ],
@@ -900,7 +900,7 @@
       "Depth 1 is optimal — the gap is smallest, indicating the best generalization",
       "Depth 15 is optimal — highest training accuracy means the model learned the most from the data",
       "The validation curve is inconclusive; try a random forest instead",
-      "Depth 8 is optimal — it sits in the sweet spot where both train and val accuracy are high and the gap is reasonable; depth 1 is underfit and depth 15 is overfit"
+      "Depth 8 is optimal — it sits in the sweet spot where both train and val accuracy are high and"
     ],
     "correct_option": 3,
     "explanation": "The three regions illustrate the full bias-variance spectrum. At depth=1, both train and val accuracy are low (≈0.64–0.65) — classic underfitting (high bias). The model is too simple to capture the data's signal. At depth=8, train accuracy is high (0.92) and val accuracy is still strong (0.87) — the model has learned meaningful patterns that generalize. At depth=15, training accuracy is near-perfect (0.99) but val accuracy has dropped to 0.71 — the model has memorized training noise (high variance, overfitting). The sweet spot is depth=8, where the validation curve peaks before diverging from the training curve.",
@@ -923,7 +923,7 @@
     "title": "When to Use One-vs-Rest vs Softmax for Multiclass",
     "description": "You are building a 5-class classifier using logistic regression. Your dataset is linearly separable between some class pairs but not others. Should you use One-vs-Rest (OvR) or multinomial (softmax) logistic regression?",
     "options": [
-      "Use softmax when the classes are mutually exclusive and the dataset is large enough; OvR when you want independent calibration per class or when one class is much harder to separate than others",
+      "Use softmax when the classes are mutually exclusive and the dataset is large enough;",
       "Always use OvR — it is simpler and always outperforms softmax on real data",
       "Always use softmax — it optimizes a single joint loss and is always more accurate",
       "OvR and softmax are mathematically equivalent for 5 classes; the choice doesn't matter"
@@ -951,7 +951,7 @@
     "description": "For which models is feature scaling necessary for correctness or performance, and for which is it irrelevant?",
     "options": [
       "Scaling is necessary for all four — unscaled features always degrade model performance",
-      "Scaling is necessary for A and C; irrelevant for B and D — tree-based models use rank-based splits that are invariant to monotonic transformations of feature values",
+      "Scaling is necessary for A and C; irrelevant for B and D — tree-based models use rank-based splits",
       "Scaling is necessary for B and D; irrelevant for A and C — gradient methods are stable without scaling",
       "Scaling is only necessary when features have units (e.g., meters vs kilometers)"
     ],
@@ -978,7 +978,7 @@
     "options": [
       "The generalization estimate is 0.84 (best outer fold score); hyperparameter variance indicates the model is unstable",
       "The generalization estimate is 0.79 (median outer fold score); hyperparameter variance should be minimized by using a fixed depth",
-      "The generalization estimate is 0.808 (mean of outer fold scores); hyperparameter variance indicates the optimal depth is data-dependent and the model's performance is sensitive to the training subset",
+      "The generalization estimate is 0.808 (mean of outer fold scores); hyperparameter variance indicates the optimal depth is",
       "Nested CV is invalid when hyperparameters vary across folds; use standard CV instead"
     ],
     "correct_option": 2,
@@ -1003,7 +1003,7 @@
     "scenario_context": "A binary classifier for loan default prediction produces this confusion matrix on 9,000 test cases:\n\n- True Negative (predicted no default, actual no default): 7,200\n- False Positive (predicted default, actual no default): 800\n- False Negative (predicted no default, actual default): 400\n- True Positive (predicted default, actual default): 600",
     "description": "The bank loses $5,000 per false negative and spends $200 per false positive in review costs. What is the total cost of errors and which error type should the bank prioritize reducing?",
     "options": [
-      "Total cost: $2,160,000; prioritize reducing false negatives because each costs 25x more than a false positive",
+      "Total cost: $2,160,000; prioritize reducing false negatives because each costs 25x more than a",
       "Total cost: $2,160,000; prioritize reducing false positives because there are twice as many of them",
       "Total cost: $320,000; both error types are equally important",
       "Total cost: $160,000; false negatives are already low enough relative to true positives"
@@ -1031,7 +1031,7 @@
     "options": [
       "Only F1 score exposes the problem — AUC and balanced accuracy both give the naive model partial credit",
       "Only AUC-ROC exposes the problem — F1 and balanced accuracy are distorted by the extreme class imbalance",
-      "All three metrics expose the naive classifier: F1 = 0.0 (zero recall on the positive class), AUC = 0.5 (random-chance ranking), balanced accuracy = 0.5 (average of 100% negative recall and 0% positive recall) — the choice depends on what is most communicable to the committee",
+      "All three metrics expose the naive classifier: F1 = 0.0 (zero recall on the positive class), AUC = 0.5 (random-chance ranking), balanced",
       "F1 and balanced accuracy expose the problem, but AUC-ROC requires a continuous score rather than a hard prediction and cannot be applied here"
     ],
     "correct_option": 2,
@@ -1058,7 +1058,7 @@
     "options": [
       "blood_pressure=MCAR (mean imputation), income=MAR (multiple imputation), mental_health_score=MNAR (no imputation possible)",
       "All three are MAR because the missingness can be explained by observed data",
-      "blood_pressure=MCAR (complete case analysis is unbiased for most estimands; mean imputation is more defensible than under MAR or MNAR but still compresses variance), income=MAR (multiple imputation using education as auxiliary), mental_health_score=MNAR (missingness indicator + pattern mixture model or sensitivity analysis)",
+      "blood_pressure=MCAR (complete-case valid); income=MAR (multiple imputation); mental_health=MNAR (missingness indicator)",
       "blood_pressure=MNAR, income=MCAR, mental_health_score=MAR — the labels don't affect the imputation choice"
     ],
     "correct_option": 2,
@@ -1083,7 +1083,7 @@
     "description": "Rank them by: convergence stability, memory usage, and final model quality.",
     "options": [
       "A > B > C on all three dimensions — more data per gradient update is always better",
-      "A: stable but memory-prohibitive; B: moderate stability + practical memory usage + best final quality in practice; C: noisy convergence, minimal memory, often escapes local minima better than A",
+      "A: stable but memory-prohibitive; B: moderate stability + practical memory usage",
       "C > B > A on final quality because noisy gradients always regularize better",
       "A and C are equivalent on memory since both use the same model parameters"
     ],
@@ -1109,7 +1109,7 @@
     "description": "You train random forests with 10, 50, 100, 500, and 1000 trees. Validation accuracy stabilizes around 500 trees: 10→0.74, 50→0.81, 100→0.84, 500→0.86, 1000→0.86. Training time grows linearly with tree count. What does this plateauing behavior reveal about random forest variance reduction, and what is the optimal tree count?",
     "options": [
       "Add more trees indefinitely — accuracy will keep improving given enough computation",
-      "The plateau reveals that variance reduction from averaging saturates; once the ensemble is diverse enough, adding more trees doesn't reduce error further — 500 trees is optimal given the compute/accuracy tradeoff",
+      "The plateau reveals that variance reduction from averaging saturates; once the",
       "The plateau means the model is overfitting; reduce tree count to 100",
       "The plateau means the data is too easy; use a more complex algorithm"
     ],
@@ -1137,7 +1137,7 @@
     "options": [
       "Use 3 components — the cumulative explained variance reaches 61%, which is sufficient",
       "Use all 200 components — discarding any variance loses information",
-      "Select the number of components that explains 90–95% of variance, or use cross-validation on the downstream task to find the optimal number that maximizes classifier performance",
+      "Select the number of components that explains 90–95% of variance, or use",
       "Select exactly 10 components — this is the standard for PCA"
     ],
     "correct_option": 2,
@@ -1163,7 +1163,7 @@
     "description": "What factors should determine the final model choice?",
     "options": [
       "Always choose the highest AUC model — gradient boosting at 0.82",
-      "Choose based on the gap significance, explanation requirements, and operational constraints: a 0.04 AUC gap may not justify the interpretability cost for a 5,000-sample dataset with explanation requirements — logistic regression or a shallow tree may be preferable",
+      "Choose based on the gap significance, explanation requirements, and operational",
       "Always choose logistic regression — it is inherently interpretable and regulators prefer it",
       "Choose the neural network — it balances accuracy and can be explained with LIME"
     ],
@@ -1190,7 +1190,7 @@
     "options": [
       "The engineer is correct — StandardScaler is unsupervised and doesn't leak label information, so both pipelines are valid",
       "The bug is that StandardScaler should not be used for this problem; use MinMaxScaler instead",
-      "The bug is that StandardScaler fitted on all data uses validation set statistics (mean, std) to transform training features, giving the model implicit access to validation set distribution — the 0.07 AUC gap measures this leakage",
+      "The bug is that StandardScaler fitted on all data uses validation set statistics (mean, std) to transform training",
       "The drop from 0.91 to 0.84 is within normal variance; no bug exists"
     ],
     "correct_option": 2,
@@ -1216,7 +1216,7 @@
     "options": [
       "Mean imputation is the wrong strategy for a skewed financial feature; using median imputation instead of mean would close the gap between test and production AUC because median is resistant to high-income outliers that inflate the imputed value and introduce bias",
       "The preprocessing is correct; global statistics computed from the full dataset produce more accurate imputation than train-only statistics, and this accuracy improvement outweighs any information leakage; the 0.028 AUC gap is within normal evaluation variance for a 20,000-row test set",
-      "Computing the imputation mean from all 100,000 rows before the train/test split incorporates the income distribution of the 20,000 test rows into the imputed values used during training; the global mean encodes test set information, making the test AUC optimistic; the correct pipeline is: (1) split first, (2) compute the mean from the 80,000 training rows only, (3) apply that training mean to impute missing values in both train and test sets — matching the production setup where no future rows exist at training time",
+      "Computing the imputation mean from all 100,000 rows before the train/test split incorporates the income distribution of the 20,000 test rows into the imputed values used during training; the global mean encodes test set information, making the test AUC optimistic; the correct",
       "The flaw is applying imputation before feature scaling; mean imputation before StandardScaler causes the imputed value to fall outside the normalized range, introducing a systematic bias for rows with imputed income values that degrades production performance"
     ],
     "correct_option": 2,
@@ -1242,7 +1242,7 @@
     "options": [
       "The silhouette score is the mathematically rigorous cluster quality measure; the elbow method is only a visual heuristic with no formal statistical basis; the analyst must choose k = 2 because it maximizes the silhouette score, and any deviation from the statistically optimal k introduces unnecessary model complexity",
       "The disagreement indicates that features have not been standardized; k-means distance calculations are dominated by high-magnitude features, and normalizing all features to unit variance before clustering will align the two metrics to agree on the same optimal k",
-      "The silhouette score indicates k = 2 produces the most geometrically coherent, well-separated clusters; the elbow at k = 4 indicates that four segments provide substantially more within-cluster compactness than two at moderate additional cost; the correct path is to profile each candidate k — examine the purchasing behavior, average order value, and category preferences of each segment — and choose the k whose segments are distinct enough to support genuinely different promotional strategies; this is a business-utility judgment that neither metric alone can resolve",
+      "The silhouette score indicates k = 2 produces the most geometrically coherent, well-separated clusters; the elbow at k = 4 indicates that four segments provide substantially more within-cluster compactness than two at moderate additional cost; the correct path is to profile each candidate k — examine the purchasing",
       "When elbow and silhouette metrics disagree, the correct procedure is to switch to a model-based algorithm (e.g., Gaussian Mixture Models) that provides a log-likelihood or BIC criterion for selecting the number of components, which is more principled than either heuristic"
     ],
     "correct_option": 2,
@@ -1269,7 +1269,7 @@
       "RandomForestClassifier uses bootstrap sampling internally, which reuses training rows across trees and creates information overlap between each tree's training data and the overall evaluation; replacing it with a non-bootstrap method like ExtraTreesClassifier eliminates internal reuse and prevents the 0.13-point inflation",
       "10,000 test rows is too small to reliably estimate AUC at 0.91; the observed evaluation is dominated by sampling variance, and a test set of at least 50,000 rows is needed to produce a stable AUC estimate; the 0.13-point production gap is within the expected variance at this test set size",
       "The bug is using Pearson correlation for feature selection: corrwith only detects linear relationships, so features with strong non-linear but weak linear correlations are excluded; this causes the model to overfit on the linearly selected features and underfit on non-linear patterns that are predictive in production",
-      "Feature selection using corrwith on all 50,000 rows incorporates the churn labels of the 10,000 test rows when ranking features; the selected 20 features are biased toward those that happen to correlate with the test set's specific churn pattern, giving the model an indirect advantage on test evaluation that disappears in production; the correct pipeline is: (1) split first, (2) compute correlations on the 40,000 training rows only, (3) apply the training-derived feature list to filter the test set"
+      "Feature selection using corrwith on all 50,000 rows incorporates the churn labels of the 10,000 test rows when ranking features; the selected 20 features are biased toward those that happen to correlate with the test set's specific churn pattern, giving the model an indirect advantage on test evaluation that disappears"
     ],
     "correct_option": 3,
     "explanation": "Option D is correct. Feature selection by correlation computes each feature's correlation with the target variable using all rows — including the 10,000 test rows. The top 20 features are chosen because they correlate with the full dataset's churn signal, which includes the test set's specific label pattern. When the model is then evaluated on that test set, it uses a feature set that was selected partly because of those rows' churn labels. No label value is directly fed into the model, but the selected feature set itself was biased toward features that match the test set's pattern. In production, feature selection will have been computed from training data only, so this indirect advantage vanishes. Fix: split first, then fit all preprocessing — including feature selection — on the training set only.\n\nOption A is wrong. RandomForestClassifier's bootstrap sampling is an internal technique for constructing each tree. The out-of-bag error is a separate internal estimate, not the test AUC from model.score. The external test set is held out entirely from training; internal bootstrap mechanics do not cause test set leakage.\n\nOption B is wrong. 10,000 test rows produces a highly stable AUC estimate — the standard error of AUC at this sample size is approximately 0.003 to 0.005. A 0.13-point gap between test and production AUC is more than 20 standard errors away from what sampling variance alone could explain.\n\nOption C addresses a model-quality concern that does not explain the evaluation gap. Whether Pearson or mutual information is used for feature selection, the same leakage problem exists if selection is done on the full dataset before splitting. Switching to mutual information would still produce an inflated test AUC if the pipeline order is wrong.",
@@ -1293,7 +1293,7 @@
     "options": [
       "Use the same global feature importance plot for all three — it shows which features matter most, which covers all stakeholder needs",
       "LIME for all three — it is the most widely cited explanation method and applies to any use case",
-      "SHAP local (per-instance Shapley values) for customer support; SHAP global summary or partial dependence plots for model risk; partial dependence plot for legal — each method is scoped to the right level of analysis",
+      "SHAP local (per-instance Shapley values) for customer support; SHAP global summary or partial dependence plots for model risk; partial",
       "Replace the gradient boosting model with logistic regression so all teams can read coefficients directly instead of relying on post-hoc methods"
     ],
     "correct_option": 2,
@@ -1320,7 +1320,7 @@
     "options": [
       "C=100 — maximize training AUC; high training performance means the model has learned the data well",
       "C=0.001 — the most regularized model is safest against overfitting regardless of validation performance",
-      "C=1 — it achieves the peak validation AUC (0.86); the curves show that at C<1 the model is underfit (both curves low and nearly equal), at C=1 validation peaks, and at C>1 the growing train-val gap signals overfitting",
+      "C=1 — it achieves the peak validation AUC (0.86); the curves show that at C<1 the model is underfit (both curves low and nearly equal), at",
       "C=10 — it has the second-highest validation AUC (0.85) with a larger train-val gap, which predicts better generalization to production data"
     ],
     "correct_option": 2,
@@ -1347,7 +1347,7 @@
       "L1 uses a squared penalty term that aggressively shrinks small weights; L2 uses an absolute value penalty that is gentler, leaving small weights nonzero",
       "L1 applies a hard threshold that zeroes weights below a fixed value; L2 does not apply any threshold",
       "L1 and L2 produce identical weight distributions when the regularization strength is tuned correctly; the difference is purely computational",
-      "L1 adds |w| to the loss, creating a non-differentiable kink at zero where the subgradient can zero out a weight entirely; L2 adds w² to the loss, whose gradient 2w approaches zero smoothly without ever forcing the weight to exactly zero"
+      "L1 adds |w| to the loss, creating a non-differentiable kink at zero where the subgradient can zero out a weight entirely; L2 adds w² to the loss, whose"
     ],
     "correct_option": 3,
     "explanation": "L1 penalty: the term |w| has a non-differentiable point at w=0. During optimization, the subgradient at zero is any value in [-λ, λ]. When the gradient of the data loss is smaller than λ in magnitude, the optimizer can set w=0 and satisfy the optimality condition — producing an exact zero. Geometrically, the L1 constraint set (a diamond in 2D) has corners that touch axis-aligned hyperplanes, making sparse solutions at corners likely.\n\nL2 penalty: the term w² has gradient 2w. As w approaches zero, the regularization gradient also approaches zero. The optimizer will shrink w toward zero but asymptotically — it never forces w to exactly zero because the gradient encourages movement but never reaches zero force at w=0. Geometrically, the L2 constraint set (a sphere in 2D) has no corners, so solutions rarely land on axes.\n\nPractical implication: L1 for automatic feature selection when you believe many features are truly irrelevant. L2 for keeping all features with small weights when all features may contribute.\n\nOption A swaps the penalty terms — L1 uses absolute value (|w|), L2 uses squared (w²).",
@@ -1373,7 +1373,7 @@
       "The model is underfit — non-deterministic outputs indicate the model hasn't converged; train for more epochs",
       "The learning rate was too high during training, causing the weights to oscillate; the variance in predictions reflects the oscillation in the weight values",
       "The model requires temperature scaling at inference to reduce output variance to a deterministic value",
-      "Dropout is still active at inference time — it randomly zeroes 50% of neurons on each forward pass, making predictions stochastic; the fix is to call model.eval() (PyTorch) or set training=False (Keras) before inference, which disables dropout and uses the full network with scaled weights"
+      "Dropout is still active at inference time — it randomly zeroes 50% of neurons on each forward pass, making predictions stochastic; the fix is to call"
     ],
     "correct_option": 3,
     "explanation": "Dropout randomly zeroes neurons during training to regularize the network. At inference, dropout must be disabled — the full network (with all neurons active) produces the deterministic output. Without disabling dropout, each forward pass randomly masks a different 50% of neurons, producing wildly different outputs for the same input.\n\nIn PyTorch: call model.eval() before inference. This sets all dropout and batch normalization layers to inference mode. In Keras: set training=False in the call or use model.predict() (not model(x, training=True)). In scikit-learn wrappers: this is handled automatically.\n\nNote: when dropout is disabled at inference, the expected output equals the training-time expected output because dropout during training already accounts for the 1/p scaling factor — no additional adjustment is needed.\n\nOption A is wrong: non-determinism is not a convergence symptom. Convergence affects validation accuracy, not the determinism of individual predictions.\n\nOption C is wrong: temperature scaling affects the sharpness of probability distributions (calibration), not the determinism of predictions. Stochastic predictions indicate architectural/configuration issues, not a calibration problem.",
@@ -1399,7 +1399,7 @@
       "Always use supervised learning when labels are available — clustering is only for when you have no labels at all",
       "Clustering is always better for marketing because it avoids label bias; supervised models introduce selection bias by optimizing toward historical churn labels",
       "Use the supervised model to create cluster labels, then run k-means on those cluster predictions to remove noise from the classifier outputs",
-      "Clustering is appropriate when the goal is discovery — finding naturally occurring groups for business action (promotions, personalization) without a specific target to predict; the classifier is appropriate when the goal is to predict a specific outcome (who will churn) and the label reflects that outcome; both can be useful simultaneously for different questions"
+      "Clustering is appropriate when the goal is discovery — finding naturally occurring groups for business action (promotions, personalization) without a specific"
     ],
     "correct_option": 3,
     "explanation": "The choice depends on the question being asked:\n\nClustering (unsupervised): the goal is exploratory segmentation — discovering groups of customers with similar behaviors for business action. Clustering groups customers by their overall transaction patterns, regardless of churn. The output is segments with distinct purchasing profiles, geographic patterns, or product preferences — actionable for personalization and promotion. The churn labels are irrelevant to this question.\n\nSupervised classifier: the goal is prediction — which specific customers will churn in the next 30 days so retention offers can be targeted to them. This requires a labeled outcome and optimizes toward it. The model's output is a churn probability per customer, not a segment membership.\n\nBoth can be appropriate simultaneously: use clustering to understand customer types, use the classifier to target high-risk churners within each segment.\n\nOption A is too strong — having labels doesn't always mean supervised learning is the right tool. If the business goal is discovery/segmentation rather than prediction, clustering may be more appropriate even when labels exist.\n\nOption B is wrong: supervised models don't introduce selection bias inherently; they optimize toward the labeled objective, which is exactly what's needed when prediction is the goal.",
@@ -1423,7 +1423,7 @@
     "scenario_context": "You are building a fraud detection model. You have 500 labeled fraud examples, 2,000 labeled non-fraud examples, and 200,000 unlabeled transactions. Three strategies are proposed: the labeled-only strategy — use only the 2,500 labeled examples; the pseudo-labeling strategy — pseudo-label the 200,000 unlabeled examples using a model trained on the 2,500 labeled, then retrain on all; the label-propagation strategy — use label propagation to spread labels from labeled to unlabeled examples in a similarity graph.",
     "description": "What is the primary risk of the pseudo-labeling strategy?",
     "options": [
-      "Pseudo-labeling amplifies model errors: the initial model's wrong predictions become training labels for the second model, reinforcing its mistakes; if the initial model has poor precision on fraud examples (few labeled), pseudo-labeled fraud cases may be systematically incorrect, training the next model on wrong labels",
+      "Pseudo-labeling amplifies model errors: the initial model's wrong predictions become training labels for the second model, reinforcing its",
       "The pseudo-labeling strategy is always superior — more data always improves model performance; pseudo-labeling is a standard and risk-free technique",
       "The pseudo-labeling strategy introduces temporal leakage because the 200,000 unlabeled transactions include future data",
       "The label-propagation strategy is always better than pseudo-labeling because graph-based methods handle class imbalance better"
@@ -1451,7 +1451,7 @@
     "options": [
       "Overall silhouette score improves significantly because splitting the weakest cluster always increases the score",
       "The silhouette scores for the original clusters A and B will also increase because k-means re-optimizes all cluster assignments when k changes",
-      "The silhouette score for the new sub-clusters may be higher than C's original score if C contained two genuinely separable groups; but if C was coherent and the low score was due to C being near cluster A or B, splitting may not help and could create two small clusters both with low scores",
+      "The silhouette score for the new sub-clusters may be higher than C's original score if C contained two genuinely separable groups; but if C",
       "Silhouette score is monotonically increasing in k — adding more clusters always produces equal or higher scores"
     ],
     "correct_option": 2,
@@ -1479,7 +1479,7 @@
       "The model is under-confident — predicted probabilities are systematically higher than actual rates; apply Platt scaling to stretch the probabilities upward",
       "The model is well-calibrated — small deviations from the diagonal at 0.1 and 0.3 are within normal statistical noise",
       "The model has data leakage — systematic calibration errors always indicate that training and test distributions differ",
-      "The model is over-confident — predicted probabilities in the high range (0.7, 0.9) are systematically higher than actual rates (0.51, 0.67); apply isotonic regression or Platt scaling to compress predicted probabilities toward the true rates"
+      "The model is over-confident — predicted probabilities in the high range (0.7, 0.9) are systematically higher than actual rates (0.51, 0.67); apply"
     ],
     "correct_option": 3,
     "explanation": "The reliability diagram shows systematic over-confidence: the model's predicted probabilities are consistently higher than the actual positive rates. At bin 0.7, the model predicts 70% probability but only 51% of those predictions are actually positive. At bin 0.9, the model predicts 90% but only 67% are positive.\n\nThis S-shaped deviation (predicted > actual at high probabilities, predicted ≈ actual at low probabilities) is common in gradient boosted tree models, which tend to produce extreme probability estimates.\n\nCalibration methods:\n- Platt scaling: fits a logistic regression on the raw scores, mapping them to calibrated probabilities. Works well for sigmoidal deviations.\n- Isotonic regression: fits a non-parametric monotone function mapping scores to calibrated probabilities. More flexible; better for non-sigmoidal patterns. Requires a dedicated calibration set.\n\nOption A is wrong: the model is over-confident, not under-confident. Predicted values exceed actual rates — the model overstates its certainty.\n\nOption B is wrong: the deviations (e.g., 0.9 predicted vs 0.67 actual — a 23-point gap) are not statistical noise. They are substantial systematic errors affecting financial or risk calculations that depend on probability values.",
@@ -1504,7 +1504,7 @@
     "options": [
       "Model A — higher AUC is always the right criterion for model selection in financial applications",
       "Model B — lower AUC models are always better calibrated, which is more important for probability-based decisions",
-      "Model A's AUC advantage is meaningful only if the bank is using predictions for ranking; for probability-based decisions (capital provisioning), both models need calibration evaluation — a reliability diagram and Expected Calibration Error (ECE) should be checked; a better-calibrated Model B may be preferable to a higher-AUC Model A if Model A is severely miscalibrated",
+      "Model A's AUC advantage is meaningful only if the bank is using predictions for ranking; for probability-based decisions (capital",
       "Neither — any model used for capital provisioning must be a logistic regression to satisfy regulatory interpretability requirements"
     ],
     "correct_option": 2,
@@ -1529,7 +1529,7 @@
     "description": "A gradient boosted classifier's pre-calibration reliability diagram shows: the curve bows below the diagonal at low probabilities (model under-predicts) and bows above the diagonal at high probabilities (model over-predicts). This is an S-shaped curve. You apply Platt scaling using a calibration set. What does the post-calibration reliability diagram most likely show?",
     "options": [
       "The curve shifts to the left, making all probabilities lower",
-      "The curve moves closer to the diagonal — Platt scaling fits a sigmoid transformation that corrects S-shaped miscalibration by compressing over-confident high probabilities and expanding under-confident low probabilities",
+      "The curve moves closer to the diagonal — Platt scaling fits a sigmoid transformation that corrects S-shaped miscalibration by",
       "The curve becomes a horizontal line at 0.5 — Platt scaling forces all probabilities to the midpoint as a conservative estimate",
       "The curve becomes worse because Platt scaling is designed for neural networks, not gradient boosted trees"
     ],
@@ -1555,7 +1555,7 @@
     "scenario_context": "You build a house price prediction model. Three teams use the predictions differently: the finance team calculates total portfolio risk (cares about large errors more than small ones), the operations team measures average prediction error per house (equal weighting), and the regional team compares error across markets with different price ranges (needs scale-invariant errors).",
     "description": "Which metric should each team use?",
     "options": [
-      "Finance team: RMSE (squares large errors, giving them disproportionate weight); Operations team: MAE (equal weight per prediction); Regional team: MAPE (percentage error is scale-invariant, enabling cross-market comparison)",
+      "Finance team: RMSE (squares large errors, giving them disproportionate weight); Operations team: MAE (equal weight per",
       "All three teams should use RMSE — it is the standard regression metric and consistent across use cases",
       "Finance team: MAE; Operations team: RMSE; Regional team: R² (coefficient of determination is scale-invariant)",
       "Finance team: MAPE; Operations team: MAE; Regional team: RMSE — the mapping is always finance→MAPE, operations→MAE, regional→RMSE"
@@ -1582,7 +1582,7 @@
     "options": [
       "The analyst is correct — R² is bounded between 0 and 1 by definition; a negative value indicates a computation error",
       "R² = -0.23 means the model has negative correlation with the target — predictions go in the opposite direction to actual values",
-      "R² is not bounded between 0 and 1 on held-out data; R² = -0.23 means the model is worse than a baseline that predicts the training mean for every example — the model's predictions have higher error variance than just guessing the average",
+      "R² is not bounded between 0 and 1 on held-out data; R² = -0.23 means the model is worse than a baseline that predicts the",
       "Negative R² only occurs with non-linear models; switching to linear regression will fix it"
     ],
     "correct_option": 2,
@@ -1609,7 +1609,7 @@
       "The bug is using mean instead of median — use median absolute percentage error to handle outliers in demand data",
       "The bug is computing MAPE on all categories simultaneously; MAPE must be computed separately per category and then averaged to prevent inf",
       "MAPE should use predicted in the denominator, not actual — switch to mean(|actual - predicted| / predicted)",
-      "Division by zero: when actual=0 (items with no demand in a period), the formula |actual - predicted| / actual divides by zero, producing inf or NaN; fix options: (1) exclude zero-actual periods from MAPE calculation, (2) use sMAPE (symmetric MAPE: 2|actual - predicted| / (|actual| + |predicted|)), or (3) use a different metric (MAE or RMSE) that does not divide by the actual value"
+      "Division by zero: when actual=0 (items with no demand in a period), the formula |actual - predicted| / actual divides by zero, producing"
     ],
     "correct_option": 3,
     "explanation": "MAPE = mean(|actual - predicted| / actual) divides by the actual value. When actual = 0 (no demand in a period), the denominator is zero, producing inf or NaN. With numpy, any inf in an array propagates through the mean.\n\nSolutions in priority order:\n\n1. Exclude zero-actual periods: compute MAPE only on periods where actual > 0. Report separately that N periods with zero demand were excluded. This is the most common production fix and makes the metric interpretable for non-zero periods.\n\n2. sMAPE (symmetric MAPE): uses (|actual| + |predicted|) in the denominator. When actual=0 and predicted≠0, denominator = predicted ≠ 0. Has its own known issues but handles zeros more gracefully.\n\n3. Switch metrics: for demand forecasting with many zeros, MAE or RMSE often preferred over any percentage-based metric.\n\nOption B is wrong: computing MAPE per category then averaging (macro-average) is a valid aggregation strategy but doesn't fix the division-by-zero bug — zero-actual periods within a category still cause the issue.\n\nOption C is wrong: switching to predicted in the denominator changes what the metric measures (now expressing error as a fraction of predicted, not actual) and doesn't fundamentally solve the zero problem — if the model predicts zero for some period, you'd still divide by zero.",
@@ -1633,7 +1633,7 @@
     "scenario_context": "A bioinformatics team has 500 genomic features and only 200 patient samples (p >> n setting). They propose recursive feature elimination (RFE) with a random forest. A statistical reviewer flags the approach.",
     "description": "What is the specific risk in this setting and what alternative is more appropriate?",
     "options": [
-      "With p >> n, RFE with cross-validated random forest will overfit: evaluating feature subsets on small folds of 200 samples is noisy, and the selected features may be spuriously important in the training folds; preferable approaches: univariate filter methods with multiple testing correction (e.g., Benjamini-Hochberg), LASSO with cross-validated regularization strength, or stability selection",
+      "With p >> n, RFE with cross-validated random forest will overfit: evaluating feature subsets on small folds of 200 samples is noisy, and the",
       "RFE is appropriate — it handles high-dimensional data well by iteratively removing the least important feature until the optimal subset is found",
       "The problem is that random forests cannot handle genomic data — use SVM with RBF kernel instead",
       "The issue is that 500 features is not high-dimensional; RFE problems only occur with > 10,000 features"
@@ -1661,7 +1661,7 @@
     "options": [
       "Filter methods are always correct — correlations with the target are the best measure of feature importance and the top-2 selection is optimal",
       "The problem is that filter methods cannot handle more than one feature at a time; use PCA instead to create orthogonal components",
-      "Selecting both income and net_worth adds little value because they are highly redundant (corr=0.93): the second feature provides almost no independent information beyond the first; a better selection might be income + credit_score, which together cover independent aspects of creditworthiness",
+      "Selecting both income and net_worth adds little value because they are highly redundant (corr=0.93): the second feature provides almost no",
       "The correlation of 0.71 is too low to be useful; both income and net_worth should be dropped and only credit_score (correlation 0.65) should be used"
     ],
     "correct_option": 2,
@@ -1686,7 +1686,7 @@
     "description": "A pipeline uses L1-regularized logistic regression for feature selection: it trains with default C=1.0, takes the non-zero coefficient features, then trains a final random forest on those features. Validation AUC of the random forest is 0.71 — lower than a random forest trained on all features (0.78). The engineer claims 'L1 selected the best features.' What is wrong?",
     "options": [
       "L1 regularization is incompatible with random forests; the features selected by L1 are meaningless inputs for tree-based models",
-      "The default C=1.0 was not tuned; with C=1.0, L1 may zero out many features that are genuinely predictive (too strong regularization) or keep many irrelevant features (too weak); without cross-validating C, the selected feature set is arbitrary relative to this dataset; fix: use LassoCV or LogisticRegressionCV to tune C before extracting non-zero features",
+      "The default C=1.0 was not tuned; with C=1.0, L1 may zero out many features that are genuinely predictive (too strong regularization) or keep many irrelevant features (too weak); without",
       "The random forest on the reduced feature set will always perform worse because fewer features means less information; embedded selection should only be used with logistic regression, not random forest",
       "The problem is that L1 does not work with binary classification; use L2 instead"
     ],
@@ -1715,7 +1715,7 @@
       "The model converged at epoch 1000 — train_auc=1.00 means optimal performance; val_auc=0.82 is the correct test performance",
       "The model needs a higher learning rate to escape the local minimum where validation AUC plateaus",
       "Disabling early stopping always causes NaN values; the 0.82 val_auc indicates numerical instability, not overfitting",
-      "The model overfit: validation AUC peaked around epoch 300-500 and then degraded as additional trees memorized training noise; early stopping (with rounds=50) would have stopped training when val_auc failed to improve for 50 consecutive rounds, restoring the model to its best validation checkpoint (epoch ~400, val_auc≈0.89)"
+      "The model overfit: validation AUC peaked around epoch 300-500 and then degraded as additional trees memorized training"
     ],
     "correct_option": 3,
     "explanation": "This is a classic overfitting trajectory in gradient boosting. Additional trees continue to fit training-set residuals, improving training AUC monotonically. But from epoch 500 onward, those residuals are largely noise — the trees are memorizing training-specific patterns that don't generalize, causing validation AUC to fall.\n\nEarly stopping prevents this: with early_stopping_rounds=50, training stops when validation AUC fails to improve for 50 consecutive rounds. The final model is restored to the best checkpoint (approximately epoch 400 with val_auc≈0.89 based on the plateau at epoch 300-500).\n\nBest practices for XGBoost:\n1. Set n_estimators high (1000+)\n2. Enable early_stopping_rounds=50 (or 100 for noisy validation sets)\n3. Provide eval_set=[(X_val, y_val)] in .fit()\n4. The returned model is automatically the best-checkpoint model\n\nThe alternative to early stopping is tuning n_estimators via grid search, but this requires multiple full training runs and is less efficient.\n\nOption A is wrong: train_auc=1.00 means the model has memorized the training set — this is a red flag, not a sign of optimal performance.",
@@ -1739,7 +1739,7 @@
     "description": "Two gradient boosting configurations achieve similar validation AUC: Config A (learning_rate=0.3, n_estimators=100) and Config B (learning_rate=0.01, n_estimators=3000). A teammate says 'they're equivalent — same total update.' Under what conditions are they NOT equivalent, and which is generally preferred in practice?",
     "options": [
       "They are always equivalent — learning_rate × n_estimators controls total model capacity and produces identical models if the product is the same",
-      "They are not equivalent: Config B (low LR, many trees) generally produces better generalization because each tree makes a small correction that is less likely to overfit to noise; the ensemble explores more of the loss landscape with finer steps; Config A is faster to train but more sensitive to noise; Config B is preferred when compute budget allows",
+      "They are not equivalent: Config B (low LR, many trees) generally produces better generalization because each tree makes a small correction that",
       "Config A is always preferred because it requires fewer trees and is faster to serve in production",
       "The configurations are equivalent only when all trees are identical depth — at mixed depths they diverge unpredictably"
     ],
@@ -1764,7 +1764,7 @@
     "title": "Post-Event Feature Leakage: Lifetime Purchases in a Churn Model",
     "description": "A 3-year customer churn model achieves validation AUC=0.94. Features include: tenure_days, avg_monthly_spend_last_6m, support_tickets_lifetime, lifetime_purchases, and days_since_last_login. The label is 'churned within next 30 days.' In production, AUC drops to 0.71. A review shows lifetime_purchases is the most important feature. What is the bug?",
     "options": [
-      "lifetime_purchases is computed over the customer's full history including purchases made after the label date; at prediction time, future purchases do not yet exist; the feature includes post-label information, causing temporal leakage; fix: recompute as purchases_up_to_label_date only",
+      "lifetime_purchases is computed over the customer's full history including purchases made after the label date; at",
       "lifetime_purchases has too many unique values — discretize it into deciles to reduce cardinality and prevent overfitting",
       "The model is overfitting to support_tickets_lifetime — reduce its weight using feature importance clipping",
       "Production AUC drop always indicates distribution shift; retrain the model on more recent data"
@@ -1791,7 +1791,7 @@
     "scenario_context": "A hospital trains a readmission prediction model on records from 5,000 patients, each contributing an average of 3 visits (15,000 total records). A random 80/20 train/test split is performed on records (not patients). Validation accuracy is 0.88. After deployment, accuracy on new patients is 0.71. A colleague proposes group k-fold cross-validation.",
     "description": "What is the leakage mechanism?",
     "options": [
-      "A patient's records in the test set share features (demographics, chronic conditions, medication history) with that patient's records in the training set; the model learns patient-specific patterns in training and 'recognizes' the same patient at test time, inflating accuracy; group k-fold ensures all records from a given patient are in the same fold, testing generalization to new patients",
+      "A patient's records in the test set share features (demographics, chronic conditions, medication history) with that",
       "Random split is correct — each record is independent; patient identity should not affect model evaluation",
       "The issue is that 15,000 records is too few for medical data; collect more records to stabilize accuracy",
       "The model is overfitting to the 80% training split size; change the split to 90/10 to give the model more training data"
@@ -1817,7 +1817,7 @@
     "title": "Temporal Holdout vs Random Split for Time-Series Evaluation",
     "description": "A demand forecasting model is trained on 3 years of weekly sales data. Team A evaluates using a random 80/20 split across all 156 weeks. Team B evaluates using a temporal holdout — training on weeks 1-125, testing on weeks 126-156 (last 6 months). Team A reports AUC 0.92, Team B reports 0.79. Why does the split method matter, and which estimate is more trustworthy for production use?",
     "options": [
-      "Team B's temporal holdout is more trustworthy because it simulates the production setting: you train on past data and predict future data; random split allows future weeks' data to appear in training, giving the model illegal access to future patterns (temporal leakage), inflating the evaluation metric",
+      "Team B's temporal holdout is more trustworthy because it simulates the production setting: you train on past data and predict future data; random",
       "Team A's estimate is more trustworthy — larger training set leads to better model and more reliable evaluation",
       "Both estimates are equally valid; the difference is due to random variation in the split and the two teams should average their results",
       "Team B's estimate is lower because they have a smaller training set — the 0.13 gap is entirely explained by training data size, not the split method"
@@ -1846,7 +1846,7 @@
       "The colleague is correct — TF-IDF uses no label information so it cannot introduce leakage; the production gap is due to distribution shift",
       "The fix is to use word2vec instead of TF-IDF, which does not require fitting on the dataset",
       "The problem is not leakage but a difference in text length between training and production data; normalize by document length",
-      "The colleague is wrong: fitting TF-IDF on all data (including test documents) uses test set vocabulary and IDF weights to transform training features; in production, new documents' TF-IDF is computed using only the training vocabulary and IDF weights; the test evaluation uses 'production-unfaithful' feature representations inflating accuracy; fix: fit TF-IDF on training data only, transform both train and test with the training-fit vectorizer"
+      "The colleague is wrong: fitting TF-IDF on all data (including test documents) uses test set vocabulary and IDF weights to transform"
     ],
     "correct_option": 3,
     "explanation": "The colleague's reasoning has a subtle error: leakage doesn't require label information. It only requires that test-set information influences the feature representation used during training evaluation.\n\nTF-IDF fitted on all 10,000 documents:\n- IDF (Inverse Document Frequency) for each term is computed across all 10,000 docs, including the 2,000 test docs.\n- The IDF weights reflect the term distribution in the full corpus, including test documents.\n\nIn production: TF-IDF was fit only on 8,000 training documents. A term appearing exclusively in test documents will have a different IDF weight (or be out-of-vocabulary entirely) compared to the full-corpus-fitted vectorizer.\n\nResult: the test evaluation uses feature representations that cannot be replicated in production — the model sees test documents through a TF-IDF lens calibrated using the test documents themselves.\n\nCorrect pipeline:\n1. Split data into train/test first\n2. Fit TF-IDF on train only\n3. Transform both train and test with the training-fit vectorizer\n4. Train classifier and evaluate\n\nThis is the same principle as StandardScaler, imputers, and any other preprocessing: fit on training data, transform everywhere.",
@@ -1871,7 +1871,7 @@
     "description": "Which diagnosis is correct and what should be done?",
     "options": [
       "Engineer A is correct — add more layers and neurons to give the model capacity to learn validation patterns",
-      "Engineer B is correct — 100% training accuracy with near-random validation accuracy is the definition of severe overfitting; the model memorized training samples instead of learning generalizable patterns; remedies: add dropout/L2 regularization, reduce model capacity, apply early stopping, augment training data if possible",
+      "Engineer B is correct — 100% training accuracy with near-random validation accuracy is the definition of",
       "Engineer C is correct — low learning rate causes convergence to local optima; increase learning rate to escape",
       "All three diagnoses are plausible; run ablation studies to determine which is correct"
     ],
@@ -1896,7 +1896,7 @@
     "title": "Predicting Learning Curve Behavior: Already-Overfit Network Trained Longer",
     "description": "A neural network shows this learning curve after 100 epochs: training loss=0.08, validation loss=0.41, train-val gap=0.33. Early stopping was not used. You continue training for 50 more epochs (to epoch 150). What is the most likely outcome?",
     "options": [
-      "Training loss decreases further (toward 0) or stays near 0; validation loss increases further or stays elevated; the gap widens — the network continues memorizing training patterns with no mechanism to improve generalization",
+      "Training loss decreases further (toward 0) or stays near 0; validation loss increases further or stays elevated; the gap widens — the network",
       "Training loss drops slightly; validation loss drops slightly; both converge — extended training recovers validation performance on overfit networks",
       "Validation loss decreases after epoch 100 because the model eventually learns generalizable features after sufficient training",
       "Both training and validation loss spike at epoch 101 due to catastrophic forgetting when training continues past convergence"
@@ -1924,7 +1924,7 @@
     "options": [
       "Neural networks always underperform gradient boosting on tabular data regardless of dataset size",
       "The 5-layer network needs a larger learning rate to compete with gradient boosting on small datasets",
-      "With 1,200 fraud examples, the 5-layer network has far more parameters than there is signal to fit; the model overfits to the training noise; gradient boosting's inductive bias (shallow trees + regularization) is better matched to the data regime — it can represent complex patterns without requiring large amounts of data to generalize",
+      "With 1,200 fraud examples, the 5-layer network has far more parameters than there is signal to fit; the",
       "Deep networks cannot handle imbalanced datasets; the fraud-to-non-fraud ratio explains the underperformance"
     ],
     "correct_option": 2,
@@ -1951,7 +1951,7 @@
       "This is a sampling bias problem — duplicate rows increase training set representation of certain customers, causing the model to favor them",
       "This is a target leakage problem — duplicate rows indicate the target column was computed from the features, not independently collected",
       "Duplicate rows in the test set always cause AUC to exactly double; remove duplicates and the AUC will drop from 0.95 to approximately 0.475",
-      "This is a data splitting failure that creates test contamination: if 40% of test rows are copies of training rows, the model is evaluated on data it has literally memorized; the high AUC reflects memorization of training examples in the test set, not generalization; fix: deduplicate the dataset before splitting, then re-split and re-evaluate"
+      "This is a data splitting failure that creates test contamination: if 40% of test rows are copies of training rows, the model is evaluated"
     ],
     "correct_option": 3,
     "explanation": "When 40% of test rows are exact copies of training rows, the model is partially evaluated on training data it has memorized. Specifically:\n\n- The 40% of 'test' rows that are training duplicates: the model assigns them the same score as in training (since they are identical inputs). These predictions are perfect by construction — the model learned their labels.\n- The 60% of truly novel test rows: these are the actual generalization test. If these rows have AUC ~0.78, the overall test AUC blends the 1.0 (memorized) and 0.78 (generalized) to produce an inflated 0.95 estimate.\n\nCorrect pipeline:\n1. Deduplicate the full dataset before splitting\n2. Use stratified train/test split on the deduplicated dataset\n3. Optionally: group by customer ID to prevent multiple records from the same customer appearing in both splits\n\nOption A is wrong: the specific problem is not sampling bias but test set contamination. The model evaluating on training data (disguised as test data) inflates the evaluation metric.\n\nOption C is wrong: the AUC relationship with duplicates is not a simple halving formula. The effect depends on the proportion of duplicates and how they are distributed across positive and negative classes.",
@@ -1976,7 +1976,7 @@
     "description": "Which pattern does forward fill handle incorrectly and why?",
     "options": [
       "Forward fill handles all three correctly — carrying forward the last known value is always appropriate for time series",
-      "Forward fill is reasonable for pattern A (single random gaps); it becomes increasingly problematic for pattern B (4-hour gaps introduce stale values through major temperature changes — forward-filled values may differ substantially from true readings); for pattern C, midnight reboots create a systematic artifact where overnight temperature changes are invisible until the sensor restarts, introducing a predictable bias in midnight-adjacent features",
+      "Forward fill is reasonable for pattern A (single random gaps); it becomes increasingly problematic for pattern B",
       "Forward fill is only valid for pattern C — systematic gaps have predictable structure that ffill can exploit",
       "None of the three patterns should use forward fill; always use mean imputation for sensor data"
     ],
@@ -2002,7 +2002,7 @@
     "options": [
       "Multiple imputation produces better point estimates — it computes a more accurate mean for the missing values",
       "Multiple imputation is only needed when missingness exceeds 30% — below that threshold, single imputation produces equivalent confidence intervals",
-      "Single imputation replaces missing values with a fixed value (the mean), treating each imputed value as if it were observed with certainty; this artificially reduces variability in the dataset, narrowing confidence intervals and producing p-values that are spuriously significant; multiple imputation generates M imputed datasets with different plausible values for each missing entry (reflecting uncertainty about the true value), analyzes each dataset separately, and combines results using Rubin's rules — pooling both within-imputation and between-imputation variance, correctly widening confidence intervals to reflect missing-data uncertainty",
+      "Single imputation replaces missing values with a fixed value (the mean), treating each imputed value as if it were observed with certainty; this",
       "Multiple imputation and single imputation produce the same confidence intervals; the difference is only computational cost"
     ],
     "correct_option": 2,
@@ -2027,7 +2027,7 @@
     "description": "What mechanism makes focal loss more effective for this imbalance?",
     "options": [
       "Focal loss up-weights positive examples by a fixed factor of γ=2, equivalent to oversampling positives by 2×",
-      "Focal loss multiplies the cross-entropy loss by (1 - p_t)^γ, where p_t is the model's predicted probability for the true class; easy examples (those the model classifies confidently, high p_t) receive near-zero loss weight; hard examples (those the model is uncertain about, low p_t) retain near-full loss weight; in severe imbalance, the majority of easy negatives contribute negligible loss, forcing the model to focus training gradient on the hard examples — which are predominantly the rare positives",
+      "Focal loss multiplies the cross-entropy loss by (1 - p_t)^γ, where p_t is the model's predicted probability for the true class; easy",
       "Focal loss directly penalizes false negatives (missed positive examples) proportional to γ, equivalent to setting a higher decision threshold",
       "Focal loss only works with γ>1; at γ=0 it degrades to standard cross-entropy and at γ=2 it applies 2× stronger downweighting to all examples"
     ],
@@ -2054,7 +2054,7 @@
     "options": [
       "MSE is most robust to outliers because squaring errors gives large outliers more influence, which stabilizes training",
       "All three loss functions produce identical regression coefficients for normally distributed errors",
-      "MAE is robust to outliers (linear in error — large errors are not squared); MSE is sensitive to outliers (quadratic — large errors dominate gradients); Huber loss is a hybrid: for errors below a threshold δ, it behaves like MSE (smooth, second-order convergence near the optimum); for errors above δ, it behaves like MAE (linear — bounding outlier influence); Huber is the best fit here: robust to outlier delivery times while still providing smooth gradients near the prediction optimum",
+      "MAE is robust to outliers (linear in error — large errors are not squared); MSE is sensitive to outliers (quadratic",
       "Huber loss is only appropriate for neural networks; use MAE for gradient boosting to handle outliers"
     ],
     "correct_option": 2,
@@ -2079,7 +2079,7 @@
     "scenario_context": "A European fintech must comply with GDPR Article 22: rejected loan applicants have a right to 'meaningful information about the logic involved' in automated decisions. The team wants to use gradient boosting (best AUC) but a legal reviewer says SHAP post-hoc explanations may not satisfy the regulatory standard.",
     "description": "What is the most defensible approach?",
     "options": [
-      "Use a logistic regression with selected interpretable features — each coefficient has a clear, auditable direction of effect; rejected applicants can be given an explanation in terms of the specific features that most negatively affected their score, with magnitudes proportional to the coefficient × feature value product",
+      "Use a logistic regression with selected interpretable features — each coefficient has a clear, auditable direction of effect; rejected",
       "Use gradient boosting with SHAP — SHAP is mathematically rigorous and satisfies any regulatory explanation requirement",
       "Use a deep neural network with LIME — LIME provides local explanations that are more regulation-compliant than SHAP",
       "Regulatory explanation requirements only apply to fully automated systems; add a human reviewer to the loop and any model becomes compliant"
@@ -2108,7 +2108,7 @@
       "High spend and high tenure both push the churn probability higher — the model treats high-value customers as high churn risk",
       "SHAP values cannot predict individual outcomes — they only show global feature importance rankings",
       "Red points always mean the feature increases the prediction regardless of sign — the sign of the SHAP axis does not matter",
-      "High monthly_spend pushes churn probability higher (positive SHAP) while high tenure_days pushes it lower (negative SHAP) — the customer has competing signals; the net effect depends on the relative SHAP magnitudes for this specific customer"
+      "High monthly_spend pushes churn probability higher (positive SHAP) while high tenure_days pushes it lower (negative SHAP) —"
     ],
     "correct_option": 3,
     "explanation": "SHAP summary plot interpretation:\n- X-axis: SHAP value for a feature (positive = pushes prediction higher, negative = pushes lower)\n- Y-axis: features ranked by mean |SHAP|\n- Point color: feature value (red = high, blue = low)\n\nmonthly_spend: red points (high spend) cluster on the positive SHAP side → high spending increases churn probability. This might seem counterintuitive but could reflect that high-spend customers are power users who disengage abruptly, or who are more likely to switch to competitors.\n\ntenure_days: red points (high tenure) cluster on the negative SHAP side → high tenure decreases churn probability. Long-tenured customers are more loyal — this is the expected direction.\n\nFor a customer with monthly_spend=800 (high, red → positive SHAP ~+0.3 to +0.5) and tenure=2000 days (high, red → negative SHAP ~-0.3 to -0.5): the churn prediction is pulled up by spend and down by tenure. The net effect depends on which effect is stronger — you need the individual SHAP values for this specific customer, not just the summary range.\n\nOption B is wrong: SHAP values are computed per-instance and do predict individual contributions. The summary plot aggregates many individual SHAP values but the per-instance values are available.\n\nOption C is wrong: the sign of the SHAP value (positive vs negative x-axis position) always indicates the direction of the contribution — positive increases the prediction, negative decreases it.",
@@ -2132,7 +2132,7 @@
     "description": "A dataset has two features: annual_income (range: $20K–$200K) and num_purchases (range: 0–50). PCA is applied without standardization. The first principal component explains 99.8% of variance. A data scientist says 'the model found that income is the only important feature.' Why is this interpretation wrong?",
     "options": [
       "The interpretation is correct — PCA correctly identifies the highest-variance feature as the most important",
-      "PCA finds the directions of maximum variance in the raw feature space. annual_income has variance ~(90K)² while num_purchases has variance ~(25)². PCA's first component aligns almost entirely with the income axis simply because income has a larger numeric scale — not because income is more predictive. The 99.8% explained variance reflects magnitude dominance, not information dominance. Fix: standardize (zero mean, unit variance) before PCA so all features contribute equally",
+      "PCA finds the directions of maximum variance in the raw feature space. annual_income has variance ~(90K)² while",
       "PCA should not be applied to mixed-unit features; use linear discriminant analysis instead",
       "The 99.8% explained variance means num_purchases adds no information; dropping it and using income alone is justified"
     ],
@@ -2161,7 +2161,7 @@
       "The SVM needs more training data — validation accuracy this low indicates insufficient sample size",
       "The RBF kernel is inappropriate for this data; switch to a linear kernel",
       "The C hyperparameter is too small; try C=1000 to increase model complexity",
-      "Unscaled features: salary has range ~$280K while age has range ~100 — the RBF kernel computes Euclidean distances in this raw feature space; salary dominates the distance metric by ~2800×, making age and num_transactions geometrically invisible; the kernel can only separate classes along the salary axis, producing an overfit model with near-random validation accuracy; fix: standardize all features before SVM"
+      "Unscaled features: salary has range ~$280K while age has range ~100 — the RBF kernel computes"
     ],
     "correct_option": 3,
     "explanation": "RBF (Radial Basis Function) kernel: K(x, z) = exp(-γ||x - z||²). The kernel value depends on Euclidean distance ||x - z||² in the original feature space.\n\nWith unscaled features:\n- salary range: $280K → ||salary component||² can be ~(280,000)² = 7.84 × 10¹⁰\n- age range: 100 → ||age component||² ≤ 100² = 10,000\n- Ratio: salary dominates distance by ~7.84 × 10⁶\n\nThe kernel is effectively measuring 'how different are two customers in salary?' — age and num_transactions are invisible. The SVM can only create decision boundaries based on salary variation, limiting it to essentially one-dimensional separability.\n\nThis causes the apparent overfitting (training accuracy 0.96 on training samples that the model has memorized via salary-based partitioning) combined with poor validation (the model doesn't generalize because it ignores 29 features).\n\nNote: trying different C and γ values won't fix the scaling problem — they adjust regularization and kernel bandwidth but not the scale imbalance between features.\n\nFix: apply StandardScaler (or MinMaxScaler) before SVM. After scaling, all 30 features contribute equally to Euclidean distance, enabling the RBF kernel to use the full feature space.\n\nOption B is wrong: the RBF kernel is generally appropriate for non-linear classification — the problem is feature scaling, not kernel choice.",
@@ -2186,7 +2186,7 @@
     "options": [
       "The efficiency axiom guarantees that SHAP values are computed in polynomial time for tree models",
       "The efficiency axiom guarantees that the most important feature always has the largest absolute SHAP value",
-      "The efficiency axiom guarantees that the sum of all SHAP values for a prediction plus the base value equals the model's actual output for that instance: Σ φ_i + φ_0 = f(x); this means no prediction probability is 'missing' from the explanation — every unit of deviation from the base value is fully attributed across features",
+      "The efficiency axiom guarantees that the sum of all SHAP values for a prediction plus the base value equals the model's actual output for that instance: Σ φ_i + φ_0 = f(x); this means no",
       "The efficiency axiom ensures SHAP values are consistent — if a feature's contribution increases in one model, its SHAP value is always higher in that model compared to a less complex model"
     ],
     "correct_option": 2,
@@ -2214,7 +2214,7 @@
       "The PDP is wrong — tenure should always monotonically reduce churn and the spike indicates a modeling error; retrain with a monotonicity constraint",
       "Non-monotonic PDPs always indicate data leakage; investigate what features correlate with tenure at 370-400 days",
       "Apply SHAP instead of PDP — SHAP always produces monotonic explanations that better reflect business intuition",
-      "The spike at 370-400 days may reflect a real business phenomenon (e.g., end of a 12-month contract renewal period triggers evaluation and potential churn); or it may be a data artifact (e.g., different subscription plans with 1-year terms creating a cohort effect); investigate by checking business context and whether the spike aligns with contract renewal events before applying monotonicity constraints"
+      "The spike at 370-400 days may reflect a real business phenomenon (e.g., end of a 12-month contract renewal period triggers evaluation and"
     ],
     "correct_option": 3,
     "explanation": "Partial dependence plots (PDPs) show the average marginal effect of a feature on predictions, holding all other features at their observed values. A non-monotonic pattern can have real or artifactual causes:\n\nReal business causes:\n- 12-month contract renewal: customers at day 365-395 are at a natural decision point. Many evaluate their subscription, leading to a churn spike. This would be a genuine and important effect the model correctly learned.\n- Pricing tier changes at tenure milestones: if pricing changes at certain tenure points, churn behavior may shift non-monotonically.\n\nData/modeling artifacts:\n- Cohort effects: customers who signed up during a specific period (e.g., a promotion) may have different churn rates at every tenure level. The PDP mixes multiple cohorts.\n- Model extrapolation in sparse regions: if few customers have tenure 370-400 days in the training data, the model may be extrapolating unreliably.\n\nCorrect approach: investigate first (business context, data distribution at tenure=370-400 days, cohort analysis) before applying constraints. Forcing monotonicity without understanding the spike may suppress a real and important business signal.\n\nOption B is wrong: non-monotonic PDPs do not indicate data leakage by default. Leakage produces specific patterns (extreme importance, sudden performance collapse when removed) — not non-monotonic PDPs.\n\nOption C is wrong: SHAP summary plots can also be non-monotonic. Monotonicity of explanations is not a property of SHAP.",
@@ -2238,7 +2238,7 @@
     "scenario_context": "Training loss after each epoch: 1.82, 0.95, 1.71, 0.88, 1.65, 0.91, 1.58, 0.89. The pattern alternates high-low-high-low. Validation loss mirrors this oscillation. A junior engineer proposes training for 100 more epochs to 'wait for convergence.'",
     "description": "What is the problem and the correct fix?",
     "options": [
-      "The learning rate is too high: large gradient steps cause the optimizer to overshoot the loss minimum, bouncing between sides of the loss bowl rather than descending into it; training for more epochs will not fix this — oscillation will continue indefinitely; fix: reduce learning rate by 5-10×, or use learning rate warmup (start low, ramp up to target, then decay)",
+      "The learning rate is too high: large gradient steps cause the optimizer to overshoot the loss minimum, bouncing between sides of the loss bowl rather",
       "The model is underfitting — alternating loss indicates insufficient model capacity; add more layers",
       "The dataset has label noise — alternating loss is caused by contradictory labels in alternating batches",
       "The alternating pattern indicates the model is correctly implementing curriculum learning — alternating difficulty levels cause the oscillating pattern"
@@ -2265,7 +2265,7 @@
     "description": "Two teams train the same neural network architecture on the same image classification task: Team A uses SGD with momentum (lr=0.01, momentum=0.9); Team B uses Adam (lr=0.001, β1=0.9, β2=0.999). After 100 epochs, Team B achieves lower training loss (0.12 vs 0.19). After 200 epochs, Team B's validation accuracy is 87.2% vs Team A's 89.1%. What does this pattern reveal about the two optimizers?",
     "options": [
       "Team A's final model is better because SGD always outperforms Adam on image classification",
-      "Adam converged faster early (lower training loss at epoch 100) because per-parameter adaptive learning rates accelerate training on sparse gradients; but SGD with momentum found a flatter minimum that generalizes better (higher validation accuracy at epoch 200); this pattern — Adam fast convergence, SGD better generalization — is a known empirical phenomenon: Adam's sharp minima vs SGD's flat minima",
+      "Adam converged faster early (lower training loss at epoch 100) because per-parameter adaptive learning rates accelerate training",
       "The difference is entirely due to Team B using a lower learning rate; matching learning rates would make the optimizers equivalent",
       "Team B's model has overfit by epoch 200; Adam always produces worse generalization than SGD after sufficient epochs"
     ],
@@ -2292,7 +2292,7 @@
     "description": "Why is stratification still recommended?",
     "options": [
       "The colleague is correct — random splits with n=100,000 are large enough that stratification adds no value; the 0.08% difference is negligible",
-      "With 1% positive rate, random splits have high relative variance in the positive class count. A single lucky split with 180 test positives could easily become 50 or 300 on a different random seed — the evaluation metric (e.g., F1 or AUC on the positive class) depends heavily on how many positives land in the test set; stratification guarantees exactly 200 positives in the test set (1% of 20,000) every time, making evaluation reproducible and comparable across experiments",
+      "With 1% positive rate, random splits have high relative variance in the positive class count. A single lucky split with 180 test positives",
       "Stratification must be used because the fraud examples in training and test must be from completely different time periods",
       "Stratification artificially increases the positive rate in the test set, making the model appear better than it is"
     ],
@@ -2317,7 +2317,7 @@
     "title": "Group K-Fold Cross-Validation: When Standard K-Fold Leaks",
     "description": "You are evaluating a model that predicts hospital readmission. The dataset has 50,000 patient visits from 8,000 unique patients (average 6 visits each). Standard 5-fold CV reports AUC=0.89. Group 5-fold CV (by patient_id) reports AUC=0.78. Which is the valid estimate, and what is the leakage mechanism in standard 5-fold?",
     "options": [
-      "Group 5-fold AUC=0.78 is the valid estimate. Standard 5-fold leaks patient identity: a patient's visits are distributed across all 5 folds; when a patient's visit is in the test fold, the model has seen other visits from that same patient in training folds and learns patient-specific patterns (demographics, chronic conditions, medication lists) that inflate its apparent ability to generalize; group 5-fold assigns all visits from a patient to the same fold, testing true generalization to new patients",
+      "Group 5-fold AUC=0.78 is the valid estimate. Standard 5-fold leaks patient identity: a patient's visits are",
       "Standard 5-fold is valid — each fold is independently drawn from the same distribution, satisfying i.i.d. assumptions",
       "The 0.11 AUC gap indicates group 5-fold introduced a sampling bias; averaging both estimates (0.835) is most accurate",
       "Standard 5-fold is more accurate because it uses more training data per fold"
@@ -2347,7 +2347,7 @@
       "K-means is correct — it always outperforms DBSCAN because it uses fewer hyperparameters and is more stable",
       "Both methods are equivalent for anomaly detection; k-means just requires post-processing to identify far-from-centroid points",
       "DBSCAN is inappropriate because it cannot handle the exactly 5 cluster structure of the hubs",
-      "DBSCAN is appropriate because it identifies points in low-density regions as noise (anomalies) — vehicles not within 0.5km of at least 10 other vehicles are flagged as outliers; k-means cannot identify outliers because it assigns every point to the nearest centroid regardless of distance, grouping isolated anomalous vehicles with the nearest hub"
+      "DBSCAN is appropriate because it identifies points in low-density regions as noise (anomalies) — vehicles not within 0.5km"
     ],
     "correct_option": 3,
     "explanation": "K-means partitions every point into exactly one of k clusters by minimizing within-cluster variance. It cannot leave any point unassigned. An anomalous vehicle at an arbitrary location gets assigned to the nearest hub centroid — even if it is 50km from the nearest hub. K-means has no concept of 'too far away to belong to any cluster.'\n\nDBSCAN (Density-Based Spatial Clustering of Applications with Noise):\n- Core points: have ≥ min_samples points within ε radius\n- Border points: within ε of a core point but fewer than min_samples neighbors\n- Noise points: neither core nor border — assigned label -1 (outlier)\n\nFor this task: normal vehicles in hubs form dense clusters (many vehicles within 0.5km of each other). Anomalous isolated vehicles have <10 neighbors within 0.5km — they are noise points by DBSCAN's definition, correctly flagged as anomalies.\n\nDBSCAN also handles arbitrary cluster shapes — if hub clusters are elongated (along a highway) or irregular, DBSCAN captures them while k-means assumes spherical clusters.\n\nOption B is partially valid: k-means distance-to-centroid can be used post-hoc as an anomaly score, but this requires setting a threshold and assumes anomalies are far from hubs in spherical geometry. DBSCAN's noise detection is more principled for density-based anomalies.\n\nOption C is wrong: DBSCAN doesn't require a fixed number of clusters. It will naturally discover 5 hub clusters from the dense regions — and flag the scattered vehicles as noise.",
@@ -2370,7 +2370,7 @@
     "title": "Davies-Bouldin Index vs Silhouette Score: What Each Measures and When DB Fails",
     "description": "A data scientist evaluates k-means clustering using both the silhouette score and the Davies-Bouldin (DB) index. She finds they disagree on the optimal k: silhouette peaks at k=4, DB index is minimized at k=7. She asks: 'What does each measure, and why might they disagree?'",
     "options": [
-      "Silhouette score measures the ratio of intra-cluster cohesion to inter-cluster separation per point, averaged across all points; DB index measures the average ratio of (sum of intra-cluster scatter for two clusters) to (distance between their centroids), averaged across all cluster pairs; they can disagree because they weight different geometric properties — silhouette emphasizes point-level assignment quality while DB emphasizes centroid-to-centroid separation; DB index is sensitive to cluster shape (it assumes roughly spherical clusters and performs poorly when clusters are elongated or have unequal sizes)",
+      "Silhouette score measures the ratio of intra-cluster cohesion to inter-cluster separation per point, averaged across all points; DB index",
       "Both metrics measure the same thing; the disagreement indicates a computation error",
       "Silhouette score is always more reliable than DB index; use silhouette exclusively",
       "DB index finds the optimal k by searching all possible k values simultaneously; silhouette does not search globally and produces local optima"
@@ -2399,7 +2399,7 @@
       "Averaging reduces variance because the individual trees are identically distributed — averaging identical predictions always converges to the mean faster than taking a single sample",
       "Averaging increases bias but the bias-variance tradeoff makes the overall error smaller because variance reduction outweighs bias increase",
       "Variance reduction in ensembles requires that all trees produce different predictions; identical tree predictions do not benefit from averaging",
-      "For T independent predictions with variance σ², the variance of the average is σ²/T. Trees in a random forest are not fully independent (they share training data structure), but they are de-correlated by random feature subsampling at each split; variance reduction = σ²(1-ρ)/T + ρσ², where ρ is the inter-tree correlation; averaging reduces variance without changing the individual tree's expected prediction (bias), because the average of unbiased estimators is an unbiased estimator"
+      "For T independent predictions with variance σ², the variance of the average is σ²/T. Trees in a random forest are not fully independent (they share training data structure), but"
     ],
     "correct_option": 3,
     "explanation": "Bias of the ensemble: E[ŷ_forest] = E[(1/T) Σ ŷ_tree] = (1/T) Σ E[ŷ_tree] = E[ŷ_tree]. The expected prediction of the ensemble equals the expected prediction of any individual tree — bias is unchanged.\n\nVariance of the ensemble (simplified case, fully independent trees):\nVar[(1/T) Σ ŷ_tree] = (1/T²) × T × σ² = σ²/T\n\nAveraging T independent predictions reduces variance by 1/T. With σ=0.12, T=100: σ_ensemble = 0.12/√100 = 0.012. (The observed 0.04 is higher because trees are correlated, not independent.)\n\nWith correlated trees (ρ = inter-tree correlation from shared training data):\nVar_ensemble = σ²ρ + σ²(1-ρ)/T\n\nAs T→∞: Var_ensemble → σ²ρ. Variance doesn't go to zero — the irreducible correlation floor σ²ρ remains.\n\nRandom feature subsampling (at each split) reduces ρ, which lowers the variance floor. This is why random forests outperform bagged decision trees (same bootstrap, but no feature subsampling).\n\nKey insight: averaging preserves expected value (bias) while dividing the variance contribution — the mathematical reason ensembles work.\n\nOption B is wrong: bagging ensembles (random forest type) reduce variance without increasing bias. Boosting ensembles reduce bias at the potential cost of variance.",
@@ -2422,7 +2422,7 @@
     "title": "SMOTE Applied Before Split: Predicting the Evaluation Error",
     "description": "A team applies SMOTE (Synthetic Minority Oversampling Technique) to the full dataset before performing an 80/20 train/test split. The original positive rate is 3%. After SMOTE, the dataset has a 30% positive rate. The model reports test F1=0.71 on the augmented test set. When deployed, the real-world F1 drops to 0.38. What is the most likely explanation for the gap?",
     "options": [
-      "SMOTE applied before splitting contaminates the test set with synthetic examples generated from training-set minority samples; at test time, the model is evaluated on synthetic points that share feature structure with training samples — this inflates F1 because the model learned the synthetic generation pattern; in production, the model encounters real minority-class examples with the true 3% rate and natural feature variation, not synthetic near-neighbors of training samples",
+      "SMOTE applied before splitting contaminates the test set with synthetic examples generated from training-set minority samples; at test time, the model is evaluated on",
       "SMOTE created too many synthetic samples — use a 10% positive rate instead of 30% to prevent this gap",
       "The gap is purely due to the change in positive rate from 30% (evaluation) to 3% (production) — any metric computed at different base rates will differ; use AUC instead",
       "SMOTE is only valid for training data augmentation; it never introduces evaluation leakage"
@@ -2449,7 +2449,7 @@
     "description": "Applied to the same dataset: PCA (2 components) shows a uniform, amorphous blob — no visible cluster structure. t-SNE (perplexity=30) shows 6 distinct clusters. A team member concludes: 'PCA missed the clusters; t-SNE found the truth.' Is this conclusion correct and what are the correct interpretations of each visualization?",
     "options": [
       "The conclusion is correct — t-SNE is always more accurate than PCA for discovering cluster structure",
-      "The conclusion is incorrect. PCA finds the two directions of maximum variance (global linear structure); if clusters differ in their non-linear relationships or are separated in directions of low variance, PCA won't reveal them. t-SNE explicitly optimizes to preserve local neighborhoods in 2D — it will show clusters if any local structure exists. t-SNE limitations: distances between clusters are not meaningful, cluster sizes are distorted, perplexity choice affects appearance; t-SNE showing clusters is necessary but not sufficient evidence — the clusters may be artifacts of perplexity or random initialization. Verify: run t-SNE with multiple seeds/perplexity values to check stability",
+      "The conclusion is incorrect. PCA finds the two directions of maximum variance (global linear structure); if clusters",
       "PCA is more reliable because it has no hyperparameters; t-SNE clusters are always artifacts",
       "t-SNE and PCA are equivalent visualization tools; different visual outputs indicate a bug in one of the implementations"
     ],
@@ -2475,7 +2475,7 @@
     "description": "A researcher evaluates two model configurations using 5-fold stratified CV. Configuration A has mean AUC=0.841, std=0.028 across folds. Configuration B has mean AUC=0.836, std=0.031. The difference (0.005) is smaller than the standard deviation. A statistician proposes switching to repeated stratified 5-fold (5 repeats × 5 folds = 25 evaluations). When does this add value and when is it overkill?",
     "options": [
       "Repeated CV is always overkill — standard 5-fold provides sufficient statistical power for any evaluation",
-      "Repeated CV reduces the variance of the mean AUC estimate by averaging across multiple random fold assignments; it adds value when the performance difference between configurations is small relative to fold variance (as here — the 0.005 gap is within fold std) and a decision must be made; it is overkill when the difference is large relative to variance (>2× std) or when compute budget is tight; with 5 repeats, std of the mean ≈ 0.028/√25 ≈ 0.006 — still comparable to the 0.005 gap, so even repeated CV may not definitively separate these configurations",
+      "Repeated CV reduces the variance of the mean AUC estimate by averaging across multiple random fold assignments; it adds value when the performance",
       "Repeated CV is needed only for neural networks, which have high training randomness; for deterministic models like SVMs, single 5-fold is always sufficient",
       "5 repeats × 5 folds = 25 evaluations always provides a statistically significant result regardless of effect size"
     ],
@@ -2503,7 +2503,7 @@
     "options": [
       "Bayesian optimization cannot handle 2+ hyperparameters simultaneously — it only works for single-parameter tuning",
       "Bayesian optimization always outperforms grid search; the manual grid must have searched a different problem",
-      "The search space is very large (log-scale spanning 6 orders of magnitude for C, 5 for γ); with only 30 trials, the Gaussian process surrogate model may not have sampled densely enough near the true optimum to build an accurate surrogate — initial random trials may have concentrated in C<0.01 by random chance, building a surrogate that wrongly estimates poor performance for C=1; the fix: increase trials (100+), restrict search space based on domain knowledge, or use a warm start with manual anchor points",
+      "The search space is very large (log-scale spanning 6 orders of magnitude for C, 5 for γ); with only 30 trials,",
       "SVM is not compatible with Bayesian optimization — only neural network hyperparameters can be tuned this way"
     ],
     "correct_option": 2,
@@ -2527,7 +2527,7 @@
     "title": "New Category at Inference Breaks One-Hot Encoder: Pipeline Failure Pattern",
     "description": "A fraud detection pipeline: (1) OHE encodes the 'merchant_category' feature (50 categories during training), (2) imputes remaining missing values with training mean, (3) runs the XGBoost model. After 6 months, a new merchant category ('crypto_exchange') appears. The pipeline crashes at the OHE step with 'unknown category' error. How should the pipeline handle this, and why is the current design fragile?",
     "options": [
-      "The OHE was fit only on training categories; new categories at inference are not in the learned vocabulary and cause errors; fixes: (1) add handle_unknown='ignore' (sklearn) to encode unknown categories as all-zeros, allowing the pipeline to proceed; (2) add an 'OTHER' bucket during training for rare/unseen categories; (3) use target encoding or embeddings that generalize to unseen values; monitor frequency of unknown-category records to trigger retraining when a new category becomes common",
+      "The OHE was fit only on training categories; new categories at inference are not in the learned vocabulary and cause errors; fixes: (1) add",
       "Re-train the model immediately whenever a new category appears — there is no other valid approach",
       "The bug is in the imputation step — mean imputation causes issues when new categories appear",
       "One-hot encoding should be replaced with label encoding, which assigns integers and can handle new categories by assigning the next available integer"
@@ -2554,7 +2554,7 @@
     "options": [
       "Overall AUC 0.88 is strong; subgroup TPR and FPR variation is expected from differing base rates and requires no immediate action.",
       "Group B’s lower TPR signals class imbalance — oversample group B fraud cases during training to equalize detection rates across groups.",
-      "Both the 23-point TPR gap and the 7-point FPR gap favor group A, constituting an equalized-odds violation; root-cause investigation (training data representation, feature quality per group, labeling consistency) should precede any threshold adjustment.",
+      "Both the 23-point TPR gap and the 7-point FPR gap favor group A, constituting an equalized-odds violation; root-cause investigation (training data",
       "Apply a lower decision threshold for group B to raise its TPR to match group A’s 0.85; this directly equalizes detection rates without requiring retraining."
     ],
     "correct_option": 2,
