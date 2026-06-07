@@ -1955,8 +1955,7 @@ def main() -> None:
     _validate_hint_numbers_in_stem()
     _validate_no_numeric_option_references()
     _validate_no_embedded_option_labels()
-    # TODO(debias): enable after Phase 1 lands
-    # _validate_answer_position_balance()
+    _validate_answer_position_balance()
 
     print("Content validation passed")
 

@@ -8,13 +8,13 @@
     "title": "Formulating a Testable Hypothesis",
     "description": "A product team wants to test whether changing the checkout button color from grey to green increases purchase conversion. Which hypothesis formulation is correct for an A/B test?",
     "options": [
-      "H₀: the green button is better. H₁: the grey button is better. Run the test until we get p < 0.05",
       "H₀: there is no difference in purchase conversion rate between the grey button (control) and green button (treatment). H₁: there is a difference. Define the primary metric, significance level, and minimum detectable effect before running the test",
+      "H₀: the green button is better. H₁: the grey button is better. Run the test until we get p < 0.05",
       "H₀: conversion will improve by at least 5%. H₁: conversion will not improve. Run until we have 1,000 conversions",
       "H₀: users prefer the green button. H₁: users prefer the grey button. Survey users and use their preference as the test metric"
     ],
-    "correct_option": 1,
-    "explanation": "A well-formed A/B hypothesis has a null (no effect) and a directional or non-directional alternative, along with a pre-specified primary metric. Defining the significance level (α) and minimum detectable effect (MDE) before running is essential — post-hoc threshold adjustments inflate false positive rates. Option A reverses the null/alternative convention (null should represent the 'no effect' baseline) and commits to peeking-until-significant, inflating the false positive rate. Option C pre-specifies the direction correctly but uses a directional H₀ and a stopping rule based on event count rather than pre-calculated sample size. Option D substitutes a preference survey for a behavioural outcome — preference doesn't equal conversion.",
+    "correct_option": 0,
+    "explanation": "A well-formed A/B hypothesis has a null (no effect) and a directional or non-directional alternative, along with a pre-specified primary metric. Defining the significance level (α) and minimum detectable effect (MDE) before running is essential — post-hoc threshold adjustments inflate false positive rates. Option B reverses the null/alternative convention (null should represent the 'no effect' baseline) and commits to peeking-until-significant, inflating the false positive rate. Option C pre-specifies the direction correctly but uses a directional H₀ and a stopping rule based on event count rather than pre-calculated sample size. Option D substitutes a preference survey for a behavioural outcome — preference doesn't equal conversion.",
     "hints": [
       "A well-formed A/B hypothesis has more than just a null and alternative statement. What additional parameters must be fixed before the experiment runs — and what goes wrong if they are not?",
       "Define α, power, and MDE before starting — they determine sample size and cannot be adjusted after peeking at results."
@@ -107,13 +107,13 @@
     "title": "Novelty Effect: Separating Real Lift from Temporary Excitement",
     "description": "A new recommendation widget is launched in an A/B test. In week 1, treatment shows a 12% lift in click-through rate. In weeks 2–3, the lift narrows to 4%, then 2%. The team is deciding whether to ship. How should they interpret this pattern?",
     "options": [
-      "Ship immediately — week 1's 12% lift is real and the decline is due to the control group catching up",
       "The declining lift is consistent with a novelty effect: users in treatment initially engage more due to the novelty of a new UI element, not because the widget provides durable value. The 2% long-run lift may be real but is much smaller than week 1 suggested. The team should wait until the treatment effect stabilises before making a ship decision, and evaluate the long-run (week 3+) lift against the business threshold",
+      "Ship immediately — week 1's 12% lift is real and the decline is due to the control group catching up",
       "The test has low power — the declining lift means the sample size was insufficient and the initial 12% was noise",
       "Ship at the week 3 result — 2% lift is small but still positive and any positive metric movement justifies shipping"
     ],
-    "correct_option": 1,
-    "explanation": "A novelty effect causes inflated initial engagement that decays over time as users habituate to a new UI element. This is a well-documented threat to internal validity in A/B tests for UI changes, content recommendations, and notifications. The decay pattern (12% → 4% → 2%) is the signature. The team should use the stabilised long-run lift (2%) for the ship decision, not the week-1 spike. Shipping based on week 1 would deploy based on a temporary effect, not durable value. The business threshold question — 'is a 2% stable lift worth the engineering cost?' — is a separate decision. Option A misattributes the decline to the control group. Option C conflates novelty decay with statistical noise. Option D is too simplistic — positive lift should be durable, not just present.",
+    "correct_option": 0,
+    "explanation": "A novelty effect causes inflated initial engagement that decays over time as users habituate to a new UI element. This is a well-documented threat to internal validity in A/B tests for UI changes, content recommendations, and notifications. The decay pattern (12% → 4% → 2%) is the signature. The team should use the stabilised long-run lift (2%) for the ship decision, not the week-1 spike. Shipping based on week 1 would deploy based on a temporary effect, not durable value. The business threshold question — 'is a 2% stable lift worth the engineering cost?' — is a separate decision. Option B misattributes the decline to the control group. Option C conflates novelty decay with statistical noise. Option D is too simplistic — positive lift should be durable, not just present.",
     "hints": [
       "Look at the weekly lift numbers in sequence: 12%, then 4%, then 2%. What does a pattern that starts high and decays steadily — rather than holding steady — tell you about the nature of the underlying effect?",
       "Ship decisions should use the stabilised long-run metric, not the initial novelty spike."
