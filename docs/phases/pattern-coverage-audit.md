@@ -21,15 +21,15 @@ Headline coverage tables reflect the **live state of paths**, not tag-derived hy
 
 | Track | Practice Qs | In a live path | Orphans | Divergent | Patterns (proposed) | Healthy | Uneven | Thin | Empty |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| sql | 118 | 58 | 60 | 27 | 14 | 4 | 5 | 0 | 5 |
-| python | 79 | 29 | 50 | 7 | 9 | 0 | 4 | 2 | 3 |
-| python-data | 92 | 29 | 63 | 16 | 9 | 0 | 4 | 2 | 3 |
+| sql | 118 | 59 | 59 | 27 | 14 | 4 | 5 | 1 | 4 |
+| python | 79 | 35 | 44 | 7 | 9 | 1 | 4 | 1 | 3 |
+| python-data | 92 | 50 | 42 | 16 | 9 | 1 | 5 | 0 | 3 |
 | pyspark | 127 | 34 | 93 | 7 | 7 | 0 | 5 | 0 | 2 |
-| data-engineering | 91 | 19 | 72 | 9 | 9 | 1 | 1 | 4 | 3 |
-| data-modeling | 81 | 31 | 50 | 3 | 14 | 2 | 0 | 7 | 5 |
-| statistics | 100 | 28 | 72 | 11 | 11 | 0 | 3 | 2 | 6 |
-| ml-fundamentals | 100 | 40 | 60 | 24 | 15 | 0 | 5 | 3 | 7 |
-| experimentation | 87 | 43 | 44 | 29 | 9 | 0 | 5 | 1 | 3 |
+| data-engineering | 91 | 46 | 45 | 9 | 9 | 3 | 2 | 1 | 3 |
+| data-modeling | 81 | 65 | 16 | 3 | 14 | 6 | 1 | 2 | 5 |
+| statistics | 100 | 52 | 48 | 11 | 11 | 1 | 4 | 0 | 6 |
+| ml-fundamentals | 100 | 55 | 45 | 24 | 15 | 1 | 7 | 0 | 7 |
+| experimentation | 87 | 49 | 38 | 29 | 9 | 1 | 5 | 0 | 3 |
 
 **Legend:**  
 `In a live path` = practice questions currently included in some live path's `questions[]`.  
@@ -40,7 +40,7 @@ Pattern classes are based on live-path-aggregated coverage: **Healthy** ≥5 acr
 ---
 ## sql
 
-Practice questions: **118** (58 in live paths · 60 orphans · 27 divergent). Proposed canonical patterns: **14**.
+Practice questions: **118** (59 in live paths · 59 orphans · 27 divergent). Proposed canonical patterns: **14**.
 
 ### Pattern coverage (live-path-aggregated)
 
@@ -51,7 +51,7 @@ Practice questions: **118** (58 in live paths · 60 orphans · 27 divergent). Pr
 | `subqueries` | Subqueries & EXISTS | 0 | 4 | 2 | 6 | ⚠️ uneven |
 | `set-operations` | Set Operations (UNION / INTERSECT / EXCEPT) | 0 | 6 | 1 | 7 | ⚠️ uneven |
 | `window-functions` | Window Functions | 1 | 2 | 4 | 7 | ✅ healthy |
-| `ctes-and-recursion` | CTEs & Recursion | 0 | 0 | 0 | 0 | 🔴 empty (no live path or no questions) |
+| `ctes-and-recursion` | CTEs & Recursion | 0 | 0 | 1 | 1 | 🟡 thin (needs content) |
 | `grouping-extensions` | ROLLUP / CUBE / GROUPING SETS | 0 | 0 | 0 | 0 | 🔴 empty (no live path or no questions) |
 | `string-and-text` | String & Text Functions | 5 | 2 | 0 | 7 | ⚠️ uneven |
 | `date-and-time` | Date & Time Functions | 0 | 0 | 0 | 0 | 🔴 empty (no live path or no questions) |
@@ -71,14 +71,14 @@ A question contributes once per family tag — multi-tag questions count multipl
 |---|---|---|
 | COHORT RETENTION | `cohort-and-retention` (2) | `(orphan)` (1) |
 | CONDITIONAL LOGIC & CASE | `(orphan)` (11) | — |
-| CTE PIPELINE | `(orphan)` (4) | `period-over-period` (2), `set-operations` (1) |
+| CTE PIPELINE | `(orphan)` (3) | `period-over-period` (2), `ctes-and-recursion` (1), `set-operations` (1) |
 | DATA QUALITY SKEPTICISM | `(orphan)` (4) | — |
 | DEDUPLICATION LOGIC | `(orphan)` (7) | `cohort-and-retention` (1), `aggregation` (1), `set-operations` (1) |
-| DOUBLE-COUNTING DETECTION | `(orphan)` (3) | — |
+| DOUBLE-COUNTING DETECTION | `(orphan)` (2) | `ctes-and-recursion` (1) |
 | FUNNEL ANALYSIS | `(orphan)` (2) | `funnel-and-event-analysis` (1) |
 | GROUPED AGGREGATION | `(orphan)` (28) | `aggregation` (7), `set-operations` (3), `joins` (2), `window-functions` (1) |
 | METRIC RECONCILIATION | `joins` (1) | — |
-| MULTI-TABLE ENTITY LINKING | `(orphan)` (18) | `joins` (6), `subqueries` (4), `aggregation` (3), `window-functions` (2) |
+| MULTI-TABLE ENTITY LINKING | `(orphan)` (17) | `joins` (6), `subqueries` (4), `aggregation` (3), `window-functions` (2) |
 | NULL HANDLING & COALESCE | `(orphan)` (4) | `joins` (2), `string-and-text` (1) |
 | POST-AGGREGATION FILTERING | `(orphan)` (14) | `aggregation` (2), `subqueries` (2), `window-functions` (1), `cohort-and-retention` (1) |
 | PRE-AGGREGATION FILTERING | `(orphan)` (19) | `cohort-and-retention` (2), `funnel-and-event-analysis` (2), `joins` (2), `aggregation` (1) |
@@ -171,7 +171,6 @@ a starting point for deciding which path (existing or new) should include them.
 | 13027 | hard | `funnel-and-event-analysis` | Session engagement score |
 | 13028 | hard | `window-functions` | ROWS vs RANGE: running total divergence |
 | 13029 | hard | `funnel-and-event-analysis` | First conversion within 7 days of signup |
-| 13050 | hard | `ctes-and-recursion` | Per-user revenue and purchase events without fan-out |
 | 12002 | medium | `joins` | Products in refunded orders |
 | 12006 | medium | `joins` | Users with multiple paid payment methods |
 | 12008 | medium | `pivot-and-unpivot` | Order value bands |
@@ -200,7 +199,7 @@ a starting point for deciding which path (existing or new) should include them.
 
 ### Coverage gaps in this track
 
-- 🔴 **`ctes-and-recursion`** — 0 practice Qs (empty). No live path or no questions. Either create a path that aggregates this pattern, or author initial content.
+- 🟡 **`ctes-and-recursion`** — 1 practice Q (thin). Author or recruit 3–5 more to reach healthy threshold.
 - 🔴 **`grouping-extensions`** — 0 practice Qs (empty). No live path or no questions. Either create a path that aggregates this pattern, or author initial content.
 - 🔴 **`date-and-time`** — 0 practice Qs (empty). No live path or no questions. Either create a path that aggregates this pattern, or author initial content.
 - 🔴 **`top-n-and-ranking`** — 0 practice Qs (empty). No live path or no questions. Either create a path that aggregates this pattern, or author initial content.
@@ -209,14 +208,14 @@ a starting point for deciding which path (existing or new) should include them.
 ---
 ## python
 
-Practice questions: **79** (29 in live paths · 50 orphans · 7 divergent). Proposed canonical patterns: **9**.
+Practice questions: **79** (35 in live paths · 44 orphans · 7 divergent). Proposed canonical patterns: **9**.
 
 ### Pattern coverage (live-path-aggregated)
 
 | Pattern | Display | Easy | Medium | Hard | Total | Class |
 |---|---|---:|---:|---:|---:|---|
 | `arrays-and-hashing` | Arrays & Hashing | 3 | 2 | 0 | 5 | ⚠️ uneven |
-| `sliding-window` | Sliding Window & Two Pointers | 1 | 1 | 1 | 3 | 🟡 thin (needs content) |
+| `sliding-window` | Sliding Window & Two Pointers | 3 | 4 | 2 | 9 | ✅ healthy |
 | `stacks-and-queues` | Stacks & Queues | 1 | 3 | 0 | 4 | 🟡 thin (needs content) |
 | `heap-and-priority` | Heaps & Priority Queues | 0 | 0 | 0 | 0 | 🔴 empty (no live path or no questions) |
 | `dynamic-programming` | Dynamic Programming | 0 | 2 | 3 | 5 | ⚠️ uneven |
@@ -239,17 +238,17 @@ A question contributes once per family tag — multi-tag questions count multipl
 | DYNAMIC PROGRAMMING (2D) | `dynamic-programming` (2) | — |
 | GRAPH TRAVERSAL (BFS / DFS) | `graph-traversal` (4) | `(orphan)` (1) |
 | GREEDY CHOICE | `(orphan)` (7) | — |
-| HASH-MAP STATE | `(orphan)` (16) | `arrays-and-hashing` (5), `data-pipeline-scripting` (2), `sliding-window` (2), `dynamic-programming` (1) |
-| HEAP & PRIORITY QUEUE | `(orphan)` (6) | `graph-traversal` (1) |
-| IN-PLACE TRANSFORMATION & SPACE OPTIMIZATION | `(orphan)` (2) | `graph-traversal` (1) |
-| INDEXED SEQUENCE REASONING | `(orphan)` (26) | `arrays-and-hashing` (2), `data-pipeline-scripting` (2), `dynamic-programming` (2), `stacks-and-queues` (1) |
+| HASH-MAP STATE | `(orphan)` (14) | `arrays-and-hashing` (5), `sliding-window` (4), `data-pipeline-scripting` (2), `dynamic-programming` (1) |
+| HEAP & PRIORITY QUEUE | `(orphan)` (5) | `sliding-window` (1), `graph-traversal` (1) |
+| IN-PLACE TRANSFORMATION & SPACE OPTIMIZATION | `graph-traversal` (1) | `(orphan)` (1), `sliding-window` (1) |
+| INDEXED SEQUENCE REASONING | `(orphan)` (25) | `arrays-and-hashing` (2), `data-pipeline-scripting` (2), `dynamic-programming` (2), `sliding-window` (1) |
 | LIST & COLLECTION TRANSFORMATION | `(orphan)` (17) | `data-pipeline-scripting` (4), `arrays-and-hashing` (1) |
 | MODULAR ARITHMETIC & NUMBER THEORY | `(orphan)` (2) | — |
-| SLIDING WINDOW | `(orphan)` (4) | `sliding-window` (2), `stacks-and-queues` (1) |
-| STACK & MONOTONIC STRUCTURES | `stacks-and-queues` (4) | `(orphan)` (1) |
+| SLIDING WINDOW | `sliding-window` (6) | `stacks-and-queues` (1) |
+| STACK & MONOTONIC STRUCTURES | `stacks-and-queues` (4) | `sliding-window` (1) |
 | STREAMING / ONLINE REDUCTION | `(orphan)` (3) | `stacks-and-queues` (1) |
 | STRING PATTERN REASONING | `(orphan)` (8) | `data-pipeline-scripting` (4), `arrays-and-hashing` (2), `sliding-window` (1), `stacks-and-queues` (1) |
-| TWO POINTERS | `(orphan)` (3) | `sliding-window` (2) |
+| TWO POINTERS | `sliding-window` (4) | `(orphan)` (1) |
 | UNION-FIND & DISJOINT SET | `graph-traversal` (1) | — |
 | WEIGHTED SHORTEST PATH | `graph-traversal` (2) | — |
 
@@ -284,7 +283,6 @@ a starting point for deciding which path (existing or new) should include them.
 | 21013 | easy | `arrays-and-hashing` | Count Occurrences |
 | 21016 | easy | `data-pipeline-scripting` | Flatten One Level |
 | 21017 | easy | `data-pipeline-scripting` | Rotate List Left |
-| 21018 | easy | `sliding-window` | Merge Two Sorted Lists |
 | 21020 | easy | `arrays-and-hashing` | First Non-Repeating Character |
 | 21021 | easy | `string-and-text-processing` | String Compression |
 | 21023 | easy | `arrays-and-hashing` | Missing Number |
@@ -295,7 +293,6 @@ a starting point for deciding which path (existing or new) should include them.
 | 21029 | easy | `data-pipeline-scripting` | Second Largest |
 | 21030 | easy | `arrays-and-hashing` | Intersection of Two Lists |
 | 21034 | easy | `arrays-and-hashing` | Find Duplicate Values |
-| 21036 | easy | `sliding-window` | Sliding Window Maximum with deque |
 | 21037 | easy | `data-pipeline-scripting` | Event Type Frequency Counter |
 | 21038 | easy | `arrays-and-hashing` | First Sensor Reading Above Threshold |
 | 21039 | easy | `data-pipeline-scripting` | Config File Parser |
@@ -304,7 +301,6 @@ a starting point for deciding which path (existing or new) should include them.
 | 23001 | hard | `arrays-and-hashing` | Merge Intervals |
 | 23007 | hard | `data-pipeline-scripting` | LRU Cache |
 | 23015 | hard | `heap-and-priority` | Median from Data Stream |
-| 23017 | hard | `sliding-window` | Sliding Window Median |
 | 23020 | hard | `string-and-text-processing` | Implement a Trie |
 | 23023 | hard | `data-pipeline-scripting` | Merge K sorted lists |
 | 23035 | hard | `heap-and-priority` | Minimum Parallel Workers for Job Schedule |
@@ -314,15 +310,12 @@ a starting point for deciding which path (existing or new) should include them.
 | 22010 | medium | `arrays-and-hashing` | Intersection of Two Arrays II |
 | 22011 | medium | `arrays-and-hashing` | Longest Consecutive Sequence |
 | 22012 | medium | `heap-and-priority` | Kth Highest Revenue |
-| 22018 | medium | `sliding-window` | Priority-Partition Log Entries |
 | 22024 | medium | `arrays-and-hashing` | Word Pattern Match |
 | 22027 | medium | `arrays-and-hashing` | Task scheduler |
-| 22028 | medium | `sliding-window` | Find all anagrams in a string |
 | 22041 | medium | `data-pipeline-scripting` | Event Session Segmentation |
 | 22043 | medium | `arrays-and-hashing` | Minimum Batch Processing Capacity |
 | 22044 | medium | `data-pipeline-scripting` | Dominant Category Detection |
 | 22045 | medium | `data-pipeline-scripting` | In-Memory Hash Join |
-| 22046 | medium | `sliding-window` | Sliding Window Rate Limiter |
 | 22047 | medium | `data-pipeline-scripting` | Run-Length Log Encoder |
 | 22048 | medium | `streaming-and-online` | Event Stream Deduplication |
 | 22049 | medium | `data-pipeline-scripting` | Merge Two Sorted Event Streams |
@@ -330,7 +323,6 @@ a starting point for deciding which path (existing or new) should include them.
 
 ### Coverage gaps in this track
 
-- 🟡 **`sliding-window`** — 3 practice Qs (thin). Author or recruit 3–5 more to reach healthy threshold.
 - 🟡 **`stacks-and-queues`** — 4 practice Qs (thin). Author or recruit 3–5 more to reach healthy threshold.
 - 🔴 **`heap-and-priority`** — 0 practice Qs (empty). No live path or no questions. Either create a path that aggregates this pattern, or author initial content.
 - 🔴 **`string-and-text-processing`** — 0 practice Qs (empty). No live path or no questions. Either create a path that aggregates this pattern, or author initial content.
@@ -339,15 +331,15 @@ a starting point for deciding which path (existing or new) should include them.
 ---
 ## python-data
 
-Practice questions: **92** (29 in live paths · 63 orphans · 16 divergent). Proposed canonical patterns: **9**.
+Practice questions: **92** (50 in live paths · 42 orphans · 16 divergent). Proposed canonical patterns: **9**.
 
 ### Pattern coverage (live-path-aggregated)
 
 | Pattern | Display | Easy | Medium | Hard | Total | Class |
 |---|---|---:|---:|---:|---:|---|
 | `dataframe-basics` | DataFrame Basics | 6 | 0 | 0 | 6 | ⚠️ uneven |
-| `groupby` | GroupBy Aggregation | 2 | 1 | 0 | 3 | 🟡 thin (needs content) |
-| `joins-and-merges` | Joins & Merges | 0 | 3 | 0 | 3 | 🟡 thin (needs content) |
+| `groupby` | GroupBy Aggregation | 7 | 7 | 2 | 16 | ✅ healthy |
+| `joins-and-merges` | Joins & Merges | 0 | 10 | 1 | 11 | ⚠️ uneven |
 | `reshape-and-pivot` | Reshape & Pivot | 0 | 2 | 3 | 5 | ⚠️ uneven |
 | `time-series-pandas` | Time Series | 0 | 2 | 4 | 6 | ⚠️ uneven |
 | `window-and-rolling` | Window & Rolling Operations | 0 | 0 | 0 | 0 | 🔴 empty (no live path or no questions) |
@@ -363,23 +355,23 @@ A question contributes once per family tag — multi-tag questions count multipl
 
 | Family | Top landing | Other landings |
 |---|---|---|
-| BOOLEAN INDEXING & FILTERING | `(orphan)` (9) | `dataframe-basics` (4), `time-series-pandas` (1), `joins-and-merges` (1) |
+| BOOLEAN INDEXING & FILTERING | `(orphan)` (7) | `dataframe-basics` (4), `groupby` (2), `time-series-pandas` (1), `joins-and-merges` (1) |
 | CATEGORICAL & BINNING | `(orphan)` (5) | `customer-analytics` (1) |
-| COLUMN SELECTION & PROJECTION | `(orphan)` (11) | `dataframe-basics` (5), `groupby` (1), `joins-and-merges` (1), `customer-analytics` (1) |
-| DATA QUALITY SKEPTICISM | `(orphan)` (1) | — |
-| DATETIME OPERATIONS | `(orphan)` (16) | `time-series-pandas` (6), `customer-analytics` (2), `groupby` (1) |
+| COLUMN SELECTION & PROJECTION | `(orphan)` (9) | `dataframe-basics` (5), `groupby` (3), `joins-and-merges` (1), `customer-analytics` (1) |
+| DATA QUALITY SKEPTICISM | `joins-and-merges` (1) | — |
+| DATETIME OPERATIONS | `(orphan)` (13) | `time-series-pandas` (6), `customer-analytics` (2), `groupby` (2), `joins-and-merges` (2) |
 | DEBUG PANDAS | `dataframe-basics` (1) | `(orphan)` (1) |
 | DEDUPLICATION LOGIC | `(orphan)` (6) | — |
-| DOUBLE-COUNTING DETECTION | `(orphan)` (1) | — |
-| GROUPED AGGREGATION | `(orphan)` (36) | `customer-analytics` (6), `time-series-pandas` (5), `groupby` (3), `reshape-and-pivot` (2) |
-| MEMORY & VECTORIZATION REASONING | `(orphan)` (3) | — |
-| METHOD CHAINING & PIPELINE STYLE | `(orphan)` (3) | `customer-analytics` (1) |
+| DOUBLE-COUNTING DETECTION | `joins-and-merges` (1) | — |
+| GROUPED AGGREGATION | `(orphan)` (18) | `groupby` (15), `joins-and-merges` (7), `customer-analytics` (6), `time-series-pandas` (5) |
+| MEMORY & VECTORIZATION REASONING | `(orphan)` (2) | `groupby` (1) |
+| METHOD CHAINING & PIPELINE STYLE | `groupby` (2) | `customer-analytics` (1), `(orphan)` (1) |
 | MISSING VALUE STRATEGY | `(orphan)` (7) | `dataframe-basics` (2), `reshape-and-pivot` (1) |
-| MULTI-DATAFRAME ENTITY LINKING | `(orphan)` (18) | `reshape-and-pivot` (3), `joins-and-merges` (3), `customer-analytics` (1) |
-| OUTPUT SHAPE & ORDERING | `(orphan)` (14) | `dataframe-basics` (2), `reshape-and-pivot` (2), `joins-and-merges` (2), `groupby` (1) |
+| MULTI-DATAFRAME ENTITY LINKING | `joins-and-merges` (11) | `(orphan)` (9), `reshape-and-pivot` (3), `customer-analytics` (1), `groupby` (1) |
+| OUTPUT SHAPE & ORDERING | `(orphan)` (8) | `groupby` (6), `joins-and-merges` (3), `dataframe-basics` (2), `reshape-and-pivot` (2) |
 | RANKING & TOP-N PER GROUP | `(orphan)` (7) | — |
 | RESHAPING & PIVOT | `reshape-and-pivot` (5) | `customer-analytics` (1), `(orphan)` (1) |
-| TRANSFORM VS AGGREGATE | `(orphan)` (3) | `customer-analytics` (2) |
+| TRANSFORM VS AGGREGATE | `groupby` (3) | `customer-analytics` (2) |
 | WINDOW & ROLLING OPERATIONS | `time-series-pandas` (4) | `(orphan)` (4), `groupby` (1) |
 
 ### Divergences (live path says A, tags suggest B)
@@ -418,11 +410,7 @@ a starting point for deciding which path (existing or new) should include them.
 | 31006 | easy | `data-cleaning` | First Event Type per User |
 | 31008 | easy | `top-n-and-ranking` | Top Products by Order Quantity |
 | 31010 | easy | `time-series-pandas` | Orders Placed in 2023 |
-| 31011 | easy | `groupby` | Average Order Value per User |
 | 31012 | easy | `top-n-and-ranking` | Latest Order per User |
-| 31013 | easy | `groupby` | Support Tickets by Status |
-| 31014 | easy | `groupby` | Employee Count by Department |
-| 31015 | easy | `groupby` | Revenue per Product |
 | 31016 | easy | `data-cleaning` | Orders with Missing or Zero Discount |
 | 31017 | easy | `time-series-pandas` | Extract Order Date (Date Only) |
 | 31018 | easy | `time-series-pandas` | Users Registered After 2022 |
@@ -433,13 +421,9 @@ a starting point for deciding which path (existing or new) should include them.
 | 31024 | easy | `data-cleaning` | Drop Events Without a Product |
 | 31025 | easy | `data-cleaning` | Forward-Fill Missing Resolution Hours |
 | 31026 | easy | `data-cleaning` | Event Count per Product Including Null Group |
-| 31027 | easy | `groupby` | Average Order Value by Status |
 | 31028 | easy | `dataframe-basics` | Sessions by channel group |
 | 33002 | hard | `top-n-and-ranking` | Revenue Percentile Rank by Category |
-| 33004 | hard | `groupby` | User Lifetime Value Rank |
 | 33005 | hard | `window-and-rolling` | Cumulative Revenue per User |
-| 33007 | hard | `groupby` | Support Ticket Resolution Rate by Month |
-| 33008 | hard | `joins-and-merges` | Employee Salary Distribution by Department |
 | 33012 | hard | `data-cleaning` | Multi-Step Funnel Analysis |
 | 33014 | hard | `data-cleaning` | Product Affinity Pairs |
 | 33016 | hard | `data-cleaning` | Employee Tenure Calculation |
@@ -449,40 +433,25 @@ a starting point for deciding which path (existing or new) should include them.
 | 33023 | hard | `data-cleaning` | Funnel conversion analysis from events |
 | 33038 | hard | `data-cleaning` | Discount Classification Performance |
 | 32007 | medium | `top-n-and-ranking` | Rank Products by Price within Category |
-| 32008 | medium | `groupby` | Revenue Contribution Percent |
 | 32009 | medium | `time-series-pandas` | Orders Grouped by Month-Year |
 | 32010 | medium | `data-cleaning` | Price Bucket Segmentation |
-| 32011 | medium | `joins-and-merges` | Top 10 Products by Revenue (Three-Table Join) |
 | 32012 | medium | `dataframe-basics` | Support Ticket Resolution Rate |
 | 32013 | medium | `window-and-rolling` | Cumulative Employee Salary by Department |
 | 32014 | medium | `data-cleaning` | Merge Payments with Orders |
 | 32015 | medium | `data-cleaning` | Users with Sessions from Multiple Device Types |
 | 32016 | medium | `dataframe-basics` | Top 20 Order Items by Revenue |
-| 32018 | medium | `joins-and-merges` | Category Revenue Share |
 | 32019 | medium | `top-n-and-ranking` | Employee Salary Percentile Rank |
-| 32020 | medium | `joins-and-merges` | Days Between Order and Payment |
-| 32021 | medium | `groupby` | Order Items Above Product Average Price |
 | 32022 | medium | `top-n-and-ranking` | Top Product per Category by Revenue |
 | 32023 | medium | `time-series-pandas` | Revenue by Day of Week |
-| 32024 | medium | `joins-and-merges` | Event Count per Session |
-| 32025 | medium | `groupby` | Employees Above Department Average Salary |
 | 32028 | medium | `top-n-and-ranking` | Salary rank and percentile by department |
-| 32029 | medium | `groupby` | Named aggregation: order stats by status |
 | 32031 | medium | `data-cleaning` | Orders with Most Line Items |
-| 32042 | medium | `joins-and-merges` | Match Events to Most Recent Prior Order |
 | 32043 | medium | `data-cleaning` | Fill Missing Emails with combine_first |
 | 32044 | medium | `dataframe-basics` | Compute Discount Rate and Flag with assign |
-| 32045 | medium | `groupby` | Build a Transformation Pipeline with pipe |
 | 32046 | medium | `time-series-pandas` | Convert Event Timestamps to New York Time |
-| 32049 | medium | `groupby` | Memory-optimised channel revenue summary |
-| 32050 | medium | `joins-and-merges` | Fix inflated user revenue from payment fan-out |
-| 32051 | medium | `joins-and-merges` | Fix double-counted revenue after order-items join |
 | 32052 | medium | `data-cleaning` | Fix cumulative revenue running total (sort before cumsum) |
 
 ### Coverage gaps in this track
 
-- 🟡 **`groupby`** — 3 practice Qs (thin). Author or recruit 3–5 more to reach healthy threshold.
-- 🟡 **`joins-and-merges`** — 3 practice Qs (thin). Author or recruit 3–5 more to reach healthy threshold.
 - 🔴 **`window-and-rolling`** — 0 practice Qs (empty). No live path or no questions. Either create a path that aggregates this pattern, or author initial content.
 - 🔴 **`data-cleaning`** — 0 practice Qs (empty). No live path or no questions. Either create a path that aggregates this pattern, or author initial content.
 - 🔴 **`top-n-and-ranking`** — 0 practice Qs (empty). No live path or no questions. Either create a path that aggregates this pattern, or author initial content.
@@ -662,17 +631,17 @@ a starting point for deciding which path (existing or new) should include them.
 ---
 ## data-engineering
 
-Practice questions: **91** (19 in live paths · 72 orphans · 9 divergent). Proposed canonical patterns: **9**.
+Practice questions: **91** (46 in live paths · 45 orphans · 9 divergent). Proposed canonical patterns: **9**.
 
 ### Pattern coverage (live-path-aggregated)
 
 | Pattern | Display | Easy | Medium | Hard | Total | Class |
 |---|---|---:|---:|---:|---:|---|
 | `etl-elt` | ETL / ELT Design | 5 | 0 | 0 | 5 | ⚠️ uneven |
-| `orchestration` | Pipeline Orchestration | 1 | 0 | 0 | 1 | 🟡 thin (needs content) |
-| `schema-evolution` | Schema Evolution | 0 | 2 | 0 | 2 | 🟡 thin (needs content) |
-| `delivery-semantics` | Delivery Semantics | 0 | 2 | 0 | 2 | 🟡 thin (needs content) |
-| `backfill-design` | Backfill Design | 0 | 1 | 0 | 1 | 🟡 thin (needs content) |
+| `orchestration` | Pipeline Orchestration | 3 | 3 | 0 | 6 | ⚠️ uneven |
+| `schema-evolution` | Schema Evolution | 2 | 5 | 3 | 10 | ✅ healthy |
+| `delivery-semantics` | Delivery Semantics | 2 | 5 | 7 | 14 | ✅ healthy |
+| `backfill-design` | Backfill Design | 0 | 2 | 1 | 3 | 🟡 thin (needs content) |
 | `lineage-and-observability` | Lineage & Pipeline Observability | 1 | 5 | 2 | 8 | ✅ healthy |
 | `streaming-vs-batch` | Streaming vs Batch Architecture | 0 | 0 | 0 | 0 | 🔴 empty (no live path or no questions) |
 | `cost-and-format-optimization` | Cost & Format Optimization | 0 | 0 | 0 | 0 | 🔴 empty (no live path or no questions) |
@@ -686,27 +655,27 @@ A question contributes once per family tag — multi-tag questions count multipl
 
 | Family | Top landing | Other landings |
 |---|---|---|
-| BACKFILL DESIGN | `(orphan)` (8) | `backfill-design` (1) |
+| BACKFILL DESIGN | `(orphan)` (5) | `backfill-design` (3), `orchestration` (1) |
 | BACKPRESSURE | `(orphan)` (1) | — |
-| BATCH VS STREAMING | `(orphan)` (9) | `etl-elt` (1), `delivery-semantics` (1), `schema-evolution` (1) |
-| CDC & INGESTION | `(orphan)` (7) | — |
+| BATCH VS STREAMING | `(orphan)` (6) | `delivery-semantics` (4), `etl-elt` (1), `schema-evolution` (1) |
+| CDC & INGESTION | `(orphan)` (5) | `delivery-semantics` (1), `schema-evolution` (1) |
 | COST OPTIMIZATION | `(orphan)` (10) | `delivery-semantics` (1) |
-| DATA CONTRACT | `(orphan)` (7) | `schema-evolution` (1) |
+| DATA CONTRACT | `schema-evolution` (6) | `(orphan)` (2) |
 | DATA GOVERNANCE | `(orphan)` (2) | — |
-| DATA QUALITY | `(orphan)` (14) | `lineage-and-observability` (3) |
-| DELIVERY SEMANTICS | `(orphan)` (12) | `etl-elt` (1), `delivery-semantics` (1) |
+| DATA QUALITY | `(orphan)` (11) | `lineage-and-observability` (3), `delivery-semantics` (2), `schema-evolution` (1) |
+| DELIVERY SEMANTICS | `delivery-semantics` (10) | `(orphan)` (2), `etl-elt` (1), `schema-evolution` (1) |
 | ETL VS ELT | `(orphan)` (3) | `etl-elt` (1) |
-| IDEMPOTENCY | `(orphan)` (11) | `etl-elt` (1), `delivery-semantics` (1), `backfill-design` (1) |
+| IDEMPOTENCY | `delivery-semantics` (7) | `(orphan)` (4), `backfill-design` (2), `etl-elt` (1) |
 | INCIDENT RESPONSE | `(orphan)` (4) | `lineage-and-observability` (2) |
-| LINEAGE & OBSERVABILITY | `(orphan)` (8) | `lineage-and-observability` (8) |
-| ORCHESTRATION | `(orphan)` (6) | `orchestration` (1), `lineage-and-observability` (1) |
-| PARTITIONING & PRUNING | `(orphan)` (11) | `etl-elt` (1) |
-| SCD OPERATIONS | `(orphan)` (4) | `etl-elt` (1) |
-| SCHEDULING & SLAS | `(orphan)` (10) | `lineage-and-observability` (3), `orchestration` (1) |
-| SCHEMA EVOLUTION | `(orphan)` (10) | `lineage-and-observability` (2), `schema-evolution` (1) |
+| LINEAGE & OBSERVABILITY | `lineage-and-observability` (8) | `(orphan)` (7), `orchestration` (1) |
+| ORCHESTRATION | `orchestration` (5) | `delivery-semantics` (2), `lineage-and-observability` (1) |
+| PARTITIONING & PRUNING | `(orphan)` (10) | `etl-elt` (1), `backfill-design` (1) |
+| SCD OPERATIONS | `(orphan)` (3) | `etl-elt` (1), `backfill-design` (1) |
+| SCHEDULING & SLAS | `(orphan)` (6) | `orchestration` (5), `lineage-and-observability` (3) |
+| SCHEMA EVOLUTION | `schema-evolution` (9) | `(orphan)` (2), `lineage-and-observability` (2) |
 | STORAGE ARCHITECTURE | `(orphan)` (12) | `etl-elt` (3) |
-| STORAGE LAYOUT & FILE FORMATS | `(orphan)` (8) | `etl-elt` (1), `schema-evolution` (1) |
-| WATERMARKING | `(orphan)` (6) | `delivery-semantics` (1) |
+| STORAGE LAYOUT & FILE FORMATS | `(orphan)` (6) | `schema-evolution` (3), `etl-elt` (1) |
+| WATERMARKING | `delivery-semantics` (6) | `(orphan)` (1) |
 
 ### Divergences (live path says A, tags suggest B)
 
@@ -738,8 +707,6 @@ a starting point for deciding which path (existing or new) should include them.
 | 51003 | easy | `etl-elt` | Choosing ETL vs ELT: Sensitive Data |
 | 51005 | easy | `etl-elt` | Making an Insert Idempotent |
 | 51006 | easy | `etl-elt` | Idempotency and Partition Overwrite |
-| 51008 | easy | `orchestration` | Task Dependencies in a DAG |
-| 51009 | easy | `orchestration` | Orchestration: Retry vs Backfill |
 | 51011 | easy | `streaming-vs-batch` | When to Choose Streaming Over Batch |
 | 51012 | easy | `streaming-vs-batch` | Micro-Batch Processing |
 | 51014 | easy | `cost-and-format-optimization` | Choosing a Partition Key |
@@ -753,46 +720,23 @@ a starting point for deciding which path (existing or new) should include them.
 | 51023 | easy | `etl-elt` | CDC: Log-Based vs Query-Based |
 | 51024 | easy | `data-quality-and-incident-response` | Data Quality: Where to Place a Null Check |
 | 51025 | easy | `data-quality-and-incident-response` | Data Quality: Freshness Checks |
-| 51026 | easy | `schema-evolution` | Schema Evolution: Full Compatibility |
-| 51027 | easy | `schema-evolution` | Schema Evolution: Breaking Changes |
-| 51028 | easy | `delivery-semantics` | Delivery Semantics: At-Least-Once |
-| 51029 | easy | `delivery-semantics` | Delivery Semantics: At-Most-Once |
-| 53001 | hard | `delivery-semantics` | Exactly-Once Across a Transactional Boundary |
-| 53002 | hard | `delivery-semantics` | Duplicate Detection at Scale |
-| 53003 | hard | `delivery-semantics` | Delivery Semantics and Consumer-Side State |
-| 53004 | hard | `delivery-semantics` | Exactly-Once with Fan-Out Sinks |
 | 53005 | hard | `data-quality-and-incident-response` | Incident Response: Silent Data Loss |
 | 53007 | hard | `data-quality-and-incident-response` | Incident Response: Data Corruption in Production |
 | 53009 | hard | `lineage-and-observability` | Observability: Distinguishing Pipeline vs Data Quality Issues |
 | 53010 | hard | `cost-and-format-optimization` | SCD Type 2 and Fact Table Joins |
-| 53011 | hard | `backfill-design` | SCD Type 2 and Late-Arriving Dimension Changes |
-| 53012 | hard | `schema-evolution` | Schema Evolution with Columnar Storage |
-| 53013 | hard | `schema-evolution` | Breaking Schema Change with Active Consumers |
 | 53014 | hard | `cost-and-format-optimization` | Cost Optimization: Materialization Decisions |
 | 53015 | hard | `cost-and-format-optimization` | Cost Optimization: Partition Strategy and Scan Cost |
-| 53016 | hard | `delivery-semantics` | Watermark and Out-of-Order Event Storms |
-| 53017 | hard | `delivery-semantics` | Watermark Tuning for Multi-Source Joins |
 | 53018 | hard | `cost-and-format-optimization` | Lakehouse ACID and Concurrent Writes |
 | 53019 | hard | `cost-and-format-optimization` | Data Lake Zone Architecture Trade-offs |
 | 53020 | hard | `data-quality-and-incident-response` | Data Quality at Scale: Statistical Anomaly Detection |
 | 53022 | hard | `cost-and-format-optimization` | Snowflake Warehouse Cost Optimization: Separate Warehouses and Auto-Suspend |
 | 53023 | hard | `cost-and-format-optimization` | BigQuery Cost Reduction: Partitioning, Incremental Exports, and Scan Optimization |
 | 53024 | hard | `data-quality-and-incident-response` | Schema Drift Incident: Containment and Forward-Fix Strategy |
-| 53025 | hard | `delivery-semantics` | CDC Watermark Too Short — Late Debezium Events Silently Dropped |
 | 53026 | hard | `cost-and-format-optimization` | Dynamic Partition Overwrite Deleting the Entire Table |
-| 53027 | hard | `schema-evolution` | Schema Merge Upcasting Numeric Column to String Across Parquet Sources |
-| 52002 | medium | `schema-evolution` | Forward vs Backward Compatibility Trade-offs |
 | 52004 | medium | `streaming-vs-batch` | Micro-Batch vs True Streaming Latency |
 | 52005 | medium | `streaming-vs-batch` | Stateful Streaming: Session Windows |
 | 52006 | medium | `streaming-vs-batch` | Lambda Architecture Trade-offs |
-| 52008 | medium | `delivery-semantics` | Event Time vs Processing Time |
-| 52009 | medium | `delivery-semantics` | Watermark and Window Completeness |
 | 52011 | medium | `data-quality-and-incident-response` | Data Quality: Row Count Assertions |
-| 52013 | medium | `delivery-semantics` | End-to-End Exactly-Once in a Pipeline |
-| 52014 | medium | `orchestration` | Orchestration: Fan-Out Task Design |
-| 52015 | medium | `orchestration` | Orchestration: Event-Driven vs Schedule Trigger |
-| 52017 | medium | `orchestration` | SLA Budgeting Across Pipeline Stages |
-| 52019 | medium | `backfill-design` | Backfill Design: Making Jobs Backfill-Safe |
 | 52020 | medium | `cost-and-format-optimization` | Partition Pruning: Filter Pushdown |
 | 52021 | medium | `cost-and-format-optimization` | Data Skew in Partitioned Joins |
 | 52023 | medium | `cost-and-format-optimization` | Compaction: Solving the Small File Problem |
@@ -803,16 +747,11 @@ a starting point for deciding which path (existing or new) should include them.
 | 52030 | medium | `etl-elt` | ELT Transformation Layers: Debugging a Wrong Metric |
 | 52031 | medium | `streaming-vs-batch` | Backpressure in a Streaming Pipeline |
 | 52032 | medium | _unrouted_ | GDPR Erasure in an Immutable Data Lake: Crypto Shredding |
-| 52033 | medium | `schema-evolution` | Operationalizing Data Contracts: Schema Registry and CI Enforcement |
-| 52034 | medium | `schema-evolution` | Avro Consumer Failing After Producer Adds Required Field Without Default |
 | 52035 | medium | `etl-elt` | Backfill Job Producing Duplicate Rows in the Warehouse |
 
 ### Coverage gaps in this track
 
-- 🟡 **`orchestration`** — 1 practice Q (thin). Author or recruit 3–5 more to reach healthy threshold.
-- 🟡 **`schema-evolution`** — 2 practice Qs (thin). Author or recruit 3–5 more to reach healthy threshold.
-- 🟡 **`delivery-semantics`** — 2 practice Qs (thin). Author or recruit 3–5 more to reach healthy threshold.
-- 🟡 **`backfill-design`** — 1 practice Q (thin). Author or recruit 3–5 more to reach healthy threshold.
+- 🟡 **`backfill-design`** — 3 practice Qs (thin). Author or recruit 3–5 more to reach healthy threshold.
 - 🔴 **`streaming-vs-batch`** — 0 practice Qs (empty). No live path or no questions. Either create a path that aggregates this pattern, or author initial content.
 - 🔴 **`cost-and-format-optimization`** — 0 practice Qs (empty). No live path or no questions. Either create a path that aggregates this pattern, or author initial content.
 - 🔴 **`data-quality-and-incident-response`** — 0 practice Qs (empty). No live path or no questions. Either create a path that aggregates this pattern, or author initial content.
@@ -820,20 +759,20 @@ a starting point for deciding which path (existing or new) should include them.
 ---
 ## data-modeling
 
-Practice questions: **81** (31 in live paths · 50 orphans · 3 divergent). Proposed canonical patterns: **14**.
+Practice questions: **81** (65 in live paths · 16 orphans · 3 divergent). Proposed canonical patterns: **14**.
 
 ### Pattern coverage (live-path-aggregated)
 
 | Pattern | Display | Easy | Medium | Hard | Total | Class |
 |---|---|---:|---:|---:|---:|---|
-| `star-snowflake` | Star & Snowflake Schemas | 4 | 0 | 0 | 4 | 🟡 thin (needs content) |
-| `fact-table-design` | Fact Table Design | 1 | 0 | 0 | 1 | 🟡 thin (needs content) |
+| `star-snowflake` | Star & Snowflake Schemas | 7 | 0 | 1 | 8 | ⚠️ uneven |
+| `fact-table-design` | Fact Table Design | 3 | 3 | 1 | 7 | ✅ healthy |
 | `surrogate-keys` | Surrogate vs Natural Keys | 0 | 0 | 0 | 0 | 🔴 empty (no live path or no questions) |
-| `grain-definition` | Grain Definition | 0 | 2 | 0 | 2 | 🟡 thin (needs content) |
-| `scd` | Slowly Changing Dimensions | 1 | 2 | 0 | 3 | 🟡 thin (needs content) |
+| `grain-definition` | Grain Definition | 1 | 4 | 2 | 7 | ✅ healthy |
+| `scd` | Slowly Changing Dimensions | 4 | 7 | 6 | 17 | ✅ healthy |
 | `normalization` | Normalization (1NF–3NF) | 3 | 0 | 0 | 3 | 🟡 thin (needs content) |
-| `referential-integrity` | Referential Integrity | 1 | 2 | 0 | 3 | 🟡 thin (needs content) |
-| `bridge-tables` | Bridge Tables & Many-to-Many | 0 | 1 | 0 | 1 | 🟡 thin (needs content) |
+| `referential-integrity` | Referential Integrity | 1 | 2 | 2 | 5 | ✅ healthy |
+| `bridge-tables` | Bridge Tables & Many-to-Many | 0 | 3 | 1 | 4 | 🟡 thin (needs content) |
 | `dbt-modeling` | dbt Layered Modeling | 1 | 3 | 2 | 6 | ✅ healthy |
 | `wide-tables` | Wide Tables & OBT | 3 | 3 | 2 | 8 | ✅ healthy |
 | `conformed-dimensions` | Conformed Dimensions | 0 | 0 | 0 | 0 | 🔴 empty (no live path or no questions) |
@@ -849,28 +788,28 @@ A question contributes once per family tag — multi-tag questions count multipl
 
 | Family | Top landing | Other landings |
 |---|---|---|
-| ADDITIVE VS NON-ADDITIVE | `(orphan)` (1) | — |
-| AGGREGATE & SUMMARY DESIGN | `(orphan)` (5) | `wide-tables` (2) |
-| BI-TEMPORAL MODELING | `(orphan)` (1) | — |
-| BRIDGE & MANY-TO-MANY | `(orphan)` (6) | `bridge-tables` (1) |
-| CONFORMED DIMENSIONS | `(orphan)` (3) | — |
+| ADDITIVE VS NON-ADDITIVE | `fact-table-design` (1) | — |
+| AGGREGATE & SUMMARY DESIGN | `(orphan)` (4) | `wide-tables` (2), `grain-definition` (1) |
+| BI-TEMPORAL MODELING | `scd` (1) | — |
+| BRIDGE & MANY-TO-MANY | `bridge-tables` (4) | `(orphan)` (3) |
+| CONFORMED DIMENSIONS | `(orphan)` (2) | `scd` (1) |
 | DATA VAULT | `(orphan)` (4) | — |
-| DBT MODELING | `dbt-modeling` (6) | `wide-tables` (2), `(orphan)` (1) |
-| DENORMALIZATION TRADEOFF | `(orphan)` (6) | `wide-tables` (5), `star-snowflake` (2), `dbt-modeling` (2) |
-| DIMENSION DESIGN | `(orphan)` (15) | `scd` (2), `referential-integrity` (1) |
-| DIMENSIONAL MODELING | `(orphan)` (17) | `star-snowflake` (2), `grain-definition` (2), `scd` (2), `wide-tables` (1) |
-| DOUBLE-COUNTING & FAN-OUT | `(orphan)` (3) | — |
-| FACT TABLE DESIGN | `(orphan)` (24) | `fact-table-design` (1), `star-snowflake` (1), `dbt-modeling` (1), `grain-definition` (1) |
-| GRAIN DEFINITION | `(orphan)` (10) | `grain-definition` (2), `fact-table-design` (1), `star-snowflake` (1) |
+| DBT MODELING | `dbt-modeling` (6) | `wide-tables` (2), `referential-integrity` (1) |
+| DENORMALIZATION TRADEOFF | `wide-tables` (5) | `star-snowflake` (3), `scd` (2), `(orphan)` (2), `dbt-modeling` (2) |
+| DIMENSION DESIGN | `scd` (11) | `(orphan)` (4), `star-snowflake` (1), `referential-integrity` (1), `fact-table-design` (1) |
+| DIMENSIONAL MODELING | `scd` (9) | `star-snowflake` (6), `grain-definition` (4), `referential-integrity` (3), `bridge-tables` (2) |
+| DOUBLE-COUNTING & FAN-OUT | `grain-definition` (2) | `bridge-tables` (1) |
+| FACT TABLE DESIGN | `fact-table-design` (7) | `scd` (7), `grain-definition` (5), `bridge-tables` (4), `star-snowflake` (2) |
+| GRAIN DEFINITION | `grain-definition` (7) | `fact-table-design` (4), `star-snowflake` (1), `bridge-tables` (1), `(orphan)` (1) |
 | HIERARCHIES & MULTI-PATH | `(orphan)` (3) | — |
-| NORMALIZATION | `(orphan)` (4) | `normalization` (3), `wide-tables` (3), `dbt-modeling` (2) |
-| REFERENTIAL INTEGRITY | `referential-integrity` (3) | `(orphan)` (3), `star-snowflake` (1), `scd` (1) |
-| SCD STRUCTURE | `(orphan)` (9) | `scd` (2) |
-| SCHEMA EVOLUTION | `(orphan)` (3) | — |
-| SCHEMA FROM REQUIREMENTS | `(orphan)` (10) | `dbt-modeling` (3), `wide-tables` (3), `grain-definition` (1) |
+| NORMALIZATION | `star-snowflake` (3) | `normalization` (3), `wide-tables` (3), `dbt-modeling` (2), `(orphan)` (1) |
+| REFERENTIAL INTEGRITY | `referential-integrity` (5) | `star-snowflake` (1), `(orphan)` (1), `scd` (1) |
+| SCD STRUCTURE | `scd` (10) | `(orphan)` (1) |
+| SCHEMA EVOLUTION | `scd` (3) | — |
+| SCHEMA FROM REQUIREMENTS | `(orphan)` (4) | `dbt-modeling` (3), `fact-table-design` (3), `wide-tables` (3), `grain-definition` (2) |
 | SEMANTIC LAYER & METRIC GOVERNANCE | `(orphan)` (1) | — |
-| SURROGATE VS NATURAL KEYS | `(orphan)` (4) | `star-snowflake` (1) |
-| WIDE VS NARROW | `wide-tables` (4) | `(orphan)` (1) |
+| SURROGATE VS NATURAL KEYS | `(orphan)` (3) | `star-snowflake` (1), `scd` (1) |
+| WIDE VS NARROW | `wide-tables` (4) | `star-snowflake` (1) |
 
 ### Divergences (live path says A, tags suggest B)
 
@@ -892,67 +831,28 @@ a starting point for deciding which path (existing or new) should include them.
 
 | QID | Diff | Tag-suggested pattern | Title |
 |---|---|---|---|
-| 61002 | easy | `star-snowflake` | Snowflake Schema: Dimension Normalisation |
-| 61003 | easy | `star-snowflake` | Star vs Snowflake: Storage and Joins |
-| 61008 | easy | `fact-table-design` | Periodic Snapshot Fact Table |
-| 61009 | easy | `fact-table-design` | Accumulating Snapshot Fact Table |
 | 61011 | easy | `surrogate-keys` | Natural Key: When Source IDs Are Reliable |
 | 61012 | easy | `surrogate-keys` | Surrogate Key: Integrating Multiple Source Systems |
-| 61014 | easy | `scd` | SCD Type 2: Preserving History With New Rows |
-| 61015 | easy | `scd` | SCD Type 1 vs Type 2: Choosing the Right Strategy |
-| 61017 | easy | `grain-definition` | Grain Consistency: Mixing Granularities |
-| 61023 | easy | `scd` | Dimension Table: Descriptive Attributes |
-| 61025 | easy | `star-snowflake` | Star Schema Design: Identifying Facts vs Dimensions |
 | 63001 | hard | `data-vault` | Data Vault Hub Design for Multi-Source Customer IDs |
-| 63002 | hard | `scd` | Choosing the Right SCD Strategy for Analyst-Facing Price History |
-| 63003 | hard | `grain-definition` | Grain Definition for Accumulating Snapshot Fact Tables |
 | 63005 | hard | `aggregate-and-summary-design` | Pre-Aggregation vs. Live Query for High-Cardinality Dashboard |
 | 63006 | hard | `data-vault` | Data Vault Satellite Design for Multi-Source Attribute Conflicts |
-| 63007 | hard | `referential-integrity` | Referential Integrity Constraints in a Cloud Analytical Warehouse |
-| 63008 | hard | `bridge-tables` | Modeling a Many-to-Many Promotion-Product Relationship in a Star Schema |
-| 63010 | hard | `star-snowflake` | Choosing Between Lake, Warehouse, and Lakehouse for ML + BI Workloads |
-| 63011 | hard | `scd` | Schema Design from Ambiguous Subscription + Usage Requirements |
 | 63012 | hard | `data-vault` | Data Vault Link Design for Multi-Party Financial Transactions |
 | 63013 | hard | `aggregate-and-summary-design` | Partitioning Strategy for a 10-Billion-Row Event Fact Table |
 | 63014 | hard | `hierarchies-and-multipath` | Handling Hierarchy Ragged-Depth in an Organizational Dimension |
-| 63015 | hard | `referential-integrity` | Referential Integrity Under High-Volume Parallel Loads |
-| 63016 | hard | `scd` | SCD Type 4 vs. Type 6 for a High-Churn Customer Attribute |
 | 63017 | hard | `aggregate-and-summary-design` | Modeling Customer Lifetime Value in a Dimensional Schema |
-| 63020 | hard | `fact-table-design` | Modeling Requirements for a Multi-Currency Financial Reporting System |
-| 63022 | hard | `scd` | Bi-Temporal Queries: Correct Predicates for Both Time Axes |
 | 63023 | hard | `hierarchies-and-multipath` | Cross-Hierarchy Reporting: Two Hierarchies in One Dimension |
-| 63024 | hard | `grain-definition` | Fact-to-Fact Join: Avoiding Fan-Out Row Multiplication |
-| 63032 | hard | `scd` | Schema Evolution: Adding a Compliance Column to a Shared Dimension Under a Regulatory Deadline |
-| 63033 | hard | `scd` | Schema Evolution Governance: Breaking-Change Strategy for a High-Fan-Out Shared Dimension |
-| 62003 | medium | `scd` | SCD Type 2: Performance vs. Storage Tradeoff |
-| 62005 | medium | `bridge-tables` | Bridge Table Weighting Factor Edge Case |
-| 62009 | medium | `grain-definition` | Modeling a Subscription Funnel: Grain Choice |
-| 62011 | medium | `scd` | Junk Dimension Design |
-| 62012 | medium | `scd` | Degenerate Dimension: When to Use One |
 | 62016 | medium | `wide-tables` | Denormalization Tradeoff: Update Anomalies in Analytics |
-| 62019 | medium | `fact-table-design` | Accumulating Snapshot Fact Table for Order Fulfillment |
-| 62020 | medium | `grain-definition` | Grain Definition: Sessions with Variable Event Counts |
 | 62022 | medium | `hierarchies-and-multipath` | Schema from Requirements: Product Hierarchy Rollup |
-| 62023 | medium | `fact-table-design` | Schema from Requirements: Healthcare Patient Events |
-| 62024 | medium | `scd` | SCD Type 2 vs Type 3: When Type 3 is Sufficient |
 | 62025 | medium | `aggregate-and-summary-design` | Partitioning and Clustering: Choosing the Right Strategy |
 | 62026 | medium | _unrouted_ | Semantic Layer: Centralized Metric Governance |
-| 62027 | medium | `fact-table-design` | Semi-Additive Facts: Account Balance in a Periodic Snapshot |
-| 62028 | medium | `bridge-tables` | Multi-Valued Dimension: Bridge Table for Promotions |
-| 62035 | medium | `scd` | Schema Evolution: NULL vs Default When Extending a Fact Table with Missing Historical Data |
 | 62036 | medium | `conformed-dimensions` | Conformed Dimensions: Resolving Cross-Mart Inconsistency for a Shared Business Concept |
 | 62077 | medium | `data-vault` | Data Vault Constructs: What Hubs, Links, and Satellites Each Store |
 
 ### Coverage gaps in this track
 
-- 🟡 **`star-snowflake`** — 4 practice Qs (thin). Author or recruit 3–5 more to reach healthy threshold.
-- 🟡 **`fact-table-design`** — 1 practice Q (thin). Author or recruit 3–5 more to reach healthy threshold.
 - 🔴 **`surrogate-keys`** — 0 practice Qs (empty). No live path or no questions. Either create a path that aggregates this pattern, or author initial content.
-- 🟡 **`grain-definition`** — 2 practice Qs (thin). Author or recruit 3–5 more to reach healthy threshold.
-- 🟡 **`scd`** — 3 practice Qs (thin). Author or recruit 3–5 more to reach healthy threshold.
 - 🟡 **`normalization`** — 3 practice Qs (thin). Author or recruit 3–5 more to reach healthy threshold.
-- 🟡 **`referential-integrity`** — 3 practice Qs (thin). Author or recruit 3–5 more to reach healthy threshold.
-- 🟡 **`bridge-tables`** — 1 practice Q (thin). Author or recruit 3–5 more to reach healthy threshold.
+- 🟡 **`bridge-tables`** — 4 practice Qs (thin). Author or recruit 3–5 more to reach healthy threshold.
 - 🔴 **`conformed-dimensions`** — 0 practice Qs (empty). No live path or no questions. Either create a path that aggregates this pattern, or author initial content.
 - 🔴 **`data-vault`** — 0 practice Qs (empty). No live path or no questions. Either create a path that aggregates this pattern, or author initial content.
 - 🔴 **`aggregate-and-summary-design`** — 0 practice Qs (empty). No live path or no questions. Either create a path that aggregates this pattern, or author initial content.
@@ -961,7 +861,7 @@ a starting point for deciding which path (existing or new) should include them.
 ---
 ## statistics
 
-Practice questions: **100** (28 in live paths · 72 orphans · 11 divergent). Proposed canonical patterns: **11**.
+Practice questions: **100** (52 in live paths · 48 orphans · 11 divergent). Proposed canonical patterns: **11**.
 
 ### Pattern coverage (live-path-aggregated)
 
@@ -969,10 +869,10 @@ Practice questions: **100** (28 in live paths · 72 orphans · 11 divergent). Pr
 |---|---|---:|---:|---:|---:|---|
 | `descriptive-stats` | Descriptive Statistics | 6 | 0 | 0 | 6 | ⚠️ uneven |
 | `probability-and-combinatorics` | Probability & Combinatorics | 0 | 0 | 0 | 0 | 🔴 empty (no live path or no questions) |
-| `distributions` | Probability Distributions | 2 | 0 | 0 | 2 | 🟡 thin (needs content) |
+| `distributions` | Probability Distributions | 10 | 6 | 2 | 18 | ✅ healthy |
 | `sampling-and-clt` | Sampling & CLT | 0 | 0 | 0 | 0 | 🔴 empty (no live path or no questions) |
 | `hypothesis-testing` | Hypothesis Testing | 0 | 11 | 0 | 11 | ⚠️ uneven |
-| `confidence-intervals` | Confidence Intervals | 0 | 1 | 0 | 1 | 🟡 thin (needs content) |
+| `confidence-intervals` | Confidence Intervals | 0 | 3 | 6 | 9 | ⚠️ uneven |
 | `errors-and-power` | Errors, Power & Multiple Testing | 0 | 0 | 0 | 0 | 🔴 empty (no live path or no questions) |
 | `regression-and-correlation` | Regression, Correlation & Causality | 0 | 8 | 0 | 8 | ⚠️ uneven |
 | `variance-and-anova` | Variance Decomposition & ANOVA | 0 | 0 | 0 | 0 | 🔴 empty (no live path or no questions) |
@@ -988,18 +888,18 @@ A question contributes once per family tag — multi-tag questions count multipl
 | Family | Top landing | Other landings |
 |---|---|---|
 | bayesian inference | `(orphan)` (5) | `hypothesis-testing` (1) |
-| confidence intervals & estimation | `(orphan)` (12) | `confidence-intervals` (1), `regression-and-correlation` (1) |
+| confidence intervals & estimation | `confidence-intervals` (9) | `(orphan)` (4), `regression-and-correlation` (1) |
 | correlation, regression & causality | `(orphan)` (10) | `regression-and-correlation` (7) |
-| descriptive statistics | `(orphan)` (9) | `descriptive-stats` (5), `hypothesis-testing` (1) |
-| distributions | `(orphan)` (26) | `distributions` (2), `hypothesis-testing` (2) |
+| descriptive statistics | `(orphan)` (6) | `descriptive-stats` (5), `distributions` (3), `hypothesis-testing` (1) |
+| distributions | `distributions` (18) | `(orphan)` (6), `confidence-intervals` (4), `hypothesis-testing` (2) |
 | errors & power | `(orphan)` (5) | `hypothesis-testing` (3), `regression-and-correlation` (2) |
 | experimental design (within stats) | `hypothesis-testing` (4) | `(orphan)` (3), `regression-and-correlation` (1) |
-| hypothesis testing | `(orphan)` (15) | `hypothesis-testing` (2), `regression-and-correlation` (1) |
+| hypothesis testing | `(orphan)` (11) | `distributions` (3), `hypothesis-testing` (2), `confidence-intervals` (1), `regression-and-correlation` (1) |
 | multiple testing & correction | `(orphan)` (4) | `hypothesis-testing` (1) |
-| probability & combinatorics | `(orphan)` (24) | `hypothesis-testing` (2), `descriptive-stats` (1), `distributions` (1) |
-| sampling & central limit theorem | `hypothesis-testing` (6) | `(orphan)` (5), `confidence-intervals` (1) |
+| probability & combinatorics | `(orphan)` (17) | `distributions` (8), `hypothesis-testing` (2), `descriptive-stats` (1) |
+| sampling & central limit theorem | `hypothesis-testing` (6) | `(orphan)` (3), `confidence-intervals` (3) |
 | survival analysis & time-to-event | `(orphan)` (3) | — |
-| variance decomposition & ANOVA | `(orphan)` (8) | — |
+| variance decomposition & ANOVA | `(orphan)` (7) | `distributions` (1) |
 
 ### Divergences (live path says A, tags suggest B)
 
@@ -1034,10 +934,6 @@ a starting point for deciding which path (existing or new) should include them.
 | 71009 | easy | `probability-and-combinatorics` | Independent vs Dependent Events |
 | 71010 | easy | `probability-and-combinatorics` | Conditional Probability Definition |
 | 71011 | easy | `probability-and-combinatorics` | Conditional Probability Calculation |
-| 71013 | easy | `distributions` | Binomial Probability Single Term |
-| 71014 | easy | `distributions` | Uniform Distribution Probability |
-| 71015 | easy | `distributions` | Z-Score Calculation |
-| 71017 | easy | `distributions` | Expected Value of Discrete Distribution |
 | 71018 | easy | `probability-and-combinatorics` | Expected Value Interpretation |
 | 71019 | easy | `probability-and-combinatorics` | Combinations vs Permutations |
 | 71020 | easy | `probability-and-combinatorics` | Number of Combinations |
@@ -1046,39 +942,26 @@ a starting point for deciding which path (existing or new) should include them.
 | 71023 | easy | `probability-and-combinatorics` | Sample Space Counting |
 | 71024 | easy | `probability-and-combinatorics` | Permutation Count |
 | 71025 | easy | `probability-and-combinatorics` | Probability of Intersection (Independent Events) |
-| 71026 | easy | `distributions` | Normal Distribution Symmetry |
 | 71027 | easy | `probability-and-combinatorics` | Simple Probability from Sample Space |
-| 71028 | easy | `distributions` | Variance of Discrete Distribution |
 | 71029 | easy | `descriptive-stats` | Kurtosis and Tail Behaviour |
-| 71030 | easy | `distributions` | Binomial vs Bernoulli Relationship |
-| 71031 | easy | `distributions` | Geometric Distribution and Memorylessness |
 | 73001 | hard | `bayesian-reasoning` | Bayesian Posterior Calculation |
 | 73002 | hard | `regression-and-correlation` | Simpson's Paradox |
-| 73003 | hard | `confidence-intervals` | Maximum Likelihood Estimation — Bernoulli |
-| 73004 | hard | `confidence-intervals` | Bootstrap Confidence Interval Logic |
-| 73005 | hard | `confidence-intervals` | Bootstrap Percentile CI |
 | 73006 | hard | `regression-and-correlation` | R-Squared Interpretation |
 | 73007 | hard | `regression-and-correlation` | Computing R-Squared |
 | 73008 | hard | `regression-and-correlation` | Bias-Variance Tradeoff |
-| 73009 | hard | `distributions` | Chi-Squared Test Statistic |
 | 73010 | hard | `errors-and-power` | Multiple Comparisons — FWER |
 | 73011 | hard | `errors-and-power` | Power Analysis — Effect Size |
 | 73012 | hard | `variance-and-anova` | Variance Decomposition — ANOVA Logic |
-| 73013 | hard | `confidence-intervals` | MLE for Exponential Distribution |
 | 73014 | hard | `survival-analysis` | Survival Analysis — Hazard Rate |
 | 73015 | hard | `survival-analysis` | Kaplan-Meier Survival Probability |
-| 73016 | hard | `confidence-intervals` | Method of Moments for Normal Distribution |
 | 73017 | hard | `variance-and-anova` | ANOVA F-Statistic |
 | 73018 | hard | `regression-and-correlation` | Regression — Bias-Variance Decomposition |
-| 73019 | hard | `distributions` | Chi-Squared Test of Independence |
 | 73020 | hard | `bayesian-reasoning` | Posterior Update with Conjugate Prior |
 | 73021 | hard | `bayesian-reasoning` | Posterior Mean Computation |
 | 73022 | hard | `errors-and-power` | Bonferroni Correction Power Loss |
 | 73023 | hard | `variance-and-anova` | Variance of a Linear Combination |
-| 73024 | hard | `confidence-intervals` | Bootstrap vs Parametric CI Tradeoffs |
 | 73027 | hard | `regression-and-correlation` | MCAR, MAR, and MNAR Missingness Mechanisms |
 | 73034 | hard | `hypothesis-testing` | CUPED: Mechanism Behind Variance Reduction |
-| 72003 | medium | `confidence-intervals` | 95% Confidence Interval for a Mean |
 | 72005 | medium | `hypothesis-testing` | Null and Alternative Hypothesis Setup |
 | 72006 | medium | `hypothesis-testing` | p-Value Interpretation |
 | 72007 | medium | `hypothesis-testing` | Type I and Type II Errors |
@@ -1087,27 +970,18 @@ a starting point for deciding which path (existing or new) should include them.
 | 72012 | medium | `regression-and-correlation` | Correlation vs Causation |
 | 72013 | medium | `regression-and-correlation` | A/B Test — Identifying the Correct Setup |
 | 72015 | medium | `sampling-and-clt` | Law of Large Numbers |
-| 72016 | medium | `distributions` | Poisson Probability |
 | 72017 | medium | `bayesian-reasoning` | Bayesian vs Frequentist Reasoning |
-| 72019 | medium | `confidence-intervals` | Confidence Interval Width and Sample Size |
-| 72020 | medium | `distributions` | Poisson Expected Value and Variance |
-| 72021 | medium | `distributions` | Binomial Mean and Standard Deviation |
 | 72023 | medium | `regression-and-correlation` | Effect of Outlier on Correlation |
 | 72024 | medium | `errors-and-power` | Multiple Testing Problem |
 | 72025 | medium | `errors-and-power` | Bonferroni Correction |
-| 72026 | medium | `distributions` | Expected Number of Events (Poisson) |
 | 72027 | medium | `hypothesis-testing` | Selecting the Right Hypothesis Test |
-| 72029 | medium | `distributions` | Log-Normal Distribution and Log Transformation |
-| 72030 | medium | `distributions` | F-Statistic and ANOVA |
 | 72042 | medium | `bayesian-reasoning` | Beta-Binomial Posterior Mean |
 | 72043 | medium | `survival-analysis` | Kaplan-Meier: What Censored Observations Tell Us |
 
 ### Coverage gaps in this track
 
 - 🔴 **`probability-and-combinatorics`** — 0 practice Qs (empty). No live path or no questions. Either create a path that aggregates this pattern, or author initial content.
-- 🟡 **`distributions`** — 2 practice Qs (thin). Author or recruit 3–5 more to reach healthy threshold.
 - 🔴 **`sampling-and-clt`** — 0 practice Qs (empty). No live path or no questions. Either create a path that aggregates this pattern, or author initial content.
-- 🟡 **`confidence-intervals`** — 1 practice Q (thin). Author or recruit 3–5 more to reach healthy threshold.
 - 🔴 **`errors-and-power`** — 0 practice Qs (empty). No live path or no questions. Either create a path that aggregates this pattern, or author initial content.
 - 🔴 **`variance-and-anova`** — 0 practice Qs (empty). No live path or no questions. Either create a path that aggregates this pattern, or author initial content.
 - 🔴 **`bayesian-reasoning`** — 0 practice Qs (empty). No live path or no questions. Either create a path that aggregates this pattern, or author initial content.
@@ -1116,18 +990,18 @@ a starting point for deciding which path (existing or new) should include them.
 ---
 ## ml-fundamentals
 
-Practice questions: **100** (40 in live paths · 60 orphans · 24 divergent). Proposed canonical patterns: **15**.
+Practice questions: **100** (55 in live paths · 45 orphans · 24 divergent). Proposed canonical patterns: **15**.
 
 ### Pattern coverage (live-path-aggregated)
 
 | Pattern | Display | Easy | Medium | Hard | Total | Class |
 |---|---|---:|---:|---:|---:|---|
 | `supervised-unsupervised` | Supervised vs Unsupervised Framing | 7 | 0 | 0 | 7 | ⚠️ uneven |
-| `bias-variance` | Bias-Variance & Overfitting | 1 | 0 | 0 | 1 | 🟡 thin (needs content) |
+| `bias-variance` | Bias-Variance & Overfitting | 4 | 2 | 0 | 6 | ⚠️ uneven |
 | `cross-validation` | Cross-Validation | 2 | 4 | 0 | 6 | ⚠️ uneven |
-| `metrics` | Model Metrics | 0 | 1 | 0 | 1 | 🟡 thin (needs content) |
+| `metrics` | Model Metrics | 5 | 3 | 2 | 10 | ✅ healthy |
 | `regularization` | Regularization | 0 | 3 | 3 | 6 | ⚠️ uneven |
-| `ensembles` | Ensemble Methods | 0 | 2 | 2 | 4 | 🟡 thin (needs content) |
+| `ensembles` | Ensemble Methods | 0 | 3 | 2 | 5 | ⚠️ uneven |
 | `missing-data-and-preprocessing` | Missing Data & Preprocessing Hygiene | 0 | 4 | 1 | 5 | ⚠️ uneven |
 | `feature-engineering` | Feature Engineering | 0 | 0 | 0 | 0 | 🔴 empty (no live path or no questions) |
 | `class-imbalance` | Class Imbalance | 0 | 0 | 0 | 0 | 🔴 empty (no live path or no questions) |
@@ -1147,32 +1021,32 @@ A question contributes once per family tag — multi-tag questions count multipl
 | Family | Top landing | Other landings |
 |---|---|---|
 | ALGORITHMIC FAIRNESS | `(orphan)` (3) | — |
-| BIAS-VARIANCE TRADEOFF | `(orphan)` (6) | `ensembles` (2), `bias-variance` (1), `production-and-monitoring` (1) |
+| BIAS-VARIANCE TRADEOFF | `bias-variance` (6) | `ensembles` (3), `production-and-monitoring` (1) |
 | BOOSTING MECHANICS | `cross-validation` (2) | `ensembles` (1), `regularization` (1) |
 | CLASS IMBALANCE HANDLING | `(orphan)` (6) | `cross-validation` (2), `production-and-monitoring` (1) |
-| CLASSIFICATION METRICS | `(orphan)` (13) | `cross-validation` (1), `metrics` (1) |
+| CLASSIFICATION METRICS | `(orphan)` (8) | `metrics` (6), `cross-validation` (1) |
 | CLUSTERING EVALUATION | `(orphan)` (4) | — |
 | CROSS-VALIDATION DESIGN | `(orphan)` (3) | `cross-validation` (2), `supervised-unsupervised` (1), `production-and-monitoring` (1) |
 | DATA LEAKAGE DETECTION | `production-and-monitoring` (5) | `supervised-unsupervised` (2), `missing-data-and-preprocessing` (2), `(orphan)` (1) |
 | DATA SPLITTING STRATEGY | `supervised-unsupervised` (3) | `(orphan)` (2), `cross-validation` (1) |
 | DEPLOYMENT CONSTRAINTS | `production-and-monitoring` (2) | `(orphan)` (1) |
 | DIMENSIONALITY REDUCTION | `(orphan)` (2) | `production-and-monitoring` (1), `regularization` (1) |
-| ENSEMBLE STRATEGY | `ensembles` (4) | `(orphan)` (3), `cross-validation` (1), `production-and-monitoring` (1) |
+| ENSEMBLE STRATEGY | `ensembles` (5) | `(orphan)` (2), `cross-validation` (1), `production-and-monitoring` (1) |
 | FEATURE IMPORTANCE INTERPRETATION | `(orphan)` (3) | `production-and-monitoring` (1) |
 | FEATURE SCALING NECESSITY | `(orphan)` (5) | `supervised-unsupervised` (1) |
 | FEATURE SELECTION STRATEGY | `(orphan)` (7) | `regularization` (3), `missing-data-and-preprocessing` (1) |
-| GRADIENT DESCENT BEHAVIOR | `(orphan)` (5) | `cross-validation` (1) |
+| GRADIENT DESCENT BEHAVIOR | `(orphan)` (4) | `cross-validation` (1), `metrics` (1) |
 | GRADIENT PATHOLOGY | `regularization` (1) | `(orphan)` (1) |
 | HYPERPARAMETER SENSITIVITY | `(orphan)` (10) | `cross-validation` (2), `regularization` (1) |
 | INTERPRETABILITY TRADEOFF | `(orphan)` (2) | — |
-| LOSS FUNCTION SELECTION | `(orphan)` (4) | `supervised-unsupervised` (1) |
+| LOSS FUNCTION SELECTION | `metrics` (4) | `supervised-unsupervised` (1) |
 | MISSING DATA STRATEGY | `missing-data-and-preprocessing` (4) | — |
-| MODEL CALIBRATION | `production-and-monitoring` (1) | `metrics` (1), `(orphan)` (1) |
+| MODEL CALIBRATION | `metrics` (2) | `production-and-monitoring` (1) |
 | MODEL MONITORING | `(orphan)` (2) | `production-and-monitoring` (2) |
 | NEURAL NETWORK DESIGN | `(orphan)` (2) | `regularization` (1) |
-| OVERFITTING DIAGNOSIS | `(orphan)` (9) | `production-and-monitoring` (2), `bias-variance` (1), `supervised-unsupervised` (1), `regularization` (1) |
-| REGRESSION METRICS | `(orphan)` (3) | `supervised-unsupervised` (1) |
-| REGULARIZATION EFFECT | `(orphan)` (7) | `regularization` (2), `supervised-unsupervised` (1) |
+| OVERFITTING DIAGNOSIS | `bias-variance` (5) | `(orphan)` (5), `production-and-monitoring` (2), `supervised-unsupervised` (1), `regularization` (1) |
+| REGRESSION METRICS | `metrics` (3) | `supervised-unsupervised` (1) |
+| REGULARIZATION EFFECT | `(orphan)` (6) | `regularization` (2), `supervised-unsupervised` (1), `bias-variance` (1) |
 | SUPERVISED VS UNSUPERVISED | `supervised-unsupervised` (1) | `(orphan)` (1) |
 | TRAINING-SERVING SKEW | `production-and-monitoring` (3) | `(orphan)` (1) |
 | TRANSFER LEARNING STRATEGY | `regularization` (1) | `production-and-monitoring` (1), `(orphan)` (1) |
@@ -1219,24 +1093,16 @@ a starting point for deciding which path (existing or new) should include them.
 | QID | Diff | Tag-suggested pattern | Title |
 |---|---|---|---|
 | 81002 | easy | `supervised-unsupervised` | Supervised vs Unsupervised: Fraud Detection Setup |
-| 81003 | easy | `bias-variance` | Diagnosing Overfitting from Train-Validation Gap |
-| 81004 | easy | `bias-variance` | Recognising Underfitting |
 | 81006 | easy | `cross-validation` | Data Splitting: Purpose of the Test Set |
 | 81008 | easy | `feature-engineering` | Feature Scaling: When It Matters |
 | 81009 | easy | `feature-engineering` | Feature Scaling: Normalisation vs Standardisation |
-| 81011 | easy | `metrics` | Classification Metrics: Precision vs Recall |
-| 81012 | easy | `metrics` | ROC-AUC: Interpreting the Curve |
-| 81014 | easy | `metrics` | Loss Function Selection: Classification |
 | 81015 | easy | `hyperparameter-tuning` | Decision Tree: Does Criterion Choice Move the Model? |
 | 81017 | easy | `neural-networks-and-gradients` | Gradient Descent: Convergence Indicators |
 | 81018 | easy | `feature-engineering` | Regularisation: L1 vs L2 Effect Direction |
 | 81020 | easy | `hyperparameter-tuning` | Hyperparameter Sensitivity: Does max_iter Affect Learned Weights? |
 | 81021 | easy | `class-imbalance` | Class Imbalance: When Accuracy Misleads |
-| 81023 | easy | `metrics` | Regression Metrics: MSE vs MAE |
-| 81024 | easy | `bias-variance` | Bias-Variance Tradeoff: Diagnosing from Curves |
 | 81026 | easy | `hyperparameter-tuning` | Regularisation Hyperparameter: Effect of C on Logistic Regression Coefficients |
 | 81028 | easy | `cross-validation` | Cross-Validation: Correct Usage with Test Set |
-| 81029 | easy | `metrics` | Classification Metrics: F1 Score |
 | 81030 | easy | `regularization` | Regularisation: Effect on Model Complexity |
 | 83001 | hard | `production-and-monitoring` | Diagnosing a Production Model Degradation |
 | 83005 | hard | `model-interpretability` | Interpretability vs Accuracy Tradeoff Under Regulatory Constraints |
@@ -1244,28 +1110,21 @@ a starting point for deciding which path (existing or new) should include them.
 | 83008 | hard | `class-imbalance` | Selecting Evaluation Metrics for a Multi-Class Imbalanced Classifier |
 | 83012 | hard | `hyperparameter-tuning` | Hyperparameter Sensitivity: Learning Rate Schedules |
 | 83015 | hard | `feature-engineering` | Feature Importance Disagreement Between Methods |
-| 83016 | hard | `metrics` | Debugging a Regression Model with Heteroscedastic Residuals |
 | 83017 | hard | `neural-networks-and-gradients` | Neural Network Architecture for Tabular Data |
 | 83019 | hard | `unsupervised-methods` | Clustering Evaluation When Ground Truth Is Unknown |
 | 83023 | hard | `hyperparameter-tuning` | Hyperparameter Tuning: Grid Search vs Bayesian Optimization |
-| 83025 | hard | `metrics` | Loss Function Selection for Skewed Regression Targets |
 | 83039 | hard | `neural-networks-and-gradients` | Domain-Adaptive Pre-Training: When General Pre-Training Representations Misalign with Target Domain |
 | 83040 | hard | `production-and-monitoring` | Silent Feature Transformation: Upstream Business Logic Change Causes Precision Collapse |
 | 83041 | hard | `neural-networks-and-gradients` | Deep Sigmoid Network: Diagnosing Vanishing Gradients from Activation Saturation |
 | 83126 | hard | `algorithmic-fairness` | Demographic parity vs equalized odds in a lending approval model |
 | 83127 | hard | `algorithmic-fairness` | Diagnose root cause of hiring-model disparate impact from symptom data |
-| 82001 | medium | `bias-variance` | Bias-Variance Tradeoff as a Complexity Dial |
-| 82002 | medium | `bias-variance` | Choosing the Right Intervention from a Learning Curve |
-| 82004 | medium | `ensembles` | Random Forest: Feature Subsampling and Tree Correlation |
 | 82006 | medium | `class-imbalance` | Class Imbalance: SMOTE vs Class Weights |
 | 82007 | medium | `class-imbalance` | Threshold Tuning: Precision-Recall Trade-off |
 | 82010 | medium | `feature-engineering` | Dimensionality Reduction: When PCA Hurts |
 | 82011 | medium | `feature-engineering` | Feature Importance: Impurity vs Permutation |
 | 82014 | medium | `feature-engineering` | Regularisation: Correlated Features and L1 vs L2 |
 | 82015 | medium | `feature-engineering` | Regularisation Path: Coefficient Behaviour as λ Increases |
-| 82016 | medium | `metrics` | Logistic Regression: Log-Odds and Sigmoid Saturation |
 | 82017 | medium | `class-imbalance` | Logistic Regression: Imbalanced Data and Default Threshold |
-| 82021 | medium | `metrics` | Model Calibration: Applying Platt Scaling |
 | 82022 | medium | `feature-engineering` | Feature Selection: Filter vs Wrapper vs Embedded |
 | 82023 | medium | `feature-engineering` | Feature Selection: Budget and Timeline Constraints |
 | 82027 | medium | `hyperparameter-tuning` | Hyperparameter Tuning: Reading a Grid Search Result |
@@ -1281,9 +1140,6 @@ a starting point for deciding which path (existing or new) should include them.
 
 ### Coverage gaps in this track
 
-- 🟡 **`bias-variance`** — 1 practice Q (thin). Author or recruit 3–5 more to reach healthy threshold.
-- 🟡 **`metrics`** — 1 practice Q (thin). Author or recruit 3–5 more to reach healthy threshold.
-- 🟡 **`ensembles`** — 4 practice Qs (thin). Author or recruit 3–5 more to reach healthy threshold.
 - 🔴 **`feature-engineering`** — 0 practice Qs (empty). No live path or no questions. Either create a path that aggregates this pattern, or author initial content.
 - 🔴 **`class-imbalance`** — 0 practice Qs (empty). No live path or no questions. Either create a path that aggregates this pattern, or author initial content.
 - 🔴 **`model-interpretability`** — 0 practice Qs (empty). No live path or no questions. Either create a path that aggregates this pattern, or author initial content.
@@ -1295,14 +1151,14 @@ a starting point for deciding which path (existing or new) should include them.
 ---
 ## experimentation
 
-Practice questions: **87** (43 in live paths · 44 orphans · 29 divergent). Proposed canonical patterns: **9**.
+Practice questions: **87** (49 in live paths · 38 orphans · 29 divergent). Proposed canonical patterns: **9**.
 
 ### Pattern coverage (live-path-aggregated)
 
 | Pattern | Display | Easy | Medium | Hard | Total | Class |
 |---|---|---:|---:|---:|---:|---|
 | `ab-test-mechanics` | A/B Test Mechanics | 6 | 0 | 0 | 6 | ⚠️ uneven |
-| `metric-selection` | Metric Selection | 2 | 0 | 0 | 2 | 🟡 thin (needs content) |
+| `metric-selection` | Metric Selection | 4 | 3 | 1 | 8 | ✅ healthy |
 | `power-and-sample-size` | Power & Sample Size | 5 | 5 | 0 | 10 | ⚠️ uneven |
 | `variance-reduction` | Variance Reduction | 0 | 6 | 4 | 10 | ⚠️ uneven |
 | `behavioral-effects-and-interference` | Behavioral Effects & Interference | 0 | 0 | 0 | 0 | 🔴 empty (no live path or no questions) |
@@ -1323,12 +1179,12 @@ A question contributes once per family tag — multi-tag questions count multipl
 | BAYESIAN EXPERIMENTATION | `causal-inference` (2) | `(orphan)` (2), `variance-reduction` (1) |
 | CAUSAL INFERENCE | `(orphan)` (5) | `causal-inference` (3), `variance-reduction` (3) |
 | CONFIDENCE INTERVALS | `(orphan)` (3) | `power-and-sample-size` (2) |
-| EXPERIMENT DESIGN | `(orphan)` (18) | `ab-test-mechanics` (4), `variance-reduction` (4), `causal-inference` (3), `metric-selection` (1) |
+| EXPERIMENT DESIGN | `(orphan)` (14) | `metric-selection` (5), `ab-test-mechanics` (4), `variance-reduction` (4), `causal-inference` (3) |
 | EXPERIMENT DURATION | `(orphan)` (7) | `metric-selection` (1), `power-and-sample-size` (1), `variance-reduction` (1) |
 | HOLDOUT GROUPS | `causal-inference` (2) | `(orphan)` (1), `variance-reduction` (1) |
 | HYPOTHESIS FORMULATION | `(orphan)` (2) | `ab-test-mechanics` (1) |
-| METRIC SELECTION | `(orphan)` (6) | `metric-selection` (2), `causal-inference` (1), `subgroup-and-hte` (1), `variance-reduction` (1) |
-| METRIC SENSITIVITY | `(orphan)` (2) | — |
+| METRIC SELECTION | `metric-selection` (6) | `(orphan)` (2), `causal-inference` (1), `subgroup-and-hte` (1), `variance-reduction` (1) |
+| METRIC SENSITIVITY | `metric-selection` (2) | — |
 | MULTI-ARMED BANDIT | `causal-inference` (1) | `variance-reduction` (1), `(orphan)` (1) |
 | MULTIPLE TESTING | `subgroup-and-hte` (2) | `(orphan)` (2), `power-and-sample-size` (1), `variance-reduction` (1) |
 | NETWORK EFFECTS | `(orphan)` (3) | `causal-inference` (2), `variance-reduction` (1) |
@@ -1338,7 +1194,7 @@ A question contributes once per family tag — multi-tag questions count multipl
 | SAMPLE SIZE BASICS | `(orphan)` (3) | `power-and-sample-size` (2), `ab-test-mechanics` (1) |
 | SEGMENTATION ANALYSIS | `subgroup-and-hte` (5) | — |
 | SEQUENTIAL TESTING | `(orphan)` (1) | — |
-| STATISTICAL POWER | `(orphan)` (8) | `power-and-sample-size` (3), `ab-test-mechanics` (1), `variance-reduction` (1) |
+| STATISTICAL POWER | `(orphan)` (6) | `power-and-sample-size` (3), `metric-selection` (2), `ab-test-mechanics` (1), `variance-reduction` (1) |
 | STATISTICAL SIGNIFICANCE | `(orphan)` (4) | `power-and-sample-size` (3), `ab-test-mechanics` (1) |
 | SWITCHBACK EXPERIMENTS | `causal-inference` (1) | `subgroup-and-hte` (1), `(orphan)` (1) |
 | TYPE I AND TYPE II ERRORS | `(orphan)` (5) | `power-and-sample-size` (4), `ab-test-mechanics` (1), `variance-reduction` (1) |
@@ -1397,11 +1253,9 @@ a starting point for deciding which path (existing or new) should include them.
 | 91009 | easy | `ab-test-mechanics` | Interpreting a Confidence Interval |
 | 91011 | easy | `ab-test-mechanics` | The Role of a Control Group |
 | 91013 | easy | `power-and-sample-size` | Peeking at Results Early |
-| 91014 | easy | `metric-selection` | Guardrail Metrics |
 | 91016 | easy | `ab-test-mechanics` | Confidence Interval and Practical Significance |
 | 91017 | easy | `power-and-sample-size` | Experiment Duration and Day-of-Week Effects |
 | 91019 | easy | `power-and-sample-size` | Increasing Power Without More Users |
-| 91020 | easy | `metric-selection` | Logging at the Step Level in a Checkout Experiment |
 | 91021 | easy | `ab-test-mechanics` | Feature Only Visible to a Subset of Assigned Users |
 | 91023 | easy | `power-and-sample-size` | Defining the Minimum Detectable Effect |
 | 91025 | easy | `ab-test-mechanics` | Predicting CI Width After Quadrupling Sample Size |
@@ -1414,10 +1268,8 @@ a starting point for deciding which path (existing or new) should include them.
 | 93034 | hard | `experiment-platform-design` | Long-Run Holdout Group Decay: When the Counterfactual Diverges from Current Users |
 | 93035 | hard | `behavioral-effects-and-interference` | Switchback Experiment Analysis: Temporal Autocorrelation Inflates the Test Statistic |
 | 93036 | hard | `sequential-and-bandits` | Continuous monitoring with alpha spending: when can you stop early? |
-| 93037 | hard | `metric-selection` | Metric insensitivity: why your OEC hides a real treatment effect |
 | 92002 | medium | `experiment-platform-design` | Sample Ratio Mismatch Detection |
 | 92003 | medium | `behavioral-effects-and-interference` | Novelty Effect in Feature Launch |
-| 92005 | medium | `metric-selection` | Choosing the Right Primary Metric |
 | 92006 | medium | `behavioral-effects-and-interference` | Network Effects and Interference |
 | 92009 | medium | `power-and-sample-size` | Experiment Duration and Weekly Seasonality |
 | 92011 | medium | `subgroup-and-hte` | Type I Error and Repeated Peeking |
@@ -1426,18 +1278,15 @@ a starting point for deciding which path (existing or new) should include them.
 | 92021 | medium | `power-and-sample-size` | Minimum Detectable Effect and Business Threshold |
 | 92023 | medium | `sequential-and-bandits` | Bayesian Experimentation: Early Stopping |
 | 92025 | medium | `variance-reduction` | Variance Reduction: Stratified Randomization |
-| 92026 | medium | `metric-selection` | Guardrail Metrics and Ship Decisions |
 | 92027 | medium | `power-and-sample-size` | Power Calculation: Effect of Increasing Variance |
 | 92028 | medium | `causal-inference` | Quasi-Experimental Method Selection |
 | 92029 | medium | `sequential-and-bandits` | Multi-Armed Bandit vs A/B Test Trade-offs |
 | 92030 | medium | `causal-inference` | Interaction Effects in Concurrent Experiments |
 | 92043 | medium | `variance-reduction` | CUPED Covariate Window: Contamination Through Post-Exposure Measurement |
 | 92044 | medium | `behavioral-effects-and-interference` | Two-Sided Marketplace Equilibration: Why Short-Duration Tests Miss Steady-State Effects |
-| 92045 | medium | `metric-selection` | High-variance revenue metric can't detect a real 2% lift — what's the structural diagnosis? |
 
 ### Coverage gaps in this track
 
-- 🟡 **`metric-selection`** — 2 practice Qs (thin). Author or recruit 3–5 more to reach healthy threshold.
 - 🔴 **`behavioral-effects-and-interference`** — 0 practice Qs (empty). No live path or no questions. Either create a path that aggregates this pattern, or author initial content.
 - 🔴 **`sequential-and-bandits`** — 0 practice Qs (empty). No live path or no questions. Either create a path that aggregates this pattern, or author initial content.
 - 🔴 **`experiment-platform-design`** — 0 practice Qs (empty). No live path or no questions. Either create a path that aggregates this pattern, or author initial content.
@@ -1571,7 +1420,7 @@ the audit credits the question to. `Tag-suggested` = where tag-routing would pla
 | 13028 | hard | _orphan_ | — | `window-functions` |  | ROWS vs RANGE: running total divergence |
 | 13029 | hard | _orphan_ | — | `funnel-and-event-analysis` |  | First conversion within 7 days of signup |
 | 13044 | hard | `sql-advanced-patterns` | `set-operations` | `aggregation` | ⚠️ | Revenue slices with GROUPING SETS |
-| 13050 | hard | _orphan_ | — | `ctes-and-recursion` |  | Per-user revenue and purchase events without fan-out |
+| 13050 | hard | `sql-advanced-patterns` | `ctes-and-recursion` | `ctes-and-recursion` |  | Per-user revenue and purchase events without fan-out |
 
 ### python
 
@@ -1589,7 +1438,7 @@ the audit credits the question to. `Tag-suggested` = where tag-routing would pla
 | 21013 | easy | _orphan_ | — | `arrays-and-hashing` |  | Count Occurrences |
 | 21016 | easy | _orphan_ | — | `data-pipeline-scripting` |  | Flatten One Level |
 | 21017 | easy | _orphan_ | — | `data-pipeline-scripting` |  | Rotate List Left |
-| 21018 | easy | _orphan_ | — | `sliding-window` |  | Merge Two Sorted Lists |
+| 21018 | easy | `sliding-window-patterns` | `sliding-window` | `sliding-window` |  | Merge Two Sorted Lists |
 | 21020 | easy | _orphan_ | — | `arrays-and-hashing` |  | First Non-Repeating Character |
 | 21021 | easy | _orphan_ | — | `string-and-text-processing` |  | String Compression |
 | 21023 | easy | _orphan_ | — | `arrays-and-hashing` |  | Missing Number |
@@ -1604,7 +1453,7 @@ the audit credits the question to. `Tag-suggested` = where tag-routing would pla
 | 21033 | easy | `practical-data-python` | `data-pipeline-scripting` | `string-and-text-processing` | ⚠️ | Most Recent Date |
 | 21034 | easy | _orphan_ | — | `arrays-and-hashing` |  | Find Duplicate Values |
 | 21035 | easy | `practical-data-python` | `data-pipeline-scripting` | `data-pipeline-scripting` |  | Group Items by Category |
-| 21036 | easy | _orphan_ | — | `sliding-window` |  | Sliding Window Maximum with deque |
+| 21036 | easy | `sliding-window-patterns` | `sliding-window` | `sliding-window` |  | Sliding Window Maximum with deque |
 | 21037 | easy | _orphan_ | — | `data-pipeline-scripting` |  | Event Type Frequency Counter |
 | 21038 | easy | _orphan_ | — | `arrays-and-hashing` |  | First Sensor Reading Above Threshold |
 | 21039 | easy | _orphan_ | — | `data-pipeline-scripting` |  | Config File Parser |
@@ -1620,13 +1469,13 @@ the audit credits the question to. `Tag-suggested` = where tag-routing would pla
 | 22011 | medium | _orphan_ | — | `arrays-and-hashing` |  | Longest Consecutive Sequence |
 | 22012 | medium | _orphan_ | — | `heap-and-priority` |  | Kth Highest Revenue |
 | 22015 | medium | `stacks-and-queues` | `stacks-and-queues` | `stacks-and-queues` |  | KPI Formula Evaluator |
-| 22018 | medium | _orphan_ | — | `sliding-window` |  | Priority-Partition Log Entries |
+| 22018 | medium | `sliding-window-patterns` | `sliding-window` | `sliding-window` |  | Priority-Partition Log Entries |
 | 22023 | medium | `dynamic-programming` | `dynamic-programming` | `dynamic-programming` |  | Maximum Revenue Streak |
 | 22024 | medium | _orphan_ | — | `arrays-and-hashing` |  | Word Pattern Match |
 | 22025 | medium | `dynamic-programming` | `dynamic-programming` | `dynamic-programming` |  | Schema Version Alignment |
 | 22026 | medium | `sliding-window-patterns` | `sliding-window` | `sliding-window` |  | Longest Unique Token Window |
 | 22027 | medium | _orphan_ | — | `arrays-and-hashing` |  | Task scheduler |
-| 22028 | medium | _orphan_ | — | `sliding-window` |  | Find all anagrams in a string |
+| 22028 | medium | `sliding-window-patterns` | `sliding-window` | `sliding-window` |  | Find all anagrams in a string |
 | 22039 | medium | `practical-data-python` | `data-pipeline-scripting` | `data-pipeline-scripting` |  | Chunked List Processing |
 | 22040 | medium | `practical-data-python` | `data-pipeline-scripting` | `data-pipeline-scripting` |  | Filter and Order Error Logs |
 | 22041 | medium | _orphan_ | — | `data-pipeline-scripting` |  | Event Session Segmentation |
@@ -1634,7 +1483,7 @@ the audit credits the question to. `Tag-suggested` = where tag-routing would pla
 | 22043 | medium | _orphan_ | — | `arrays-and-hashing` |  | Minimum Batch Processing Capacity |
 | 22044 | medium | _orphan_ | — | `data-pipeline-scripting` |  | Dominant Category Detection |
 | 22045 | medium | _orphan_ | — | `data-pipeline-scripting` |  | In-Memory Hash Join |
-| 22046 | medium | _orphan_ | — | `sliding-window` |  | Sliding Window Rate Limiter |
+| 22046 | medium | `sliding-window-patterns` | `sliding-window` | `sliding-window` |  | Sliding Window Rate Limiter |
 | 22047 | medium | _orphan_ | — | `data-pipeline-scripting` |  | Run-Length Log Encoder |
 | 22048 | medium | _orphan_ | — | `streaming-and-online` |  | Event Stream Deduplication |
 | 22049 | medium | _orphan_ | — | `data-pipeline-scripting` |  | Merge Two Sorted Event Streams |
@@ -1647,7 +1496,7 @@ the audit credits the question to. `Tag-suggested` = where tag-routing would pla
 | 23012 | hard | `dynamic-programming` | `dynamic-programming` | `arrays-and-hashing` | ⚠️ | Longest Increasing Subsequence |
 | 23014 | hard | `graph-and-tree-patterns` | `graph-traversal` | `graph-traversal` |  | Alien Dictionary |
 | 23015 | hard | _orphan_ | — | `heap-and-priority` |  | Median from Data Stream |
-| 23017 | hard | _orphan_ | — | `sliding-window` |  | Sliding Window Median |
+| 23017 | hard | `sliding-window-patterns` | `sliding-window` | `sliding-window` |  | Sliding Window Median |
 | 23020 | hard | _orphan_ | — | `string-and-text-processing` |  | Implement a Trie |
 | 23021 | hard | `graph-and-tree-patterns` | `graph-traversal` | `graph-traversal` |  | Number of connected components |
 | 23022 | hard | `graph-and-tree-patterns` | `graph-traversal` | `graph-traversal` |  | Network delay time |
@@ -1671,11 +1520,11 @@ the audit credits the question to. `Tag-suggested` = where tag-routing would pla
 | 31008 | easy | _orphan_ | — | `top-n-and-ranking` |  | Top Products by Order Quantity |
 | 31009 | easy | `dataframe-fundamentals` | `dataframe-basics` | `dataframe-basics` |  | High-Salary Employees |
 | 31010 | easy | _orphan_ | — | `time-series-pandas` |  | Orders Placed in 2023 |
-| 31011 | easy | _orphan_ | — | `groupby` |  | Average Order Value per User |
+| 31011 | easy | `groupby-and-joins` | `groupby` | `groupby` |  | Average Order Value per User |
 | 31012 | easy | _orphan_ | — | `top-n-and-ranking` |  | Latest Order per User |
-| 31013 | easy | _orphan_ | — | `groupby` |  | Support Tickets by Status |
-| 31014 | easy | _orphan_ | — | `groupby` |  | Employee Count by Department |
-| 31015 | easy | _orphan_ | — | `groupby` |  | Revenue per Product |
+| 31013 | easy | `groupby-and-joins` | `groupby` | `groupby` |  | Support Tickets by Status |
+| 31014 | easy | `groupby-and-joins` | `groupby` | `groupby` |  | Employee Count by Department |
+| 31015 | easy | `groupby-and-joins` | `groupby` | `groupby` |  | Revenue per Product |
 | 31016 | easy | _orphan_ | — | `data-cleaning` |  | Orders with Missing or Zero Discount |
 | 31017 | easy | _orphan_ | — | `time-series-pandas` |  | Extract Order Date (Date Only) |
 | 31018 | easy | _orphan_ | — | `time-series-pandas` |  | Users Registered After 2022 |
@@ -1687,7 +1536,7 @@ the audit credits the question to. `Tag-suggested` = where tag-routing would pla
 | 31024 | easy | _orphan_ | — | `data-cleaning` |  | Drop Events Without a Product |
 | 31025 | easy | _orphan_ | — | `data-cleaning` |  | Forward-Fill Missing Resolution Hours |
 | 31026 | easy | _orphan_ | — | `data-cleaning` |  | Event Count per Product Including Null Group |
-| 31027 | easy | _orphan_ | — | `groupby` |  | Average Order Value by Status |
+| 31027 | easy | `groupby-and-joins` | `groupby` | `groupby` |  | Average Order Value by Status |
 | 31028 | easy | _orphan_ | — | `dataframe-basics` |  | Sessions by channel group |
 | 32001 | medium | `groupby-and-joins` | `joins-and-merges` | `joins-and-merges` |  | Orders with User Info |
 | 32002 | medium | `groupby-and-joins` | `joins-and-merges` | `joins-and-merges` |  | Users with No Orders |
@@ -1696,47 +1545,47 @@ the audit credits the question to. `Tag-suggested` = where tag-routing would pla
 | 32005 | medium | `customer-analytics` | `customer-analytics` | `groupby` | ⚠️ | User Average Order Amount per Row |
 | 32006 | medium | `groupby-and-joins` | `groupby` | `time-series-pandas` | ⚠️ | 7-Day Rolling Revenue |
 | 32007 | medium | _orphan_ | — | `top-n-and-ranking` |  | Rank Products by Price within Category |
-| 32008 | medium | _orphan_ | — | `groupby` |  | Revenue Contribution Percent |
+| 32008 | medium | `groupby-and-joins` | `groupby` | `groupby` |  | Revenue Contribution Percent |
 | 32009 | medium | _orphan_ | — | `time-series-pandas` |  | Orders Grouped by Month-Year |
 | 32010 | medium | _orphan_ | — | `data-cleaning` |  | Price Bucket Segmentation |
-| 32011 | medium | _orphan_ | — | `joins-and-merges` |  | Top 10 Products by Revenue (Three-Table Join) |
+| 32011 | medium | `groupby-and-joins` | `joins-and-merges` | `joins-and-merges` |  | Top 10 Products by Revenue (Three-Table Join) |
 | 32012 | medium | _orphan_ | — | `dataframe-basics` |  | Support Ticket Resolution Rate |
 | 32013 | medium | _orphan_ | — | `window-and-rolling` |  | Cumulative Employee Salary by Department |
 | 32014 | medium | _orphan_ | — | `data-cleaning` |  | Merge Payments with Orders |
 | 32015 | medium | _orphan_ | — | `data-cleaning` |  | Users with Sessions from Multiple Device Types |
 | 32016 | medium | _orphan_ | — | `dataframe-basics` |  | Top 20 Order Items by Revenue |
 | 32017 | medium | `reshaping-and-pivoting` | `reshape-and-pivot` | `data-cleaning` | ⚠️ | Sessions per User by Device Type (Pivot) |
-| 32018 | medium | _orphan_ | — | `joins-and-merges` |  | Category Revenue Share |
+| 32018 | medium | `groupby-and-joins` | `joins-and-merges` | `joins-and-merges` |  | Category Revenue Share |
 | 32019 | medium | _orphan_ | — | `top-n-and-ranking` |  | Employee Salary Percentile Rank |
-| 32020 | medium | _orphan_ | — | `joins-and-merges` |  | Days Between Order and Payment |
-| 32021 | medium | _orphan_ | — | `groupby` |  | Order Items Above Product Average Price |
+| 32020 | medium | `groupby-and-joins` | `joins-and-merges` | `joins-and-merges` |  | Days Between Order and Payment |
+| 32021 | medium | `groupby-and-joins` | `groupby` | `groupby` |  | Order Items Above Product Average Price |
 | 32022 | medium | _orphan_ | — | `top-n-and-ranking` |  | Top Product per Category by Revenue |
 | 32023 | medium | _orphan_ | — | `time-series-pandas` |  | Revenue by Day of Week |
-| 32024 | medium | _orphan_ | — | `joins-and-merges` |  | Event Count per Session |
-| 32025 | medium | _orphan_ | — | `groupby` |  | Employees Above Department Average Salary |
+| 32024 | medium | `groupby-and-joins` | `joins-and-merges` | `joins-and-merges` |  | Event Count per Session |
+| 32025 | medium | `groupby-and-joins` | `groupby` | `groupby` |  | Employees Above Department Average Salary |
 | 32026 | medium | `time-series-analysis` | `time-series-pandas` | `window-and-rolling` | ⚠️ | Weekly revenue with resample |
 | 32027 | medium | `reshaping-and-pivoting` | `reshape-and-pivot` | `reshape-and-pivot` |  | Order status pivot table by country |
 | 32028 | medium | _orphan_ | — | `top-n-and-ranking` |  | Salary rank and percentile by department |
-| 32029 | medium | _orphan_ | — | `groupby` |  | Named aggregation: order stats by status |
+| 32029 | medium | `groupby-and-joins` | `groupby` | `groupby` |  | Named aggregation: order stats by status |
 | 32030 | medium | `customer-analytics` | `customer-analytics` | `groupby` | ⚠️ | Second-order retention rate by country |
 | 32031 | medium | _orphan_ | — | `data-cleaning` |  | Orders with Most Line Items |
-| 32042 | medium | _orphan_ | — | `joins-and-merges` |  | Match Events to Most Recent Prior Order |
+| 32042 | medium | `groupby-and-joins` | `joins-and-merges` | `joins-and-merges` |  | Match Events to Most Recent Prior Order |
 | 32043 | medium | _orphan_ | — | `data-cleaning` |  | Fill Missing Emails with combine_first |
 | 32044 | medium | _orphan_ | — | `dataframe-basics` |  | Compute Discount Rate and Flag with assign |
-| 32045 | medium | _orphan_ | — | `groupby` |  | Build a Transformation Pipeline with pipe |
+| 32045 | medium | `groupby-and-joins` | `groupby` | `groupby` |  | Build a Transformation Pipeline with pipe |
 | 32046 | medium | _orphan_ | — | `time-series-pandas` |  | Convert Event Timestamps to New York Time |
-| 32049 | medium | _orphan_ | — | `groupby` |  | Memory-optimised channel revenue summary |
-| 32050 | medium | _orphan_ | — | `joins-and-merges` |  | Fix inflated user revenue from payment fan-out |
-| 32051 | medium | _orphan_ | — | `joins-and-merges` |  | Fix double-counted revenue after order-items join |
+| 32049 | medium | `groupby-and-joins` | `groupby` | `groupby` |  | Memory-optimised channel revenue summary |
+| 32050 | medium | `groupby-and-joins` | `joins-and-merges` | `joins-and-merges` |  | Fix inflated user revenue from payment fan-out |
+| 32051 | medium | `groupby-and-joins` | `joins-and-merges` | `joins-and-merges` |  | Fix double-counted revenue after order-items join |
 | 32052 | medium | _orphan_ | — | `data-cleaning` |  | Fix cumulative revenue running total (sort before cumsum) |
 | 33001 | hard | `customer-analytics` | `customer-analytics` | `groupby` | ⚠️ | Monthly Cohort Retention |
 | 33002 | hard | _orphan_ | — | `top-n-and-ranking` |  | Revenue Percentile Rank by Category |
 | 33003 | hard | `time-series-analysis` | `time-series-pandas` | `window-and-rolling` | ⚠️ | 30-Day Moving Average Revenue |
-| 33004 | hard | _orphan_ | — | `groupby` |  | User Lifetime Value Rank |
+| 33004 | hard | `groupby-and-joins` | `groupby` | `groupby` |  | User Lifetime Value Rank |
 | 33005 | hard | _orphan_ | — | `window-and-rolling` |  | Cumulative Revenue per User |
 | 33006 | hard | `time-series-analysis` | `time-series-pandas` | `window-and-rolling` | ⚠️ | Monthly Revenue Trend with Growth Rate |
-| 33007 | hard | _orphan_ | — | `groupby` |  | Support Ticket Resolution Rate by Month |
-| 33008 | hard | _orphan_ | — | `joins-and-merges` |  | Employee Salary Distribution by Department |
+| 33007 | hard | `groupby-and-joins` | `groupby` | `groupby` |  | Support Ticket Resolution Rate by Month |
+| 33008 | hard | `groupby-and-joins` | `joins-and-merges` | `joins-and-merges` |  | Employee Salary Distribution by Department |
 | 33009 | hard | `reshaping-and-pivoting` | `reshape-and-pivot` | `reshape-and-pivot` |  | Cross-Tab: Country × Order Status |
 | 33010 | hard | `reshaping-and-pivoting` | `reshape-and-pivot` | `reshape-and-pivot` |  | Stack/Unstack: Order Status × Month |
 | 33011 | hard | `customer-analytics` | `customer-analytics` | `joins-and-merges` | ⚠️ | User Engagement Score |
@@ -1897,8 +1746,8 @@ the audit credits the question to. `Tag-suggested` = where tag-routing would pla
 | 51005 | easy | _orphan_ | — | `etl-elt` |  | Making an Insert Idempotent |
 | 51006 | easy | _orphan_ | — | `etl-elt` |  | Idempotency and Partition Overwrite |
 | 51007 | easy | `pipeline-fundamentals` | `orchestration` | `orchestration` |  | DAG Orchestration: Why Cycles Are Rejected |
-| 51008 | easy | _orphan_ | — | `orchestration` |  | Task Dependencies in a DAG |
-| 51009 | easy | _orphan_ | — | `orchestration` |  | Orchestration: Retry vs Backfill |
+| 51008 | easy | `pipeline-fundamentals` | `orchestration` | `orchestration` |  | Task Dependencies in a DAG |
+| 51009 | easy | `pipeline-fundamentals` | `orchestration` | `orchestration` |  | Orchestration: Retry vs Backfill |
 | 51010 | easy | `pipeline-fundamentals` | `etl-elt` | `streaming-vs-batch` | ⚠️ | Batch vs Streaming: Defining Characteristics |
 | 51011 | easy | _orphan_ | — | `streaming-vs-batch` |  | When to Choose Streaming Over Batch |
 | 51012 | easy | _orphan_ | — | `streaming-vs-batch` |  | Micro-Batch Processing |
@@ -1915,30 +1764,30 @@ the audit credits the question to. `Tag-suggested` = where tag-routing would pla
 | 51023 | easy | _orphan_ | — | `etl-elt` |  | CDC: Log-Based vs Query-Based |
 | 51024 | easy | _orphan_ | — | `data-quality-and-incident-response` |  | Data Quality: Where to Place a Null Check |
 | 51025 | easy | _orphan_ | — | `data-quality-and-incident-response` |  | Data Quality: Freshness Checks |
-| 51026 | easy | _orphan_ | — | `schema-evolution` |  | Schema Evolution: Full Compatibility |
-| 51027 | easy | _orphan_ | — | `schema-evolution` |  | Schema Evolution: Breaking Changes |
-| 51028 | easy | _orphan_ | — | `delivery-semantics` |  | Delivery Semantics: At-Least-Once |
-| 51029 | easy | _orphan_ | — | `delivery-semantics` |  | Delivery Semantics: At-Most-Once |
+| 51026 | easy | `pipeline-evolution` | `schema-evolution` | `schema-evolution` |  | Schema Evolution: Full Compatibility |
+| 51027 | easy | `pipeline-evolution` | `schema-evolution` | `schema-evolution` |  | Schema Evolution: Breaking Changes |
+| 51028 | easy | `pipeline-evolution` | `delivery-semantics` | `delivery-semantics` |  | Delivery Semantics: At-Least-Once |
+| 51029 | easy | `pipeline-evolution` | `delivery-semantics` | `delivery-semantics` |  | Delivery Semantics: At-Most-Once |
 | 51030 | easy | `lineage-and-observability` | `lineage-and-observability` | `orchestration` | ⚠️ | SLA vs SLO in Data Pipelines |
 | 52001 | medium | `pipeline-evolution` | `schema-evolution` | `schema-evolution` |  | Schema Registry and Backward Compatibility |
-| 52002 | medium | _orphan_ | — | `schema-evolution` |  | Forward vs Backward Compatibility Trade-offs |
+| 52002 | medium | `pipeline-evolution` | `schema-evolution` | `schema-evolution` |  | Forward vs Backward Compatibility Trade-offs |
 | 52003 | medium | `lineage-and-observability` | `lineage-and-observability` | `schema-evolution` | ⚠️ | Data Contracts and Upstream Changes |
 | 52004 | medium | _orphan_ | — | `streaming-vs-batch` |  | Micro-Batch vs True Streaming Latency |
 | 52005 | medium | _orphan_ | — | `streaming-vs-batch` |  | Stateful Streaming: Session Windows |
 | 52006 | medium | _orphan_ | — | `streaming-vs-batch` |  | Lambda Architecture Trade-offs |
 | 52007 | medium | `pipeline-evolution` | `delivery-semantics` | `delivery-semantics` |  | Watermark Choice and State Store Size |
-| 52008 | medium | _orphan_ | — | `delivery-semantics` |  | Event Time vs Processing Time |
-| 52009 | medium | _orphan_ | — | `delivery-semantics` |  | Watermark and Window Completeness |
+| 52008 | medium | `pipeline-evolution` | `delivery-semantics` | `delivery-semantics` |  | Event Time vs Processing Time |
+| 52009 | medium | `pipeline-evolution` | `delivery-semantics` | `delivery-semantics` |  | Watermark and Window Completeness |
 | 52010 | medium | `lineage-and-observability` | `lineage-and-observability` | `data-quality-and-incident-response` | ⚠️ | Data Quality: Schema Drift Detection |
 | 52011 | medium | _orphan_ | — | `data-quality-and-incident-response` |  | Data Quality: Row Count Assertions |
 | 52012 | medium | `pipeline-evolution` | `delivery-semantics` | `delivery-semantics` |  | Exactly-Once Semantics: Producer Side |
-| 52013 | medium | _orphan_ | — | `delivery-semantics` |  | End-to-End Exactly-Once in a Pipeline |
-| 52014 | medium | _orphan_ | — | `orchestration` |  | Orchestration: Fan-Out Task Design |
-| 52015 | medium | _orphan_ | — | `orchestration` |  | Orchestration: Event-Driven vs Schedule Trigger |
+| 52013 | medium | `pipeline-evolution` | `delivery-semantics` | `delivery-semantics` |  | End-to-End Exactly-Once in a Pipeline |
+| 52014 | medium | `pipeline-fundamentals` | `orchestration` | `orchestration` |  | Orchestration: Fan-Out Task Design |
+| 52015 | medium | `pipeline-fundamentals` | `orchestration` | `orchestration` |  | Orchestration: Event-Driven vs Schedule Trigger |
 | 52016 | medium | `lineage-and-observability` | `lineage-and-observability` | `orchestration` | ⚠️ | SLA Breach: Root Cause vs Symptom |
-| 52017 | medium | _orphan_ | — | `orchestration` |  | SLA Budgeting Across Pipeline Stages |
+| 52017 | medium | `pipeline-fundamentals` | `orchestration` | `orchestration` |  | SLA Budgeting Across Pipeline Stages |
 | 52018 | medium | `pipeline-evolution` | `backfill-design` | `backfill-design` |  | Backfill Design: Partition-Aware Reruns |
-| 52019 | medium | _orphan_ | — | `backfill-design` |  | Backfill Design: Making Jobs Backfill-Safe |
+| 52019 | medium | `pipeline-evolution` | `backfill-design` | `backfill-design` |  | Backfill Design: Making Jobs Backfill-Safe |
 | 52020 | medium | _orphan_ | — | `cost-and-format-optimization` |  | Partition Pruning: Filter Pushdown |
 | 52021 | medium | _orphan_ | — | `cost-and-format-optimization` |  | Data Skew in Partitioned Joins |
 | 52022 | medium | `pipeline-evolution` | `schema-evolution` | `cost-and-format-optimization` | ⚠️ | Parquet vs Avro: Choosing a File Format |
@@ -1952,121 +1801,121 @@ the audit credits the question to. `Tag-suggested` = where tag-routing would pla
 | 52030 | medium | _orphan_ | — | `etl-elt` |  | ELT Transformation Layers: Debugging a Wrong Metric |
 | 52031 | medium | _orphan_ | — | `streaming-vs-batch` |  | Backpressure in a Streaming Pipeline |
 | 52032 | medium | _orphan_ | — | _unrouted_ |  | GDPR Erasure in an Immutable Data Lake: Crypto Shredding |
-| 52033 | medium | _orphan_ | — | `schema-evolution` |  | Operationalizing Data Contracts: Schema Registry and CI Enforcement |
-| 52034 | medium | _orphan_ | — | `schema-evolution` |  | Avro Consumer Failing After Producer Adds Required Field Without Default |
+| 52033 | medium | `pipeline-evolution` | `schema-evolution` | `schema-evolution` |  | Operationalizing Data Contracts: Schema Registry and CI Enforcement |
+| 52034 | medium | `pipeline-evolution` | `schema-evolution` | `schema-evolution` |  | Avro Consumer Failing After Producer Adds Required Field Without Default |
 | 52035 | medium | _orphan_ | — | `etl-elt` |  | Backfill Job Producing Duplicate Rows in the Warehouse |
-| 53001 | hard | _orphan_ | — | `delivery-semantics` |  | Exactly-Once Across a Transactional Boundary |
-| 53002 | hard | _orphan_ | — | `delivery-semantics` |  | Duplicate Detection at Scale |
-| 53003 | hard | _orphan_ | — | `delivery-semantics` |  | Delivery Semantics and Consumer-Side State |
-| 53004 | hard | _orphan_ | — | `delivery-semantics` |  | Exactly-Once with Fan-Out Sinks |
+| 53001 | hard | `pipeline-evolution` | `delivery-semantics` | `delivery-semantics` |  | Exactly-Once Across a Transactional Boundary |
+| 53002 | hard | `pipeline-evolution` | `delivery-semantics` | `delivery-semantics` |  | Duplicate Detection at Scale |
+| 53003 | hard | `pipeline-evolution` | `delivery-semantics` | `delivery-semantics` |  | Delivery Semantics and Consumer-Side State |
+| 53004 | hard | `pipeline-evolution` | `delivery-semantics` | `delivery-semantics` |  | Exactly-Once with Fan-Out Sinks |
 | 53005 | hard | _orphan_ | — | `data-quality-and-incident-response` |  | Incident Response: Silent Data Loss |
 | 53006 | hard | `lineage-and-observability` | `lineage-and-observability` | `data-quality-and-incident-response` | ⚠️ | Incident Response: Cascading Pipeline Failures |
 | 53007 | hard | _orphan_ | — | `data-quality-and-incident-response` |  | Incident Response: Data Corruption in Production |
 | 53008 | hard | `lineage-and-observability` | `lineage-and-observability` | `lineage-and-observability` |  | Lineage for Impact Analysis |
 | 53009 | hard | _orphan_ | — | `lineage-and-observability` |  | Observability: Distinguishing Pipeline vs Data Quality Issues |
 | 53010 | hard | _orphan_ | — | `cost-and-format-optimization` |  | SCD Type 2 and Fact Table Joins |
-| 53011 | hard | _orphan_ | — | `backfill-design` |  | SCD Type 2 and Late-Arriving Dimension Changes |
-| 53012 | hard | _orphan_ | — | `schema-evolution` |  | Schema Evolution with Columnar Storage |
-| 53013 | hard | _orphan_ | — | `schema-evolution` |  | Breaking Schema Change with Active Consumers |
+| 53011 | hard | `pipeline-evolution` | `backfill-design` | `backfill-design` |  | SCD Type 2 and Late-Arriving Dimension Changes |
+| 53012 | hard | `pipeline-evolution` | `schema-evolution` | `schema-evolution` |  | Schema Evolution with Columnar Storage |
+| 53013 | hard | `pipeline-evolution` | `schema-evolution` | `schema-evolution` |  | Breaking Schema Change with Active Consumers |
 | 53014 | hard | _orphan_ | — | `cost-and-format-optimization` |  | Cost Optimization: Materialization Decisions |
 | 53015 | hard | _orphan_ | — | `cost-and-format-optimization` |  | Cost Optimization: Partition Strategy and Scan Cost |
-| 53016 | hard | _orphan_ | — | `delivery-semantics` |  | Watermark and Out-of-Order Event Storms |
-| 53017 | hard | _orphan_ | — | `delivery-semantics` |  | Watermark Tuning for Multi-Source Joins |
+| 53016 | hard | `pipeline-evolution` | `delivery-semantics` | `delivery-semantics` |  | Watermark and Out-of-Order Event Storms |
+| 53017 | hard | `pipeline-evolution` | `delivery-semantics` | `delivery-semantics` |  | Watermark Tuning for Multi-Source Joins |
 | 53018 | hard | _orphan_ | — | `cost-and-format-optimization` |  | Lakehouse ACID and Concurrent Writes |
 | 53019 | hard | _orphan_ | — | `cost-and-format-optimization` |  | Data Lake Zone Architecture Trade-offs |
 | 53020 | hard | _orphan_ | — | `data-quality-and-incident-response` |  | Data Quality at Scale: Statistical Anomaly Detection |
 | 53022 | hard | _orphan_ | — | `cost-and-format-optimization` |  | Snowflake Warehouse Cost Optimization: Separate Warehouses and Auto-Suspend |
 | 53023 | hard | _orphan_ | — | `cost-and-format-optimization` |  | BigQuery Cost Reduction: Partitioning, Incremental Exports, and Scan Optimization |
 | 53024 | hard | _orphan_ | — | `data-quality-and-incident-response` |  | Schema Drift Incident: Containment and Forward-Fix Strategy |
-| 53025 | hard | _orphan_ | — | `delivery-semantics` |  | CDC Watermark Too Short — Late Debezium Events Silently Dropped |
+| 53025 | hard | `pipeline-evolution` | `delivery-semantics` | `delivery-semantics` |  | CDC Watermark Too Short — Late Debezium Events Silently Dropped |
 | 53026 | hard | _orphan_ | — | `cost-and-format-optimization` |  | Dynamic Partition Overwrite Deleting the Entire Table |
-| 53027 | hard | _orphan_ | — | `schema-evolution` |  | Schema Merge Upcasting Numeric Column to String Across Parquet Sources |
+| 53027 | hard | `pipeline-evolution` | `schema-evolution` | `schema-evolution` |  | Schema Merge Upcasting Numeric Column to String Across Parquet Sources |
 
 ### data-modeling
 
 | QID | Diff | Live path | Attributed | Tag-suggested | Divergent? | Title |
 |---|---|---|---|---|---|---|
 | 61001 | easy | `schema-design-basics` | `star-snowflake` | `star-snowflake` |  | Star Schema: Joins and Query Speed |
-| 61002 | easy | _orphan_ | — | `star-snowflake` |  | Snowflake Schema: Dimension Normalisation |
-| 61003 | easy | _orphan_ | — | `star-snowflake` |  | Star vs Snowflake: Storage and Joins |
+| 61002 | easy | `schema-design-basics` | `star-snowflake` | `star-snowflake` |  | Snowflake Schema: Dimension Normalisation |
+| 61003 | easy | `schema-design-basics` | `star-snowflake` | `star-snowflake` |  | Star vs Snowflake: Storage and Joins |
 | 61004 | easy | `normalization-and-referential-integrity` | `normalization` | `normalization` |  | First Normal Form: Repeating Groups |
 | 61005 | easy | `normalization-and-referential-integrity` | `normalization` | `normalization` |  | Second Normal Form: Partial Dependencies |
 | 61006 | easy | `normalization-and-referential-integrity` | `normalization` | `normalization` |  | Third Normal Form: Transitive Dependencies |
 | 61007 | easy | `schema-design-basics` | `fact-table-design` | `fact-table-design` |  | Transaction Fact Table: One Row Per Event |
-| 61008 | easy | _orphan_ | — | `fact-table-design` |  | Periodic Snapshot Fact Table |
-| 61009 | easy | _orphan_ | — | `fact-table-design` |  | Accumulating Snapshot Fact Table |
+| 61008 | easy | `schema-design-basics` | `fact-table-design` | `fact-table-design` |  | Periodic Snapshot Fact Table |
+| 61009 | easy | `schema-design-basics` | `fact-table-design` | `fact-table-design` |  | Accumulating Snapshot Fact Table |
 | 61010 | easy | `schema-design-basics` | `star-snowflake` | `surrogate-keys` | ⚠️ | Surrogate Key vs Natural Key: Identity Source |
 | 61011 | easy | _orphan_ | — | `surrogate-keys` |  | Natural Key: When Source IDs Are Reliable |
 | 61012 | easy | _orphan_ | — | `surrogate-keys` |  | Surrogate Key: Integrating Multiple Source Systems |
 | 61013 | easy | `schema-design-basics` | `scd` | `scd` |  | SCD Type 1: Overwrite With No History |
-| 61014 | easy | _orphan_ | — | `scd` |  | SCD Type 2: Preserving History With New Rows |
-| 61015 | easy | _orphan_ | — | `scd` |  | SCD Type 1 vs Type 2: Choosing the Right Strategy |
+| 61014 | easy | `dimensional-modeling-deep-dive` | `scd` | `scd` |  | SCD Type 2: Preserving History With New Rows |
+| 61015 | easy | `dimensional-modeling-deep-dive` | `scd` | `scd` |  | SCD Type 1 vs Type 2: Choosing the Right Strategy |
 | 61016 | easy | `schema-design-basics` | `star-snowflake` | `grain-definition` | ⚠️ | Grain Definition: What One Row Represents |
-| 61017 | easy | _orphan_ | — | `grain-definition` |  | Grain Consistency: Mixing Granularities |
+| 61017 | easy | `dimensional-modeling-deep-dive` | `grain-definition` | `grain-definition` |  | Grain Consistency: Mixing Granularities |
 | 61018 | easy | `wide-tables-and-obt` | `wide-tables` | `wide-tables` |  | Denormalisation: Read Performance in OLAP |
 | 61019 | easy | `wide-tables-and-obt` | `wide-tables` | `wide-tables` |  | Denormalisation Cost: Update Anomalies |
 | 61020 | easy | `schema-design-basics` | `star-snowflake` | `star-snowflake` |  | OLTP vs OLAP: Optimisation Goals |
 | 61021 | easy | `wide-tables-and-obt` | `wide-tables` | `normalization` | ⚠️ | OLAP Schema Choice: Why Not Normalise Fully? |
 | 61022 | easy | `dbt-and-modern-analytics-modeling` | `dbt-modeling` | `dbt-modeling` |  | DBT: Staging Layer Purpose |
-| 61023 | easy | _orphan_ | — | `scd` |  | Dimension Table: Descriptive Attributes |
+| 61023 | easy | `dimensional-modeling-deep-dive` | `scd` | `scd` |  | Dimension Table: Descriptive Attributes |
 | 61024 | easy | `normalization-and-referential-integrity` | `referential-integrity` | `referential-integrity` |  | Referential Integrity: Orphaned Fact Rows |
-| 61025 | easy | _orphan_ | — | `star-snowflake` |  | Star Schema Design: Identifying Facts vs Dimensions |
+| 61025 | easy | `schema-design-basics` | `star-snowflake` | `star-snowflake` |  | Star Schema Design: Identifying Facts vs Dimensions |
 | 62001 | medium | `dimensional-modeling-deep-dive` | `grain-definition` | `grain-definition` |  | Choosing the Right Grain for an Orders Fact Table |
 | 62002 | medium | `dimensional-modeling-deep-dive` | `scd` | `scd` |  | SCD Type 2 vs Type 3: Customer Tier Changes |
-| 62003 | medium | _orphan_ | — | `scd` |  | SCD Type 2: Performance vs. Storage Tradeoff |
+| 62003 | medium | `dimensional-modeling-deep-dive` | `scd` | `scd` |  | SCD Type 2: Performance vs. Storage Tradeoff |
 | 62004 | medium | `dimensional-modeling-deep-dive` | `bridge-tables` | `bridge-tables` |  | Bridge Table for Student-Course Many-to-Many |
-| 62005 | medium | _orphan_ | — | `bridge-tables` |  | Bridge Table Weighting Factor Edge Case |
+| 62005 | medium | `dimensional-modeling-deep-dive` | `bridge-tables` | `bridge-tables` |  | Bridge Table Weighting Factor Edge Case |
 | 62006 | medium | `dbt-and-modern-analytics-modeling` | `dbt-modeling` | `dbt-modeling` |  | dbt Staging Layer Responsibilities |
 | 62007 | medium | `dbt-and-modern-analytics-modeling` | `dbt-modeling` | `dbt-modeling` |  | dbt Materialization: View vs Table vs Incremental |
 | 62008 | medium | `dbt-and-modern-analytics-modeling` | `dbt-modeling` | `dbt-modeling` |  | dbt: Intermediate Layer Purpose |
-| 62009 | medium | _orphan_ | — | `grain-definition` |  | Modeling a Subscription Funnel: Grain Choice |
+| 62009 | medium | `dimensional-modeling-deep-dive` | `grain-definition` | `grain-definition` |  | Modeling a Subscription Funnel: Grain Choice |
 | 62010 | medium | `dimensional-modeling-deep-dive` | `scd` | `scd` |  | Conformed vs Role-Playing Dimensions |
-| 62011 | medium | _orphan_ | — | `scd` |  | Junk Dimension Design |
-| 62012 | medium | _orphan_ | — | `scd` |  | Degenerate Dimension: When to Use One |
+| 62011 | medium | `dimensional-modeling-deep-dive` | `scd` | `scd` |  | Junk Dimension Design |
+| 62012 | medium | `dimensional-modeling-deep-dive` | `scd` | `scd` |  | Degenerate Dimension: When to Use One |
 | 62013 | medium | `normalization-and-referential-integrity` | `referential-integrity` | `referential-integrity` |  | Referential Integrity in Analytics Warehouses |
 | 62014 | medium | `normalization-and-referential-integrity` | `referential-integrity` | `referential-integrity` |  | Referential Integrity: Late-Arriving Dimension Members |
 | 62015 | medium | `wide-tables-and-obt` | `wide-tables` | `wide-tables` |  | When to Denormalize in an Analytics Model |
 | 62016 | medium | _orphan_ | — | `wide-tables` |  | Denormalization Tradeoff: Update Anomalies in Analytics |
 | 62017 | medium | `wide-tables-and-obt` | `wide-tables` | `wide-tables` |  | Wide Table (OBT) vs Normalized Star: BI Tool Query Patterns |
 | 62018 | medium | `wide-tables-and-obt` | `wide-tables` | `wide-tables` |  | Wide Table Scalability Limits |
-| 62019 | medium | _orphan_ | — | `fact-table-design` |  | Accumulating Snapshot Fact Table for Order Fulfillment |
-| 62020 | medium | _orphan_ | — | `grain-definition` |  | Grain Definition: Sessions with Variable Event Counts |
+| 62019 | medium | `schema-design-basics` | `fact-table-design` | `fact-table-design` |  | Accumulating Snapshot Fact Table for Order Fulfillment |
+| 62020 | medium | `dimensional-modeling-deep-dive` | `grain-definition` | `grain-definition` |  | Grain Definition: Sessions with Variable Event Counts |
 | 62021 | medium | `dimensional-modeling-deep-dive` | `grain-definition` | `grain-definition` |  | Schema from Requirements: B2B SaaS Revenue Model |
 | 62022 | medium | _orphan_ | — | `hierarchies-and-multipath` |  | Schema from Requirements: Product Hierarchy Rollup |
-| 62023 | medium | _orphan_ | — | `fact-table-design` |  | Schema from Requirements: Healthcare Patient Events |
-| 62024 | medium | _orphan_ | — | `scd` |  | SCD Type 2 vs Type 3: When Type 3 is Sufficient |
+| 62023 | medium | `schema-design-basics` | `fact-table-design` | `fact-table-design` |  | Schema from Requirements: Healthcare Patient Events |
+| 62024 | medium | `dimensional-modeling-deep-dive` | `scd` | `scd` |  | SCD Type 2 vs Type 3: When Type 3 is Sufficient |
 | 62025 | medium | _orphan_ | — | `aggregate-and-summary-design` |  | Partitioning and Clustering: Choosing the Right Strategy |
 | 62026 | medium | _orphan_ | — | _unrouted_ |  | Semantic Layer: Centralized Metric Governance |
-| 62027 | medium | _orphan_ | — | `fact-table-design` |  | Semi-Additive Facts: Account Balance in a Periodic Snapshot |
-| 62028 | medium | _orphan_ | — | `bridge-tables` |  | Multi-Valued Dimension: Bridge Table for Promotions |
-| 62035 | medium | _orphan_ | — | `scd` |  | Schema Evolution: NULL vs Default When Extending a Fact Table with Missing Historical Data |
+| 62027 | medium | `schema-design-basics` | `fact-table-design` | `fact-table-design` |  | Semi-Additive Facts: Account Balance in a Periodic Snapshot |
+| 62028 | medium | `dimensional-modeling-deep-dive` | `bridge-tables` | `bridge-tables` |  | Multi-Valued Dimension: Bridge Table for Promotions |
+| 62035 | medium | `dimensional-modeling-deep-dive` | `scd` | `scd` |  | Schema Evolution: NULL vs Default When Extending a Fact Table with Missing Historical Data |
 | 62036 | medium | _orphan_ | — | `conformed-dimensions` |  | Conformed Dimensions: Resolving Cross-Mart Inconsistency for a Shared Business Concept |
 | 62077 | medium | _orphan_ | — | `data-vault` |  | Data Vault Constructs: What Hubs, Links, and Satellites Each Store |
 | 63001 | hard | _orphan_ | — | `data-vault` |  | Data Vault Hub Design for Multi-Source Customer IDs |
-| 63002 | hard | _orphan_ | — | `scd` |  | Choosing the Right SCD Strategy for Analyst-Facing Price History |
-| 63003 | hard | _orphan_ | — | `grain-definition` |  | Grain Definition for Accumulating Snapshot Fact Tables |
+| 63002 | hard | `dimensional-modeling-deep-dive` | `scd` | `scd` |  | Choosing the Right SCD Strategy for Analyst-Facing Price History |
+| 63003 | hard | `dimensional-modeling-deep-dive` | `grain-definition` | `grain-definition` |  | Grain Definition for Accumulating Snapshot Fact Tables |
 | 63004 | hard | `wide-tables-and-obt` | `wide-tables` | `wide-tables` |  | Wide OBT vs. Normalized Model for ML Feature Generation |
 | 63005 | hard | _orphan_ | — | `aggregate-and-summary-design` |  | Pre-Aggregation vs. Live Query for High-Cardinality Dashboard |
 | 63006 | hard | _orphan_ | — | `data-vault` |  | Data Vault Satellite Design for Multi-Source Attribute Conflicts |
-| 63007 | hard | _orphan_ | — | `referential-integrity` |  | Referential Integrity Constraints in a Cloud Analytical Warehouse |
-| 63008 | hard | _orphan_ | — | `bridge-tables` |  | Modeling a Many-to-Many Promotion-Product Relationship in a Star Schema |
+| 63007 | hard | `normalization-and-referential-integrity` | `referential-integrity` | `referential-integrity` |  | Referential Integrity Constraints in a Cloud Analytical Warehouse |
+| 63008 | hard | `dimensional-modeling-deep-dive` | `bridge-tables` | `bridge-tables` |  | Modeling a Many-to-Many Promotion-Product Relationship in a Star Schema |
 | 63009 | hard | `dbt-and-modern-analytics-modeling` | `dbt-modeling` | `dbt-modeling` |  | dbt Incremental Strategy for Late-Arriving Event Data |
-| 63010 | hard | _orphan_ | — | `star-snowflake` |  | Choosing Between Lake, Warehouse, and Lakehouse for ML + BI Workloads |
-| 63011 | hard | _orphan_ | — | `scd` |  | Schema Design from Ambiguous Subscription + Usage Requirements |
+| 63010 | hard | `schema-design-basics` | `star-snowflake` | `star-snowflake` |  | Choosing Between Lake, Warehouse, and Lakehouse for ML + BI Workloads |
+| 63011 | hard | `dimensional-modeling-deep-dive` | `scd` | `scd` |  | Schema Design from Ambiguous Subscription + Usage Requirements |
 | 63012 | hard | _orphan_ | — | `data-vault` |  | Data Vault Link Design for Multi-Party Financial Transactions |
 | 63013 | hard | _orphan_ | — | `aggregate-and-summary-design` |  | Partitioning Strategy for a 10-Billion-Row Event Fact Table |
 | 63014 | hard | _orphan_ | — | `hierarchies-and-multipath` |  | Handling Hierarchy Ragged-Depth in an Organizational Dimension |
-| 63015 | hard | _orphan_ | — | `referential-integrity` |  | Referential Integrity Under High-Volume Parallel Loads |
-| 63016 | hard | _orphan_ | — | `scd` |  | SCD Type 4 vs. Type 6 for a High-Churn Customer Attribute |
+| 63015 | hard | `normalization-and-referential-integrity` | `referential-integrity` | `referential-integrity` |  | Referential Integrity Under High-Volume Parallel Loads |
+| 63016 | hard | `dimensional-modeling-deep-dive` | `scd` | `scd` |  | SCD Type 4 vs. Type 6 for a High-Churn Customer Attribute |
 | 63017 | hard | _orphan_ | — | `aggregate-and-summary-design` |  | Modeling Customer Lifetime Value in a Dimensional Schema |
 | 63018 | hard | `dbt-and-modern-analytics-modeling` | `dbt-modeling` | `dbt-modeling` |  | dbt Materialization Strategy for a Funnel Model with Backfill Requirements |
 | 63019 | hard | `wide-tables-and-obt` | `wide-tables` | `wide-tables` |  | Wide One-Big-Table vs. Normalized Model for High-Cardinality Real-Time Analytics |
-| 63020 | hard | _orphan_ | — | `fact-table-design` |  | Modeling Requirements for a Multi-Currency Financial Reporting System |
-| 63022 | hard | _orphan_ | — | `scd` |  | Bi-Temporal Queries: Correct Predicates for Both Time Axes |
+| 63020 | hard | `schema-design-basics` | `fact-table-design` | `fact-table-design` |  | Modeling Requirements for a Multi-Currency Financial Reporting System |
+| 63022 | hard | `dimensional-modeling-deep-dive` | `scd` | `scd` |  | Bi-Temporal Queries: Correct Predicates for Both Time Axes |
 | 63023 | hard | _orphan_ | — | `hierarchies-and-multipath` |  | Cross-Hierarchy Reporting: Two Hierarchies in One Dimension |
-| 63024 | hard | _orphan_ | — | `grain-definition` |  | Fact-to-Fact Join: Avoiding Fan-Out Row Multiplication |
-| 63032 | hard | _orphan_ | — | `scd` |  | Schema Evolution: Adding a Compliance Column to a Shared Dimension Under a Regulatory Deadline |
-| 63033 | hard | _orphan_ | — | `scd` |  | Schema Evolution Governance: Breaking-Change Strategy for a High-Fan-Out Shared Dimension |
+| 63024 | hard | `dimensional-modeling-deep-dive` | `grain-definition` | `grain-definition` |  | Fact-to-Fact Join: Avoiding Fan-Out Row Multiplication |
+| 63032 | hard | `dimensional-modeling-deep-dive` | `scd` | `scd` |  | Schema Evolution: Adding a Compliance Column to a Shared Dimension Under a Regulatory Deadline |
+| 63033 | hard | `dimensional-modeling-deep-dive` | `scd` | `scd` |  | Schema Evolution Governance: Breaking-Change Strategy for a High-Fan-Out Shared Dimension |
 
 ### statistics
 
@@ -2084,11 +1933,11 @@ the audit credits the question to. `Tag-suggested` = where tag-routing would pla
 | 71010 | easy | _orphan_ | — | `probability-and-combinatorics` |  | Conditional Probability Definition |
 | 71011 | easy | _orphan_ | — | `probability-and-combinatorics` |  | Conditional Probability Calculation |
 | 71012 | easy | `stats-for-analysts` | `distributions` | `distributions` |  | Bernoulli Trial Definition |
-| 71013 | easy | _orphan_ | — | `distributions` |  | Binomial Probability Single Term |
-| 71014 | easy | _orphan_ | — | `distributions` |  | Uniform Distribution Probability |
-| 71015 | easy | _orphan_ | — | `distributions` |  | Z-Score Calculation |
+| 71013 | easy | `stats-for-analysts` | `distributions` | `distributions` |  | Binomial Probability Single Term |
+| 71014 | easy | `stats-for-analysts` | `distributions` | `distributions` |  | Uniform Distribution Probability |
+| 71015 | easy | `stats-for-analysts` | `distributions` | `distributions` |  | Z-Score Calculation |
 | 71016 | easy | `stats-for-analysts` | `distributions` | `distributions` |  | 68-95-99.7 Rule Application |
-| 71017 | easy | _orphan_ | — | `distributions` |  | Expected Value of Discrete Distribution |
+| 71017 | easy | `stats-for-analysts` | `distributions` | `distributions` |  | Expected Value of Discrete Distribution |
 | 71018 | easy | _orphan_ | — | `probability-and-combinatorics` |  | Expected Value Interpretation |
 | 71019 | easy | _orphan_ | — | `probability-and-combinatorics` |  | Combinations vs Permutations |
 | 71020 | easy | _orphan_ | — | `probability-and-combinatorics` |  | Number of Combinations |
@@ -2097,15 +1946,15 @@ the audit credits the question to. `Tag-suggested` = where tag-routing would pla
 | 71023 | easy | _orphan_ | — | `probability-and-combinatorics` |  | Sample Space Counting |
 | 71024 | easy | _orphan_ | — | `probability-and-combinatorics` |  | Permutation Count |
 | 71025 | easy | _orphan_ | — | `probability-and-combinatorics` |  | Probability of Intersection (Independent Events) |
-| 71026 | easy | _orphan_ | — | `distributions` |  | Normal Distribution Symmetry |
+| 71026 | easy | `stats-for-analysts` | `distributions` | `distributions` |  | Normal Distribution Symmetry |
 | 71027 | easy | _orphan_ | — | `probability-and-combinatorics` |  | Simple Probability from Sample Space |
-| 71028 | easy | _orphan_ | — | `distributions` |  | Variance of Discrete Distribution |
+| 71028 | easy | `stats-for-analysts` | `distributions` | `distributions` |  | Variance of Discrete Distribution |
 | 71029 | easy | _orphan_ | — | `descriptive-stats` |  | Kurtosis and Tail Behaviour |
-| 71030 | easy | _orphan_ | — | `distributions` |  | Binomial vs Bernoulli Relationship |
-| 71031 | easy | _orphan_ | — | `distributions` |  | Geometric Distribution and Memorylessness |
+| 71030 | easy | `stats-for-analysts` | `distributions` | `distributions` |  | Binomial vs Bernoulli Relationship |
+| 71031 | easy | `stats-for-analysts` | `distributions` | `distributions` |  | Geometric Distribution and Memorylessness |
 | 72001 | medium | `experimental-design-inference` | `hypothesis-testing` | `sampling-and-clt` | ⚠️ | Central Limit Theorem — When It Applies |
 | 72002 | medium | `experimental-design-inference` | `hypothesis-testing` | `sampling-and-clt` | ⚠️ | Standard Error of the Mean |
-| 72003 | medium | _orphan_ | — | `confidence-intervals` |  | 95% Confidence Interval for a Mean |
+| 72003 | medium | `experimental-design-inference` | `confidence-intervals` | `confidence-intervals` |  | 95% Confidence Interval for a Mean |
 | 72004 | medium | `experimental-design-inference` | `confidence-intervals` | `confidence-intervals` |  | Interpreting a Confidence Interval |
 | 72005 | medium | _orphan_ | — | `hypothesis-testing` |  | Null and Alternative Hypothesis Setup |
 | 72006 | medium | _orphan_ | — | `hypothesis-testing` |  | p-Value Interpretation |
@@ -2118,21 +1967,21 @@ the audit credits the question to. `Tag-suggested` = where tag-routing would pla
 | 72013 | medium | _orphan_ | — | `regression-and-correlation` |  | A/B Test — Identifying the Correct Setup |
 | 72014 | medium | `experimental-design-inference` | `hypothesis-testing` | `hypothesis-testing` |  | Minimum Sample Size for A/B Test |
 | 72015 | medium | _orphan_ | — | `sampling-and-clt` |  | Law of Large Numbers |
-| 72016 | medium | _orphan_ | — | `distributions` |  | Poisson Probability |
+| 72016 | medium | `stats-for-analysts` | `distributions` | `distributions` |  | Poisson Probability |
 | 72017 | medium | _orphan_ | — | `bayesian-reasoning` |  | Bayesian vs Frequentist Reasoning |
 | 72018 | medium | `experimental-design-inference` | `hypothesis-testing` | `bayesian-reasoning` | ⚠️ | Bayes' Theorem Application |
-| 72019 | medium | _orphan_ | — | `confidence-intervals` |  | Confidence Interval Width and Sample Size |
-| 72020 | medium | _orphan_ | — | `distributions` |  | Poisson Expected Value and Variance |
-| 72021 | medium | _orphan_ | — | `distributions` |  | Binomial Mean and Standard Deviation |
+| 72019 | medium | `experimental-design-inference` | `confidence-intervals` | `confidence-intervals` |  | Confidence Interval Width and Sample Size |
+| 72020 | medium | `stats-for-analysts` | `distributions` | `distributions` |  | Poisson Expected Value and Variance |
+| 72021 | medium | `stats-for-analysts` | `distributions` | `distributions` |  | Binomial Mean and Standard Deviation |
 | 72022 | medium | `experimental-design-inference` | `hypothesis-testing` | `sampling-and-clt` | ⚠️ | Sampling Distribution of Proportion |
 | 72023 | medium | _orphan_ | — | `regression-and-correlation` |  | Effect of Outlier on Correlation |
 | 72024 | medium | _orphan_ | — | `errors-and-power` |  | Multiple Testing Problem |
 | 72025 | medium | _orphan_ | — | `errors-and-power` |  | Bonferroni Correction |
-| 72026 | medium | _orphan_ | — | `distributions` |  | Expected Number of Events (Poisson) |
+| 72026 | medium | `stats-for-analysts` | `distributions` | `distributions` |  | Expected Number of Events (Poisson) |
 | 72027 | medium | _orphan_ | — | `hypothesis-testing` |  | Selecting the Right Hypothesis Test |
 | 72028 | medium | `experimental-design-inference` | `hypothesis-testing` | `sampling-and-clt` | ⚠️ | CLT Sampling Distribution Mean |
-| 72029 | medium | _orphan_ | — | `distributions` |  | Log-Normal Distribution and Log Transformation |
-| 72030 | medium | _orphan_ | — | `distributions` |  | F-Statistic and ANOVA |
+| 72029 | medium | `stats-for-analysts` | `distributions` | `distributions` |  | Log-Normal Distribution and Log Transformation |
+| 72030 | medium | `stats-for-analysts` | `distributions` | `distributions` |  | F-Statistic and ANOVA |
 | 72031 | medium | `experimental-design-inference` | `hypothesis-testing` | `errors-and-power` | ⚠️ | Sequential Testing and the Peeking Problem |
 | 72032 | medium | `experimental-design-inference` | `hypothesis-testing` | `descriptive-stats` | ⚠️ | Metric Sensitivity — Mean vs Median Under Treatment |
 | 72033 | medium | `experimental-design-inference` | `hypothesis-testing` | `hypothesis-testing` |  | Guardrail Metric Violation |
@@ -2148,28 +1997,28 @@ the audit credits the question to. `Tag-suggested` = where tag-routing would pla
 | 72043 | medium | _orphan_ | — | `survival-analysis` |  | Kaplan-Meier: What Censored Observations Tell Us |
 | 73001 | hard | _orphan_ | — | `bayesian-reasoning` |  | Bayesian Posterior Calculation |
 | 73002 | hard | _orphan_ | — | `regression-and-correlation` |  | Simpson's Paradox |
-| 73003 | hard | _orphan_ | — | `confidence-intervals` |  | Maximum Likelihood Estimation — Bernoulli |
-| 73004 | hard | _orphan_ | — | `confidence-intervals` |  | Bootstrap Confidence Interval Logic |
-| 73005 | hard | _orphan_ | — | `confidence-intervals` |  | Bootstrap Percentile CI |
+| 73003 | hard | `experimental-design-inference` | `confidence-intervals` | `confidence-intervals` |  | Maximum Likelihood Estimation — Bernoulli |
+| 73004 | hard | `experimental-design-inference` | `confidence-intervals` | `confidence-intervals` |  | Bootstrap Confidence Interval Logic |
+| 73005 | hard | `experimental-design-inference` | `confidence-intervals` | `confidence-intervals` |  | Bootstrap Percentile CI |
 | 73006 | hard | _orphan_ | — | `regression-and-correlation` |  | R-Squared Interpretation |
 | 73007 | hard | _orphan_ | — | `regression-and-correlation` |  | Computing R-Squared |
 | 73008 | hard | _orphan_ | — | `regression-and-correlation` |  | Bias-Variance Tradeoff |
-| 73009 | hard | _orphan_ | — | `distributions` |  | Chi-Squared Test Statistic |
+| 73009 | hard | `stats-for-analysts` | `distributions` | `distributions` |  | Chi-Squared Test Statistic |
 | 73010 | hard | _orphan_ | — | `errors-and-power` |  | Multiple Comparisons — FWER |
 | 73011 | hard | _orphan_ | — | `errors-and-power` |  | Power Analysis — Effect Size |
 | 73012 | hard | _orphan_ | — | `variance-and-anova` |  | Variance Decomposition — ANOVA Logic |
-| 73013 | hard | _orphan_ | — | `confidence-intervals` |  | MLE for Exponential Distribution |
+| 73013 | hard | `experimental-design-inference` | `confidence-intervals` | `confidence-intervals` |  | MLE for Exponential Distribution |
 | 73014 | hard | _orphan_ | — | `survival-analysis` |  | Survival Analysis — Hazard Rate |
 | 73015 | hard | _orphan_ | — | `survival-analysis` |  | Kaplan-Meier Survival Probability |
-| 73016 | hard | _orphan_ | — | `confidence-intervals` |  | Method of Moments for Normal Distribution |
+| 73016 | hard | `experimental-design-inference` | `confidence-intervals` | `confidence-intervals` |  | Method of Moments for Normal Distribution |
 | 73017 | hard | _orphan_ | — | `variance-and-anova` |  | ANOVA F-Statistic |
 | 73018 | hard | _orphan_ | — | `regression-and-correlation` |  | Regression — Bias-Variance Decomposition |
-| 73019 | hard | _orphan_ | — | `distributions` |  | Chi-Squared Test of Independence |
+| 73019 | hard | `stats-for-analysts` | `distributions` | `distributions` |  | Chi-Squared Test of Independence |
 | 73020 | hard | _orphan_ | — | `bayesian-reasoning` |  | Posterior Update with Conjugate Prior |
 | 73021 | hard | _orphan_ | — | `bayesian-reasoning` |  | Posterior Mean Computation |
 | 73022 | hard | _orphan_ | — | `errors-and-power` |  | Bonferroni Correction Power Loss |
 | 73023 | hard | _orphan_ | — | `variance-and-anova` |  | Variance of a Linear Combination |
-| 73024 | hard | _orphan_ | — | `confidence-intervals` |  | Bootstrap vs Parametric CI Tradeoffs |
+| 73024 | hard | `experimental-design-inference` | `confidence-intervals` | `confidence-intervals` |  | Bootstrap vs Parametric CI Tradeoffs |
 | 73027 | hard | _orphan_ | — | `regression-and-correlation` |  | MCAR, MAR, and MNAR Missingness Mechanisms |
 | 73034 | hard | _orphan_ | — | `hypothesis-testing` |  | CUPED: Mechanism Behind Variance Reduction |
 
@@ -2179,18 +2028,18 @@ the audit credits the question to. `Tag-suggested` = where tag-routing would pla
 |---|---|---|---|---|---|---|
 | 81001 | easy | `ml-starter` | `supervised-unsupervised` | `supervised-unsupervised` |  | Supervised vs Unsupervised: Choosing the Right Paradigm |
 | 81002 | easy | _orphan_ | — | `supervised-unsupervised` |  | Supervised vs Unsupervised: Fraud Detection Setup |
-| 81003 | easy | _orphan_ | — | `bias-variance` |  | Diagnosing Overfitting from Train-Validation Gap |
-| 81004 | easy | _orphan_ | — | `bias-variance` |  | Recognising Underfitting |
+| 81003 | easy | `ml-starter` | `bias-variance` | `bias-variance` |  | Diagnosing Overfitting from Train-Validation Gap |
+| 81004 | easy | `ml-starter` | `bias-variance` | `bias-variance` |  | Recognising Underfitting |
 | 81005 | easy | `ml-starter` | `bias-variance` | `bias-variance` |  | Bias-Variance Tradeoff: Model Complexity |
 | 81006 | easy | _orphan_ | — | `cross-validation` |  | Data Splitting: Purpose of the Test Set |
 | 81007 | easy | `ml-starter` | `supervised-unsupervised` | `missing-data-and-preprocessing` | ⚠️ | Data Splitting: Temporal Ordering |
 | 81008 | easy | _orphan_ | — | `feature-engineering` |  | Feature Scaling: When It Matters |
 | 81009 | easy | _orphan_ | — | `feature-engineering` |  | Feature Scaling: Normalisation vs Standardisation |
 | 81010 | easy | `ml-starter` | `supervised-unsupervised` | `cross-validation` | ⚠️ | Cross-Validation: Purpose and Motivation |
-| 81011 | easy | _orphan_ | — | `metrics` |  | Classification Metrics: Precision vs Recall |
-| 81012 | easy | _orphan_ | — | `metrics` |  | ROC-AUC: Interpreting the Curve |
+| 81011 | easy | `ml-model-evaluation` | `metrics` | `metrics` |  | Classification Metrics: Precision vs Recall |
+| 81012 | easy | `ml-model-evaluation` | `metrics` | `metrics` |  | ROC-AUC: Interpreting the Curve |
 | 81013 | easy | `ml-starter` | `supervised-unsupervised` | `metrics` | ⚠️ | Loss Function Selection: Regression |
-| 81014 | easy | _orphan_ | — | `metrics` |  | Loss Function Selection: Classification |
+| 81014 | easy | `ml-model-evaluation` | `metrics` | `metrics` |  | Loss Function Selection: Classification |
 | 81015 | easy | _orphan_ | — | `hyperparameter-tuning` |  | Decision Tree: Does Criterion Choice Move the Model? |
 | 81016 | easy | `ml-model-evaluation` | `cross-validation` | `neural-networks-and-gradients` | ⚠️ | Gradient Descent: Learning Rate Effects |
 | 81017 | easy | _orphan_ | — | `neural-networks-and-gradients` |  | Gradient Descent: Convergence Indicators |
@@ -2199,18 +2048,18 @@ the audit credits the question to. `Tag-suggested` = where tag-routing would pla
 | 81020 | easy | _orphan_ | — | `hyperparameter-tuning` |  | Hyperparameter Sensitivity: Does max_iter Affect Learned Weights? |
 | 81021 | easy | _orphan_ | — | `class-imbalance` |  | Class Imbalance: When Accuracy Misleads |
 | 81022 | easy | `ml-model-evaluation` | `cross-validation` | `class-imbalance` | ⚠️ | Cross-Validation: Stratified K-Fold |
-| 81023 | easy | _orphan_ | — | `metrics` |  | Regression Metrics: MSE vs MAE |
-| 81024 | easy | _orphan_ | — | `bias-variance` |  | Bias-Variance Tradeoff: Diagnosing from Curves |
+| 81023 | easy | `ml-model-evaluation` | `metrics` | `metrics` |  | Regression Metrics: MSE vs MAE |
+| 81024 | easy | `ml-starter` | `bias-variance` | `bias-variance` |  | Bias-Variance Tradeoff: Diagnosing from Curves |
 | 81025 | easy | `ml-starter` | `supervised-unsupervised` | `missing-data-and-preprocessing` | ⚠️ | Data Splitting: Leakage from Preprocessing |
 | 81026 | easy | _orphan_ | — | `hyperparameter-tuning` |  | Regularisation Hyperparameter: Effect of C on Logistic Regression Coefficients |
 | 81027 | easy | `ml-starter` | `supervised-unsupervised` | `feature-engineering` | ⚠️ | Feature Scaling: SVM and Neural Networks |
 | 81028 | easy | _orphan_ | — | `cross-validation` |  | Cross-Validation: Correct Usage with Test Set |
-| 81029 | easy | _orphan_ | — | `metrics` |  | Classification Metrics: F1 Score |
+| 81029 | easy | `ml-model-evaluation` | `metrics` | `metrics` |  | Classification Metrics: F1 Score |
 | 81030 | easy | _orphan_ | — | `regularization` |  | Regularisation: Effect on Model Complexity |
-| 82001 | medium | _orphan_ | — | `bias-variance` |  | Bias-Variance Tradeoff as a Complexity Dial |
-| 82002 | medium | _orphan_ | — | `bias-variance` |  | Choosing the Right Intervention from a Learning Curve |
+| 82001 | medium | `ml-starter` | `bias-variance` | `bias-variance` |  | Bias-Variance Tradeoff as a Complexity Dial |
+| 82002 | medium | `ml-starter` | `bias-variance` | `bias-variance` |  | Choosing the Right Intervention from a Learning Curve |
 | 82003 | medium | `ml-advanced-methods` | `ensembles` | `ensembles` |  | Ensemble Strategy: Bagging vs Boosting |
-| 82004 | medium | _orphan_ | — | `ensembles` |  | Random Forest: Feature Subsampling and Tree Correlation |
+| 82004 | medium | `ml-advanced-methods` | `ensembles` | `ensembles` |  | Random Forest: Feature Subsampling and Tree Correlation |
 | 82005 | medium | `ml-advanced-methods` | `ensembles` | `ensembles` |  | Ensemble Selection: High-Bias vs High-Variance Problem |
 | 82006 | medium | _orphan_ | — | `class-imbalance` |  | Class Imbalance: SMOTE vs Class Weights |
 | 82007 | medium | _orphan_ | — | `class-imbalance` |  | Threshold Tuning: Precision-Recall Trade-off |
@@ -2222,12 +2071,12 @@ the audit credits the question to. `Tag-suggested` = where tag-routing would pla
 | 82013 | medium | `ml-advanced-methods` | `regularization` | `feature-engineering` | ⚠️ | Regularisation Depth: L1 vs L2 Solution Geometry |
 | 82014 | medium | _orphan_ | — | `feature-engineering` |  | Regularisation: Correlated Features and L1 vs L2 |
 | 82015 | medium | _orphan_ | — | `feature-engineering` |  | Regularisation Path: Coefficient Behaviour as λ Increases |
-| 82016 | medium | _orphan_ | — | `metrics` |  | Logistic Regression: Log-Odds and Sigmoid Saturation |
+| 82016 | medium | `ml-model-evaluation` | `metrics` | `metrics` |  | Logistic Regression: Log-Odds and Sigmoid Saturation |
 | 82017 | medium | _orphan_ | — | `class-imbalance` |  | Logistic Regression: Imbalanced Data and Default Threshold |
 | 82018 | medium | `ml-model-evaluation` | `cross-validation` | `ensembles` | ⚠️ | Boosting Mechanics: What Each Tree Corrects |
 | 82019 | medium | `ml-model-evaluation` | `cross-validation` | `ensembles` | ⚠️ | Boosting: n_estimators vs Learning Rate Interaction |
 | 82020 | medium | `ml-model-evaluation` | `metrics` | `metrics` |  | Model Calibration: When High AUC is Not Enough |
-| 82021 | medium | _orphan_ | — | `metrics` |  | Model Calibration: Applying Platt Scaling |
+| 82021 | medium | `ml-model-evaluation` | `metrics` | `metrics` |  | Model Calibration: Applying Platt Scaling |
 | 82022 | medium | _orphan_ | — | `feature-engineering` |  | Feature Selection: Filter vs Wrapper vs Embedded |
 | 82023 | medium | _orphan_ | — | `feature-engineering` |  | Feature Selection: Budget and Timeline Constraints |
 | 82024 | medium | `missing-data-and-preprocessing-hygiene` | `missing-data-and-preprocessing` | `missing-data-and-preprocessing` |  | Missing Data: MCAR vs MAR vs MNAR |
@@ -2262,7 +2111,7 @@ the audit credits the question to. `Tag-suggested` = where tag-routing would pla
 | 83013 | hard | `ml-production` | `production-and-monitoring` | `missing-data-and-preprocessing` | ⚠️ | Dimensionality Reduction Before vs After Train-Test Split |
 | 83014 | hard | `ml-advanced-methods` | `ensembles` | `ensembles` |  | Boosting Failure Mode: Noisy Labels |
 | 83015 | hard | _orphan_ | — | `feature-engineering` |  | Feature Importance Disagreement Between Methods |
-| 83016 | hard | _orphan_ | — | `metrics` |  | Debugging a Regression Model with Heteroscedastic Residuals |
+| 83016 | hard | `ml-model-evaluation` | `metrics` | `metrics` |  | Debugging a Regression Model with Heteroscedastic Residuals |
 | 83017 | hard | _orphan_ | — | `neural-networks-and-gradients` |  | Neural Network Architecture for Tabular Data |
 | 83018 | hard | `ml-production` | `production-and-monitoring` | `production-and-monitoring` |  | Training-Serving Skew from Feature Pipeline Divergence |
 | 83019 | hard | _orphan_ | — | `unsupervised-methods` |  | Clustering Evaluation When Ground Truth Is Unknown |
@@ -2271,7 +2120,7 @@ the audit credits the question to. `Tag-suggested` = where tag-routing would pla
 | 83022 | hard | `ml-production` | `production-and-monitoring` | `production-and-monitoring` |  | Model Deployment Constraints: Latency vs Accuracy |
 | 83023 | hard | _orphan_ | — | `hyperparameter-tuning` |  | Hyperparameter Tuning: Grid Search vs Bayesian Optimization |
 | 83024 | hard | `ml-production` | `production-and-monitoring` | `production-and-monitoring` |  | Evaluating a Model Under Distribution Shift |
-| 83025 | hard | _orphan_ | — | `metrics` |  | Loss Function Selection for Skewed Regression Targets |
+| 83025 | hard | `ml-model-evaluation` | `metrics` | `metrics` |  | Loss Function Selection for Skewed Regression Targets |
 | 83039 | hard | _orphan_ | — | `neural-networks-and-gradients` |  | Domain-Adaptive Pre-Training: When General Pre-Training Representations Misalign with Target Domain |
 | 83040 | hard | _orphan_ | — | `production-and-monitoring` |  | Silent Feature Transformation: Upstream Business Logic Change Causes Precision Collapse |
 | 83041 | hard | _orphan_ | — | `neural-networks-and-gradients` |  | Deep Sigmoid Network: Diagnosing Vanishing Gradients from Activation Saturation |
@@ -2295,13 +2144,13 @@ the audit credits the question to. `Tag-suggested` = where tag-routing would pla
 | 91011 | easy | _orphan_ | — | `ab-test-mechanics` |  | The Role of a Control Group |
 | 91012 | easy | `experimentation-starter` | `ab-test-mechanics` | `ab-test-mechanics` |  | Unexpected Traffic Imbalance at Experiment Start |
 | 91013 | easy | _orphan_ | — | `power-and-sample-size` |  | Peeking at Results Early |
-| 91014 | easy | _orphan_ | — | `metric-selection` |  | Guardrail Metrics |
+| 91014 | easy | `experimentation-starter` | `metric-selection` | `metric-selection` |  | Guardrail Metrics |
 | 91015 | easy | `experimentation-starter` | `metric-selection` | `metric-selection` |  | Selecting a Sensitive Metric |
 | 91016 | easy | _orphan_ | — | `ab-test-mechanics` |  | Confidence Interval and Practical Significance |
 | 91017 | easy | _orphan_ | — | `power-and-sample-size` |  | Experiment Duration and Day-of-Week Effects |
 | 91018 | easy | `experimentation-starter` | `ab-test-mechanics` | `ab-test-mechanics` |  | A/A Test Purpose |
 | 91019 | easy | _orphan_ | — | `power-and-sample-size` |  | Increasing Power Without More Users |
-| 91020 | easy | _orphan_ | — | `metric-selection` |  | Logging at the Step Level in a Checkout Experiment |
+| 91020 | easy | `experimentation-starter` | `metric-selection` | `metric-selection` |  | Logging at the Step Level in a Checkout Experiment |
 | 91021 | easy | _orphan_ | — | `ab-test-mechanics` |  | Feature Only Visible to a Subset of Assigned Users |
 | 91022 | easy | `experiment-design-and-power` | `power-and-sample-size` | `ab-test-mechanics` | ⚠️ | Carryover Effects When Starting a Follow-On Experiment |
 | 91023 | easy | _orphan_ | — | `power-and-sample-size` |  | Defining the Minimum Detectable Effect |
@@ -2316,7 +2165,7 @@ the audit credits the question to. `Tag-suggested` = where tag-routing would pla
 | 92002 | medium | _orphan_ | — | `experiment-platform-design` |  | Sample Ratio Mismatch Detection |
 | 92003 | medium | _orphan_ | — | `behavioral-effects-and-interference` |  | Novelty Effect in Feature Launch |
 | 92004 | medium | `experiment-design-and-power` | `power-and-sample-size` | `power-and-sample-size` |  | Statistical Power and Sample Size Trade-off |
-| 92005 | medium | _orphan_ | — | `metric-selection` |  | Choosing the Right Primary Metric |
+| 92005 | medium | `experimentation-starter` | `metric-selection` | `metric-selection` |  | Choosing the Right Primary Metric |
 | 92006 | medium | _orphan_ | — | `behavioral-effects-and-interference` |  | Network Effects and Interference |
 | 92007 | medium | `experiment-design-and-power` | `power-and-sample-size` | `variance-reduction` | ⚠️ | Variance Reduction with Pre-experiment Covariates |
 | 92008 | medium | `subgroup-analysis-and-hte` | `subgroup-and-hte` | `subgroup-and-hte` |  | Segmentation Analysis and Simpson's Paradox |
@@ -2337,14 +2186,14 @@ the audit credits the question to. `Tag-suggested` = where tag-routing would pla
 | 92023 | medium | _orphan_ | — | `sequential-and-bandits` |  | Bayesian Experimentation: Early Stopping |
 | 92024 | medium | `variance-reduction-and-behavioral-effects` | `variance-reduction` | `power-and-sample-size` | ⚠️ | Experiment Duration: Long-Run vs Short-Run Effects |
 | 92025 | medium | _orphan_ | — | `variance-reduction` |  | Variance Reduction: Stratified Randomization |
-| 92026 | medium | _orphan_ | — | `metric-selection` |  | Guardrail Metrics and Ship Decisions |
+| 92026 | medium | `experimentation-starter` | `metric-selection` | `metric-selection` |  | Guardrail Metrics and Ship Decisions |
 | 92027 | medium | _orphan_ | — | `power-and-sample-size` |  | Power Calculation: Effect of Increasing Variance |
 | 92028 | medium | _orphan_ | — | `causal-inference` |  | Quasi-Experimental Method Selection |
 | 92029 | medium | _orphan_ | — | `sequential-and-bandits` |  | Multi-Armed Bandit vs A/B Test Trade-offs |
 | 92030 | medium | _orphan_ | — | `causal-inference` |  | Interaction Effects in Concurrent Experiments |
 | 92043 | medium | _orphan_ | — | `variance-reduction` |  | CUPED Covariate Window: Contamination Through Post-Exposure Measurement |
 | 92044 | medium | _orphan_ | — | `behavioral-effects-and-interference` |  | Two-Sided Marketplace Equilibration: Why Short-Duration Tests Miss Steady-State Effects |
-| 92045 | medium | _orphan_ | — | `metric-selection` |  | High-variance revenue metric can't detect a real 2% lift — what's the structural diagnosis? |
+| 92045 | medium | `experimentation-starter` | `metric-selection` | `metric-selection` |  | High-variance revenue metric can't detect a real 2% lift — what's the structural diagnosis? |
 | 93001 | hard | `causal-inference-and-advanced-experimentation` | `causal-inference` | `behavioral-effects-and-interference` | ⚠️ | Cluster Randomization and Network Interference |
 | 93002 | hard | `causal-inference-and-advanced-experimentation` | `causal-inference` | `causal-inference` |  | Difference-in-Differences with Parallel Trends Failure |
 | 93003 | hard | `causal-inference-and-advanced-experimentation` | `causal-inference` | `behavioral-effects-and-interference` | ⚠️ | Geo Switchback: Carryover Period Design |
@@ -2368,7 +2217,7 @@ the audit credits the question to. `Tag-suggested` = where tag-routing would pla
 | 93034 | hard | _orphan_ | — | `experiment-platform-design` |  | Long-Run Holdout Group Decay: When the Counterfactual Diverges from Current Users |
 | 93035 | hard | _orphan_ | — | `behavioral-effects-and-interference` |  | Switchback Experiment Analysis: Temporal Autocorrelation Inflates the Test Statistic |
 | 93036 | hard | _orphan_ | — | `sequential-and-bandits` |  | Continuous monitoring with alpha spending: when can you stop early? |
-| 93037 | hard | _orphan_ | — | `metric-selection` |  | Metric insensitivity: why your OEC hides a real treatment effect |
+| 93037 | hard | `experimentation-starter` | `metric-selection` | `metric-selection` |  | Metric insensitivity: why your OEC hides a real treatment effect |
 
 ---
 ## Pass 2: Rebalance recommendations
@@ -2409,73 +2258,48 @@ count would change. Divergents require more author scrutiny than orphans.
 
 | Track | Pattern | Current | + Orphans | + Divergents | Max potential | Becomes |
 |---|---|---:|---:|---:|---:|---|
-| sql | `ctes-and-recursion` | 0 | 1 | 1 | 2 | 🟡 still thin |
+| sql | `ctes-and-recursion` | 1 | 0 | 1 | 2 | 🟡 still thin |
 | sql | `pivot-and-unpivot` | 0 | 7 | 0 | 7 | ✅ healthy potential |
 | sql | `top-n-and-ranking` | 0 | 3 | 5 | 8 | ✅ healthy potential |
 | python | `heap-and-priority` | 0 | 4 | 0 | 4 | 🟡 still thin |
-| python | `sliding-window` | 3 | 6 | 1 | 10 | ✅ healthy potential |
 | python | `streaming-and-online` | 0 | 3 | 1 | 4 | 🟡 still thin |
 | python | `string-and-text-processing` | 0 | 4 | 3 | 7 | ✅ healthy potential |
 | python-data | `data-cleaning` | 0 | 18 | 5 | 23 | ✅ healthy potential |
-| python-data | `groupby` | 3 | 13 | 5 | 21 | ✅ healthy potential |
-| python-data | `joins-and-merges` | 3 | 8 | 1 | 12 | ✅ healthy potential |
 | python-data | `top-n-and-ranking` | 0 | 7 | 0 | 7 | ✅ healthy potential |
 | python-data | `window-and-rolling` | 0 | 2 | 4 | 6 | ✅ healthy potential |
 | pyspark | `pyspark-windowing` | 0 | 5 | 0 | 5 | ✅ healthy potential |
 | pyspark | `spark-joins-and-skew` | 0 | 16 | 2 | 18 | ✅ healthy potential |
-| data-engineering | `backfill-design` | 1 | 2 | 0 | 3 | 🟡 still thin |
 | data-engineering | `cost-and-format-optimization` | 0 | 19 | 3 | 22 | ✅ healthy potential |
 | data-engineering | `data-quality-and-incident-response` | 0 | 7 | 2 | 9 | ✅ healthy potential |
-| data-engineering | `delivery-semantics` | 2 | 12 | 0 | 14 | ✅ healthy potential |
-| data-engineering | `orchestration` | 1 | 5 | 2 | 8 | ✅ healthy potential |
-| data-engineering | `schema-evolution` | 2 | 8 | 1 | 11 | ✅ healthy potential |
 | data-engineering | `streaming-vs-batch` | 0 | 6 | 1 | 7 | ✅ healthy potential |
 | data-modeling | `aggregate-and-summary-design` | 0 | 4 | 0 | 4 | 🟡 still thin |
-| data-modeling | `bridge-tables` | 1 | 3 | 0 | 4 | 🟡 still thin |
 | data-modeling | `conformed-dimensions` | 0 | 1 | 0 | 1 | 🟡 still thin |
 | data-modeling | `data-vault` | 0 | 4 | 0 | 4 | 🟡 still thin |
-| data-modeling | `fact-table-design` | 1 | 6 | 0 | 7 | ✅ healthy potential |
-| data-modeling | `grain-definition` | 2 | 5 | 1 | 8 | ✅ healthy potential |
 | data-modeling | `hierarchies-and-multipath` | 0 | 3 | 0 | 3 | 🟡 still thin |
 | data-modeling | `normalization` | 3 | 0 | 1 | 4 | 🟡 still thin |
-| data-modeling | `referential-integrity` | 3 | 2 | 0 | 5 | ✅ healthy potential |
-| data-modeling | `scd` | 3 | 14 | 0 | 17 | ✅ healthy potential |
-| data-modeling | `star-snowflake` | 4 | 4 | 0 | 8 | ✅ healthy potential |
 | data-modeling | `surrogate-keys` | 0 | 2 | 1 | 3 | 🟡 still thin |
 | statistics | `bayesian-reasoning` | 0 | 5 | 1 | 6 | ✅ healthy potential |
-| statistics | `confidence-intervals` | 1 | 8 | 0 | 9 | ✅ healthy potential |
-| statistics | `distributions` | 2 | 16 | 1 | 19 | ✅ healthy potential |
 | statistics | `errors-and-power` | 0 | 5 | 2 | 7 | ✅ healthy potential |
 | statistics | `probability-and-combinatorics` | 0 | 12 | 1 | 13 | ✅ healthy potential |
 | statistics | `sampling-and-clt` | 0 | 1 | 4 | 5 | ✅ healthy potential |
 | statistics | `survival-analysis` | 0 | 3 | 0 | 3 | 🟡 still thin |
 | statistics | `variance-and-anova` | 0 | 3 | 0 | 3 | 🟡 still thin |
 | ml-fundamentals | `algorithmic-fairness` | 0 | 3 | 0 | 3 | 🟡 still thin |
-| ml-fundamentals | `bias-variance` | 1 | 5 | 0 | 6 | ✅ healthy potential |
 | ml-fundamentals | `class-imbalance` | 0 | 6 | 3 | 9 | ✅ healthy potential |
-| ml-fundamentals | `ensembles` | 4 | 1 | 3 | 8 | ✅ healthy potential |
 | ml-fundamentals | `feature-engineering` | 0 | 13 | 6 | 19 | ✅ healthy potential |
 | ml-fundamentals | `hyperparameter-tuning` | 0 | 6 | 1 | 7 | ✅ healthy potential |
-| ml-fundamentals | `metrics` | 1 | 9 | 1 | 11 | ✅ healthy potential |
 | ml-fundamentals | `model-interpretability` | 0 | 2 | 0 | 2 | 🟡 still thin |
 | ml-fundamentals | `neural-networks-and-gradients` | 0 | 4 | 3 | 7 | ✅ healthy potential |
 | ml-fundamentals | `unsupervised-methods` | 0 | 4 | 0 | 4 | 🟡 still thin |
 | experimentation | `behavioral-effects-and-interference` | 0 | 5 | 6 | 11 | ✅ healthy potential |
 | experimentation | `experiment-platform-design` | 0 | 2 | 5 | 7 | ✅ healthy potential |
-| experimentation | `metric-selection` | 2 | 6 | 0 | 8 | ✅ healthy potential |
 | experimentation | `sequential-and-bandits` | 0 | 4 | 4 | 8 | ✅ healthy potential |
 
 ### sql
 
 #### `ctes-and-recursion` — CTEs & Recursion
 
-_1 orphan candidate · 1 divergent candidate_
-
-**Orphans** (in no live path; zero-cost recruitment):
-
-| QID | Diff | Title | Concepts |
-|---|---|---|---|
-| 13050 | hard | Per-user revenue and purchase events without fan-out | `DOUBLE-COUNTING DETECTION`, `CTE PIPELINE`, `MULTI-TABLE ENTITY LINKING` |
+_0 orphan candidates · 1 divergent candidate_
 
 **Divergents** (in another live path; review per question):
 
@@ -2536,27 +2360,6 @@ _4 orphan candidates · 0 divergent candidates_
 | 22050 | medium | Smallest Covering Maintenance Window | `HEAP & PRIORITY QUEUE`, `GREEDY CHOICE` |
 | 23015 | hard | Median from Data Stream | `HEAP & PRIORITY QUEUE`, `INDEXED SEQUENCE REASONING` |
 | 23035 | hard | Minimum Parallel Workers for Job Schedule | `HEAP & PRIORITY QUEUE`, `GREEDY CHOICE` |
-
-#### `sliding-window` — Sliding Window & Two Pointers
-
-_6 orphan candidates · 1 divergent candidate_
-
-**Orphans** (in no live path; zero-cost recruitment):
-
-| QID | Diff | Title | Concepts |
-|---|---|---|---|
-| 21018 | easy | Merge Two Sorted Lists | `TWO POINTERS`, `INDEXED SEQUENCE REASONING` |
-| 21036 | easy | Sliding Window Maximum with deque | `SLIDING WINDOW`, `STACK & MONOTONIC STRUCTURES` |
-| 22018 | medium | Priority-Partition Log Entries | `TWO POINTERS`, `IN-PLACE TRANSFORMATION & SPACE OPTIMIZATION` |
-| 22028 | medium | Find all anagrams in a string | `SLIDING WINDOW`, `HASH-MAP STATE` |
-| 22046 | medium | Sliding Window Rate Limiter | `SLIDING WINDOW`, `HASH-MAP STATE` |
-| 23017 | hard | Sliding Window Median | `SLIDING WINDOW`, `HEAP & PRIORITY QUEUE` |
-
-**Divergents** (in another live path; review per question):
-
-| QID | Diff | Currently in | Attributed pattern | Title |
-|---|---|---|---|---|
-| 22002 | medium | `stacks-and-queues` | `stacks-and-queues` | Sliding Window Maximum |
 
 #### `streaming-and-online` — Streaming & Online Algorithms
 
@@ -2636,61 +2439,6 @@ _18 orphan candidates · 5 divergent candidates_
 | 31023 | easy | `dataframe-fundamentals` | `dataframe-basics` | Flag Failed Payments with .loc |
 | 32017 | medium | `reshaping-and-pivoting` | `reshape-and-pivot` | Sessions per User by Device Type (Pivot) |
 | 33020 | hard | `customer-analytics` | `customer-analytics` | Customer RFM Segmentation |
-
-#### `groupby` — GroupBy Aggregation
-
-_13 orphan candidates · 5 divergent candidates_
-
-**Orphans** (in no live path; zero-cost recruitment):
-
-| QID | Diff | Title | Concepts |
-|---|---|---|---|
-| 31011 | easy | Average Order Value per User | `GROUPED AGGREGATION`, `OUTPUT SHAPE & ORDERING` |
-| 31013 | easy | Support Tickets by Status | `GROUPED AGGREGATION`, `OUTPUT SHAPE & ORDERING` |
-| 31014 | easy | Employee Count by Department | `GROUPED AGGREGATION`, `OUTPUT SHAPE & ORDERING` |
-| 31015 | easy | Revenue per Product | `GROUPED AGGREGATION`, `OUTPUT SHAPE & ORDERING` |
-| 31027 | easy | Average Order Value by Status | `GROUPED AGGREGATION`, `COLUMN SELECTION & PROJECTION` |
-| 32008 | medium | Revenue Contribution Percent | `GROUPED AGGREGATION`, `COLUMN SELECTION & PROJECTION` |
-| 32021 | medium | Order Items Above Product Average Price | `GROUPED AGGREGATION`, `TRANSFORM VS AGGREGATE`, `BOOLEAN INDEXING & FILTERING` |
-| 32025 | medium | Employees Above Department Average Salary | `GROUPED AGGREGATION`, `TRANSFORM VS AGGREGATE`, `BOOLEAN INDEXING & FILTERING` |
-| 32029 | medium | Named aggregation: order stats by status | `GROUPED AGGREGATION`, `METHOD CHAINING & PIPELINE STYLE` |
-| 32045 | medium | Build a Transformation Pipeline with pipe | `METHOD CHAINING & PIPELINE STYLE`, `TRANSFORM VS AGGREGATE` |
-| 32049 | medium | Memory-optimised channel revenue summary | `MEMORY & VECTORIZATION REASONING`, `GROUPED AGGREGATION`, `MULTI-DATAFRAME ENTITY LINKING` |
-| 33004 | hard | User Lifetime Value Rank | `GROUPED AGGREGATION`, `OUTPUT SHAPE & ORDERING` |
-| 33007 | hard | Support Ticket Resolution Rate by Month | `GROUPED AGGREGATION`, `DATETIME OPERATIONS` |
-
-**Divergents** (in another live path; review per question):
-
-| QID | Diff | Currently in | Attributed pattern | Title |
-|---|---|---|---|---|
-| 32005 | medium | `customer-analytics` | `customer-analytics` | User Average Order Amount per Row |
-| 32030 | medium | `customer-analytics` | `customer-analytics` | Second-order retention rate by country |
-| 33001 | hard | `customer-analytics` | `customer-analytics` | Monthly Cohort Retention |
-| 33013 | hard | `time-series-analysis` | `time-series-pandas` | Revenue Anomaly Detection (IQR) |
-| 33017 | hard | `customer-analytics` | `customer-analytics` | Churn Proxy — Users Inactive 90 Days |
-
-#### `joins-and-merges` — Joins & Merges
-
-_8 orphan candidates · 1 divergent candidate_
-
-**Orphans** (in no live path; zero-cost recruitment):
-
-| QID | Diff | Title | Concepts |
-|---|---|---|---|
-| 32011 | medium | Top 10 Products by Revenue (Three-Table Join) | `MULTI-DATAFRAME ENTITY LINKING`, `GROUPED AGGREGATION`, `OUTPUT SHAPE & ORDERING` |
-| 32018 | medium | Category Revenue Share | `MULTI-DATAFRAME ENTITY LINKING`, `GROUPED AGGREGATION` |
-| 32020 | medium | Days Between Order and Payment | `MULTI-DATAFRAME ENTITY LINKING`, `DATETIME OPERATIONS` |
-| 32024 | medium | Event Count per Session | `MULTI-DATAFRAME ENTITY LINKING`, `GROUPED AGGREGATION` |
-| 32042 | medium | Match Events to Most Recent Prior Order | `MULTI-DATAFRAME ENTITY LINKING`, `DATETIME OPERATIONS` |
-| 32050 | medium | Fix inflated user revenue from payment fan-out | `DATA QUALITY SKEPTICISM`, `MULTI-DATAFRAME ENTITY LINKING`, `GROUPED AGGREGATION` |
-| 32051 | medium | Fix double-counted revenue after order-items join | `DOUBLE-COUNTING DETECTION`, `MULTI-DATAFRAME ENTITY LINKING`, `GROUPED AGGREGATION` |
-| 33008 | hard | Employee Salary Distribution by Department | `MULTI-DATAFRAME ENTITY LINKING`, `GROUPED AGGREGATION` |
-
-**Divergents** (in another live path; review per question):
-
-| QID | Diff | Currently in | Attributed pattern | Title |
-|---|---|---|---|---|
-| 33011 | hard | `customer-analytics` | `customer-analytics` | User Engagement Score |
 
 #### `top-n-and-ranking` — Top-N & Ranking
 
@@ -2780,17 +2528,6 @@ _16 orphan candidates · 2 divergent candidates_
 
 ### data-engineering
 
-#### `backfill-design` — Backfill Design
-
-_2 orphan candidates · 0 divergent candidates_
-
-**Orphans** (in no live path; zero-cost recruitment):
-
-| QID | Diff | Title | Concepts |
-|---|---|---|---|
-| 52019 | medium | Backfill Design: Making Jobs Backfill-Safe | `BACKFILL DESIGN`, `IDEMPOTENCY`, `PARTITIONING & PRUNING` |
-| 53011 | hard | SCD Type 2 and Late-Arriving Dimension Changes | `SCD OPERATIONS`, `BACKFILL DESIGN` |
-
 #### `cost-and-format-optimization` — Cost & Format Optimization
 
 _19 orphan candidates · 3 divergent candidates_
@@ -2850,71 +2587,6 @@ _7 orphan candidates · 2 divergent candidates_
 | 52010 | medium | `lineage-and-observability` | `lineage-and-observability` | Data Quality: Schema Drift Detection |
 | 53006 | hard | `lineage-and-observability` | `lineage-and-observability` | Incident Response: Cascading Pipeline Failures |
 
-#### `delivery-semantics` — Delivery Semantics
-
-_12 orphan candidates · 0 divergent candidates_
-
-**Orphans** (in no live path; zero-cost recruitment):
-
-| QID | Diff | Title | Concepts |
-|---|---|---|---|
-| 51028 | easy | Delivery Semantics: At-Least-Once | `DELIVERY SEMANTICS`, `IDEMPOTENCY` |
-| 51029 | easy | Delivery Semantics: At-Most-Once | `DELIVERY SEMANTICS`, `IDEMPOTENCY` |
-| 52008 | medium | Event Time vs Processing Time | `WATERMARKING`, `BATCH VS STREAMING` |
-| 52009 | medium | Watermark and Window Completeness | `WATERMARKING`, `DELIVERY SEMANTICS` |
-| 52013 | medium | End-to-End Exactly-Once in a Pipeline | `DELIVERY SEMANTICS`, `ORCHESTRATION` |
-| 53001 | hard | Exactly-Once Across a Transactional Boundary | `DELIVERY SEMANTICS`, `IDEMPOTENCY` |
-| 53002 | hard | Duplicate Detection at Scale | `DELIVERY SEMANTICS`, `IDEMPOTENCY`, `DATA QUALITY` |
-| 53003 | hard | Delivery Semantics and Consumer-Side State | `DELIVERY SEMANTICS`, `IDEMPOTENCY` |
-| 53004 | hard | Exactly-Once with Fan-Out Sinks | `DELIVERY SEMANTICS`, `IDEMPOTENCY`, `ORCHESTRATION` |
-| 53016 | hard | Watermark and Out-of-Order Event Storms | `WATERMARKING`, `DELIVERY SEMANTICS` |
-| 53017 | hard | Watermark Tuning for Multi-Source Joins | `WATERMARKING`, `BATCH VS STREAMING` |
-| 53025 | hard | CDC Watermark Too Short — Late Debezium Events Silently Dropped | `WATERMARKING`, `CDC & INGESTION`, `DATA QUALITY`, `BATCH VS STREAMING` |
-
-#### `orchestration` — Pipeline Orchestration
-
-_5 orphan candidates · 2 divergent candidates_
-
-**Orphans** (in no live path; zero-cost recruitment):
-
-| QID | Diff | Title | Concepts |
-|---|---|---|---|
-| 51008 | easy | Task Dependencies in a DAG | `ORCHESTRATION`, `SCHEDULING & SLAS` |
-| 51009 | easy | Orchestration: Retry vs Backfill | `ORCHESTRATION`, `BACKFILL DESIGN` |
-| 52014 | medium | Orchestration: Fan-Out Task Design | `ORCHESTRATION`, `SCHEDULING & SLAS` |
-| 52015 | medium | Orchestration: Event-Driven vs Schedule Trigger | `ORCHESTRATION`, `SCHEDULING & SLAS` |
-| 52017 | medium | SLA Budgeting Across Pipeline Stages | `SCHEDULING & SLAS`, `LINEAGE & OBSERVABILITY` |
-
-**Divergents** (in another live path; review per question):
-
-| QID | Diff | Currently in | Attributed pattern | Title |
-|---|---|---|---|---|
-| 51030 | easy | `lineage-and-observability` | `lineage-and-observability` | SLA vs SLO in Data Pipelines |
-| 52016 | medium | `lineage-and-observability` | `lineage-and-observability` | SLA Breach: Root Cause vs Symptom |
-
-#### `schema-evolution` — Schema Evolution
-
-_8 orphan candidates · 1 divergent candidate_
-
-**Orphans** (in no live path; zero-cost recruitment):
-
-| QID | Diff | Title | Concepts |
-|---|---|---|---|
-| 51026 | easy | Schema Evolution: Full Compatibility | `SCHEMA EVOLUTION`, `DATA CONTRACT` |
-| 51027 | easy | Schema Evolution: Breaking Changes | `SCHEMA EVOLUTION`, `DATA CONTRACT` |
-| 52002 | medium | Forward vs Backward Compatibility Trade-offs | `SCHEMA EVOLUTION`, `DATA CONTRACT` |
-| 52033 | medium | Operationalizing Data Contracts: Schema Registry and CI Enforcement | `DATA CONTRACT`, `SCHEMA EVOLUTION` |
-| 52034 | medium | Avro Consumer Failing After Producer Adds Required Field Without Default | `SCHEMA EVOLUTION`, `DATA CONTRACT` |
-| 53012 | hard | Schema Evolution with Columnar Storage | `SCHEMA EVOLUTION`, `STORAGE LAYOUT & FILE FORMATS` |
-| 53013 | hard | Breaking Schema Change with Active Consumers | `SCHEMA EVOLUTION`, `DELIVERY SEMANTICS` |
-| 53027 | hard | Schema Merge Upcasting Numeric Column to String Across Parquet Sources | `SCHEMA EVOLUTION`, `STORAGE LAYOUT & FILE FORMATS`, `DATA QUALITY`, `CDC & INGESTION` |
-
-**Divergents** (in another live path; review per question):
-
-| QID | Diff | Currently in | Attributed pattern | Title |
-|---|---|---|---|---|
-| 52003 | medium | `lineage-and-observability` | `lineage-and-observability` | Data Contracts and Upstream Changes |
-
 #### `streaming-vs-batch` — Streaming vs Batch Architecture
 
 _6 orphan candidates · 1 divergent candidate_
@@ -2952,18 +2624,6 @@ _4 orphan candidates · 0 divergent candidates_
 | 63013 | hard | Partitioning Strategy for a 10-Billion-Row Event Fact Table | `AGGREGATE & SUMMARY DESIGN`, `FACT TABLE DESIGN` |
 | 63017 | hard | Modeling Customer Lifetime Value in a Dimensional Schema | `SCHEMA FROM REQUIREMENTS`, `AGGREGATE & SUMMARY DESIGN`, `DIMENSION DESIGN` |
 
-#### `bridge-tables` — Bridge Tables & Many-to-Many
-
-_3 orphan candidates · 0 divergent candidates_
-
-**Orphans** (in no live path; zero-cost recruitment):
-
-| QID | Diff | Title | Concepts |
-|---|---|---|---|
-| 62005 | medium | Bridge Table Weighting Factor Edge Case | `BRIDGE & MANY-TO-MANY`, `FACT TABLE DESIGN`, `GRAIN DEFINITION` |
-| 62028 | medium | Multi-Valued Dimension: Bridge Table for Promotions | `BRIDGE & MANY-TO-MANY`, `FACT TABLE DESIGN`, `DOUBLE-COUNTING & FAN-OUT` |
-| 63008 | hard | Modeling a Many-to-Many Promotion-Product Relationship in a Star Schema | `BRIDGE & MANY-TO-MANY`, `DIMENSIONAL MODELING`, `FACT TABLE DESIGN` |
-
 #### `conformed-dimensions` — Conformed Dimensions
 
 _1 orphan candidate · 0 divergent candidates_
@@ -2987,41 +2647,6 @@ _4 orphan candidates · 0 divergent candidates_
 | 63006 | hard | Data Vault Satellite Design for Multi-Source Attribute Conflicts | `DATA VAULT`, `SCD STRUCTURE`, `SCHEMA FROM REQUIREMENTS` |
 | 63012 | hard | Data Vault Link Design for Multi-Party Financial Transactions | `DATA VAULT`, `BRIDGE & MANY-TO-MANY`, `SCHEMA FROM REQUIREMENTS` |
 
-#### `fact-table-design` — Fact Table Design
-
-_6 orphan candidates · 0 divergent candidates_
-
-**Orphans** (in no live path; zero-cost recruitment):
-
-| QID | Diff | Title | Concepts |
-|---|---|---|---|
-| 61008 | easy | Periodic Snapshot Fact Table | `FACT TABLE DESIGN`, `GRAIN DEFINITION` |
-| 61009 | easy | Accumulating Snapshot Fact Table | `FACT TABLE DESIGN`, `GRAIN DEFINITION` |
-| 62019 | medium | Accumulating Snapshot Fact Table for Order Fulfillment | `FACT TABLE DESIGN`, `GRAIN DEFINITION`, `SCHEMA FROM REQUIREMENTS` |
-| 62023 | medium | Schema from Requirements: Healthcare Patient Events | `SCHEMA FROM REQUIREMENTS`, `FACT TABLE DESIGN`, `DIMENSION DESIGN` |
-| 62027 | medium | Semi-Additive Facts: Account Balance in a Periodic Snapshot | `ADDITIVE VS NON-ADDITIVE`, `FACT TABLE DESIGN` |
-| 63020 | hard | Modeling Requirements for a Multi-Currency Financial Reporting System | `SCHEMA FROM REQUIREMENTS`, `FACT TABLE DESIGN`, `DENORMALIZATION TRADEOFF` |
-
-#### `grain-definition` — Grain Definition
-
-_5 orphan candidates · 1 divergent candidate_
-
-**Orphans** (in no live path; zero-cost recruitment):
-
-| QID | Diff | Title | Concepts |
-|---|---|---|---|
-| 61017 | easy | Grain Consistency: Mixing Granularities | `GRAIN DEFINITION`, `FACT TABLE DESIGN`, `DOUBLE-COUNTING & FAN-OUT` |
-| 62009 | medium | Modeling a Subscription Funnel: Grain Choice | `GRAIN DEFINITION`, `FACT TABLE DESIGN`, `SCHEMA FROM REQUIREMENTS` |
-| 62020 | medium | Grain Definition: Sessions with Variable Event Counts | `GRAIN DEFINITION`, `FACT TABLE DESIGN`, `DIMENSIONAL MODELING` |
-| 63003 | hard | Grain Definition for Accumulating Snapshot Fact Tables | `GRAIN DEFINITION`, `FACT TABLE DESIGN`, `DIMENSIONAL MODELING` |
-| 63024 | hard | Fact-to-Fact Join: Avoiding Fan-Out Row Multiplication | `DOUBLE-COUNTING & FAN-OUT`, `GRAIN DEFINITION`, `AGGREGATE & SUMMARY DESIGN` |
-
-**Divergents** (in another live path; review per question):
-
-| QID | Diff | Currently in | Attributed pattern | Title |
-|---|---|---|---|---|
-| 61016 | easy | `schema-design-basics` | `star-snowflake` | Grain Definition: What One Row Represents |
-
 #### `hierarchies-and-multipath` — Hierarchies & Multi-Path Dimensions
 
 _3 orphan candidates · 0 divergent candidates_
@@ -3043,53 +2668,6 @@ _0 orphan candidates · 1 divergent candidate_
 | QID | Diff | Currently in | Attributed pattern | Title |
 |---|---|---|---|---|
 | 61021 | easy | `wide-tables-and-obt` | `wide-tables` | OLAP Schema Choice: Why Not Normalise Fully? |
-
-#### `referential-integrity` — Referential Integrity
-
-_2 orphan candidates · 0 divergent candidates_
-
-**Orphans** (in no live path; zero-cost recruitment):
-
-| QID | Diff | Title | Concepts |
-|---|---|---|---|
-| 63007 | hard | Referential Integrity Constraints in a Cloud Analytical Warehouse | `REFERENTIAL INTEGRITY`, `DIMENSIONAL MODELING`, `DBT MODELING` |
-| 63015 | hard | Referential Integrity Under High-Volume Parallel Loads | `REFERENTIAL INTEGRITY`, `FACT TABLE DESIGN`, `DIMENSIONAL MODELING` |
-
-#### `scd` — Slowly Changing Dimensions
-
-_14 orphan candidates · 0 divergent candidates_
-
-**Orphans** (in no live path; zero-cost recruitment):
-
-| QID | Diff | Title | Concepts |
-|---|---|---|---|
-| 61014 | easy | SCD Type 2: Preserving History With New Rows | `SCD STRUCTURE`, `DIMENSIONAL MODELING`, `FACT TABLE DESIGN` |
-| 61015 | easy | SCD Type 1 vs Type 2: Choosing the Right Strategy | `SCD STRUCTURE`, `DIMENSION DESIGN` |
-| 61023 | easy | Dimension Table: Descriptive Attributes | `DIMENSION DESIGN`, `FACT TABLE DESIGN`, `DIMENSIONAL MODELING` |
-| 62003 | medium | SCD Type 2: Performance vs. Storage Tradeoff | `SCD STRUCTURE`, `SURROGATE VS NATURAL KEYS`, `FACT TABLE DESIGN` |
-| 62011 | medium | Junk Dimension Design | `DIMENSION DESIGN`, `DIMENSIONAL MODELING`, `FACT TABLE DESIGN` |
-| 62012 | medium | Degenerate Dimension: When to Use One | `DIMENSION DESIGN`, `FACT TABLE DESIGN`, `DIMENSIONAL MODELING` |
-| 62024 | medium | SCD Type 2 vs Type 3: When Type 3 is Sufficient | `SCD STRUCTURE`, `DIMENSION DESIGN`, `DIMENSIONAL MODELING` |
-| 62035 | medium | Schema Evolution: NULL vs Default When Extending a Fact Table with Missing Historical Data | `SCHEMA EVOLUTION`, `FACT TABLE DESIGN`, `DIMENSIONAL MODELING` |
-| 63002 | hard | Choosing the Right SCD Strategy for Analyst-Facing Price History | `SCD STRUCTURE`, `DIMENSION DESIGN`, `DENORMALIZATION TRADEOFF` |
-| 63011 | hard | Schema Design from Ambiguous Subscription + Usage Requirements | `SCHEMA FROM REQUIREMENTS`, `SCD STRUCTURE`, `FACT TABLE DESIGN` |
-| 63016 | hard | SCD Type 4 vs. Type 6 for a High-Churn Customer Attribute | `SCD STRUCTURE`, `DIMENSION DESIGN`, `DENORMALIZATION TRADEOFF` |
-| 63022 | hard | Bi-Temporal Queries: Correct Predicates for Both Time Axes | `BI-TEMPORAL MODELING`, `SCD STRUCTURE` |
-| 63032 | hard | Schema Evolution: Adding a Compliance Column to a Shared Dimension Under a Regulatory Deadline | `SCHEMA EVOLUTION`, `DIMENSION DESIGN`, `CONFORMED DIMENSIONS` |
-| 63033 | hard | Schema Evolution Governance: Breaking-Change Strategy for a High-Fan-Out Shared Dimension | `SCHEMA EVOLUTION`, `DIMENSION DESIGN`, `DIMENSIONAL MODELING` |
-
-#### `star-snowflake` — Star & Snowflake Schemas
-
-_4 orphan candidates · 0 divergent candidates_
-
-**Orphans** (in no live path; zero-cost recruitment):
-
-| QID | Diff | Title | Concepts |
-|---|---|---|---|
-| 61002 | easy | Snowflake Schema: Dimension Normalisation | `DIMENSIONAL MODELING`, `NORMALIZATION` |
-| 61003 | easy | Star vs Snowflake: Storage and Joins | `DIMENSIONAL MODELING`, `NORMALIZATION`, `DENORMALIZATION TRADEOFF` |
-| 61025 | easy | Star Schema Design: Identifying Facts vs Dimensions | `DIMENSIONAL MODELING`, `FACT TABLE DESIGN`, `DIMENSION DESIGN`, `SCHEMA FROM REQUIREMENTS` |
-| 63010 | hard | Choosing Between Lake, Warehouse, and Lakehouse for ML + BI Workloads | `DIMENSIONAL MODELING`, `WIDE VS NARROW`, `NORMALIZATION` |
 
 #### `surrogate-keys` — Surrogate vs Natural Keys
 
@@ -3130,54 +2708,6 @@ _5 orphan candidates · 1 divergent candidate_
 | QID | Diff | Currently in | Attributed pattern | Title |
 |---|---|---|---|---|
 | 72018 | medium | `experimental-design-inference` | `hypothesis-testing` | Bayes' Theorem Application |
-
-#### `confidence-intervals` — Confidence Intervals
-
-_8 orphan candidates · 0 divergent candidates_
-
-**Orphans** (in no live path; zero-cost recruitment):
-
-| QID | Diff | Title | Concepts |
-|---|---|---|---|
-| 72003 | medium | 95% Confidence Interval for a Mean | `confidence intervals & estimation`, `sampling & central limit theorem`, `distributions` |
-| 72019 | medium | Confidence Interval Width and Sample Size | `confidence intervals & estimation`, `sampling & central limit theorem` |
-| 73003 | hard | Maximum Likelihood Estimation — Bernoulli | `confidence intervals & estimation`, `distributions` |
-| 73004 | hard | Bootstrap Confidence Interval Logic | `confidence intervals & estimation` |
-| 73005 | hard | Bootstrap Percentile CI | `confidence intervals & estimation` |
-| 73013 | hard | MLE for Exponential Distribution | `confidence intervals & estimation`, `distributions` |
-| 73016 | hard | Method of Moments for Normal Distribution | `confidence intervals & estimation`, `distributions` |
-| 73024 | hard | Bootstrap vs Parametric CI Tradeoffs | `confidence intervals & estimation`, `hypothesis testing` |
-
-#### `distributions` — Probability Distributions
-
-_16 orphan candidates · 1 divergent candidate_
-
-**Orphans** (in no live path; zero-cost recruitment):
-
-| QID | Diff | Title | Concepts |
-|---|---|---|---|
-| 71013 | easy | Binomial Probability Single Term | `distributions`, `probability & combinatorics` |
-| 71014 | easy | Uniform Distribution Probability | `distributions` |
-| 71015 | easy | Z-Score Calculation | `distributions` |
-| 71017 | easy | Expected Value of Discrete Distribution | `distributions` |
-| 71026 | easy | Normal Distribution Symmetry | `distributions` |
-| 71028 | easy | Variance of Discrete Distribution | `distributions` |
-| 71030 | easy | Binomial vs Bernoulli Relationship | `distributions` |
-| 71031 | easy | Geometric Distribution and Memorylessness | `distributions` |
-| 72016 | medium | Poisson Probability | `distributions`, `probability & combinatorics` |
-| 72020 | medium | Poisson Expected Value and Variance | `distributions`, `probability & combinatorics`, `descriptive statistics` |
-| 72021 | medium | Binomial Mean and Standard Deviation | `distributions`, `probability & combinatorics`, `descriptive statistics` |
-| 72026 | medium | Expected Number of Events (Poisson) | `distributions`, `probability & combinatorics` |
-| 72029 | medium | Log-Normal Distribution and Log Transformation | `distributions`, `probability & combinatorics`, `descriptive statistics` |
-| 72030 | medium | F-Statistic and ANOVA | `distributions`, `variance decomposition & ANOVA`, `hypothesis testing` |
-| 73009 | hard | Chi-Squared Test Statistic | `distributions`, `hypothesis testing` |
-| 73019 | hard | Chi-Squared Test of Independence | `distributions`, `hypothesis testing`, `probability & combinatorics` |
-
-**Divergents** (in another live path; review per question):
-
-| QID | Diff | Currently in | Attributed pattern | Title |
-|---|---|---|---|---|
-| 72010 | medium | `experimental-design-inference` | `hypothesis-testing` | When to Use t vs z Distribution |
 
 #### `errors-and-power` — Errors, Power & Multiple Testing
 
@@ -3285,20 +2815,6 @@ _3 orphan candidates · 0 divergent candidates_
 | 83126 | hard | Demographic parity vs equalized odds in a lending approval model | `ALGORITHMIC FAIRNESS`, `CLASSIFICATION METRICS` |
 | 83127 | hard | Diagnose root cause of hiring-model disparate impact from symptom data | `ALGORITHMIC FAIRNESS` |
 
-#### `bias-variance` — Bias-Variance & Overfitting
-
-_5 orphan candidates · 0 divergent candidates_
-
-**Orphans** (in no live path; zero-cost recruitment):
-
-| QID | Diff | Title | Concepts |
-|---|---|---|---|
-| 81003 | easy | Diagnosing Overfitting from Train-Validation Gap | `OVERFITTING DIAGNOSIS`, `BIAS-VARIANCE TRADEOFF` |
-| 81004 | easy | Recognising Underfitting | `OVERFITTING DIAGNOSIS`, `BIAS-VARIANCE TRADEOFF` |
-| 81024 | easy | Bias-Variance Tradeoff: Diagnosing from Curves | `BIAS-VARIANCE TRADEOFF`, `OVERFITTING DIAGNOSIS` |
-| 82001 | medium | Bias-Variance Tradeoff as a Complexity Dial | `BIAS-VARIANCE TRADEOFF`, `REGULARIZATION EFFECT` |
-| 82002 | medium | Choosing the Right Intervention from a Learning Curve | `BIAS-VARIANCE TRADEOFF`, `OVERFITTING DIAGNOSIS` |
-
 #### `class-imbalance` — Class Imbalance
 
 _6 orphan candidates · 3 divergent candidates_
@@ -3321,24 +2837,6 @@ _6 orphan candidates · 3 divergent candidates_
 | 81022 | easy | `ml-model-evaluation` | `cross-validation` | Cross-Validation: Stratified K-Fold |
 | 82008 | medium | `ml-model-evaluation` | `cross-validation` | Class Imbalance: Choosing the Right Threshold for Fraud |
 | 83020 | hard | `ml-production` | `production-and-monitoring` | Class Imbalance in Production: When SMOTE Hurts |
-
-#### `ensembles` — Ensemble Methods
-
-_1 orphan candidate · 3 divergent candidates_
-
-**Orphans** (in no live path; zero-cost recruitment):
-
-| QID | Diff | Title | Concepts |
-|---|---|---|---|
-| 82004 | medium | Random Forest: Feature Subsampling and Tree Correlation | `ENSEMBLE STRATEGY`, `BIAS-VARIANCE TRADEOFF` |
-
-**Divergents** (in another live path; review per question):
-
-| QID | Diff | Currently in | Attributed pattern | Title |
-|---|---|---|---|---|
-| 82018 | medium | `ml-model-evaluation` | `cross-validation` | Boosting Mechanics: What Each Tree Corrects |
-| 82019 | medium | `ml-model-evaluation` | `cross-validation` | Boosting: n_estimators vs Learning Rate Interaction |
-| 82034 | medium | `ml-production` | `production-and-monitoring` | Ensemble Depth: Why More Trees Don't Overfit in Random Forests |
 
 #### `feature-engineering` — Feature Engineering
 
@@ -3393,30 +2891,6 @@ _6 orphan candidates · 1 divergent candidate_
 | QID | Diff | Currently in | Attributed pattern | Title |
 |---|---|---|---|---|
 | 82026 | medium | `ml-advanced-methods` | `regularization` | Hyperparameter Sensitivity: Learning Rate as the Master Control |
-
-#### `metrics` — Model Metrics
-
-_9 orphan candidates · 1 divergent candidate_
-
-**Orphans** (in no live path; zero-cost recruitment):
-
-| QID | Diff | Title | Concepts |
-|---|---|---|---|
-| 81011 | easy | Classification Metrics: Precision vs Recall | `CLASSIFICATION METRICS` |
-| 81012 | easy | ROC-AUC: Interpreting the Curve | `CLASSIFICATION METRICS` |
-| 81014 | easy | Loss Function Selection: Classification | `LOSS FUNCTION SELECTION`, `CLASSIFICATION METRICS` |
-| 81023 | easy | Regression Metrics: MSE vs MAE | `REGRESSION METRICS`, `LOSS FUNCTION SELECTION` |
-| 81029 | easy | Classification Metrics: F1 Score | `CLASSIFICATION METRICS` |
-| 82016 | medium | Logistic Regression: Log-Odds and Sigmoid Saturation | `LOSS FUNCTION SELECTION`, `GRADIENT DESCENT BEHAVIOR` |
-| 82021 | medium | Model Calibration: Applying Platt Scaling | `MODEL CALIBRATION`, `CLASSIFICATION METRICS` |
-| 83016 | hard | Debugging a Regression Model with Heteroscedastic Residuals | `REGRESSION METRICS` |
-| 83025 | hard | Loss Function Selection for Skewed Regression Targets | `LOSS FUNCTION SELECTION`, `REGRESSION METRICS` |
-
-**Divergents** (in another live path; review per question):
-
-| QID | Diff | Currently in | Attributed pattern | Title |
-|---|---|---|---|---|
-| 81013 | easy | `ml-starter` | `supervised-unsupervised` | Loss Function Selection: Regression |
 
 #### `model-interpretability` — Model Interpretability
 
@@ -3511,21 +2985,6 @@ _2 orphan candidates · 5 divergent candidates_
 | 92016 | medium | `variance-reduction-and-behavioral-effects` | `variance-reduction` | Sample Ratio Mismatch from Eligibility Filter |
 | 93006 | hard | `causal-inference-and-advanced-experimentation` | `causal-inference` | Long-Term Holdout Group Design |
 | 93015 | hard | `causal-inference-and-advanced-experimentation` | `causal-inference` | Holdout Group: Cannibalization Detection |
-
-#### `metric-selection` — Metric Selection
-
-_6 orphan candidates · 0 divergent candidates_
-
-**Orphans** (in no live path; zero-cost recruitment):
-
-| QID | Diff | Title | Concepts |
-|---|---|---|---|
-| 91014 | easy | Guardrail Metrics | `METRIC SELECTION`, `EXPERIMENT DESIGN` |
-| 91020 | easy | Logging at the Step Level in a Checkout Experiment | `METRIC SELECTION`, `EXPERIMENT DESIGN` |
-| 92005 | medium | Choosing the Right Primary Metric | `METRIC SELECTION`, `EXPERIMENT DESIGN` |
-| 92026 | medium | Guardrail Metrics and Ship Decisions | `METRIC SELECTION`, `EXPERIMENT DESIGN` |
-| 92045 | medium | High-variance revenue metric can't detect a real 2% lift — what's the structural diagnosis? | `METRIC SENSITIVITY`, `STATISTICAL POWER` |
-| 93037 | hard | Metric insensitivity: why your OEC hides a real treatment effect | `METRIC SENSITIVITY`, `STATISTICAL POWER` |
 
 #### `sequential-and-bandits` — Sequential Testing & Bandits
 

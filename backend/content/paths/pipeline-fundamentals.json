@@ -7,9 +7,14 @@
     51001,
     51004,
     51007,
+    51008,
+    51009,
     51010,
     51013,
-    51016
+    51016,
+    52014,
+    52015,
+    52017
   ],
   "tier": "free",
   "role": "starter",
@@ -23,7 +28,8 @@
     "ORCHESTRATION",
     "BATCH VS STREAMING",
     "PARTITIONING & PRUNING",
-    "SCD OPERATIONS"
+    "SCD OPERATIONS",
+    "SCHEDULING & SLAS"
   ],
   "outcomes": "You will be able to explain the ETL/ELT distinction, design idempotent jobs, describe DAG execution, and choose between batch and streaming for common scenarios.",
   "recommended_after": []
