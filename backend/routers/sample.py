@@ -9,6 +9,7 @@ import python_guard
 from deps import RunQueryRequest, SubmitRequest, _validate_difficulty, get_current_user
 from mcq import is_mcq_correct
 from evaluator import evaluate, run_query
+from exceptions import BadRequestError
 from middleware.request_context import get_request_id
 from progress import (
     clear_seen_sample_ids,
@@ -418,7 +419,18 @@ async def submit_topic_sample_answer(
         question = get_sample_question_for_topic(parsed.question_id, normalized_topic)
         if question is None:
             raise HTTPException(status_code=404, detail="Question not found")
-        result = evaluate(parsed.query, question["expected_query"], question)
+        try:
+            result = evaluate(parsed.query, question["expected_query"], question)
+        except (BadRequestError, ValueError) as exc:
+            await _mark_sample_attempted(current_user, normalized_topic, question)
+            return {
+                "correct": False,
+                "is_result_correct": False,
+                "structure_correct": False,
+                "feedback": [str(exc)],
+                "solution_query": question["solution_query"],
+                "explanation": question["explanation"],
+            }
         await _mark_sample_attempted(current_user, normalized_topic, question)
         return {
             **result,

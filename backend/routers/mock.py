@@ -756,8 +756,9 @@ def _evaluate_submission(
         try:
             result = evaluate(code, question["expected_query"], question)
         except (BadRequestError, ValueError) as exc:
-            # Parse/guard errors (e.g. syntax error) still count as a failed attempt
-            return False, {"correct": False, "error": str(exc), "feedback": []}
+            # Parse/guard errors (e.g. syntax error) still count as a failed attempt.
+            # Return structured wrong-answer — no 400 raised, question consumed as incorrect.
+            return False, {"correct": False, "feedback": [str(exc)]}
         accepted = bool(result.get("correct")) and bool(result.get("structure_correct", True))
         return accepted, {
             "correct": accepted,
