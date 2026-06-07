@@ -8,7 +8,7 @@
     "scenario_context": "Your team is rebuilding a daily customer-events pipeline that lands data in Snowflake. Engineer A proposes loading raw events into a separate staging server, transforming them there (deduping, enriching, joining to reference data), then writing the cleaned output to Snowflake. Engineer B proposes loading raw events directly into Snowflake first, then running the same transformations inside Snowflake using SQL.",
     "description": "Which statement correctly maps these two designs to the ETL and ELT patterns?",
     "options": [
-      "Engineer A's design is ETL (transform happens before loading to the target); Engineer B's design is ELT (transform happens after loading, inside the target)",
+      "Engineer A's design is ETL; Engineer B's design is ELT (transform happens after loading, inside the target)",
       "Engineer A's design is ELT (transform happens before loading); Engineer B's design is ETL (transform happens inside the warehouse)",
       "Both designs are ETL — the only difference is where the staging server physically lives",
       "Both designs are ELT — modern cloud warehouses always transform after loading, regardless of pipeline design"
@@ -35,7 +35,7 @@
       "Loading raw data first guarantees stronger data quality because the warehouse validates every record on arrival",
       "ELT eliminates the need for schema definitions since the warehouse infers all column types automatically",
       "The ELT pattern reduces storage costs because raw data is automatically compressed and deduplicated on load",
-      "The cloud warehouse's compute power makes in-warehouse transformation faster and more scalable than a separate processing layer"
+      "The cloud warehouse's compute makes in-warehouse transformation faster than a separate processing layer"
     ],
     "correct_option": 3,
     "explanation": "ELT exploits the elastic, massively parallel compute of modern cloud warehouses (e.g., BigQuery, Snowflake, Redshift). Transforming inside the warehouse is often faster and cheaper than running a separate processing cluster. Option A is wrong — loading raw data first actually defers quality checks; they must be added explicitly. Option B is false — ELT still requires schema definitions for structured formats. Option C is incorrect — storage compression is a separate feature unrelated to the ETL/ELT distinction.",
@@ -84,7 +84,7 @@
       "The job completes in constant time regardless of input size",
       "The job can process data from multiple sources simultaneously without conflicts",
       "The job retries automatically on failure without any manual intervention",
-      "Running the job multiple times with the same inputs produces the same output state as running it once"
+      "Repeated executions with the same inputs always produce the same output state"
     ],
     "correct_option": 3,
     "explanation": "Idempotency means repeated executions with identical inputs yield identical results — no duplicates, no data corruption, no state drift. This is critical for safe retries and backfills. Option A describes time complexity, which is unrelated. Option B describes parallelism, not idempotency. Option C describes automatic retry logic, which is a related but distinct property — a non-idempotent job that auto-retries will produce incorrect results.",
@@ -108,10 +108,10 @@
       "Add a retry counter column so duplicate rows can be identified and removed later",
       "Schedule the job to run only once per day so restarts cannot occur during the window",
       "Wrap the insert in a transaction so partial inserts are automatically rolled back",
-      "Replace the INSERT with an UPSERT (INSERT ... ON CONFLICT UPDATE) keyed on a natural unique identifier"
+      "Replace the INSERT with an UPSERT keyed on a natural unique identifier"
     ],
     "correct_option": 3,
-    "explanation": "The bare INSERT has no conflict guard: on retry, every staging row is inserted again regardless of whether it already exists in the fact table, producing the doubled row count. Replacing it with an UPSERT (INSERT ... ON CONFLICT UPDATE) keyed on a natural unique identifier ensures that re-inserting a row with an existing key updates rather than creates a new row, producing an identical outcome whether the job ran once or ten times. Option A defers the problem — it adds cleanup work without preventing the re-insertion. Option B does not prevent restarts; a crash can happen at any time. Option C prevents partial writes but does not prevent full duplicate inserts on retry.",
+    "explanation": "The bare INSERT has no conflict guard: on retry, every staging row is inserted again regardless of whether it already exists in the fact table, producing the doubled row count. Replacing it with an UPSERT keyed on a natural unique identifier ensures that re-inserting a row with an existing key updates rather than creates a new row, producing an identical outcome whether the job ran once or ten times. Option A defers the problem — it adds cleanup work without preventing the re-insertion. Option B does not prevent restarts; a crash can happen at any time. Option C prevents partial writes but does not prevent full duplicate inserts on retry.",
     "hints": [
       "Think about what database operation lets you insert a row that might already exist without creating a duplicate.",
       "An operation that 'insert or update' on a unique key guarantees the same final state regardless of how many times it runs."
@@ -155,7 +155,7 @@
     "options": [
       "The orchestrator only rejects the pipeline if the cycle contains more than three tasks; shorter cycles are silently allowed and capped by a default retry limit",
       "The cycle is allowed by the graph engine, but the orchestrator refuses to register pipelines that produce non-deterministic task order at runtime",
-      "The edge from C back to A creates a cycle: every task in the loop is waiting for an upstream task that itself depends on something downstream, so the orchestrator has no valid starting point and no topological execution order exists",
+      "The C→A edge creates a cycle: every task waits on an upstream that depends on something downstream, so no topological order exists",
       "The rejection happens because A, B, and C use different execution operators; cycles are accepted when all tasks in the loop share the same operator type"
     ],
     "correct_option": 2,
@@ -226,7 +226,7 @@
     "description": "What is the fundamental difference between batch processing and stream processing?",
     "options": [
       "Batch processing is always faster than streaming because it can apply optimizations across the full dataset",
-      "Batch processes bounded, finite datasets at scheduled intervals; streaming processes unbounded data continuously as it arrives",
+      "Batch processes finite datasets at scheduled intervals; streaming processes unbounded data continuously",
       "Streaming is simply batch processing with a very short interval, so the two are functionally identical",
       "Batch processing requires more infrastructure than streaming because it needs to store all data before processing"
     ],
@@ -275,7 +275,7 @@
     "description": "A streaming framework processes data in small batches every 30 seconds rather than event-by-event. What is this pattern called, and what latency trade-off does it make?",
     "options": [
       "Mini-streaming — processes events in real time with the same latency guarantees as native streaming",
-      "Micro-batch — offers lower latency than hourly batch jobs but higher latency than true event-by-event streaming",
+      "Micro-batch — lower latency than batch jobs but higher latency than true event-by-event streaming",
       "Windowed batch — equivalent to hourly batch jobs but with a shorter accumulation window",
       "Pseudo-streaming — inherently unreliable because batching events introduces data loss between windows"
     ],
@@ -372,7 +372,7 @@
     "description": "A customer changes their email address. Your data warehouse stores customer dimension data. What is the difference between SCD Type 1 and SCD Type 2 for handling this update?",
     "options": [
       "SCD Type 1 inserts a new row for the change; SCD Type 2 overwrites the old row so only the current value is kept",
-      "SCD Type 1 overwrites the old value with no history; SCD Type 2 inserts a new row and marks the old row as expired so history is preserved",
+      "SCD Type 1 overwrites the old value, discarding history; SCD Type 2 inserts a new row and marks the old row expired",
       "SCD Type 1 stores all history in a separate audit table; SCD Type 2 stores history in the same row using array columns",
       "SCD Type 1 applies only to numeric columns; SCD Type 2 applies only to string columns like email"
     ],
@@ -396,7 +396,7 @@
     "description": "In a SCD Type 2 dimension table, why is a surrogate key used instead of the natural business key as the primary key?",
     "options": [
       "Surrogate keys are shorter than natural keys, reducing storage costs for the dimension table",
-      "A customer can have multiple rows (one per version), so a unique system-generated surrogate key distinguishes each version row",
+      "A customer has multiple rows (one per version); a surrogate key uniquely identifies each version row",
       "Natural keys cannot be joined to fact tables because they contain non-numeric characters",
       "Surrogate keys automatically encode the effective date, eliminating the need for separate date columns"
     ],
@@ -467,7 +467,7 @@
     "type": "conceptual",
     "description": "What problem does the lakehouse architecture solve compared to using a data lake and a data warehouse separately?",
     "options": [
-      "It eliminates redundant data copies by enabling warehouse-quality SQL performance directly on data lake storage",
+      "It eliminates redundant data copies by enabling SQL warehouse performance on data lake storage",
       "It replaces both systems with a streaming-only architecture that processes all data in real time",
       "It allows data warehouses to store unstructured data like images and audio alongside relational tables",
       "It provides automatic data encryption that neither data lakes nor warehouses offer natively"
@@ -491,7 +491,7 @@
     "type": "conceptual",
     "description": "Why are columnar storage formats (like Parquet) preferred for analytics (OLAP) workloads over row-oriented formats used in transactional databases (OLTP)?",
     "options": [
-      "Analytics queries typically read a few columns across millions of rows; columnar storage reads only the needed columns, skipping the rest",
+      "Analytics queries scan a few columns across millions of rows; columnar storage reads only those columns",
       "Columnar storage is required for ACID transactions, which analytics workloads need to update rows frequently",
       "Row-oriented storage cannot handle tables with more than 1,000 columns, so columnar is necessary for wide tables",
       "Columnar storage stores each row as a compressed JSON object, making it faster to parse than binary row formats"
@@ -517,7 +517,7 @@
     "options": [
       "CDC captures full table snapshots at scheduled intervals and computes row-level diffs to detect changes",
       "CDC monitors network traffic between the application and the database to intercept write operations",
-      "CDC captures INSERT, UPDATE, and DELETE events — in relational databases it typically reads the database write-ahead log (WAL)",
+      "CDC captures INSERT, UPDATE, and DELETE events by reading the database write-ahead log (WAL)",
       "CDC relies on application code to emit change events to a message queue when it performs database writes"
     ],
     "correct_option": 2,
@@ -589,7 +589,7 @@
     "description": "A dashboard shows sales data that should update every hour. Analysts complain the numbers are stale. Which data quality dimension is failing?",
     "options": [
       "Accuracy — the data values are incorrect compared to the source of truth",
-      "Freshness — the data is not arriving or being processed within the expected time window",
+      "Freshness — data is not being updated within its expected time window",
       "Completeness — records are missing from the dataset",
       "Consistency — the same metric shows different values in different reports"
     ],
@@ -662,7 +662,7 @@
     "options": [
       "Every event is delivered exactly once with no duplicates, making consumer deduplication unnecessary",
       "Some events may be dropped if the broker crashes, but delivered events are guaranteed to be duplicate-free",
-      "Every event is delivered at least once, but network retries may cause duplicate deliveries that consumers must handle",
+      "Every event is delivered at least once, but retries can cause duplicates that consumers must handle",
       "Events are delivered in strict order with at most one duplicate per event window"
     ],
     "correct_option": 2,
@@ -687,7 +687,7 @@
       "When data integrity is critical and every event must be counted exactly once in the final aggregate",
       "When the pipeline must guarantee ordered delivery for sequence-sensitive operations like CDC",
       "When events are very large and the system cannot afford the storage overhead of deduplication",
-      "When occasional data loss is tolerable and duplicate processing is more harmful than missing a small percentage of events"
+      "When occasional data loss is tolerable and duplicate processing is worse than missing some events"
     ],
     "correct_option": 3,
     "explanation": "At-most-once semantics: a message is delivered zero or one times — it may be lost but will never be duplicated. This is acceptable for best-effort metrics (e.g., approximate click counts, monitoring heartbeats) where a small loss rate is tolerable and simplicity is valued over completeness. Option A requires exactly-once semantics. Option B is about ordering, which is a separate concern. Option C conflates deduplication storage with delivery guarantees.",
@@ -708,7 +708,7 @@
     "type": "conceptual",
     "description": "What is the difference between a Service Level Agreement (SLA) and a Service Level Objective (SLO) in the context of data pipelines?",
     "options": [
-      "An SLO is an internal technical target (e.g., pipeline completes within 2 hours); an SLA is a formal external commitment with consequences for breach",
+      "An SLO is an internal performance target; an SLA is a formal external commitment with consequences for breach",
       "An SLA is a technical metric measured by the engineering team; an SLO is a contract with business stakeholders",
       "SLOs apply only to streaming pipelines; SLAs apply only to batch pipelines",
       "An SLA and an SLO are interchangeable terms that both describe the same uptime guarantee"
