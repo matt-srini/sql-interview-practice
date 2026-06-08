@@ -51,6 +51,7 @@ DISPLAY_ORDER: dict[str, dict[str, int]] = {
         "sliding-window-patterns": 3,
         "greedy-and-scanning": 4,
         "list-transformations": 5,
+        "streaming-and-online": 6,  # added 2026-06-08: orphan-closure
         # advanced
         "heap-and-priority": 1,
         "graph-and-tree-patterns": 2,

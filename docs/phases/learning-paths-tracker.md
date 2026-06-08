@@ -78,26 +78,6 @@ or is out of scope (see "Shipped / closed" section below for the audit trail).
   register a "data-pipeline scripting" family in `concept_families.py` or
   refresh the path's framing/focus_concepts to match the current Q mix.
 
-### New paths blocked on catalog growth (Bucket B)
-
-11 thin patterns where the catalog doesn't yet support a path (under the
-4-Q floor for new paths). Wait for catalog growth before path-ifying.
-Tracked from the 2026-06-08 bucket-accounting work.
-
-| Track | Pattern | Practice Qs available |
-|---|---|---:|
-| python | `streaming-and-online` | 3 |
-| python-data | `window-and-rolling` | 2 |
-| sql | `top-n-and-ranking` | 3 |
-| data-modeling | `surrogate-keys` | 3 |
-| data-modeling | `hierarchies-and-multipath` | 3 |
-| data-modeling | `conformed-dimensions` | 1 |
-| statistics | `variance-and-anova` | 3 |
-| statistics | `survival-analysis` | 3 |
-| ml-fundamentals | `algorithmic-fairness` | 3 |
-| experimentation | `sequential-and-bandits` | 3 |
-| experimentation | `experiment-platform-design` | 1 |
-
 ### Locked: deferred indefinitely
 
 - **Concept-mastery loop wiring (front-end).** Pattern-paths and mock are
@@ -111,20 +91,52 @@ Tracked from the 2026-06-08 bucket-accounting work.
   What stays live (always was concept-family driven): dashboard
   `weakest_concepts` → recommended path; mock `focus_concepts` filter (Elite).
 
-### Catalog-only by design (locked exclusions)
+### Catalog-only orphans (the principle + the accounting)
 
-These questions exist in the catalog but deliberately don't earn a path slot:
+**Principle.** A question may be left orphaned (in the catalog but in no
+path) **only if** it satisfies one of:
 
-- **5 cost-and-format-optimization Qs** (51017, 51019, 51020, 53010, 53018):
-  trimmed during F3 batch; vendor-heavy edge content not absorbed.
-- **11 SQL SELECT/WHERE Qs** (11001, 11002, 11003, 11013, 11015, 11016,
-  11018, 11019, 11020, 11027, 11030): tag-routed to aggregation via the
-  PRE-AGGREGATION FILTERING family-membership artifact, but semantically
-  pure filtering exercises. SQL is the first track and aggregation-patterns
-  is its first path — the platform doesn't open with trivial filtering.
-- **4 Bucket C orphans** with no canonical pattern fit: DE 52032 (GDPR
-  crypto-shredding), DM 62026 (semantic layer governance), SQL 11004 +
-  11024 (NULL handling trivia).
+1. **Redundant rep** — its primary concept is already covered by an
+   existing live path. Pedagogically, the path already drills the pattern;
+   the orphan is an extra rep available via catalog browse.
+2. **SQL easy filtering** — pure SELECT/WHERE trivia (the one acknowledged
+   exception; see below for why).
+3. **Catalog-growth-blocked frontier** — concept doesn't yet have enough
+   practice Qs (under the 4-Q path floor) to sustain a dedicated path.
+   Held until catalog grows.
+4. **Truly unroutable** — no canonical pattern fit in any track.
+5. **Deliberately excluded** — vendor-heavy or otherwise off-bar content.
+
+Any orphan NOT covered by one of these is a bug — should be absorbed into
+an existing path or seed a new path.
+
+**Current accounting (2026-06-08): 59 orphans, all accounted for.**
+
+| Sub-bucket | Count | What |
+|---|---:|---|
+| **A.redundant-trim** (rule 1) | 13 | Near-duplicates trimmed from oversized paths on 2026-06-08. Each has a kept-twin in the same path covering the same concept. IDs: 11010, 11028, 12004, 12012, 12020, 42051, 61015, 72038, 73007, 73009, 73018, 91002, 91014 |
+| **A.redundant-cross-path** (rule 1) | 2 | Concept covered by another live path. exp/92002 Sample Ratio Mismatch (SRM covered by experimentation-starter Q91012). exp/93018 Bayesian A/B Test (Bayesian covered by statistics/bayesian-reasoning). |
+| **SQL easy filtering** (rule 2) | 11 | Pure SELECT/WHERE Qs tag-routed to aggregation via the PRE-AGGREGATION FILTERING family-membership artifact, but semantically pure filtering exercises. SQL is the first track and aggregation-patterns is its first path — the platform doesn't open with trivial filtering. IDs: 11001, 11002, 11003, 11013, 11015, 11016, 11018, 11019, 11020, 11027, 11030 |
+| **B. Bucket B catalog-growth-blocked** (rule 3) | 24 | Thin patterns (<4 Qs each) waiting on catalog to grow. Table below. |
+| **C. Truly unroutable** (rule 4) | 4 | DE 52032 (GDPR crypto-shredding), DM 62026 (semantic layer governance), SQL 11004 + 11024 (NULL handling trivia). |
+| **D. Deliberately excluded** (rule 5) | 5 | cost-and-format-optimization Qs (51017, 51019, 51020, 53010, 53018): vendor-heavy edge content trimmed during F3 batch. |
+| **TOTAL** | **59** | |
+
+#### Bucket B detail (24 Qs across 9 patterns)
+
+These patterns are below the 4-Q path floor. Wait for catalog growth.
+
+| Track | Pattern | Qs | QIDs |
+|---|---|---:|---|
+| python-data | `window-and-rolling` | 3 | 32013, 33005, 33088 |
+| sql | `top-n-and-ranking` | 3 | 13013, 13019, 13023 |
+| data-modeling | `surrogate-keys` | 3 | 61010, 61011, 61012 |
+| data-modeling | `hierarchies-and-multipath` | 3 | 62022, 63014, 63023 |
+| data-modeling | `conformed-dimensions` | 1 | 62036 |
+| statistics | `variance-and-anova` | 3 | 73012, 73017, 73023 |
+| statistics | `survival-analysis` | 3 | 72043, 73014, 73015 |
+| ml-fundamentals | `algorithmic-fairness` | 3 | 82105, 83126, 83127 |
+| experimentation | `sequential-and-bandits` | 2 | 92029, 93036 |
 
 ### Out of scope for this tracker
 
@@ -416,6 +428,7 @@ Most growth = honest splits of compound paths. New patterns filling genuine inte
 | 2026-XX | **Orphan recruitment applied across all tracks.** `scripts/recruit_orphans.py` added 134 orphans into existing live paths whose `patterns[]` declares the orphan's tag-suggested pattern. Coverage shifts: data-modeling 31→65 in path; data-engineering 19→46; statistics 28→52; ml-fundamentals 40→55; python-data 29→50; python 29→35; experimentation 43→49; sql 58→59 (only ctes-and-recursion had a live target). Pattern classes: many thin patterns are now healthy or uneven. 34 thin/empty patterns were SKIPPED because no live path declares them — these are stage-2 new-path decisions (per the §F "Track-specific path additions" list, expanded below). Path-size guardrail in `test_paths_quality.py` widened to 4–30 (paths >15 are flagged for stage-2 splitting; tightens back once split). Focus_concepts auto-broadened on 2 paths (dimensional-modeling-deep-dive, pipeline-fundamentals) to satisfy validator rule 5 for recruited orphans. Validator + tests pass. |
 | 2026-XX | **8 new paths created for high-orphan thin patterns** (zero new questions authored — all 96 Qs drawn from existing catalog orphans). Adds: `data-cleaning` (python-data, 18 Qs), `spark-joins-and-skew` (pyspark, 16), `feature-engineering` (ml-fundamentals, 13), `probability-and-combinatorics` (statistics, 12), `data-quality-and-incident-response` (DE, 7), `pivot-and-conditional-aggregation` (sql, 7), `class-imbalance` (ml-fundamentals, 6), `behavioral-effects-and-interference` (experimentation, 5). `backend/path_patterns.py` registered 8 new pattern slugs. **Path count: 46 → 54.** Coverage: in-path questions 433 → 529; healthy patterns 18 → 23; empty patterns 35 → 26 (the remaining 26 are mostly patterns deferred per F3 — thin with low orphan availability). Validator + tests pass. |
 | 2026-XX | **Per-question divergent audit + actions across all tracks.** `scripts/divergent_audit.py` classified 133 divergents into 4 buckets (B1 leave / B2 use-case-framed move-if-dest-thin / B3 routing priority fix / B4 tag-gap add). Classifier uses a per-pattern title-keyword guard to demote ambiguous "no canonical tag" cases from B4 to B1 (cost asymmetry: false-B4 pollutes question tags; false-B1 leaves a benign audit divergence). Results: **B1=74** (left alone, mostly questions in advanced paths whose tags are construct-primary; divergence is honest); **B2=43** (1 moved to thin dest, 42 skipped because dest is healthy or has no live path); **B3=8** (resolved via additions to `ANALYTICAL_PRIORITY` for SQL, ML, and Experimentation tracks — no question changes); **B4=8** (3 effective tag additions: q21032 `LIST & COLLECTION TRANSFORMATION`, q81013 `SUPERVISED VS UNSUPERVISED`, q83020 `MODEL MONITORING`; 5 customer-analytics cases noop because no concept-family routes to that pattern — a known finding). Net divergent count 133 → 122. Validator + tests pass. |
+| 2026-06-08 | **Orphan closure pass — every catalog-only Q now classified against the orphan principle.** Formalized the orphan principle: a Q may be left in catalog only if (1) it's a redundant rep of a covered concept, (2) it's SQL easy filtering (acknowledged exception), (3) it's catalog-growth-blocked frontier in a thin pattern (<4 Qs), (4) it's truly unroutable, or (5) it's deliberately excluded. Found 64 orphans total; 20 were already documented (11 SQL easy + 5 A.skip + 4 Bucket C), 13 were the just-trimmed near-dups (now classified A.redundant-trim), 27 were inadequately tracked. Actions: (a) absorbed 23037 'Largest 3-D Voxel Region (6-Neighbor BFS)' into `graph-and-tree-patterns` (7→8 Qs — clean GRAPH TRAVERSAL fit); (b) shipped new `streaming-and-online` path (python intermediate #6, 4 Qs: 21041, 22004, 22048, 22051 — STREAMING / ONLINE REDUCTION is its own concept family, no existing path covered it); (c) tracker rewritten with explicit principle + clean 5-sub-bucket accounting. Final state: 64 → 59 orphans, ALL accounted for. Path count 86 → 87; Qs in paths 814 → 819. Validator + 14/14 path-quality tests pass. |
 | 2026-06-08 | **Trim near-duplicate Qs from 7 paths over 15; close §D entirely.** Reviewed all 12 paths >15 Qs for near-duplicate questions (title-token overlap + concept-tag overlap). Trimmed 10 Qs across 7 paths (all dropped Qs remain in catalog, solvable via /practice; just removed from curated walk): aggregation-patterns 18→15 (-12004, -11010, -11028); applied-stats 18→15 (-72038, -73007, -73018); experimentation-starter 17→15 (-91002, -91014 — easy duplicates of medium versions kept); joins-and-filtering 17→15 (-12012, -12020); distributions 18→17 (-73009); scd 17→16 (-61015); spark-joins-and-skew 18→17 (-42051). 5 paths kept as-is (no defensible drops): data-cleaning 18, pipeline-fundamentals 18, ml-advanced-methods 16, spark-execution-model-and-dag 16, experiment-design-and-power 20 (only 1 near-dupe, Type I/II pair pedagogically belongs together). Net: 4 paths land at 15 target, 3 paths closer to 15, 5 stay where they are. **§D (DAG-aware UX) closed entirely.** Critical re-review showed all 4 D-items either superseded by `display_order` (D1), would add friction (D2), low-value (D3), or redundant with path titles (D4). The 1:1 + solved-status-sync architecture + display_order ordering already deliver the goal: a calm curation lens over the catalog. Paths total 827 → 817 Qs in paths. Validator + 14/14 path-quality tests pass. Zero question-content edits. Tracker hygiene: closed §D, removed all 4 prior open product questions (all resolved). |
 | 2026-06-08 | **Tracker hygiene pass.** Phase 2 section rewritten to show only actual open work (frontend D1–D4, content E1/E2, Bucket B catalog-growth-blocked patterns). Closed B-series as shipped or superseded by rule 7: B1 shipped (registry); B2/B3/B5 superseded (rule 7 enforces 1:1 via path's `questions[]` array — a `pattern` field on each Q would be redundant); B4 shipped implicitly (Bucket B = the formal triage output); B6/B7 shipped. Closed E3, F1, F2 as shipped. Moved completed items into a "Shipped / closed" audit-trail table. Closed 3 of 4 Open Product Questions (path-size policy resolved; pattern-field-on-Q closed with B; loop semantics closed with C). Net tracker size: 522 → 442 lines. No code or path changes — doc-only. |
 | 2026-06-08 | **Rule 7 added — question→path uniqueness (1:1 model) now enforced.** 15 pre-existing duplicate questions (Qs in 2 paths) discovered when the user asked "is the 1:1 rule enforced?". Rule was never validator-enforced and slipped through across many earlier batches in this session. Added `_validate_paths` rule 7 (ERROR-level) and `test_rule7_question_appears_in_at_most_one_path`. Resolved the 15 duplicates by assigning each Q to its primary pattern path: kept 1 in `stacks-and-queues` (Q22002 Sliding Window Maximum — both-paths Q; tiebreaker preserved 4-Q floor), removed 1 each from `dataframe-fundamentals` (Q31002), `pipeline-fundamentals` (Q51009), `sliding-window-patterns` (Q22002), `ml-production` (Q82034); removed 3 from `normalization-and-referential-integrity` (61018, 61019, 62015 — all wide-vs-narrow tradeoff Qs); removed 4 from `dbt-and-modern-analytics-modeling` (62017, 62018, 63004, 63019 — all wide-table comparison Qs); removed 4 from `ml-starter` (81007, 81010, 81019, 81025 — preprocessing/CV/regularization Qs that belong in their specialized paths, not the foundational sampler). Net path size changes: 7 paths shrank by 1–4 Qs each, no path breached 4-Q floor. `docs/content-authoring.md §Paths` updated with rule 7 documentation. `scripts/dedupe_paths.py` re-runnable + idempotent. **Zero question-content edits.** Validator + 14/14 path-quality tests pass. |

@@ -56,6 +56,7 @@ PATH_PATTERNS: dict[str, dict[str, str]] = {
         "heap-and-priority": "Heaps & Priority Queues",
         "greedy-and-scanning": "Greedy & Scanning Patterns",
         "list-transformations": "List & Array Transformations",
+        "streaming-and-online": "Streaming & Online Reductions",
     },
     "python-data": {
         "dataframe-basics": "DataFrame Basics",
