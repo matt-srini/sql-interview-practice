@@ -52,7 +52,7 @@ from db import (
     register_failed_login_attempt,
     update_password,
     upgrade_anonymous_to_registered,
-    verify_password,
+    verify_password_async,
 )
 from deps import clear_session_cookie, get_current_user, get_optional_current_user, set_csrf_cookie, set_session_cookie
 from email_service import email_available, send_magic_link_email, send_password_reset_email, send_verification_email
@@ -231,12 +231,16 @@ def _coarse_ip_prefix(request: Request) -> str | None:
 
 def _check_auth_limits(request: Request, *, issue_token: bool = False) -> JSONResponse | None:
     key = request.client.host if request.client and request.client.host else "unknown"
-    baseline = _auth_rate_limiter.check(f"auth:{key}")
+    # Baseline auth limiter fails open on a Redis blip — Postgres login-lockout is the
+    # real brute-force control, so a coarse-limit gap during a blip is acceptable.
+    baseline = _auth_rate_limiter.check_safe(f"auth:{key}", fail_open=True)
     if not baseline.allowed:
         return _err("Too many auth attempts. Please try again shortly.", status=429)
 
     if issue_token:
-        decision = _auth_token_issue_limiter.check(f"auth-token:{key}")
+        # Token issuance fails CLOSED — it bounds expensive side effects (emails /
+        # OAuth state); better to refuse briefly than to allow a blast during a blip.
+        decision = _auth_token_issue_limiter.check_safe(f"auth-token:{key}", fail_open=False)
         if not decision.allowed:
             return _err("Too many auth token requests. Please wait and try again.", status=429)
     return None
@@ -335,18 +339,20 @@ async def login(
             return _err("Too many failed sign-in attempts. Please try again in a few minutes.", status=429)
 
     if candidate is None:
-        verify_password(body.password, "0" * 64, "0" * 64)
+        # Burn the same PBKDF2 work even when the account doesn't exist, so response
+        # time can't be used to enumerate accounts. Offloaded like every real verify.
+        await verify_password_async(body.password, "0" * 64, "0" * 64)
         return _err("Invalid email or password.", status=401)
 
     if not candidate["pwd_hash"] or not candidate["pwd_salt"]:
         # Account exists but was created via OAuth — no password set
-        verify_password(body.password, "0" * 64, "0" * 64)
+        await verify_password_async(body.password, "0" * 64, "0" * 64)
         return _err(
             "This account uses Google or GitHub sign-in. Sign in that way, or use 'Forgot password' to set a password.",
             status=401,
         )
 
-    if not verify_password(body.password, candidate["pwd_hash"], candidate["pwd_salt"]):
+    if not await verify_password_async(body.password, candidate["pwd_hash"], candidate["pwd_salt"]):
         await register_failed_login_attempt(
             candidate["id"],
             current_failed_attempts=int(candidate.get("failed_login_attempts") or 0),

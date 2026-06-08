@@ -238,6 +238,7 @@ The `FRONTEND_DIST_DIR` env var defaults to `/app/frontend/dist` inside the imag
 | `RATE_LIMIT_REQUESTS` | — | Requests per window per IP; default `60` |
 | `RATE_LIMIT_WINDOW_SECONDS` | — | Window size in seconds; default `60` |
 | `MAX_CONCURRENT_EXECUTIONS` | — | Max concurrent code executions (DuckDB SQL + subprocess sandboxes) across the app; default **cores − 2**. Bounds peak sandbox memory (× `RLIMIT_AS` 512 MB) and CPU. Prod sets `6` on the 8-vCPU replica. See `backend/offload.py`. |
+| `MAX_CONCURRENT_HASHES` | — | Max concurrent password hashes (PBKDF2, ~22 ms/call) run off the event loop; default **cores − 1**. Kept **independent** of `MAX_CONCURRENT_EXECUTIONS` (auth hashing vs. sandbox execution are different resource classes). See `backend/offload.py` `run_blocking_hash`. |
 | `DB_POOL_SIZE` | — | Postgres connection pool size per replica; default `10` |
 | `DB_MAX_OVERFLOW` | — | Extra Postgres connections beyond the pool under burst; default `20` (→ 30 max per replica) |
 | `DB_POOL_TIMEOUT` | — | Seconds a request waits for a free DB connection before failing fast; default `10` |
@@ -357,7 +358,7 @@ For Dockerfile-based services on Railway, the application must listen on Railway
 
 ## Concurrency & scaling model
 
-The app serves all traffic on a **single event loop per replica** (`uvicorn main:app`, one worker). Code execution is blocking (DuckDB SQL grading; a 5–12 s subprocess sandbox), so it runs **off the loop** via `backend/offload.py` (subprocess sandboxes concurrent up to `MAX_CONCURRENT_EXECUTIONS`; DuckDB serialized behind a process-wide lock — see `docs/backend.md` § Off-loop code execution). Reproduce/measure with `backend/loadtest/` (driver + head-of-line probe; README documents usage).
+The app serves all traffic on a **single event loop per replica** (`uvicorn main:app`, one worker). Code execution is blocking (DuckDB SQL grading; a 5–12 s subprocess sandbox), so it runs **off the loop** via `backend/offload.py` (subprocess sandboxes concurrent up to `MAX_CONCURRENT_EXECUTIONS`; DuckDB serialized behind a process-wide lock — see `docs/backend.md` § Off-loop code execution). **Password hashing** (PBKDF2, ~22 ms/call) is the other blocking-CPU call on the request path and is offloaded the same way under its own `MAX_CONCURRENT_HASHES` cap (see `docs/backend.md` § Off-loop password hashing). Reproduce/measure with `backend/loadtest/` (driver + head-of-line probe; README documents usage).
 
 **Per-replica connection budget.** Each replica opens up to `DB_POOL_SIZE + DB_MAX_OVERFLOW` (default 30) Postgres connections. Keep `replicas × 30` comfortably below the managed-Postgres `max_connections` (Railway's default is ~100–400 depending on plan). Beyond that, put PgBouncer (transaction pooling) in front of Postgres.
 
@@ -368,6 +369,26 @@ The app serves all traffic on a **single event loop per replica** (`uvicorn main
 | **1 — current** | Off-loop execution + real semaphore + DuckDB serialize/table-cache + pool tuning | low **thousands** of concurrent users on one replica; ~`MAX_CONCURRENT_EXECUTIONS` truly-concurrent executions. CPU is the next limiter (single replica saturated ~32 active VUs at 8 vCPU in measurement). | done; low |
 | **2 — horizontal replicas** | Multiple stateless app replicas behind Railway; Redis-backed shared rate-limit/session state (already Redis-ready); PgBouncer + a Postgres read replica; CDN for the SPA. DuckDB is loaded per-replica (fine — read-only catalog data). | **tens of thousands** | medium; shared-state correctness |
 | **3 — externalize execution** | Move code execution to a dedicated, horizontally-scaled worker fleet / queue so the web tier never blocks on a sandbox; DuckDB per-worker or a query service. | lifts the **execute-heavy** ceiling (the real constraint — execution is CPU/subprocess-bound, not loop-bound) | high; new infra |
+
+---
+
+## Rate-limiter operational notes & findings
+
+The per-IP limiter (`RATE_LIMIT_REQUESTS`/`RATE_LIMIT_WINDOW_SECONDS`, default 60/60s) plus the two auth limiters are documented behaviourally in `docs/backend.md` § Rate limiting. Operational findings from the burst probe (`backend/loadtest/ratelimit.py`, 2026-06-08):
+
+- **Degrades gracefully under burst** — measured 60 pass / next 20 `429` with `Retry-After` + `X-RateLimit-*` + the canonical `{error, request_id}` body; the check is O(1), so a burst never stalls the loop.
+- **In-memory fallback is single-replica-only, and enforced** — `create_rate_limiter` raises at startup in production if `REDIS_URL` is unset or Redis init fails. The process-local `InMemoryRateLimiter` is dev-only; across horizontal replicas it would be per-replica (ineffective as a global limit), so **`REDIS_URL` is mandatory in prod** (already in the required-env list above and the Tier-2 scaling row).
+- **Transient Redis errors fail gracefully, not as 500s** — `check_safe` fails open for the coarse IP + auth-baseline limiters and closed for the token-issue limiter (see `docs/backend.md`).
+
+### Action item — verify per-IP keying behind the prod proxy
+
+The middleware keys on `request.client.host`. The prod Dockerfile starts `uvicorn main:app --host 0.0.0.0 --port ${PORT}` **without** `--forwarded-allow-ips`, so uvicorn defaults to `proxy_headers=True` + `forwarded_allow_ips="127.0.0.1"`. Empirically (probe, this venv): `X-Forwarded-For` is **trusted from a `127.0.0.1` peer** (we rewrote `client.host` to `8.8.8.8` from loopback) and **ignored from any other peer**.
+
+Consequence: per-IP rate limiting is correct **iff** Railway's edge proxy reaches the container from `127.0.0.1`. If it reaches it from another internal address, `X-Forwarded-For` is dropped and *every* client collapses into a single proxy-IP bucket — the 60/min limit becomes near-global (too aggressive for legitimate users sharing the egress, useless against a distributed abuser).
+
+**To verify:** the app already logs `client_ip=<host>` per request — inspect prod logs for whether `client_ip` shows diverse real client IPs or one repeated internal/proxy address.
+
+**To fix (if it's keying on the proxy):** set `FORWARDED_ALLOW_IPS` (or `--forwarded-allow-ips`) to the **actual Railway proxy hop** so uvicorn rewrites `client.host` from the trusted `X-Forwarded-For`. **Never set it to `*`** — that lets any client spoof its IP to evade the limiter or frame another address. This is a deliberate deployment + security change pending confirmation of the real prod peer address; it is not applied automatically.
 
 ---
 

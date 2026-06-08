@@ -295,6 +295,25 @@ def verify_password(password: str, stored_hash: str, salt: str) -> bool:
     return secrets.compare_digest(digest.hex(), stored_hash)
 
 
+# PBKDF2 (260k iterations) is ~22 ms of synchronous CPU per call. The sync helpers
+# above stay the implementation (and are reused by offline scripts + seeding), but
+# every request-path caller MUST go through these async wrappers so the hash runs in
+# a worker thread instead of blocking the single event loop. See
+# offload.run_blocking_hash.
+async def hash_password(password: str) -> tuple[str, str]:
+    """Async PBKDF2 hash — runs the blocking hash off the event loop."""
+    from offload import run_blocking_hash
+
+    return await run_blocking_hash(_hash_password, password)
+
+
+async def verify_password_async(password: str, stored_hash: str, salt: str) -> bool:
+    """Async PBKDF2 verify — runs the blocking verify off the event loop."""
+    from offload import run_blocking_hash
+
+    return await run_blocking_hash(verify_password, password, stored_hash, salt)
+
+
 async def init_pool() -> None:
     global _engine, _session_factory
 
@@ -541,7 +560,7 @@ async def create_anonymous_user() -> dict[str, Any]:
 
 
 async def upgrade_anonymous_to_registered(user_id: str, email: str, name: str, password: str) -> dict[str, Any] | None | str:
-    pwd_hash, pwd_salt = _hash_password(password)
+    pwd_hash, pwd_salt = await hash_password(password)
     session_factory = _session_factory_or_raise()
     async with session_factory() as session:
         try:
@@ -1967,7 +1986,7 @@ async def add_password_to_existing_user(user_id: str, password: str) -> dict[str
     Only updates if pwd_hash IS NULL — safe to call concurrently.
     Returns the updated user dict, or None if the user already has a password (or is not found).
     """
-    pwd_hash, pwd_salt = _hash_password(password)
+    pwd_hash, pwd_salt = await hash_password(password)
     session_factory = _session_factory_or_raise()
     async with session_factory() as session:
         result = await session.execute(
@@ -1993,7 +2012,7 @@ async def add_password_to_existing_user(user_id: str, password: str) -> dict[str
 
 async def update_password(user_id: str, new_password: str) -> None:
     """Update a user's password hash."""
-    pwd_hash, pwd_salt = _hash_password(new_password)
+    pwd_hash, pwd_salt = await hash_password(new_password)
     session_factory = _session_factory_or_raise()
     async with session_factory() as session:
         await session.execute(

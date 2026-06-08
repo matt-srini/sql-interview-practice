@@ -6,17 +6,24 @@ sandbox for Python/Pandas/statistics). Before the offload fix, those blocking ca
 ran directly on the loop, so one slow submission froze every other request — a
 concurrent /health was measured stalling ~4.7 s behind a single 5 s execution.
 
+The same single-loop hazard applies to **password hashing**: PBKDF2 (260k iterations)
+is ~22 ms of synchronous CPU per call, so a login/register burst run on the loop would
+serialize and stall every unrelated request. The auth paths offload it the same way
+(``offload.run_blocking_hash``), and that is asserted here too.
+
 These tests assert the offload discipline in ``offload.py`` that prevents that:
 
   1. blocking work runs OFF the loop (the loop stays responsive while it runs);
   2. subprocess-style execution is bounded by the global semaphore;
   3. SQL execution is serialized (exactly one DuckDB op in flight at a time);
   4. ``database.get_loaded_tables()`` is served from the startup snapshot and never
-     queries the shared DuckDB connection (concurrent use of which segfaults).
+     queries the shared DuckDB connection (concurrent use of which segfaults);
+  5. password hashing runs off the loop and is bounded by its own (separate) cap.
 
 Fast + deterministic by design: no DB, no real subprocess — a ``time.sleep`` stands
 in for the blocking evaluator so the test exercises the *scheduling* discipline, not
-the evaluators themselves (those have their own tests).
+the evaluators themselves (those have their own tests). The hashing tests use the
+*real* PBKDF2 to prove the actual auth path stays off the loop.
 """
 import asyncio
 import threading
@@ -35,6 +42,16 @@ def _fresh_sql_lock() -> None:
     it here is picked up.
     """
     offload._sql_lock = asyncio.Lock()
+
+
+def _fresh_hash_semaphore(limit: int | None = None) -> None:
+    """Rebind the module-level hash semaphore to the current loop (test-only).
+
+    Same lazy-loop-binding concern as ``_fresh_sql_lock``: ``offload._hash_semaphore``
+    is created at import and binds to the first loop that awaits it. ``run_blocking_hash``
+    reads the module global at call time, so reassigning it here is picked up.
+    """
+    offload._hash_semaphore = asyncio.Semaphore(limit if limit is not None else offload._hash_concurrency())
 
 
 def test_blocking_exec_does_not_block_the_event_loop():
@@ -151,3 +168,81 @@ def test_get_loaded_tables_served_from_cache_not_shared_conn():
         assert database.get_loaded_tables() == snapshot
     finally:
         database._golden_conn = saved
+
+
+def test_password_hash_does_not_block_the_event_loop():
+    """Real PBKDF2 hashing must run off the loop (the P2 auth fix).
+
+    Uses the *actual* ``db.hash_password`` (each call ~22 ms of synchronous CPU). Run
+    directly on the loop, a batch of these would freeze the ~10 ms-cadence ticker for
+    the batch's whole duration; offloaded, the ticker keeps advancing.
+    """
+    import db
+
+    async def scenario() -> int:
+        _fresh_hash_semaphore()
+        ticks = 0
+
+        async def ticker() -> None:
+            nonlocal ticks
+            while True:
+                ticks += 1
+                await asyncio.sleep(0.01)
+
+        t = asyncio.create_task(ticker())
+        await asyncio.sleep(0.01)  # let the ticker start
+        # A batch of real hashes — well over the ticker cadence in total CPU time.
+        await asyncio.gather(*[db.hash_password("Password1!") for _ in range(8)])
+        t.cancel()
+        return ticks
+
+    ticks = asyncio.run(scenario())
+    assert ticks >= 5, f"event loop appeared blocked during password hashing (ticks={ticks})"
+
+
+def test_verify_password_async_runs_off_the_loop_and_is_correct():
+    """verify_password_async must round-trip a real hash AND stay off the loop."""
+    import db
+
+    async def scenario() -> tuple[bool, bool]:
+        _fresh_hash_semaphore()
+        pwd_hash, salt = await db.hash_password("Correct-Horse-Battery-Staple-1")
+        good = await db.verify_password_async("Correct-Horse-Battery-Staple-1", pwd_hash, salt)
+        bad = await db.verify_password_async("wrong-password", pwd_hash, salt)
+        return good, bad
+
+    good, bad = asyncio.run(scenario())
+    assert good is True, "correct password failed to verify after offloaded hash"
+    assert bad is False, "wrong password verified — verify is broken"
+
+
+def test_run_blocking_hash_bounded_by_semaphore():
+    """Password hashing never exceeds its (separate) concurrency cap."""
+    cap = 3
+    lock = threading.Lock()
+    state = {"cur": 0, "peak": 0}
+
+    def job() -> None:
+        with lock:
+            state["cur"] += 1
+            state["peak"] = max(state["peak"], state["cur"])
+        time.sleep(0.2)
+        with lock:
+            state["cur"] -= 1
+
+    async def scenario() -> None:
+        _fresh_hash_semaphore(cap)
+        await asyncio.gather(*[offload.run_blocking_hash(job) for _ in range(cap + 4)])
+
+    asyncio.run(scenario())
+    assert state["peak"] <= cap, f"hash semaphore breached: peak={state['peak']} cap={cap}"
+    assert state["peak"] >= min(2, cap), "hashes did not actually overlap — not concurrent"
+
+
+def test_hash_and_exec_caps_are_independent():
+    """Auth hashing and code execution use SEPARATE caps and don't share slots."""
+    import main
+
+    assert offload._hash_semaphore is not main._execution_semaphore, (
+        "hash and code-execution semaphores must be distinct objects"
+    )
