@@ -175,10 +175,7 @@ The validator (`_validate_sample_cross_bank_titles`) catches exact title collisi
     {"input": [["504", "500", "503"], 0], "expected": 0},
     {"input": [["504", "504", "429", "429", "503", "503"], 2], "expected": 4}
   ],
-  "public_test_cases": [
-    {"input": [["500", "503", "500", "429", "504"], 2], "expected": 3},
-    {"input": [["504", "504"], 1], "expected": 2}
-  ],
+  "public_test_cases": 2,
   "hints": [
     "The constraint is on distinct codes in a moving window — what structure tracks that count cheaply?",
     "Expand the window from the right; contract from the left when the distinct-code count exceeds k."
@@ -190,7 +187,7 @@ The validator (`_validate_sample_cross_bank_titles`) catches exact title collisi
 Required:
 - `expected_code` and `solution_code` produce identical results on all `test_cases`.
 - At least one edge case in `test_cases` (empty input, boundary, degenerate input).
-- `public_test_cases` = exactly 2 (user can run before submit).
+- `public_test_cases` = the integer **count** of leading `test_cases` shown to the user before submit (exactly 2) — an `int`, **not** the list of cases. The loader slices `test_cases[:public_test_cases]`, so a list value throws `TypeError` at serialization (guarded by `tests/test_public_question_serialization.py`).
 - Hidden tests do not add new constraints beyond what the description states.
 - Hints follow the same discipline as other tracks: name the pattern / data structure, not the implementation.
 

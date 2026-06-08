@@ -668,7 +668,7 @@
       {"input": [[], {"alpha": [0, 10, 0, 10, 0, 5]}], "expected": []},
       {"input": [[[5, 5, 3, "alpha"], [3, 3, 2, "alpha"]], {"alpha": [0, 10, 0, 10, 0, 5]}], "expected": []}
     ],
-    "public_test_cases": [{"input": [[[5, 5, 3, "alpha"], [5, 5, 8, "alpha"], [5, 5, 2, "alpha"]], {"alpha": [0, 10, 0, 10, 0, 5]}], "expected": [1]}, {"input": [[[15, 5, 3, "alpha"], [0, 0, 0, "beta"], [5, 25, 10, "beta"]], {"alpha": [0, 10, 0, 10, 0, 5], "beta": [0, 20, 0, 20, 0, 20]}], "expected": [0, 2]}],
+    "public_test_cases": 2,
     "hints": ["For each reading, check whether its three coordinates each fall within the boundaries stored for its assigned zone — what can you look up in O(1) to retrieve those six bounds?", "Access zone boundaries by zone_id key (O(1)) as each point arrives; the breach condition fires if any of the six inequalities holds — x < xmin, x > xmax, y < ymin, y > ymax, z < zmin, z > zmax."],
     "concepts": ["STREAMING / ONLINE REDUCTION", "HASH-MAP STATE"]
   },
