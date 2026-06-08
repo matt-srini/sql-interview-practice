@@ -22,14 +22,14 @@ Headline coverage tables reflect the **live state of paths**, not tag-derived hy
 | Track | Practice Qs | In a live path | Orphans | Divergent | Patterns (proposed) | Healthy | Uneven | Thin | Empty |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
 | sql | 118 | 91 | 27 | 24 | 14 | 5 | 5 | 1 | 3 |
-| python | 79 | 44 | 35 | 6 | 9 | 1 | 4 | 3 | 1 |
-| python-data | 92 | 87 | 5 | 15 | 9 | 5 | 3 | 0 | 1 |
-| pyspark | 127 | 106 | 21 | 20 | 7 | 2 | 4 | 0 | 1 |
+| python | 81 | 44 | 37 | 6 | 9 | 1 | 4 | 3 | 1 |
+| python-data | 93 | 90 | 3 | 15 | 9 | 5 | 3 | 0 | 1 |
+| pyspark | 127 | 112 | 15 | 20 | 7 | 2 | 4 | 0 | 1 |
 | data-engineering | 91 | 85 | 6 | 10 | 9 | 5 | 4 | 0 | 0 |
 | data-modeling | 81 | 73 | 8 | 0 | 14 | 6 | 1 | 4 | 3 |
-| statistics | 100 | 84 | 16 | 4 | 11 | 1 | 8 | 0 | 2 |
+| statistics | 100 | 94 | 6 | 4 | 11 | 1 | 8 | 0 | 2 |
 | ml-fundamentals | 100 | 97 | 3 | 19 | 15 | 4 | 8 | 1 | 2 |
-| experimentation | 87 | 65 | 22 | 26 | 9 | 1 | 6 | 0 | 2 |
+| experimentation | 87 | 73 | 14 | 26 | 9 | 1 | 6 | 0 | 2 |
 
 **Legend:**  
 `In a live path` = practice questions currently included in some live path's `questions[]`.  
@@ -172,7 +172,7 @@ a starting point for deciding which path (existing or new) should include them.
 ---
 ## python
 
-Practice questions: **79** (44 in live paths · 35 orphans · 6 divergent). Proposed canonical patterns: **9**.
+Practice questions: **81** (44 in live paths · 37 orphans · 6 divergent). Proposed canonical patterns: **9**.
 
 ### Pattern coverage (live-path-aggregated)
 
@@ -200,9 +200,9 @@ A question contributes once per family tag — multi-tag questions count multipl
 | BINARY SEARCH | `(orphan)` (2) | `dynamic-programming` (1) |
 | DYNAMIC PROGRAMMING (1D) | `dynamic-programming` (3) | `graph-traversal` (2) |
 | DYNAMIC PROGRAMMING (2D) | `dynamic-programming` (2) | — |
-| GRAPH TRAVERSAL (BFS / DFS) | `graph-traversal` (5) | — |
+| GRAPH TRAVERSAL (BFS / DFS) | `graph-traversal` (5) | `(orphan)` (1) |
 | GREEDY CHOICE | `(orphan)` (5) | `heap-and-priority` (2) |
-| HASH-MAP STATE | `(orphan)` (13) | `arrays-and-hashing` (5), `sliding-window` (4), `data-pipeline-scripting` (2), `dynamic-programming` (1) |
+| HASH-MAP STATE | `(orphan)` (15) | `arrays-and-hashing` (5), `sliding-window` (4), `data-pipeline-scripting` (2), `dynamic-programming` (1) |
 | HEAP & PRIORITY QUEUE | `heap-and-priority` (4) | `sliding-window` (1), `graph-traversal` (1), `(orphan)` (1) |
 | IN-PLACE TRANSFORMATION & SPACE OPTIMIZATION | `graph-traversal` (1) | `(orphan)` (1), `sliding-window` (1) |
 | INDEXED SEQUENCE REASONING | `(orphan)` (20) | `string-and-text-processing` (3), `arrays-and-hashing` (2), `data-pipeline-scripting` (2), `heap-and-priority` (2) |
@@ -210,7 +210,7 @@ A question contributes once per family tag — multi-tag questions count multipl
 | MODULAR ARITHMETIC & NUMBER THEORY | `(orphan)` (2) | — |
 | SLIDING WINDOW | `sliding-window` (6) | `stacks-and-queues` (1) |
 | STACK & MONOTONIC STRUCTURES | `stacks-and-queues` (4) | `sliding-window` (1) |
-| STREAMING / ONLINE REDUCTION | `(orphan)` (3) | `stacks-and-queues` (1) |
+| STREAMING / ONLINE REDUCTION | `(orphan)` (4) | `stacks-and-queues` (1) |
 | STRING PATTERN REASONING | `string-and-text-processing` (4) | `(orphan)` (4), `data-pipeline-scripting` (4), `arrays-and-hashing` (2), `sliding-window` (1) |
 | TWO POINTERS | `sliding-window` (4) | `(orphan)` (1) |
 | UNION-FIND & DISJOINT SET | `graph-traversal` (1) | — |
@@ -261,6 +261,7 @@ a starting point for deciding which path (existing or new) should include them.
 | 23001 | hard | `arrays-and-hashing` | Merge Intervals |
 | 23007 | hard | `data-pipeline-scripting` | LRU Cache |
 | 23023 | hard | `data-pipeline-scripting` | Merge K sorted lists |
+| 23037 | hard | `graph-traversal` | Largest 3-D Voxel Region (6-Neighbor BFS) |
 | 22003 | medium | `arrays-and-hashing` | Leave-One-Out Signal Product |
 | 22004 | medium | `streaming-and-online` | Find the Dropped Import ID |
 | 22010 | medium | `arrays-and-hashing` | Intersection of Two Arrays II |
@@ -274,6 +275,7 @@ a starting point for deciding which path (existing or new) should include them.
 | 22047 | medium | `data-pipeline-scripting` | Run-Length Log Encoder |
 | 22048 | medium | `streaming-and-online` | Event Stream Deduplication |
 | 22049 | medium | `data-pipeline-scripting` | Merge Two Sorted Event Streams |
+| 22051 | medium | `streaming-and-online` | Real-Time 3-D Zone Breach Detector |
 
 ### Coverage gaps in this track
 
@@ -285,7 +287,7 @@ a starting point for deciding which path (existing or new) should include them.
 ---
 ## python-data
 
-Practice questions: **92** (87 in live paths · 5 orphans · 15 divergent). Proposed canonical patterns: **9**.
+Practice questions: **93** (90 in live paths · 3 orphans · 15 divergent). Proposed canonical patterns: **9**.
 
 ### Pattern coverage (live-path-aggregated)
 
@@ -297,7 +299,7 @@ Practice questions: **92** (87 in live paths · 5 orphans · 15 divergent). Prop
 | `reshape-and-pivot` | Reshape & Pivot | 0 | 2 | 4 | 6 | ⚠️ uneven |
 | `time-series-pandas` | Time Series | 4 | 6 | 5 | 15 | ✅ healthy |
 | `window-and-rolling` | Window & Rolling Operations | 0 | 0 | 0 | 0 | 🔴 empty (no live path or no questions) |
-| `data-cleaning` | Data Cleaning | 7 | 6 | 2 | 15 | ✅ healthy |
+| `data-cleaning` | Data Cleaning | 7 | 6 | 5 | 18 | ✅ healthy |
 | `top-n-and-ranking` | Top-N & Ranking | 2 | 4 | 1 | 7 | ✅ healthy |
 | `customer-analytics` | Customer Analytics Pipelines | 0 | 2 | 4 | 6 | ⚠️ uneven |
 
@@ -310,23 +312,23 @@ A question contributes once per family tag — multi-tag questions count multipl
 | Family | Top landing | Other landings |
 |---|---|---|
 | BOOLEAN INDEXING & FILTERING | `dataframe-basics` (6) | `time-series-pandas` (3), `data-cleaning` (3), `groupby` (2), `joins-and-merges` (1) |
-| CATEGORICAL & BINNING | `data-cleaning` (3) | `(orphan)` (2), `customer-analytics` (1) |
+| CATEGORICAL & BINNING | `data-cleaning` (5) | `customer-analytics` (1) |
 | COLUMN SELECTION & PROJECTION | `dataframe-basics` (9) | `groupby` (3), `time-series-pandas` (2), `data-cleaning` (2), `joins-and-merges` (1) |
 | DATA QUALITY SKEPTICISM | `joins-and-merges` (1) | — |
-| DATETIME OPERATIONS | `time-series-pandas` (15) | `data-cleaning` (4), `customer-analytics` (2), `joins-and-merges` (2), `groupby` (1) |
+| DATETIME OPERATIONS | `time-series-pandas` (15) | `data-cleaning` (5), `customer-analytics` (2), `joins-and-merges` (2), `groupby` (1) |
 | DEBUG PANDAS | `dataframe-basics` (1) | `data-cleaning` (1) |
-| DEDUPLICATION LOGIC | `data-cleaning` (5) | `(orphan)` (1) |
+| DEDUPLICATION LOGIC | `data-cleaning` (6) | — |
 | DOUBLE-COUNTING DETECTION | `joins-and-merges` (1) | — |
-| GROUPED AGGREGATION | `groupby` (14) | `time-series-pandas` (9), `joins-and-merges` (7), `customer-analytics` (6), `top-n-and-ranking` (5) |
-| MEMORY & VECTORIZATION REASONING | `dataframe-basics` (1) | `(orphan)` (1), `groupby` (1) |
+| GROUPED AGGREGATION | `groupby` (14) | `time-series-pandas` (9), `joins-and-merges` (7), `data-cleaning` (6), `customer-analytics` (6) |
+| MEMORY & VECTORIZATION REASONING | `dataframe-basics` (1) | `data-cleaning` (1), `groupby` (1) |
 | METHOD CHAINING & PIPELINE STYLE | `groupby` (2) | `customer-analytics` (1), `dataframe-basics` (1) |
 | MISSING VALUE STRATEGY | `data-cleaning` (6) | `dataframe-basics` (2), `reshape-and-pivot` (1), `top-n-and-ranking` (1) |
 | MULTI-DATAFRAME ENTITY LINKING | `joins-and-merges` (11) | `data-cleaning` (5), `top-n-and-ranking` (3), `reshape-and-pivot` (3), `customer-analytics` (1) |
 | OUTPUT SHAPE & ORDERING | `groupby` (6) | `dataframe-basics` (5), `joins-and-merges` (3), `top-n-and-ranking` (2), `(orphan)` (2) |
 | RANKING & TOP-N PER GROUP | `top-n-and-ranking` (7) | — |
-| RESHAPING & PIVOT | `reshape-and-pivot` (6) | `customer-analytics` (1) |
+| RESHAPING & PIVOT | `reshape-and-pivot` (6) | `customer-analytics` (1), `(orphan)` (1) |
 | TRANSFORM VS AGGREGATE | `groupby` (3) | `customer-analytics` (2) |
-| WINDOW & ROLLING OPERATIONS | `time-series-pandas` (5) | `(orphan)` (2), `top-n-and-ranking` (1), `data-cleaning` (1) |
+| WINDOW & ROLLING OPERATIONS | `time-series-pandas` (5) | `(orphan)` (3), `top-n-and-ranking` (1), `data-cleaning` (1) |
 
 ### Divergences (live path says A, tags suggest B)
 
@@ -361,9 +363,7 @@ a starting point for deciding which path (existing or new) should include them.
 | QID | Diff | Tag-suggested pattern | Title |
 |---|---|---|---|
 | 33005 | hard | `window-and-rolling` | Cumulative Revenue per User |
-| 33016 | hard | `data-cleaning` | Employee Tenure Calculation |
-| 33023 | hard | `data-cleaning` | Funnel conversion analysis from events |
-| 33038 | hard | `data-cleaning` | Discount Classification Performance |
+| 33088 | hard | `reshape-and-pivot` | Acquisition Channel Refund Cascade Detector |
 | 32013 | medium | `window-and-rolling` | Cumulative Employee Salary by Department |
 
 ### Coverage gaps in this track
@@ -373,7 +373,7 @@ a starting point for deciding which path (existing or new) should include them.
 ---
 ## pyspark
 
-Practice questions: **127** (106 in live paths · 21 orphans · 20 divergent). Proposed canonical patterns: **7**.
+Practice questions: **127** (112 in live paths · 15 orphans · 20 divergent). Proposed canonical patterns: **7**.
 
 ### Pattern coverage (live-path-aggregated)
 
@@ -401,22 +401,22 @@ A question contributes once per family tag — multi-tag questions count multipl
 | COLLECTION & ARRAY OPERATIONS | `spark-collections-and-arrays` (5) | — |
 | DATA QUALITY SKEPTICISM | `spark-collections-and-arrays` (5) | `streaming` (3), `spark-schema-and-type-handling` (2), `(orphan)` (2), `spark-execution-model-and-dag` (1) |
 | DATA SKEW & MITIGATION | `spark-joins-and-skew` (6) | `spark-performance` (1) |
-| DEBUG SPARK ERRORS | `spark-execution-model-and-dag` (3) | `(orphan)` (3), `spark-io-and-file-formats` (1), `query-optimization` (1), `spark-schema-and-type-handling` (1) |
+| DEBUG SPARK ERRORS | `spark-execution-model-and-dag` (3) | `spark-memory-and-driver-executor` (2), `spark-io-and-file-formats` (1), `query-optimization` (1), `(orphan)` (1) |
 | DELTA LAKE OPERATIONS | `delta-lake` (8) | — |
 | DOUBLE-COUNTING DETECTION | `spark-joins-and-skew` (4) | — |
-| EXECUTION MODEL REASONING | `spark-execution-model-and-dag` (15) | `(orphan)` (7), `spark-memory-and-driver-executor` (6), `spark-fault-tolerance-and-recovery` (3), `streaming` (3) |
+| EXECUTION MODEL REASONING | `spark-execution-model-and-dag` (15) | `spark-memory-and-driver-executor` (8), `(orphan)` (5), `spark-fault-tolerance-and-recovery` (3), `streaming` (3) |
 | FAULT TOLERANCE & RECOVERY | `spark-fault-tolerance-and-recovery` (5) | `streaming` (2), `delta-lake` (1), `spark-joins-and-skew` (1) |
 | FILE FORMATS & READERS | `spark-io-and-file-formats` (4) | `(orphan)` (1), `spark-fault-tolerance-and-recovery` (1), `delta-lake` (1), `query-optimization` (1) |
-| JOIN STRATEGY SELECTION | `spark-joins-and-skew` (14) | `(orphan)` (4), `query-optimization` (4), `spark-performance` (3), `spark-collections-and-arrays` (1) |
-| MEMORY MANAGEMENT | `(orphan)` (9) | `spark-memory-and-driver-executor` (6), `spark-joins-and-skew` (4), `streaming` (1), `spark-performance` (1) |
+| JOIN STRATEGY SELECTION | `spark-joins-and-skew` (14) | `query-optimization` (4), `spark-performance` (3), `spark-memory-and-driver-executor` (2), `(orphan)` (2) |
+| MEMORY MANAGEMENT | `spark-memory-and-driver-executor` (12) | `spark-joins-and-skew` (4), `(orphan)` (3), `streaming` (1), `spark-performance` (1) |
 | NARROW VS WIDE TRANSFORMATIONS | `spark-execution-model-and-dag` (2) | `(orphan)` (1) |
-| OUTPUT SANITY VALIDATION | `spark-joins-and-skew` (5) | `(orphan)` (3), `spark-execution-model-and-dag` (2), `spark-schema-and-type-handling` (2), `pyspark-windowing` (1) |
+| OUTPUT SANITY VALIDATION | `spark-joins-and-skew` (5) | `spark-execution-model-and-dag` (2), `spark-schema-and-type-handling` (2), `(orphan)` (2), `spark-memory-and-driver-executor` (1) |
 | PARTITIONING STRATEGY | `(orphan)` (5) | `query-optimization` (5), `spark-performance` (3), `delta-lake` (2), `spark-execution-model-and-dag` (1) |
-| PERFORMANCE TUNING & TRADE-OFFS | `(orphan)` (5) | `spark-io-and-file-formats` (2), `query-optimization` (2), `spark-performance` (2), `spark-memory-and-driver-executor` (1) |
+| PERFORMANCE TUNING & TRADE-OFFS | `spark-memory-and-driver-executor` (4) | `(orphan)` (2), `spark-io-and-file-formats` (2), `query-optimization` (2), `spark-performance` (2) |
 | SCHEMA & TYPE HANDLING | `spark-schema-and-type-handling` (11) | `spark-io-and-file-formats` (4), `spark-execution-model-and-dag` (3), `(orphan)` (3), `query-optimization` (2) |
-| SHUFFLE REASONING | `(orphan)` (7) | `spark-performance` (5), `spark-joins-and-skew` (3), `query-optimization` (2), `spark-execution-model-and-dag` (1) |
+| SHUFFLE REASONING | `(orphan)` (5) | `spark-performance` (5), `spark-joins-and-skew` (3), `query-optimization` (2), `spark-memory-and-driver-executor` (2) |
 | STRUCTURED STREAMING | `streaming` (11) | `delta-lake` (1), `spark-execution-model-and-dag` (1) |
-| UDF & PYTHON BOUNDARY | `(orphan)` (6) | `spark-execution-model-and-dag` (1), `spark-joins-and-skew` (1) |
+| UDF & PYTHON BOUNDARY | `(orphan)` (5) | `spark-execution-model-and-dag` (1), `spark-memory-and-driver-executor` (1), `spark-joins-and-skew` (1) |
 | WINDOW FUNCTIONS & FRAMES | `pyspark-windowing` (5) | — |
 
 ### Divergences (live path says A, tags suggest B)
@@ -460,18 +460,12 @@ a starting point for deciding which path (existing or new) should include them.
 | 41011 | easy | `spark-performance` | What is a Spark Partition? |
 | 41013 | easy | `spark-performance` | orderBy vs sort: output comparison |
 | 41019 | easy | `spark-performance` | Why Python UDFs Are Slow |
-| 41032 | easy | `spark-memory-and-driver-executor` | Debug: Python len() on a DataFrame |
 | 41033 | easy | `spark-performance` | Predict output: count vs countDistinct |
-| 41034 | easy | `spark-memory-and-driver-executor` | Debug: collect() on a large DataFrame |
 | 41035 | easy | `spark-performance` | Debug: UDF return type mismatch |
-| 43002 | hard | `spark-memory-and-driver-executor` | executor.memory vs memoryOverhead for Pandas UDFs |
 | 43007 | hard | `spark-performance` | reduceByKey vs groupByKey Network Cost |
-| 43013 | hard | `spark-memory-and-driver-executor` | Bloom Filters for High-Cardinality Joins |
 | 43017 | hard | `spark-performance` | Guaranteeing Co-location with repartition by Column |
 | 43023 | hard | `spark-performance` | Dynamic Partition Pruning Absent on Left Join |
 | 43041 | hard | `spark-performance` | Pandas UDF: Predicting Output for Null and Zero Inputs |
-| 43046 | hard | `spark-memory-and-driver-executor` | 9× Slowdown After Halving Executor Memory Despite Identical Total RAM |
-| 42010 | medium | `spark-memory-and-driver-executor` | Kryo vs Java Serialization |
 | 42019 | medium | `spark-performance` | Caching Strategy: When to Cache |
 | 42022 | medium | `spark-performance` | mapPartitions vs map |
 | 42033 | medium | `spark-performance` | Debug: AttributeError in Python UDF on Nullable Column |
@@ -658,7 +652,7 @@ a starting point for deciding which path (existing or new) should include them.
 ---
 ## statistics
 
-Practice questions: **100** (84 in live paths · 16 orphans · 4 divergent). Proposed canonical patterns: **11**.
+Practice questions: **100** (94 in live paths · 6 orphans · 4 divergent). Proposed canonical patterns: **11**.
 
 ### Pattern coverage (live-path-aggregated)
 
@@ -671,7 +665,7 @@ Practice questions: **100** (84 in live paths · 16 orphans · 4 divergent). Pro
 | `hypothesis-testing` | Hypothesis Testing | 0 | 10 | 1 | 11 | ⚠️ uneven |
 | `confidence-intervals` | Confidence Intervals | 0 | 3 | 6 | 9 | ⚠️ uneven |
 | `errors-and-power` | Errors, Power & Multiple Testing | 0 | 2 | 3 | 5 | ⚠️ uneven |
-| `regression-and-correlation` | Regression, Correlation & Causality | 0 | 8 | 0 | 8 | ⚠️ uneven |
+| `regression-and-correlation` | Regression, Correlation & Causality | 0 | 12 | 6 | 18 | ⚠️ uneven |
 | `variance-and-anova` | Variance Decomposition & ANOVA | 0 | 0 | 0 | 0 | 🔴 empty (no live path or no questions) |
 | `bayesian-reasoning` | Bayesian Reasoning | 0 | 3 | 3 | 6 | ⚠️ uneven |
 | `survival-analysis` | Survival Analysis & Time-to-Event | 0 | 0 | 0 | 0 | 🔴 empty (no live path or no questions) |
@@ -685,18 +679,18 @@ A question contributes once per family tag — multi-tag questions count multipl
 | Family | Top landing | Other landings |
 |---|---|---|
 | bayesian inference | `bayesian-reasoning` (6) | — |
-| confidence intervals & estimation | `confidence-intervals` (9) | `(orphan)` (2), `hypothesis-testing` (1), `regression-and-correlation` (1), `bayesian-reasoning` (1) |
-| correlation, regression & causality | `(orphan)` (10) | `regression-and-correlation` (7) |
-| descriptive statistics | `descriptive-stats` (9) | `(orphan)` (3), `distributions` (3) |
+| confidence intervals & estimation | `confidence-intervals` (9) | `regression-and-correlation` (2), `hypothesis-testing` (1), `bayesian-reasoning` (1), `(orphan)` (1) |
+| correlation, regression & causality | `regression-and-correlation` (17) | — |
+| descriptive statistics | `descriptive-stats` (9) | `regression-and-correlation` (3), `distributions` (3) |
 | distributions | `distributions` (18) | `confidence-intervals` (4), `hypothesis-testing` (3), `bayesian-reasoning` (2), `descriptive-stats` (1) |
 | errors & power | `errors-and-power` (4) | `hypothesis-testing` (4), `regression-and-correlation` (2) |
-| experimental design (within stats) | `hypothesis-testing` (5) | `(orphan)` (1), `descriptive-stats` (1), `regression-and-correlation` (1) |
+| experimental design (within stats) | `hypothesis-testing` (5) | `regression-and-correlation` (2), `descriptive-stats` (1) |
 | hypothesis testing | `hypothesis-testing` (7) | `errors-and-power` (4), `distributions` (3), `(orphan)` (2), `confidence-intervals` (1) |
 | multiple testing & correction | `errors-and-power` (4) | `hypothesis-testing` (1) |
 | probability & combinatorics | `probability-and-combinatorics` (13) | `distributions` (8), `bayesian-reasoning` (3), `(orphan)` (2), `sampling-and-clt` (2) |
-| sampling & central limit theorem | `sampling-and-clt` (5) | `confidence-intervals` (3), `hypothesis-testing` (3), `(orphan)` (1) |
+| sampling & central limit theorem | `sampling-and-clt` (5) | `confidence-intervals` (3), `hypothesis-testing` (3), `regression-and-correlation` (1) |
 | survival analysis & time-to-event | `(orphan)` (3) | — |
-| variance decomposition & ANOVA | `(orphan)` (7) | `distributions` (1) |
+| variance decomposition & ANOVA | `regression-and-correlation` (4) | `(orphan)` (3), `distributions` (1) |
 
 ### Divergences (live path says A, tags suggest B)
 
@@ -719,21 +713,11 @@ a starting point for deciding which path (existing or new) should include them.
 
 | QID | Diff | Tag-suggested pattern | Title |
 |---|---|---|---|
-| 73002 | hard | `regression-and-correlation` | Simpson's Paradox |
-| 73006 | hard | `regression-and-correlation` | R-Squared Interpretation |
-| 73007 | hard | `regression-and-correlation` | Computing R-Squared |
-| 73008 | hard | `regression-and-correlation` | Bias-Variance Tradeoff |
 | 73012 | hard | `variance-and-anova` | Variance Decomposition — ANOVA Logic |
 | 73014 | hard | `survival-analysis` | Survival Analysis — Hazard Rate |
 | 73015 | hard | `survival-analysis` | Kaplan-Meier Survival Probability |
 | 73017 | hard | `variance-and-anova` | ANOVA F-Statistic |
-| 73018 | hard | `regression-and-correlation` | Regression — Bias-Variance Decomposition |
 | 73023 | hard | `variance-and-anova` | Variance of a Linear Combination |
-| 73027 | hard | `regression-and-correlation` | MCAR, MAR, and MNAR Missingness Mechanisms |
-| 72011 | medium | `regression-and-correlation` | Pearson Correlation Coefficient |
-| 72012 | medium | `regression-and-correlation` | Correlation vs Causation |
-| 72013 | medium | `regression-and-correlation` | A/B Test — Identifying the Correct Setup |
-| 72023 | medium | `regression-and-correlation` | Effect of Outlier on Correlation |
 | 72043 | medium | `survival-analysis` | Kaplan-Meier: What Censored Observations Tell Us |
 
 ### Coverage gaps in this track
@@ -854,7 +838,7 @@ a starting point for deciding which path (existing or new) should include them.
 ---
 ## experimentation
 
-Practice questions: **87** (65 in live paths · 22 orphans · 26 divergent). Proposed canonical patterns: **9**.
+Practice questions: **87** (73 in live paths · 14 orphans · 26 divergent). Proposed canonical patterns: **9**.
 
 ### Pattern coverage (live-path-aggregated)
 
@@ -862,7 +846,7 @@ Practice questions: **87** (65 in live paths · 22 orphans · 26 divergent). Pro
 |---|---|---:|---:|---:|---:|---|
 | `ab-test-mechanics` | A/B Test Mechanics | 6 | 0 | 0 | 6 | ⚠️ uneven |
 | `metric-selection` | Metric Selection | 4 | 3 | 1 | 8 | ✅ healthy |
-| `power-and-sample-size` | Power & Sample Size | 5 | 5 | 0 | 10 | ⚠️ uneven |
+| `power-and-sample-size` | Power & Sample Size | 10 | 8 | 0 | 18 | ⚠️ uneven |
 | `variance-reduction` | Variance Reduction | 0 | 9 | 5 | 14 | ⚠️ uneven |
 | `behavioral-effects-and-interference` | Behavioral Effects & Interference | 0 | 4 | 1 | 5 | ⚠️ uneven |
 | `subgroup-and-hte` | Subgroup Analysis & HTE | 0 | 5 | 2 | 7 | ⚠️ uneven |
@@ -878,12 +862,12 @@ A question contributes once per family tag — multi-tag questions count multipl
 
 | Family | Top landing | Other landings |
 |---|---|---|
-| A/B TEST MECHANICS | `(orphan)` (4) | `ab-test-mechanics` (3), `variance-reduction` (2), `causal-inference` (1), `power-and-sample-size` (1) |
+| A/B TEST MECHANICS | `ab-test-mechanics` (3) | `(orphan)` (3), `variance-reduction` (2), `power-and-sample-size` (2), `causal-inference` (1) |
 | BAYESIAN EXPERIMENTATION | `causal-inference` (2) | `variance-reduction` (1), `(orphan)` (1), `subgroup-and-hte` (1) |
 | CAUSAL INFERENCE | `causal-inference` (8) | `variance-reduction` (3) |
 | CONFIDENCE INTERVALS | `(orphan)` (3) | `power-and-sample-size` (2) |
-| EXPERIMENT DESIGN | `(orphan)` (7) | `variance-reduction` (7), `metric-selection` (5), `ab-test-mechanics` (4), `causal-inference` (4) |
-| EXPERIMENT DURATION | `(orphan)` (5) | `behavioral-effects-and-interference` (2), `metric-selection` (1), `power-and-sample-size` (1), `variance-reduction` (1) |
+| EXPERIMENT DESIGN | `variance-reduction` (7) | `metric-selection` (5), `ab-test-mechanics` (4), `(orphan)` (4), `power-and-sample-size` (4) |
+| EXPERIMENT DURATION | `power-and-sample-size` (6) | `behavioral-effects-and-interference` (2), `metric-selection` (1), `variance-reduction` (1) |
 | HOLDOUT GROUPS | `causal-inference` (3) | `variance-reduction` (1) |
 | HYPOTHESIS FORMULATION | `(orphan)` (2) | `ab-test-mechanics` (1) |
 | METRIC SELECTION | `metric-selection` (6) | `variance-reduction` (2), `causal-inference` (1), `(orphan)` (1), `subgroup-and-hte` (1) |
@@ -894,14 +878,14 @@ A question contributes once per family tag — multi-tag questions count multipl
 | NOVELTY EFFECTS | `causal-inference` (1) | `behavioral-effects-and-interference` (1), `subgroup-and-hte` (1) |
 | QUASI-EXPERIMENTAL METHODS | `causal-inference` (5) | `variance-reduction` (1) |
 | SAMPLE RATIO MISMATCH | `(orphan)` (1) | `power-and-sample-size` (1), `variance-reduction` (1) |
-| SAMPLE SIZE BASICS | `(orphan)` (3) | `power-and-sample-size` (2), `ab-test-mechanics` (1) |
+| SAMPLE SIZE BASICS | `power-and-sample-size` (4) | `ab-test-mechanics` (1), `(orphan)` (1) |
 | SEGMENTATION ANALYSIS | `subgroup-and-hte` (5) | — |
 | SEQUENTIAL TESTING | `(orphan)` (1) | — |
-| STATISTICAL POWER | `(orphan)` (6) | `power-and-sample-size` (3), `metric-selection` (2), `ab-test-mechanics` (1), `variance-reduction` (1) |
+| STATISTICAL POWER | `power-and-sample-size` (6) | `(orphan)` (3), `metric-selection` (2), `ab-test-mechanics` (1), `variance-reduction` (1) |
 | STATISTICAL SIGNIFICANCE | `(orphan)` (4) | `power-and-sample-size` (3), `ab-test-mechanics` (1) |
 | SWITCHBACK EXPERIMENTS | `causal-inference` (1) | `subgroup-and-hte` (1), `behavioral-effects-and-interference` (1) |
-| TYPE I AND TYPE II ERRORS | `(orphan)` (4) | `power-and-sample-size` (4), `ab-test-mechanics` (1), `subgroup-and-hte` (1), `variance-reduction` (1) |
-| VARIANCE REDUCTION | `variance-reduction` (4) | `causal-inference` (1), `power-and-sample-size` (1), `(orphan)` (1) |
+| TYPE I AND TYPE II ERRORS | `power-and-sample-size` (5) | `(orphan)` (3), `ab-test-mechanics` (1), `subgroup-and-hte` (1), `variance-reduction` (1) |
+| VARIANCE REDUCTION | `variance-reduction` (4) | `power-and-sample-size` (2), `causal-inference` (1) |
 
 ### Divergences (live path says A, tags suggest B)
 
@@ -949,24 +933,16 @@ a starting point for deciding which path (existing or new) should include them.
 | 91003 | easy | `ab-test-mechanics` | Null vs Alternative Hypothesis |
 | 91005 | easy | `ab-test-mechanics` | Type I Error in Practice |
 | 91006 | easy | `ab-test-mechanics` | Type II Error and Underpowered Tests |
-| 91008 | easy | `power-and-sample-size` | Factors That Increase Required Sample Size |
 | 91009 | easy | `ab-test-mechanics` | Interpreting a Confidence Interval |
 | 91011 | easy | `ab-test-mechanics` | The Role of a Control Group |
-| 91013 | easy | `power-and-sample-size` | Peeking at Results Early |
 | 91016 | easy | `ab-test-mechanics` | Confidence Interval and Practical Significance |
-| 91017 | easy | `power-and-sample-size` | Experiment Duration and Day-of-Week Effects |
-| 91019 | easy | `power-and-sample-size` | Increasing Power Without More Users |
 | 91021 | easy | `ab-test-mechanics` | Feature Only Visible to a Subset of Assigned Users |
-| 91023 | easy | `power-and-sample-size` | Defining the Minimum Detectable Effect |
 | 91025 | easy | `ab-test-mechanics` | Predicting CI Width After Quadrupling Sample Size |
 | 91027 | easy | `ab-test-mechanics` | Defining Experiment Eligibility Criteria |
 | 91029 | easy | `ab-test-mechanics` | Pre-Registering Hypotheses |
 | 93018 | hard | `sequential-and-bandits` | Bayesian A/B Test: Posterior Probability vs Business Threshold |
 | 93036 | hard | `sequential-and-bandits` | Continuous monitoring with alpha spending: when can you stop early? |
 | 92002 | medium | `experiment-platform-design` | Sample Ratio Mismatch Detection |
-| 92009 | medium | `power-and-sample-size` | Experiment Duration and Weekly Seasonality |
-| 92021 | medium | `power-and-sample-size` | Minimum Detectable Effect and Business Threshold |
-| 92027 | medium | `power-and-sample-size` | Power Calculation: Effect of Increasing Variance |
 | 92029 | medium | `sequential-and-bandits` | Multi-Armed Bandit vs A/B Test Trade-offs |
 
 ### Coverage gaps in this track
@@ -1097,7 +1073,7 @@ the audit credits the question to. `Tag-suggested` = where tag-routing would pla
 | 13022 | hard | `period-over-period-analysis` | `period-over-period` | `period-over-period` |  | User segments with priority-based decision logic |
 | 13023 | hard | _orphan_ | — | `top-n-and-ranking` |  | Completed orders contradicted by payment evidence |
 | 13024 | hard | `joins-and-filtering` | `joins` | `top-n-and-ranking` | ⚠️ | Top 2 products per category without window functions |
-| 13025 | hard | `funnel-and-events` | `funnel-and-event-analysis` | `funnel-and-event-analysis` |  | Users with a timed view-to-cart-to-purchase chain |
+| 13025 | hard | `funnel-and-events` | `funnel-and-event-analysis` | `funnel-and-event-analysis` |  | Users with a slow-burn view-to-cart-to-purchase chain |
 | 13026 | hard | `period-over-period-analysis` | `period-over-period` | `period-over-period` |  | Session-based attribution with conflicting signals |
 | 13027 | hard | `funnel-and-events` | `funnel-and-event-analysis` | `funnel-and-event-analysis` |  | Session engagement score |
 | 13028 | hard | `window-functions-mastery` | `window-functions` | `window-functions` |  | ROWS vs RANGE: running total divergence |
@@ -1171,6 +1147,7 @@ the audit credits the question to. `Tag-suggested` = where tag-routing would pla
 | 22048 | medium | _orphan_ | — | `streaming-and-online` |  | Event Stream Deduplication |
 | 22049 | medium | _orphan_ | — | `data-pipeline-scripting` |  | Merge Two Sorted Event Streams |
 | 22050 | medium | `heap-and-priority` | `heap-and-priority` | `heap-and-priority` |  | Smallest Covering Maintenance Window |
+| 22051 | medium | _orphan_ | — | `streaming-and-online` |  | Real-Time 3-D Zone Breach Detector |
 | 23001 | hard | _orphan_ | — | `arrays-and-hashing` |  | Merge Intervals |
 | 23002 | hard | `sliding-window-patterns` | `sliding-window` | `sliding-window` |  | Minimum Log Span Covering Required Events |
 | 23004 | hard | `dynamic-programming` | `dynamic-programming` | `dynamic-programming` |  | ETL Field Tokenizer |
@@ -1188,6 +1165,7 @@ the audit credits the question to. `Tag-suggested` = where tag-routing would pla
 | 23034 | hard | `graph-and-tree-patterns` | `graph-traversal` | `graph-traversal` |  | Critical Path in Data Pipeline |
 | 23035 | hard | `heap-and-priority` | `heap-and-priority` | `heap-and-priority` |  | Minimum Parallel Workers for Job Schedule |
 | 23036 | hard | `graph-and-tree-patterns` | `graph-traversal` | `graph-traversal` |  | Valid Column Report Orderings |
+| 23037 | hard | _orphan_ | — | `graph-traversal` |  | Largest 3-D Voxel Region (6-Neighbor BFS) |
 
 ### python-data
 
@@ -1276,15 +1254,16 @@ the audit credits the question to. `Tag-suggested` = where tag-routing would pla
 | 33013 | hard | `time-series-analysis` | `time-series-pandas` | `groupby` | ⚠️ | Revenue Anomaly Detection (IQR) |
 | 33014 | hard | `data-cleaning` | `data-cleaning` | `data-cleaning` |  | Product Affinity Pairs |
 | 33015 | hard | `time-series-analysis` | `time-series-pandas` | `window-and-rolling` | ⚠️ | Forecast Next Month Revenue |
-| 33016 | hard | _orphan_ | — | `data-cleaning` |  | Employee Tenure Calculation |
+| 33016 | hard | `data-cleaning` | `data-cleaning` | `data-cleaning` |  | Employee Tenure Calculation |
 | 33017 | hard | `customer-analytics` | `customer-analytics` | `groupby` | ⚠️ | Churn Proxy — Users Inactive 90 Days |
 | 33018 | hard | `time-series-analysis` | `time-series-pandas` | `time-series-pandas` |  | Session-to-Order Attribution Rate |
 | 33019 | hard | `reshaping-and-pivoting` | `reshape-and-pivot` | `reshape-and-pivot` |  | Geographic Revenue Heatmap |
 | 33020 | hard | `customer-analytics` | `customer-analytics` | `data-cleaning` | ⚠️ | Customer RFM Segmentation |
 | 33021 | hard | `dataframe-fundamentals` | `dataframe-basics` | `dataframe-basics` |  | Memory optimization with dtype conversion |
 | 33022 | hard | `reshaping-and-pivoting` | `reshape-and-pivot` | `reshape-and-pivot` |  | MultiIndex salary analysis |
-| 33023 | hard | _orphan_ | — | `data-cleaning` |  | Funnel conversion analysis from events |
-| 33038 | hard | _orphan_ | — | `data-cleaning` |  | Discount Classification Performance |
+| 33023 | hard | `data-cleaning` | `data-cleaning` | `data-cleaning` |  | Funnel conversion analysis from events |
+| 33038 | hard | `data-cleaning` | `data-cleaning` | `data-cleaning` |  | Discount Classification Performance |
+| 33088 | hard | _orphan_ | — | `reshape-and-pivot` |  | Acquisition Channel Refund Cascade Detector |
 
 ### pyspark
 
@@ -1321,9 +1300,9 @@ the audit credits the question to. `Tag-suggested` = where tag-routing would pla
 | 41029 | easy | `spark-fault-tolerance-and-recovery` | `spark-fault-tolerance-and-recovery` | `spark-execution-model-and-dag` | ⚠️ | Why Use checkpoint()? |
 | 41030 | easy | `spark-io-and-file-formats` | `spark-io-and-file-formats` | `spark-schema-and-type-handling` | ⚠️ | inferSchema Performance Cost |
 | 41031 | easy | `spark-schema-and-type-handling` | `spark-schema-and-type-handling` | `spark-schema-and-type-handling` |  | Predict output: auto-named arithmetic column |
-| 41032 | easy | _orphan_ | — | `spark-memory-and-driver-executor` |  | Debug: Python len() on a DataFrame |
+| 41032 | easy | `spark-memory-and-driver-executor` | `spark-memory-and-driver-executor` | `spark-memory-and-driver-executor` |  | Debug: Python len() on a DataFrame |
 | 41033 | easy | _orphan_ | — | `spark-performance` |  | Predict output: count vs countDistinct |
-| 41034 | easy | _orphan_ | — | `spark-memory-and-driver-executor` |  | Debug: collect() on a large DataFrame |
+| 41034 | easy | `spark-memory-and-driver-executor` | `spark-memory-and-driver-executor` | `spark-memory-and-driver-executor` |  | Debug: collect() on a large DataFrame |
 | 41035 | easy | _orphan_ | — | `spark-performance` |  | Debug: UDF return type mismatch |
 | 41036 | easy | `spark-memory-and-driver-executor` | `spark-memory-and-driver-executor` | `spark-execution-model-and-dag` | ⚠️ | Predict output: when cache() materializes |
 | 41037 | easy | `query-optimization` | `query-optimization` | `query-optimization` |  | Catalyst optimizer: predicate pushdown |
@@ -1339,7 +1318,7 @@ the audit credits the question to. `Tag-suggested` = where tag-routing would pla
 | 42007 | medium | `pyspark-windowing` | `pyspark-windowing` | `pyspark-windowing` |  | RANK vs DENSE_RANK vs ROW_NUMBER |
 | 42008 | medium | `spark-joins-and-skew` | `spark-joins-and-skew` | `spark-joins-and-skew` |  | Broadcast Variable vs Accumulator |
 | 42009 | medium | `spark-io-and-file-formats` | `spark-io-and-file-formats` | `spark-schema-and-type-handling` | ⚠️ | inferSchema in Production Pipelines |
-| 42010 | medium | _orphan_ | — | `spark-memory-and-driver-executor` |  | Kryo vs Java Serialization |
+| 42010 | medium | `spark-memory-and-driver-executor` | `spark-memory-and-driver-executor` | `spark-memory-and-driver-executor` |  | Kryo vs Java Serialization |
 | 42011 | medium | `spark-joins-and-skew` | `spark-joins-and-skew` | `spark-joins-and-skew` |  | Salting for Skewed Joins |
 | 42012 | medium | `delta-lake-patterns` | `delta-lake` | `spark-performance` | ⚠️ | Writing Partitioned Parquet Output |
 | 42013 | medium | `query-optimization` | `query-optimization` | `query-optimization` |  | AQE Auto-Broadcast Join Threshold |
@@ -1376,7 +1355,7 @@ the audit credits the question to. `Tag-suggested` = where tag-routing would pla
 | 42055 | medium | `pyspark-windowing` | `pyspark-windowing` | `pyspark-windowing` |  | RANK vs DENSE_RANK vs ROW_NUMBER with Salary Ties |
 | 42056 | medium | `spark-collections-and-arrays` | `spark-collections-and-arrays` | `spark-collections-and-arrays` |  | collect_list: Is the Element Order Deterministic? |
 | 43001 | hard | `spark-performance` | `spark-performance` | `spark-joins-and-skew` | ⚠️ | Skewed Join Optimization with Salting |
-| 43002 | hard | _orphan_ | — | `spark-memory-and-driver-executor` |  | executor.memory vs memoryOverhead for Pandas UDFs |
+| 43002 | hard | `spark-memory-and-driver-executor` | `spark-memory-and-driver-executor` | `spark-memory-and-driver-executor` |  | executor.memory vs memoryOverhead for Pandas UDFs |
 | 43003 | hard | `query-optimization` | `query-optimization` | `spark-performance` | ⚠️ | Dynamic Partition Pruning Activation Requirements |
 | 43004 | hard | `spark-performance` | `spark-performance` | `query-optimization` | ⚠️ | Three AQE Runtime Optimizations |
 | 43005 | hard | `query-optimization` | `query-optimization` | `query-optimization` |  | Identify the Bottleneck in an Explain Plan |
@@ -1387,7 +1366,7 @@ the audit credits the question to. `Tag-suggested` = where tag-routing would pla
 | 43010 | hard | `spark-fault-tolerance-and-recovery` | `spark-fault-tolerance-and-recovery` | `spark-execution-model-and-dag` | ⚠️ | Checkpoint vs Cache for Iterative ML Training |
 | 43011 | hard | `spark-memory-and-driver-executor` | `spark-memory-and-driver-executor` | `spark-execution-model-and-dag` | ⚠️ | Tungsten Off-Heap Binary Format |
 | 43012 | hard | `delta-lake-patterns` | `delta-lake` | `delta-lake` |  | Z-Ordering in Delta Lake |
-| 43013 | hard | _orphan_ | — | `spark-memory-and-driver-executor` |  | Bloom Filters for High-Cardinality Joins |
+| 43013 | hard | `spark-memory-and-driver-executor` | `spark-memory-and-driver-executor` | `spark-memory-and-driver-executor` |  | Bloom Filters for High-Cardinality Joins |
 | 43014 | hard | `query-optimization` | `query-optimization` | `query-optimization` |  | AQE Partition Coalescing: Predicting Output Count |
 | 43015 | hard | `streaming-fundamentals` | `streaming` | `streaming` |  | Stream–Stream Join Watermarks and Late Data |
 | 43016 | hard | `streaming-fundamentals` | `streaming` | `streaming` |  | mapGroupsWithState Memory Leak |
@@ -1410,7 +1389,7 @@ the audit credits the question to. `Tag-suggested` = where tag-routing would pla
 | 43043 | hard | `streaming-fundamentals` | `streaming` | `streaming` |  | Streaming Windows Always Emitted One Full Trigger Cycle Late |
 | 43044 | hard | `delta-lake-patterns` | `delta-lake` | `delta-lake` |  | Delta MERGE Fails on Large Batch After Consumer Offset Reset |
 | 43045 | hard | `delta-lake-patterns` | `delta-lake` | `delta-lake` |  | MERGE Scans 798 of 800 Files After 30 Days of Good Pruning |
-| 43046 | hard | _orphan_ | — | `spark-memory-and-driver-executor` |  | 9× Slowdown After Halving Executor Memory Despite Identical Total RAM |
+| 43046 | hard | `spark-memory-and-driver-executor` | `spark-memory-and-driver-executor` | `spark-memory-and-driver-executor` |  | 9× Slowdown After Halving Executor Memory Despite Identical Total RAM |
 | 43047 | hard | `spark-joins-and-skew` | `spark-joins-and-skew` | `spark-joins-and-skew` |  | Many-to-Many Join Fan-Out: Row Count and OOM Risk |
 | 43048 | hard | `pyspark-windowing` | `pyspark-windowing` | `pyspark-windowing` |  | rangeBetween with Numeric Interval: Which Rows Enter the Frame? |
 | 43049 | hard | `spark-collections-and-arrays` | `spark-collections-and-arrays` | `spark-collections-and-arrays` |  | pivot() Missing Values: Null Propagation Through Arithmetic |
@@ -1645,9 +1624,9 @@ the audit credits the question to. `Tag-suggested` = where tag-routing would pla
 | 72008 | medium | `hypothesis-testing` | `hypothesis-testing` | `errors-and-power` | ⚠️ | Statistical Power |
 | 72009 | medium | `hypothesis-testing` | `hypothesis-testing` | `hypothesis-testing` |  | One-Sample Z-Test Statistic |
 | 72010 | medium | `hypothesis-testing` | `hypothesis-testing` | `distributions` | ⚠️ | When to Use t vs z Distribution |
-| 72011 | medium | _orphan_ | — | `regression-and-correlation` |  | Pearson Correlation Coefficient |
-| 72012 | medium | _orphan_ | — | `regression-and-correlation` |  | Correlation vs Causation |
-| 72013 | medium | _orphan_ | — | `regression-and-correlation` |  | A/B Test — Identifying the Correct Setup |
+| 72011 | medium | `applied-stats` | `regression-and-correlation` | `regression-and-correlation` |  | Pearson Correlation Coefficient |
+| 72012 | medium | `applied-stats` | `regression-and-correlation` | `regression-and-correlation` |  | Correlation vs Causation |
+| 72013 | medium | `applied-stats` | `regression-and-correlation` | `regression-and-correlation` |  | A/B Test — Identifying the Correct Setup |
 | 72014 | medium | `hypothesis-testing` | `hypothesis-testing` | `hypothesis-testing` |  | Minimum Sample Size for A/B Test |
 | 72015 | medium | `sampling-and-clt` | `sampling-and-clt` | `sampling-and-clt` |  | Law of Large Numbers |
 | 72016 | medium | `distributions` | `distributions` | `distributions` |  | Poisson Probability |
@@ -1657,7 +1636,7 @@ the audit credits the question to. `Tag-suggested` = where tag-routing would pla
 | 72020 | medium | `distributions` | `distributions` | `distributions` |  | Poisson Expected Value and Variance |
 | 72021 | medium | `distributions` | `distributions` | `distributions` |  | Binomial Mean and Standard Deviation |
 | 72022 | medium | `sampling-and-clt` | `sampling-and-clt` | `sampling-and-clt` |  | Sampling Distribution of Proportion |
-| 72023 | medium | _orphan_ | — | `regression-and-correlation` |  | Effect of Outlier on Correlation |
+| 72023 | medium | `applied-stats` | `regression-and-correlation` | `regression-and-correlation` |  | Effect of Outlier on Correlation |
 | 72024 | medium | `errors-and-power` | `errors-and-power` | `errors-and-power` |  | Multiple Testing Problem |
 | 72025 | medium | `errors-and-power` | `errors-and-power` | `errors-and-power` |  | Bonferroni Correction |
 | 72026 | medium | `distributions` | `distributions` | `distributions` |  | Expected Number of Events (Poisson) |
@@ -1679,13 +1658,13 @@ the audit credits the question to. `Tag-suggested` = where tag-routing would pla
 | 72042 | medium | `bayesian-reasoning` | `bayesian-reasoning` | `bayesian-reasoning` |  | Beta-Binomial Posterior Mean |
 | 72043 | medium | _orphan_ | — | `survival-analysis` |  | Kaplan-Meier: What Censored Observations Tell Us |
 | 73001 | hard | `bayesian-reasoning` | `bayesian-reasoning` | `bayesian-reasoning` |  | Bayesian Posterior Calculation |
-| 73002 | hard | _orphan_ | — | `regression-and-correlation` |  | Simpson's Paradox |
+| 73002 | hard | `applied-stats` | `regression-and-correlation` | `regression-and-correlation` |  | Simpson's Paradox |
 | 73003 | hard | `confidence-intervals` | `confidence-intervals` | `confidence-intervals` |  | Maximum Likelihood Estimation — Bernoulli |
 | 73004 | hard | `confidence-intervals` | `confidence-intervals` | `confidence-intervals` |  | Bootstrap Confidence Interval Logic |
 | 73005 | hard | `confidence-intervals` | `confidence-intervals` | `confidence-intervals` |  | Bootstrap Percentile CI |
-| 73006 | hard | _orphan_ | — | `regression-and-correlation` |  | R-Squared Interpretation |
-| 73007 | hard | _orphan_ | — | `regression-and-correlation` |  | Computing R-Squared |
-| 73008 | hard | _orphan_ | — | `regression-and-correlation` |  | Bias-Variance Tradeoff |
+| 73006 | hard | `applied-stats` | `regression-and-correlation` | `regression-and-correlation` |  | R-Squared Interpretation |
+| 73007 | hard | `applied-stats` | `regression-and-correlation` | `regression-and-correlation` |  | Computing R-Squared |
+| 73008 | hard | `applied-stats` | `regression-and-correlation` | `regression-and-correlation` |  | Bias-Variance Tradeoff |
 | 73009 | hard | `distributions` | `distributions` | `distributions` |  | Chi-Squared Test Statistic |
 | 73010 | hard | `errors-and-power` | `errors-and-power` | `errors-and-power` |  | Multiple Comparisons — FWER |
 | 73011 | hard | `errors-and-power` | `errors-and-power` | `errors-and-power` |  | Power Analysis — Effect Size |
@@ -1695,14 +1674,14 @@ the audit credits the question to. `Tag-suggested` = where tag-routing would pla
 | 73015 | hard | _orphan_ | — | `survival-analysis` |  | Kaplan-Meier Survival Probability |
 | 73016 | hard | `confidence-intervals` | `confidence-intervals` | `confidence-intervals` |  | Method of Moments for Normal Distribution |
 | 73017 | hard | _orphan_ | — | `variance-and-anova` |  | ANOVA F-Statistic |
-| 73018 | hard | _orphan_ | — | `regression-and-correlation` |  | Regression — Bias-Variance Decomposition |
+| 73018 | hard | `applied-stats` | `regression-and-correlation` | `regression-and-correlation` |  | Regression — Bias-Variance Decomposition |
 | 73019 | hard | `distributions` | `distributions` | `distributions` |  | Chi-Squared Test of Independence |
 | 73020 | hard | `bayesian-reasoning` | `bayesian-reasoning` | `bayesian-reasoning` |  | Posterior Update with Conjugate Prior |
 | 73021 | hard | `bayesian-reasoning` | `bayesian-reasoning` | `bayesian-reasoning` |  | Posterior Mean Computation |
 | 73022 | hard | `errors-and-power` | `errors-and-power` | `errors-and-power` |  | Bonferroni Correction Power Loss |
 | 73023 | hard | _orphan_ | — | `variance-and-anova` |  | Variance of a Linear Combination |
 | 73024 | hard | `confidence-intervals` | `confidence-intervals` | `confidence-intervals` |  | Bootstrap vs Parametric CI Tradeoffs |
-| 73027 | hard | _orphan_ | — | `regression-and-correlation` |  | MCAR, MAR, and MNAR Missingness Mechanisms |
+| 73027 | hard | `applied-stats` | `regression-and-correlation` | `regression-and-correlation` |  | MCAR, MAR, and MNAR Missingness Mechanisms |
 | 73034 | hard | `hypothesis-testing` | `hypothesis-testing` | `hypothesis-testing` |  | CUPED: Mechanism Behind Variance Reduction |
 
 ### ml-fundamentals
@@ -1821,22 +1800,22 @@ the audit credits the question to. `Tag-suggested` = where tag-routing would pla
 | 91005 | easy | _orphan_ | — | `ab-test-mechanics` |  | Type I Error in Practice |
 | 91006 | easy | _orphan_ | — | `ab-test-mechanics` |  | Type II Error and Underpowered Tests |
 | 91007 | easy | `experimentation-starter` | `ab-test-mechanics` | `power-and-sample-size` | ⚠️ | Statistical Power Definition |
-| 91008 | easy | _orphan_ | — | `power-and-sample-size` |  | Factors That Increase Required Sample Size |
+| 91008 | easy | `experiment-design-and-power` | `power-and-sample-size` | `power-and-sample-size` |  | Factors That Increase Required Sample Size |
 | 91009 | easy | _orphan_ | — | `ab-test-mechanics` |  | Interpreting a Confidence Interval |
 | 91010 | easy | `experimentation-starter` | `ab-test-mechanics` | `ab-test-mechanics` |  | One-Sided vs Two-Sided Tests |
 | 91011 | easy | _orphan_ | — | `ab-test-mechanics` |  | The Role of a Control Group |
 | 91012 | easy | `experimentation-starter` | `ab-test-mechanics` | `ab-test-mechanics` |  | Unexpected Traffic Imbalance at Experiment Start |
-| 91013 | easy | _orphan_ | — | `power-and-sample-size` |  | Peeking at Results Early |
+| 91013 | easy | `experiment-design-and-power` | `power-and-sample-size` | `power-and-sample-size` |  | Peeking at Results Early |
 | 91014 | easy | `experimentation-starter` | `metric-selection` | `metric-selection` |  | Guardrail Metrics |
 | 91015 | easy | `experimentation-starter` | `metric-selection` | `metric-selection` |  | Selecting a Sensitive Metric |
 | 91016 | easy | _orphan_ | — | `ab-test-mechanics` |  | Confidence Interval and Practical Significance |
-| 91017 | easy | _orphan_ | — | `power-and-sample-size` |  | Experiment Duration and Day-of-Week Effects |
+| 91017 | easy | `experiment-design-and-power` | `power-and-sample-size` | `power-and-sample-size` |  | Experiment Duration and Day-of-Week Effects |
 | 91018 | easy | `experimentation-starter` | `ab-test-mechanics` | `ab-test-mechanics` |  | A/A Test Purpose |
-| 91019 | easy | _orphan_ | — | `power-and-sample-size` |  | Increasing Power Without More Users |
+| 91019 | easy | `experiment-design-and-power` | `power-and-sample-size` | `power-and-sample-size` |  | Increasing Power Without More Users |
 | 91020 | easy | `experimentation-starter` | `metric-selection` | `metric-selection` |  | Logging at the Step Level in a Checkout Experiment |
 | 91021 | easy | _orphan_ | — | `ab-test-mechanics` |  | Feature Only Visible to a Subset of Assigned Users |
 | 91022 | easy | `experiment-design-and-power` | `power-and-sample-size` | `ab-test-mechanics` | ⚠️ | Carryover Effects When Starting a Follow-On Experiment |
-| 91023 | easy | _orphan_ | — | `power-and-sample-size` |  | Defining the Minimum Detectable Effect |
+| 91023 | easy | `experiment-design-and-power` | `power-and-sample-size` | `power-and-sample-size` |  | Defining the Minimum Detectable Effect |
 | 91024 | easy | `experiment-design-and-power` | `power-and-sample-size` | `power-and-sample-size` |  | High-Variance Metric and Required Sample Size |
 | 91025 | easy | _orphan_ | — | `ab-test-mechanics` |  | Predicting CI Width After Quadrupling Sample Size |
 | 91026 | easy | `experiment-design-and-power` | `power-and-sample-size` | `ab-test-mechanics` | ⚠️ | Interpreting a Non-Significant Result |
@@ -1852,7 +1831,7 @@ the audit credits the question to. `Tag-suggested` = where tag-routing would pla
 | 92006 | medium | `behavioral-effects-and-interference` | `behavioral-effects-and-interference` | `behavioral-effects-and-interference` |  | Network Effects and Interference |
 | 92007 | medium | `experiment-design-and-power` | `power-and-sample-size` | `variance-reduction` | ⚠️ | Variance Reduction with Pre-experiment Covariates |
 | 92008 | medium | `subgroup-analysis-and-hte` | `subgroup-and-hte` | `subgroup-and-hte` |  | Segmentation Analysis and Simpson's Paradox |
-| 92009 | medium | _orphan_ | — | `power-and-sample-size` |  | Experiment Duration and Weekly Seasonality |
+| 92009 | medium | `experiment-design-and-power` | `power-and-sample-size` | `power-and-sample-size` |  | Experiment Duration and Weekly Seasonality |
 | 92010 | medium | `experiment-design-and-power` | `power-and-sample-size` | `experiment-platform-design` | ⚠️ | Sample Ratio Mismatch from Logging Bug |
 | 92011 | medium | `subgroup-analysis-and-hte` | `subgroup-and-hte` | `subgroup-and-hte` |  | Type I Error and Repeated Peeking |
 | 92012 | medium | `behavioral-effects-and-interference` | `behavioral-effects-and-interference` | `behavioral-effects-and-interference` |  | Network Effects in Social Features |
@@ -1864,13 +1843,13 @@ the audit credits the question to. `Tag-suggested` = where tag-routing would pla
 | 92018 | medium | `variance-reduction-and-behavioral-effects` | `variance-reduction` | `subgroup-and-hte` | ⚠️ | Multiple Testing with Sequential Feature Rollouts |
 | 92019 | medium | `variance-reduction-and-behavioral-effects` | `variance-reduction` | `variance-reduction` |  | Variance Reduction via Metric Transformation |
 | 92020 | medium | `variance-reduction-and-behavioral-effects` | `variance-reduction` | `behavioral-effects-and-interference` | ⚠️ | Cluster Randomization for Network Features |
-| 92021 | medium | _orphan_ | — | `power-and-sample-size` |  | Minimum Detectable Effect and Business Threshold |
+| 92021 | medium | `experiment-design-and-power` | `power-and-sample-size` | `power-and-sample-size` |  | Minimum Detectable Effect and Business Threshold |
 | 92022 | medium | `variance-reduction-and-behavioral-effects` | `variance-reduction` | `causal-inference` | ⚠️ | Debug: Carryover Bias in Sequential Testing |
 | 92023 | medium | `subgroup-analysis-and-hte` | `subgroup-and-hte` | `subgroup-and-hte` |  | Bayesian Experimentation: Early Stopping |
 | 92024 | medium | `variance-reduction-and-behavioral-effects` | `variance-reduction` | `power-and-sample-size` | ⚠️ | Experiment Duration: Long-Run vs Short-Run Effects |
 | 92025 | medium | `variance-reduction-and-behavioral-effects` | `variance-reduction` | `variance-reduction` |  | Variance Reduction: Stratified Randomization |
 | 92026 | medium | `experimentation-starter` | `metric-selection` | `metric-selection` |  | Guardrail Metrics and Ship Decisions |
-| 92027 | medium | _orphan_ | — | `power-and-sample-size` |  | Power Calculation: Effect of Increasing Variance |
+| 92027 | medium | `experiment-design-and-power` | `power-and-sample-size` | `power-and-sample-size` |  | Power Calculation: Effect of Increasing Variance |
 | 92028 | medium | `causal-inference-and-advanced-experimentation` | `causal-inference` | `causal-inference` |  | Quasi-Experimental Method Selection |
 | 92029 | medium | _orphan_ | — | `sequential-and-bandits` |  | Multi-Armed Bandit vs A/B Test Trade-offs |
 | 92030 | medium | `causal-inference-and-advanced-experimentation` | `causal-inference` | `causal-inference` |  | Interaction Effects in Concurrent Experiments |

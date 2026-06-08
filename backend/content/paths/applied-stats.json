@@ -4,6 +4,10 @@
   "description": "Sharpen your statistical intuition for the judgment calls data roles face every day: recognizing cognitive bias traps in data, designing experiments that avoid confounds, and choosing the right test for the right structure.",
   "topic": "statistics",
   "questions": [
+    72011,
+    72012,
+    72013,
+    72023,
     72034,
     72035,
     72036,
@@ -11,7 +15,13 @@
     72038,
     72039,
     72040,
-    72041
+    72041,
+    73002,
+    73006,
+    73007,
+    73008,
+    73018,
+    73027
   ],
   "tier": "pro",
   "level": "advanced",
