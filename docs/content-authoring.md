@@ -528,7 +528,7 @@ Mock-only add-on bank: **1,102 questions** (Pro/Elite only). Samples: **81 total
 
 **This subsection is the canonical source of truth for learning-path semantics.** Other docs (`CLAUDE.md`, `docs/track-onboarding.md`, `docs/backend.md`, `docs/architecture.md`, `docs/frontend.md`) link here and must not restate the rules below.
 
-86 paths total across 9 tracks. Path files live in `backend/content/paths/`. Per-track pattern registry lives in `backend/path_patterns.py`.
+96 paths total across 9 tracks. Path files live in `backend/content/paths/`. Per-track pattern registry lives in `backend/path_patterns.py`.
 
 #### What a learning path is
 
@@ -614,7 +614,7 @@ Level has no unlock semantics. Levels are used for sort order on TrackHub, the "
 `backend/scripts/validate_content.py::_validate_paths` enforces:
 
 1. **Schema completeness.** All required fields present; slug unique; matches filename.
-2. **Singleton foundational.** Exactly one `level=foundational` per track. No upper bound on `intermediate` or `advanced`.
+2. **At least one foundational (content-driven levels).** A path's `level` reflects what's actually in it — question difficulty, prerequisite position, and concept role — **not** a fixed per-track template. Every track must have **≥1** `foundational` path (the guaranteed entry point, ordered first via `display_order`); there is no upper bound on any level, and the count per level is whatever the content warrants (a track may have 2–3 foundational entry points if it has multiple independent base skills). The validator enforces ≥1 foundational, not exactly one.
 3. **Pattern registry.** Every `patterns[]` entry resolves in `path_patterns.py` for the path's track.
 4. **Focus-concept registry.** Every `focus_concepts[]` entry resolves to a registered family in `concept_families.py` (only enforced for tracks listed in `_TAXONOMY_VALIDATED_TRACKS` in `backend/scripts/validate_content.py` — currently `{sql, python}`; others get a presence-only check). **When a track joins the validated set, the path validator immediately enforces this rule strictly for it** — coordinate the concept-family registry completion + paths re-check in the same PR.
 5. **Question-tag alignment.** Every question in `questions[]` carries at least one concept tag that resolves to the same family as at least one of the path's `focus_concepts[]`. This is the mechanical guarantee that the path drills what it claims.

@@ -201,7 +201,7 @@ Cross-track progress overview. Fetches `GET /api/dashboard`, `GET /api/dashboard
 
 Index of all learning paths. Grouped by track. Topic-filter pills narrow to a single track when `:topic` is present in the URL. Each path shown as a card with title, description, solved count, and a link to the path.
 
-Current catalog footprint shown on this page: **86 paths total** (SQL 10, Python 10, Pandas 8, PySpark 13, Data Engineering 8, Data Modeling 10, Statistics 9, ML Fundamentals 11, Experimentation 7).
+Current catalog footprint shown on this page: **96 paths total** (SQL 11, Python 11, Pandas 9, PySpark 14, Data Engineering 9, Data Modeling 11, Statistics 11, ML Fundamentals 12, Experimentation 8).
 
 - Adds an "In progress" rail above the grouped grids (`1 <= solved_count < question_count`), sorted by completion percentage descending.
 - Empty state upgraded from plain text to CTA card (`/practice/sql`, `/dashboard`).
