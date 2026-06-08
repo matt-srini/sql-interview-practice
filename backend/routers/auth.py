@@ -52,7 +52,7 @@ from db import (
     register_failed_login_attempt,
     update_password,
     upgrade_anonymous_to_registered,
-    verify_password,
+    verify_password_async,
 )
 from deps import clear_session_cookie, get_current_user, get_optional_current_user, set_csrf_cookie, set_session_cookie
 from email_service import email_available, send_magic_link_email, send_password_reset_email, send_verification_email
@@ -335,18 +335,20 @@ async def login(
             return _err("Too many failed sign-in attempts. Please try again in a few minutes.", status=429)
 
     if candidate is None:
-        verify_password(body.password, "0" * 64, "0" * 64)
+        # Burn the same PBKDF2 work even when the account doesn't exist, so response
+        # time can't be used to enumerate accounts. Offloaded like every real verify.
+        await verify_password_async(body.password, "0" * 64, "0" * 64)
         return _err("Invalid email or password.", status=401)
 
     if not candidate["pwd_hash"] or not candidate["pwd_salt"]:
         # Account exists but was created via OAuth — no password set
-        verify_password(body.password, "0" * 64, "0" * 64)
+        await verify_password_async(body.password, "0" * 64, "0" * 64)
         return _err(
             "This account uses Google or GitHub sign-in. Sign in that way, or use 'Forgot password' to set a password.",
             status=401,
         )
 
-    if not verify_password(body.password, candidate["pwd_hash"], candidate["pwd_salt"]):
+    if not await verify_password_async(body.password, candidate["pwd_hash"], candidate["pwd_salt"]):
         await register_failed_login_attempt(
             candidate["id"],
             current_failed_attempts=int(candidate.get("failed_login_attempts") or 0),

@@ -35,6 +35,12 @@ Keep entries to 4–6 lines. Friction kills logs; if it's longer than the change
 
 ## Entries
 
+## 2026-06-08 — Off-loop password hashing under a separate cap (concurrency P2.1)
+**Area:** architecture · ops · **Status:** accepted
+**Decision:** PBKDF2 (260k iterations, ~22 ms/call) was the last blocking-CPU call left on the single event loop. Auth paths now hash off the loop via `offload.run_blocking_hash` (`db.hash_password` / `db.verify_password_async`), under a **separate** `MAX_CONCURRENT_HASHES` semaphore (default cores − 1). Sync `_hash_password`/`verify_password` stay the implementation (still used by scripts/seeding); register/login/reset-password call the async wrappers. Iteration count unchanged. Guarded by `tests/test_concurrency_smoke.py` (real-PBKDF2 off-loop + bounding + verify round-trip + caps-are-distinct).
+**Rejected:** (a) **Reuse the code-execution semaphore (`MAX_CONCURRENT_EXECUTIONS`)** — couples two different resource classes (a 22 ms CPU burst vs. a 512 MB subprocess); an auth burst would starve code execution and vice versa. Separate caps keep them isolated. (b) **Plain `asyncio.to_thread` with no cap** — gets it off the loop but lets a burst saturate every core (PBKDF2 releases the GIL), degrading the loop and code execution; the bounded helper mirrors the existing offload discipline. (c) **Lowering the iteration count** — that's a security parameter, not a perf knob; offloading fixes the loop block without weakening the hash.
+**Affects:** backend/offload.py, backend/db.py, backend/routers/auth.py, backend/tests/test_concurrency_smoke.py, docs/backend.md (§ Off-loop password hashing), docs/deployment.md (env table + § Concurrency & scaling model).
+
 ## 2026-06-08 — Per-task git worktrees, merged to main + pushed + deleted (reverses "main only")
 **Area:** process · **Status:** accepted
 **Decision:** Each coding task runs in its **own git worktree** (off `main`), not directly on `main`. When the task is done and committed (one or several distinct logical commits, no squash unless asked): fast-forward local `main` from `origin/main` first, merge **all** the worktree branch's commits into `main`, `git push`, then delete the worktree + its branch. Invariant after every task: `main` ≡ `origin/main`, no lingering worktrees/branches. Trivial meta-changes may still go straight to `main`. The Agent tool `isolation: "worktree"` option is now allowed/encouraged for disjoint parallel slices.

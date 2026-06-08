@@ -238,6 +238,7 @@ The `FRONTEND_DIST_DIR` env var defaults to `/app/frontend/dist` inside the imag
 | `RATE_LIMIT_REQUESTS` | — | Requests per window per IP; default `60` |
 | `RATE_LIMIT_WINDOW_SECONDS` | — | Window size in seconds; default `60` |
 | `MAX_CONCURRENT_EXECUTIONS` | — | Max concurrent code executions (DuckDB SQL + subprocess sandboxes) across the app; default **cores − 2**. Bounds peak sandbox memory (× `RLIMIT_AS` 512 MB) and CPU. Prod sets `6` on the 8-vCPU replica. See `backend/offload.py`. |
+| `MAX_CONCURRENT_HASHES` | — | Max concurrent password hashes (PBKDF2, ~22 ms/call) run off the event loop; default **cores − 1**. Kept **independent** of `MAX_CONCURRENT_EXECUTIONS` (auth hashing vs. sandbox execution are different resource classes). See `backend/offload.py` `run_blocking_hash`. |
 | `DB_POOL_SIZE` | — | Postgres connection pool size per replica; default `10` |
 | `DB_MAX_OVERFLOW` | — | Extra Postgres connections beyond the pool under burst; default `20` (→ 30 max per replica) |
 | `DB_POOL_TIMEOUT` | — | Seconds a request waits for a free DB connection before failing fast; default `10` |
@@ -357,7 +358,7 @@ For Dockerfile-based services on Railway, the application must listen on Railway
 
 ## Concurrency & scaling model
 
-The app serves all traffic on a **single event loop per replica** (`uvicorn main:app`, one worker). Code execution is blocking (DuckDB SQL grading; a 5–12 s subprocess sandbox), so it runs **off the loop** via `backend/offload.py` (subprocess sandboxes concurrent up to `MAX_CONCURRENT_EXECUTIONS`; DuckDB serialized behind a process-wide lock — see `docs/backend.md` § Off-loop code execution). Reproduce/measure with `backend/loadtest/` (driver + head-of-line probe; README documents usage).
+The app serves all traffic on a **single event loop per replica** (`uvicorn main:app`, one worker). Code execution is blocking (DuckDB SQL grading; a 5–12 s subprocess sandbox), so it runs **off the loop** via `backend/offload.py` (subprocess sandboxes concurrent up to `MAX_CONCURRENT_EXECUTIONS`; DuckDB serialized behind a process-wide lock — see `docs/backend.md` § Off-loop code execution). **Password hashing** (PBKDF2, ~22 ms/call) is the other blocking-CPU call on the request path and is offloaded the same way under its own `MAX_CONCURRENT_HASHES` cap (see `docs/backend.md` § Off-loop password hashing). Reproduce/measure with `backend/loadtest/` (driver + head-of-line probe; README documents usage).
 
 **Per-replica connection budget.** Each replica opens up to `DB_POOL_SIZE + DB_MAX_OVERFLOW` (default 30) Postgres connections. Keep `replicas × 30` comfortably below the managed-Postgres `max_connections` (Railway's default is ~100–400 depending on plan). Beyond that, put PgBouncer (transaction pooling) in front of Postgres.
 

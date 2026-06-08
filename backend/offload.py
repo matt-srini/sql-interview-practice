@@ -32,6 +32,7 @@ grader (see docs/decisions/DECISIONS.md).
 from __future__ import annotations
 
 import asyncio
+import os
 from typing import Any, Callable, TypeVar
 
 T = TypeVar("T")
@@ -40,6 +41,28 @@ T = TypeVar("T")
 # import time bind to the running loop lazily on first await (Python ≥3.10); the app
 # runs one worker == one loop, so this is safe.
 _sql_lock = asyncio.Lock()
+
+
+def _hash_concurrency() -> int:
+    # PBKDF2 is CPU-bound and releases the GIL, so the natural ceiling is roughly the
+    # core count; leave one core for the event loop itself. Override with
+    # MAX_CONCURRENT_HASHES (kept independent of MAX_CONCURRENT_EXECUTIONS on purpose).
+    default = max(2, (os.cpu_count() or 4) - 1)
+    raw = os.environ.get("MAX_CONCURRENT_HASHES")
+    if raw is None:
+        return default
+    try:
+        return max(1, int(raw))
+    except ValueError:
+        return default
+
+
+# Bounds concurrent password hashing. Auth hashing (``run_blocking_hash``) and sandbox
+# code execution (``run_blocking_exec``) are different resource classes — a small CPU
+# burst vs. a heavy 512 MB subprocess — so they get SEPARATE caps and never contend
+# for each other's slots (an auth burst must not starve code execution, or vice
+# versa). Same lazy loop-binding as ``_sql_lock`` above.
+_hash_semaphore = asyncio.Semaphore(_hash_concurrency())
 
 
 def _execution_semaphore() -> asyncio.Semaphore:
@@ -70,3 +93,19 @@ async def run_blocking_sql(fn: Callable[..., T], *args: Any, **kwargs: Any) -> T
     async with _sql_lock:
         async with _execution_semaphore():
             return await asyncio.to_thread(fn, *args, **kwargs)
+
+
+async def run_blocking_hash(fn: Callable[..., T], *args: Any, **kwargs: Any) -> T:
+    """Run a blocking password hash/verify (PBKDF2) off the loop, under the hash cap.
+
+    PBKDF2 with 260k iterations is ~22 ms of CPU per call and runs *synchronously*
+    inside ``hashlib.pbkdf2_hmac``. Called directly from an ``async def`` auth endpoint
+    it blocks the single event loop for that whole 22 ms — under an auth burst the
+    calls serialize on the loop (e.g. 100 concurrent logins ≈ 2.2 s of loop block,
+    stalling every unrelated request). Offloading to a worker thread keeps the loop
+    free (``pbkdf2_hmac`` releases the GIL, so threads run truly parallel across cores);
+    ``_hash_semaphore`` bounds how many of those CPU burns run at once. Use this for
+    ``db.hash_password`` / ``db.verify_password_async``.
+    """
+    async with _hash_semaphore:
+        return await asyncio.to_thread(fn, *args, **kwargs)
