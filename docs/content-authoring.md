@@ -431,7 +431,7 @@ Mock-only inventory must support a power user who completes most of practice and
 | SQL | 118 | 165 | **1.40×** | executable analytics |
 | Python | 79 | 103 | **1.30×** | executable algorithms |
 | Pandas | 92 | 114 | **1.24×** | executable analytics |
-| PySpark | 128 | 150 | **1.17×** | code-adjacent reasoning (MCQ) |
+| PySpark | 127 | 150 | **1.18×** | code-adjacent reasoning (MCQ) |
 | Data Engineering | 91 | 110 | **1.21×** | constructed reasoning (MCQ) |
 | Data Modeling | 81 | 97 | **1.20×** | constructed reasoning (MCQ) |
 | Statistics | 100 | 116 | **1.16×** | hybrid (conceptual MCQ + numerical Python) |
@@ -506,13 +506,13 @@ Practice questions are the full curriculum. Mock-only questions live in the same
 | SQL | 37 | 50 | 31 | **118** | Executable (DuckDB) |
 | Python | 33 | 29 | 17 | **79** | Executable (sandbox) |
 | Pandas | 28 | 40 | 24 | **92** | Executable (sandbox) |
-| PySpark | 41 | 45 | 42 | **128** | Code-adjacent reasoning (MCQ) |
+| PySpark | 40 | 45 | 42 | **127** | Code-adjacent reasoning (MCQ) |
 | Data Engineering | 30 | 35 | 26 | **91** | Constructed reasoning (MCQ) |
 | Data Modeling | 25 | 31 | 25 | **81** | Constructed reasoning (MCQ) |
 | Statistics | 31 | 43 | 26 | **100** | Hybrid (conceptual MCQ + numerical Python) |
 | ML Fundamentals | 30 | 40 | 30 | **100** | Constructed reasoning (MCQ) |
 | Experimentation | 30 | 33 | 24 | **87** | Constructed reasoning (MCQ) |
-| **Total** | | | | **876** | |
+| **Total** | | | | **875** | |
 
 Mock-only add-on bank: **1,102 questions** (Pro/Elite only). Samples: **81 total** (9 per track × 9 tracks, dedicated content separate from practice and mock pools).
 

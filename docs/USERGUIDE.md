@@ -5,7 +5,7 @@
 ## Modes
 
 ### Practice mode (`/practice/:topic`)
-The main curriculum. Practice is the full bank: 876 questions across SQL, Python, Pandas, PySpark, Data Engineering, Data Modeling, Statistics, ML Fundamentals, and Experimentation. Progress and unlocks are tracked independently per topic.
+The main curriculum. Practice is the full bank: 875 questions across SQL, Python, Pandas, PySpark, Data Engineering, Data Modeling, Statistics, ML Fundamentals, and Experimentation. Progress and unlocks are tracked independently per topic.
 
 ### Sample mode (`/sample`)
 Low-stakes trial mode. No login required and no effect on practice progress. The Sample Hub at `/sample` is the entry point — pick any of the 9 tracks and any difficulty (Easy / Medium / Hard) from a single grid. Every track has 3 questions per difficulty (81 total) that are completely separate from the practice and mock banks. Once inside a sample (`/sample/:topic/:difficulty`), an in-page switcher lets you pivot to a different track or difficulty without going back to the Hub. Logged-in users see which (track, difficulty) cells they've already tried.

@@ -51,7 +51,7 @@ Interview performance follows from reasoning quality. Build for the practitioner
 
 - Active tracks: SQL, Python, Pandas, PySpark, Data Engineering, Data Modeling, Statistics, ML Fundamentals, Experimentation
 - Hiring roles surfaced on landing: Data Analyst, Data Engineer, Analytics Engineer, Data Scientist
-- Practice bank: 876 questions
+- Practice bank: 875 questions
 - Mock-only bank: 1,102 questions
 - Practice is the full curriculum; mock-only content is supplemental benchmark inventory
 

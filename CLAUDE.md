@@ -15,7 +15,7 @@ When working in this codebase, think simultaneously from multiple vantage points
 
 - **User-behaviour expert** — Users are under pressure (job search, timed practice). Friction costs them confidence. Low-friction flows (anonymous-first identity, in-place registration, persistent progress) are intentional product choices, not oversights. When suggesting changes, consider: how does a first-time visitor experience this? How does a returning user with 40 solves experience it? What happens when a user hits a locked question or an empty state?
 
-- **Curriculum designer** — The 876 practice questions have intentional difficulty progressions, real-world datasets with deliberate edge cases, and semantic concept tags. Changes to unlock rules, question ordering, or content must preserve the learning arc. Don't make hard questions trivially accessible or easy questions feel insulting.
+- **Curriculum designer** — The 875 practice questions have intentional difficulty progressions, real-world datasets with deliberate edge cases, and semantic concept tags. Changes to unlock rules, question ordering, or content must preserve the learning arc. Don't make hard questions trivially accessible or easy questions feel insulting.
 
 - **Product-minded operator** — Three subscription tiers (Free / Pro / Elite) are the revenue model. The unlock gates are not arbitrary; they create upgrade motivation without being punitive. Rate limiting, error shapes (`{ error, request_id }`), and idempotent webhooks exist for real operational reasons. Changes to these areas need business-level reasoning, not just technical correctness.
 
@@ -136,7 +136,7 @@ The five-perspective pushback in § Standing instructions reads this section as 
 A data interview practice platform covering nine tracks. Users write SQL or Python, answer conceptual questions, get instant feedback, and work through gated challenge banks.
 
 **Modes per track:**
-- **Challenge mode** — plan-aware unlock rules, persistent progress, 876 practice questions across 9 tracks
+- **Challenge mode** — plan-aware unlock rules, persistent progress, 875 practice questions across 9 tracks
 - **Mock mode** — 793 additional mock-only questions (Pro/Elite), never shown in practice catalog
 - **Sample mode** — 81 sandbox questions across all 9 tracks (3 per track × 3 difficulties), no progress recorded toward the challenge unlock state, no login required. Every track has **dedicated sample questions** completely separate from the practice and mock pools — samples never duplicate practice or mock content. Sample IDs use the compact TXS format (e.g., 211–233 for Python, 711–733 for Statistics); sample files live in `backend/content/sample_questions/`. The Sample Hub at `/sample` is the discovery surface for the entire set; SampleQuestionPage at `/sample/:topic/:difficulty` carries an in-page track + difficulty switcher so users can pivot without returning to the Hub. Logged-in users see per-`(track, difficulty)` attempted/total markers on the Hub, powered by `GET /api/sample/summary` (anonymous visitors see ghost counts — no surveilling pre-signup). **Resume model:** GET is read-only and idempotent — refreshing, navigating away, or closing a tab never advances the user past a question they didn't engage with. A question is only marked attempted when the user **submits** an answer (correct or incorrect both count) or explicitly **skips** via the "Another sample →" button (`POST /api/sample/{topic}/{difficulty}/skip`). The "Reset sample progress" affordance is demoted to a small secondary link on the exhausted state — it remains because the only way to redo a finished set as if fresh is to wipe the attempted markers.
 
@@ -144,7 +144,7 @@ A data interview practice platform covering nine tracks. Users write SQL or Pyth
 - **SQL** — 118 practice (37 easy / 50 medium / 31 hard) + 165 mock-only, DuckDB execution, realistic relational datasets
 - **Python** — 79 practice (33 easy / 29 medium / 17 hard) + 103 mock-only, data-professional algorithms (sessionization, hash join, DAG cycle detection, critical path, rate limiting, edit distance, streaming anomaly detection), test-case evaluation
 - **Pandas** — 92 practice (28 easy / 40 medium / 24 hard) + 114 mock-only, pandas-specific data manipulation, DataFrame comparison
-- **PySpark** — 128 practice (41 easy / 45 medium / 42 hard) + 150 mock-only, conceptual / predict_output / debug / scenario / optimization (MCQ response), no code execution
+- **PySpark** — 127 practice (40 easy / 45 medium / 42 hard) + 150 mock-only, conceptual / predict_output / debug / scenario / optimization (MCQ response), no code execution
 - **Data Engineering** — 91 practice (30 easy / 35 medium / 26 hard) + 110 mock-only (0 easy / 34 medium / 76 hard), conceptual / scenario / debug (MCQ response), no code execution; `eval_kind="mcq"`, `unlock_profile="mcq"`, `in_mixed_mock=false`
 - **Data Modeling** — 81 practice (25 easy / 31 medium / 25 hard) + 97 mock-only, conceptual / scenario / debug (MCQ response), no code execution; `eval_kind="mcq"`, `unlock_profile="mcq"`, `in_mixed_mock=false`
 - **Statistics** — 100 practice (31 easy / 43 medium / 26 hard) + 116 mock-only (0 easy / 66 medium / 50 hard), **dual-subtype**: each question is either `conceptual` (MCQ response) or `numerical` (Python code execution); `eval_kind="mixed"`, `unlock_profile="code"`, `mixed_subtype=true`, `in_mixed_mock=false`
@@ -177,7 +177,7 @@ Mock-only questions (`mock_only: true`) live in the same JSON files as practice 
 | SQL | 37 + 0 | 50 + 62 | 31 + 103 | SQL query via DuckDB | `backend/content/questions/` |
 | Python | 33 + 0 | 29 + 50 | 17 + 53 | Algorithm function, test cases | `backend/content/python_questions/` |
 | Pandas | 28 + 0 | 40 + 51 | 24 + 63 | DataFrame function, output comparison | `backend/content/python_data_questions/` |
-| PySpark | 41 + 0 | 45 + 75 | 42 + 75 | conceptual / predict_output / debug / scenario / optimization (MCQ) | `backend/content/pyspark_questions/` |
+| PySpark | 40 + 0 | 45 + 75 | 42 + 75 | conceptual / predict_output / debug / scenario / optimization (MCQ) | `backend/content/pyspark_questions/` |
 | Data Engineering | 30 + 0 | 35 + 34 | 26 + 76 | conceptual / scenario / debug (MCQ) | `backend/content/data_engineering_questions/` |
 | Data Modeling | 25 + 0 | 31 + 46 | 25 + 51 | conceptual / scenario / debug (MCQ) | `backend/content/data_modeling_questions/` |
 | Statistics | 31 + 0 | 43 + 66 | 26 + 50 | conceptual (MCQ) + numerical Python | `backend/content/statistics_questions/` |
@@ -186,7 +186,7 @@ Mock-only questions (`mock_only: true`) live in the same JSON files as practice 
 
 †ML Fundamentals hard mock-only: 68 standalone (including 8 chain parents) + 16 chain children from 8 chains.
 
-**Practice totals:** SQL 118 · Python 79 · Pandas 92 · PySpark 128 · Data Engineering 91 · Data Modeling 81 · Statistics 100 · ML Fundamentals 100 · Experimentation 87 = **876 practice questions**  
+**Practice totals:** SQL 118 · Python 79 · Pandas 92 · PySpark 127 · Data Engineering 91 · Data Modeling 81 · Statistics 100 · ML Fundamentals 100 · Experimentation 87 = **875 practice questions**  
 **Mock-only totals:** SQL 165 · Python 103 · Pandas 114 · PySpark 150 · Statistics 116 · ML Fundamentals 143 · Experimentation 104 · Data Modeling 97 · Data Engineering 110 = **1,102 mock-only questions** (Pro/Elite only)
 
 See [docs/content-authoring.md](docs/content-authoring.md) for the full mock-only authoring spec.
