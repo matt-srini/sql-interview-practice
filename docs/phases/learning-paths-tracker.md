@@ -62,203 +62,134 @@ This makes Open Question #1 (does `level` still earn its place once the DAG is h
 
 ---
 
-## Phase 2 — Open work, prioritised
+## Phase 2 — Remaining open work
 
-### A. Schema and naming
+The active items left. Everything else has shipped, is locked as deferred,
+or is out of scope (see "Shipped / closed" section below for the audit trail).
 
-**A1. Rename `path.role` → `path.level` and `starter` → `foundational`**
-Two coupled renames:
-- Field: `role` → `level`. `role` collides with the user-role concept ("Data Analyst", "Data Engineer") used on landing and north-star. `level` is ed-tech standard (Khan, Brilliant, Coursera) and describes the field honestly: where the path sits in the track's pattern arc.
-- First-tier value: `starter` → `foundational`. `starter` is a noun outlier ("a starter for whom?") that quietly implies beginner-only. `foundational` is an adjective describing the *content layer* — useful even for experienced devs verifying their basics. Matches the canonical text in `docs/content-authoring.md §Paths` ("the foundational concept layer of the track").
+### Frontend — DAG-aware UX
 
-Enum becomes `foundational / intermediate / advanced` — all adjectives, consistent grammar.
+The path prerequisite DAG (`recommended_after[]`) is encoded in path JSON
+but only partially honored by the frontend. Display ordering is currently
+driven by `display_order` (cosmetic per-track ordering), not by a true
+topological sort over the DAG.
 
-Scope:
-- Rename field in all 46 path JSON files (`"role": "starter"` → `"level": "foundational"`; also `intermediate` and `advanced` updated to the new key name)
-- `backend/scripts/validate_content.py::_validate_paths` — field name + error messages + singleton-foundational rule
-- `backend/routers/insights.py`: `role_order` → `level_order`; `_build_concept_path_index` sort key
-- `backend/routers/paths.py`: serialised field name in API responses
-- `frontend/src/pages/TrackHubPage.js` (sort key + "Start here" pill renders against `level === 'foundational'`)
-- `frontend/src/pages/LearningPath.js` (Schema.org `educationalLevel` mapping — map `foundational` → "Beginner" for the schema.org vocabulary, since that's their controlled vocabulary)
-- `docs/content-authoring.md §Paths` (the SoT — update enum vocabulary + singleton rule wording)
-- `docs/track-onboarding.md`, `docs/backend.md`, `CLAUDE.md` (cross-references)
-- `tests/test_paths_quality.py` (assertions: `VALID_LEVELS = {"foundational", "intermediate", "advanced"}`; `test_rule2_exactly_one_foundational_per_track`)
+- **D1.** TrackHub topological sort by `recommended_after[]`. Currently uses
+  `display_order` which approximates the right ordering but doesn't strictly
+  honor the DAG (e.g., a path's prerequisites could in principle sort after it).
+  Replace the sort in [`frontend/src/pages/TrackHubPage.js`](../../frontend/src/pages/TrackHubPage.js).
+- **D2.** "Prerequisite: complete X first" soft hint on path detail. Render
+  in [`frontend/src/pages/LearningPath.js`](../../frontend/src/pages/LearningPath.js)
+  when the path has unsatisfied `recommended_after[]`. Soft hint, not a hard gate.
+- **D3.** "Next recommended" CTA after path completion. Surface the first
+  path whose `recommended_after[]` is now fully satisfied. Replaces the current
+  generic "What's next →" with a DAG-aware target.
+- **D4.** Pattern badges on path cards. Show `patterns[]` as chips on
+  TrackHub + `/learn` cards so users can scan for the subject they want.
 
-API-contract note: this is a breaking change for any external consumer of `/api/paths`. We do not have external consumers — internal-only fields, one PR is fine. No migration needed beyond the in-repo rename.
+### Content cleanups
 
-### B. Curriculum spine + 1-question-1-path model
+- **E1.** Split `variance-reduction-and-behavioral-effects` (experimentation).
+  Path declares many focus_concepts and tries to teach 2–3 distinct things.
+  Candidates: keep `variance-reduction` as its own path; `behavioral-effects-and-interference`
+  already exists; add `sequential-and-bandits` when catalog supports it (currently in Bucket B).
+- **E2.** Re-frame `practical-data-python` focus_concepts. Path grew to 14 Qs
+  via Bucket A Route 1 but the focus_concepts haven't been re-audited. Either
+  register a "data-pipeline scripting" family in `concept_families.py` or
+  refresh the path's framing/focus_concepts to match the current Q mix.
 
-**Question-bank expansion is complete (2026-XX).** Coverage audit has been run end-to-end — see [`docs/phases/pattern-coverage-audit.md`](./pattern-coverage-audit.md) for the per-question pattern proposal, per-track pattern coverage matrices, and concept-family → pattern landings.
+### New paths blocked on catalog growth (Bucket B)
 
-**Locked rules (B-series final):**
-- **1:1 mapping.** Each practice question routes to exactly one pattern-path. No multi-membership.
-- **Routing by objective.** Match on the question's *primary objective* (captured by its concept-family tag). Construct usage doesn't override objective.
-- **Analytical wins.** When a question's tags span both an analytical pattern (e.g., `cohort-and-retention`) and a construct pattern (e.g., `window-functions`), the analytical pattern wins.
-- **Mock-only excluded.** Pattern-paths contain *only* practice questions. Mock-only questions stay strictly out.
-- **Easy → hard ordering** within each path's `questions[]`. Stable sort: difficulty → ID.
-- **Mock + dashboard stay concept-family driven.** Pattern-paths are practice-only. No bridge ever (see §C).
+11 thin patterns where the catalog doesn't yet support a path (under the
+4-Q floor for new paths). Wait for catalog growth before path-ifying.
+Tracked from the 2026-06-08 bucket-accounting work.
 
-**B1. Define canonical pattern registry per track**
-Per-track canonical patterns proposed in the 2026-05-23 analysis (saved in this tracker — see "Canonical pattern set per track" notes below in the chat log; will move into `backend/path_patterns.py` at execution time). Each pattern becomes a path; each question maps to exactly one pattern.
+| Track | Pattern | Practice Qs available |
+|---|---|---:|
+| python | `streaming-and-online` | 3 |
+| python-data | `window-and-rolling` | 2 |
+| sql | `top-n-and-ranking` | 3 |
+| data-modeling | `surrogate-keys` | 3 |
+| data-modeling | `hierarchies-and-multipath` | 3 |
+| data-modeling | `conformed-dimensions` | 1 |
+| statistics | `variance-and-anova` | 3 |
+| statistics | `survival-analysis` | 3 |
+| ml-fundamentals | `algorithmic-fairness` | 3 |
+| experimentation | `sequential-and-bandits` | 3 |
+| experimentation | `experiment-platform-design` | 1 |
 
-**B2. Add `pattern` field to question schema**
-Single-value optional field on each question. If set, must resolve to a registered pattern in the track's registry. If null, the question is catalog-only.
+### Locked: deferred indefinitely
 
-**B3. Question-to-pattern mapping pass (per track)**
-**This is a real authoring exercise, not a sort.** The analytical-wins tie-breaker (a cohort question that uses window functions → goes in `cohort-and-retention`, not `window-functions`) requires human judgment on every question. A script can flag *candidates* per question by scanning concept tags, but the final pattern choice is an author call. Run per track as each track's expansion finishes.
+- **Concept-mastery loop wiring (front-end).** Pattern-paths and mock are
+  an explicit two-system design. Practice runs on patterns; mock + dashboard
+  run on concept-families. They do not loop into each other. Originally
+  proposed bridges (C1–C5: mock axis-mismatch resolution, MockHub `?focus=`
+  deep-link, "benchmark with focused drill" CTA, "drill in mock" CTA,
+  tier-gating UX) are **not pursued**. Reopening requires a fresh product
+  decision because the parallel-systems shape is now load-bearing across
+  `§Paths` SoT, `pattern-coverage-audit.md`, and active content authoring.
+  What stays live (always was concept-family driven): dashboard
+  `weakest_concepts` → recommended path; mock `focus_concepts` filter (Elite).
 
-**B4. Lean-path triage**
-After B3, audit each pattern's question count and apply this triage:
-- 0–2 questions → **drop the pattern** from the registry (don't ship a path that can't teach itself; reconsider when catalog grows)
-- 3–4 questions → **keep the pattern**, tag `needs_content: true` in the registry, log the gap as a targeted authoring task in this tracker
-- 5+ → **ship the path**
+### Catalog-only by design (locked exclusions)
 
-This protects against shipping a `Bayesian Methods`-style path with 4 questions just because the pattern is in the registry.
+These questions exist in the catalog but deliberately don't earn a path slot:
 
-**B5. Auto-derive `path.questions[]` from question tags + collapse `patterns[]` to singular `pattern`**
+- **5 cost-and-format-optimization Qs** (51017, 51019, 51020, 53010, 53018):
+  trimmed during F3 batch; vendor-heavy edge content not absorbed.
+- **11 SQL SELECT/WHERE Qs** (11001, 11002, 11003, 11013, 11015, 11016,
+  11018, 11019, 11020, 11027, 11030): tag-routed to aggregation via the
+  PRE-AGGREGATION FILTERING family-membership artifact, but semantically
+  pure filtering exercises. SQL is the first track and aggregation-patterns
+  is its first path — the platform doesn't open with trivial filtering.
+- **4 Bucket C orphans** with no canonical pattern fit: DE 52032 (GDPR
+  crypto-shredding), DM 62026 (semantic layer governance), SQL 11004 +
+  11024 (NULL handling trivia).
 
-Two coupled schema changes in this step:
-- Path JSON's `patterns: [...]` array becomes singular `pattern: "..."` (one pattern per path; 1:1 model means multi-pattern paths no longer make sense — split them).
-- Path JSON drops manual `questions[]`. Loader scans the track catalog for matching `pattern` and populates ordered by difficulty + ID. Validator enforces 1:1 (every question with `pattern == X` appears in exactly one path; the path for X).
+### Out of scope for this tracker
 
-Paths currently declaring multiple patterns will need splitting in B1's canonical-set decision:
-- `groupby-and-joins` (python-data): `["groupby", "joins"]` → split into 2 paths.
-- `sql-advanced-patterns` (sql): `["set-operations", "recursive-ctes", "grouping-extensions"]` → split into 3 paths (already in canonical proposal).
-- `sql-string-and-date` (sql): `["string-functions", "date-functions"]` → split into 2 paths (already in canonical proposal).
-- `pipeline-fundamentals` (data-engineering): `["etl-elt", "orchestration"]` → split into 2 paths (already in canonical proposal).
-- `pipeline-evolution` (data-engineering): `["schema-evolution", "delivery-semantics", "backfill-design"]` → split into 3 paths (already in canonical proposal).
-- `schema-design-basics` (data-modeling): `["star-snowflake", "fact-table-design", "scd"]` → split into 3 paths (already in canonical proposal).
-- `dimensional-modeling-deep-dive` (data-modeling): `["scd", "bridge-tables", "grain-definition"]` → split (note: `scd` would now collide with schema-design-basics' `scd` after that split — resolve by treating SCD as a single pattern spanning easy → hard, not a depth-tier split). Likely outcome: `bridge-tables` + `grain-definition` become their own paths; SCD content from both current paths merges into one `scd` path.
-- `ml-starter`, `ml-model-evaluation`, `ml-advanced-methods`, `ml-production` (ml-fundamentals): each declares 2+ patterns → all need splitting (already in canonical proposal).
-- `stats-for-analysts` (statistics): `["descriptive-stats", "distributions"]` → split into 2 (already in canonical proposal).
-- `experimentation-starter`, `experiment-design-and-power`, `variance-reduction-and-behavioral-effects` (experimentation): multi-pattern → split (already in canonical proposal).
+- **G1.** ~60 question concept-tag-count failures across Python / ML /
+  Experimentation / Statistics / Pandas (`expected 2-5 concept tags, found 1`).
+  Pre-existing — surfaced by the validator before the paths refactor crashed it.
+  Owned by the per-track re-authoring effort, not this tracker.
 
-**This collapse is the structural change**, not just B1. The canonical pattern set already anticipates the 1:1 outcome.
+### Open product questions
 
-**B6. Doc the strategy in `docs/content-authoring.md §Paths`**
-Add a "Pattern registry and 1:1 mapping" subsection covering the curriculum-spine framing, the analytical-wins tie-breaker, the lean-path triage thresholds, and the lifecycle (new question → choose pattern → goes in path).
-
-**B7. Update `.github/agents/question-authoring.agent.md`**
-Add a step: pick the question's primary pattern (or null) during authoring, with the selection rule.
-
-### C. Concept-mastery loop wiring (front-end) — **DEFERRED INDEFINITELY (2026-XX)**
-
-**Decision (2026-XX):** Pattern-paths and mock are an explicit *two-system* design. Patterns drive practice. Concept-families drive mock + dashboard diagnostics. They **do not loop into each other.** C1–C5 are kept below as the audit trail for what was considered and why it's not being pursued.
-
-**What stays live (was always concept-family driven, doesn't depend on patterns):**
-- Dashboard `weakest_concepts` → recommended path via `focus_concepts` (family-aware via `_path_for_concept` in `insights.py`). Shipped 2026-05.
-- Mock `focus_concepts` filter (Elite only). Shipped.
-
-**What's dropped (originally proposed, no longer planned):**
-- **C1.** Resolve pattern↔concept-family axis mismatch in Mock — *not pursued.* Axes stay parallel by design.
-- **C2.** MockHub `?focus=` URL deep-link parsing — *not pursued.*
-- **C3.** "Benchmark with focused drill" CTA on path completion — *not pursued.*
-- **C4.** "Drill in mock" CTA on dashboard weak-concept cards — *not pursued.*
-- **C5.** Tier-gating UX for the dropped CTAs — *not applicable.*
-
-If the loop ever becomes a product direction again, the items above are the starting list. Reopening requires a fresh product decision because the parallel-systems shape is now load-bearing across `§Paths` SoT, `pattern-coverage-audit.md`, and the active content authoring direction.
-
-### D. DAG-aware UX (`recommended_after[]` is currently backend-only)
-
-**D1. TrackHub sorts paths by `recommended_after[]` topological order**
-Replace the current role-based sort in [`frontend/src/pages/TrackHubPage.js:124`](../../frontend/src/pages/TrackHubPage.js#L124) with a topological sort over the prerequisite DAG.
-
-**D2. "Prerequisite: complete X first" hint on path detail**
-Render in [`frontend/src/pages/LearningPath.js`](../../frontend/src/pages/LearningPath.js) when the path has unsatisfied `recommended_after[]`. Soft hint, not a hard gate.
-
-**D3. "Next recommended" CTA on path completion**
-After completion, surface the first path whose `recommended_after[]` is now fully satisfied. Replaces the current generic "What's next →" with a DAG-aware target.
-
-**D4. Pattern badges on path cards**
-Show the path's `patterns[]` as chips on TrackHub + `/learn` cards so users can scan for the subject they want.
-
-### E. Content cleanups exposed by the refactor
-
-**E1. Split `variance-reduction-and-behavioral-effects` (Experimentation)**
-The path now declares 11 focus_concepts after auto-broadening — it is doing too many things. Split into 2–3 narrower paths (variance-reduction, behavioral-effects-and-interference, sequential-and-bandits). Depends on B1 pattern audit.
-
-**E2. Re-frame `practical-data-python` focus_concepts**
-The path lost its domain-flavored focus_concepts (CSV / JSON / DATETIME / etc.) because Python's concept-family registry doesn't include them. Either register a "data-pipeline scripting" family or rethink the path's framing.
-
-**E3. Normalise focus_concept casing across paths**
-Some paths now mix UPPERCASE and lowercase tags after the auto-broadening pass (e.g., `experimental-design-inference` mixes `HYPOTHESIS TESTING` and `confidence intervals`). Cosmetic, not a validator issue. One pass to UPPERCASE everywhere.
-
-### F. Track-specific path additions (audit-flagged but deferred)
-
-**F1. Data Engineering: Cost & Performance Optimization path**
-7 platform-specific questions exist (Snowflake auto-suspend, BigQuery partitioning, format selection for scan cost). Needs content review before path-ifying — many are vendor-specific and may belong in a different curriculum slot.
-
-**F2. Statistics: Bayesian Methods path**
-Blocked — would need ≥5 more Bayesian questions in the catalog before a dedicated path makes sense (currently only 4).
-
-**F3. Patterns needing new paths (post-2026-XX orphan recruitment).**
-After orphan recruitment, the following thin/empty patterns still have *no live path* declaring them. Each is a stage-2 decision: create a new path, merge into an existing pattern, or defer.
-
-Orphan-count shown is recruitable practice questions (from Pass 2) — strong upside for a new path.
-
-| Track | Pattern | Orphans available | Likely action |
-|---|---|---:|---|
-| sql | `top-n-and-ranking` | 3 | New path |
-| sql | ~~`pivot-and-unpivot`~~ | ~~7~~ | ✅ **Done** (`pivot-and-conditional-aggregation.json` created 2026-XX) |
-| python | `heap-and-priority` | 4 | New path |
-| python | `string-and-text-processing` | 4 | New path |
-| python | `streaming-and-online` | 3 | New path |
-| python-data | ~~`data-cleaning`~~ | ~~18~~ | ✅ **Done** (`data-cleaning.json` created 2026-XX) |
-| python-data | `top-n-and-ranking` | 7 | New path |
-| python-data | `window-and-rolling` | 2 | Merge into time-series or new |
-| pyspark | ~~`spark-joins-and-skew`~~ | ~~16~~ | ✅ **Done** (`spark-joins-and-skew.json` created 2026-XX) |
-| pyspark | `pyspark-windowing` | 5 | New path |
-| data-engineering | `streaming-vs-batch` | 6 | New path |
-| data-engineering | `cost-and-format-optimization` | 19 | **New path (strong)** — see F1 caveat (vendor-heavy) |
-| data-engineering | ~~`data-quality-and-incident-response`~~ | ~~7~~ | ✅ **Done** (`data-quality-and-incident-response.json` created 2026-XX) |
-| data-modeling | `surrogate-keys` | 2 | Merge or new |
-| data-modeling | `conformed-dimensions` | 1 | Defer (too thin) |
-| data-modeling | `data-vault` | 4 | New path or defer |
-| data-modeling | `aggregate-and-summary-design` | 4 | New path or defer |
-| data-modeling | `hierarchies-and-multipath` | 3 | Merge or new |
-| statistics | ~~`probability-and-combinatorics`~~ | ~~12~~ | ✅ **Done** (`probability-and-combinatorics.json` created 2026-XX) |
-| statistics | `sampling-and-clt` | 1 | Defer |
-| statistics | `errors-and-power` | 5 | New path |
-| statistics | `variance-and-anova` | 3 | New path or defer |
-| statistics | `bayesian-reasoning` | 5 | New path (was F2-blocked; now viable at 5) |
-| statistics | `survival-analysis` | 3 | Defer |
-| ml-fundamentals | ~~`feature-engineering`~~ | ~~13~~ | ✅ **Done** (`feature-engineering.json` created 2026-XX) |
-| ml-fundamentals | ~~`class-imbalance`~~ | ~~6~~ | ✅ **Done** (`class-imbalance.json` created 2026-XX) |
-| ml-fundamentals | `model-interpretability` | 2 | Defer or merge with algorithmic-fairness |
-| ml-fundamentals | `unsupervised-methods` | 4 | New path |
-| ml-fundamentals | `neural-networks-and-gradients` | 4 | New path |
-| ml-fundamentals | `hyperparameter-tuning` | 6 | New path |
-| ml-fundamentals | `algorithmic-fairness` | 3 | Merge with model-interpretability as "Responsible ML" |
-| experimentation | ~~`behavioral-effects-and-interference`~~ | ~~5~~ | ✅ **Done** (`behavioral-effects-and-interference.json` created 2026-XX) |
-| experimentation | `sequential-and-bandits` | 4 | New path or defer |
-| experimentation | `experiment-platform-design` | 2 | Defer |
-
-**Oversized paths flagged for stage-2 split** (>15 questions after recruitment):
-- `groupby-and-joins` (python-data): 6 → 27 — split into `groupby` + `joins-and-merges` (2 separate paths)
-- `pipeline-evolution` (data-engineering): 5 → 27 — split into `schema-evolution` + `delivery-semantics` + `backfill-design` (3 separate paths)
-- `dimensional-modeling-deep-dive` (data-modeling): 6 → 28 — split into `scd` + `grain-definition` + `bridge-tables` (3 separate paths)
-- `schema-design-basics` (data-modeling): 6 → 16 — borderline; split into `star-snowflake` + `fact-table-design`
-- `stats-for-analysts` (statistics): 8 → 24 — split into `descriptive-stats` + `distributions`
-- `experimental-design-inference` (statistics): 12 → 20 — split into `hypothesis-testing` + `confidence-intervals`
-- `ml-model-evaluation` (ml-fundamentals): 10 → 19 — split into `cross-validation` + `metrics`
-
-These splits are the natural completion of the 1:1 question→path migration (B5 in this tracker).
-
-### G. Pre-existing content cleanups not directly path-related
-
-**G1. ~60 question concept-tag-count failures** across Python / ML / Experimentation / Statistics / Pandas (`expected 2-5 concept tags, found 1`). Pre-existing — surfaced by the validator before the paths refactor crashed it. Owned by the per-track re-authoring effort, not this tracker.
+1. **Does the `level` enum still earn its place once the DAG is honored?**
+   Once D1 lands and ordering is topological, `level` becomes a vibe-badge
+   only ("foundational" / "intermediate" / "advanced" labels in chips). The
+   DAG could subsume tie-breaker + sort; the "Start here" pill could become
+   a separate `is_entry: true` boolean. Worth revisiting after D1.
 
 ---
 
-## Open product questions (no owner yet)
+## Shipped / closed (audit trail)
 
-1. **Does the `level` enum still earn its place once the DAG (`recommended_after[]`) is honored as the real ordering primitive?** The DAG already encodes prerequisite chains; level becomes a vibe-badge only. Worth revisiting after C/D land.
+For reference. The above is the live work; the below is what's done.
 
-2. **Maximum path size — should there be one?** The 1:1 mapping (B-series) means paths grow with the catalog. A `joins` path could end up with 30+ questions. Is that fine (chunked by difficulty in the UI) or do we set a max and split patterns (`joins-basics` + `joins-advanced`) when they balloon?
-
-3. **Should `pattern` on a question be required, or optional?** Required forces every question into the curriculum spine but rejects "general practice" questions that don't fit. Optional allows orphans. Current proposal: optional, with periodic audits flagging orphan counts per track.
-
-4. **Path completion semantics for the loop.** Today path is "complete" when all its questions are solved (via path UI or directly from practice). For the loop's "you've mastered this — now benchmark" moment, is solved-via-practice enough, or do we want a "path completed flow" event (user actually walked through the path UI)? Affects how the C-series CTAs fire.
+| Original item | Status | Notes |
+|---|---|---|
+| **A1.** Rename `role`→`level` + `starter`→`foundational` | ✅ shipped | commit `b5b0394` — schema, validator, frontend, docs, tests |
+| **B1.** Canonical pattern registry per track | ✅ shipped | `backend/path_patterns.py` |
+| **B2.** Add `pattern` field to question schema | ❌ closed (superseded) | Validator rule 7 enforces 1:1 mapping via the path's `questions[]` array. Adding a `pattern` field on each Q would be a redundant second source of truth. Closed as not needed. |
+| **B3.** Question-to-pattern mapping pass | ❌ closed (superseded) | Routing decisions made in-place during the 2026-06-08 bucketing/dedupe batches. Each Q's home is in exactly one path's `questions[]` array. |
+| **B4.** Lean-path triage | ✅ shipped (implicit) | The Bucket B deferral list (11 thin patterns above) is the formal triage output. |
+| **B5.** Auto-derive `path.questions[]` + collapse `patterns[]` to singular | ❌ closed (superseded) | Same reason as B2/B3. Manual `questions[]` arrays with validator rule 7 = same correctness guarantee, simpler model. |
+| **B6.** Doc the strategy in §Paths | ✅ shipped | Rules 1–7 + path-size policy + primary-path-selection guidance all documented in `docs/content-authoring.md §Paths`. |
+| **B7.** Update authoring agent | ✅ shipped | Path-applicability step (B7) added. |
+| **C1–C5.** Concept-mastery loop wiring | ❌ deferred indefinitely | Two-system design — see Locked section above. |
+| **E3.** Normalize focus_concept casing | ✅ shipped | Done in earlier 2026-XX batch. |
+| **F1.** DE Cost & Performance Optimization path | ✅ shipped | `cost-and-format-optimization` (15 Qs). |
+| **F2.** Statistics Bayesian Methods path | ✅ shipped | `bayesian-reasoning` (6 Qs). |
+| **F3.** New paths from thin patterns | ✅ partial / mostly shipped | 14 of 25 originally-proposed F3 patterns shipped as paths; 11 remain in Bucket B (above) waiting on catalog. |
+| **Oversized-path splits** (B5 tail) | ✅ shipped | `groupby-and-joins`, `pipeline-evolution`, `dimensional-modeling-deep-dive`, `schema-design-basics`, `stats-for-analysts`, `experimental-design-inference`, `ml-model-evaluation`, `spark-core-concepts` all split into focused per-pattern paths. |
+| **display_order field + per-track ordering** | ✅ shipped 2026-06-08 | Every path has a 1-based `display_order` per `(topic, level)`; `scripts/apply_path_display_order.py` is the SoT. |
+| **Re-leveling pass** | ✅ shipped 2026-06-08 | `joins-and-filtering` (SQL) → intermediate; `spark-joins-and-skew` → intermediate; `bayesian-reasoning` → advanced; etc. |
+| **Path-size ceiling extension 15→20** | ✅ shipped 2026-06-07 | Default cap 15, extended ceiling 20 with explicit per-path approval. Validator enforces 4–20 hard range. |
+| **Bucket A.live extended-range absorption** | ✅ shipped 2026-06-08 | 27 orphans into 4 paths (data-cleaning, applied-stats, experiment-design-and-power, spark-memory-and-driver-executor). |
+| **SQL aggregation absorption** | ✅ shipped 2026-06-08 | 11 of 22 real-aggregation orphans absorbed; 11 SELECT/WHERE Qs deliberately kept catalog-only. |
+| **Bucket A.live heavy (Route 1 + 1a)** | ✅ shipped 2026-06-08 | 4 new paths (greedy-and-scanning, list-transformations, spark-udfs-and-python-boundary, hypothesis-testing-and-ci) + 47 orphans routed across 9 existing paths. |
+| **Rule 7: 1:1 question→path uniqueness** | ✅ shipped 2026-06-08 | `_validate_paths` rule 7 + `test_rule7_question_appears_in_at_most_one_path`. 15 pre-existing duplicates resolved in the same commit. |
 
 ---
 
@@ -504,6 +435,7 @@ Most growth = honest splits of compound paths. New patterns filling genuine inte
 | 2026-XX | **Orphan recruitment applied across all tracks.** `scripts/recruit_orphans.py` added 134 orphans into existing live paths whose `patterns[]` declares the orphan's tag-suggested pattern. Coverage shifts: data-modeling 31→65 in path; data-engineering 19→46; statistics 28→52; ml-fundamentals 40→55; python-data 29→50; python 29→35; experimentation 43→49; sql 58→59 (only ctes-and-recursion had a live target). Pattern classes: many thin patterns are now healthy or uneven. 34 thin/empty patterns were SKIPPED because no live path declares them — these are stage-2 new-path decisions (per the §F "Track-specific path additions" list, expanded below). Path-size guardrail in `test_paths_quality.py` widened to 4–30 (paths >15 are flagged for stage-2 splitting; tightens back once split). Focus_concepts auto-broadened on 2 paths (dimensional-modeling-deep-dive, pipeline-fundamentals) to satisfy validator rule 5 for recruited orphans. Validator + tests pass. |
 | 2026-XX | **8 new paths created for high-orphan thin patterns** (zero new questions authored — all 96 Qs drawn from existing catalog orphans). Adds: `data-cleaning` (python-data, 18 Qs), `spark-joins-and-skew` (pyspark, 16), `feature-engineering` (ml-fundamentals, 13), `probability-and-combinatorics` (statistics, 12), `data-quality-and-incident-response` (DE, 7), `pivot-and-conditional-aggregation` (sql, 7), `class-imbalance` (ml-fundamentals, 6), `behavioral-effects-and-interference` (experimentation, 5). `backend/path_patterns.py` registered 8 new pattern slugs. **Path count: 46 → 54.** Coverage: in-path questions 433 → 529; healthy patterns 18 → 23; empty patterns 35 → 26 (the remaining 26 are mostly patterns deferred per F3 — thin with low orphan availability). Validator + tests pass. |
 | 2026-XX | **Per-question divergent audit + actions across all tracks.** `scripts/divergent_audit.py` classified 133 divergents into 4 buckets (B1 leave / B2 use-case-framed move-if-dest-thin / B3 routing priority fix / B4 tag-gap add). Classifier uses a per-pattern title-keyword guard to demote ambiguous "no canonical tag" cases from B4 to B1 (cost asymmetry: false-B4 pollutes question tags; false-B1 leaves a benign audit divergence). Results: **B1=74** (left alone, mostly questions in advanced paths whose tags are construct-primary; divergence is honest); **B2=43** (1 moved to thin dest, 42 skipped because dest is healthy or has no live path); **B3=8** (resolved via additions to `ANALYTICAL_PRIORITY` for SQL, ML, and Experimentation tracks — no question changes); **B4=8** (3 effective tag additions: q21032 `LIST & COLLECTION TRANSFORMATION`, q81013 `SUPERVISED VS UNSUPERVISED`, q83020 `MODEL MONITORING`; 5 customer-analytics cases noop because no concept-family routes to that pattern — a known finding). Net divergent count 133 → 122. Validator + tests pass. |
+| 2026-06-08 | **Tracker hygiene pass.** Phase 2 section rewritten to show only actual open work (frontend D1–D4, content E1/E2, Bucket B catalog-growth-blocked patterns). Closed B-series as shipped or superseded by rule 7: B1 shipped (registry); B2/B3/B5 superseded (rule 7 enforces 1:1 via path's `questions[]` array — a `pattern` field on each Q would be redundant); B4 shipped implicitly (Bucket B = the formal triage output); B6/B7 shipped. Closed E3, F1, F2 as shipped. Moved completed items into a "Shipped / closed" audit-trail table. Closed 3 of 4 Open Product Questions (path-size policy resolved; pattern-field-on-Q closed with B; loop semantics closed with C). Net tracker size: 522 → 442 lines. No code or path changes — doc-only. |
 | 2026-06-08 | **Rule 7 added — question→path uniqueness (1:1 model) now enforced.** 15 pre-existing duplicate questions (Qs in 2 paths) discovered when the user asked "is the 1:1 rule enforced?". Rule was never validator-enforced and slipped through across many earlier batches in this session. Added `_validate_paths` rule 7 (ERROR-level) and `test_rule7_question_appears_in_at_most_one_path`. Resolved the 15 duplicates by assigning each Q to its primary pattern path: kept 1 in `stacks-and-queues` (Q22002 Sliding Window Maximum — both-paths Q; tiebreaker preserved 4-Q floor), removed 1 each from `dataframe-fundamentals` (Q31002), `pipeline-fundamentals` (Q51009), `sliding-window-patterns` (Q22002), `ml-production` (Q82034); removed 3 from `normalization-and-referential-integrity` (61018, 61019, 62015 — all wide-vs-narrow tradeoff Qs); removed 4 from `dbt-and-modern-analytics-modeling` (62017, 62018, 63004, 63019 — all wide-table comparison Qs); removed 4 from `ml-starter` (81007, 81010, 81019, 81025 — preprocessing/CV/regularization Qs that belong in their specialized paths, not the foundational sampler). Net path size changes: 7 paths shrank by 1–4 Qs each, no path breached 4-Q floor. `docs/content-authoring.md §Paths` updated with rule 7 documentation. `scripts/dedupe_paths.py` re-runnable + idempotent. **Zero question-content edits.** Validator + 14/14 path-quality tests pass. |
 | 2026-06-08 | **Bucket A.live heavy (Route 1 + sub-1a) — 4 new paths + 8 existing-path absorptions, 47 orphans routed.** Cluster analysis of the remaining 4 Bucket A.live heavy candidates (python data-pipeline-scripting, python arrays-and-hashing, pyspark spark-performance, experimentation ab-test-mechanics) revealed pervasive tag-family-membership artifacts — orphans tag-routed to a target path but semantically belonging elsewhere. Created 4 NEW lean paths to absorb the leakage cleanly: `greedy-and-scanning` (python intermediate, 5 Qs: 21008, 21038, 22027, 22043, 23001), `list-transformations` (python intermediate, 7 Qs: 21003, 21016, 21017, 21025, 21026, 21028, 21029), `spark-udfs-and-python-boundary` (pyspark intermediate, 5 Qs: 41019, 41035, 42022, 42033, 43041), `hypothesis-testing-and-ci` (experimentation intermediate, 5 Qs: 91003, 91009, 91016, 91025, 91029). Absorbed into existing paths (with cluster-routed redistribution): arrays-and-hashing 5→15 (+10), practical-data-python 6→14 (+8), sliding-window-patterns 10→11 (+22049 two-pointer), heap-and-priority 4→5 (+23023), spark-performance 6→13 (+7), spark-joins-and-skew 16→18 (+2 join spillover), spark-memory-and-driver-executor 12→13 (+42035), experimentation-starter 14→17 (+3 A/B mechanics), experiment-design-and-power 18→20 (+2 Type I/II errors). Focus_concepts broadened on 2 paths to align rule 5: `arrays-and-hashing` += INDEXED SEQUENCE REASONING, `spark-performance` += CACHING & PERSISTENCE, EXECUTION MODEL REASONING, SHUFFLE REASONING (canonical family names; pre-existing descriptive labels like "SHUFFLE BOUNDARY DETECTION" didn't resolve correctly). Registered 4 new pattern slugs in `backend/path_patterns.py`. Updated `scripts/apply_path_display_order.py` with new positions. Bucket A.live heavy is now CLEARED. **Path count: 82 → 86.** Orphan totals: python 35→8, pyspark 21→6, experimentation 14→4. All 13 path-quality tests + validator pass. Zero question-content edits. Done in worktree, merged to main. |
 | 2026-06-08 | **SQL `aggregation-patterns` absorption — 11 of 22 orphans + 11 catalog-only by design.** Cluster analysis of the 22 SQL-aggregation orphans split cleanly: 11 "real aggregation" Qs (with `GROUPED AGGREGATION` tag) + 11 pure SELECT/WHERE Qs tag-routed to aggregation via the `PRE-AGGREGATION FILTERING` family-membership artifact. Applied: absorb the 11 real-agg orphans into `aggregation-patterns` 7→18 (added: 11006, 11007, 11022, 11023, 11028, 11032, 12017, 12018, 12034, 12055, 12123). The 11 SELECT/WHERE Qs (11001, 11002, 11003, 11013, 11015, 11016, 11018, 11019, 11020, 11027, 11030) deliberately left as catalog-only — a curatorial decision that the foundational SQL path should not open the platform with trivial filtering exercises, given SQL is the first track and aggregation-patterns is its first path. All 11 absorptions verified against validator rule 5 (concept tags align with path's focus_concepts). Zero question-content edits. SQL orphan count: 27 → 16. Validator + 19/19 tests pass. |
