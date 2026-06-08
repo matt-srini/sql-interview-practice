@@ -28,17 +28,18 @@ DISPLAY_ORDER: dict[str, dict[str, int]] = {
     "sql": {
         # foundational
         "aggregation-patterns": 1,
-        # intermediate
-        "window-functions-mastery": 1,
-        "pivot-and-conditional-aggregation": 2,
-        # advanced (loosely ordered by conceptual depth)
+        # intermediate (joins moved here from advanced — conceptually a mid-tier
+        # construct that everything analytical depends on)
         "joins-and-filtering": 1,
-        "subqueries-and-existence": 2,
-        "sql-string-and-date": 3,
-        "sql-advanced-patterns": 4,
-        "period-over-period-analysis": 5,
-        "cohort-and-retention": 6,
-        "funnel-and-events": 7,
+        "window-functions-mastery": 2,
+        "pivot-and-conditional-aggregation": 3,
+        # advanced (analytical use cases that compose joins + windows)
+        "subqueries-and-existence": 1,
+        "sql-string-and-date": 2,
+        "sql-advanced-patterns": 3,
+        "period-over-period-analysis": 4,
+        "cohort-and-retention": 5,
+        "funnel-and-events": 6,
     },
     "python": {
         # foundational
@@ -176,9 +177,14 @@ def execute():
             missing_paths.append(f"{track}/{slug}")
             continue
         found_slugs_per_track[track].add(slug)
-        # Insert display_order field (after level for readability)
+        # Insert display_order field (after level for readability).
+        # Skip any pre-existing display_order key in the source dict so the
+        # NEW value placed after level isn't overwritten when we copy the
+        # rest of the keys forward.
         new_d = {}
         for k, v in d.items():
+            if k == "display_order":
+                continue  # drop stale value; replaced below
             new_d[k] = v
             if k == "level":
                 new_d["display_order"] = order

@@ -15,7 +15,7 @@
   ],
   "tier": "pro",
   "level": "advanced",
-  "display_order": 4,
+  "display_order": 3,
   "patterns": [
     "set-operations",
     "recursive-ctes",

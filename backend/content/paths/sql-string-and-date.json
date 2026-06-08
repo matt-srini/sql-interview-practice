@@ -15,7 +15,7 @@
   ],
   "tier": "pro",
   "level": "advanced",
-  "display_order": 3,
+  "display_order": 2,
   "patterns": [
     "string-functions",
     "date-functions"
