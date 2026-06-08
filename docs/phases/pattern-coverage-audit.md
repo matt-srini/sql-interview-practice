@@ -21,7 +21,7 @@ Headline coverage tables reflect the **live state of paths**, not tag-derived hy
 
 | Track | Practice Qs | In a live path | Orphans | Divergent | Patterns (proposed) | Healthy | Uneven | Thin | Empty |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| sql | 118 | 91 | 27 | 24 | 14 | 5 | 5 | 1 | 3 |
+| sql | 118 | 102 | 16 | 24 | 14 | 5 | 5 | 1 | 3 |
 | python | 81 | 44 | 37 | 6 | 9 | 1 | 4 | 3 | 1 |
 | python-data | 93 | 90 | 3 | 15 | 9 | 5 | 3 | 0 | 1 |
 | pyspark | 127 | 112 | 15 | 20 | 7 | 2 | 4 | 0 | 1 |
@@ -40,13 +40,13 @@ Pattern classes are based on live-path-aggregated coverage: **Healthy** ≥5 acr
 ---
 ## sql
 
-Practice questions: **118** (91 in live paths · 27 orphans · 24 divergent). Proposed canonical patterns: **14**.
+Practice questions: **118** (102 in live paths · 16 orphans · 24 divergent). Proposed canonical patterns: **14**.
 
 ### Pattern coverage (live-path-aggregated)
 
 | Pattern | Display | Easy | Medium | Hard | Total | Class |
 |---|---|---:|---:|---:|---:|---|
-| `aggregation` | Aggregation | 3 | 4 | 0 | 7 | ⚠️ uneven |
+| `aggregation` | Aggregation | 9 | 9 | 0 | 18 | ⚠️ uneven |
 | `joins` | Joins | 2 | 14 | 1 | 17 | ✅ healthy |
 | `subqueries` | Subqueries & EXISTS | 0 | 4 | 2 | 6 | ⚠️ uneven |
 | `set-operations` | Set Operations (UNION / INTERSECT / EXCEPT) | 0 | 6 | 1 | 7 | ⚠️ uneven |
@@ -72,23 +72,23 @@ A question contributes once per family tag — multi-tag questions count multipl
 | COHORT RETENTION | `cohort-and-retention` (3) | — |
 | CONDITIONAL LOGIC & CASE | `pivot-and-unpivot` (7) | `(orphan)` (2), `period-over-period` (1), `funnel-and-event-analysis` (1) |
 | CTE PIPELINE | `period-over-period` (3) | `funnel-and-event-analysis` (2), `ctes-and-recursion` (1), `set-operations` (1) |
-| DATA QUALITY SKEPTICISM | `(orphan)` (3) | `period-over-period` (1) |
-| DEDUPLICATION LOGIC | `joins` (6) | `cohort-and-retention` (1), `aggregation` (1), `set-operations` (1), `(orphan)` (1) |
+| DATA QUALITY SKEPTICISM | `(orphan)` (2) | `period-over-period` (1), `aggregation` (1) |
+| DEDUPLICATION LOGIC | `joins` (6) | `aggregation` (2), `cohort-and-retention` (1), `set-operations` (1) |
 | DOUBLE-COUNTING DETECTION | `joins` (2) | `ctes-and-recursion` (1) |
 | FUNNEL ANALYSIS | `funnel-and-event-analysis` (3) | — |
-| GROUPED AGGREGATION | `(orphan)` (10) | `joins` (9), `aggregation` (7), `pivot-and-unpivot` (7), `set-operations` (3) |
+| GROUPED AGGREGATION | `aggregation` (17) | `joins` (9), `pivot-and-unpivot` (7), `set-operations` (3), `period-over-period` (2) |
 | METRIC RECONCILIATION | `joins` (1) | — |
-| MULTI-TABLE ENTITY LINKING | `joins` (16) | `pivot-and-unpivot` (5), `subqueries` (4), `aggregation` (3), `window-functions` (2) |
+| MULTI-TABLE ENTITY LINKING | `joins` (16) | `pivot-and-unpivot` (5), `aggregation` (4), `subqueries` (4), `window-functions` (2) |
 | NULL HANDLING & COALESCE | `(orphan)` (4) | `joins` (2), `string-and-text` (1) |
-| POST-AGGREGATION FILTERING | `pivot-and-unpivot` (5) | `joins` (5), `(orphan)` (4), `aggregation` (2), `subqueries` (2) |
-| PRE-AGGREGATION FILTERING | `(orphan)` (15) | `joins` (5), `cohort-and-retention` (2), `funnel-and-event-analysis` (2), `period-over-period` (1) |
+| POST-AGGREGATION FILTERING | `aggregation` (6) | `pivot-and-unpivot` (5), `joins` (5), `subqueries` (2), `window-functions` (1) |
+| PRE-AGGREGATION FILTERING | `(orphan)` (11) | `aggregation` (5), `joins` (5), `cohort-and-retention` (2), `funnel-and-event-analysis` (2) |
 | RANKING & TOP-N PER GROUP | `period-over-period` (3) | `(orphan)` (3), `window-functions` (1), `joins` (1) |
-| RESULT SHAPING & ORDERING | `(orphan)` (8) | `aggregation` (1), `joins` (1), `string-and-text` (1) |
+| RESULT SHAPING & ORDERING | `(orphan)` (5) | `aggregation` (4), `joins` (1), `string-and-text` (1) |
 | RUNNING TOTAL & MOVING WINDOW | `window-functions` (2) | `period-over-period` (1) |
 | SELF-COMPARISON & RECURSION | `funnel-and-event-analysis` (1) | `window-functions` (1) |
 | SESSIONIZATION | `funnel-and-event-analysis` (6) | `cohort-and-retention` (2) |
 | SET OPERATIONS & COMPARISON | `set-operations` (3) | `subqueries` (1) |
-| STRING PARSING & PATTERN MATCHING | `string-and-text` (5) | `funnel-and-event-analysis` (1), `(orphan)` (1) |
+| STRING PARSING & PATTERN MATCHING | `string-and-text` (5) | `funnel-and-event-analysis` (1), `aggregation` (1) |
 | SUBQUERY PATTERNS | `subqueries` (6) | `window-functions` (2), `funnel-and-event-analysis` (1), `cohort-and-retention` (1) |
 | TIME-SERIES BUCKETING & ARITHMETIC | `period-over-period` (12) | `cohort-and-retention` (3), `string-and-text` (3), `set-operations` (1) |
 | WINDOW FUNCTIONS | `period-over-period` (4) | `window-functions` (3), `cohort-and-retention` (2), `funnel-and-event-analysis` (1) |
@@ -138,29 +138,18 @@ a starting point for deciding which path (existing or new) should include them.
 | 11002 | easy | `aggregation` | US users |
 | 11003 | easy | `aggregation` | High-salary employees |
 | 11004 | easy | _unrouted_ | Employees by hire date |
-| 11006 | easy | `aggregation` | Most expensive product |
-| 11007 | easy | `aggregation` | Fastest ticket resolution |
 | 11013 | easy | `aggregation` | Products in price range |
 | 11015 | easy | `aggregation` | Users in selected countries |
 | 11016 | easy | `aggregation` | Products in selected categories |
 | 11018 | easy | `aggregation` | Orders that need review |
 | 11019 | easy | `aggregation` | US paid users on higher tiers |
 | 11020 | easy | `aggregation` | Users missing an email address |
-| 11022 | easy | `aggregation` | Total payment amount for failed or refunded payments |
-| 11023 | easy | `aggregation` | Active users by country |
 | 11024 | easy | _unrouted_ | Order amount with discount fallback |
 | 11027 | easy | `aggregation` | Employees in US or UK |
-| 11028 | easy | `aggregation` | Highest and lowest order value |
 | 11030 | easy | `aggregation` | Orders with a non-zero discount |
-| 11032 | easy | `aggregation` | Tickets by priority and status |
 | 13013 | hard | `top-n-and-ranking` | Country-level order outcome mix using the latest payment attempt |
 | 13019 | hard | `top-n-and-ranking` | Resolve final order status from conflicting payment evidence |
 | 13023 | hard | `top-n-and-ranking` | Completed orders contradicted by payment evidence |
-| 12017 | medium | `aggregation` | Country order outcome mix |
-| 12018 | medium | `aggregation` | Ticket resolution mix by issue type |
-| 12034 | medium | `aggregation` | Top revenue by country and plan tier |
-| 12055 | medium | `aggregation` | List active products per category |
-| 12123 | medium | `aggregation` | Sessions with duplicate product view events |
 
 ### Coverage gaps in this track
 
@@ -967,8 +956,8 @@ the audit credits the question to. `Tag-suggested` = where tag-routing would pla
 | 11003 | easy | _orphan_ | — | `aggregation` |  | High-salary employees |
 | 11004 | easy | _orphan_ | — | _unrouted_ |  | Employees by hire date |
 | 11005 | easy | `aggregation-patterns` | `aggregation` | `aggregation` |  | Total order count |
-| 11006 | easy | _orphan_ | — | `aggregation` |  | Most expensive product |
-| 11007 | easy | _orphan_ | — | `aggregation` |  | Fastest ticket resolution |
+| 11006 | easy | `aggregation-patterns` | `aggregation` | `aggregation` |  | Most expensive product |
+| 11007 | easy | `aggregation-patterns` | `aggregation` | `aggregation` |  | Fastest ticket resolution |
 | 11008 | easy | `aggregation-patterns` | `aggregation` | `aggregation` |  | Orders by status |
 | 11009 | easy | `window-functions-mastery` | `window-functions` | `aggregation` | ⚠️ | Total spend per user |
 | 11010 | easy | `aggregation-patterns` | `aggregation` | `aggregation` |  | Support tickets by issue type |
@@ -983,17 +972,17 @@ the audit credits the question to. `Tag-suggested` = where tag-routing would pla
 | 11019 | easy | _orphan_ | — | `aggregation` |  | US paid users on higher tiers |
 | 11020 | easy | _orphan_ | — | `aggregation` |  | Users missing an email address |
 | 11021 | easy | `funnel-and-events` | `funnel-and-event-analysis` | `aggregation` | ⚠️ | Events linked to a product |
-| 11022 | easy | _orphan_ | — | `aggregation` |  | Total payment amount for failed or refunded payments |
-| 11023 | easy | _orphan_ | — | `aggregation` |  | Active users by country |
+| 11022 | easy | `aggregation-patterns` | `aggregation` | `aggregation` |  | Total payment amount for failed or refunded payments |
+| 11023 | easy | `aggregation-patterns` | `aggregation` | `aggregation` |  | Active users by country |
 | 11024 | easy | _orphan_ | — | _unrouted_ |  | Order amount with discount fallback |
 | 11025 | easy | `period-over-period-analysis` | `period-over-period` | `period-over-period` |  | Orders per calendar month |
 | 11026 | easy | `period-over-period-analysis` | `period-over-period` | `period-over-period` |  | Products launched in 2024 |
 | 11027 | easy | _orphan_ | — | `aggregation` |  | Employees in US or UK |
-| 11028 | easy | _orphan_ | — | `aggregation` |  | Highest and lowest order value |
+| 11028 | easy | `aggregation-patterns` | `aggregation` | `aggregation` |  | Highest and lowest order value |
 | 11029 | easy | `pivot-and-conditional-aggregation` | `pivot-and-unpivot` | `pivot-and-unpivot` |  | Users by plan tier |
 | 11030 | easy | _orphan_ | — | `aggregation` |  | Orders with a non-zero discount |
 | 11031 | easy | `period-over-period-analysis` | `period-over-period` | `period-over-period` |  | Monthly user signups with a CTE |
-| 11032 | easy | _orphan_ | — | `aggregation` |  | Tickets by priority and status |
+| 11032 | easy | `aggregation-patterns` | `aggregation` | `aggregation` |  | Tickets by priority and status |
 | 11033 | easy | `sql-string-and-date` | `string-and-text` | `string-and-text` |  | Normalize acquisition channel names |
 | 11034 | easy | `sql-string-and-date` | `string-and-text` | `string-and-text` |  | Extract email domains |
 | 11035 | easy | `sql-string-and-date` | `string-and-text` | `string-and-text` |  | Build employee display labels |
@@ -1015,8 +1004,8 @@ the audit credits the question to. `Tag-suggested` = where tag-routing would pla
 | 12014 | medium | `window-functions-mastery` | `window-functions` | `ctes-and-recursion` | ⚠️ | Employees above their department average |
 | 12015 | medium | `cohort-and-retention` | `cohort-and-retention` | `joins` | ⚠️ | Early signups with no completed orders |
 | 12016 | medium | `window-functions-mastery` | `window-functions` | `subqueries` | ⚠️ | Brands above average completed-order revenue |
-| 12017 | medium | _orphan_ | — | `aggregation` |  | Country order outcome mix |
-| 12018 | medium | _orphan_ | — | `aggregation` |  | Ticket resolution mix by issue type |
+| 12017 | medium | `aggregation-patterns` | `aggregation` | `aggregation` |  | Country order outcome mix |
+| 12018 | medium | `aggregation-patterns` | `aggregation` | `aggregation` |  | Ticket resolution mix by issue type |
 | 12019 | medium | `joins-and-filtering` | `joins` | `joins` |  | Repeat large-order users in selected countries |
 | 12020 | medium | `joins-and-filtering` | `joins` | `joins` |  | High-volume brands in completed 2024 orders |
 | 12021 | medium | `joins-and-filtering` | `joins` | `joins` |  | Departments with no 2024 hires |
@@ -1032,9 +1021,9 @@ the audit credits the question to. `Tag-suggested` = where tag-routing would pla
 | 12031 | medium | `period-over-period-analysis` | `period-over-period` | `period-over-period` |  | Quarter-over-quarter revenue change |
 | 12032 | medium | `joins-and-filtering` | `joins` | `joins` |  | Full outer join: order-payment reconciliation |
 | 12033 | medium | `joins-and-filtering` | `joins` | `joins` |  | Departments with employee count and region |
-| 12034 | medium | _orphan_ | — | `aggregation` |  | Top revenue by country and plan tier |
+| 12034 | medium | `aggregation-patterns` | `aggregation` | `aggregation` |  | Top revenue by country and plan tier |
 | 12054 | medium | `sql-string-and-date` | `string-and-text` | `string-and-text` |  | Normalize event names for display |
-| 12055 | medium | _orphan_ | — | `aggregation` |  | List active products per category |
+| 12055 | medium | `aggregation-patterns` | `aggregation` | `aggregation` |  | List active products per category |
 | 12056 | medium | `sql-string-and-date` | `string-and-text` | `period-over-period` | ⚠️ | Flag users approaching renewal |
 | 12057 | medium | `period-over-period-analysis` | `period-over-period` | `period-over-period` |  | Convert event timestamps to Pacific time |
 | 12058 | medium | `sql-advanced-patterns` | `set-operations` | `set-operations` |  | All user IDs who ordered or raised a ticket |
@@ -1048,7 +1037,7 @@ the audit credits the question to. `Tag-suggested` = where tag-routing would pla
 | 12066 | medium | `joins-and-filtering` | `joins` | `joins` |  | Distinct buyers per payment method |
 | 12121 | medium | `cohort-and-retention` | `cohort-and-retention` | `cohort-and-retention` |  | Purchase rate by 2024 signup cohort |
 | 12122 | medium | `funnel-and-events` | `funnel-and-event-analysis` | `funnel-and-event-analysis` |  | Order placement and completion funnel by plan tier |
-| 12123 | medium | _orphan_ | — | `aggregation` |  | Sessions with duplicate product view events |
+| 12123 | medium | `aggregation-patterns` | `aggregation` | `aggregation` |  | Sessions with duplicate product view events |
 | 13001 | hard | `window-functions-mastery` | `window-functions` | `window-functions` |  | Completed revenue share by plan tier |
 | 13002 | hard | `window-functions-mastery` | `window-functions` | `top-n-and-ranking` | ⚠️ | Top completed-revenue user in each acquisition channel |
 | 13003 | hard | `window-functions-mastery` | `window-functions` | `window-functions` |  | First completed order where cumulative revenue reaches 1000 |
