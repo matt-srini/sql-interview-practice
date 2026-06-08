@@ -3243,6 +3243,9 @@ select {
   letter-spacing: 0.07em;
   text-transform: uppercase;
   color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .question-prompt-guidance {

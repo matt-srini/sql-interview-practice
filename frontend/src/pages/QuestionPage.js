@@ -102,14 +102,23 @@ export default function QuestionPage() {
       ? `${group.difficulty.charAt(0).toUpperCase()}${group.difficulty.slice(1)}`
       : null;
     const total = group?.counts?.total ?? group?.questions?.length ?? null;
-    const order = catalogQuestionMeta.question?.order ?? null;
+    // Compute 1-indexed display position within the sorted practice group.
+    // The raw `order` field is shared across practice + mock-only questions and
+    // can exceed the practice-only count (e.g. "Question 57 of 50"), so we
+    // derive position from the question's rank in the sorted practice list instead.
+    const sortedIds = (group?.questions ?? [])
+      .slice()
+      .sort((a, b) => a.order - b.order)
+      .map(q => q.id);
+    const posIdx = sortedIds.indexOf(Number(id));
+    const order = posIdx >= 0 ? posIdx + 1 : null;
     const openNow = group?.questions?.filter((entry) => entry.state !== 'locked').length ?? null;
     const chunks = [];
     if (groupTitle) chunks.push(groupTitle);
     if (order && total) chunks.push(`Question ${order} of ${total}`);
     if (typeof openNow === 'number') chunks.push(`${openNow} open now`);
     return chunks.length > 0 ? chunks.join(' · ') : null;
-  }, [catalogQuestionMeta]);
+  }, [catalogQuestionMeta, id]);
 
   const [question, setQuestion] = useState(null);
   const [loadError, setLoadError] = useState(null);
