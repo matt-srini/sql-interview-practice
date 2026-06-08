@@ -31,6 +31,15 @@ def init_query_engine() -> None:
         return
 
     conn = duckdb.connect(database=":memory:")
+    # Single-threaded execution makes floating-point aggregation deterministic.
+    # DuckDB parallelises aggregates, and float addition is non-associative, so a
+    # multi-threaded avg()/sum() can vary in its last bits between runs; a query that
+    # then ROUND()s near a boundary flips its displayed value, making grading
+    # non-deterministic (a correct answer marked wrong on the unlucky run). Grading
+    # datasets are tiny (≤ ~9k rows), so the throughput cost is negligible and the
+    # determinism is load-bearing for sound comparison. See evaluator._results_match
+    # and tests/test_sql_grading_determinism.py.
+    conn.execute("SET threads TO 1")
     loaded = []
 
     try:

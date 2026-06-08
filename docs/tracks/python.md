@@ -152,6 +152,8 @@ Before finalizing any Hard sample question, check the Python hard and medium pra
 
 The validator (`_validate_sample_cross_bank_titles`) catches exact title collisions. Family+shape near-clone detection remains an authoring-time judgment call — the validator cannot enforce it.
 
+**A higher-dimensional lift of an existing question is a near-clone unless the added axis changes the *reasoning*, not just the loop nesting.** A 3-D version of a 2-D grid problem (flood-fill / connected components, template or region matching, etc.) is a near-clone of the 2-D original when the only delta is one more index in the neighbour enumeration — that is "another nested loop," not new reasoning. The added dimension earns a slot only when it is *load-bearing*: the answer would be **different or wrong if collapsed to the lower dimension** (e.g. a depth axis that disambiguates motions identical in 2-D, or a containment test where the third axis is what trips the boundary). Before authoring an N-D variant, state explicitly what reasoning the extra dimension trains that the existing lower-D question does not. If the honest answer is "iterate one more axis," redesign around a genuinely distinct pivot or reject — per the track framing, mechanical index bookkeeping is not reasoning depth.
+
 ## JSON schema
 
 ```json

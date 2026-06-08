@@ -341,6 +341,103 @@ def normalize_dataframe(df: pd.DataFrame, *, sort_rows: bool = True) -> pd.DataF
     return df
 
 
+_ORDER_DIRECTION_RE = re.compile(
+    r"\b(?:asc|desc|nulls\s+first|nulls\s+last)\b", re.IGNORECASE
+)
+_BARE_COLUMN_RE = re.compile(
+    r"[A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)?"
+)
+_TRAILING_LIMIT_RE = re.compile(
+    r"\blimit\s+\d+\s*(?:offset\s+\d+\s*)?;?\s*$", re.IGNORECASE | re.DOTALL
+)
+
+
+def _parse_order_by_columns(expected_query: str) -> list[str]:
+    """Return the output-column names of the outermost trailing ORDER BY.
+
+    We anchor on the *last* ORDER BY in the statement — the one that orders the
+    final output — so an upstream ORDER BY inside a window's ``OVER(...)`` or a CTE
+    is ignored. Names are lowercased and table qualifiers stripped (``e.salary`` →
+    ``salary``) to line up with ``normalize_dataframe`` column names. Returns ``[]``
+    when there is no ORDER BY, or when any key term is not a bare column reference
+    (an expression like ``COUNT(*)`` or an ordinal like ``2``), or when the tail
+    is not a clean key list (e.g. the last ORDER BY sits inside a subquery) — the
+    caller then falls back to strict positional comparison, never widening
+    acceptance on a clause it cannot parse.
+    """
+    idx = expected_query.lower().rfind("order by")
+    if idx == -1:
+        return []
+    tail = expected_query[idx + len("order by"):]
+    tail = _TRAILING_LIMIT_RE.sub("", tail).strip().rstrip(";").strip()
+    if not tail:
+        return []
+    columns: list[str] = []
+    for term in tail.split(","):
+        term = _ORDER_DIRECTION_RE.sub("", term).strip()
+        if not _BARE_COLUMN_RE.fullmatch(term):
+            return []  # expression / ordinal / subquery tail — cannot map to a column
+        columns.append(term.split(".")[-1].lower())
+    return columns
+
+
+def _results_match(
+    user_df: pd.DataFrame, expected_df: pd.DataFrame, expected_query: str
+) -> bool:
+    """Decide grading correctness between a user result and the reference result.
+
+    Order-insensitive questions (no trailing ORDER BY) compare as multisets.
+
+    Order-sensitive questions require BOTH (a) the same row multiset AND (b) the
+    user's rows in the same *sequence of ORDER BY key values* as the reference.
+    Condition (b) enforces the requested ordering while tolerating the arbitrary
+    internal order of rows that tie on the key — DuckDB returns tied rows in an
+    unstable order, so the previous full-row positional comparison mis-graded
+    correct answers (including the reference query against itself) whenever the
+    ORDER BY was not a total order. When the key cannot be resolved to output
+    columns, fall back to the original strict positional comparison.
+    """
+    if not _requires_order_sensitive_comparison(expected_query):
+        return normalize_dataframe(user_df, sort_rows=True).equals(
+            normalize_dataframe(expected_df, sort_rows=True)
+        )
+
+    canon_user = normalize_dataframe(user_df, sort_rows=False)
+    canon_expected = normalize_dataframe(expected_df, sort_rows=False)
+
+    if list(canon_user.columns) != list(canon_expected.columns):
+        return False
+
+    # (a) same rows, ignoring order
+    rows_match = (
+        canon_user.sort_values(by=list(canon_user.columns))
+        .reset_index(drop=True)
+        .equals(
+            canon_expected.sort_values(by=list(canon_expected.columns)).reset_index(
+                drop=True
+            )
+        )
+    )
+    if not rows_match:
+        return False
+
+    key_columns = _parse_order_by_columns(expected_query)
+    usable_keys = [c for c in key_columns if c in canon_expected.columns]
+    if not usable_keys or len(canon_user) != len(canon_expected):
+        # Unparseable / unmapped ORDER BY key → preserve strict positional behaviour.
+        return canon_user.reset_index(drop=True).equals(
+            canon_expected.reset_index(drop=True)
+        )
+
+    # (b) the requested ordering is respected iff the ORDER BY key sequence matches;
+    # rows that tie on the key are free to appear in any internal order.
+    return (
+        canon_user[usable_keys]
+        .reset_index(drop=True)
+        .equals(canon_expected[usable_keys].reset_index(drop=True))
+    )
+
+
 def _evaluate_concepts(
     user_query: str,
     question: dict[str, Any],
@@ -422,10 +519,7 @@ def evaluate(user_query: str, expected_query: str, question: dict[str, Any]) -> 
     )
 
     try:
-        order_sensitive = _requires_order_sensitive_comparison(expected_query)
-        correct = normalize_dataframe(user_df, sort_rows=not order_sensitive).equals(
-            normalize_dataframe(expected_df, sort_rows=not order_sensitive)
-        )
+        correct = _results_match(user_df, expected_df, expected_query)
     except Exception:
         correct = False
 
