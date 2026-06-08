@@ -44,10 +44,13 @@ DISPLAY_ORDER: dict[str, dict[str, int]] = {
     "python": {
         # foundational
         "arrays-and-hashing": 1,
-        # intermediate (stacks-and-queues moved here — basic DS toolkit)
+        # intermediate (stacks-and-queues moved here — basic DS toolkit;
+        # greedy-and-scanning + list-transformations added 2026-06-08 via Route 1)
         "string-and-text-processing": 1,
         "stacks-and-queues": 2,
         "sliding-window-patterns": 3,
+        "greedy-and-scanning": 4,
+        "list-transformations": 5,
         # advanced
         "heap-and-priority": 1,
         "graph-and-tree-patterns": 2,
@@ -78,6 +81,7 @@ DISPLAY_ORDER: dict[str, dict[str, int]] = {
         "spark-memory-and-driver-executor": 5,
         "spark-performance": 6,
         "pyspark-windowing": 7,
+        "spark-udfs-and-python-boundary": 8,  # added 2026-06-08 via Route 1
         # advanced
         "query-optimization": 1,
         "spark-fault-tolerance-and-recovery": 2,
@@ -145,9 +149,10 @@ DISPLAY_ORDER: dict[str, dict[str, int]] = {
     "experimentation": {
         # foundational
         "experimentation-starter": 1,
-        # intermediate
+        # intermediate (hypothesis-testing-and-ci added 2026-06-08 via Route 1)
         "experiment-design-and-power": 1,
         "subgroup-analysis-and-hte": 2,
+        "hypothesis-testing-and-ci": 3,
         # advanced
         "variance-reduction-and-behavioral-effects": 1,
         "behavioral-effects-and-interference": 2,

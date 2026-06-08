@@ -54,6 +54,8 @@ PATH_PATTERNS: dict[str, dict[str, str]] = {
         "data-pipelines": "Data Pipeline Scripting",
         "string-and-text-processing": "String & Text Processing",
         "heap-and-priority": "Heaps & Priority Queues",
+        "greedy-and-scanning": "Greedy & Scanning Patterns",
+        "list-transformations": "List & Array Transformations",
     },
     "python-data": {
         "dataframe-basics": "DataFrame Basics",
@@ -78,6 +80,7 @@ PATH_PATTERNS: dict[str, dict[str, str]] = {
         "spark-io-and-file-formats": "Spark I/O & File Formats",
         "spark-fault-tolerance-and-recovery": "Spark Fault Tolerance & Recovery",
         "spark-collections-and-arrays": "Spark Collections & Arrays",
+        "spark-udfs-and-python-boundary": "Spark UDFs & the Python Boundary",
     },
     "data-engineering": {
         "etl-elt": "ETL / ELT Design",
@@ -139,6 +142,7 @@ PATH_PATTERNS: dict[str, dict[str, str]] = {
         "causal-inference": "Causal Inference",
         "subgroup-analysis": "Subgroup Analysis & HTE",
         "behavioral-effects-and-interference": "Behavioral Effects & Interference",
+        "hypothesis-testing-and-ci": "Hypothesis Testing & Confidence Intervals",
     },
 }
 
