@@ -12,7 +12,7 @@
   ],
   "tier": "free",
   "level": "intermediate",
-  "display_order": 4,
+  "display_order": 5,
   "patterns": [
     "greedy-and-scanning"
   ],

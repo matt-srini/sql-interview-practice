@@ -4,7 +4,6 @@
   "description": "Master the cleaning patterns every Pandas practitioner reaches for daily: deduplication, missing-value strategies, categorical binning, type fixes, and the subtle Pandas gotchas that distort results when uncaught.",
   "topic": "python-data",
   "questions": [
-    31006,
     31016,
     31019,
     31020,
@@ -13,19 +12,11 @@
     31026,
     32010,
     32014,
-    32015,
-    32031,
-    32043,
-    32052,
-    33012,
-    33014,
-    33016,
-    33023,
-    33038
+    32043
   ],
   "tier": "free",
-  "level": "intermediate",
-  "display_order": 1,
+  "level": "foundational",
+  "display_order": 2,
   "patterns": [
     "data-cleaning"
   ],

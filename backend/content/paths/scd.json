@@ -13,25 +13,19 @@
     62011,
     62012,
     62024,
-    62035,
-    63002,
-    63011,
-    63016,
-    63022,
-    63032,
-    63033
+    61015
   ],
   "tier": "pro",
   "level": "intermediate",
-  "display_order": 4,
+  "display_order": 5,
   "patterns": [
     "scd"
   ],
   "focus_concepts": [
     "SCD STRUCTURE",
     "DIMENSION DESIGN",
-    "SCHEMA EVOLUTION",
-    "BI-TEMPORAL MODELING"
+    "BI-TEMPORAL MODELING",
+    "SURROGATE VS NATURAL KEYS"
   ],
   "outcomes": "You'll pick the right SCD type for the business question, design conformed and role-playing dimensions correctly, reason about junk/degenerate dimensions, handle schema evolution on shared dimensions under deadline pressure, and write bi-temporal queries with both time axes.",
   "recommended_after": [

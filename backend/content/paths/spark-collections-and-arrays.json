@@ -11,8 +11,8 @@
     43052
   ],
   "tier": "free",
-  "level": "intermediate",
-  "display_order": 3,
+  "level": "advanced",
+  "display_order": 2,
   "patterns": [
     "spark-collections-and-arrays"
   ],

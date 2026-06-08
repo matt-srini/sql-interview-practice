@@ -1,0 +1,26 @@
+{
+  "slug": "storage-and-lakehouse",
+  "title": "Storage & Lakehouse Architecture",
+  "description": "A focused, compact intermediate path on the storage-layer decisions that define a modern data platform: data lake vs data warehouse trade-offs, lakehouse ACID guarantees, and file-format selection for columnar access.",
+  "topic": "data-engineering",
+  "questions": [
+    51019,
+    51020,
+    53018
+  ],
+  "tier": "free",
+  "level": "intermediate",
+  "display_order": 6,
+  "patterns": [
+    "etl-elt"
+  ],
+  "focus_concepts": [
+    "STORAGE ARCHITECTURE",
+    "STORAGE LAYOUT & FILE FORMATS",
+    "DELIVERY SEMANTICS"
+  ],
+  "outcomes": "You'll articulate when a lakehouse beats a pure data lake or warehouse, reason about ACID concurrency guarantees at the storage layer, and choose file formats for downstream columnar query patterns.",
+  "recommended_after": [
+    "pipeline-fundamentals"
+  ]
+}

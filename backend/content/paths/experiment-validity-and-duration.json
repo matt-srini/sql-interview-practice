@@ -1,0 +1,38 @@
+{
+  "slug": "experiment-validity-and-duration",
+  "title": "Experiment Validity & Duration",
+  "description": "Intermediate path covering the validity threats that appear once an experiment is running: peeking, carryover effects, day-of-week bias, sample ratio mismatches, and how to set duration correctly so the result is trustworthy.",
+  "topic": "experimentation",
+  "questions": [
+    91013,
+    91017,
+    91022,
+    91030,
+    92001,
+    92007,
+    92009,
+    92010,
+    92013
+  ],
+  "tier": "free",
+  "level": "intermediate",
+  "display_order": 2,
+  "patterns": [
+    "ab-test-basics",
+    "power-analysis"
+  ],
+  "focus_concepts": [
+    "EXPERIMENT DURATION",
+    "MULTIPLE TESTING",
+    "SAMPLE RATIO MISMATCH",
+    "VARIANCE REDUCTION",
+    "TYPE I AND TYPE II ERRORS",
+    "STATISTICAL SIGNIFICANCE",
+    "CONFIDENCE INTERVALS",
+    "A/B TEST MECHANICS"
+  ],
+  "outcomes": "You'll determine the right experiment duration, detect peeking and carryover bias, interpret sample ratio mismatches, apply variance reduction to tighten confidence intervals, and read a result correctly when multiple metrics are tested simultaneously.",
+  "recommended_after": [
+    "experiment-design-and-power"
+  ]
+}

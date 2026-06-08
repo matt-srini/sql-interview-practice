@@ -18,7 +18,7 @@
   ],
   "tier": "free",
   "level": "advanced",
-  "display_order": 1,
+  "display_order": 4,
   "patterns": [
     "query-optimization"
   ],

@@ -1,0 +1,26 @@
+{
+  "slug": "survival-analysis",
+  "title": "Survival Analysis",
+  "description": "A focused, compact advanced path on time-to-event reasoning: Kaplan-Meier curves, hazard rates, censored observations, and the distributional assumptions that make survival estimates trustworthy.",
+  "topic": "statistics",
+  "questions": [
+    72043,
+    73014,
+    73015
+  ],
+  "tier": "pro",
+  "level": "advanced",
+  "display_order": 5,
+  "patterns": [
+    "descriptive-stats"
+  ],
+  "focus_concepts": [
+    "survival analysis & time-to-event",
+    "confidence intervals & estimation",
+    "distributions"
+  ],
+  "outcomes": "You'll interpret Kaplan-Meier curves including censored observations, compute and reason about hazard rates, and connect time-to-event estimates to the distributional assumptions behind them.",
+  "recommended_after": [
+    "distributions"
+  ]
+}

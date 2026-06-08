@@ -1036,9 +1036,9 @@ def _validate_paths(paths: list[dict], catalogs_by_topic: dict[str, dict[str, li
 
     Rules:
       1. Required schema fields present; slug unique; file matches slug.
-      2. ``level`` in {foundational, intermediate, advanced}; exactly one ``foundational``
+      2. ``level`` in {foundational, intermediate, advanced}; at least one ``foundational``
          per track (UX promise: every track has one obvious entry point).
-         No upper bound on intermediate or advanced.
+         No upper bound on foundational, intermediate, or advanced.
       3. ``patterns[]`` non-empty; each entry resolves to the track's registry
          in ``path_patterns.py``.
       4. ``focus_concepts[]`` non-empty; each entry resolves to a registered
@@ -1175,11 +1175,11 @@ def _validate_paths(paths: list[dict], catalogs_by_topic: dict[str, dict[str, li
 
         paths_by_topic[topic][slug] = path
 
-    # Rule 2: exactly one foundational per track
+    # Rule 2: at least one foundational per track
     for topic in valid_topics:
-        if foundational_counts[topic] != 1:
+        if foundational_counts[topic] < 1:
             raise ValueError(
-                f"Topic {topic} must have exactly one foundational path (found {foundational_counts[topic]})"
+                f"Topic {topic} must have at least one foundational path (found 0)"
             )
 
     # Rule 6: recommended_after references + acyclic

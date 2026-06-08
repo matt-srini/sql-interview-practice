@@ -10,11 +10,12 @@
     53005,
     53007,
     53020,
-    53024
+    53024,
+    52032
   ],
   "tier": "free",
   "level": "advanced",
-  "display_order": 1,
+  "display_order": 2,
   "patterns": [
     "data-quality-and-incident-response"
   ],
@@ -22,7 +23,8 @@
     "DATA QUALITY",
     "INCIDENT RESPONSE",
     "LINEAGE & OBSERVABILITY",
-    "SCHEDULING & SLAS"
+    "SCHEDULING & SLAS",
+    "DATA GOVERNANCE"
   ],
   "outcomes": "You'll place null and freshness checks where they catch problems early, distinguish silent data loss from late arrival, run incident response on data-corruption and schema-drift events without flying blind, and design statistical anomaly detection that scales beyond per-row asserts.",
   "recommended_after": [

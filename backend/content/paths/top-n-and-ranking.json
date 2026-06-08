@@ -14,7 +14,7 @@
   ],
   "tier": "free",
   "level": "intermediate",
-  "display_order": 4,
+  "display_order": 3,
   "patterns": [
     "top-n-and-ranking"
   ],

@@ -1,0 +1,26 @@
+{
+  "slug": "data-quality-skepticism",
+  "title": "Data Quality Skepticism",
+  "description": "A focused, compact advanced path on the diagnostic SQL patterns that catch contradictions, noisy signals, and attribution conflicts before they corrupt downstream metrics.",
+  "topic": "sql",
+  "questions": [
+    13013,
+    13019,
+    13023
+  ],
+  "tier": "pro",
+  "level": "advanced",
+  "display_order": 6,
+  "patterns": [
+    "aggregation"
+  ],
+  "focus_concepts": [
+    "DATA QUALITY SKEPTICISM",
+    "RANKING & TOP-N PER GROUP",
+    "CONDITIONAL LOGIC & CASE"
+  ],
+  "outcomes": "You'll write SQL that surfaces contradictory records, resolves conflicting attribution signals, and flags missing evidence before a metric is reported.",
+  "recommended_after": [
+    "window-functions-mastery"
+  ]
+}

@@ -20,8 +20,8 @@
     53025
   ],
   "tier": "pro",
-  "level": "intermediate",
-  "display_order": 3,
+  "level": "advanced",
+  "display_order": 1,
   "patterns": [
     "delivery-semantics"
   ],

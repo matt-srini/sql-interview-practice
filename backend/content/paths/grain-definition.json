@@ -11,18 +11,20 @@
     62020,
     62021,
     63003,
-    63024
+    63024,
+    62036
   ],
   "tier": "pro",
   "level": "intermediate",
-  "display_order": 2,
+  "display_order": 3,
   "patterns": [
     "grain-definition"
   ],
   "focus_concepts": [
     "GRAIN DEFINITION",
     "FACT TABLE DESIGN",
-    "SCHEMA FROM REQUIREMENTS"
+    "SCHEMA FROM REQUIREMENTS",
+    "CONFORMED DIMENSIONS"
   ],
   "outcomes": "You'll declare grain explicitly on every fact table, distinguish transaction from periodic-snapshot from accumulating-snapshot grain, avoid fact-to-fact fan-out, and translate ambiguous funnel/subscription requirements into a single defensible grain.",
   "recommended_after": [

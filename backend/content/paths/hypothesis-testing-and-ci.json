@@ -11,7 +11,7 @@
     91029
   ],
   "tier": "free",
-  "level": "intermediate",
+  "level": "foundational",
   "display_order": 3,
   "patterns": [
     "hypothesis-testing-and-ci"
@@ -24,6 +24,6 @@
   ],
   "outcomes": "You'll state null and alternative hypotheses unambiguously, interpret p-values without the common 'probability the null is true' fallacy, reason about how CI width scales with √n, and explain why pre-registration constrains false-discovery risk.",
   "recommended_after": [
-    "experiment-design-and-power"
+    "experimentation-starter"
   ]
 }

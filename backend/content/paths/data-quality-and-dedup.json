@@ -1,0 +1,36 @@
+{
+  "slug": "data-quality-and-dedup",
+  "title": "Data Quality & Deduplication",
+  "description": "A focused, advanced path on the quality and deduplication patterns that separate a reliable Pandas pipeline from a brittle one: cross-table entity linking, multi-step dedup, and debugging subtle data-integrity failures.",
+  "topic": "python-data",
+  "questions": [
+    31006,
+    32015,
+    32031,
+    32052,
+    33012,
+    33014,
+    33016,
+    33023,
+    33038
+  ],
+  "tier": "pro",
+  "level": "advanced",
+  "display_order": 4,
+  "patterns": [
+    "data-cleaning"
+  ],
+  "focus_concepts": [
+    "DEDUPLICATION LOGIC",
+    "MULTI-DATAFRAME ENTITY LINKING",
+    "DEBUG PANDAS",
+    "GROUPED AGGREGATION",
+    "DATETIME OPERATIONS",
+    "MEMORY & VECTORIZATION REASONING"
+  ],
+  "outcomes": "You'll deduplicate with correct key choice, link entities across multiple DataFrames without fan-out, catch silent Pandas bugs that corrupt running totals, and apply vectorised approaches where apply() would be too slow.",
+  "recommended_after": [
+    "data-cleaning",
+    "joins-and-merges"
+  ]
+}

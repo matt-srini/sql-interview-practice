@@ -17,8 +17,8 @@
     42005
   ],
   "tier": "free",
-  "level": "intermediate",
-  "display_order": 1,
+  "level": "foundational",
+  "display_order": 2,
   "patterns": [
     "spark-schema-and-type-handling"
   ],

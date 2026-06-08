@@ -1,0 +1,28 @@
+{
+  "slug": "variance-decomposition-anova",
+  "title": "Variance Decomposition & ANOVA",
+  "description": "A focused, compact advanced path on partitioning variance between groups: the F-statistic, sum-of-squares decomposition, linear-combination variance, and what ANOVA answers that a t-test cannot.",
+  "topic": "statistics",
+  "questions": [
+    73009,
+    73012,
+    73017,
+    73023
+  ],
+  "tier": "pro",
+  "level": "advanced",
+  "display_order": 6,
+  "patterns": [
+    "hypothesis-testing"
+  ],
+  "focus_concepts": [
+    "variance decomposition & ANOVA",
+    "hypothesis testing",
+    "distributions",
+    "probability & combinatorics"
+  ],
+  "outcomes": "You'll partition total variance into between- and within-group components, interpret the F-statistic, compute variance for linear combinations, and know when ANOVA is the right tool over pairwise t-tests.",
+  "recommended_after": [
+    "hypothesis-testing"
+  ]
+}

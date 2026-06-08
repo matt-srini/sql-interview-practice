@@ -11,8 +11,8 @@
     43051
   ],
   "tier": "free",
-  "level": "intermediate",
-  "display_order": 7,
+  "level": "advanced",
+  "display_order": 3,
   "patterns": [
     "pyspark-windowing"
   ],

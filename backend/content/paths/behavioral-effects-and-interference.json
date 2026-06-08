@@ -8,11 +8,12 @@
     92006,
     92012,
     92044,
-    93035
+    93035,
+    93036
   ],
   "tier": "free",
-  "level": "advanced",
-  "display_order": 2,
+  "level": "intermediate",
+  "display_order": 1,
   "patterns": [
     "behavioral-effects-and-interference"
   ],
@@ -21,7 +22,9 @@
     "NETWORK EFFECTS",
     "SWITCHBACK EXPERIMENTS",
     "EXPERIMENT DURATION",
-    "EXPERIMENT DESIGN"
+    "EXPERIMENT DESIGN",
+    "SEQUENTIAL TESTING",
+    "TYPE I AND TYPE II ERRORS"
   ],
   "outcomes": "You'll distinguish novelty from genuine treatment effects, recognise when network spillover contaminates A/B control, design switchback experiments that account for temporal autocorrelation, and reason about when short-duration tests miss two-sided marketplace steady-state effects.",
   "recommended_after": [

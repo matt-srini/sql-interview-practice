@@ -9,18 +9,21 @@
     52019,
     52025,
     52035,
-    53011
+    53011,
+    51017,
+    53010
   ],
   "tier": "pro",
   "level": "intermediate",
-  "display_order": 4,
+  "display_order": 3,
   "patterns": [
     "backfill-design"
   ],
   "focus_concepts": [
     "BACKFILL DESIGN",
     "IDEMPOTENCY",
-    "SCD OPERATIONS"
+    "SCD OPERATIONS",
+    "STORAGE ARCHITECTURE"
   ],
   "outcomes": "You'll design partition-aware backfills, make jobs backfill-safe through idempotency, and reason about SCD Type 2 behavior under late-arriving dimension changes.",
   "recommended_after": [

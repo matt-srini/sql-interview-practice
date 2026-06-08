@@ -15,8 +15,8 @@
     13028
   ],
   "tier": "free",
-  "level": "intermediate",
-  "display_order": 2,
+  "level": "advanced",
+  "display_order": 1,
   "patterns": [
     "window-functions"
   ],

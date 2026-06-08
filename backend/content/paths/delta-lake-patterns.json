@@ -16,7 +16,7 @@
   ],
   "tier": "pro",
   "level": "advanced",
-  "display_order": 3,
+  "display_order": 5,
   "patterns": [
     "delta-lake"
   ],

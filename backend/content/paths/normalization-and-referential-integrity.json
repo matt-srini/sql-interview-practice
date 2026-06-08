@@ -12,11 +12,14 @@
     62013,
     62014,
     63007,
-    63015
+    63015,
+    61010,
+    61011,
+    61012
   ],
   "tier": "free",
   "level": "intermediate",
-  "display_order": 3,
+  "display_order": 4,
   "patterns": [
     "normalization",
     "referential-integrity"
@@ -24,7 +27,8 @@
   "focus_concepts": [
     "NORMALIZATION",
     "DENORMALIZATION TRADEOFF",
-    "REFERENTIAL INTEGRITY"
+    "REFERENTIAL INTEGRITY",
+    "SURROGATE VS NATURAL KEYS"
   ],
   "outcomes": "You'll identify 1NF, 2NF, and 3NF violations and explain what each normal form eliminates, describe how denormalization trades update anomalies for read performance in OLAP systems, explain why cloud analytical warehouses don't enforce foreign key constraints and what that means for data quality, and handle late-arriving dimension members without breaking fact table integrity.",
   "recommended_after": [

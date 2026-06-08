@@ -17,7 +17,8 @@
     93009,
     93011,
     93013,
-    93017
+    93017,
+    92029
   ],
   "tier": "pro",
   "level": "advanced",
@@ -36,7 +37,8 @@
     "CAUSAL INFERENCE",
     "EXPERIMENT DURATION",
     "EXPERIMENT DESIGN",
-    "MULTI-ARMED BANDIT"
+    "MULTI-ARMED BANDIT",
+    "STATISTICAL POWER"
   ],
   "outcomes": "You'll apply CUPED using a pre-experiment covariate and explain when the technique is invalid, distinguish novelty effects from genuine long-term treatment effects and prescribe a remedy, identify SUTVA violations in social or marketplace experiments and choose between cluster randomization and holdout-based measurement, and conduct subgroup analyses without inflating the family-wise error rate.",
   "recommended_after": [

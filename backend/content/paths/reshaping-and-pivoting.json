@@ -9,18 +9,19 @@
     33009,
     33010,
     33019,
-    33022
+    33022,
+    33088
   ],
   "tier": "pro",
-  "level": "intermediate",
-  "display_order": 5,
+  "level": "advanced",
+  "display_order": 1,
   "patterns": [
     "reshape-and-pivot"
   ],
   "focus_concepts": [
     "RESHAPING & PIVOT",
-    "RESHAPING & PIVOT",
-    "RESHAPING & PIVOT"
+    "WINDOW & ROLLING OPERATIONS",
+    "DATETIME OPERATIONS"
   ],
   "outcomes": "You'll pivot, melt, stack, and unstack DataFrames to reshape data from long to wide form and back.",
   "recommended_after": [

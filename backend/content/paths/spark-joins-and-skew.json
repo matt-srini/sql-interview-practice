@@ -4,16 +4,10 @@
   "description": "Master the join decisions and skew-mitigation patterns that separate Spark practitioners from Spark sufferers: broadcast vs sort-merge, salting hot partitions, AQE skew handling, fan-out detection, and the OOM scenarios that come from getting any of these wrong.",
   "topic": "pyspark",
   "questions": [
-    41040,
-    42008,
     42011,
     42023,
-    42029,
-    42032,
-    42034,
     42036,
     42038,
-    42054,
     43009,
     43023,
     43024,
@@ -23,8 +17,8 @@
     43050
   ],
   "tier": "free",
-  "level": "intermediate",
-  "display_order": 2,
+  "level": "advanced",
+  "display_order": 1,
   "patterns": [
     "spark-joins-and-skew"
   ],
@@ -36,6 +30,7 @@
   ],
   "outcomes": "You'll choose the right join strategy from query characteristics, recognise skew before it tanks a job, design salting and AQE skew-join solutions, predict row counts after fan-out joins, and diagnose driver OOMs traced to broadcast misuse.",
   "recommended_after": [
+    "spark-join-mechanics",
     "spark-performance"
   ]
 }

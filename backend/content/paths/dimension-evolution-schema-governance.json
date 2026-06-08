@@ -1,0 +1,32 @@
+{
+  "slug": "dimension-evolution-schema-governance",
+  "title": "Dimension Evolution & Schema Governance",
+  "description": "Advanced modeling decisions that arise when dimensions must change without breaking downstream: SCD type selection for analyst-facing tables, bi-temporal query predicates, and safe schema-evolution strategies under compliance deadlines.",
+  "topic": "data-modeling",
+  "questions": [
+    62035,
+    63002,
+    63011,
+    63016,
+    63022,
+    63032,
+    63033
+  ],
+  "tier": "pro",
+  "level": "advanced",
+  "display_order": 3,
+  "patterns": [
+    "scd",
+    "star-snowflake"
+  ],
+  "focus_concepts": [
+    "SCD STRUCTURE",
+    "SCHEMA EVOLUTION",
+    "BI-TEMPORAL MODELING",
+    "DIMENSION DESIGN"
+  ],
+  "outcomes": "You'll choose the right SCD type for analyst-facing tables under churn pressure, write correct bi-temporal predicates on both time axes, and govern schema changes that must not break existing reports.",
+  "recommended_after": [
+    "scd"
+  ]
+}

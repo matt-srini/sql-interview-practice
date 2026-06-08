@@ -9,17 +9,19 @@
     62007,
     62008,
     63009,
-    63018
+    63018,
+    62026
   ],
   "tier": "pro",
-  "level": "advanced",
+  "level": "intermediate",
   "display_order": 1,
   "patterns": [
     "dbt-modeling"
   ],
   "focus_concepts": [
     "DBT MODELING",
-    "WIDE VS NARROW"
+    "WIDE VS NARROW",
+    "SEMANTIC LAYER & METRIC GOVERNANCE"
   ],
   "outcomes": "You'll design a dbt project layer structure from staging through marts, choose between view, table, and incremental materializations based on query patterns and freshness requirements, select an incremental merge strategy for late-arriving event data with backfill constraints, and decide when a wide one-big-table outperforms a normalized star schema for BI tools or ML feature generation.",
   "recommended_after": [

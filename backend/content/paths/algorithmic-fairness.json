@@ -1,0 +1,25 @@
+{
+  "slug": "algorithmic-fairness",
+  "title": "Algorithmic Fairness",
+  "description": "A focused, compact advanced path on fairness in ML systems: reading disaggregated metrics to diagnose disparate impact, comparing demographic parity against equalized odds, and tracing the root cause of a fairness failure to the right model component.",
+  "topic": "ml-fundamentals",
+  "questions": [
+    82105,
+    83126,
+    83127
+  ],
+  "tier": "pro",
+  "level": "advanced",
+  "display_order": 4,
+  "patterns": [
+    "metrics"
+  ],
+  "focus_concepts": [
+    "ALGORITHMIC FAIRNESS",
+    "CLASSIFICATION METRICS"
+  ],
+  "outcomes": "You'll interpret disaggregated classification metrics to surface fairness gaps, distinguish demographic parity from equalized odds, and diagnose the root cause of disparate impact in a production model.",
+  "recommended_after": [
+    "metrics"
+  ]
+}

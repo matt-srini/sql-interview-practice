@@ -1,0 +1,31 @@
+{
+  "slug": "spark-join-mechanics",
+  "title": "Spark Join Mechanics",
+  "description": "Intermediate path through Spark's join layer: broadcast vs sort-merge selection, predicting output row counts, diagnosing double-counting from one-to-many joins, and spotting the ambiguous-column and hint-override failures that bite in production.",
+  "topic": "pyspark",
+  "questions": [
+    41040,
+    42008,
+    42029,
+    42032,
+    42034,
+    42054,
+    42051
+  ],
+  "tier": "free",
+  "level": "intermediate",
+  "display_order": 2,
+  "patterns": [
+    "spark-joins-and-skew"
+  ],
+  "focus_concepts": [
+    "JOIN STRATEGY SELECTION",
+    "DOUBLE-COUNTING DETECTION",
+    "SHUFFLE REASONING",
+    "DEBUG SPARK ERRORS"
+  ],
+  "outcomes": "You'll select the right join strategy, predict row counts through one-to-many joins, catch double-counting before it corrupts metrics, and debug the AnalysisException and hint-override surprises that appear only at scale.",
+  "recommended_after": [
+    "spark-execution-model-and-dag"
+  ]
+}

@@ -11,8 +11,8 @@
     43026
   ],
   "tier": "free",
-  "level": "advanced",
-  "display_order": 2,
+  "level": "intermediate",
+  "display_order": 1,
   "patterns": [
     "spark-fault-tolerance-and-recovery"
   ],

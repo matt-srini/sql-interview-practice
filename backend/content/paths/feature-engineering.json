@@ -21,7 +21,7 @@
   ],
   "tier": "free",
   "level": "intermediate",
-  "display_order": 3,
+  "display_order": 2,
   "patterns": [
     "feature-engineering"
   ],

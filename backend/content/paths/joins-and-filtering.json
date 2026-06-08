@@ -22,7 +22,7 @@
   ],
   "tier": "free",
   "level": "intermediate",
-  "display_order": 1,
+  "display_order": 2,
   "patterns": [
     "joins"
   ],

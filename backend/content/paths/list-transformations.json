@@ -13,8 +13,8 @@
     21029
   ],
   "tier": "free",
-  "level": "intermediate",
-  "display_order": 5,
+  "level": "foundational",
+  "display_order": 2,
   "patterns": [
     "list-transformations"
   ],
@@ -23,7 +23,5 @@
     "INDEXED SEQUENCE REASONING"
   ],
   "outcomes": "You'll cleanly express rotation, flattening, chunking, and transposition on Python lists without index off-by-one bugs, and recognise these shapes in larger pipeline problems.",
-  "recommended_after": [
-    "arrays-and-hashing"
-  ]
+  "recommended_after": []
 }

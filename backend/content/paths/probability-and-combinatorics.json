@@ -19,8 +19,8 @@
     71027
   ],
   "tier": "free",
-  "level": "intermediate",
-  "display_order": 1,
+  "level": "foundational",
+  "display_order": 2,
   "patterns": [
     "probability-and-combinatorics"
   ],

@@ -11,7 +11,7 @@
   ],
   "tier": "pro",
   "level": "advanced",
-  "display_order": 2,
+  "display_order": 1,
   "patterns": [
     "aggregate-and-summary-design"
   ],
