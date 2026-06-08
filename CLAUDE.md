@@ -127,16 +127,7 @@ The five-perspective pushback in § Standing instructions reads this section as 
 
 - **Parallelize coding work when possible.** If a coding task can be split safely and subagents are available, offload disjoint slices in parallel. Review and integrate results before finishing.
 
-- **Work in a git worktree per task; close every task with a merge commit + push + worktree delete.** Each coding task runs in its **own** git worktree off `main` (`git worktree add ../<repo>-<task> -b task/<name>`), not directly on `main`. Commit there — one or several distinct logical commits (no squash). **A task is not "done" until it is integrated and its worktree is gone:**
-  1. In the main checkout, fast-forward `main` from origin first: `git checkout main && git pull --ff-only` (so a parallel session's push can't cause divergence).
-  2. Merge the task branch with a **merge commit**: `git merge --no-ff task/<name> -m "merge task/<name>: <summary>"` — `--no-ff` makes each task **one auditable landmark** in `git log --first-parent main` (never fast-forward, never squash).
-  3. `git push` → `main` ≡ `origin/main`.
-  4. Remove the worktree and delete the branch: `git worktree remove ../<repo>-<task> && git branch -d task/<name>`.
-  **Anti-orphan safeguards (the reason this rule exists — past work was stranded in worktrees and lost track of across sessions):**
-  - At the **start** of every session/task, run `git worktree list` and `git branch --no-merged main`. If any leftover worktree or unmerged task branch exists, **surface it to the user before starting new work** — never silently leave or step on it.
-  - **Never end a session with a dirty worktree.** If a task is interrupted, commit WIP to its task branch and tell the user exactly where it lives (worktree dir + branch). Visibility beats tidiness — stranded-but-visible is recoverable; stranded-and-silent is the failure mode this rule prevents.
-  - Invariant after every completed task: `main` ≡ `origin/main`, **zero** leftover worktrees or task branches.
-  Trivial meta-changes (a one-line doc/config fix) may go straight to `main`. *(Reverses a prior "main only, never use worktrees" rule — which itself existed to prevent lost-in-worktree work; the merge+push+delete discipline plus the start-of-session leftover check is the real cure. See `docs/decisions/DECISIONS.md` 2026-06-08 worktree entries.)*
+- **Work in a git worktree per task, then merge to `main` + push + delete the worktree.** Each coding task runs in its **own** git worktree (`git worktree add ../<repo>-<task> -b <task-branch>`), not directly on `main`. Commit there — one or several logical commits, kept distinct (no squash unless asked). When the task is done and committed: (1) `git checkout main` and **fast-forward `main` from `origin/main` first** (`git pull --ff-only`) so a parallel session's push can't cause divergence; (2) merge **all** the worktree branch's commits into `main` (full history, not squashed); (3) `git push` so `main` ≡ `origin/main`; (4) remove the worktree (`git worktree remove`) and delete its branch. Invariant after every completed task: `main` ≡ `origin/main`, no lingering worktrees or task branches. Trivial meta-changes (a one-line doc/config fix) may go straight to `main`. *(Reverses the prior "always work directly on `main`, never use worktrees" rule — see `docs/decisions/DECISIONS.md` 2026-06-08 worktree-workflow entry.)*
 
 ---
 
