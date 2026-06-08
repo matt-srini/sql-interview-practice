@@ -843,6 +843,47 @@ def _validate_solution_code_presence() -> None:
         raise ValueError(f"solution_code presence validation failed:\n{joined}")
 
 
+def _validate_public_test_cases_type() -> None:
+    """`public_test_cases` must be an integer COUNT, never the list of cases.
+
+    Multiple serializers slice `test_cases` by this field: `get_public_question`
+    (the question-detail endpoints) and `routers/mock.py::_public_question_payload`
+    (mock sessions) both do `test_cases[:public_test_cases]`. Because practice and
+    mock_only questions share the same JSON files, a list/str/float value here throws
+    `TypeError: slice indices must be integers` at request time (HTTP 500) on whichever
+    surface serves it — invisibly to every other content/reference guard, which never
+    call those serializers. This validates the field at the DATA level so all consumers
+    (detail, mock, catalog, future) are protected at once. (Caught in production on
+    22051/23037, authored as lists because the python.md schema example showed the list
+    form; example since corrected.)
+    """
+    errors: list[str] = []
+    for track, file_path in _iter_question_files():
+        with file_path.open("r", encoding="utf-8") as handle:
+            questions = json.load(handle)
+        if not isinstance(questions, list):
+            continue
+        for q in questions:
+            if not isinstance(q, dict) or "public_test_cases" not in q:
+                continue
+            ptc = q["public_test_cases"]
+            ident = f"{track} {q.get('id', '<unknown>')} {q.get('title', '<untitled>')}"
+            # bool is an int subclass — reject it explicitly; accept only plain int.
+            if isinstance(ptc, bool) or not isinstance(ptc, int):
+                errors.append(
+                    f"{ident}: public_test_cases is {type(ptc).__name__} — must be an int COUNT "
+                    f"(serializers slice test_cases[:public_test_cases]; a non-int 500s the endpoint)"
+                )
+            elif isinstance(q.get("test_cases"), list) and not (0 <= ptc <= len(q["test_cases"])):
+                errors.append(
+                    f"{ident}: public_test_cases={ptc} out of range for "
+                    f"len(test_cases)={len(q['test_cases'])}"
+                )
+    if errors:
+        joined = "\n".join(f"- {item}" for item in errors[:200])
+        raise ValueError(f"public_test_cases type validation failed:\n{joined}")
+
+
 _DIFFICULTY_ORDER = {"easy": 0, "medium": 1, "hard": 2}
 
 
@@ -1969,6 +2010,7 @@ def main() -> None:
     _validate_mcq_scenario_questions()
     _validate_mock_fields()
     _validate_solution_code_presence()
+    _validate_public_test_cases_type()
     _validate_sample_cross_bank_titles()
     _validate_mcq_consistency()
     _validate_non_sql_sample_fields()

@@ -981,18 +981,7 @@
         "tolerance": 0.0
       }
     ],
-    "public_test_cases": [
-      {
-        "input": [
-          4.8,
-          4.2,
-          1.5,
-          25
-        ],
-        "expected": 2.0,
-        "tolerance": 0.0001
-      }
-    ],
+    "public_test_cases": 1,
     "hints": [
       "The standard error of the mean is s/√n, not s alone. This measures the precision of the sample mean estimate, not the spread of individual observations.",
       "The t-statistic counts how many standard errors separate x̄ from μ₀. A larger n reduces SE, which increases t for the same raw difference."
@@ -1054,20 +1043,7 @@
         "tolerance": 0.0
       }
     ],
-    "public_test_cases": [
-      {
-        "input": [
-          12,
-          45.2,
-          8.4,
-          10,
-          52.7,
-          9.1
-        ],
-        "expected": -2.0083,
-        "tolerance": 0.001
-      }
-    ],
+    "public_test_cases": 1,
     "hints": [
       "The pooled variance combines within-group variance from both samples, weighted by degrees of freedom. Why n−1 as the weight? Because each sample's variance estimate uses n−1 degrees of freedom.",
       "Once you have s²_p, the SE of (mean₁−mean₂) follows from independence: Var(X̄₁−X̄₂) = s²_p/n₁ + s²_p/n₂ = s²_p·(1/n₁+1/n₂)."
@@ -1132,21 +1108,7 @@
         "tolerance": 0.0
       }
     ],
-    "public_test_cases": [
-      {
-        "input": [
-          1400,
-          8000,
-          1600,
-          8000
-        ],
-        "expected": [
-          4.051,
-          true
-        ],
-        "tolerance": 0.001
-      }
-    ],
+    "public_test_cases": 1,
     "hints": [
       "The rejection decision is symmetric: reject if |z| > z_crit = 1.96, which is the two-tailed 5% critical value for the standard normal distribution.",
       "For the second test case (505 vs 510 out of 10,000 each), the absolute difference is tiny (0.05 pp). What does this tell you about effect size vs sample size in determining statistical significance?"
@@ -1307,24 +1269,7 @@
         "tolerance": 0
       }
     ],
-    "public_test_cases": [
-      {
-        "input": [
-          0.05,
-          0.25
-        ],
-        "expected": 393,
-        "tolerance": 0
-      },
-      {
-        "input": [
-          0.1,
-          0.3
-        ],
-        "expected": 142,
-        "tolerance": 0
-      }
-    ],
+    "public_test_cases": 2,
     "hints": [
       "The sample size formula is the algebraic inverse of the MDE formula from the companion medium question: solve for n given a target MDE.",
       "`math.ceil` rounds up because you cannot have a fractional user — you always need at least n, never fewer."
@@ -1434,28 +1379,7 @@
         "tolerance": 0.02
       }
     ],
-    "public_test_cases": [
-      {
-        "input": [
-          36,
-          466,
-          21,
-          481
-        ],
-        "expected": 0.9809,
-        "tolerance": 0.02
-      },
-      {
-        "input": [
-          36,
-          466,
-          36,
-          466
-        ],
-        "expected": 0.5005,
-        "tolerance": 0.02
-      }
-    ],
+    "public_test_cases": 2,
     "hints": [
       "`random.Random(42).betavariate(alpha, beta)` draws a sample from Beta(alpha, beta). Draw one for each variant per iteration.",
       "Repeat this N times and count how often A's draw exceeds B's draw. Divide by N for the probability estimate."
@@ -1571,30 +1495,7 @@
         "tolerance": 0.002
       }
     ],
-    "public_test_cases": [
-      {
-        "input": [
-          35,
-          500
-        ],
-        "expected": [
-          0.0476,
-          0.0924
-        ],
-        "tolerance": 0.001
-      },
-      {
-        "input": [
-          350,
-          5000
-        ],
-        "expected": [
-          0.0629,
-          0.0771
-        ],
-        "tolerance": 0.001
-      }
-    ],
+    "public_test_cases": 2,
     "hints": [
       "The z-score for a conf-level CI is NormalDist().inv_cdf((1 + conf) / 2) — this gives z such that P(-z < Z < z) = conf.",
       "Standard error for a proportion is sqrt(phat * (1 - phat) / n). After computing bounds, clamp to [0, 1] to avoid impossible values."
@@ -1675,30 +1576,7 @@
         "tolerance": 0.01
       }
     ],
-    "public_test_cases": [
-      {
-        "input": [
-          [
-            1.2,
-            0.8,
-            2.1,
-            0.5,
-            1.7,
-            0.9,
-            1.4,
-            0.6,
-            2.3,
-            1.0
-          ]
-        ],
-        "expected": [
-          0.8,
-          0.304164,
-          1.295836
-        ],
-        "tolerance": 0.01
-      }
-    ],
+    "public_test_cases": 1,
     "hints": [
       "The MLE for an exponential rate is the reciprocal of the sample mean. Write out the log-likelihood and differentiate to confirm.",
       "Fisher information for Exp(λ) is 1/λ². The asymptotic SE is 1/sqrt(n × I(λ̂)) = λ̂/sqrt(n)."
@@ -1778,26 +1656,7 @@
         "tolerance": 0.01
       }
     ],
-    "public_test_cases": [
-      {
-        "input": [
-          1000,
-          0.2,
-          0.01
-        ],
-        "expected": 0.1388,
-        "tolerance": 0.01
-      },
-      {
-        "input": [
-          5000,
-          0.2,
-          0.01
-        ],
-        "expected": 0.3465,
-        "tolerance": 0.01
-      }
-    ],
+    "public_test_cases": 2,
     "hints": [
       "This is a one-sided test — use z_{1-α} (not z_{1-α/2}). For α=0.05, z_α ≈ 1.645, not 1.96.",
       "Power = Φ(δ / SE_alt − z_α). δ is the non-inferiority margin (how far from the inferiority boundary you're trying to show you are)."
@@ -1901,26 +1760,7 @@
         "tolerance": 0.0001
       }
     ],
-    "public_test_cases": [
-      {
-        "input": [
-          0.001,
-          0.9,
-          0.99
-        ],
-        "expected": 0.082645,
-        "tolerance": 0.0001
-      },
-      {
-        "input": [
-          0.01,
-          0.95,
-          0.95
-        ],
-        "expected": 0.161017,
-        "tolerance": 0.0001
-      }
-    ],
+    "public_test_cases": 2,
     "hints": [
       "P(positive test) = P(positive | disease) × P(disease) + P(positive | no disease) × P(no disease). Write this out using the given parameters.",
       "P(positive | no disease) = 1 - specificity (false positive rate). Then apply Bayes' theorem."
@@ -1999,26 +1839,7 @@
         "tolerance": 0.0001
       }
     ],
-    "public_test_cases": [
-      {
-        "input": [
-          10,
-          3,
-          0.5
-        ],
-        "expected": 0.945312,
-        "tolerance": 1e-05
-      },
-      {
-        "input": [
-          20,
-          15,
-          0.8
-        ],
-        "expected": 0.804208,
-        "tolerance": 0.0001
-      }
-    ],
+    "public_test_cases": 2,
     "hints": [
       "`math.comb(n, i)` computes C(n,i). Loop from k to n (inclusive), computing P(X=i) for each i and sum them.",
       "P(X = i) = C(n,i) × pⁱ × (1−p)^(n−i). This is one term of the binomial PMF."
@@ -2123,24 +1944,7 @@
         "tolerance": 1e-05
       }
     ],
-    "public_test_cases": [
-      {
-        "input": [
-          0,
-          2.5
-        ],
-        "expected": 0.082085,
-        "tolerance": 1e-05
-      },
-      {
-        "input": [
-          3,
-          2.5
-        ],
-        "expected": 0.213763,
-        "tolerance": 1e-05
-      }
-    ],
+    "public_test_cases": 2,
     "hints": [
       "P(X = k) = exp(-lambda) * lambda^k / k!. `math.exp`, `math.factorial` are your tools.",
       "Validate inputs first: k must be non-negative (can't have -1 events), lambda must be positive (rate must be > 0)."
@@ -2324,26 +2128,7 @@
         "tolerance": 1e-05
       }
     ],
-    "public_test_cases": [
-      {
-        "input": [
-          [
-            1.0,
-            2.0,
-            3.0,
-            4.0,
-            5.0,
-            6.0,
-            7.0,
-            8.0,
-            9.0,
-            10.0
-          ]
-        ],
-        "expected": 0.889939,
-        "tolerance": 0.1
-      }
-    ],
+    "public_test_cases": 1,
     "hints": [
       "`random.choices(values, k=n)` draws n values with replacement from values — this is one bootstrap resample.",
       "Compute the mean of each resample. Then take the standard deviation of all those means — that's the bootstrap SE."
@@ -2478,26 +2263,7 @@
         "tolerance": 50
       }
     ],
-    "public_test_cases": [
-      {
-        "input": [
-          1,
-          0.1,
-          0.15
-        ],
-        "expected": 687,
-        "tolerance": 5
-      },
-      {
-        "input": [
-          10,
-          0.1,
-          0.15
-        ],
-        "expected": 1165,
-        "tolerance": 5
-      }
-    ],
+    "public_test_cases": 2,
     "hints": [
       "Bonferroni correction: alpha per test = fwer / k. More tests → smaller alpha per test → larger z-score needed → more users per arm.",
       "The formula is n = ceil(2 * ((z_alpha2 + z_beta) * sigma / mde)^2) where sigma = sqrt(p_bar*(1-p_bar)) and z_alpha2 uses the Bonferroni-corrected alpha."
@@ -2624,24 +2390,7 @@
         "tolerance": 0.0
       }
     ],
-    "public_test_cases": [
-      {
-        "input": [
-          [
-            1.0,
-            2.0,
-            3.0,
-            4.0,
-            5.0
-          ]
-        ],
-        "expected": [
-          0.0,
-          -1.3
-        ],
-        "tolerance": 0.0001
-      }
-    ],
+    "public_test_cases": 1,
     "hints": [
       "Compute the central moments mₖ = mean of (xᵢ − x̅)^k for k = 2, 3, 4 in a single pass each.",
       "Skewness uses m₂^(3/2) as the denominator; excess kurtosis uses m₂² and then subtracts 3."
@@ -2742,35 +2491,7 @@
         "tolerance": 0.0001
       }
     ],
-    "public_test_cases": [
-      {
-        "input": [
-          [
-            [
-              2.0,
-              4.0,
-              6.0
-            ],
-            [
-              8.0,
-              10.0,
-              12.0
-            ],
-            [
-              1.0,
-              3.0,
-              5.0
-            ]
-          ]
-        ],
-        "expected": [
-          86.0,
-          24.0,
-          0.7818
-        ],
-        "tolerance": 0.0001
-      }
-    ],
+    "public_test_cases": 1,
     "hints": [
       "Compute grand mean and each group mean first. SS_between weights each group mean deviation by the group size.",
       "η² = SS_between / SS_total where SS_total = SS_between + SS_within — the same decomposition as R² in regression."
@@ -2902,32 +2623,7 @@
         "tolerance": 0.0
       }
     ],
-    "public_test_cases": [
-      {
-        "input": [
-          [
-            [
-              1,
-              1
-            ],
-            [
-              1,
-              1
-            ],
-            [
-              2,
-              0
-            ],
-            [
-              3,
-              1
-            ]
-          ]
-        ],
-        "expected": 1.0,
-        "tolerance": 0.0
-      }
-    ],
+    "public_test_cases": 1,
     "hints": [
       "Sort the unique event times. For each t, count how many observations in the original data have time ≥ t to get the risk set size.",
       "Track S multiplicatively from 1.0. Return the current t as soon as S drops to or below 0.5. If the loop ends without S hitting 0.5, return -1.0."

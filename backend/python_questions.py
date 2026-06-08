@@ -83,7 +83,13 @@ def get_question(question_id: int) -> Optional[dict[str, Any]]:
 
 
 def get_public_question(question: dict[str, Any]) -> dict[str, Any]:
-    public_count = question.get("public_test_cases", len(question.get("test_cases", [])))
+    _test_cases = question.get("test_cases", [])
+    ptc = question.get("public_test_cases")
+    # public_test_cases is an int COUNT by contract; coerce defensively (a stray list
+    # → its length) so a malformed field can never raise on the slice below. See
+    # tests/test_public_question_serialization.py and validate_content
+    # _validate_public_test_cases_type.
+    public_count = len(ptc) if isinstance(ptc, list) else (ptc if isinstance(ptc, int) else len(_test_cases))
     return {
         "id": question["id"],
         "order": question["order"],

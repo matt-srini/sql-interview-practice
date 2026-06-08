@@ -1091,18 +1091,7 @@
         "tolerance": 0.0001
       }
     ],
-    "public_test_cases": [
-      {
-        "input": [
-          6,
-          14,
-          25,
-          80
-        ],
-        "expected": 0.31,
-        "tolerance": 0.0
-      }
-    ],
+    "public_test_cases": 1,
     "hints": [
       "The posterior is also a Beta distribution — the conjugate prior property means the update has a closed-form formula. Identify the updated shape parameters.",
       "The posterior mean of Beta(a, b) is a / (a + b). Apply the update first, then compute the mean."
@@ -1331,16 +1320,7 @@
         "tolerance": 0.0
       }
     ],
-    "public_test_cases": [
-      {
-        "input": [
-          4,
-          0.05
-        ],
-        "expected": 0.1855,
-        "tolerance": 0.0
-      }
-    ],
+    "public_test_cases": 1,
     "hints": [
       "The probability of NO false positive across k independent tests is (1−α)^k. The FWER is the complement of that.",
       "Why does the Bonferroni correction set the per-test α to α_family/k? Trace through: if each test is run at α/k, what is (1−α/k)^k approximately equal to?"
@@ -1423,18 +1403,7 @@
         "tolerance": 0.0
       }
     ],
-    "public_test_cases": [
-      {
-        "input": [
-          250,
-          5000,
-          300,
-          5000
-        ],
-        "expected": 2.1932,
-        "tolerance": 0.001
-      }
-    ],
+    "public_test_cases": 1,
     "hints": [
       "Under H₀ the two groups have the same true proportion. What is the best estimate of that common proportion? Use it to compute the standard error of (p̂₂−p̂₁).",
       "SE = sqrt(p_pool*(1-p_pool)*(1/n₁ + 1/n₂)). The factor (1/n₁+1/n₂) accounts for both sample sizes contributing to the variance of the difference."
@@ -1745,48 +1714,7 @@
         "description": "strong positive correlation with slight noise"
       }
     ],
-    "public_test_cases": [
-      {
-        "input": [
-          [
-            1.0,
-            2.0,
-            3.0,
-            4.0,
-            5.0
-          ],
-          [
-            2.0,
-            4.0,
-            6.0,
-            8.0,
-            10.0
-          ]
-        ],
-        "expected": 1.0,
-        "tolerance": 1e-09
-      },
-      {
-        "input": [
-          [
-            1.0,
-            2.0,
-            3.0,
-            4.0,
-            5.0
-          ],
-          [
-            10.0,
-            8.0,
-            6.0,
-            4.0,
-            2.0
-          ]
-        ],
-        "expected": -1.0,
-        "tolerance": 1e-09
-      }
-    ],
+    "public_test_cases": 2,
     "hints": [
       "Pearson r = sum of (xi−x̄)(yi−ȳ) in the numerator, divided by the product of the two root-sum-of-squares in the denominator.",
       "The denominator is sqrt(SS_x * SS_y) where SS_x = sum of squared deviations from the mean."
@@ -1981,24 +1909,7 @@
         "tolerance": 0.001
       }
     ],
-    "public_test_cases": [
-      {
-        "input": [
-          500,
-          0.25
-        ],
-        "expected": 0.044297,
-        "tolerance": 0.0005
-      },
-      {
-        "input": [
-          1000,
-          0.2
-        ],
-        "expected": 0.025058,
-        "tolerance": 0.0005
-      }
-    ],
+    "public_test_cases": 2,
     "hints": [
       "The MDE formula uses two z-scores: one for the significance threshold (z_{α/2}) and one for the power requirement (z_β). `statistics.NormalDist().inv_cdf(p)` gives the z-score such that P(Z ≤ z) = p.",
       "The standard error of the difference between two equal-sized groups is σ × √(2/n), not σ/√n."
@@ -2181,34 +2092,7 @@
         "tolerance": 0
       }
     ],
-    "public_test_cases": [
-      {
-        "input": [
-          1,
-          1,
-          35,
-          500
-        ],
-        "expected": [
-          36,
-          466
-        ],
-        "tolerance": 0
-      },
-      {
-        "input": [
-          10,
-          90,
-          50,
-          200
-        ],
-        "expected": [
-          60,
-          240
-        ],
-        "tolerance": 0
-      }
-    ],
+    "public_test_cases": 2,
     "hints": [
       "The Beta distribution's two parameters encode prior counts of successes (α) and failures (β). Observing k more successes and n−k more failures adds directly to each count.",
       "Write out the posterior parameters as algebraic expressions of alpha_prior, beta_prior, k, and n. The conjugate update formula is a single addition for each parameter."
@@ -2444,26 +2328,7 @@
         "tolerance": 0.005
       }
     ],
-    "public_test_cases": [
-      {
-        "input": [
-          500,
-          0.1,
-          0.15
-        ],
-        "expected": 0.6691,
-        "tolerance": 0.005
-      },
-      {
-        "input": [
-          2000,
-          0.1,
-          0.15
-        ],
-        "expected": 0.9977,
-        "tolerance": 0.005
-      }
-    ],
+    "public_test_cases": 2,
     "hints": [
       "Power uses the standard error under the *alternative* hypothesis, not under the null. Under H₁, the true proportions are p1 and p2, so SE_alt = sqrt(p1*(1-p1)/n + p2*(1-p2)/n).",
       "The non-centrality parameter ncp = |p2 - p1| / SE_alt tells you how many SEs the true effect is from zero. Power ≈ Phi(ncp - z_critical)."
@@ -2709,44 +2574,7 @@
         "tolerance": 1e-06
       }
     ],
-    "public_test_cases": [
-      {
-        "input": [
-          [
-            0,
-            1,
-            2,
-            3
-          ],
-          [
-            0.125,
-            0.375,
-            0.375,
-            0.125
-          ]
-        ],
-        "expected": 1.5,
-        "tolerance": 1e-09
-      },
-      {
-        "input": [
-          [
-            -10,
-            0,
-            5,
-            20
-          ],
-          [
-            0.1,
-            0.4,
-            0.4,
-            0.1
-          ]
-        ],
-        "expected": 3.0,
-        "tolerance": 1e-09
-      }
-    ],
+    "public_test_cases": 2,
     "hints": [
       "Expected value is Σ (outcome × probability). Zip the two lists together and sum the products.",
       "Validate first: check list lengths match, then check probabilities sum to ~1.0 before computing."
@@ -2910,22 +2738,7 @@
         "tolerance": 0.0001
       }
     ],
-    "public_test_cases": [
-      {
-        "input": [
-          1.0
-        ],
-        "expected": 0.682689,
-        "tolerance": 1e-05
-      },
-      {
-        "input": [
-          2.0
-        ],
-        "expected": 0.9545,
-        "tolerance": 0.0001
-      }
-    ],
+    "public_test_cases": 2,
     "hints": [
       "P(-k ≤ Z ≤ k) = P(Z ≤ k) - P(Z ≤ -k). By symmetry of the normal distribution, P(Z ≤ -k) = 1 - P(Z ≤ k) = 1 - Φ(k).",
       "`NormalDist()` creates a standard normal (mean=0, sd=1). `.cdf(k)` returns P(Z ≤ k)."
@@ -3227,33 +3040,7 @@
         "tolerance": 1e-05
       }
     ],
-    "public_test_cases": [
-      {
-        "input": [
-          [
-            1.0,
-            2.0,
-            3.0,
-            4.0,
-            5.0
-          ]
-        ],
-        "expected": 0.707107,
-        "tolerance": 1e-05
-      },
-      {
-        "input": [
-          [
-            5.0,
-            10.0,
-            15.0,
-            20.0
-          ]
-        ],
-        "expected": 3.227486,
-        "tolerance": 1e-05
-      }
-    ],
+    "public_test_cases": 2,
     "hints": [
       "Use `statistics.stdev(values)` for the sample standard deviation (n-1 denominator). Then divide by `math.sqrt(n)`.",
       "SE = s / sqrt(n). If all values are identical, s = 0 and SE = 0 — a constant variable has no sampling uncertainty."
@@ -3414,33 +3201,7 @@
         "tolerance": 0
       }
     ],
-    "public_test_cases": [
-      {
-        "input": [
-          [
-            0.001,
-            0.012,
-            0.024,
-            0.031,
-            0.052,
-            0.081,
-            0.158,
-            0.223
-          ]
-        ],
-        "expected": [
-          true,
-          true,
-          false,
-          false,
-          false,
-          false,
-          false,
-          false
-        ],
-        "tolerance": 0
-      }
-    ],
+    "public_test_cases": 1,
     "hints": [
       "Sort p-values ascending and find the largest rank k where p_(k) ≤ α×k/m. Then reject everything at ranks 1 through k (not just k — all earlier ranks are also rejected).",
       "Keep track of original indices so you can map rejections back to the original order."
@@ -3573,36 +3334,7 @@
         "tolerance": 0.0
       }
     ],
-    "public_test_cases": [
-      {
-        "input": [
-          [
-            10.0,
-            20.0,
-            30.0,
-            40.0,
-            50.0,
-            60.0,
-            70.0,
-            80.0,
-            90.0,
-            100.0,
-            110.0,
-            120.0,
-            130.0,
-            140.0,
-            150.0,
-            160.0,
-            170.0,
-            180.0,
-            190.0,
-            200.0
-          ]
-        ],
-        "expected": 105.0,
-        "tolerance": 0.0
-      }
-    ],
+    "public_test_cases": 1,
     "hints": [
       "Sort the data, then count how many values to drop from each end using floor(0.10 × n).",
       "Slice away k values from each end, then take the arithmetic mean of the remainder."
@@ -3749,31 +3481,7 @@
         "tolerance": 0.0001
       }
     ],
-    "public_test_cases": [
-      {
-        "input": [
-          [
-            [
-              2.0,
-              4.0,
-              6.0
-            ],
-            [
-              8.0,
-              10.0,
-              12.0
-            ],
-            [
-              1.0,
-              3.0,
-              5.0
-            ]
-          ]
-        ],
-        "expected": 10.75,
-        "tolerance": 0.0001
-      }
-    ],
+    "public_test_cases": 1,
     "hints": [
       "Compute the grand mean across all observations, then each group mean. The F-statistic is the ratio of between-group to within-group variance.",
       "Between-group MS = SS_between / (k−1); within-group MS = SS_within / (N−k). Then F = MS_between / MS_within."
@@ -3911,40 +3619,7 @@
         "tolerance": 0.0001
       }
     ],
-    "public_test_cases": [
-      {
-        "input": [
-          [
-            [
-              1,
-              1
-            ],
-            [
-              2,
-              0
-            ],
-            [
-              3,
-              1
-            ],
-            [
-              4,
-              1
-            ],
-            [
-              5,
-              0
-            ]
-          ]
-        ],
-        "expected": [
-          0.8,
-          0.5333,
-          0.2667
-        ],
-        "tolerance": 0.0001
-      }
-    ],
+    "public_test_cases": 1,
     "hints": [
       "Sort the unique event times. For each one, count how many observations have time ≥ t — that is the risk set size nᵢ.",
       "S(t) is the running product of (1 − d/n) over all event times up to t. Start from S = 1.0 and multiply at each step."

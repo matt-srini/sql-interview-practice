@@ -660,11 +660,15 @@ def _public_question_payload(question: dict, track: str) -> dict:
         payload["dataset_files"] = question.get("dataset_files", [])
     # Python: include test case inputs (no expected outputs)
     if track == "python":
-        public_cases = [
+        all_cases = question.get("test_cases", [])
+        ptc = question.get("public_test_cases")
+        # Coerce defensively: public_test_cases is an int count by contract, but a stray
+        # list (its length) must not raise on the slice. Mirrors the statistics branch below.
+        public_count = len(ptc) if isinstance(ptc, list) else (ptc if isinstance(ptc, int) else len(all_cases))
+        payload["test_cases"] = [
             {"input": tc.get("input"), "description": tc.get("description", "")}
-            for tc in question.get("test_cases", [])[:question.get("public_test_cases", 999)]
+            for tc in all_cases[:public_count]
         ]
-        payload["test_cases"] = public_cases
     # Pandas: include available dataframes info
     if track == "python-data":
         payload["dataframes"] = {
