@@ -22,14 +22,14 @@ Headline coverage tables reflect the **live state of paths**, not tag-derived hy
 | Track | Practice Qs | In a live path | Orphans | Divergent | Patterns (proposed) | Healthy | Uneven | Thin | Empty |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
 | sql | 118 | 102 | 16 | 24 | 14 | 5 | 5 | 1 | 3 |
-| python | 81 | 44 | 37 | 6 | 9 | 1 | 4 | 3 | 1 |
+| python | 81 | 76 | 5 | 20 | 9 | 2 | 4 | 2 | 1 |
 | python-data | 93 | 90 | 3 | 15 | 9 | 5 | 3 | 0 | 1 |
-| pyspark | 127 | 112 | 15 | 20 | 7 | 2 | 4 | 0 | 1 |
+| pyspark | 127 | 127 | 0 | 28 | 7 | 3 | 3 | 0 | 1 |
 | data-engineering | 91 | 85 | 6 | 10 | 9 | 5 | 4 | 0 | 0 |
 | data-modeling | 81 | 73 | 8 | 0 | 14 | 6 | 1 | 4 | 3 |
 | statistics | 100 | 94 | 6 | 4 | 11 | 1 | 8 | 0 | 2 |
 | ml-fundamentals | 100 | 97 | 3 | 19 | 15 | 4 | 8 | 1 | 2 |
-| experimentation | 87 | 73 | 14 | 26 | 9 | 1 | 6 | 0 | 2 |
+| experimentation | 87 | 83 | 4 | 33 | 9 | 1 | 6 | 0 | 2 |
 
 **Legend:**  
 `In a live path` = practice questions currently included in some live path's `questions[]`.  
@@ -161,21 +161,21 @@ a starting point for deciding which path (existing or new) should include them.
 ---
 ## python
 
-Practice questions: **81** (44 in live paths · 37 orphans · 6 divergent). Proposed canonical patterns: **9**.
+Practice questions: **81** (76 in live paths · 5 orphans · 20 divergent). Proposed canonical patterns: **9**.
 
 ### Pattern coverage (live-path-aggregated)
 
 | Pattern | Display | Easy | Medium | Hard | Total | Class |
 |---|---|---:|---:|---:|---:|---|
-| `arrays-and-hashing` | Arrays & Hashing | 3 | 2 | 0 | 5 | ⚠️ uneven |
-| `sliding-window` | Sliding Window & Two Pointers | 3 | 4 | 2 | 9 | ✅ healthy |
+| `arrays-and-hashing` | Arrays & Hashing | 9 | 6 | 0 | 15 | ⚠️ uneven |
+| `sliding-window` | Sliding Window & Two Pointers | 3 | 5 | 2 | 10 | ✅ healthy |
 | `stacks-and-queues` | Stacks & Queues | 1 | 3 | 0 | 4 | 🟡 thin (needs content) |
-| `heap-and-priority` | Heaps & Priority Queues | 0 | 2 | 2 | 4 | 🟡 thin (needs content) |
+| `heap-and-priority` | Heaps & Priority Queues | 0 | 2 | 3 | 5 | ⚠️ uneven |
 | `dynamic-programming` | Dynamic Programming | 0 | 2 | 3 | 5 | ⚠️ uneven |
 | `graph-traversal` | Graph & Tree Traversal | 0 | 1 | 6 | 7 | ⚠️ uneven |
 | `string-and-text-processing` | String & Text Processing | 3 | 0 | 1 | 4 | 🟡 thin (needs content) |
 | `streaming-and-online` | Streaming & Online Algorithms | 0 | 0 | 0 | 0 | 🔴 empty (no live path or no questions) |
-| `data-pipeline-scripting` | Data Pipeline Scripting | 4 | 2 | 0 | 6 | ⚠️ uneven |
+| `data-pipeline-scripting` | Data Pipeline Scripting | 7 | 6 | 1 | 14 | ✅ healthy |
 
 ### Concept-family → pattern landings
 
@@ -186,22 +186,22 @@ A question contributes once per family tag — multi-tag questions count multipl
 | Family | Top landing | Other landings |
 |---|---|---|
 | BACKTRACKING & COMBINATORIAL SEARCH | `graph-traversal` (1) | — |
-| BINARY SEARCH | `(orphan)` (2) | `dynamic-programming` (1) |
+| BINARY SEARCH | `arrays-and-hashing` (1) | `dynamic-programming` (1), `greedy-and-scanning` (1) |
 | DYNAMIC PROGRAMMING (1D) | `dynamic-programming` (3) | `graph-traversal` (2) |
 | DYNAMIC PROGRAMMING (2D) | `dynamic-programming` (2) | — |
 | GRAPH TRAVERSAL (BFS / DFS) | `graph-traversal` (5) | `(orphan)` (1) |
-| GREEDY CHOICE | `(orphan)` (5) | `heap-and-priority` (2) |
-| HASH-MAP STATE | `(orphan)` (15) | `arrays-and-hashing` (5), `sliding-window` (4), `data-pipeline-scripting` (2), `dynamic-programming` (1) |
-| HEAP & PRIORITY QUEUE | `heap-and-priority` (4) | `sliding-window` (1), `graph-traversal` (1), `(orphan)` (1) |
-| IN-PLACE TRANSFORMATION & SPACE OPTIMIZATION | `graph-traversal` (1) | `(orphan)` (1), `sliding-window` (1) |
-| INDEXED SEQUENCE REASONING | `(orphan)` (20) | `string-and-text-processing` (3), `arrays-and-hashing` (2), `data-pipeline-scripting` (2), `heap-and-priority` (2) |
-| LIST & COLLECTION TRANSFORMATION | `(orphan)` (17) | `data-pipeline-scripting` (5), `arrays-and-hashing` (1) |
-| MODULAR ARITHMETIC & NUMBER THEORY | `(orphan)` (2) | — |
+| GREEDY CHOICE | `greedy-and-scanning` (5) | `heap-and-priority` (2) |
+| HASH-MAP STATE | `arrays-and-hashing` (11) | `data-pipeline-scripting` (7), `sliding-window` (4), `(orphan)` (3), `dynamic-programming` (1) |
+| HEAP & PRIORITY QUEUE | `heap-and-priority` (5) | `sliding-window` (1), `graph-traversal` (1) |
+| IN-PLACE TRANSFORMATION & SPACE OPTIMIZATION | `graph-traversal` (1) | `arrays-and-hashing` (1), `sliding-window` (1) |
+| INDEXED SEQUENCE REASONING | `arrays-and-hashing` (10) | `list-transformations` (6), `string-and-text-processing` (3), `greedy-and-scanning` (3), `data-pipeline-scripting` (3) |
+| LIST & COLLECTION TRANSFORMATION | `data-pipeline-scripting` (13) | `list-transformations` (7), `arrays-and-hashing` (1), `heap-and-priority` (1), `sliding-window` (1) |
+| MODULAR ARITHMETIC & NUMBER THEORY | `list-transformations` (1) | `arrays-and-hashing` (1) |
 | SLIDING WINDOW | `sliding-window` (6) | `stacks-and-queues` (1) |
 | STACK & MONOTONIC STRUCTURES | `stacks-and-queues` (4) | `sliding-window` (1) |
 | STREAMING / ONLINE REDUCTION | `(orphan)` (4) | `stacks-and-queues` (1) |
-| STRING PATTERN REASONING | `string-and-text-processing` (4) | `(orphan)` (4), `data-pipeline-scripting` (4), `arrays-and-hashing` (2), `sliding-window` (1) |
-| TWO POINTERS | `sliding-window` (4) | `(orphan)` (1) |
+| STRING PATTERN REASONING | `data-pipeline-scripting` (6) | `string-and-text-processing` (4), `arrays-and-hashing` (4), `sliding-window` (1), `stacks-and-queues` (1) |
+| TWO POINTERS | `sliding-window` (5) | — |
 | UNION-FIND & DISJOINT SET | `graph-traversal` (1) | — |
 | WEIGHTED SHORTEST PATH | `graph-traversal` (2) | — |
 
@@ -215,8 +215,22 @@ primary objective genuinely differs from its tag-primary primitive.
 |---|---|---|---|---|---|
 | 21007 | easy | `arrays-and-hashing` | `arrays-and-hashing` | `data-pipeline-scripting` | Deduplicate Record IDs |
 | 23012 | hard | `dynamic-programming` | `dynamic-programming` | `arrays-and-hashing` | Longest Increasing Subsequence |
+| 21008 | easy | `greedy-and-scanning` | `greedy-and-scanning` | `arrays-and-hashing` | Peak Value Scanner |
+| 21038 | easy | `greedy-and-scanning` | `greedy-and-scanning` | `arrays-and-hashing` | First Sensor Reading Above Threshold |
+| 22027 | medium | `greedy-and-scanning` | `greedy-and-scanning` | `arrays-and-hashing` | Task scheduler |
+| 22043 | medium | `greedy-and-scanning` | `greedy-and-scanning` | `arrays-and-hashing` | Minimum Batch Processing Capacity |
+| 23001 | hard | `greedy-and-scanning` | `greedy-and-scanning` | `arrays-and-hashing` | Merge Intervals |
+| 23023 | hard | `heap-and-priority` | `heap-and-priority` | `data-pipeline-scripting` | Merge K sorted lists |
+| 21003 | easy | `list-transformations` | `list-transformations` | `data-pipeline-scripting` | Record Category Labeler |
+| 21016 | easy | `list-transformations` | `list-transformations` | `data-pipeline-scripting` | Flatten One Level |
+| 21017 | easy | `list-transformations` | `list-transformations` | `data-pipeline-scripting` | Rotate List Left |
+| 21025 | easy | `list-transformations` | `list-transformations` | `data-pipeline-scripting` | Remove Consecutive Duplicates |
+| 21026 | easy | `list-transformations` | `list-transformations` | `data-pipeline-scripting` | Chunk List |
+| 21028 | easy | `list-transformations` | `list-transformations` | `data-pipeline-scripting` | Matrix Transpose |
+| 21029 | easy | `list-transformations` | `list-transformations` | `data-pipeline-scripting` | Second Largest |
 | 21033 | easy | `practical-data-python` | `data-pipeline-scripting` | `string-and-text-processing` | Most Recent Date |
 | 21002 | easy | `sliding-window-patterns` | `sliding-window` | `string-and-text-processing` | Symmetric Code Validator |
+| 22049 | medium | `sliding-window-patterns` | `sliding-window` | `data-pipeline-scripting` | Merge Two Sorted Event Streams |
 | 22002 | medium | `stacks-and-queues` | `stacks-and-queues` | `sliding-window` | Sliding Window Maximum |
 | 22009 | medium | `stacks-and-queues` | `stacks-and-queues` | `streaming-and-online` | Minimum Stack |
 
@@ -228,48 +242,15 @@ a starting point for deciding which path (existing or new) should include them.
 
 | QID | Diff | Tag-suggested pattern | Title |
 |---|---|---|---|
-| 21003 | easy | `data-pipeline-scripting` | Record Category Labeler |
-| 21008 | easy | `arrays-and-hashing` | Peak Value Scanner |
-| 21012 | easy | `arrays-and-hashing` | Binary Search |
-| 21013 | easy | `arrays-and-hashing` | Count Occurrences |
-| 21016 | easy | `data-pipeline-scripting` | Flatten One Level |
-| 21017 | easy | `data-pipeline-scripting` | Rotate List Left |
-| 21020 | easy | `arrays-and-hashing` | First Non-Repeating Character |
-| 21023 | easy | `arrays-and-hashing` | Missing Number |
-| 21025 | easy | `data-pipeline-scripting` | Remove Consecutive Duplicates |
-| 21026 | easy | `data-pipeline-scripting` | Chunk List |
-| 21028 | easy | `data-pipeline-scripting` | Matrix Transpose |
-| 21029 | easy | `data-pipeline-scripting` | Second Largest |
-| 21030 | easy | `arrays-and-hashing` | Intersection of Two Lists |
-| 21034 | easy | `arrays-and-hashing` | Find Duplicate Values |
-| 21037 | easy | `data-pipeline-scripting` | Event Type Frequency Counter |
-| 21038 | easy | `arrays-and-hashing` | First Sensor Reading Above Threshold |
-| 21039 | easy | `data-pipeline-scripting` | Config File Parser |
-| 21040 | easy | `data-pipeline-scripting` | Detect Duplicate Import IDs |
 | 21041 | easy | `streaming-and-online` | Cumulative Spend Alert |
-| 23001 | hard | `arrays-and-hashing` | Merge Intervals |
-| 23007 | hard | `data-pipeline-scripting` | LRU Cache |
-| 23023 | hard | `data-pipeline-scripting` | Merge K sorted lists |
 | 23037 | hard | `graph-traversal` | Largest 3-D Voxel Region (6-Neighbor BFS) |
-| 22003 | medium | `arrays-and-hashing` | Leave-One-Out Signal Product |
 | 22004 | medium | `streaming-and-online` | Find the Dropped Import ID |
-| 22010 | medium | `arrays-and-hashing` | Intersection of Two Arrays II |
-| 22011 | medium | `arrays-and-hashing` | Longest Consecutive Sequence |
-| 22024 | medium | `arrays-and-hashing` | Word Pattern Match |
-| 22027 | medium | `arrays-and-hashing` | Task scheduler |
-| 22041 | medium | `data-pipeline-scripting` | Event Session Segmentation |
-| 22043 | medium | `arrays-and-hashing` | Minimum Batch Processing Capacity |
-| 22044 | medium | `data-pipeline-scripting` | Dominant Category Detection |
-| 22045 | medium | `data-pipeline-scripting` | In-Memory Hash Join |
-| 22047 | medium | `data-pipeline-scripting` | Run-Length Log Encoder |
 | 22048 | medium | `streaming-and-online` | Event Stream Deduplication |
-| 22049 | medium | `data-pipeline-scripting` | Merge Two Sorted Event Streams |
 | 22051 | medium | `streaming-and-online` | Real-Time 3-D Zone Breach Detector |
 
 ### Coverage gaps in this track
 
 - 🟡 **`stacks-and-queues`** — 4 practice Qs (thin). Author or recruit 3–5 more to reach healthy threshold.
-- 🟡 **`heap-and-priority`** — 4 practice Qs (thin). Author or recruit 3–5 more to reach healthy threshold.
 - 🟡 **`string-and-text-processing`** — 4 practice Qs (thin). Author or recruit 3–5 more to reach healthy threshold.
 - 🔴 **`streaming-and-online`** — 0 practice Qs (empty). No live path or no questions. Either create a path that aggregates this pattern, or author initial content.
 
@@ -362,16 +343,16 @@ a starting point for deciding which path (existing or new) should include them.
 ---
 ## pyspark
 
-Practice questions: **127** (112 in live paths · 15 orphans · 20 divergent). Proposed canonical patterns: **7**.
+Practice questions: **127** (127 in live paths · 0 orphans · 28 divergent). Proposed canonical patterns: **7**.
 
 ### Pattern coverage (live-path-aggregated)
 
 | Pattern | Display | Easy | Medium | Hard | Total | Class |
 |---|---|---:|---:|---:|---:|---|
 | `spark-basics` | Core Spark Concepts | 0 | 0 | 0 | 0 | 🔴 empty (no live path or no questions) |
-| `spark-performance` | Spark Performance | 0 | 4 | 2 | 6 | ⚠️ uneven |
+| `spark-performance` | Spark Performance | 4 | 5 | 4 | 13 | ✅ healthy |
 | `query-optimization` | Catalyst & Query Optimization | 2 | 4 | 5 | 11 | ✅ healthy |
-| `spark-joins-and-skew` | Joins & Skew Handling | 1 | 9 | 6 | 16 | ✅ healthy |
+| `spark-joins-and-skew` | Joins & Skew Handling | 1 | 10 | 7 | 18 | ✅ healthy |
 | `streaming` | Structured Streaming | 0 | 4 | 7 | 11 | ⚠️ uneven |
 | `delta-lake` | Delta Lake | 0 | 4 | 5 | 9 | ⚠️ uneven |
 | `pyspark-windowing` | Window Functions & Frames | 0 | 3 | 2 | 5 | ⚠️ uneven |
@@ -385,27 +366,27 @@ A question contributes once per family tag — multi-tag questions count multipl
 | Family | Top landing | Other landings |
 |---|---|---|
 | ADAPTIVE QUERY EXECUTION | `query-optimization` (5) | `spark-performance` (1), `spark-joins-and-skew` (1) |
-| CACHING & PERSISTENCE | `(orphan)` (2) | `spark-memory-and-driver-executor` (1) |
-| CATALYST OPTIMIZER | `query-optimization` (6) | `spark-execution-model-and-dag` (5), `spark-schema-and-type-handling` (4), `delta-lake` (3), `(orphan)` (3) |
+| CACHING & PERSISTENCE | `spark-performance` (2) | `spark-memory-and-driver-executor` (1) |
+| CATALYST OPTIMIZER | `query-optimization` (6) | `spark-execution-model-and-dag` (5), `spark-schema-and-type-handling` (4), `delta-lake` (3), `spark-joins-and-skew` (2) |
 | COLLECTION & ARRAY OPERATIONS | `spark-collections-and-arrays` (5) | — |
-| DATA QUALITY SKEPTICISM | `spark-collections-and-arrays` (5) | `streaming` (3), `spark-schema-and-type-handling` (2), `(orphan)` (2), `spark-execution-model-and-dag` (1) |
+| DATA QUALITY SKEPTICISM | `spark-collections-and-arrays` (5) | `streaming` (3), `spark-schema-and-type-handling` (2), `spark-udfs-and-python-boundary` (2), `spark-execution-model-and-dag` (1) |
 | DATA SKEW & MITIGATION | `spark-joins-and-skew` (6) | `spark-performance` (1) |
-| DEBUG SPARK ERRORS | `spark-execution-model-and-dag` (3) | `spark-memory-and-driver-executor` (2), `spark-io-and-file-formats` (1), `query-optimization` (1), `(orphan)` (1) |
+| DEBUG SPARK ERRORS | `spark-execution-model-and-dag` (3) | `spark-memory-and-driver-executor` (2), `spark-io-and-file-formats` (1), `query-optimization` (1), `spark-udfs-and-python-boundary` (1) |
 | DELTA LAKE OPERATIONS | `delta-lake` (8) | — |
 | DOUBLE-COUNTING DETECTION | `spark-joins-and-skew` (4) | — |
-| EXECUTION MODEL REASONING | `spark-execution-model-and-dag` (15) | `spark-memory-and-driver-executor` (8), `(orphan)` (5), `spark-fault-tolerance-and-recovery` (3), `streaming` (3) |
+| EXECUTION MODEL REASONING | `spark-execution-model-and-dag` (15) | `spark-memory-and-driver-executor` (9), `spark-performance` (4), `spark-fault-tolerance-and-recovery` (3), `streaming` (3) |
 | FAULT TOLERANCE & RECOVERY | `spark-fault-tolerance-and-recovery` (5) | `streaming` (2), `delta-lake` (1), `spark-joins-and-skew` (1) |
-| FILE FORMATS & READERS | `spark-io-and-file-formats` (4) | `(orphan)` (1), `spark-fault-tolerance-and-recovery` (1), `delta-lake` (1), `query-optimization` (1) |
-| JOIN STRATEGY SELECTION | `spark-joins-and-skew` (14) | `query-optimization` (4), `spark-performance` (3), `spark-memory-and-driver-executor` (2), `(orphan)` (2) |
-| MEMORY MANAGEMENT | `spark-memory-and-driver-executor` (12) | `spark-joins-and-skew` (4), `(orphan)` (3), `streaming` (1), `spark-performance` (1) |
-| NARROW VS WIDE TRANSFORMATIONS | `spark-execution-model-and-dag` (2) | `(orphan)` (1) |
-| OUTPUT SANITY VALIDATION | `spark-joins-and-skew` (5) | `spark-execution-model-and-dag` (2), `spark-schema-and-type-handling` (2), `(orphan)` (2), `spark-memory-and-driver-executor` (1) |
-| PARTITIONING STRATEGY | `(orphan)` (5) | `query-optimization` (5), `spark-performance` (3), `delta-lake` (2), `spark-execution-model-and-dag` (1) |
-| PERFORMANCE TUNING & TRADE-OFFS | `spark-memory-and-driver-executor` (4) | `(orphan)` (2), `spark-io-and-file-formats` (2), `query-optimization` (2), `spark-performance` (2) |
-| SCHEMA & TYPE HANDLING | `spark-schema-and-type-handling` (11) | `spark-io-and-file-formats` (4), `spark-execution-model-and-dag` (3), `(orphan)` (3), `query-optimization` (2) |
-| SHUFFLE REASONING | `(orphan)` (5) | `spark-performance` (5), `spark-joins-and-skew` (3), `query-optimization` (2), `spark-memory-and-driver-executor` (2) |
+| FILE FORMATS & READERS | `spark-io-and-file-formats` (4) | `spark-performance` (1), `spark-fault-tolerance-and-recovery` (1), `delta-lake` (1), `query-optimization` (1) |
+| JOIN STRATEGY SELECTION | `spark-joins-and-skew` (16) | `query-optimization` (4), `spark-performance` (3), `spark-memory-and-driver-executor` (2), `spark-collections-and-arrays` (1) |
+| MEMORY MANAGEMENT | `spark-memory-and-driver-executor` (13) | `spark-joins-and-skew` (4), `spark-performance` (2), `spark-udfs-and-python-boundary` (1), `streaming` (1) |
+| NARROW VS WIDE TRANSFORMATIONS | `spark-execution-model-and-dag` (2) | `spark-performance` (1) |
+| OUTPUT SANITY VALIDATION | `spark-joins-and-skew` (6) | `spark-execution-model-and-dag` (2), `spark-schema-and-type-handling` (2), `spark-memory-and-driver-executor` (1), `spark-performance` (1) |
+| PARTITIONING STRATEGY | `spark-performance` (5) | `query-optimization` (5), `spark-joins-and-skew` (3), `delta-lake` (2), `spark-execution-model-and-dag` (1) |
+| PERFORMANCE TUNING & TRADE-OFFS | `spark-memory-and-driver-executor` (5) | `spark-io-and-file-formats` (2), `query-optimization` (2), `spark-performance` (2), `spark-udfs-and-python-boundary` (1) |
+| SCHEMA & TYPE HANDLING | `spark-schema-and-type-handling` (11) | `spark-io-and-file-formats` (4), `spark-execution-model-and-dag` (3), `spark-udfs-and-python-boundary` (3), `query-optimization` (2) |
+| SHUFFLE REASONING | `spark-performance` (9) | `spark-joins-and-skew` (3), `spark-memory-and-driver-executor` (3), `query-optimization` (2), `spark-execution-model-and-dag` (1) |
 | STRUCTURED STREAMING | `streaming` (11) | `delta-lake` (1), `spark-execution-model-and-dag` (1) |
-| UDF & PYTHON BOUNDARY | `(orphan)` (5) | `spark-execution-model-and-dag` (1), `spark-memory-and-driver-executor` (1), `spark-joins-and-skew` (1) |
+| UDF & PYTHON BOUNDARY | `spark-udfs-and-python-boundary` (5) | `spark-execution-model-and-dag` (1), `spark-memory-and-driver-executor` (1), `spark-joins-and-skew` (1) |
 | WINDOW FUNCTIONS & FRAMES | `pyspark-windowing` (5) | — |
 
 ### Divergences (live path says A, tags suggest B)
@@ -425,41 +406,29 @@ primary objective genuinely differs from its tag-primary primitive.
 | 41026 | easy | `spark-io-and-file-formats` | `spark-io-and-file-formats` | `spark-schema-and-type-handling` | Debug: Malformed Output From Multi-Line JSON |
 | 41030 | easy | `spark-io-and-file-formats` | `spark-io-and-file-formats` | `spark-schema-and-type-handling` | inferSchema Performance Cost |
 | 42009 | medium | `spark-io-and-file-formats` | `spark-io-and-file-formats` | `spark-schema-and-type-handling` | inferSchema in Production Pipelines |
+| 42036 | medium | `spark-joins-and-skew` | `spark-joins-and-skew` | `spark-performance` | Delta MERGE Scanning the Entire Table |
+| 43023 | hard | `spark-joins-and-skew` | `spark-joins-and-skew` | `spark-performance` | Dynamic Partition Pruning Absent on Left Join |
 | 41004 | easy | `spark-memory-and-driver-executor` | `spark-memory-and-driver-executor` | `spark-execution-model-and-dag` | Role of the Driver |
 | 41028 | easy | `spark-memory-and-driver-executor` | `spark-memory-and-driver-executor` | `spark-execution-model-and-dag` | limit() vs head() |
 | 41036 | easy | `spark-memory-and-driver-executor` | `spark-memory-and-driver-executor` | `spark-execution-model-and-dag` | Predict output: when cache() materializes |
 | 42025 | medium | `spark-memory-and-driver-executor` | `spark-memory-and-driver-executor` | `spark-execution-model-and-dag` | Driver OOM vs Executor OOM |
+| 42035 | medium | `spark-memory-and-driver-executor` | `spark-memory-and-driver-executor` | `spark-performance` | Aggregation Job Suddenly 5× Slower After Data Growth |
 | 43006 | hard | `spark-memory-and-driver-executor` | `spark-memory-and-driver-executor` | `spark-execution-model-and-dag` | collect() on a Large DataFrame |
 | 43011 | hard | `spark-memory-and-driver-executor` | `spark-memory-and-driver-executor` | `spark-execution-model-and-dag` | Tungsten Off-Heap Binary Format |
 | 42004 | medium | `spark-performance` | `spark-performance` | `spark-joins-and-skew` | Broadcast Join for Small Dimension Tables |
 | 42006 | medium | `spark-performance` | `spark-performance` | `spark-memory-and-driver-executor` | Executor OutOfMemoryError Diagnosis |
 | 43001 | hard | `spark-performance` | `spark-performance` | `spark-joins-and-skew` | Skewed Join Optimization with Salting |
 | 43004 | hard | `spark-performance` | `spark-performance` | `query-optimization` | Three AQE Runtime Optimizations |
+| 41019 | easy | `spark-udfs-and-python-boundary` | `spark-udfs-and-python-boundary` | `spark-performance` | Why Python UDFs Are Slow |
+| 41035 | easy | `spark-udfs-and-python-boundary` | `spark-udfs-and-python-boundary` | `spark-performance` | Debug: UDF return type mismatch |
+| 42022 | medium | `spark-udfs-and-python-boundary` | `spark-udfs-and-python-boundary` | `spark-performance` | mapPartitions vs map |
+| 42033 | medium | `spark-udfs-and-python-boundary` | `spark-udfs-and-python-boundary` | `spark-performance` | Debug: AttributeError in Python UDF on Nullable Column |
+| 43041 | hard | `spark-udfs-and-python-boundary` | `spark-udfs-and-python-boundary` | `spark-performance` | Pandas UDF: Predicting Output for Null and Zero Inputs |
 | 43018 | hard | `streaming-fundamentals` | `streaming` | `spark-fault-tolerance-and-recovery` | Structured Streaming Exactly-Once Semantics |
 
 ### Orphans (catalog questions in no live path)
 
-Practice questions whose IDs are not referenced by any live path's `questions[]`.
-The tag-suggested pattern is where they would land under tag-derived routing —
-a starting point for deciding which path (existing or new) should include them.
-
-| QID | Diff | Tag-suggested pattern | Title |
-|---|---|---|---|
-| 41010 | easy | `spark-performance` | What Does .cache() Do? |
-| 41011 | easy | `spark-performance` | What is a Spark Partition? |
-| 41013 | easy | `spark-performance` | orderBy vs sort: output comparison |
-| 41019 | easy | `spark-performance` | Why Python UDFs Are Slow |
-| 41033 | easy | `spark-performance` | Predict output: count vs countDistinct |
-| 41035 | easy | `spark-performance` | Debug: UDF return type mismatch |
-| 43007 | hard | `spark-performance` | reduceByKey vs groupByKey Network Cost |
-| 43017 | hard | `spark-performance` | Guaranteeing Co-location with repartition by Column |
-| 43023 | hard | `spark-performance` | Dynamic Partition Pruning Absent on Left Join |
-| 43041 | hard | `spark-performance` | Pandas UDF: Predicting Output for Null and Zero Inputs |
-| 42019 | medium | `spark-performance` | Caching Strategy: When to Cache |
-| 42022 | medium | `spark-performance` | mapPartitions vs map |
-| 42033 | medium | `spark-performance` | Debug: AttributeError in Python UDF on Nullable Column |
-| 42035 | medium | `spark-performance` | Aggregation Job Suddenly 5× Slower After Data Growth |
-| 42036 | medium | `spark-performance` | Delta MERGE Scanning the Entire Table |
+None — every practice question is in some live path.
 
 ### Coverage gaps in this track
 
@@ -827,15 +796,15 @@ a starting point for deciding which path (existing or new) should include them.
 ---
 ## experimentation
 
-Practice questions: **87** (73 in live paths · 14 orphans · 26 divergent). Proposed canonical patterns: **9**.
+Practice questions: **87** (83 in live paths · 4 orphans · 33 divergent). Proposed canonical patterns: **9**.
 
 ### Pattern coverage (live-path-aggregated)
 
 | Pattern | Display | Easy | Medium | Hard | Total | Class |
 |---|---|---:|---:|---:|---:|---|
-| `ab-test-mechanics` | A/B Test Mechanics | 6 | 0 | 0 | 6 | ⚠️ uneven |
+| `ab-test-mechanics` | A/B Test Mechanics | 9 | 0 | 0 | 9 | ⚠️ uneven |
 | `metric-selection` | Metric Selection | 4 | 3 | 1 | 8 | ✅ healthy |
-| `power-and-sample-size` | Power & Sample Size | 10 | 8 | 0 | 18 | ⚠️ uneven |
+| `power-and-sample-size` | Power & Sample Size | 12 | 8 | 0 | 20 | ⚠️ uneven |
 | `variance-reduction` | Variance Reduction | 0 | 9 | 5 | 14 | ⚠️ uneven |
 | `behavioral-effects-and-interference` | Behavioral Effects & Interference | 0 | 4 | 1 | 5 | ⚠️ uneven |
 | `subgroup-and-hte` | Subgroup Analysis & HTE | 0 | 5 | 2 | 7 | ⚠️ uneven |
@@ -851,14 +820,14 @@ A question contributes once per family tag — multi-tag questions count multipl
 
 | Family | Top landing | Other landings |
 |---|---|---|
-| A/B TEST MECHANICS | `ab-test-mechanics` (3) | `(orphan)` (3), `variance-reduction` (2), `power-and-sample-size` (2), `causal-inference` (1) |
+| A/B TEST MECHANICS | `ab-test-mechanics` (6) | `variance-reduction` (2), `power-and-sample-size` (2), `causal-inference` (1) |
 | BAYESIAN EXPERIMENTATION | `causal-inference` (2) | `variance-reduction` (1), `(orphan)` (1), `subgroup-and-hte` (1) |
 | CAUSAL INFERENCE | `causal-inference` (8) | `variance-reduction` (3) |
-| CONFIDENCE INTERVALS | `(orphan)` (3) | `power-and-sample-size` (2) |
-| EXPERIMENT DESIGN | `variance-reduction` (7) | `metric-selection` (5), `ab-test-mechanics` (4), `(orphan)` (4), `power-and-sample-size` (4) |
+| CONFIDENCE INTERVALS | `hypothesis-testing-and-ci` (3) | `power-and-sample-size` (2) |
+| EXPERIMENT DESIGN | `ab-test-mechanics` (7) | `variance-reduction` (7), `metric-selection` (5), `power-and-sample-size` (4), `causal-inference` (4) |
 | EXPERIMENT DURATION | `power-and-sample-size` (6) | `behavioral-effects-and-interference` (2), `metric-selection` (1), `variance-reduction` (1) |
 | HOLDOUT GROUPS | `causal-inference` (3) | `variance-reduction` (1) |
-| HYPOTHESIS FORMULATION | `(orphan)` (2) | `ab-test-mechanics` (1) |
+| HYPOTHESIS FORMULATION | `hypothesis-testing-and-ci` (2) | `ab-test-mechanics` (1) |
 | METRIC SELECTION | `metric-selection` (6) | `variance-reduction` (2), `causal-inference` (1), `(orphan)` (1), `subgroup-and-hte` (1) |
 | METRIC SENSITIVITY | `metric-selection` (2) | — |
 | MULTI-ARMED BANDIT | `causal-inference` (1) | `variance-reduction` (1), `(orphan)` (1) |
@@ -867,13 +836,13 @@ A question contributes once per family tag — multi-tag questions count multipl
 | NOVELTY EFFECTS | `causal-inference` (1) | `behavioral-effects-and-interference` (1), `subgroup-and-hte` (1) |
 | QUASI-EXPERIMENTAL METHODS | `causal-inference` (5) | `variance-reduction` (1) |
 | SAMPLE RATIO MISMATCH | `(orphan)` (1) | `power-and-sample-size` (1), `variance-reduction` (1) |
-| SAMPLE SIZE BASICS | `power-and-sample-size` (4) | `ab-test-mechanics` (1), `(orphan)` (1) |
+| SAMPLE SIZE BASICS | `power-and-sample-size` (4) | `ab-test-mechanics` (1), `hypothesis-testing-and-ci` (1) |
 | SEGMENTATION ANALYSIS | `subgroup-and-hte` (5) | — |
 | SEQUENTIAL TESTING | `(orphan)` (1) | — |
-| STATISTICAL POWER | `power-and-sample-size` (6) | `(orphan)` (3), `metric-selection` (2), `ab-test-mechanics` (1), `variance-reduction` (1) |
-| STATISTICAL SIGNIFICANCE | `(orphan)` (4) | `power-and-sample-size` (3), `ab-test-mechanics` (1) |
+| STATISTICAL POWER | `power-and-sample-size` (8) | `metric-selection` (2), `ab-test-mechanics` (1), `variance-reduction` (1), `(orphan)` (1) |
+| STATISTICAL SIGNIFICANCE | `hypothesis-testing-and-ci` (4) | `power-and-sample-size` (3), `ab-test-mechanics` (1) |
 | SWITCHBACK EXPERIMENTS | `causal-inference` (1) | `subgroup-and-hte` (1), `behavioral-effects-and-interference` (1) |
-| TYPE I AND TYPE II ERRORS | `power-and-sample-size` (5) | `(orphan)` (3), `ab-test-mechanics` (1), `subgroup-and-hte` (1), `variance-reduction` (1) |
+| TYPE I AND TYPE II ERRORS | `power-and-sample-size` (7) | `ab-test-mechanics` (1), `(orphan)` (1), `subgroup-and-hte` (1), `variance-reduction` (1) |
 | VARIANCE REDUCTION | `variance-reduction` (4) | `power-and-sample-size` (2), `causal-inference` (1) |
 
 ### Divergences (live path says A, tags suggest B)
@@ -891,6 +860,8 @@ primary objective genuinely differs from its tag-primary primitive.
 | 93010 | hard | `causal-inference-and-advanced-experimentation` | `causal-inference` | `variance-reduction` | CUPED with Correlated Pre-Experiment Covariates |
 | 93014 | hard | `causal-inference-and-advanced-experimentation` | `causal-inference` | `behavioral-effects-and-interference` | Two-Sided Marketplace Network Effects in A/B Tests |
 | 93015 | hard | `causal-inference-and-advanced-experimentation` | `causal-inference` | `experiment-platform-design` | Holdout Group: Cannibalization Detection |
+| 91005 | easy | `experiment-design-and-power` | `power-and-sample-size` | `ab-test-mechanics` | Type I Error in Practice |
+| 91006 | easy | `experiment-design-and-power` | `power-and-sample-size` | `ab-test-mechanics` | Type II Error and Underpowered Tests |
 | 91022 | easy | `experiment-design-and-power` | `power-and-sample-size` | `ab-test-mechanics` | Carryover Effects When Starting a Follow-On Experiment |
 | 91026 | easy | `experiment-design-and-power` | `power-and-sample-size` | `ab-test-mechanics` | Interpreting a Non-Significant Result |
 | 91028 | easy | `experiment-design-and-power` | `power-and-sample-size` | `ab-test-mechanics` | Confidence Interval Width and Sample Size |
@@ -900,6 +871,11 @@ primary objective genuinely differs from its tag-primary primitive.
 | 92010 | medium | `experiment-design-and-power` | `power-and-sample-size` | `experiment-platform-design` | Sample Ratio Mismatch from Logging Bug |
 | 92013 | medium | `experiment-design-and-power` | `power-and-sample-size` | `ab-test-mechanics` | Confidence Interval Interpretation |
 | 91007 | easy | `experimentation-starter` | `ab-test-mechanics` | `power-and-sample-size` | Statistical Power Definition |
+| 91003 | easy | `hypothesis-testing-and-ci` | `hypothesis-testing-and-ci` | `ab-test-mechanics` | Null vs Alternative Hypothesis |
+| 91009 | easy | `hypothesis-testing-and-ci` | `hypothesis-testing-and-ci` | `ab-test-mechanics` | Interpreting a Confidence Interval |
+| 91016 | easy | `hypothesis-testing-and-ci` | `hypothesis-testing-and-ci` | `ab-test-mechanics` | Confidence Interval and Practical Significance |
+| 91025 | easy | `hypothesis-testing-and-ci` | `hypothesis-testing-and-ci` | `ab-test-mechanics` | Predicting CI Width After Quadrupling Sample Size |
+| 91029 | easy | `hypothesis-testing-and-ci` | `hypothesis-testing-and-ci` | `ab-test-mechanics` | Pre-Registering Hypotheses |
 | 92014 | medium | `variance-reduction-and-behavioral-effects` | `variance-reduction` | `causal-inference` | Holdout Groups for Long-Run Measurement |
 | 92016 | medium | `variance-reduction-and-behavioral-effects` | `variance-reduction` | `experiment-platform-design` | Sample Ratio Mismatch from Eligibility Filter |
 | 92018 | medium | `variance-reduction-and-behavioral-effects` | `variance-reduction` | `subgroup-and-hte` | Multiple Testing with Sequential Feature Rollouts |
@@ -919,16 +895,6 @@ a starting point for deciding which path (existing or new) should include them.
 
 | QID | Diff | Tag-suggested pattern | Title |
 |---|---|---|---|
-| 91003 | easy | `ab-test-mechanics` | Null vs Alternative Hypothesis |
-| 91005 | easy | `ab-test-mechanics` | Type I Error in Practice |
-| 91006 | easy | `ab-test-mechanics` | Type II Error and Underpowered Tests |
-| 91009 | easy | `ab-test-mechanics` | Interpreting a Confidence Interval |
-| 91011 | easy | `ab-test-mechanics` | The Role of a Control Group |
-| 91016 | easy | `ab-test-mechanics` | Confidence Interval and Practical Significance |
-| 91021 | easy | `ab-test-mechanics` | Feature Only Visible to a Subset of Assigned Users |
-| 91025 | easy | `ab-test-mechanics` | Predicting CI Width After Quadrupling Sample Size |
-| 91027 | easy | `ab-test-mechanics` | Defining Experiment Eligibility Criteria |
-| 91029 | easy | `ab-test-mechanics` | Pre-Registering Hypotheses |
 | 93018 | hard | `sequential-and-bandits` | Bayesian A/B Test: Posterior Probability vs Business Threshold |
 | 93036 | hard | `sequential-and-bandits` | Continuous monitoring with alpha spending: when can you stop early? |
 | 92002 | medium | `experiment-platform-design` | Sample Ratio Mismatch Detection |
@@ -1076,72 +1042,72 @@ the audit credits the question to. `Tag-suggested` = where tag-routing would pla
 |---|---|---|---|---|---|---|
 | 21001 | easy | `arrays-and-hashing` | `arrays-and-hashing` | `arrays-and-hashing` |  | Revenue Pair Finder |
 | 21002 | easy | `sliding-window-patterns` | `sliding-window` | `string-and-text-processing` | ⚠️ | Symmetric Code Validator |
-| 21003 | easy | _orphan_ | — | `data-pipeline-scripting` |  | Record Category Labeler |
+| 21003 | easy | `list-transformations` | `list-transformations` | `data-pipeline-scripting` | ⚠️ | Record Category Labeler |
 | 21004 | easy | `string-and-text-processing` | `string-and-text-processing` | `string-and-text-processing` |  | Field Vowel Counter |
 | 21006 | easy | `arrays-and-hashing` | `arrays-and-hashing` | `arrays-and-hashing` |  | SKU Variant Detector |
 | 21007 | easy | `arrays-and-hashing` | `arrays-and-hashing` | `data-pipeline-scripting` | ⚠️ | Deduplicate Record IDs |
-| 21008 | easy | _orphan_ | — | `arrays-and-hashing` |  | Peak Value Scanner |
+| 21008 | easy | `greedy-and-scanning` | `greedy-and-scanning` | `arrays-and-hashing` | ⚠️ | Peak Value Scanner |
 | 21011 | easy | `stacks-and-queues` | `stacks-and-queues` | `stacks-and-queues` |  | Valid Parentheses |
-| 21012 | easy | _orphan_ | — | `arrays-and-hashing` |  | Binary Search |
-| 21013 | easy | _orphan_ | — | `arrays-and-hashing` |  | Count Occurrences |
-| 21016 | easy | _orphan_ | — | `data-pipeline-scripting` |  | Flatten One Level |
-| 21017 | easy | _orphan_ | — | `data-pipeline-scripting` |  | Rotate List Left |
+| 21012 | easy | `arrays-and-hashing` | `arrays-and-hashing` | `arrays-and-hashing` |  | Binary Search |
+| 21013 | easy | `arrays-and-hashing` | `arrays-and-hashing` | `arrays-and-hashing` |  | Count Occurrences |
+| 21016 | easy | `list-transformations` | `list-transformations` | `data-pipeline-scripting` | ⚠️ | Flatten One Level |
+| 21017 | easy | `list-transformations` | `list-transformations` | `data-pipeline-scripting` | ⚠️ | Rotate List Left |
 | 21018 | easy | `sliding-window-patterns` | `sliding-window` | `sliding-window` |  | Merge Two Sorted Lists |
-| 21020 | easy | _orphan_ | — | `arrays-and-hashing` |  | First Non-Repeating Character |
+| 21020 | easy | `arrays-and-hashing` | `arrays-and-hashing` | `arrays-and-hashing` |  | First Non-Repeating Character |
 | 21021 | easy | `string-and-text-processing` | `string-and-text-processing` | `string-and-text-processing` |  | String Compression |
-| 21023 | easy | _orphan_ | — | `arrays-and-hashing` |  | Missing Number |
+| 21023 | easy | `arrays-and-hashing` | `arrays-and-hashing` | `arrays-and-hashing` |  | Missing Number |
 | 21024 | easy | `string-and-text-processing` | `string-and-text-processing` | `string-and-text-processing` |  | Longest Common Prefix |
-| 21025 | easy | _orphan_ | — | `data-pipeline-scripting` |  | Remove Consecutive Duplicates |
-| 21026 | easy | _orphan_ | — | `data-pipeline-scripting` |  | Chunk List |
-| 21028 | easy | _orphan_ | — | `data-pipeline-scripting` |  | Matrix Transpose |
-| 21029 | easy | _orphan_ | — | `data-pipeline-scripting` |  | Second Largest |
-| 21030 | easy | _orphan_ | — | `arrays-and-hashing` |  | Intersection of Two Lists |
+| 21025 | easy | `list-transformations` | `list-transformations` | `data-pipeline-scripting` | ⚠️ | Remove Consecutive Duplicates |
+| 21026 | easy | `list-transformations` | `list-transformations` | `data-pipeline-scripting` | ⚠️ | Chunk List |
+| 21028 | easy | `list-transformations` | `list-transformations` | `data-pipeline-scripting` | ⚠️ | Matrix Transpose |
+| 21029 | easy | `list-transformations` | `list-transformations` | `data-pipeline-scripting` | ⚠️ | Second Largest |
+| 21030 | easy | `arrays-and-hashing` | `arrays-and-hashing` | `arrays-and-hashing` |  | Intersection of Two Lists |
 | 21031 | easy | `practical-data-python` | `data-pipeline-scripting` | `data-pipeline-scripting` |  | Parse CSV Rows into Records |
 | 21032 | easy | `practical-data-python` | `data-pipeline-scripting` | `data-pipeline-scripting` |  | Extract Fields from a Log Line |
 | 21033 | easy | `practical-data-python` | `data-pipeline-scripting` | `string-and-text-processing` | ⚠️ | Most Recent Date |
-| 21034 | easy | _orphan_ | — | `arrays-and-hashing` |  | Find Duplicate Values |
+| 21034 | easy | `arrays-and-hashing` | `arrays-and-hashing` | `arrays-and-hashing` |  | Find Duplicate Values |
 | 21035 | easy | `practical-data-python` | `data-pipeline-scripting` | `data-pipeline-scripting` |  | Group Items by Category |
 | 21036 | easy | `sliding-window-patterns` | `sliding-window` | `sliding-window` |  | Sliding Window Maximum with deque |
-| 21037 | easy | _orphan_ | — | `data-pipeline-scripting` |  | Event Type Frequency Counter |
-| 21038 | easy | _orphan_ | — | `arrays-and-hashing` |  | First Sensor Reading Above Threshold |
-| 21039 | easy | _orphan_ | — | `data-pipeline-scripting` |  | Config File Parser |
-| 21040 | easy | _orphan_ | — | `data-pipeline-scripting` |  | Detect Duplicate Import IDs |
+| 21037 | easy | `practical-data-python` | `data-pipeline-scripting` | `data-pipeline-scripting` |  | Event Type Frequency Counter |
+| 21038 | easy | `greedy-and-scanning` | `greedy-and-scanning` | `arrays-and-hashing` | ⚠️ | First Sensor Reading Above Threshold |
+| 21039 | easy | `practical-data-python` | `data-pipeline-scripting` | `data-pipeline-scripting` |  | Config File Parser |
+| 21040 | easy | `practical-data-python` | `data-pipeline-scripting` | `data-pipeline-scripting` |  | Detect Duplicate Import IDs |
 | 21041 | easy | _orphan_ | — | `streaming-and-online` |  | Cumulative Spend Alert |
 | 22001 | medium | `arrays-and-hashing` | `arrays-and-hashing` | `arrays-and-hashing` |  | Group Product Code Variants |
 | 22002 | medium | `stacks-and-queues` | `stacks-and-queues` | `sliding-window` | ⚠️ | Sliding Window Maximum |
-| 22003 | medium | _orphan_ | — | `arrays-and-hashing` |  | Leave-One-Out Signal Product |
+| 22003 | medium | `arrays-and-hashing` | `arrays-and-hashing` | `arrays-and-hashing` |  | Leave-One-Out Signal Product |
 | 22004 | medium | _orphan_ | — | `streaming-and-online` |  | Find the Dropped Import ID |
 | 22006 | medium | `arrays-and-hashing` | `arrays-and-hashing` | `arrays-and-hashing` |  | Budget Window Counter |
 | 22009 | medium | `stacks-and-queues` | `stacks-and-queues` | `streaming-and-online` | ⚠️ | Minimum Stack |
-| 22010 | medium | _orphan_ | — | `arrays-and-hashing` |  | Intersection of Two Arrays II |
-| 22011 | medium | _orphan_ | — | `arrays-and-hashing` |  | Longest Consecutive Sequence |
+| 22010 | medium | `arrays-and-hashing` | `arrays-and-hashing` | `arrays-and-hashing` |  | Intersection of Two Arrays II |
+| 22011 | medium | `arrays-and-hashing` | `arrays-and-hashing` | `arrays-and-hashing` |  | Longest Consecutive Sequence |
 | 22012 | medium | `heap-and-priority` | `heap-and-priority` | `heap-and-priority` |  | Kth Highest Revenue |
 | 22015 | medium | `stacks-and-queues` | `stacks-and-queues` | `stacks-and-queues` |  | KPI Formula Evaluator |
 | 22018 | medium | `sliding-window-patterns` | `sliding-window` | `sliding-window` |  | Priority-Partition Log Entries |
 | 22023 | medium | `dynamic-programming` | `dynamic-programming` | `dynamic-programming` |  | Maximum Revenue Streak |
-| 22024 | medium | _orphan_ | — | `arrays-and-hashing` |  | Word Pattern Match |
+| 22024 | medium | `arrays-and-hashing` | `arrays-and-hashing` | `arrays-and-hashing` |  | Word Pattern Match |
 | 22025 | medium | `dynamic-programming` | `dynamic-programming` | `dynamic-programming` |  | Schema Version Alignment |
 | 22026 | medium | `sliding-window-patterns` | `sliding-window` | `sliding-window` |  | Longest Unique Token Window |
-| 22027 | medium | _orphan_ | — | `arrays-and-hashing` |  | Task scheduler |
+| 22027 | medium | `greedy-and-scanning` | `greedy-and-scanning` | `arrays-and-hashing` | ⚠️ | Task scheduler |
 | 22028 | medium | `sliding-window-patterns` | `sliding-window` | `sliding-window` |  | Find all anagrams in a string |
 | 22039 | medium | `practical-data-python` | `data-pipeline-scripting` | `data-pipeline-scripting` |  | Chunked List Processing |
 | 22040 | medium | `practical-data-python` | `data-pipeline-scripting` | `data-pipeline-scripting` |  | Filter and Order Error Logs |
-| 22041 | medium | _orphan_ | — | `data-pipeline-scripting` |  | Event Session Segmentation |
+| 22041 | medium | `practical-data-python` | `data-pipeline-scripting` | `data-pipeline-scripting` |  | Event Session Segmentation |
 | 22042 | medium | `graph-and-tree-patterns` | `graph-traversal` | `graph-traversal` |  | Pipeline DAG Cycle Detector |
-| 22043 | medium | _orphan_ | — | `arrays-and-hashing` |  | Minimum Batch Processing Capacity |
-| 22044 | medium | _orphan_ | — | `data-pipeline-scripting` |  | Dominant Category Detection |
-| 22045 | medium | _orphan_ | — | `data-pipeline-scripting` |  | In-Memory Hash Join |
+| 22043 | medium | `greedy-and-scanning` | `greedy-and-scanning` | `arrays-and-hashing` | ⚠️ | Minimum Batch Processing Capacity |
+| 22044 | medium | `practical-data-python` | `data-pipeline-scripting` | `data-pipeline-scripting` |  | Dominant Category Detection |
+| 22045 | medium | `practical-data-python` | `data-pipeline-scripting` | `data-pipeline-scripting` |  | In-Memory Hash Join |
 | 22046 | medium | `sliding-window-patterns` | `sliding-window` | `sliding-window` |  | Sliding Window Rate Limiter |
-| 22047 | medium | _orphan_ | — | `data-pipeline-scripting` |  | Run-Length Log Encoder |
+| 22047 | medium | `practical-data-python` | `data-pipeline-scripting` | `data-pipeline-scripting` |  | Run-Length Log Encoder |
 | 22048 | medium | _orphan_ | — | `streaming-and-online` |  | Event Stream Deduplication |
-| 22049 | medium | _orphan_ | — | `data-pipeline-scripting` |  | Merge Two Sorted Event Streams |
+| 22049 | medium | `sliding-window-patterns` | `sliding-window` | `data-pipeline-scripting` | ⚠️ | Merge Two Sorted Event Streams |
 | 22050 | medium | `heap-and-priority` | `heap-and-priority` | `heap-and-priority` |  | Smallest Covering Maintenance Window |
 | 22051 | medium | _orphan_ | — | `streaming-and-online` |  | Real-Time 3-D Zone Breach Detector |
-| 23001 | hard | _orphan_ | — | `arrays-and-hashing` |  | Merge Intervals |
+| 23001 | hard | `greedy-and-scanning` | `greedy-and-scanning` | `arrays-and-hashing` | ⚠️ | Merge Intervals |
 | 23002 | hard | `sliding-window-patterns` | `sliding-window` | `sliding-window` |  | Minimum Log Span Covering Required Events |
 | 23004 | hard | `dynamic-programming` | `dynamic-programming` | `dynamic-programming` |  | ETL Field Tokenizer |
 | 23006 | hard | `graph-and-tree-patterns` | `graph-traversal` | `graph-traversal` |  | Number of Islands |
-| 23007 | hard | _orphan_ | — | `data-pipeline-scripting` |  | LRU Cache |
+| 23007 | hard | `practical-data-python` | `data-pipeline-scripting` | `data-pipeline-scripting` |  | LRU Cache |
 | 23012 | hard | `dynamic-programming` | `dynamic-programming` | `arrays-and-hashing` | ⚠️ | Longest Increasing Subsequence |
 | 23014 | hard | `graph-and-tree-patterns` | `graph-traversal` | `graph-traversal` |  | Alien Dictionary |
 | 23015 | hard | `heap-and-priority` | `heap-and-priority` | `heap-and-priority` |  | Median from Data Stream |
@@ -1149,7 +1115,7 @@ the audit credits the question to. `Tag-suggested` = where tag-routing would pla
 | 23020 | hard | `string-and-text-processing` | `string-and-text-processing` | `string-and-text-processing` |  | Implement a Trie |
 | 23021 | hard | `graph-and-tree-patterns` | `graph-traversal` | `graph-traversal` |  | Number of connected components |
 | 23022 | hard | `graph-and-tree-patterns` | `graph-traversal` | `graph-traversal` |  | Network delay time |
-| 23023 | hard | _orphan_ | — | `data-pipeline-scripting` |  | Merge K sorted lists |
+| 23023 | hard | `heap-and-priority` | `heap-and-priority` | `data-pipeline-scripting` | ⚠️ | Merge K sorted lists |
 | 23033 | hard | `dynamic-programming` | `dynamic-programming` | `dynamic-programming` |  | Schema Migration Edit Distance |
 | 23034 | hard | `graph-and-tree-patterns` | `graph-traversal` | `graph-traversal` |  | Critical Path in Data Pipeline |
 | 23035 | hard | `heap-and-priority` | `heap-and-priority` | `heap-and-priority` |  | Minimum Parallel Workers for Job Schedule |
@@ -1267,16 +1233,16 @@ the audit credits the question to. `Tag-suggested` = where tag-routing would pla
 | 41007 | easy | `spark-execution-model-and-dag` | `spark-execution-model-and-dag` | `spark-execution-model-and-dag` |  | How Many Jobs Does This Chain Trigger? |
 | 41008 | easy | `spark-execution-model-and-dag` | `spark-execution-model-and-dag` | `spark-execution-model-and-dag` |  | Wide vs Narrow Transformations |
 | 41009 | easy | `spark-execution-model-and-dag` | `spark-execution-model-and-dag` | `spark-execution-model-and-dag` |  | SQL Query Without Registering a View |
-| 41010 | easy | _orphan_ | — | `spark-performance` |  | What Does .cache() Do? |
-| 41011 | easy | _orphan_ | — | `spark-performance` |  | What is a Spark Partition? |
+| 41010 | easy | `spark-performance` | `spark-performance` | `spark-performance` |  | What Does .cache() Do? |
+| 41011 | easy | `spark-performance` | `spark-performance` | `spark-performance` |  | What is a Spark Partition? |
 | 41012 | easy | `spark-execution-model-and-dag` | `spark-execution-model-and-dag` | `spark-execution-model-and-dag` |  | count() vs show() |
-| 41013 | easy | _orphan_ | — | `spark-performance` |  | orderBy vs sort: output comparison |
+| 41013 | easy | `spark-performance` | `spark-performance` | `spark-performance` |  | orderBy vs sort: output comparison |
 | 41014 | easy | `spark-schema-and-type-handling` | `spark-schema-and-type-handling` | `spark-schema-and-type-handling` |  | withColumnRenamed Usage |
 | 41015 | easy | `spark-execution-model-and-dag` | `spark-execution-model-and-dag` | `spark-execution-model-and-dag` |  | dropDuplicates Scope |
 | 41016 | easy | `spark-execution-model-and-dag` | `spark-execution-model-and-dag` | `spark-execution-model-and-dag` |  | getOrCreate: Two Calls, One Session? |
 | 41017 | easy | `spark-fault-tolerance-and-recovery` | `spark-fault-tolerance-and-recovery` | `spark-io-and-file-formats` | ⚠️ | Write Mode: unintended append |
 | 41018 | easy | `spark-schema-and-type-handling` | `spark-schema-and-type-handling` | `spark-schema-and-type-handling` |  | when().otherwise() Return Type |
-| 41019 | easy | _orphan_ | — | `spark-performance` |  | Why Python UDFs Are Slow |
+| 41019 | easy | `spark-udfs-and-python-boundary` | `spark-udfs-and-python-boundary` | `spark-performance` | ⚠️ | Why Python UDFs Are Slow |
 | 41020 | easy | `spark-schema-and-type-handling` | `spark-schema-and-type-handling` | `spark-schema-and-type-handling` |  | Cast Failure: What Happens to Invalid Rows? |
 | 41021 | easy | `spark-schema-and-type-handling` | `spark-schema-and-type-handling` | `spark-schema-and-type-handling` |  | union() Column Matching |
 | 41022 | easy | `spark-schema-and-type-handling` | `spark-schema-and-type-handling` | `spark-schema-and-type-handling` |  | distinct() vs dropDuplicates() |
@@ -1290,9 +1256,9 @@ the audit credits the question to. `Tag-suggested` = where tag-routing would pla
 | 41030 | easy | `spark-io-and-file-formats` | `spark-io-and-file-formats` | `spark-schema-and-type-handling` | ⚠️ | inferSchema Performance Cost |
 | 41031 | easy | `spark-schema-and-type-handling` | `spark-schema-and-type-handling` | `spark-schema-and-type-handling` |  | Predict output: auto-named arithmetic column |
 | 41032 | easy | `spark-memory-and-driver-executor` | `spark-memory-and-driver-executor` | `spark-memory-and-driver-executor` |  | Debug: Python len() on a DataFrame |
-| 41033 | easy | _orphan_ | — | `spark-performance` |  | Predict output: count vs countDistinct |
+| 41033 | easy | `spark-performance` | `spark-performance` | `spark-performance` |  | Predict output: count vs countDistinct |
 | 41034 | easy | `spark-memory-and-driver-executor` | `spark-memory-and-driver-executor` | `spark-memory-and-driver-executor` |  | Debug: collect() on a large DataFrame |
-| 41035 | easy | _orphan_ | — | `spark-performance` |  | Debug: UDF return type mismatch |
+| 41035 | easy | `spark-udfs-and-python-boundary` | `spark-udfs-and-python-boundary` | `spark-performance` | ⚠️ | Debug: UDF return type mismatch |
 | 41036 | easy | `spark-memory-and-driver-executor` | `spark-memory-and-driver-executor` | `spark-execution-model-and-dag` | ⚠️ | Predict output: when cache() materializes |
 | 41037 | easy | `query-optimization` | `query-optimization` | `query-optimization` |  | Catalyst optimizer: predicate pushdown |
 | 41039 | easy | `spark-execution-model-and-dag` | `spark-execution-model-and-dag` | `spark-execution-model-and-dag` |  | F.expr(): SQL scope vs Python scope |
@@ -1316,10 +1282,10 @@ the audit credits the question to. `Tag-suggested` = where tag-routing would pla
 | 42016 | medium | `streaming-fundamentals` | `streaming` | `streaming` |  | Structured Streaming vs Batch Processing |
 | 42017 | medium | `streaming-fundamentals` | `streaming` | `streaming` |  | foreachBatch vs foreach in Structured Streaming |
 | 42018 | medium | `spark-execution-model-and-dag` | `spark-execution-model-and-dag` | `spark-execution-model-and-dag` |  | Spark SQL vs DataFrame API Performance |
-| 42019 | medium | _orphan_ | — | `spark-performance` |  | Caching Strategy: When to Cache |
+| 42019 | medium | `spark-performance` | `spark-performance` | `spark-performance` |  | Caching Strategy: When to Cache |
 | 42020 | medium | `spark-execution-model-and-dag` | `spark-execution-model-and-dag` | `spark-execution-model-and-dag` |  | Job vs Stage vs Task Hierarchy |
 | 42021 | medium | `spark-fault-tolerance-and-recovery` | `spark-fault-tolerance-and-recovery` | `spark-fault-tolerance-and-recovery` |  | Speculative Execution |
-| 42022 | medium | _orphan_ | — | `spark-performance` |  | mapPartitions vs map |
+| 42022 | medium | `spark-udfs-and-python-boundary` | `spark-udfs-and-python-boundary` | `spark-performance` | ⚠️ | mapPartitions vs map |
 | 42023 | medium | `spark-joins-and-skew` | `spark-joins-and-skew` | `spark-joins-and-skew` |  | Identifying Skewed Joins in Spark UI |
 | 42024 | medium | `query-optimization` | `query-optimization` | `spark-performance` | ⚠️ | Dynamic Partition Pruning |
 | 42025 | medium | `spark-memory-and-driver-executor` | `spark-memory-and-driver-executor` | `spark-execution-model-and-dag` | ⚠️ | Driver OOM vs Executor OOM |
@@ -1330,10 +1296,10 @@ the audit credits the question to. `Tag-suggested` = where tag-routing would pla
 | 42030 | medium | `delta-lake-patterns` | `delta-lake` | `delta-lake` |  | Delta Lake schema evolution |
 | 42031 | medium | `streaming-fundamentals` | `streaming` | `streaming` |  | Structured Streaming: Growing Kafka Consumer Lag |
 | 42032 | medium | `spark-joins-and-skew` | `spark-joins-and-skew` | `spark-joins-and-skew` |  | Broadcast Hint Silently Overridden in Production |
-| 42033 | medium | _orphan_ | — | `spark-performance` |  | Debug: AttributeError in Python UDF on Nullable Column |
+| 42033 | medium | `spark-udfs-and-python-boundary` | `spark-udfs-and-python-boundary` | `spark-performance` | ⚠️ | Debug: AttributeError in Python UDF on Nullable Column |
 | 42034 | medium | `spark-joins-and-skew` | `spark-joins-and-skew` | `spark-joins-and-skew` |  | Debug: Ambiguous Column Reference After Join |
-| 42035 | medium | _orphan_ | — | `spark-performance` |  | Aggregation Job Suddenly 5× Slower After Data Growth |
-| 42036 | medium | _orphan_ | — | `spark-performance` |  | Delta MERGE Scanning the Entire Table |
+| 42035 | medium | `spark-memory-and-driver-executor` | `spark-memory-and-driver-executor` | `spark-performance` | ⚠️ | Aggregation Job Suddenly 5× Slower After Data Growth |
+| 42036 | medium | `spark-joins-and-skew` | `spark-joins-and-skew` | `spark-performance` | ⚠️ | Delta MERGE Scanning the Entire Table |
 | 42037 | medium | `spark-execution-model-and-dag` | `spark-execution-model-and-dag` | `spark-execution-model-and-dag` |  | Debug: Streaming Schema Mismatch After Code Change |
 | 42038 | medium | `spark-joins-and-skew` | `spark-joins-and-skew` | `spark-joins-and-skew` |  | Straggler Task Holding Entire Stage Hostage |
 | 42049 | medium | `spark-collections-and-arrays` | `spark-collections-and-arrays` | `spark-collections-and-arrays` |  | collect_list vs collect_set: ordering and deduplication guarantees |
@@ -1349,7 +1315,7 @@ the audit credits the question to. `Tag-suggested` = where tag-routing would pla
 | 43004 | hard | `spark-performance` | `spark-performance` | `query-optimization` | ⚠️ | Three AQE Runtime Optimizations |
 | 43005 | hard | `query-optimization` | `query-optimization` | `query-optimization` |  | Identify the Bottleneck in an Explain Plan |
 | 43006 | hard | `spark-memory-and-driver-executor` | `spark-memory-and-driver-executor` | `spark-execution-model-and-dag` | ⚠️ | collect() on a Large DataFrame |
-| 43007 | hard | _orphan_ | — | `spark-performance` |  | reduceByKey vs groupByKey Network Cost |
+| 43007 | hard | `spark-performance` | `spark-performance` | `spark-performance` |  | reduceByKey vs groupByKey Network Cost |
 | 43008 | hard | `spark-io-and-file-formats` | `spark-io-and-file-formats` | `spark-io-and-file-formats` |  | Parquet vs CSV for Analytical Workloads |
 | 43009 | hard | `spark-joins-and-skew` | `spark-joins-and-skew` | `spark-joins-and-skew` |  | Diagnosing a Suddenly Slow Spark Job |
 | 43010 | hard | `spark-fault-tolerance-and-recovery` | `spark-fault-tolerance-and-recovery` | `spark-execution-model-and-dag` | ⚠️ | Checkpoint vs Cache for Iterative ML Training |
@@ -1359,13 +1325,13 @@ the audit credits the question to. `Tag-suggested` = where tag-routing would pla
 | 43014 | hard | `query-optimization` | `query-optimization` | `query-optimization` |  | AQE Partition Coalescing: Predicting Output Count |
 | 43015 | hard | `streaming-fundamentals` | `streaming` | `streaming` |  | Stream–Stream Join Watermarks and Late Data |
 | 43016 | hard | `streaming-fundamentals` | `streaming` | `streaming` |  | mapGroupsWithState Memory Leak |
-| 43017 | hard | _orphan_ | — | `spark-performance` |  | Guaranteeing Co-location with repartition by Column |
+| 43017 | hard | `spark-performance` | `spark-performance` | `spark-performance` |  | Guaranteeing Co-location with repartition by Column |
 | 43018 | hard | `streaming-fundamentals` | `streaming` | `spark-fault-tolerance-and-recovery` | ⚠️ | Structured Streaming Exactly-Once Semantics |
 | 43019 | hard | `delta-lake-patterns` | `delta-lake` | `delta-lake` |  | Delta Lake Write Amplification from Row-Level Updates |
 | 43020 | hard | `query-optimization` | `query-optimization` | `query-optimization` |  | AQE Runtime Join Strategy Switch |
 | 43021 | hard | `streaming-fundamentals` | `streaming` | `streaming` |  | Watermark and late data drop |
 | 43022 | hard | `delta-lake-patterns` | `delta-lake` | `delta-lake` |  | Z-ordering and data skipping in Delta Lake |
-| 43023 | hard | _orphan_ | — | `spark-performance` |  | Dynamic Partition Pruning Absent on Left Join |
+| 43023 | hard | `spark-joins-and-skew` | `spark-joins-and-skew` | `spark-performance` | ⚠️ | Dynamic Partition Pruning Absent on Left Join |
 | 43024 | hard | `spark-joins-and-skew` | `spark-joins-and-skew` | `spark-joins-and-skew` |  | Driver OOM During Broadcast Relation Construction |
 | 43025 | hard | `query-optimization` | `query-optimization` | `query-optimization` |  | AQE Over-coalescing Kills Downstream Join Parallelism |
 | 43026 | hard | `spark-fault-tolerance-and-recovery` | `spark-fault-tolerance-and-recovery` | `spark-fault-tolerance-and-recovery` |  | Speculative Execution Duplicates Non-Idempotent Sink Writes |
@@ -1373,7 +1339,7 @@ the audit credits the question to. `Tag-suggested` = where tag-routing would pla
 | 43038 | hard | `spark-joins-and-skew` | `spark-joins-and-skew` | `spark-joins-and-skew` |  | Salted Join: What Does result.count() Return? |
 | 43039 | hard | `streaming-fundamentals` | `streaming` | `streaming` |  | Watermark Boundary: Which Incoming Events Are Dropped? |
 | 43040 | hard | `streaming-fundamentals` | `streaming` | `streaming` |  | foreachBatch Driver Crash Mid-Write: What Is in the Output on Restart? |
-| 43041 | hard | _orphan_ | — | `spark-performance` |  | Pandas UDF: Predicting Output for Null and Zero Inputs |
+| 43041 | hard | `spark-udfs-and-python-boundary` | `spark-udfs-and-python-boundary` | `spark-performance` | ⚠️ | Pandas UDF: Predicting Output for Null and Zero Inputs |
 | 43042 | hard | `spark-execution-model-and-dag` | `spark-execution-model-and-dag` | `spark-execution-model-and-dag` |  | Iterative PageRank Crashes with StackOverflowError During Planning |
 | 43043 | hard | `streaming-fundamentals` | `streaming` | `streaming` |  | Streaming Windows Always Emitted One Full Trigger Cycle Late |
 | 43044 | hard | `delta-lake-patterns` | `delta-lake` | `delta-lake` |  | Delta MERGE Fails on Large Batch After Consumer Offset Reset |
@@ -1784,33 +1750,33 @@ the audit credits the question to. `Tag-suggested` = where tag-routing would pla
 |---|---|---|---|---|---|---|
 | 91001 | easy | `experimentation-starter` | `ab-test-mechanics` | `ab-test-mechanics` |  | Randomization Unit: Users vs Sessions |
 | 91002 | easy | `experimentation-starter` | `metric-selection` | `metric-selection` |  | Choosing a Primary Metric |
-| 91003 | easy | _orphan_ | — | `ab-test-mechanics` |  | Null vs Alternative Hypothesis |
+| 91003 | easy | `hypothesis-testing-and-ci` | `hypothesis-testing-and-ci` | `ab-test-mechanics` | ⚠️ | Null vs Alternative Hypothesis |
 | 91004 | easy | `experimentation-starter` | `ab-test-mechanics` | `ab-test-mechanics` |  | What a p-Value Actually Tells You |
-| 91005 | easy | _orphan_ | — | `ab-test-mechanics` |  | Type I Error in Practice |
-| 91006 | easy | _orphan_ | — | `ab-test-mechanics` |  | Type II Error and Underpowered Tests |
+| 91005 | easy | `experiment-design-and-power` | `power-and-sample-size` | `ab-test-mechanics` | ⚠️ | Type I Error in Practice |
+| 91006 | easy | `experiment-design-and-power` | `power-and-sample-size` | `ab-test-mechanics` | ⚠️ | Type II Error and Underpowered Tests |
 | 91007 | easy | `experimentation-starter` | `ab-test-mechanics` | `power-and-sample-size` | ⚠️ | Statistical Power Definition |
 | 91008 | easy | `experiment-design-and-power` | `power-and-sample-size` | `power-and-sample-size` |  | Factors That Increase Required Sample Size |
-| 91009 | easy | _orphan_ | — | `ab-test-mechanics` |  | Interpreting a Confidence Interval |
+| 91009 | easy | `hypothesis-testing-and-ci` | `hypothesis-testing-and-ci` | `ab-test-mechanics` | ⚠️ | Interpreting a Confidence Interval |
 | 91010 | easy | `experimentation-starter` | `ab-test-mechanics` | `ab-test-mechanics` |  | One-Sided vs Two-Sided Tests |
-| 91011 | easy | _orphan_ | — | `ab-test-mechanics` |  | The Role of a Control Group |
+| 91011 | easy | `experimentation-starter` | `ab-test-mechanics` | `ab-test-mechanics` |  | The Role of a Control Group |
 | 91012 | easy | `experimentation-starter` | `ab-test-mechanics` | `ab-test-mechanics` |  | Unexpected Traffic Imbalance at Experiment Start |
 | 91013 | easy | `experiment-design-and-power` | `power-and-sample-size` | `power-and-sample-size` |  | Peeking at Results Early |
 | 91014 | easy | `experimentation-starter` | `metric-selection` | `metric-selection` |  | Guardrail Metrics |
 | 91015 | easy | `experimentation-starter` | `metric-selection` | `metric-selection` |  | Selecting a Sensitive Metric |
-| 91016 | easy | _orphan_ | — | `ab-test-mechanics` |  | Confidence Interval and Practical Significance |
+| 91016 | easy | `hypothesis-testing-and-ci` | `hypothesis-testing-and-ci` | `ab-test-mechanics` | ⚠️ | Confidence Interval and Practical Significance |
 | 91017 | easy | `experiment-design-and-power` | `power-and-sample-size` | `power-and-sample-size` |  | Experiment Duration and Day-of-Week Effects |
 | 91018 | easy | `experimentation-starter` | `ab-test-mechanics` | `ab-test-mechanics` |  | A/A Test Purpose |
 | 91019 | easy | `experiment-design-and-power` | `power-and-sample-size` | `power-and-sample-size` |  | Increasing Power Without More Users |
 | 91020 | easy | `experimentation-starter` | `metric-selection` | `metric-selection` |  | Logging at the Step Level in a Checkout Experiment |
-| 91021 | easy | _orphan_ | — | `ab-test-mechanics` |  | Feature Only Visible to a Subset of Assigned Users |
+| 91021 | easy | `experimentation-starter` | `ab-test-mechanics` | `ab-test-mechanics` |  | Feature Only Visible to a Subset of Assigned Users |
 | 91022 | easy | `experiment-design-and-power` | `power-and-sample-size` | `ab-test-mechanics` | ⚠️ | Carryover Effects When Starting a Follow-On Experiment |
 | 91023 | easy | `experiment-design-and-power` | `power-and-sample-size` | `power-and-sample-size` |  | Defining the Minimum Detectable Effect |
 | 91024 | easy | `experiment-design-and-power` | `power-and-sample-size` | `power-and-sample-size` |  | High-Variance Metric and Required Sample Size |
-| 91025 | easy | _orphan_ | — | `ab-test-mechanics` |  | Predicting CI Width After Quadrupling Sample Size |
+| 91025 | easy | `hypothesis-testing-and-ci` | `hypothesis-testing-and-ci` | `ab-test-mechanics` | ⚠️ | Predicting CI Width After Quadrupling Sample Size |
 | 91026 | easy | `experiment-design-and-power` | `power-and-sample-size` | `ab-test-mechanics` | ⚠️ | Interpreting a Non-Significant Result |
-| 91027 | easy | _orphan_ | — | `ab-test-mechanics` |  | Defining Experiment Eligibility Criteria |
+| 91027 | easy | `experimentation-starter` | `ab-test-mechanics` | `ab-test-mechanics` |  | Defining Experiment Eligibility Criteria |
 | 91028 | easy | `experiment-design-and-power` | `power-and-sample-size` | `ab-test-mechanics` | ⚠️ | Confidence Interval Width and Sample Size |
-| 91029 | easy | _orphan_ | — | `ab-test-mechanics` |  | Pre-Registering Hypotheses |
+| 91029 | easy | `hypothesis-testing-and-ci` | `hypothesis-testing-and-ci` | `ab-test-mechanics` | ⚠️ | Pre-Registering Hypotheses |
 | 91030 | easy | `experiment-design-and-power` | `power-and-sample-size` | `ab-test-mechanics` | ⚠️ | Re-Running an Experiment Until Significant |
 | 92001 | medium | `experiment-design-and-power` | `power-and-sample-size` | `subgroup-and-hte` | ⚠️ | Multiple Testing: Simultaneous Metric Evaluation |
 | 92002 | medium | _orphan_ | — | `experiment-platform-design` |  | Sample Ratio Mismatch Detection |

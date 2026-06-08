@@ -1,0 +1,29 @@
+{
+  "slug": "hypothesis-testing-and-ci",
+  "title": "Hypothesis Testing & Confidence Intervals",
+  "description": "Sharpen the inference vocabulary every experimentation interview leans on: null vs alternative, what a p-value actually tells you, how CI width scales with sample size, and why pre-registration is the difference between an analysis and a fishing expedition.",
+  "topic": "experimentation",
+  "questions": [
+    91003,
+    91009,
+    91016,
+    91025,
+    91029
+  ],
+  "tier": "free",
+  "level": "intermediate",
+  "display_order": 3,
+  "patterns": [
+    "hypothesis-testing-and-ci"
+  ],
+  "focus_concepts": [
+    "HYPOTHESIS FORMULATION",
+    "STATISTICAL SIGNIFICANCE",
+    "CONFIDENCE INTERVALS",
+    "TYPE I AND TYPE II ERRORS"
+  ],
+  "outcomes": "You'll state null and alternative hypotheses unambiguously, interpret p-values without the common 'probability the null is true' fallacy, reason about how CI width scales with √n, and explain why pre-registration constrains false-discovery risk.",
+  "recommended_after": [
+    "experiment-design-and-power"
+  ]
+}

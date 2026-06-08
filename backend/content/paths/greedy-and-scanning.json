@@ -1,0 +1,27 @@
+{
+  "slug": "greedy-and-scanning",
+  "title": "Greedy & Scanning Patterns",
+  "description": "Recognise when local-optimum decisions yield the global optimum and when they don't. Build the muscle for greedy interval problems, scheduling, and scanning-with-state patterns that show up across every Python interview loop.",
+  "topic": "python",
+  "questions": [
+    21008,
+    21038,
+    22027,
+    22043,
+    23001
+  ],
+  "tier": "free",
+  "level": "intermediate",
+  "display_order": 4,
+  "patterns": [
+    "greedy-and-scanning"
+  ],
+  "focus_concepts": [
+    "GREEDY CHOICE",
+    "INDEXED SEQUENCE REASONING"
+  ],
+  "outcomes": "You'll recognise when a greedy strategy provably works, choose between sorting-first vs scanning-once, compose greedy with binary-search bounds, and handle classic interval-merging cases without overengineering toward DP.",
+  "recommended_after": [
+    "arrays-and-hashing"
+  ]
+}

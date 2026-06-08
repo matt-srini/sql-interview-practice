@@ -4,6 +4,8 @@
   "description": "Go beyond basic significance: calculate how many users you need before launching, understand the consequences of underpowered tests, diagnose a sample ratio mismatch, decide when your experiment has run long enough, and apply multiple testing corrections when you track more than one metric.",
   "topic": "experimentation",
   "questions": [
+    91005,
+    91006,
     91008,
     91013,
     91017,

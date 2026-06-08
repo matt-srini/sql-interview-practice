@@ -1,0 +1,29 @@
+{
+  "slug": "list-transformations",
+  "title": "List & Array Transformations",
+  "description": "Reshape, rotate, flatten, chunk, transpose. The structural list-manipulation toolkit that practitioners reach for daily — once you stop hand-rolling them and start recognising them as a pattern.",
+  "topic": "python",
+  "questions": [
+    21003,
+    21016,
+    21017,
+    21025,
+    21026,
+    21028,
+    21029
+  ],
+  "tier": "free",
+  "level": "intermediate",
+  "display_order": 5,
+  "patterns": [
+    "list-transformations"
+  ],
+  "focus_concepts": [
+    "LIST & COLLECTION TRANSFORMATION",
+    "INDEXED SEQUENCE REASONING"
+  ],
+  "outcomes": "You'll cleanly express rotation, flattening, chunking, and transposition on Python lists without index off-by-one bugs, and recognise these shapes in larger pipeline problems.",
+  "recommended_after": [
+    "arrays-and-hashing"
+  ]
+}

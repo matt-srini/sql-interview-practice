@@ -5,10 +5,20 @@
   "topic": "python",
   "questions": [
     21001,
-    21007,
     21006,
+    21007,
+    21012,
+    21013,
+    21020,
+    21023,
+    21030,
+    21034,
     22001,
-    22006
+    22003,
+    22006,
+    22010,
+    22011,
+    22024
   ],
   "tier": "free",
   "level": "foundational",
@@ -19,7 +29,8 @@
   "focus_concepts": [
     "HASH MAP LOOKUP",
     "FREQUENCY COUNTING",
-    "MEMBERSHIP-BASED DEDUPLICATION"
+    "MEMBERSHIP-BASED DEDUPLICATION",
+    "INDEXED SEQUENCE REASONING"
   ],
   "outcomes": "You'll build the hash map instinct that underlies most O(1) lookup problems — frequency maps, duplicate detection, and subarray tricks.",
   "recommended_after": []

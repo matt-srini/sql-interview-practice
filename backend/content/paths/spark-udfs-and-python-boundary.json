@@ -1,0 +1,28 @@
+{
+  "slug": "spark-udfs-and-python-boundary",
+  "title": "Spark UDFs & the Python Boundary",
+  "description": "Master the cost and correctness implications of crossing the JVM-Python boundary: when Python UDFs collapse performance, when Pandas UDFs save you, and how nullable columns silently break UDF logic that looked fine in tests.",
+  "topic": "pyspark",
+  "questions": [
+    41019,
+    41035,
+    42022,
+    42033,
+    43041
+  ],
+  "tier": "free",
+  "level": "intermediate",
+  "display_order": 8,
+  "patterns": [
+    "spark-udfs-and-python-boundary"
+  ],
+  "focus_concepts": [
+    "UDF & PYTHON BOUNDARY",
+    "SCHEMA & TYPE HANDLING",
+    "PERFORMANCE TUNING & TRADE-OFFS"
+  ],
+  "outcomes": "You'll predict why a Python UDF is slow, choose Pandas UDFs when vectorisation pays, debug return-type mismatches and null-input failures, and reason about mapPartitions vs map for batch-amortised Python work.",
+  "recommended_after": [
+    "spark-schema-and-type-handling"
+  ]
+}
