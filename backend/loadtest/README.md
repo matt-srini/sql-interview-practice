@@ -43,9 +43,16 @@ The weights mirror real usage: most traffic browses/reads; a minority executes c
 ## Running it
 
 ```bash
-# 1. Start a server the way prod does (single worker, one event loop):
+# 1. Start a server the way prod does (single worker, one event loop).
+#    RESEND_API_KEY= (empty) is REQUIRED: the harness registers ~hundreds of
+#    `load-*@internal.test` users, and /register sends a verification email
+#    whenever a key is set. backend/.env carries the PRODUCTION Resend key, so a
+#    server started without overriding it will fire real sends — burning quota and
+#    generating hard bounces that hurt sender reputation. (email_service also now
+#    hard-refuses reserved/.test domains as a backstop, but don't rely on it —
+#    keep the key empty for any load/dev run.)
 cd backend
-ENV=development DATABASE_URL=postgresql://postgres:postgres@localhost:5432/sql_practice \
+ENV=development RESEND_API_KEY= DATABASE_URL=postgresql://postgres:postgres@localhost:5432/sql_practice \
   MAX_CONCURRENT_EXECUTIONS=6 ../.venv/bin/uvicorn main:app --port 8000 --workers 1
 
 # 2. Ramp to find the knee (steps = VU counts):
@@ -95,6 +102,9 @@ ENV=development DATABASE_URL=postgresql://postgres:postgres@localhost:5432/sql_p
   Or point it at any non-loopback address the server is listening on (`--host 0.0.0.0`).
 - Each VU registers a unique `load-<runtag>-<n>@internal.test` user; the mock journey
   self-upgrades to Pro via the dev-only `/api/user/plan`. Run against a disposable DB.
+  **Start the server with `RESEND_API_KEY=` (empty)** — see step 1. The `.test` domain
+  is now hard-blocked in `email_service` (RFC 2606), but keeping the key empty is the
+  primary guard; the domain block is the backstop.
 - Server should run **single-worker** to mirror the production `uvicorn main:app`
   (one replica, one event loop) — that is the configuration whose ceiling we care about.
 

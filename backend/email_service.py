@@ -21,6 +21,32 @@ APP_BASE_URL: str = _getenv("APP_BASE_URL", "http://localhost:8000") or "http://
 
 _RESEND_SEND_URL = "https://api.resend.com/emails"
 
+# RFC 2606 / RFC 6761 reserved TLDs and example.* domains can never receive mail.
+# Sending to them only burns Resend quota and produces guaranteed hard bounces,
+# which damage sender reputation (and can get the sending domain throttled or
+# suspended). We refuse before ever calling Resend. This is the durable backstop
+# for the 2026-06-08 incident where the load-test harness (loadtest/driver.py)
+# registered `load-*@internal.test` virtual users against a backend holding the
+# production RESEND_API_KEY — see docs/decisions/DECISIONS.md.
+_RESERVED_EMAIL_TLDS = frozenset({"test", "example", "invalid", "localhost", "local"})
+_RESERVED_EMAIL_DOMAINS = frozenset({"example.com", "example.net", "example.org"})
+
+
+def _is_undeliverable_recipient(to_email: str) -> bool:
+    """True if the recipient's domain is structurally undeliverable.
+
+    Catches RFC-reserved TLDs (.test/.example/.invalid/.localhost/.local), the
+    example.* second-level domains, and malformed addresses with no domain.
+    """
+    if not to_email or to_email.count("@") != 1:
+        return True
+    domain = to_email.rsplit("@", 1)[-1].strip().lower().rstrip(".")
+    if not domain:
+        return True
+    if domain in _RESERVED_EMAIL_DOMAINS:
+        return True
+    return domain.rsplit(".", 1)[-1] in _RESERVED_EMAIL_TLDS
+
 
 def email_available() -> bool:
     return bool(RESEND_API_KEY)
@@ -30,6 +56,10 @@ async def send_verification_email(to_email: str, verification_token: str) -> boo
     """Send an email verification link. Returns True on success, False on failure."""
     if not RESEND_API_KEY:
         logger.warning("RESEND_API_KEY not set — skipping verification email to %s", to_email)
+        return False
+
+    if _is_undeliverable_recipient(to_email):
+        logger.warning("Refusing verification email to reserved/undeliverable domain: %s", to_email)
         return False
 
     verify_url = f"{FRONTEND_BASE_URL.rstrip('/')}/auth/verify-email?token={verification_token}"
@@ -101,6 +131,10 @@ async def send_password_reset_email(to_email: str, reset_token: str) -> bool:
         logger.warning("RESEND_API_KEY not set — skipping password reset email to %s", to_email)
         return False
 
+    if _is_undeliverable_recipient(to_email):
+        logger.warning("Refusing password reset email to reserved/undeliverable domain: %s", to_email)
+        return False
+
     reset_url = f"{FRONTEND_BASE_URL.rstrip('/')}/auth/reset-password?token={reset_token}"
 
     html_body = f"""
@@ -169,6 +203,10 @@ async def send_magic_link_email(to_email: str, magic_token: str) -> bool:
     """Send a magic-link sign-in email. Returns True on success, False on failure."""
     if not RESEND_API_KEY:
         logger.warning("RESEND_API_KEY not set — skipping magic link email to %s", to_email)
+        return False
+
+    if _is_undeliverable_recipient(to_email):
+        logger.warning("Refusing magic link email to reserved/undeliverable domain: %s", to_email)
         return False
 
     magic_url = f"{APP_BASE_URL.rstrip('/')}/api/auth/magic-link/callback?token={magic_token}"

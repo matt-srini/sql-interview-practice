@@ -35,6 +35,12 @@ Keep entries to 4–6 lines. Friction kills logs; if it's longer than the change
 
 ## Entries
 
+## 2026-06-08 — Hard-refuse email sends to RFC-reserved / undeliverable domains
+**Area:** ops · security · **Status:** accepted
+**Decision:** `email_service` now refuses (before any Resend call) to send to RFC 2606/6761 reserved TLDs (`.test/.example/.invalid/.localhost/.local`), `example.{com,net,org}`, and malformed addresses, across all three senders. Root cause: the load-test harness registers `load-*@internal.test` VUs against `/register`, and a backend holding the **production** `RESEND_API_KEY` (from `backend/.env`) fired ~150 real sends in a day to an undeliverable `.test` domain — burning Resend daily quota and, more seriously, generating hard bounces that damage sender reputation. Prod itself was clean (5 real users, 6 verification emails ever); the sends came from local load runs against localhost.
+**Rejected:** *Rely only on running the harness with `RESEND_API_KEY=` unset* — operational, easy to forget, and leaves every other accidental fake-domain send (typos, future tooling) uncaught. We did both: the README now mandates the empty key (primary guard), and the domain block is the durable backstop. *Stop carrying the prod Resend key in local `.env`* (use a Resend test key) is the deeper fix and still worth doing, but it's a larger operational change and doesn't protect prod from a typo'd reserved domain.
+**Affects:** `backend/email_service.py`, `backend/tests/test_email_reserved_domains.py`, `backend/loadtest/README.md`, `docs/backend.md` § auth security controls
+
 ## 2026-06-08 — Wire FORWARDED_ALLOW_IPS into the Dockerfile (ready the proxy-IP rate-limit fix, default unchanged)
 **Area:** ops · security · **Status:** accepted
 **Decision:** The prod Dockerfile now starts uvicorn with `--forwarded-allow-ips "${FORWARDED_ALLOW_IPS:-127.0.0.1}"`. This readies the fix for the P2.2 proxy-IP keying finding (the per-IP rate limiter keys on `request.client.host`, which only reflects the real client IP if uvicorn trusts `X-Forwarded-For` from the immediate peer): if prod `client_ip=` logs show all clients collapsing into one proxy-IP bucket, the fix is now a **single env-var set** (`FORWARDED_ALLOW_IPS=<verified Railway hop>`) with no image change. The default `127.0.0.1` reproduces uvicorn's built-in default, so runtime behaviour is **unchanged** until the env var is set.

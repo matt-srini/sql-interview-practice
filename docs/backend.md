@@ -75,6 +75,7 @@ Security controls on auth:
 - Session cookie uses `HttpOnly` + `SameSite=Lax`; `secure` is controlled by `SECURE_COOKIES` (defaults to enabled in production).
 - OAuth state is server-generated, one-time-use, and short-lived; user-agent/IP-prefix mismatches are logged as risk signals and do not hard-block callback completion.
 - Google OAuth authorize scope is `openid email profile`; GitHub OAuth authorize scope is `read:user user:email`.
+- **Reserved-domain send guard** (`email_service._is_undeliverable_recipient`): all three senders (verification, password-reset, magic-link) refuse — before any Resend HTTP call — to send to RFC 2606 / 6761 reserved TLDs (`.test`, `.example`, `.invalid`, `.localhost`, `.local`), the `example.{com,net,org}` domains, and malformed addresses. These can never receive mail, so sending only burns quota and produces hard bounces that damage sender reputation. Backstop for the load-test harness, which registers `load-*@internal.test` virtual users (see `backend/loadtest/README.md` and `DECISIONS.md` 2026-06-08). Tested in `tests/test_email_reserved_domains.py`.
 
 ### System
 
