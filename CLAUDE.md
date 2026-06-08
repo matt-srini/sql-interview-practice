@@ -175,8 +175,8 @@ Mock-only questions (`mock_only: true`) live in the same JSON files as practice 
 | Track | Easy (practice + mock) | Medium (practice + mock) | Hard (practice + mock) | Format | Location |
 |---|---|---|---|---|---|
 | SQL | 37 + 0 | 50 + 62 | 31 + 103 | SQL query via DuckDB | `backend/content/questions/` |
-| Python | 33 + 0 | 29 + 50 | 17 + 53 | Algorithm function, test cases | `backend/content/python_questions/` |
-| Pandas | 28 + 0 | 40 + 51 | 24 + 63 | DataFrame function, output comparison | `backend/content/python_data_questions/` |
+| Python | 33 + 0 | 30 + 50 | 18 + 53 | Algorithm function, test cases | `backend/content/python_questions/` |
+| Pandas | 28 + 0 | 40 + 51 | 25 + 63 | DataFrame function, output comparison | `backend/content/python_data_questions/` |
 | PySpark | 40 + 0 | 45 + 75 | 42 + 75 | conceptual / predict_output / debug / scenario / optimization (MCQ) | `backend/content/pyspark_questions/` |
 | Data Engineering | 30 + 0 | 35 + 34 | 26 + 76 | conceptual / scenario / debug (MCQ) | `backend/content/data_engineering_questions/` |
 | Data Modeling | 25 + 0 | 31 + 46 | 25 + 51 | conceptual / scenario / debug (MCQ) | `backend/content/data_modeling_questions/` |
@@ -186,7 +186,7 @@ Mock-only questions (`mock_only: true`) live in the same JSON files as practice 
 
 †ML Fundamentals hard mock-only: 68 standalone (including 8 chain parents) + 16 chain children from 8 chains.
 
-**Practice totals:** SQL 118 · Python 79 · Pandas 92 · PySpark 127 · Data Engineering 91 · Data Modeling 81 · Statistics 100 · ML Fundamentals 100 · Experimentation 87 = **875 practice questions**  
+**Practice totals:** SQL 118 · Python 81 · Pandas 93 · PySpark 127 · Data Engineering 91 · Data Modeling 81 · Statistics 100 · ML Fundamentals 100 · Experimentation 87 = **878 practice questions**  
 **Mock-only totals:** SQL 165 · Python 103 · Pandas 114 · PySpark 150 · Statistics 116 · ML Fundamentals 143 · Experimentation 104 · Data Modeling 97 · Data Engineering 110 = **1,102 mock-only questions** (Pro/Elite only)
 
 See [docs/content-authoring.md](docs/content-authoring.md) for the full mock-only authoring spec.

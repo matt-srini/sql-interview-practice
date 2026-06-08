@@ -69,10 +69,7 @@ def _qid(q: dict) -> str:
 # float-aggregation-jitter questions this guard also surfaced — 13004, 13085 — were
 # fixed at the engine layer via the single-thread setting in database.py, so they are
 # no longer listed here.)
-_SQL_KNOWN_DEFECTS = {
-    12030: "empty canonical result (degenerate) — content fix pending via authoring agent",
-    13025: "empty canonical result (degenerate) — content fix pending via authoring agent",
-}
+_SQL_KNOWN_DEFECTS = {}
 
 
 def _sql_params():

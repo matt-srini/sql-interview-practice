@@ -1591,6 +1591,58 @@
     ]
   },
   {
+    "id": 33088,
+    "order": 88,
+    "topic": "pandas",
+    "difficulty": "hard",
+    "title": "Acquisition Channel Refund Cascade Detector",
+    "description": "Your acquisition-channel analytics team suspects that refund stress doesn't stay isolated — when one channel sustains a high refund rate for two consecutive months, other channels often show elevated refund rates at the same time (a \"cascade\" month).\n\nUsing `df_orders` (joined with `df_users` via `user_id`) compute for each calendar month and each acquisition channel the **refund rate** (`payment_status == 'refunded'` / total orders). Then identify **cascade months**: months where a channel's refund rate exceeded 15 % in both that month **and the immediately preceding month** (a *sustained breach*), AND at least one other channel also exceeded 15 % in the same month (the *co-breach* condition).\n\nReturn one row per *(month, sustained_channel)* pair that meets both conditions, with columns:\n- `month` — YYYY-MM string\n- `sustained_channel` — the acquisition channel with the sustained breach\n- `co_breaching_count` — number of other channels also above 15 % in that month\n\nSort by `month` ascending, then `sustained_channel` ascending. Reset the index.",
+    "dataset_files": [
+      "orders.csv",
+      "users.csv"
+    ],
+    "dataframes": {
+      "df_orders": "orders.csv",
+      "df_users": "users.csv"
+    },
+    "schema": {
+      "orders": [
+        "order_id",
+        "user_id",
+        "order_date",
+        "status",
+        "gross_amount",
+        "discount_amount",
+        "net_amount",
+        "payment_status"
+      ],
+      "users": [
+        "user_id",
+        "name",
+        "email",
+        "signup_date",
+        "country",
+        "acquisition_channel",
+        "plan_tier",
+        "is_active"
+      ]
+    },
+    "starter_code": "import pandas as pd\n\ndef solve(df_orders: pd.DataFrame, df_users: pd.DataFrame) -> pd.DataFrame:\n    # Your code here\n    pass",
+    "expected_code": "import pandas as pd\n\ndef solve(df_orders: pd.DataFrame, df_users: pd.DataFrame) -> pd.DataFrame:\n    df = df_orders.merge(df_users[['user_id', 'acquisition_channel']], on='user_id', how='left')\n    df = df.dropna(subset=['acquisition_channel'])\n    df['order_date'] = pd.to_datetime(df['order_date'])\n    df['month'] = df['order_date'].dt.to_period('M').astype(str)\n\n    df['is_refunded'] = (df['payment_status'] == 'refunded').astype(int)\n    monthly = (\n        df.groupby(['month', 'acquisition_channel'])\n        .agg(total_orders=('order_id', 'count'), refunded=('is_refunded', 'sum'))\n        .reset_index()\n    )\n    monthly['refund_rate'] = monthly['refunded'] / monthly['total_orders']\n\n    panel = (\n        monthly.pivot(index='month', columns='acquisition_channel', values='refund_rate')\n        .fillna(0)\n        .sort_index()\n    )\n    panel.columns.name = None\n\n    THRESHOLD = 0.15\n    breach = panel > THRESHOLD\n    sustained = breach & breach.shift(1)\n\n    rows = []\n    for month, sus_row in sustained.iterrows():\n        sustainers = sus_row[sus_row].index.tolist()\n        if not sustainers:\n            continue\n        all_breaching = breach.loc[month][breach.loc[month]].index.tolist()\n        co_count = len(set(all_breaching) - set(sustainers))\n        if co_count == 0:\n            continue\n        for ch in sustainers:\n            rows.append({'month': month, 'sustained_channel': ch, 'co_breaching_count': co_count})\n\n    return (\n        pd.DataFrame(rows, columns=['month', 'sustained_channel', 'co_breaching_count'])\n        .sort_values(['month', 'sustained_channel'])\n        .reset_index(drop=True)\n    )",
+    "solution_code": "import pandas as pd\n\ndef solve(df_orders: pd.DataFrame, df_users: pd.DataFrame) -> pd.DataFrame:\n    df = df_orders.merge(df_users[['user_id', 'acquisition_channel']], on='user_id', how='left')\n    df = df.dropna(subset=['acquisition_channel'])\n    df['order_date'] = pd.to_datetime(df['order_date'])\n    df['month'] = df['order_date'].dt.to_period('M').astype(str)\n\n    df['is_refunded'] = (df['payment_status'] == 'refunded').astype(int)\n    monthly = (\n        df.groupby(['month', 'acquisition_channel'])\n        .agg(total_orders=('order_id', 'count'), refunded=('is_refunded', 'sum'))\n        .reset_index()\n    )\n    monthly['refund_rate'] = monthly['refunded'] / monthly['total_orders']\n\n    panel = (\n        monthly.pivot(index='month', columns='acquisition_channel', values='refund_rate')\n        .fillna(0)\n        .sort_index()\n    )\n    panel.columns.name = None\n\n    THRESHOLD = 0.15\n    breach = panel > THRESHOLD\n    sustained = breach & breach.shift(1)\n\n    rows = []\n    for month, sus_row in sustained.iterrows():\n        sustainers = sus_row[sus_row].index.tolist()\n        if not sustainers:\n            continue\n        all_breaching = breach.loc[month][breach.loc[month]].index.tolist()\n        co_count = len(set(all_breaching) - set(sustainers))\n        if co_count == 0:\n            continue\n        for ch in sustainers:\n            rows.append({'month': month, 'sustained_channel': ch, 'co_breaching_count': co_count})\n\n    return (\n        pd.DataFrame(rows, columns=['month', 'sustained_channel', 'co_breaching_count'])\n        .sort_values(['month', 'sustained_channel'])\n        .reset_index(drop=True)\n    )",
+    "explanation": "Four sequential operations, each Pandas-native: (1) DATETIME OPERATIONS — `pd.to_datetime` + `.dt.to_period('M').astype(str)` buckets each order into a YYYY-MM month label; (2) RESHAPING & PIVOT — `.pivot(index='month', columns='acquisition_channel', values='refund_rate')` builds a Time × Channel panel so each cell is one channel's monthly refund rate, making temporal and cross-entity operations straightforward; (3) WINDOW & ROLLING OPERATIONS — `.shift(1)` shifts the breach boolean panel back one row, so `breach & breach.shift(1)` identifies channels that exceeded the threshold in both month M and M-1 (sustained breach) without any explicit loop over months; (4) the cascade check iterates the `sustained` mask and counts co-breaching channels — the cross-entity propagation check that distinguishes this from single-series anomaly detection. The result is non-trivial because the `.shift(1)` operation on the panel works across all channels simultaneously, and the cascade condition requires two independent boolean checks (sustained + co-breach) rather than a single threshold.",
+    "hints": [
+      "The problem has two axes — time (month) and entity (channel) — so think about what shape of data makes a cross-time AND cross-channel comparison a single vectorized operation rather than a nested loop.",
+      "Once you have a month-by-channel refund-rate matrix, a single boolean comparison gives you all breach flags at once. To detect a *sustained* breach (above threshold in month M AND M-1), shift the entire breach matrix back one row and combine with `&`.",
+      "After identifying which channels had sustained breaches in a given month, count how many *other* channels were also above threshold that month — that co-breaching count is the cascade signal."
+    ],
+    "concepts": [
+      "RESHAPING & PIVOT",
+      "WINDOW & ROLLING OPERATIONS",
+      "DATETIME OPERATIONS"
+    ]
+  },
+  {
     "id": 33039,
     "order": 39,
     "topic": "python_data",
