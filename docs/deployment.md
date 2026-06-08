@@ -237,6 +237,7 @@ The `FRONTEND_DIST_DIR` env var defaults to `/app/frontend/dist` inside the imag
 | `FRONTEND_DIST_DIR` | — | Path to built SPA assets; defaults to `../frontend/dist` |
 | `RATE_LIMIT_REQUESTS` | — | Requests per window per IP; default `60` |
 | `RATE_LIMIT_WINDOW_SECONDS` | — | Window size in seconds; default `60` |
+| `FORWARDED_ALLOW_IPS` | — | Immediate-peer address(es) uvicorn trusts `X-Forwarded-For` from, deriving `request.client.host` (which the per-IP rate limiter keys on). Default `127.0.0.1` (= uvicorn's default; behaviour unchanged). Set to the **verified** Railway edge-proxy hop if per-IP keying is collapsing to one proxy bucket — **never `*`** (IP-spoofing hole). See § Rate-limiter operational notes & findings. |
 | `MAX_CONCURRENT_EXECUTIONS` | — | Max concurrent code executions (DuckDB SQL + subprocess sandboxes) across the app; default **cores − 2**. Bounds peak sandbox memory (× `RLIMIT_AS` 512 MB) and CPU. Prod sets `6` on the 8-vCPU replica. See `backend/offload.py`. |
 | `MAX_CONCURRENT_HASHES` | — | Max concurrent password hashes (PBKDF2, ~22 ms/call) run off the event loop; default **cores − 1**. Kept **independent** of `MAX_CONCURRENT_EXECUTIONS` (auth hashing vs. sandbox execution are different resource classes). See `backend/offload.py` `run_blocking_hash`. |
 | `DB_POOL_SIZE` | — | Postgres connection pool size per replica; default `10` |
@@ -382,13 +383,13 @@ The per-IP limiter (`RATE_LIMIT_REQUESTS`/`RATE_LIMIT_WINDOW_SECONDS`, default 6
 
 ### Action item — verify per-IP keying behind the prod proxy
 
-The middleware keys on `request.client.host`. The prod Dockerfile starts `uvicorn main:app --host 0.0.0.0 --port ${PORT}` **without** `--forwarded-allow-ips`, so uvicorn defaults to `proxy_headers=True` + `forwarded_allow_ips="127.0.0.1"`. Empirically (probe, this venv): `X-Forwarded-For` is **trusted from a `127.0.0.1` peer** (we rewrote `client.host` to `8.8.8.8` from loopback) and **ignored from any other peer**.
+The middleware keys on `request.client.host`. The prod Dockerfile now starts `uvicorn` with `--forwarded-allow-ips "${FORWARDED_ALLOW_IPS:-127.0.0.1}"` — the default `127.0.0.1` reproduces uvicorn's built-in default (`proxy_headers=True`), so behaviour is **unchanged until `FORWARDED_ALLOW_IPS` is set**. Empirically (probe, this venv): `X-Forwarded-For` is **trusted from a `127.0.0.1` peer** (we rewrote `client.host` to `8.8.8.8` from loopback) and **ignored from any other peer**.
 
 Consequence: per-IP rate limiting is correct **iff** Railway's edge proxy reaches the container from `127.0.0.1`. If it reaches it from another internal address, `X-Forwarded-For` is dropped and *every* client collapses into a single proxy-IP bucket — the 60/min limit becomes near-global (too aggressive for legitimate users sharing the egress, useless against a distributed abuser).
 
 **To verify:** the app already logs `client_ip=<host>` per request — inspect prod logs for whether `client_ip` shows diverse real client IPs or one repeated internal/proxy address.
 
-**To fix (if it's keying on the proxy):** set `FORWARDED_ALLOW_IPS` (or `--forwarded-allow-ips`) to the **actual Railway proxy hop** so uvicorn rewrites `client.host` from the trusted `X-Forwarded-For`. **Never set it to `*`** — that lets any client spoof its IP to evade the limiter or frame another address. This is a deliberate deployment + security change pending confirmation of the real prod peer address; it is not applied automatically.
+**To fix (if it's keying on the proxy):** set the **`FORWARDED_ALLOW_IPS`** env var to the **actual Railway proxy hop** so uvicorn rewrites `client.host` from the trusted `X-Forwarded-For`. The Dockerfile already wires this env into `--forwarded-allow-ips`, so the fix is a **single env-var set — no image change**. **Never set it to `*`** — that lets any client spoof its IP to evade the limiter or frame another address. This is a deliberate deployment + security change pending confirmation of the real prod peer address; it is not applied automatically (the default keeps today's `127.0.0.1`-only trust).
 
 ---
 

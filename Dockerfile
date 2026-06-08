@@ -42,4 +42,11 @@ USER appuser
 EXPOSE 8000
 
 # Railway injects PORT at runtime; fall back to 8000 for local docker runs.
-CMD ["/bin/sh", "-c", "exec uvicorn main:app --host 0.0.0.0 --port ${PORT:-8000}"]
+# FORWARDED_ALLOW_IPS controls which immediate-peer addresses uvicorn trusts the
+# X-Forwarded-For header from (for deriving request.client.host, which the per-IP
+# rate limiter keys on). Default "127.0.0.1" reproduces uvicorn's own default, so
+# behaviour is unchanged unless the env var is set. Set it to the specific Railway
+# edge-proxy hop ONCE that hop is verified from prod `client_ip=` logs — NEVER "*"
+# (that trusts XFF from any peer and lets clients spoof their IP to evade the
+# limiter). See docs/deployment.md § Rate-limiter operational notes & findings.
+CMD ["/bin/sh", "-c", "exec uvicorn main:app --host 0.0.0.0 --port ${PORT:-8000} --forwarded-allow-ips \"${FORWARDED_ALLOW_IPS:-127.0.0.1}\""]
