@@ -14,6 +14,7 @@
   ],
   "tier": "pro",
   "level": "advanced",
+  "display_order": 6,
   "patterns": [
     "cohort-analysis"
   ],

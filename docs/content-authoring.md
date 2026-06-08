@@ -586,6 +586,7 @@ Every practice question routes to exactly one pattern-path (or `null` if no patt
 | `topic` | ✓ | Must match a track slug |
 | `tier` | ✓ | `free` or `pro` — controls **path-listing visibility only** (the questions inside follow practice unlock thresholds regardless) |
 | `level` | ✓ | `foundational` \| `intermediate` \| `advanced` — defined below |
+| `display_order` | ✓ | 1-based integer, unique per `(topic, level)`. Lower = earlier in the track's recommended walk within that level. Foundational is always 1 (singleton). TrackHub sorts by `(level, display_order)`. |
 | `patterns` | ✓ | Non-empty array; every entry must resolve in `path_patterns.py` for the track |
 | `focus_concepts` | ✓ | Non-empty array; every entry must resolve to a registered family in `concept_families.py` for taxonomy-validated tracks (others: presence check only until registries are complete) |
 | `questions` | ✓ | Ordered array of catalog question IDs (easy → hard within the pattern). Every ID must exist in the track catalog. Every question must carry at least one concept tag in the same family as one of the path's `focus_concepts[]` (mechanical guarantee that the path drills what it claims). |

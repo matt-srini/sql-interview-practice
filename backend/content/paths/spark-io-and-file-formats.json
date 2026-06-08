@@ -12,6 +12,7 @@
   ],
   "tier": "free",
   "level": "intermediate",
+  "display_order": 3,
   "patterns": [
     "spark-io-and-file-formats"
   ],

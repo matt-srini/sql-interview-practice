@@ -15,6 +15,7 @@
   ],
   "tier": "pro",
   "level": "intermediate",
+  "display_order": 2,
   "patterns": [
     "grain-definition"
   ],

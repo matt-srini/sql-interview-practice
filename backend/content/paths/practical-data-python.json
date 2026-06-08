@@ -1,7 +1,7 @@
 {
   "slug": "practical-data-python",
   "title": "Practical Data Python",
-  "description": "Build the Python toolkit data engineers and analysts use before pandas even enters the picture \u2014 parsing CSVs and JSON logs, working with datetimes, grouping with defaultdict, and processing large files in memory-safe chunks.",
+  "description": "Build the Python toolkit data engineers and analysts use before pandas even enters the picture — parsing CSVs and JSON logs, working with datetimes, grouping with defaultdict, and processing large files in memory-safe chunks.",
   "topic": "python",
   "questions": [
     21031,
@@ -13,6 +13,7 @@
   ],
   "tier": "pro",
   "level": "advanced",
+  "display_order": 5,
   "patterns": [
     "data-pipelines"
   ],

@@ -18,6 +18,7 @@
   ],
   "tier": "pro",
   "level": "advanced",
+  "display_order": 5,
   "patterns": [
     "streaming"
   ],

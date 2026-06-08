@@ -12,6 +12,7 @@
   ],
   "tier": "free",
   "level": "intermediate",
+  "display_order": 2,
   "patterns": [
     "spark-collections-and-arrays"
   ],

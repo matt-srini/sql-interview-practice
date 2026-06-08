@@ -13,6 +13,7 @@
   ],
   "tier": "pro",
   "level": "advanced",
+  "display_order": 1,
   "patterns": [
     "reshape-and-pivot"
   ],

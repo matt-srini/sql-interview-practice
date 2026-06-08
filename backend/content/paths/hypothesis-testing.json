@@ -18,6 +18,7 @@
   ],
   "tier": "pro",
   "level": "intermediate",
+  "display_order": 4,
   "patterns": [
     "hypothesis-testing"
   ],

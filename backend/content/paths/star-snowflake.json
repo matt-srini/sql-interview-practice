@@ -13,6 +13,7 @@
   ],
   "tier": "free",
   "level": "foundational",
+  "display_order": 1,
   "patterns": [
     "star-snowflake"
   ],

@@ -12,6 +12,7 @@
   ],
   "tier": "pro",
   "level": "advanced",
+  "display_order": 4,
   "patterns": [
     "dynamic-programming"
   ],
@@ -21,7 +22,7 @@
     "LINEAR STATE UPDATE",
     "DYNAMIC PROGRAMMING (2D)"
   ],
-  "outcomes": "You'll recognize DP patterns \u2014 prefix, interval, knapsack \u2014 and write both top-down memoized and bottom-up tabulated solutions.",
+  "outcomes": "You'll recognize DP patterns — prefix, interval, knapsack — and write both top-down memoized and bottom-up tabulated solutions.",
   "recommended_after": [
     "sliding-window-patterns"
   ]

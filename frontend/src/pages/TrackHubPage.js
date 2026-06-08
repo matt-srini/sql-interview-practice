@@ -119,14 +119,18 @@ export default function TrackHubPage() {
     api.get('/paths').then(r => setTopicPaths(r.data.filter(p => p.topic === topic))).catch(() => {});
   }, [topic]);
 
-  // Sort paths: incomplete foundational first, then intermediate, then advanced; complete paths last.
+  // Sort paths: incomplete first, then by (level, display_order) — foundational
+  // before intermediate before advanced; within each level, by author-curated
+  // display_order (1-based, lower = earlier in the conceptual walk).
   const sortedPaths = useMemo(() => {
     const levelOrder = { foundational: 0, intermediate: 1, advanced: 2 };
     return [...topicPaths].sort((a, b) => {
       const aComplete = a.question_count > 0 && a.solved_count === a.question_count;
       const bComplete = b.question_count > 0 && b.solved_count === b.question_count;
       if (aComplete !== bComplete) return aComplete ? 1 : -1;
-      return (levelOrder[a.level] ?? 3) - (levelOrder[b.level] ?? 3);
+      const levelDelta = (levelOrder[a.level] ?? 3) - (levelOrder[b.level] ?? 3);
+      if (levelDelta !== 0) return levelDelta;
+      return (a.display_order ?? 999) - (b.display_order ?? 999);
     });
   }, [topicPaths]);
 

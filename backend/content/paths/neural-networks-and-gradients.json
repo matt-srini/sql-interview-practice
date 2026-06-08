@@ -12,6 +12,7 @@
   ],
   "tier": "pro",
   "level": "advanced",
+  "display_order": 2,
   "patterns": [
     "neural-networks-and-gradients"
   ],

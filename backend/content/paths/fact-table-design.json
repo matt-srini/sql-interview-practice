@@ -14,6 +14,7 @@
   ],
   "tier": "free",
   "level": "intermediate",
+  "display_order": 1,
   "patterns": [
     "fact-table-design"
   ],

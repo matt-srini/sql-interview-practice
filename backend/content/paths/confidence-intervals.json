@@ -1,7 +1,7 @@
 {
   "slug": "confidence-intervals",
   "title": "Confidence Intervals & Estimation",
-  "description": "Construct and interpret confidence intervals correctly \u2014 frequentist coverage, sample-size sensitivity, MLE and method-of-moments estimation, bootstrap CIs, and the trade-offs between bootstrap and parametric methods.",
+  "description": "Construct and interpret confidence intervals correctly — frequentist coverage, sample-size sensitivity, MLE and method-of-moments estimation, bootstrap CIs, and the trade-offs between bootstrap and parametric methods.",
   "topic": "statistics",
   "questions": [
     72003,
@@ -16,6 +16,7 @@
   ],
   "tier": "pro",
   "level": "intermediate",
+  "display_order": 5,
   "patterns": [
     "confidence-intervals"
   ],

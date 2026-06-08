@@ -1,7 +1,7 @@
 {
   "slug": "normalization-and-referential-integrity",
   "title": "Normalization & Referential Integrity",
-  "description": "Understand the rules that keep relational data consistent: first, second, and third normal form, where update anomalies come from, and why analytics warehouses deliberately break those rules for read performance. Then see how referential integrity works \u2014 and fails \u2014 in cloud warehouses that don't enforce foreign keys.",
+  "description": "Understand the rules that keep relational data consistent: first, second, and third normal form, where update anomalies come from, and why analytics warehouses deliberately break those rules for read performance. Then see how referential integrity works — and fails — in cloud warehouses that don't enforce foreign keys.",
   "topic": "data-modeling",
   "questions": [
     61004,
@@ -19,6 +19,7 @@
   ],
   "tier": "free",
   "level": "intermediate",
+  "display_order": 4,
   "patterns": [
     "normalization",
     "referential-integrity"

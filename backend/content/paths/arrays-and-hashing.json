@@ -12,6 +12,7 @@
   ],
   "tier": "free",
   "level": "foundational",
+  "display_order": 1,
   "patterns": [
     "arrays-and-hashing"
   ],
@@ -20,6 +21,6 @@
     "FREQUENCY COUNTING",
     "MEMBERSHIP-BASED DEDUPLICATION"
   ],
-  "outcomes": "You'll build the hash map instinct that underlies most O(1) lookup problems \u2014 frequency maps, duplicate detection, and subarray tricks.",
+  "outcomes": "You'll build the hash map instinct that underlies most O(1) lookup problems — frequency maps, duplicate detection, and subarray tricks.",
   "recommended_after": []
 }

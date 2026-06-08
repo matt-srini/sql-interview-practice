@@ -12,6 +12,7 @@
   ],
   "tier": "free",
   "level": "advanced",
+  "display_order": 3,
   "patterns": [
     "spark-fault-tolerance-and-recovery"
   ],

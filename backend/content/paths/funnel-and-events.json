@@ -17,6 +17,7 @@
   ],
   "tier": "pro",
   "level": "advanced",
+  "display_order": 7,
   "patterns": [
     "funnel-analysis"
   ],

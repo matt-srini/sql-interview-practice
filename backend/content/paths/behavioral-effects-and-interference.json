@@ -12,6 +12,7 @@
   ],
   "tier": "free",
   "level": "advanced",
+  "display_order": 2,
   "patterns": [
     "behavioral-effects-and-interference"
   ],

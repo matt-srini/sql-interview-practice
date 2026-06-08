@@ -13,6 +13,7 @@
   ],
   "tier": "free",
   "level": "intermediate",
+  "display_order": 4,
   "patterns": [
     "spark-memory-and-driver-executor"
   ],

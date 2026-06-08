@@ -18,6 +18,7 @@
   ],
   "tier": "free",
   "level": "intermediate",
+  "display_order": 1,
   "patterns": [
     "spark-schema-and-type-handling"
   ],

@@ -13,6 +13,7 @@
   ],
   "tier": "free",
   "level": "intermediate",
+  "display_order": 5,
   "patterns": [
     "spark-performance"
   ],

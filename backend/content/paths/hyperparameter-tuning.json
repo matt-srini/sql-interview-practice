@@ -12,6 +12,7 @@
   ],
   "tier": "free",
   "level": "intermediate",
+  "display_order": 7,
   "patterns": [
     "hyperparameter-tuning"
   ],

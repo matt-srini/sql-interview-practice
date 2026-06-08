@@ -13,6 +13,7 @@
   ],
   "tier": "pro",
   "level": "intermediate",
+  "display_order": 7,
   "patterns": [
     "bayesian-reasoning"
   ],

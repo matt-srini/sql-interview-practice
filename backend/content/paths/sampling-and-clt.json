@@ -12,6 +12,7 @@
   ],
   "tier": "pro",
   "level": "intermediate",
+  "display_order": 3,
   "patterns": [
     "sampling-and-clt"
   ],

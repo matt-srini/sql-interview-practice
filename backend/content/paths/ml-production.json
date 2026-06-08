@@ -20,6 +20,7 @@
   ],
   "tier": "pro",
   "level": "advanced",
+  "display_order": 3,
   "patterns": [
     "monitoring"
   ],
