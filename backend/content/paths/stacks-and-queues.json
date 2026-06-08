@@ -10,8 +10,8 @@
     22015
   ],
   "tier": "free",
-  "level": "advanced",
-  "display_order": 1,
+  "level": "intermediate",
+  "display_order": 2,
   "patterns": [
     "stacks-and-queues"
   ],

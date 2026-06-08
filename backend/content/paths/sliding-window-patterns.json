@@ -17,7 +17,7 @@
   ],
   "tier": "free",
   "level": "intermediate",
-  "display_order": 2,
+  "display_order": 3,
   "patterns": [
     "sliding-window"
   ],

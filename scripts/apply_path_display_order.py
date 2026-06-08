@@ -44,45 +44,45 @@ DISPLAY_ORDER: dict[str, dict[str, int]] = {
     "python": {
         # foundational
         "arrays-and-hashing": 1,
-        # intermediate
+        # intermediate (stacks-and-queues moved here — basic DS toolkit)
         "string-and-text-processing": 1,
-        "sliding-window-patterns": 2,
+        "stacks-and-queues": 2,
+        "sliding-window-patterns": 3,
         # advanced
-        "stacks-and-queues": 1,
-        "heap-and-priority": 2,
-        "graph-and-tree-patterns": 3,
-        "dynamic-programming": 4,
-        "practical-data-python": 5,
+        "heap-and-priority": 1,
+        "graph-and-tree-patterns": 2,
+        "dynamic-programming": 3,
+        "practical-data-python": 4,
     },
     "python-data": {
         # foundational
         "dataframe-fundamentals": 1,
-        # intermediate
+        # intermediate (reshaping moved here — pivot/melt is everyday pandas)
         "data-cleaning": 1,
         "groupby": 2,
         "joins-and-merges": 3,
         "top-n-and-ranking": 4,
+        "reshaping-and-pivoting": 5,
         # advanced
-        "reshaping-and-pivoting": 1,
-        "time-series-analysis": 2,
-        "customer-analytics": 3,
+        "time-series-analysis": 1,
+        "customer-analytics": 2,
     },
     "pyspark": {
         # foundational
         "spark-execution-model-and-dag": 1,
-        # intermediate
+        # intermediate (spark-joins-and-skew moved here — joins are core)
         "spark-schema-and-type-handling": 1,
-        "spark-collections-and-arrays": 2,
-        "spark-io-and-file-formats": 3,
-        "spark-memory-and-driver-executor": 4,
-        "spark-performance": 5,
-        "pyspark-windowing": 6,
+        "spark-joins-and-skew": 2,
+        "spark-collections-and-arrays": 3,
+        "spark-io-and-file-formats": 4,
+        "spark-memory-and-driver-executor": 5,
+        "spark-performance": 6,
+        "pyspark-windowing": 7,
         # advanced
         "query-optimization": 1,
-        "spark-joins-and-skew": 2,
-        "spark-fault-tolerance-and-recovery": 3,
-        "delta-lake-patterns": 4,
-        "streaming-fundamentals": 5,
+        "spark-fault-tolerance-and-recovery": 2,
+        "delta-lake-patterns": 3,
+        "streaming-fundamentals": 4,
     },
     "data-engineering": {
         # foundational
@@ -100,11 +100,11 @@ DISPLAY_ORDER: dict[str, dict[str, int]] = {
     "data-modeling": {
         # foundational
         "star-snowflake": 1,
-        # intermediate
+        # intermediate (normalization moved before SCD — more foundational)
         "fact-table-design": 1,
         "grain-definition": 2,
-        "scd": 3,
-        "normalization-and-referential-integrity": 4,
+        "normalization-and-referential-integrity": 3,
+        "scd": 4,
         "wide-tables-and-obt": 5,
         "bridge-tables": 6,
         # advanced
@@ -122,9 +122,9 @@ DISPLAY_ORDER: dict[str, dict[str, int]] = {
         "hypothesis-testing": 4,
         "confidence-intervals": 5,
         "errors-and-power": 6,
-        "bayesian-reasoning": 7,
-        # advanced
+        # advanced (bayesian-reasoning moved here — paradigm shift, builds on frequentist)
         "applied-stats": 1,
+        "bayesian-reasoning": 2,
     },
     "ml-fundamentals": {
         # foundational

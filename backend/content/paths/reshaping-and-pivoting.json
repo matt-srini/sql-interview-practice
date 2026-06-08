@@ -12,8 +12,8 @@
     33022
   ],
   "tier": "pro",
-  "level": "advanced",
-  "display_order": 1,
+  "level": "intermediate",
+  "display_order": 5,
   "patterns": [
     "reshape-and-pivot"
   ],
