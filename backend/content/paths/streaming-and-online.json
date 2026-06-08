@@ -1,0 +1,26 @@
+{
+  "slug": "streaming-and-online",
+  "title": "Streaming & Online Reductions",
+  "description": "Process unbounded data with bounded memory: running counters, dedup-as-you-go, and stateful single-pass scans. The patterns behind log aggregation, anomaly detection, and event-stream analytics that don't fit in RAM.",
+  "topic": "python",
+  "questions": [
+    21041,
+    22004,
+    22048,
+    22051
+  ],
+  "tier": "free",
+  "level": "intermediate",
+  "display_order": 6,
+  "patterns": [
+    "streaming-and-online"
+  ],
+  "focus_concepts": [
+    "STREAMING / ONLINE REDUCTION",
+    "HASH-MAP STATE"
+  ],
+  "outcomes": "You'll process unbounded data streams with bounded memory, dedupe events in flight, maintain running statistics with single-pass accumulators, and recognise when a streaming reduction beats a batch re-scan.",
+  "recommended_after": [
+    "arrays-and-hashing"
+  ]
+}
