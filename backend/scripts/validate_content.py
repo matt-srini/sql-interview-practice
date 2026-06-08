@@ -1009,6 +1009,11 @@ def _validate_paths(paths: list[dict], catalogs_by_topic: dict[str, dict[str, li
          drills what it claims.
       6. ``recommended_after[]`` references real path slugs in the same track;
          the resulting graph is acyclic.
+      7. Question→path uniqueness: every question appears in at most one path
+         (across all tracks). The 1:1 curriculum-spine model — each question
+         belongs to exactly one pattern walk. A question in two paths means
+         a user solving it sees partial progress in both, silently violating
+         the product mental model.
     """
     from concept_families import CONCEPT_FAMILIES, resolve_to_family, concept_matches_focus
     from path_patterns import PATH_PATTERNS
@@ -1165,6 +1170,23 @@ def _validate_paths(paths: list[dict], catalogs_by_topic: dict[str, dict[str, li
 
         for slug in topic_paths:
             _dfs(slug, [])
+
+    # Rule 7: question→path uniqueness — every question appears in at most one path.
+    # The 1:1 curriculum-spine model. Violations mean a user solving one question
+    # advances progress in multiple paths, silently breaking the product mental model
+    # that each question belongs to exactly one pattern walk.
+    from collections import defaultdict
+    qid_to_paths: dict[int, list[str]] = defaultdict(list)
+    for path in paths:
+        for qid in path.get("questions", []):
+            qid_to_paths[qid].append(path["slug"])
+    dupes = {qid: pths for qid, pths in qid_to_paths.items() if len(pths) > 1}
+    if dupes:
+        lines = [f"  Q{qid} appears in: {sorted(pths)}" for qid, pths in sorted(dupes.items())]
+        raise ValueError(
+            f"Path uniqueness rule 7 violated — {len(dupes)} question(s) appear in more than one path:\n"
+            + "\n".join(lines)
+        )
 
 
 def _validate_sample_cross_bank_titles() -> None:

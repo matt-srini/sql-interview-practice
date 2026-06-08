@@ -254,3 +254,30 @@ def test_path_question_counts_in_curation_range(all_paths):
         f"Paths outside 4–15 question sanity range: {out_of_range}. "
         f"See docs/content-authoring.md §Paths."
     )
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Rule 7: Question→path uniqueness (1:1 curriculum-spine model)
+# ──────────────────────────────────────────────────────────────────────────────
+
+def test_rule7_question_appears_in_at_most_one_path(all_paths):
+    """Rule 7: every question appears in at most one path.
+
+    The 1:1 model: each question belongs to exactly one pattern walk. If a
+    question appears in two paths, a user solving it sees partial progress
+    in both — silently violating the product mental model and double-counting
+    coverage in dashboards.
+
+    See docs/content-authoring.md §Paths "Question→path uniqueness".
+    """
+    from collections import defaultdict
+    qid_to_paths: dict[int, list[str]] = defaultdict(list)
+    for p in all_paths:
+        for qid in p.get("questions", []):
+            qid_to_paths[qid].append(p["slug"])
+    dupes = {qid: sorted(pths) for qid, pths in qid_to_paths.items() if len(pths) > 1}
+    assert not dupes, (
+        f"Rule 7 violated — {len(dupes)} question(s) appear in more than one path: "
+        f"{dict(list(dupes.items())[:10])}"
+        f"{'...' if len(dupes) > 10 else ''}"
+    )
