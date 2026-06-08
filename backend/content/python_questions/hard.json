@@ -429,7 +429,7 @@
       {"input": [[[[1, 0, 0], [0, 0, 0], [0, 0, 1]], [[1, 0, 0], [0, 0, 0], [0, 0, 1]], [[1, 0, 0], [0, 0, 0], [0, 0, 0]]]], "expected": 3}
     ],
     "public_test_cases": [{"input": [[[[1, 1], [1, 1]], [[1, 1], [1, 1]]]], "expected": 8}, {"input": [[[[1, 0], [0, 0]], [[0, 0], [0, 1]]]], "expected": 1}],
-    "hints": ["Think of the 3-D grid as a graph where each occupied voxel is a node; the six face-adjacent positions (±z, ±y, ±x) are its edges. Which traversal finds all members of a connected component without revisiting any node?", "Use iterative BFS with a deque rather than recursive DFS — on a dense 50×50×50 grid the recursion depth can reach 125 000, exceeding Python's default stack. Track a `visited` set so each voxel is queued at most once across all component searches.", "There are exactly six 6-neighbor deltas: (±1,0,0), (0,±1,0), (0,0,±1). Iterate through all of them for each dequeued voxel; bounds-check before accessing the grid."],
+    "hints": ["Think of the 3-D grid as a graph where each occupied voxel is a node; the six face-adjacent positions (±z, ±y, ±x) are its edges. Which traversal finds all members of a connected component without revisiting any node?", "Use iterative BFS with a deque rather than recursive DFS — on a large dense grid the recursion depth can exceed Python's default stack limit. Track a `visited` set so each voxel is queued at most once across all component searches.", "There are exactly six 6-neighbor deltas: (±1,0,0), (0,±1,0), (0,0,±1). Iterate through all of them for each dequeued voxel; bounds-check before accessing the grid."],
     "concepts": ["GRAPH TRAVERSAL (BFS / DFS)", "HASH-MAP STATE"]
   },
   {
