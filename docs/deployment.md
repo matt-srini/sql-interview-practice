@@ -372,6 +372,26 @@ The app serves all traffic on a **single event loop per replica** (`uvicorn main
 
 ---
 
+## Rate-limiter operational notes & findings
+
+The per-IP limiter (`RATE_LIMIT_REQUESTS`/`RATE_LIMIT_WINDOW_SECONDS`, default 60/60s) plus the two auth limiters are documented behaviourally in `docs/backend.md` § Rate limiting. Operational findings from the burst probe (`backend/loadtest/ratelimit.py`, 2026-06-08):
+
+- **Degrades gracefully under burst** — measured 60 pass / next 20 `429` with `Retry-After` + `X-RateLimit-*` + the canonical `{error, request_id}` body; the check is O(1), so a burst never stalls the loop.
+- **In-memory fallback is single-replica-only, and enforced** — `create_rate_limiter` raises at startup in production if `REDIS_URL` is unset or Redis init fails. The process-local `InMemoryRateLimiter` is dev-only; across horizontal replicas it would be per-replica (ineffective as a global limit), so **`REDIS_URL` is mandatory in prod** (already in the required-env list above and the Tier-2 scaling row).
+- **Transient Redis errors fail gracefully, not as 500s** — `check_safe` fails open for the coarse IP + auth-baseline limiters and closed for the token-issue limiter (see `docs/backend.md`).
+
+### Action item — verify per-IP keying behind the prod proxy
+
+The middleware keys on `request.client.host`. The prod Dockerfile starts `uvicorn main:app --host 0.0.0.0 --port ${PORT}` **without** `--forwarded-allow-ips`, so uvicorn defaults to `proxy_headers=True` + `forwarded_allow_ips="127.0.0.1"`. Empirically (probe, this venv): `X-Forwarded-For` is **trusted from a `127.0.0.1` peer** (we rewrote `client.host` to `8.8.8.8` from loopback) and **ignored from any other peer**.
+
+Consequence: per-IP rate limiting is correct **iff** Railway's edge proxy reaches the container from `127.0.0.1`. If it reaches it from another internal address, `X-Forwarded-For` is dropped and *every* client collapses into a single proxy-IP bucket — the 60/min limit becomes near-global (too aggressive for legitimate users sharing the egress, useless against a distributed abuser).
+
+**To verify:** the app already logs `client_ip=<host>` per request — inspect prod logs for whether `client_ip` shows diverse real client IPs or one repeated internal/proxy address.
+
+**To fix (if it's keying on the proxy):** set `FORWARDED_ALLOW_IPS` (or `--forwarded-allow-ips`) to the **actual Railway proxy hop** so uvicorn rewrites `client.host` from the trusted `X-Forwarded-For`. **Never set it to `*`** — that lets any client spoof its IP to evade the limiter or frame another address. This is a deliberate deployment + security change pending confirmation of the real prod peer address; it is not applied automatically.
+
+---
+
 ## Pre-launch admin seed
 
 Run once against the production database after migrations complete (idempotent upsert).

@@ -231,12 +231,16 @@ def _coarse_ip_prefix(request: Request) -> str | None:
 
 def _check_auth_limits(request: Request, *, issue_token: bool = False) -> JSONResponse | None:
     key = request.client.host if request.client and request.client.host else "unknown"
-    baseline = _auth_rate_limiter.check(f"auth:{key}")
+    # Baseline auth limiter fails open on a Redis blip — Postgres login-lockout is the
+    # real brute-force control, so a coarse-limit gap during a blip is acceptable.
+    baseline = _auth_rate_limiter.check_safe(f"auth:{key}", fail_open=True)
     if not baseline.allowed:
         return _err("Too many auth attempts. Please try again shortly.", status=429)
 
     if issue_token:
-        decision = _auth_token_issue_limiter.check(f"auth-token:{key}")
+        # Token issuance fails CLOSED — it bounds expensive side effects (emails /
+        # OAuth state); better to refuse briefly than to allow a blast during a blip.
+        decision = _auth_token_issue_limiter.check_safe(f"auth-token:{key}", fail_open=False)
         if not decision.allowed:
             return _err("Too many auth token requests. Please wait and try again.", status=429)
     return None

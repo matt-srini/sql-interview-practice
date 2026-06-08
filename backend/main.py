@@ -249,7 +249,8 @@ async def ip_rate_limit_middleware(request: Request, call_next):
     if not IS_PROD and client_ip in ("127.0.0.1", "::1", "localhost"):
         return await call_next(request)
 
-    decision = rate_limiter.check(client_ip)
+    # fail_open: a Redis blip must not turn the coarse per-IP guard into a 500 storm.
+    decision = rate_limiter.check_safe(client_ip, fail_open=True)
     if not decision.allowed:
         logger.warning(
             "[request_id=%s] Rate limit exceeded client_ip=%s retry_after=%ss",

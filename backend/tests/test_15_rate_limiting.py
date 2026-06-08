@@ -82,3 +82,51 @@ def test_tc228_clear_rate_limit_state_allows_new_requests(monkeypatch):
         # This should succeed now
         r = client.get("/health")
     assert r.status_code != 429
+
+
+# --- TC-229..231 — check_safe graceful degradation on a backend (Redis) blip -------
+# A transient Redis error during check() must NOT become a 500 for the user. The
+# in-memory limiter never raises, so a backend that raises stands in for the prod
+# Redis-blip case. See rate_limiter.BaseRateLimiter.check_safe.
+
+def _raising_limiter(max_requests: int, window_seconds: int):
+    """A real BaseRateLimiter subclass whose check() always raises (flaky-Redis stand-in).
+
+    Subclasses the real base so we exercise the actual ``check_safe`` implementation.
+    """
+    from rate_limiter import BaseRateLimiter
+
+    class _Raising(BaseRateLimiter):
+        def check(self, key):
+            raise RuntimeError("redis down")
+
+        def clear(self):
+            pass
+
+    return _Raising(max_requests=max_requests, window_seconds=window_seconds)
+
+
+def test_tc229_check_safe_fails_open_on_backend_error():
+    """fail_open=True (coarse IP / auth-baseline limiters) → allow on backend error."""
+    lim = _raising_limiter(max_requests=60, window_seconds=60)
+    decision = lim.check_safe("1.2.3.4", fail_open=True)
+    assert decision.allowed is True
+    assert decision.retry_after == 0
+
+
+def test_tc230_check_safe_fails_closed_on_backend_error():
+    """fail_open=False (token-issue limiter) → deny on backend error, with Retry-After."""
+    lim = _raising_limiter(max_requests=5, window_seconds=300)
+    decision = lim.check_safe("1.2.3.4", fail_open=False)
+    assert decision.allowed is False
+    assert decision.retry_after >= 1
+
+
+def test_tc231_check_safe_passes_through_normal_decisions():
+    """check_safe must not alter allow/deny when the backend is healthy."""
+    from rate_limiter import InMemoryRateLimiter
+
+    lim = InMemoryRateLimiter(max_requests=2, window_seconds=60)
+    assert lim.check_safe("k").allowed is True
+    assert lim.check_safe("k").allowed is True
+    assert lim.check_safe("k").allowed is False  # 3rd request is over the limit
