@@ -1,6 +1,13 @@
 fastapi!=0.136.3  # 0.136.3 flagged as malware MAL-2026-4750; exclude until resolved
 uvicorn[standard]
-duckdb
+# PINNED: DuckDB is the SQL grading engine. All ~118 SQL reference queries were
+# authored and validated against 1.5.0; an unpinned bump silently changed query
+# semantics (1.5.3 has a window-function regression that made q13011's reference
+# return 0 rows on CI while 1.5.0 returns the intended 83 — same arch, same data).
+# A grading engine MUST be pinned to the validated version. Bumping requires
+# re-running tests/test_code_references.py (it executes every SQL reference and
+# fails on any that becomes degenerate/empty) before merging.
+duckdb==1.5.0
 pandas
 pytest>=9.0.3
 sqlglot
