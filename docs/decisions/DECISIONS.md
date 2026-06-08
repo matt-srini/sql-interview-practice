@@ -35,8 +35,15 @@ Keep entries to 4–6 lines. Friction kills logs; if it's longer than the change
 
 ## Entries
 
-## 2026-06-08 — Per-task git worktrees, merged to main + pushed + deleted (reverses "main only")
+## 2026-06-08 — Close every worktree task with a merge commit + push + delete; leftover-check at session start
 **Area:** process · **Status:** accepted
+**Decision:** Refines the per-task-worktree workflow. A task is **done** only when it is (1) merged to `main` with a **merge commit** (`git merge --no-ff`, after ff-ing `main` from `origin`) so each task is one auditable landmark in `git log --first-parent main`, (2) pushed (`main` ≡ `origin/main`), and (3) its worktree + branch deleted. Plus two anti-orphan safeguards: at session/task **start**, run `git worktree list` + `git branch --no-merged main` and surface any leftover work before starting new; and **never end a session with a dirty worktree** — commit WIP to the task branch and tell the user where it lives.
+**Rejected:** (a) **Fast-forward or squash merge** — ff scatters commits with no per-task boundary; squash drops the individual commits. A merge commit best serves the user's stated goal of seeing what each task/session did. (b) **Merge+push discipline alone** (the user's first framing) — doesn't catch the actual failure mode that motivated the original "main only" rule: an *interrupted* task strands work in a worktree, and "merge after every task" never fires because the task never ends. The start-of-session leftover check + dirty-worktree rule are what address that root cause. (c) **Auto `SessionStart` hook to list worktrees** — offered as optional automation; not enforced unless the user opts in (a settings.json change).
+**Affects:** CLAUDE.md (Standing instructions — git workflow), user memory (`worktree_workflow.md`).
+**Supersedes:** 2026-06-08 — Per-task git worktrees, merged to main + pushed + deleted.
+
+## 2026-06-08 — Per-task git worktrees, merged to main + pushed + deleted (reverses "main only")
+**Area:** process · **Status:** superseded
 **Decision:** Each coding task runs in its **own git worktree** (off `main`), not directly on `main`. When the task is done and committed (one or several distinct logical commits, no squash unless asked): fast-forward local `main` from `origin/main` first, merge **all** the worktree branch's commits into `main`, `git push`, then delete the worktree + its branch. Invariant after every task: `main` ≡ `origin/main`, no lingering worktrees/branches. Trivial meta-changes may still go straight to `main`. The Agent tool `isolation: "worktree"` option is now allowed/encouraged for disjoint parallel slices.
 **Rejected:** (a) **The prior "always work directly on `main`, never use worktrees" rule** — it forbade isolation; the user reversed it. The original motivation (stale `claude/*` branches/worktrees diverging from main) is addressed by the mandatory merge-push-delete cleanup step rather than by banning worktrees. (b) **Squash-merge to main** — the user wants the individual logical commits preserved. (c) **Merge without ff-ing main from origin first** — risks divergence/conflicts in the multi-session setup; the ff-first step is part of the rule.
 **Affects:** CLAUDE.md (Standing instructions — git workflow), user memory (`worktree_workflow.md`, replacing `no_worktrees.md`).
