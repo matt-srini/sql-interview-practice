@@ -2048,51 +2048,6 @@ select {
 }
 
 /* ── Landing paths section ────────────────────────── */
-.landing-paths {
-  background: var(--bg-page);
-  padding: 3.5rem 1.5rem;
-  border-top: 1px solid var(--border-subtle);
-}
-.landing-paths-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  margin-bottom: 1.5rem;
-}
-.landing-paths-shuffle {
-  padding: 0.45rem 1rem;
-  border: 1.5px solid var(--accent);
-  border-radius: var(--radius-sm);
-  background: transparent;
-  color: var(--accent);
-  font-size: 0.875rem;
-  font-weight: 500;
-  cursor: pointer;
-  white-space: nowrap;
-  flex-shrink: 0;
-  transition: background 0.15s, color 0.15s;
-}
-.landing-paths-shuffle:hover {
-  background: var(--accent);
-  color: #fff;
-}
-.landing-paths-title {
-  font-size: 1.35rem;
-  font-weight: 700;
-  color: var(--text-strong);
-  margin: 0 0 0.35rem;
-}
-.landing-paths-sub {
-  color: var(--text-secondary);
-  margin: 0;
-  font-size: 0.93rem;
-}
-.landing-paths-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 16px;
-}
-
 .landing-practice-section {
   width: 100%;
   max-width: 1040px;
@@ -2616,7 +2571,6 @@ select {
 .sample-tile:focus-visible,
 .landing-welcome-card:focus-visible,
 .landing-company-chip:focus-visible,
-.landing-paths-shuffle:focus-visible,
 .landing-tier-col .btn:focus-visible,
 .landing-tier-col .upgrade-btn:focus-visible {
   outline: 2px solid var(--accent);
@@ -12624,14 +12578,213 @@ select {
   opacity: 0.5;
 }
 
-/* ── Paths section (reuses landing-paths-grid) ───────────────────── */
-.lp-paths { }
-.lp-paths-header {
+/* ── Paths showcase (06.5) ───────────────────────────────────────────
+ * Two-column pitch: a featured track's graded arc (left, structure) +
+ * the full track breadth (right), funneling to /learn. See
+ * PathsShowcaseSection in LandingPage.js.
+ */
+.lp-paths-showcase {
+  display: grid;
+  grid-template-columns: 1.15fr 1fr;
+  gap: 28px;
+  align-items: stretch;
+  margin-top: 2.25rem;
+}
+
+/* LEFT — featured arc as a connected, numbered spine */
+.lp-paths-arc-wrap { display: flex; }
+.lp-paths-arc {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  padding: 22px 24px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  background: var(--surface-card);
+  text-decoration: none;
+  transition: border-color 0.16s ease, transform 0.16s ease, box-shadow 0.16s ease;
+}
+.lp-paths-arc:hover {
+  border-color: color-mix(in srgb, var(--arc-color) 55%, var(--border));
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px -18px color-mix(in srgb, var(--arc-color) 60%, transparent);
+}
+.lp-paths-arc-head {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 18px;
+}
+.lp-paths-arc-track {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-strong);
+  letter-spacing: -0.01em;
+}
+.lp-paths-arc-tag {
+  margin-left: auto;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.lp-paths-spine {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.lp-paths-step {
+  position: relative;
   display: flex;
   align-items: flex-start;
-  justify-content: space-between;
-  gap: 16px;
-  margin-bottom: 2rem;
+  gap: 14px;
+  padding-bottom: 16px;
+}
+/* connecting line — makes "builds on" literal */
+.lp-paths-step::before {
+  content: "";
+  position: absolute;
+  left: 12px;
+  top: 26px;
+  bottom: -2px;
+  width: 2px;
+  background: var(--border-subtle);
+}
+.lp-paths-step:last-child { padding-bottom: 0; }
+.lp-paths-step:last-child::before { display: none; }
+.lp-paths-step-num {
+  position: relative;
+  z-index: 1;
+  flex-shrink: 0;
+  width: 25px;
+  height: 25px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  border: 1.5px solid color-mix(in srgb, var(--arc-color) 45%, var(--border));
+  background: var(--surface-card);
+  color: var(--arc-color);
+  font-size: 0.78rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.lp-paths-step-body {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding-top: 2px;
+}
+.lp-paths-step-title {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--text-strong);
+  line-height: 1.25;
+}
+.lp-paths-step-level {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: capitalize;
+}
+.lp-paths-step-level--foundational { color: var(--text-secondary); }
+.lp-paths-step-level--intermediate { color: var(--text-secondary); }
+.lp-paths-step-level--advanced     { color: var(--arc-color); }
+
+.lp-paths-arc-more {
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-subtle);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--arc-color);
+}
+
+/* RIGHT — breadth: every track with its path count */
+.lp-paths-breadth {
+  display: flex;
+  flex-direction: column;
+}
+.lp-paths-breadth-stat {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin-bottom: 14px;
+}
+.lp-paths-breadth-stat strong {
+  color: var(--text-strong);
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+.lp-paths-breadth-sep { margin: 0 8px; color: var(--text-muted); }
+
+.lp-paths-tracklist {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.lp-paths-trackchip {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 10px 12px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--surface-card);
+  text-decoration: none;
+  transition: border-color 0.14s ease, background 0.14s ease;
+}
+.lp-paths-trackchip:hover {
+  border-color: color-mix(in srgb, var(--chip-color) 55%, var(--border));
+  background: color-mix(in srgb, var(--chip-color) 8%, var(--surface-card));
+}
+.lp-paths-trackchip-name {
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: var(--text-strong);
+}
+.lp-paths-trackchip-count {
+  margin-left: auto;
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* FRONT DOOR — single primary CTA to /learn */
+.lp-paths-cta {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+  margin-top: 28px;
+}
+.lp-paths-cta-primary {
+  display: inline-flex;
+  align-items: center;
+  padding: 11px 22px;
+  border-radius: var(--radius-md);
+  background: var(--accent);
+  color: #fff;
+  font-size: 0.92rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: filter 0.14s ease, transform 0.14s ease;
+}
+.lp-paths-cta-primary:hover { filter: brightness(1.06); transform: translateY(-1px); }
+.lp-paths-cta-resume {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+}
+.lp-paths-cta-resume:hover {
+  color: var(--text-strong);
+  border-bottom-color: var(--border);
 }
 
 /* ── 08 Closer ───────────────────────────────────────────────────── */
@@ -12665,7 +12818,11 @@ select {
   .lp-proof-stat strong { font-size: 1.15rem; }
   .lp-hero-li-cards { flex-direction: column; }
   .lp-li-card { max-width: 100%; }
-  .lp-paths-header { flex-direction: column; }
+  .lp-paths-showcase { grid-template-columns: 1fr; gap: 22px; }
+}
+
+@media (max-width: 560px) {
+  .lp-paths-tracklist { grid-template-columns: 1fr; }
 }
 
 /* ─── Sample Hub (/sample) ──────────────────────────────────────────

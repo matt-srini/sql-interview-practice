@@ -331,4 +331,112 @@ describe('LandingPage', () => {
     });
   });
 
+  // ── Learning paths showcase (06.5) ────────────────────────────────────────
+
+  describe('Learning paths showcase', () => {
+    // 6 SQL paths (>SPINE_MAX of 5 → triggers "+1 more") spanning all 3 levels,
+    // deliberately out of arc order to prove the component sorts by (level,
+    // display_order). Plus one path each in two other tracks for the breadth strip.
+    const MOCK_PATHS = [
+      { slug: 'sql-sub',    title: 'Subqueries & Existence', topic: 'sql',    level: 'advanced',     display_order: 1, question_count: 6,  solved_count: 0 },
+      { slug: 'sql-agg',    title: 'Aggregation Patterns',   topic: 'sql',    level: 'foundational', display_order: 1, question_count: 15, solved_count: 0 },
+      { slug: 'sql-window', title: 'Window Functions',       topic: 'sql',    level: 'intermediate', display_order: 2, question_count: 9,  solved_count: 3 },
+      { slug: 'sql-joins',  title: 'Joins & Filtering',      topic: 'sql',    level: 'intermediate', display_order: 1, question_count: 15, solved_count: 0 },
+      { slug: 'sql-pivot',  title: 'Pivot & Conditional',    topic: 'sql',    level: 'intermediate', display_order: 3, question_count: 7,  solved_count: 0 },
+      { slug: 'sql-adv',    title: 'Advanced Patterns',      topic: 'sql',    level: 'advanced',     display_order: 2, question_count: 8,  solved_count: 0 },
+      { slug: 'py-arrays',  title: 'Arrays & Hashing',       topic: 'python', level: 'foundational', display_order: 1, question_count: 10, solved_count: 0 },
+      { slug: 'spark-dag',  title: 'Spark DAG',              topic: 'pyspark',level: 'foundational', display_order: 1, question_count: 8,  solved_count: 0 },
+    ];
+
+    function mockPaths(paths) {
+      api.get.mockImplementation((url) => {
+        if (url === '/dashboard') return Promise.resolve({ data: {} });
+        if (url === '/paths')     return Promise.resolve({ data: paths });
+        return Promise.resolve({ data: {} });
+      });
+    }
+
+    it('renders the section headline and funnels to /learn (not a single path)', async () => {
+      mockPaths(MOCK_PATHS);
+      renderWithPlan(null);
+      await waitFor(() => {
+        expect(screen.getByText('Know what to practice, and in what order.')).toBeInTheDocument();
+      });
+      const cta = screen.getByRole('link', { name: /explore all paths/i });
+      expect(cta).toHaveAttribute('href', '/learn');
+    });
+
+    it('shows the featured SQL arc sorted foundational→advanced, capped at 5 steps', async () => {
+      mockPaths(MOCK_PATHS);
+      const { container } = renderWithPlan(null);
+      await waitFor(() => expect(container.querySelector('.lp-paths-arc')).toBeInTheDocument());
+
+      const titles = [...container.querySelectorAll('.lp-paths-step-title')].map(e => e.textContent);
+      // SPINE_MAX = 5; foundational first, then intermediate by display_order, then advanced
+      expect(titles).toEqual([
+        'Aggregation Patterns',
+        'Joins & Filtering',
+        'Window Functions',
+        'Pivot & Conditional',
+        'Subqueries & Existence',
+      ]);
+      const levels = [...container.querySelectorAll('.lp-paths-step-level')].map(e => e.textContent);
+      expect(levels[0]).toBe('foundational');
+      expect(levels[4]).toBe('advanced');
+
+      // The whole arc links to the track's /learn page, never a leaf path
+      expect(container.querySelector('.lp-paths-arc')).toHaveAttribute('href', '/learn/sql');
+      // 6 SQL paths − 5 shown = "+1 more"
+      expect(screen.getByText(/\+1 more in SQL/i)).toBeInTheDocument();
+    });
+
+    it('shows a breadth chip per track with path counts, each linking to /learn/:topic', async () => {
+      mockPaths(MOCK_PATHS);
+      const { container } = renderWithPlan(null);
+      await waitFor(() => expect(container.querySelector('.lp-paths-tracklist')).toBeInTheDocument());
+
+      const chips = [...container.querySelectorAll('.lp-paths-trackchip')];
+      // Only the 3 tracks that have paths appear (sql, python, pyspark)
+      expect(chips).toHaveLength(3);
+      const sqlChip = chips.find(c => c.getAttribute('href') === '/learn/sql');
+      expect(sqlChip).toBeTruthy();
+      expect(sqlChip.textContent).toMatch(/6 paths/);
+      expect(chips.find(c => c.getAttribute('href') === '/learn/python').textContent).toMatch(/1 path\b/);
+      // Stat reflects derived totals (3 tracks · 8 paths)
+      const stat = container.querySelector('.lp-paths-breadth-stat').textContent;
+      expect(stat).toMatch(/3/);
+      expect(stat).toMatch(/8/);
+    });
+
+    it('has no shuffle control (the old random-4 pattern is gone)', async () => {
+      mockPaths(MOCK_PATHS);
+      renderWithPlan(null);
+      await waitFor(() => screen.getByText('Know what to practice, and in what order.'));
+      expect(screen.queryByRole('button', { name: /shuffle/i })).not.toBeInTheDocument();
+    });
+
+    it('shows a resume hook to the furthest-along in-progress path for logged-in users', async () => {
+      mockPaths(MOCK_PATHS);
+      renderWithPlan('pro');
+      // sql-window is the only in-progress path (3/9) → resume target
+      const resume = await screen.findByRole('link', { name: /continue: window functions/i });
+      expect(resume).toHaveAttribute('href', '/learn/sql/sql-window');
+    });
+
+    it('shows no resume hook for logged-out visitors even with prior progress', async () => {
+      mockPaths(MOCK_PATHS);
+      renderWithPlan(null);
+      await waitFor(() => screen.getByText('Know what to practice, and in what order.'));
+      expect(screen.queryByText(/continue:/i)).not.toBeInTheDocument();
+    });
+
+    it('renders nothing when there are no paths', async () => {
+      mockPaths([]);
+      renderWithPlan(null);
+      // Other sections still render; the paths headline must be absent
+      await waitFor(() => expect(screen.getByText('Practice free. Prepare seriously.')).toBeInTheDocument());
+      expect(screen.queryByText('Know what to practice, and in what order.')).not.toBeInTheDocument();
+    });
+  });
+
 });

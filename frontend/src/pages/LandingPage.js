@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import api from '../api';
@@ -6,7 +6,6 @@ import { useAuth } from '../contexts/AuthContext';
 import { TRACK_META } from '../contexts/TopicContext';
 import { ALL_TRACK_SLUGS, TRACK_SLUGS } from '../trackRegistry';
 import { useCatalogCounts } from '../contexts/CatalogCountsContext';
-import PathProgressCard from '../components/PathProgressCard';
 import Topbar from '../components/Topbar';
 import UpgradeButton from '../components/UpgradeButton';
 import { detectCurrency, PRICES } from '../utils/currency';
@@ -787,6 +786,126 @@ function TracksIndexSection() {
   );
 }
 
+// ── Section 06.5: Learning paths showcase ───────────────────────────────────
+// Pitches the curriculum's STRUCTURE — one track's graded arc shown as a
+// connected spine, making the foundational→advanced climb visible — and its
+// BREADTH (every track with its path count), then funnels to /learn, the
+// curriculum front door. It never deep-links into a single path (the old
+// "random 4 + shuffle" did, bypassing /learn); the only leaf link is the
+// returning-user resume hook, where deep-linking is the correct destination.
+const _PATH_LEVEL_ORDER = { foundational: 0, intermediate: 1, advanced: 2 };
+const _FEATURED_PATH_TRACK = 'sql'; // flagship arc; swap by changing this slug
+
+function PathsShowcaseSection({ paths, user }) {
+  if (!paths.length) return null;
+
+  const totalPaths = paths.length;
+  const trackCounts = TRACK_SLUGS
+    .map(slug => ({ slug, meta: TRACK_META[slug], count: paths.filter(p => p.topic === slug).length }))
+    .filter(t => t.count > 0);
+  const trackCount = trackCounts.length;
+
+  const featMeta = TRACK_META[_FEATURED_PATH_TRACK];
+  const featuredArc = paths
+    .filter(p => p.topic === _FEATURED_PATH_TRACK)
+    .slice()
+    .sort((a, b) =>
+      (_PATH_LEVEL_ORDER[a.level] ?? 3) - (_PATH_LEVEL_ORDER[b.level] ?? 3) ||
+      (a.display_order ?? 999) - (b.display_order ?? 999)
+    );
+  const SPINE_MAX = 5; // first 5 by (level, display_order) span all three levels
+  const spine = featuredArc.slice(0, SPINE_MAX);
+  const moreCount = Math.max(0, featuredArc.length - SPINE_MAX);
+
+  // Returning users with an unfinished path get a resume hook; first-timers
+  // get the pitch. Furthest-along (highest completion ratio) wins.
+  const resume = user
+    ? paths
+        .filter(p => p.solved_count >= 1 && p.solved_count < p.question_count)
+        .sort((a, b) => (b.solved_count / b.question_count) - (a.solved_count / a.question_count))[0]
+    : null;
+
+  return (
+    <section className="lp-section lp-section-rule lp-paths" id="lp-paths">
+      <div className="lp-inner">
+        <Reveal>
+          <p className="lp-section-index">+&ensp;LEARNING PATHS</p>
+          <h2 className="lp-section-h2">Know what to practice, and in what order.</h2>
+          <p className="lp-section-sub">
+            Each track is a graded sequence — foundational patterns first, then the intermediate
+            and advanced reasoning that builds on them. {totalPaths} guided paths across {trackCount} tracks.
+          </p>
+        </Reveal>
+
+        <div className="lp-paths-showcase">
+          {/* LEFT — featured arc: the foundational→advanced climb made visible */}
+          <Reveal className="lp-paths-arc-wrap">
+            <Link
+              to={`/learn/${_FEATURED_PATH_TRACK}`}
+              className="lp-paths-arc"
+              style={{ '--arc-color': featMeta.color }}
+            >
+              <div className="lp-paths-arc-head">
+                <span className="lp-track-dot" style={{ background: featMeta.color }} aria-hidden="true" />
+                <span className="lp-paths-arc-track">{featMeta.label}</span>
+                <span className="lp-paths-arc-tag">{featuredArc.length}-path sequence</span>
+              </div>
+              <ol className="lp-paths-spine">
+                {spine.map((p, i) => (
+                  <li key={p.slug} className="lp-paths-step">
+                    <span className="lp-paths-step-num">{i + 1}</span>
+                    <span className="lp-paths-step-body">
+                      <span className="lp-paths-step-title">{p.title}</span>
+                      <span className={`lp-paths-step-level lp-paths-step-level--${p.level}`}>{p.level}</span>
+                    </span>
+                  </li>
+                ))}
+              </ol>
+              <span className="lp-paths-arc-more">
+                {moreCount > 0 ? `+${moreCount} more in ${featMeta.label}` : `See the ${featMeta.label} arc`} →
+              </span>
+            </Link>
+          </Reveal>
+
+          {/* RIGHT — breadth: every track with its path count, each a door to /learn/:topic */}
+          <Reveal className="lp-paths-breadth" delay={80}>
+            <div className="lp-paths-breadth-stat">
+              <strong>{trackCount}</strong> tracks
+              <span className="lp-paths-breadth-sep">·</span>
+              <strong>{totalPaths}</strong> guided paths
+            </div>
+            <ul className="lp-paths-tracklist" role="list">
+              {trackCounts.map(({ slug, meta, count }) => (
+                <li key={slug}>
+                  <Link
+                    to={`/learn/${slug}`}
+                    className="lp-paths-trackchip"
+                    style={{ '--chip-color': meta.color }}
+                  >
+                    <span className="lp-track-dot" style={{ background: meta.color }} aria-hidden="true" />
+                    <span className="lp-paths-trackchip-name">{meta.label}</span>
+                    <span className="lp-paths-trackchip-count">{count} path{count === 1 ? '' : 's'}</span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </Reveal>
+        </div>
+
+        {/* FRONT DOOR — one primary CTA to /learn (+ resume hook for returning users) */}
+        <Reveal className="lp-paths-cta">
+          <Link to="/learn" className="lp-paths-cta-primary">Explore all paths →</Link>
+          {resume && (
+            <Link to={`/learn/${resume.topic}/${resume.slug}`} className="lp-paths-cta-resume">
+              Continue: {resume.title} →
+            </Link>
+          )}
+        </Reveal>
+      </div>
+    </section>
+  );
+}
+
 // ── Section 07: Pricing ─────────────────────────────────────────────────────
 function PricingSection({ userPlan, currency }) {
   const p = PRICES[currency];
@@ -945,7 +1064,6 @@ export default function LandingPage() {
 
   const [dashData, setDashData] = useState(null);
   const [paths, setPaths] = useState([]);
-  const [displayedPaths, setDisplayedPaths] = useState([]);
   const [upgradeSuccess, setUpgradeSuccess] = useState(false);
 
   const [reduced] = useState(() =>
@@ -1001,16 +1119,8 @@ export default function LandingPage() {
   }, [user]);
 
   useEffect(() => {
-    api.get('/paths').then(r => {
-      setPaths(r.data);
-      const shuffled = [...r.data].sort(() => Math.random() - 0.5);
-      setDisplayedPaths(shuffled.slice(0, 4));
-    }).catch(() => {});
+    api.get('/paths').then(r => setPaths(r.data)).catch(() => {});
   }, []);
-
-  const shufflePaths = useCallback(() => {
-    setDisplayedPaths([...paths].sort(() => Math.random() - 0.5).slice(0, 4));
-  }, [paths]);
 
   const showPricing = !['lifetime_elite'].includes(userPlan);
 
@@ -1056,27 +1166,7 @@ export default function LandingPage() {
         <TracksIndexSection />
 
         {/* Paths — shown for everyone */}
-        {displayedPaths.length > 0 && (
-          <section className="lp-section lp-section-rule lp-paths">
-            <div className="lp-inner">
-              <Reveal>
-                <div className="lp-paths-header">
-                  <div>
-                    <p className="lp-section-index">+&ensp;LEARNING PATHS</p>
-                    <h2 className="lp-section-h2">Drill one pattern until it sticks.</h2>
-                    <p className="lp-section-sub">Curated sequences that take a single concept deep — window functions, sessionization, star schema design, A/B power analysis. Build the pattern until it's automatic; your benchmark score will follow.</p>
-                  </div>
-                  <button className="landing-paths-shuffle" onClick={shufflePaths} aria-label="Shuffle learning paths">
-                    ⇄ Shuffle
-                  </button>
-                </div>
-              </Reveal>
-              <div className="landing-paths-grid">
-                {displayedPaths.map(p => <PathProgressCard key={p.slug} path={p} />)}
-              </div>
-            </div>
-          </section>
-        )}
+        <PathsShowcaseSection paths={paths} user={user} />
 
         {/* 07 PRICING */}
         {showPricing && (

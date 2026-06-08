@@ -528,7 +528,7 @@ Mock-only add-on bank: **1,102 questions** (Pro/Elite only). Samples: **81 total
 
 **This subsection is the canonical source of truth for learning-path semantics.** Other docs (`CLAUDE.md`, `docs/track-onboarding.md`, `docs/backend.md`, `docs/architecture.md`, `docs/frontend.md`) link here and must not restate the rules below.
 
-46 paths total across 9 tracks. Path files live in `backend/content/paths/`. Per-track pattern registry lives in `backend/path_patterns.py`.
+86 paths total across 9 tracks. Path files live in `backend/content/paths/`. Per-track pattern registry lives in `backend/path_patterns.py`.
 
 #### What a learning path is
 
