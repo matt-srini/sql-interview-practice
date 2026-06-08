@@ -46,6 +46,7 @@ from db import (
 from deps import get_current_user
 from evaluator import evaluate
 from exceptions import BadRequestError
+from offload import run_blocking_exec, run_blocking_sql
 from python_evaluator import evaluate_python_code, evaluate_python_data_code
 from routers.insights import _CONCEPTS_LOOKUP, build_session_debrief
 from tracks import TRACKS, VALID_MOCK_ROLES, get_track, mixed_mock_slugs, role_tracks
@@ -744,7 +745,7 @@ def _solution_payload(question: dict, track: str) -> dict:
     return {}
 
 
-def _evaluate_submission(
+async def _evaluate_submission(
     track: str,
     question: dict,
     code: str | None,
@@ -753,12 +754,17 @@ def _evaluate_submission(
     """
     Run the appropriate evaluator and return (accepted, result_dict).
     result_dict is a lean dict safe to return mid-session (no solutions).
+
+    Code execution runs OFF the event loop (offload.run_blocking_sql for DuckDB,
+    offload.run_blocking_exec for the subprocess sandbox) so a slow grade never
+    stalls other in-flight mock submissions or the rest of the app. MCQ branches do
+    no blocking work and run inline.
     """
     if track == "sql":
         if not code:
             return False, {"error": "No code provided"}
         try:
-            result = evaluate(code, question["expected_query"], question)
+            result = await run_blocking_sql(evaluate, code, question["expected_query"], question)
         except (BadRequestError, ValueError) as exc:
             # Parse/guard errors (e.g. syntax error) still count as a failed attempt.
             # Return structured wrong-answer — no 400 raised, question consumed as incorrect.
@@ -774,7 +780,7 @@ def _evaluate_submission(
     if track == "python":
         if not code:
             return False, {"error": "No code provided"}
-        result = evaluate_python_code(code, question)
+        result = await run_blocking_exec(evaluate_python_code, code, question)
         accepted = bool(result.get("correct"))
         return accepted, {
             "correct": accepted,
@@ -786,7 +792,7 @@ def _evaluate_submission(
     if track == "python-data":
         if not code:
             return False, {"error": "No code provided"}
-        result = evaluate_python_data_code(code, question)
+        result = await run_blocking_exec(evaluate_python_data_code, code, question)
         accepted = bool(result.get("correct"))
         return accepted, {
             "correct": accepted,
@@ -809,7 +815,7 @@ def _evaluate_submission(
         # numerical
         if not code:
             return False, {"error": "No code provided"}
-        result = evaluate_python_code(code, question)
+        result = await run_blocking_exec(evaluate_python_code, code, question)
         accepted = bool(result.get("correct"))
         return accepted, {
             "correct": accepted,
@@ -1407,7 +1413,7 @@ async def submit_answer(
     _validate_non_empty_input(body.track, body.code, body.selected_option, question)
 
     # Evaluate
-    accepted, result = _evaluate_submission(body.track, question, body.code, body.selected_option)
+    accepted, result = await _evaluate_submission(body.track, question, body.code, body.selected_option)
 
     # Persist mock submission record
     persisted = await submit_mock_question(

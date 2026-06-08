@@ -9,6 +9,7 @@ import python_guard
 from deps import RunQueryRequest, SubmitRequest, _validate_difficulty, get_current_user
 from mcq import is_mcq_correct
 from evaluator import evaluate, run_query
+from offload import run_blocking_exec, run_blocking_sql
 from exceptions import BadRequestError
 from middleware.request_context import get_request_id
 from progress import (
@@ -241,7 +242,7 @@ async def reset_topic_sample_progress_for_difficulty(
 
 
 @router.post("/run-query")
-def run_sample_query(body: RunQueryRequest) -> dict:
+async def run_sample_query(body: RunQueryRequest) -> dict:
     request_id = get_request_id()
     logger.info(
         "[request_id=%s] Sample /run-query: question_id=%s",
@@ -252,11 +253,11 @@ def run_sample_query(body: RunQueryRequest) -> dict:
     if question is None:
         raise HTTPException(status_code=404, detail="Question not found")
 
-    return run_query(body.query, question)
+    return await run_blocking_sql(run_query, body.query, question)
 
 
 @router.post("/sql/run-query")
-def run_sql_sample_query(body: RunQueryRequest) -> dict:
+async def run_sql_sample_query(body: RunQueryRequest) -> dict:
     """Topic-namespaced alias for the SQL sample run-query endpoint."""
     request_id = get_request_id()
     logger.info(
@@ -268,7 +269,7 @@ def run_sql_sample_query(body: RunQueryRequest) -> dict:
     if question is None:
         raise HTTPException(status_code=404, detail="Question not found")
 
-    return run_query(body.query, question)
+    return await run_blocking_sql(run_query, body.query, question)
 
 
 async def _mark_sample_attempted(
@@ -305,7 +306,7 @@ async def submit_sample_answer(
     if question is None:
         raise HTTPException(status_code=404, detail="Question not found")
 
-    result = evaluate(body.query, question["expected_query"], question)
+    result = await run_blocking_sql(evaluate, body.query, question["expected_query"], question)
 
     await _mark_sample_attempted(current_user, "sql", question)
 
@@ -317,7 +318,7 @@ async def submit_sample_answer(
 
 
 @router.post("/{topic}/run-code")
-def run_topic_sample_code(topic: str, body: SampleRunCodeRequest) -> dict[str, Any]:
+async def run_topic_sample_code(topic: str, body: SampleRunCodeRequest) -> dict[str, Any]:
     request_id = get_request_id()
     normalized_topic = _validate_topic(topic)
     logger.info(
@@ -348,9 +349,9 @@ def run_topic_sample_code(topic: str, body: SampleRunCodeRequest) -> dict[str, A
         )
 
     if eval_kind in ("python", "mixed"):
-        return python_evaluator.run_python_code(body.code, question)
+        return await run_blocking_exec(python_evaluator.run_python_code, body.code, question)
     # pandas: compares against expected on the FULL result; returns a ~200-row preview.
-    return python_evaluator.run_python_data_code_checked(body.code, question)
+    return await run_blocking_exec(python_evaluator.run_python_data_code_checked, body.code, question)
 
 
 @router.post("/{topic}/{difficulty}/skip")
@@ -420,7 +421,7 @@ async def submit_topic_sample_answer(
         if question is None:
             raise HTTPException(status_code=404, detail="Question not found")
         try:
-            result = evaluate(parsed.query, question["expected_query"], question)
+            result = await run_blocking_sql(evaluate, parsed.query, question["expected_query"], question)
         except (BadRequestError, ValueError) as exc:
             await _mark_sample_attempted(current_user, normalized_topic, question)
             return {
@@ -450,9 +451,9 @@ async def submit_topic_sample_answer(
                 detail={"error": "Code contains disallowed constructs.", "guard_errors": guard_errors},
             )
         if eval_kind == "python":
-            result = python_evaluator.evaluate_python_code(parsed.code, question)
+            result = await run_blocking_exec(python_evaluator.evaluate_python_code, parsed.code, question)
         else:
-            result = python_evaluator.evaluate_python_data_code(parsed.code, question)
+            result = await run_blocking_exec(python_evaluator.evaluate_python_data_code, parsed.code, question)
         result["solution_code"] = question.get("expected_code", "")
         result["explanation"] = question.get("explanation", "")
         await _mark_sample_attempted(current_user, normalized_topic, question)
@@ -477,7 +478,7 @@ async def submit_topic_sample_answer(
                     status_code=400,
                     detail={"error": "Code contains disallowed constructs.", "guard_errors": guard_errors},
                 )
-            result = python_evaluator.evaluate_python_code(parsed.code, question)
+            result = await run_blocking_exec(python_evaluator.evaluate_python_code, parsed.code, question)
             result["solution_code"] = question.get("expected_code", "")
             result["explanation"] = question.get("explanation", "")
             result["subtype"] = "numerical"

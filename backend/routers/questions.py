@@ -1,4 +1,3 @@
-import asyncio
 import logging
 from typing import Any
 
@@ -7,8 +6,9 @@ from fastapi import APIRouter, Depends, HTTPException
 from db import get_latest_submission, record_submission
 from exceptions import BadRequestError
 from deps import RunQueryRequest, SubmitRequest, _get_progress_snapshot, _question_detail_payload
-from deps import get_current_user, get_execution_semaphore
+from deps import get_current_user
 from evaluator import evaluate, run_query
+from offload import run_blocking_sql
 from middleware.request_context import get_request_id
 from progress import mark_question_solved
 from questions import get_all_questions, get_question
@@ -56,7 +56,6 @@ async def get_question_detail(
 async def run_query_endpoint(
     body: RunQueryRequest,
     current_user: dict[str, Any] = Depends(get_current_user),
-    semaphore: asyncio.Semaphore = Depends(get_execution_semaphore),
 ) -> dict[str, Any]:
     request_id = get_request_id()
     logger.info(
@@ -73,8 +72,7 @@ async def run_query_endpoint(
     if unlock_state[int(question["id"])] == "locked":
         raise HTTPException(status_code=403, detail="Question is locked for your current plan or progress.")
 
-    async with semaphore:
-        return run_query(body.query, question)
+    return await run_blocking_sql(run_query, body.query, question)
 
 
 @router.post("/submit")
@@ -82,7 +80,6 @@ async def run_query_endpoint(
 async def submit_answer(
     body: SubmitRequest,
     current_user: dict[str, Any] = Depends(get_current_user),
-    semaphore: asyncio.Semaphore = Depends(get_execution_semaphore),
 ) -> dict[str, Any]:
     request_id = get_request_id()
     logger.info(
@@ -105,14 +102,13 @@ async def submit_answer(
     )
 
     syntax_error_msg: str | None = None
-    async with semaphore:
-        try:
-            result = evaluate(body.query, question["expected_query"], question)
-            accepted = bool(result.get("correct")) and bool(result.get("structure_correct", True))
-        except (BadRequestError, ValueError) as exc:
-            syntax_error_msg = str(exc)
-            result = None
-            accepted = False
+    try:
+        result = await run_blocking_sql(evaluate, body.query, question["expected_query"], question)
+        accepted = bool(result.get("correct")) and bool(result.get("structure_correct", True))
+    except (BadRequestError, ValueError) as exc:
+        syntax_error_msg = str(exc)
+        result = None
+        accepted = False
 
     if syntax_error_msg is not None:
         await record_submission(

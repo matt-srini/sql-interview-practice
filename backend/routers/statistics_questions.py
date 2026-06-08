@@ -9,6 +9,7 @@ import python_evaluator
 import statistics_questions as catalog
 from db import get_solved_ids, mark_solved, record_submission
 from deps import get_current_user
+from offload import run_blocking_exec
 from mcq import is_mcq_correct
 from middleware.request_context import get_request_id
 from unlock import compute_unlock_state, get_next_questions
@@ -157,7 +158,7 @@ async def run_statistics_code(
             detail={"error": "Code contains disallowed constructs.", "guard_errors": guard_errors},
         )
 
-    return python_evaluator.run_python_code(body.code, q)
+    return await run_blocking_exec(python_evaluator.run_python_code, body.code, q)
 
 
 @router.post("/submit")
@@ -211,7 +212,7 @@ async def submit_statistics_answer(
             status_code=400,
             detail={"error": "Code contains disallowed constructs.", "guard_errors": guard_errors},
         )
-    result = python_evaluator.evaluate_python_code(body.code, q)
+    result = await run_blocking_exec(python_evaluator.evaluate_python_code, body.code, q)
     correct = bool(result.get("correct"))
     if correct:
         await mark_solved(current_user["id"], int(q["id"]), topic="statistics")

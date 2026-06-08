@@ -16,7 +16,15 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.pool import NullPool
 
-from config import MAGIC_LINK_TTL_MINUTES, OAUTH_STATE_TTL_MINUTES, get_async_database_url
+from config import (
+    DB_MAX_OVERFLOW,
+    DB_POOL_RECYCLE_SECONDS,
+    DB_POOL_SIZE,
+    DB_POOL_TIMEOUT,
+    MAGIC_LINK_TTL_MINUTES,
+    OAUTH_STATE_TTL_MINUTES,
+    get_async_database_url,
+)
 
 
 logger = logging.getLogger(__name__)
@@ -297,6 +305,10 @@ async def init_pool() -> None:
         get_async_database_url(),
         future=True,
         pool_pre_ping=True,
+        pool_size=DB_POOL_SIZE,
+        max_overflow=DB_MAX_OVERFLOW,
+        pool_timeout=DB_POOL_TIMEOUT,
+        pool_recycle=DB_POOL_RECYCLE_SECONDS,
         connect_args={"timeout": 5},  # fail fast; health endpoint reports 503 otherwise
     )
     _session_factory = async_sessionmaker(_engine, expire_on_commit=False)

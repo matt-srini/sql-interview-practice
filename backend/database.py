@@ -7,6 +7,16 @@ import duckdb
 DATASETS_DIR = os.path.join(os.path.dirname(__file__), "datasets")
 _TABLE_NAME_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
 _golden_conn: duckdb.DuckDBPyConnection | None = None
+# Snapshot of the loaded table names, captured once at startup. The set of tables
+# never changes after init (datasets are loaded once from committed CSVs), so we
+# cache it instead of running `SHOW TABLES` on the shared connection on every call.
+# This is load-bearing for concurrency: `_golden_conn.execute(...)` from more than
+# one thread at a time SEGFAULTS the process (DuckDB connections are not thread-safe
+# for concurrent use). `get_loaded_tables()` is hit by /health and by every SQL
+# query (via get_query_cursor); reading the cached tuple touches no shared state, so
+# it is safe to call concurrently. Actual query execution still goes through a
+# per-call `conn.cursor()` serialized behind the SQL offload lock (see offload.py).
+_loaded_table_names: tuple[str, ...] = ()
 
 
 def _require_query_engine() -> duckdb.DuckDBPyConnection:
@@ -25,7 +35,7 @@ def _table_name_from_dataset_file(dataset_file: str) -> str:
 
 
 def init_query_engine() -> None:
-    global _golden_conn
+    global _golden_conn, _loaded_table_names
 
     if _golden_conn is not None:
         return
@@ -58,12 +68,13 @@ def init_query_engine() -> None:
         raise
 
     _golden_conn = conn
+    _loaded_table_names = tuple(sorted(loaded))
     print(f"[database] Loaded tables: {', '.join(loaded)}")
 
 
 def get_query_cursor(dataset_files: list[str]) -> duckdb.DuckDBPyConnection:
     conn = _require_query_engine()
-    loaded_tables = set(get_loaded_tables())
+    loaded_tables = set(_loaded_table_names)
 
     for dataset_file in dataset_files:
         table_name = _table_name_from_dataset_file(str(dataset_file))
@@ -74,16 +85,20 @@ def get_query_cursor(dataset_files: list[str]) -> duckdb.DuckDBPyConnection:
 
 
 def close_query_engine() -> None:
-    global _golden_conn
+    global _golden_conn, _loaded_table_names
 
     if _golden_conn is not None:
         _golden_conn.close()
         _golden_conn = None
+    _loaded_table_names = ()
 
 
 def get_loaded_tables() -> list[str]:
-    if _golden_conn is None:
-        return []
+    """Return the loaded table names from the startup snapshot.
 
-    rows = _golden_conn.execute("SHOW TABLES").fetchall()
-    return sorted([row[0] for row in rows])
+    Deliberately does NOT query the shared `_golden_conn` — see `_loaded_table_names`.
+    Reading the cached tuple is thread-safe; running `SHOW TABLES` on the shared
+    connection concurrently (which the previous implementation did on every /health
+    and every SQL query) segfaults the process.
+    """
+    return list(_loaded_table_names)

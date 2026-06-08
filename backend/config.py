@@ -60,6 +60,19 @@ IS_PROD = ENV == "production"
 
 DATABASE_URL = _getenv("DATABASE_URL", "postgresql://localhost:5432/sql_practice")
 
+# Postgres connection pool, per app replica (SQLAlchemy AsyncAdaptedQueuePool).
+# Each request makes several short DB calls; once the event loop is no longer blocked
+# by code execution (see offload.py), real request concurrency rises and the old
+# default of 5 + 10 overflow became the next bottleneck. Defaults below give one
+# replica up to DB_POOL_SIZE + DB_MAX_OVERFLOW connections — keep the total across all
+# replicas comfortably under the managed-Postgres max_connections. DB_POOL_TIMEOUT is
+# how long a request waits for a free connection before failing (fail fast → 503,
+# rather than hang for the SQLAlchemy 30s default under saturation).
+DB_POOL_SIZE = _get_int("DB_POOL_SIZE", "10")
+DB_MAX_OVERFLOW = _get_int("DB_MAX_OVERFLOW", "20")
+DB_POOL_TIMEOUT = _get_int("DB_POOL_TIMEOUT", "10")
+DB_POOL_RECYCLE_SECONDS = _get_int("DB_POOL_RECYCLE_SECONDS", "1800")
+
 # Razorpay (replaces Stripe — India-friendly)
 RAZORPAY_KEY_ID = _getenv("RAZORPAY_KEY_ID")
 RAZORPAY_KEY_SECRET = _getenv("RAZORPAY_KEY_SECRET")

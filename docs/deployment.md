@@ -237,6 +237,11 @@ The `FRONTEND_DIST_DIR` env var defaults to `/app/frontend/dist` inside the imag
 | `FRONTEND_DIST_DIR` | — | Path to built SPA assets; defaults to `../frontend/dist` |
 | `RATE_LIMIT_REQUESTS` | — | Requests per window per IP; default `60` |
 | `RATE_LIMIT_WINDOW_SECONDS` | — | Window size in seconds; default `60` |
+| `MAX_CONCURRENT_EXECUTIONS` | — | Max concurrent code executions (DuckDB SQL + subprocess sandboxes) across the app; default **cores − 2**. Bounds peak sandbox memory (× `RLIMIT_AS` 512 MB) and CPU. Prod sets `6` on the 8-vCPU replica. See `backend/offload.py`. |
+| `DB_POOL_SIZE` | — | Postgres connection pool size per replica; default `10` |
+| `DB_MAX_OVERFLOW` | — | Extra Postgres connections beyond the pool under burst; default `20` (→ 30 max per replica) |
+| `DB_POOL_TIMEOUT` | — | Seconds a request waits for a free DB connection before failing fast; default `10` |
+| `DB_POOL_RECYCLE_SECONDS` | — | Recycle pooled connections older than this many seconds; default `1800` |
 | `AUTH_RATE_LIMIT_REQUESTS` | — | Requests per window for auth endpoints (`/api/auth/*`); default `20` |
 | `AUTH_RATE_LIMIT_WINDOW_SECONDS` | — | Window size in seconds for auth endpoint limiter; default `60` |
 | `AUTH_TOKEN_ISSUE_RATE_LIMIT_REQUESTS` | — | Stricter limiter for token-issuing auth routes (OAuth authorize, magic-link request); default `5` |
@@ -347,6 +352,22 @@ For Dockerfile-based services on Railway, the application must listen on Railway
 7. `RAZORPAY_WEBHOOK_SECRET`
 
 **Healthcheck behaviour:** `/health` returns HTTP 200 when both Postgres and DuckDB are ready, and HTTP 503 when either is unavailable. Railway marks the deploy as failed on 503, which is intentional — it means a required environment variable is missing or the DB service isn't reachable yet.
+
+---
+
+## Concurrency & scaling model
+
+The app serves all traffic on a **single event loop per replica** (`uvicorn main:app`, one worker). Code execution is blocking (DuckDB SQL grading; a 5–12 s subprocess sandbox), so it runs **off the loop** via `backend/offload.py` (subprocess sandboxes concurrent up to `MAX_CONCURRENT_EXECUTIONS`; DuckDB serialized behind a process-wide lock — see `docs/backend.md` § Off-loop code execution). Reproduce/measure with `backend/loadtest/` (driver + head-of-line probe; README documents usage).
+
+**Per-replica connection budget.** Each replica opens up to `DB_POOL_SIZE + DB_MAX_OVERFLOW` (default 30) Postgres connections. Keep `replicas × 30` comfortably below the managed-Postgres `max_connections` (Railway's default is ~100–400 depending on plan). Beyond that, put PgBouncer (transaction pooling) in front of Postgres.
+
+**Tiered roadmap** (honest about the single-process-DuckDB, subprocess-per-execution shape):
+
+| Tier | Change | Expected ceiling (read-heavy) | Effort / risk |
+|---|---|---|---|
+| **1 — current** | Off-loop execution + real semaphore + DuckDB serialize/table-cache + pool tuning | low **thousands** of concurrent users on one replica; ~`MAX_CONCURRENT_EXECUTIONS` truly-concurrent executions. CPU is the next limiter (single replica saturated ~32 active VUs at 8 vCPU in measurement). | done; low |
+| **2 — horizontal replicas** | Multiple stateless app replicas behind Railway; Redis-backed shared rate-limit/session state (already Redis-ready); PgBouncer + a Postgres read replica; CDN for the SPA. DuckDB is loaded per-replica (fine — read-only catalog data). | **tens of thousands** | medium; shared-state correctness |
+| **3 — externalize execution** | Move code execution to a dedicated, horizontally-scaled worker fleet / queue so the web tier never blocks on a sandbox; DuckDB per-worker or a query service. | lifts the **execute-heavy** ceiling (the real constraint — execution is CPU/subprocess-bound, not loop-bound) | high; new infra |
 
 ---
 

@@ -217,13 +217,21 @@ In production, FastAPI serves the pre-built SPA:
 
 ## Scalability
 
+> **Head-of-line blocking was the #1 bottleneck and is fixed.** Code execution used
+> to run *directly on the single event loop*, so one 5–12 s execution froze every
+> other request. It now runs off the loop via `backend/offload.py` (see `docs/backend.md`
+> § Off-loop code execution). The canonical concurrency/scaling model + tiered roadmap
+> lives in `docs/deployment.md` § Concurrency & scaling model; the table below is the
+> remaining per-component view.
+
 ### Current bottlenecks
 
 | Component | Bottleneck | Impact |
 |---|---|---|
-| DuckDB | Single shared cursor (not thread-safe under concurrent writes) | Queries block each other at high concurrency |
-| Python sandbox | Subprocess spawn per request (~50–100ms cold start) | Latency spikes under load |
-| Rate limiter | In-memory fallback is process-local | Ineffective when running multiple instances |
+| Single replica CPU | One uvicorn worker, 8 vCPU; code execution is CPU/subprocess-bound | Top limiter post-offload — single replica saturated ~32 active users in load tests. Lift via horizontal replicas (Tier 2) / a worker fleet (Tier 3). |
+| DuckDB | Single in-process engine; SQL grading serialized behind a process-wide lock (off-loop) for determinism + thread-safety (shared-conn concurrent use segfaults) | SQL grades one-at-a-time; sub-100 ms on ≤9k-row datasets so not the throughput limiter for this traffic mix. Per-cursor concurrency / per-replica engines are a measured-bottleneck-gated option. |
+| Python sandbox | Subprocess spawn per request (~50–100ms cold start), bounded by `MAX_CONCURRENT_EXECUTIONS` | Cold-start latency; concurrency capped per replica. Pre-warmed worker pool / external fleet lifts it. |
+| Rate limiter | In-memory fallback is process-local | Ineffective across multiple instances — use `REDIS_URL` (already supported) when scaling out. |
 | Static assets | Served by FastAPI (Python) | CPU waste; better served by CDN |
 
 ### Scaling path
@@ -258,8 +266,8 @@ FastAPI is already stateless (all state in PostgreSQL + Redis). Multiple instanc
 Build frontend to `dist/` with hashed filenames → serve from CloudFront/Cloudflare with long `Cache-Control` TTL. FastAPI only handles `/api/*` and `index.html` fallback.
 
 **PostgreSQL:**
-- Increase `asyncpg` pool size (default 10 → 50 for moderate scale)
-- Add PgBouncer connection pooler for 1,000+ concurrent connections
+- Pool is sized per replica via `DB_POOL_SIZE` (default 10) + `DB_MAX_OVERFLOW` (default 20) = 30 max/replica — raised from the old 5+10. Keep `replicas × max` under the managed-Postgres `max_connections`.
+- Add PgBouncer (transaction pooling) once `replicas × max` approaches `max_connections`
 - Add read replica for dashboard/catalog reads
 
 **Production topology for high scale:**

@@ -1,4 +1,3 @@
-import asyncio
 import logging
 from typing import Any
 
@@ -8,7 +7,8 @@ import python_guard
 import python_evaluator
 import python_data_questions as catalog
 from db import get_solved_ids, mark_solved, record_submission
-from deps import get_current_user, get_execution_semaphore
+from deps import get_current_user
+from offload import run_blocking_exec
 from middleware.request_context import get_request_id
 from models import RunCodeRequest, SubmitCodeRequest
 from unlock import compute_unlock_state, get_next_questions
@@ -102,7 +102,6 @@ async def get_python_data_question_detail(
 async def run_python_data_code_endpoint(
     body: RunCodeRequest,
     current_user: dict[str, Any] = Depends(get_current_user),
-    semaphore: asyncio.Semaphore = Depends(get_execution_semaphore),
 ) -> dict[str, Any]:
     request_id = get_request_id()
     logger.info(
@@ -127,15 +126,13 @@ async def run_python_data_code_endpoint(
         )
 
     # Compares against expected on the FULL result; returns a ~200-row display preview.
-    async with semaphore:
-        return python_evaluator.run_python_data_code_checked(body.code, q)
+    return await run_blocking_exec(python_evaluator.run_python_data_code_checked, body.code, q)
 
 
 @router.post("/submit")
 async def submit_python_data_code(
     body: SubmitCodeRequest,
     current_user: dict[str, Any] = Depends(get_current_user),
-    semaphore: asyncio.Semaphore = Depends(get_execution_semaphore),
 ) -> dict[str, Any]:
     request_id = get_request_id()
     logger.info(
@@ -159,8 +156,7 @@ async def submit_python_data_code(
             detail={"error": "Code contains disallowed constructs.", "guard_errors": guard_errors},
         )
 
-    async with semaphore:
-        result = python_evaluator.evaluate_python_data_code(body.code, q)
+    result = await run_blocking_exec(python_evaluator.evaluate_python_data_code, body.code, q)
 
     accepted = bool(result.get("correct"))
 
