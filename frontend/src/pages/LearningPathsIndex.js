@@ -38,11 +38,19 @@ export default function LearningPathsIndex() {
       return bPct - aPct;
     });
 
-  // Group by topic when showing all
+  // Group by topic when showing all. Within each track, order paths by
+  // (level, display_order) — foundational first, then intermediate, then
+  // advanced; within each level by the author-curated conceptual progression.
+  const _levelOrder = { foundational: 0, intermediate: 1, advanced: 2 };
+  const _sortByDisplay = (a, b) => {
+    const lvl = (_levelOrder[a.level] ?? 3) - (_levelOrder[b.level] ?? 3);
+    if (lvl !== 0) return lvl;
+    return (a.display_order ?? 999) - (b.display_order ?? 999);
+  };
   const grouped = TRACK_SLUGS.map(t => ({
     topic: t,
     meta: TRACK_META[t],
-    paths: filtered.filter(p => p.topic === t),
+    paths: filtered.filter(p => p.topic === t).slice().sort(_sortByDisplay),
   })).filter(g => g.paths.length > 0);
 
   const pageTitle = q
