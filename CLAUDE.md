@@ -127,7 +127,7 @@ The five-perspective pushback in § Standing instructions reads this section as 
 
 - **Parallelize coding work when possible.** If a coding task can be split safely and subagents are available, offload disjoint slices in parallel. Review and integrate results before finishing.
 
-- **Always work directly on `main`.** Never create feature branches, worktrees, or `claude/*` branches. All changes — including multi-step implementations — go directly to `main` and are committed and pushed there.
+- **Work in a git worktree per task, then merge to `main` + push + delete the worktree.** Each coding task runs in its **own** git worktree (`git worktree add ../<repo>-<task> -b <task-branch>`), not directly on `main`. Commit there — one or several logical commits, kept distinct (no squash unless asked). When the task is done and committed: (1) `git checkout main` and **fast-forward `main` from `origin/main` first** (`git pull --ff-only`) so a parallel session's push can't cause divergence; (2) merge **all** the worktree branch's commits into `main` (full history, not squashed); (3) `git push` so `main` ≡ `origin/main`; (4) remove the worktree (`git worktree remove`) and delete its branch. Invariant after every completed task: `main` ≡ `origin/main`, no lingering worktrees or task branches. Trivial meta-changes (a one-line doc/config fix) may go straight to `main`. *(Reverses the prior "always work directly on `main`, never use worktrees" rule — see `docs/decisions/DECISIONS.md` 2026-06-08 worktree-workflow entry.)*
 
 ---
 
