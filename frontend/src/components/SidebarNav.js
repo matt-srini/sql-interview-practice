@@ -94,15 +94,19 @@ function QuestionStateLabel({ q, isActive = false }) {
   return null;
 }
 
-function QuestionContent({ q, isActive = false }) {
+function QuestionContent({ q, position, isActive = false }) {
   const orderState = isActive ? 'current' : q.state === 'solved' ? 'solved' : q.state === 'locked' ? 'locked' : q.is_next ? 'next' : 'open';
   const questionFormLabel = getQuestionFormLabel(q);
+  // Use sequential 1-indexed position within the practice group, not the raw
+  // `order` field (which is shared with mock-only questions and can exceed the
+  // practice-only count, e.g. showing "51" when there are only 30 questions).
+  const displayNum = String(position ?? q.order).padStart(2, '0');
 
   return (
     <>
       <div className="sidebar-question-leading">
         <span className={`sidebar-question-order sidebar-question-order-${orderState}`}>
-          {String(q.order).padStart(2, '0')}
+          {displayNum}
         </span>
         <span className="sidebar-question-main">
           <span className="sidebar-question-title">{q.title}</span>
@@ -116,7 +120,7 @@ function QuestionContent({ q, isActive = false }) {
   );
 }
 
-function QuestionRow({ q, onNavigate, topic, pathSlug }) {
+function QuestionRow({ q, position, onNavigate, topic, pathSlug }) {
   const stateClass = `sidebar-question-state-${q.state}`;
   const lockedClass = q.state === 'locked' ? ' sidebar-question-locked' : '';
   const to = pathSlug
@@ -132,7 +136,7 @@ function QuestionRow({ q, onNavigate, topic, pathSlug }) {
       }
       onClick={onNavigate}
     >
-      {({ isActive }) => <QuestionContent q={q} isActive={isActive} />}
+      {({ isActive }) => <QuestionContent q={q} position={position} isActive={isActive} />}
     </NavLink>
   );
 }
@@ -355,6 +359,19 @@ export default function SidebarNav({ catalog, collapsedByDiff, toggleDiff, onNav
   const [searchQuery, setSearchQuery] = useState('');
 
   const allConcepts = useMemo(() => buildConceptList(groups), [groups]);
+
+  // Map question id → 1-indexed sequential position within its difficulty group.
+  // The raw `order` field is shared with mock-only questions and can exceed the
+  // practice-only count (e.g. 51 questions shown when there are only 30).
+  const positionMap = useMemo(() => {
+    const map = new Map();
+    for (const g of groups) {
+      g.questions.slice().sort((a, b) => a.order - b.order).forEach((q, i) => {
+        map.set(q.id, i + 1);
+      });
+    }
+    return map;
+  }, [groups]);
 
   useEffect(() => {
     const raw = searchParams.get('concepts');
@@ -689,7 +706,7 @@ export default function SidebarNav({ catalog, collapsedByDiff, toggleDiff, onNav
           </div>
           <div className="sidebar-question-list">
             {bookmarkedQuestions.map((q) => (
-              <QuestionRow key={`bookmark-${q.id}`} q={q} onNavigate={onNavigate} topic={topic} pathSlug={pathSlug} />
+              <QuestionRow key={`bookmark-${q.id}`} q={q} position={positionMap.get(q.id)} onNavigate={onNavigate} topic={topic} pathSlug={pathSlug} />
             ))}
           </div>
         </div>
@@ -719,7 +736,7 @@ export default function SidebarNav({ catalog, collapsedByDiff, toggleDiff, onNav
             {!collapsed && (
               <div className="sidebar-question-list">
                 {visibleQuestions.map((q) => (
-                  <QuestionRow key={q.id} q={q} onNavigate={onNavigate} topic={topic} pathSlug={pathSlug} />
+                  <QuestionRow key={q.id} q={q} position={positionMap.get(q.id)} onNavigate={onNavigate} topic={topic} pathSlug={pathSlug} />
                 ))}
                 {showRowCap && (
                   <button
