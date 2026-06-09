@@ -1657,7 +1657,9 @@ async def get_mock_history(user_id: str, limit: int = 20) -> list[dict[str, Any]
                 SELECT
                     ms.id AS session_id,
                     ms.mode, ms.track, ms.difficulty, ms.role,
-                    ms.started_at, ms.ended_at, ms.time_limit_s, ms.status,
+                    ms.started_at, ms.ended_at, ms.time_limit_s,
+                    EXTRACT(EPOCH FROM (ms.ended_at - ms.started_at))::int AS time_used_s,
+                    ms.status,
                     COUNT(msq.id) AS total_count,
                     COUNT(CASE WHEN msq.is_solved THEN 1 END) AS solved_count
                 FROM mock_sessions ms
@@ -1681,6 +1683,7 @@ async def get_mock_history(user_id: str, limit: int = 20) -> list[dict[str, Any]
                 "started_at": row["started_at"].isoformat() if row["started_at"] else None,
                 "ended_at": row["ended_at"].isoformat() if row["ended_at"] else None,
                 "time_limit_s": row["time_limit_s"],
+                "time_used_s": row["time_used_s"],
                 "status": row["status"],
                 "total_count": row["total_count"],
                 "solved_count": row["solved_count"],

@@ -175,6 +175,34 @@ describe('MockHub history framing', () => {
   });
 });
 
+describe('MockHub B4: access-fetch failure disables Start and shows Retry', () => {
+  it('disables Start and shows Retry button when /mock/access rejects', async () => {
+    mockApiGet.mockImplementation((path) => {
+      if (path === '/mock/history') return Promise.resolve({ data: [] });
+      if (path === '/mock/analytics') {
+        return Promise.resolve({
+          data: {
+            benchmark_summary: { total_sessions: 0 },
+            drill_summary: { total_sessions: 0 },
+            mode_breakdown: { benchmark: 0, drill: 0 },
+            top_concepts: [],
+            weak_concepts: [],
+          },
+        });
+      }
+      if (path === '/mock/access') return Promise.reject(new Error('network error'));
+      return Promise.resolve({ data: {} });
+    });
+
+    renderHub();
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /Start/i })).toBeDisabled();
+      expect(screen.getByRole('button', { name: /Retry/i })).toBeInTheDocument();
+    });
+  });
+});
+
 describe('MockHub mixed-track framing', () => {
   it('shows role selector for mixed track in benchmark mode (Phase 3: role-based benchmark)', async () => {
     // Phase 3 replaced "Mixed is drill-only" with a role-selection flow for mixed benchmark

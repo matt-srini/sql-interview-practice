@@ -45,8 +45,8 @@ Severity: **H** high · **M** medium · **L** low. Status: `TODO` · `WIP` · `D
 | C3 | M | DONE | code | Code-track benchmark submit leaks `correct` + `expected_result` mid-session (+ folded the F-06 button-label leak) |
 | B1 | M | DONE | code | Free sees an **"Elite"** badge on the Pro-tier Custom drill card |
 | B2 | M | DONE | code | Interview Loop summary titled **"Drill summary"** (fixed with A3) |
-| B3 | M | TODO | code | History **"Time"** column shows the limit, not time used |
-| B4 | M | TODO | code | Start button **enabled when `/access` fetch fails** (`accessState` null) |
+| B3 | M | DONE | code | History **"Time"** column shows the limit, not time used |
+| B4 | M | DONE | code | Start button **enabled when `/access` fetch fails** (`accessState` null) |
 | A4a | M | TODO | code | Blocked difficulty pills clickable but silently inert (no tooltip/why) |
 | A4b | M | TODO | code | Locked mode cards clickable, silently switch mode with no upsell-at-click |
 | A5a | M | TODO | code | Concept tags exposed on the live question (telegraphs the approach) |
@@ -123,11 +123,11 @@ Three confirmed defects compounded at the Elite payoff moment:
 ### B2 — `[M]` `[TODO]` Interview Loop summary titled "Drill summary"
 - `MockSession.js:538` — `summaryDescriptor.isBenchmark ? 'Benchmark summary' : 'Drill summary'`; Loop has `isBenchmark:false`. Add an explicit Interview-Loop title.
 
-### B3 — `[M]` `[TODO]` History "Time" column shows the limit, not time used
-- `MockHub.js:1064/1097/1125` — `formatDuration(s.time_limit_s, null)`. Pass actual `time_used_s` (the summary view already reads it). If history rows lack it, add to the history query.
+### B3 — `[M]` `[DONE]` History "Time" column shows the limit, not time used
+**Fixed 2026-06-09.** `time_used_s` wasn't a stored column, so `get_mock_history` (`backend/db.py`) now computes it via `EXTRACT(EPOCH FROM (ended_at - started_at))::int` (null for non-completed rows) and returns it on each row; the three history tables pass `s.time_used_s` to `formatDuration` (`MockHub.js`), which already renders "M:SS used". Test `test_history_row_includes_time_used_s`. Verified live: rows show "23:13 used", "2:49 used", etc.
 
-### B4 — `[M]` `[TODO]` Start button enabled when `/access` fetch fails (`accessState` null)
-- `MockHub.js:786-791` — guard `(accessState && !...can_start)`; null short-circuits to enabled. Treat null/failed access as not-startable (or show an explicit retry).
+### B4 — `[M]` `[DONE]` Start button enabled when `/access` fetch fails (`accessState` null)
+**Fixed 2026-06-09.** The guard `(accessState && !...can_start)` short-circuited to enabled when `accessState` was null (failed fetch). Changed to `(!accessState || !...can_start)` so a null/failed access keeps Start disabled (`accessLoading` still covers the in-flight state). Extracted the access fetch into a `fetchAccess` `useCallback` and added a rail notice — "Couldn't check your access. Retry" — shown only on genuine failure (`!accessLoading && !accessState`). Test added in `MockHub.test.js` (rejected `/access` → Start disabled + Retry present). Verified live: happy path unchanged (Start enabled, no notice).
 
 ### B5 — `[L]` `[TODO]` Elite analytics: network error indistinguishable from empty state `[agent-located]`
 - `MockHub.js:925-927` — `analytics` is null on both initial state and `.catch`. Add a distinct error+retry state.
@@ -211,3 +211,7 @@ Three confirmed defects compounded at the Elite payoff moment:
   - C3: `backend/routers/mock.py` submit now returns lean `{"submitted": true}` for benchmark + interview_loop (all tracks) — no verdict/answer-key leak; custom unchanged. `MockSession.js` code-track button label neutralised to "✓ Submitted" in those modes (folds in F-06). Test `test_benchmark_submit_hides_verdict_and_answer_key`. Verified live (lean response confirmed via network).
   - B1: `mockModeConfig.js` cards gain `requiredTier`; `MockHub.js` badge is config-driven (Pro/Elite by tier, dead branch removed). Verified live: Free → "Pro" on Custom + "Elite" on Loop; Pro → "Elite" on Loop only.
   - Backend mock 79 + frontend 139 green.
+- **2026-06-09 — B3 + B4** — fixed on `main`. Two parallel Sonnet agents (backend history query / frontend MockHub) on disjoint files; Opus reviewed + verified live + committed.
+  - B3: `backend/db.py` `get_mock_history` computes `time_used_s` (`EXTRACT(EPOCH FROM ended_at - started_at)`); `MockHub.js` history tables pass `s.time_used_s`. Test `test_history_row_includes_time_used_s`. Verified live: "23:13 used", "2:49 used", etc.
+  - B4: `MockHub.js` access fetch extracted to a `fetchAccess` `useCallback`; Start disabled when `accessState` is null (failed); "Couldn't check your access — Retry" rail notice on failure. Test in `MockHub.test.js`. Verified live (happy path unchanged).
+  - Backend mock 80 + frontend 140 green.

@@ -1441,3 +1441,35 @@ def test_benchmark_submit_hides_verdict_and_answer_key():
     body = r_submit.json()
     # Custom drill must still reveal verdict
     assert "correct" in body, f"'correct' missing from custom drill submit response: {body}"
+
+
+def test_history_row_includes_time_used_s():
+    """B3 regression: GET /api/mock/history → completed rows must include time_used_s as int >= 0."""
+    with TestClient(app) as client:
+        _make_user(client, plan="elite")
+        # Start a benchmark session (Elite can always start one)
+        r_start = _start_pyspark_session(client, mode="benchmark", difficulty="easy")
+        assert r_start.status_code in (200, 201), r_start.text
+        session_id = r_start.json()["session_id"]
+        first_q = r_start.json()["questions"][0]
+        # Submit one answer so the session is not entirely empty
+        client.post(f"/api/mock/{session_id}/submit", json={
+            "question_id": first_q["id"],
+            "track": "pyspark",
+            "selected_option": _pyspark_correct,
+        })
+        # Finish the session
+        r_finish = client.post(f"/api/mock/{session_id}/finish")
+        assert r_finish.status_code == 200, r_finish.text
+        # Fetch history
+        r_history = client.get("/api/mock/history")
+    assert r_history.status_code == 200, r_history.text
+    body = r_history.json()
+    sessions = body if isinstance(body, list) else body.get("sessions", [])
+    assert len(sessions) >= 1, "Expected at least one history row"
+    latest = sessions[0]
+    assert "time_used_s" in latest, f"time_used_s missing from history row: {latest}"
+    assert isinstance(latest["time_used_s"], int), (
+        f"time_used_s should be int, got {type(latest['time_used_s'])}: {latest['time_used_s']}"
+    )
+    assert latest["time_used_s"] >= 0, f"time_used_s should be >= 0, got {latest['time_used_s']}"

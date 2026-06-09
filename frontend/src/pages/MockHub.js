@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import api from '../api';
@@ -247,7 +247,7 @@ export default function MockHub() {
       .finally(() => setAnalyticsLoading(false));
   }, [isElite]);
 
-  useEffect(() => {
+  const fetchAccess = useCallback(() => {
     setAccessState(null);
     setAccessLoading(true);
     api.get('/mock/access', { params: { track, mode } })
@@ -255,6 +255,8 @@ export default function MockHub() {
       .catch(() => setAccessState(null))
       .finally(() => setAccessLoading(false));
   }, [track, mode]);
+
+  useEffect(() => { fetchAccess(); }, [fetchAccess]);
 
   async function handleStart() {
     const diffAccess = accessState?.access?.[difficulty];
@@ -766,6 +768,13 @@ export default function MockHub() {
                 </div>
               )}
 
+              {!accessLoading && !accessState && (
+                <div className="mock-rail-access mock-rail-access--blocked">
+                  <span>Couldn't check your access.</span>
+                  <button type="button" className="btn btn-secondary btn-compact" onClick={fetchAccess}>Retry</button>
+                </div>
+              )}
+
               {/* Access state notice */}
               {railDiffState.blocked ? (
                 <div className="mock-rail-access mock-rail-access--blocked">
@@ -788,7 +797,7 @@ export default function MockHub() {
                 disabled={
                   starting ||
                   accessLoading ||
-                  (accessState && !accessState.access?.[difficulty]?.can_start) ||
+                  (!accessState || !accessState.access?.[difficulty]?.can_start) ||
                   (isMixedTrack && mode !== 'interview_loop' && !selectedRole)
                 }
               >
@@ -1063,7 +1072,7 @@ export default function MockHub() {
                     <td>{TRACK_LABELS[s.track] || s.track}</td>
                     <td>{s.difficulty && <span className={`badge badge-${s.difficulty}`}>{s.difficulty}</span>}</td>
                     <td>{s.solved_count}/{s.total_count}</td>
-                    <td>{formatDuration(s.time_limit_s, null)}</td>
+                    <td>{formatDuration(s.time_limit_s, s.time_used_s)}</td>
                     <td>
                       <Link to={`/mock/${s.session_id}`} className="mock-review-link">
                         {s.status === 'completed' ? 'Review →' : 'Resume →'}
@@ -1092,7 +1101,7 @@ export default function MockHub() {
                     <td>{TRACK_LABELS[s.track] || s.track}</td>
                     <td>{s.difficulty && <span className={`badge badge-${s.difficulty}`}>{s.difficulty}</span>}</td>
                     <td>{s.solved_count}/{s.total_count}</td>
-                    <td>{formatDuration(s.time_limit_s, null)}</td>
+                    <td>{formatDuration(s.time_limit_s, s.time_used_s)}</td>
                     <td>
                       <Link to={`/mock/${s.session_id}`} className="mock-review-link">
                         {s.status === 'completed' ? 'Review →' : 'Resume →'}
@@ -1121,7 +1130,7 @@ export default function MockHub() {
                     <td>{TRACK_LABELS[s.track] || s.track}</td>
                     <td>{s.difficulty && <span className={`badge badge-${s.difficulty}`}>{s.difficulty}</span>}</td>
                     <td>{s.solved_count}/{s.total_count}</td>
-                    <td>{formatDuration(s.time_limit_s, null)}</td>
+                    <td>{formatDuration(s.time_limit_s, s.time_used_s)}</td>
                     <td>
                       <Link to={`/mock/${s.session_id}`} className="mock-review-link">
                         {s.status === 'completed' ? 'Review →' : 'Resume →'}
