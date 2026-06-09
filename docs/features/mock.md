@@ -344,17 +344,14 @@ After completion, Interview Loop sessions contribute a new analytics dimension i
 ```json
 "loop_summary": {
   "sessions": <int>,
-  "chains_completed": <int>,
-  "per_dimension_performance": [
-    {"dimension": "scale_pivot",    "attempted": 12, "correct": 9,  "accuracy_pct": 75.0},
-    {"dimension": "ambiguity_pivot","attempted": 8,  "correct": 3,  "accuracy_pct": 37.5}
-  ],
-  "weakest_dimension": "ambiguity_pivot",
-  "strongest_dimension": "scale_pivot"
+  "per_dimension_performance": {
+    "scale_pivot":     {"attempted": 12, "correct": 9, "accuracy_pct": 75.0},
+    "ambiguity_pivot": {"attempted": 8,  "correct": 3, "accuracy_pct": 37.5}
+  }
 }
 ```
 
-Populated only when Interview Loop sessions exist for the user. Computed from `mock_session_questions.follow_up_dimension` joined against submission results. Only returned to Elite users.
+`per_dimension_performance` is an **object keyed by the raw `follow_up_dimension` token** (the frontend humanises each key for display via `dimensionLabel()` in `mockModeConfig.js`); each value carries `attempted`, `correct`, `accuracy_pct`. Populated only when Interview Loop sessions exist for the user. Computed from `mock_session_questions.follow_up_dimension` joined against submission results. Only returned to Elite users. (Strongest/weakest dimension is not emitted — a consumer derives it from the map; `chains_completed` is likewise not emitted.)
 
 ---
 
@@ -383,6 +380,8 @@ Focus is available on all three modes (benchmark, custom, interview_loop).
 - `weak_concepts`: worst 3 concepts by accuracy (≥3 attempts, <60%)
 
 Returns 403 for non-Elite plans.
+
+**Not part of this payload:** `readiness_scores` and `study_plan` are **not** returned by `/api/mock/analytics`. They are computed by `GET /api/dashboard/insights` (Elite-only — see [`docs/features/dashboard.md`](dashboard.md)) and surfaced in the mock **post-mortem** (the session-summary view fetches `/dashboard/insights` directly). The plan-tier matrix row above ("Cross-session trend, dimension analysis, readiness score, study plan, debrief") groups them by *tier entitlement*, not by endpoint: trend + dimension analysis come from this endpoint, the **debrief** comes from the `/finish` payload, and readiness score + study plan come from dashboard insights.
 
 ---
 
@@ -441,7 +440,7 @@ Must accept `mode` query param in addition to `track`. Returns `weekly_benchmark
 - **Interview Loop pivot card** — after submitting any non-final chain question, an interviewer-pivot card appears inline (see [Pivot card UX](#pivot-card-ux-frontend-specification) above). User must dismiss to advance.
 - **"Next question →"** button after submit on non-last questions (benchmark/custom). For Interview Loop, this is replaced by the pivot card until dismissed.
 - **Exit confirmation** — clicking Exit or End Session shows a confirm dialog.
-- **Discard window (2 minutes)** — visible countdown chip in topbar during first 120 s: "Discard within 1:34 — no penalty". "Discard & re-roll" button appears next to "End session" while window is open; vanishes silently after 2 min. Interview Loop sessions show additional copy: "This chain will return to your pool — you'll see it again next time." Benchmark sessions show a confirm modal on discard (friction, not blocking).
+- **Early-exit discard** — the server honours `DELETE /api/mock/:id` within **120 s** of `started_at` (reverts all quota counters; Interview Loop chains are reclaimed). There is **no always-on countdown chip and no "Discard & re-roll" button** in the topbar. Instead, clicking Exit/End within the **first 60 s and before any run or submit** opens a discard prompt — *"Barely started — want to keep this?"* — with **Keep going / End normally / Discard session** (Interview Loop adds *"This chain will return to your pool."*). After 60 s, or once the user has run or submitted anything, Exit shows the normal pre-submission review modal instead. (The UI's 60 s prompt window is intentionally narrower than the server's 120 s safety margin — the prompt targets genuine misclicks, while the server stays lenient.)
 - **Active session guard** — 409 from `POST /api/mock/start` if user has an active session. Response body includes existing `session_id`, `track`, `difficulty`, `mode`.
 - **Session reload recovery** — navigating back to `/mock/:id` restores state from server. Remaining time recomputed from `started_at`.
 - **Mobile** — collapsible left panel.

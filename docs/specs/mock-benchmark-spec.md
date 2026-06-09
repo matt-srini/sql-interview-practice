@@ -200,7 +200,7 @@ CREATE TABLE mock_chain_consumption (
     user_id       UUID NOT NULL REFERENCES users(id),
     parent_id     INTEGER NOT NULL,
     consumed_at   TIMESTAMP NOT NULL DEFAULT NOW(),
-    session_id    INTEGER REFERENCES mock_sessions(id),  -- NULL after reclaim
+    session_id    INTEGER REFERENCES mock_sessions(id),  -- the session that consumed this chain
     reclaimed     BOOLEAN NOT NULL DEFAULT FALSE,
     PRIMARY KEY (user_id, parent_id)
 );
@@ -209,6 +209,8 @@ CREATE INDEX idx_mcc_user_active ON mock_chain_consumption (user_id) WHERE NOT r
 ```
 
 The `idx_mcc_user_active` partial index supports the hot path: "what parent_ids has this user already consumed?"
+
+**Reclaim is a hard delete, not a flag-flip.** When a chain is reclaimed (discard within the 120 s window), the implementation **deletes the `mock_chain_consumption` row** (`discard_mock_session` in `backend/db.py`) — it does *not* set `reclaimed = TRUE` or null `session_id`. A reclaimed chain is therefore simply absent from the table and becomes selectable again. The `reclaimed` column + the `NOT reclaimed` filter in `get_consumed_chain_parent_ids` are a vestigial soft-delete affordance that the current delete-based path never exercises (a deleted row trivially satisfies `NOT reclaimed` by not existing). Matches `docs/features/mock.md` ("row deleted").
 
 ---
 
@@ -261,16 +263,14 @@ Mock today (benchmark + drills) measures readiness at a single point. Interview 
 ```json
 "loop_summary": {
   "sessions": <int>,
-  "chains_completed": <int>,
-  "per_dimension_performance": [
-    {"dimension": "scale_pivot", "attempted": 12, "correct": 9, "accuracy": 0.75},
-    {"dimension": "ambiguity_pivot", "attempted": 8, "correct": 3, "accuracy": 0.375},
-    ...
-  ],
-  "weakest_dimension": "ambiguity_pivot",
-  "strongest_dimension": "scale_pivot"
+  "per_dimension_performance": {
+    "scale_pivot":     {"attempted": 12, "correct": 9, "accuracy_pct": 75.0},
+    "ambiguity_pivot": {"attempted": 8,  "correct": 3, "accuracy_pct": 37.5}
+  }
 }
 ```
+
+`per_dimension_performance` is an **object keyed by the raw `follow_up_dimension` token**, each value `{attempted, correct, accuracy_pct}` (`accuracy_pct` is a percentage, **not** a 0–1 fraction). `chains_completed`, `weakest_dimension`, and `strongest_dimension` are **not** emitted — a consumer derives strongest/weakest from the map. This is the canonical shape; [`docs/features/mock.md`](../features/mock.md) matches it.
 
 The dimension-level signal feeds the Elite dashboard's "What kinds of interviewer pivots break you?" card.
 

@@ -58,10 +58,10 @@ Severity: **H** high · **M** medium · **L** low. Status: `TODO` · `WIP` · `D
 | C5 | L | DONE | code | `is_follow_up` never persisted (root cause of A3) |
 | C6 | L | TODO | code | `30min` legacy → generic "Invalid mode" instead of read-only message |
 | C7 | L | TODO | code | Daily-cap `CURRENT_DATE` not explicitly UTC; TOCTOU on check→create |
-| D2 | M | TODO | doc | `loop_summary` shape (dict vs list, missing fields); `accuracy` vs `accuracy_pct` across specs |
-| D3 | M | TODO | doc | `readiness_scores`/`study_plan` live in dashboard insights, not mock analytics |
-| D4 | L | TODO | doc | Discard chip window 60s (frontend) vs 120s (doc + server) |
-| D5 | L | TODO | doc | Chain reclaim: spec schema says `reclaimed=TRUE`; code deletes the row |
+| D2 | M | DONE | doc | `loop_summary` shape (dict vs list, missing fields); `accuracy` vs `accuracy_pct` across specs |
+| D3 | M | DONE | doc | `readiness_scores`/`study_plan` live in dashboard insights, not mock analytics |
+| D4 | L | DONE | doc | Discard chip window 60s (frontend) vs 120s (doc + server) |
+| D5 | L | DONE | doc | Chain reclaim: spec schema says `reclaimed=TRUE`; code deletes the row |
 | D6 | L | DONE | doc | Pivot-card spec says render `framing`; `framing` is only the type token (reconciled with A3) |
 | **E1** | M | TODO | content+code+doc | `follow_up_dimension` drift: 16 chain children use non-canonical tokens; validator doesn't enforce the 7-list |
 
@@ -173,10 +173,10 @@ Three confirmed defects compounded at the Elite payoff moment:
 ## D — Doc / SoT drift
 
 - **D1 `[DONE]`** — Company filter advertised in SoT but absent in code: resolved with C1 (deleted everywhere; `mock.md`/`pricing.md`/landing/AppShell/specs all reconciled 2026-06-09).
-- **D2 `[M]`** `[agent-located]` `loop_summary`: code returns `per_dimension_performance` as a **dict** and omits `chains_completed`/`weakest_dimension`/`strongest_dimension`; both specs show a **list** with those fields. mock.md uses `accuracy_pct` (matches code); mock-benchmark-spec.md uses `accuracy` (stale) — the two specs contradict each other.
-- **D3 `[M]`** `[agent-located]` `readiness_scores`/`study_plan` live in `/api/dashboard/insights`, not `/api/mock/analytics`; mock.md's analytics matrix row implies they're mock analytics.
-- **D4 `[L]`** `[agent-located]` Discard chip: frontend offers the prompt for 60s (`MockSession.js:341`); doc + server use 120s — 60s UI dead zone.
-- **D5 `[L]`** `[agent-located]` Chain reclaim: mock-benchmark-spec.md schema implies `reclaimed=TRUE`; code **deletes** the row (mock.md is right).
+- **D2 `[M]` `[DONE]`** Verified the real shape firsthand (`_compute_mock_analytics`, mock.py): `loop_summary = {sessions, per_dimension_performance: {dim_token: {attempted, correct, accuracy_pct}}}` — a **dict** keyed by token, `accuracy_pct` (percentage), and **no** `chains_completed`/`weakest_dimension`/`strongest_dimension`. Reconciled both `mock.md` and `mock-benchmark-spec.md` to this shape (resolving the cross-doc `accuracy` vs `accuracy_pct` contradiction — both now say `accuracy_pct`).
+- **D3 `[M]` `[DONE]`** Confirmed `readiness_scores`/`study_plan` come from `GET /api/dashboard/insights` (insights.py, Elite), **not** `/api/mock/analytics`. Added a "Not part of this payload" note to mock.md's analytics section clarifying the matrix row groups by tier entitlement, not endpoint (trend/dimension ← analytics; debrief ← `/finish`; readiness/study-plan ← dashboard insights).
+- **D4 `[L]` `[DONE]`** Confirmed the frontend has **no** countdown chip / "Discard & re-roll" button; the real UX is an early-exit modal ("Barely started — want to keep this?" → Keep going / End normally / Discard session) shown only when exiting within 60 s with no run/submit activity, while the server honours discard for 120 s. Rewrote mock.md's discard bullet to reality and noted the intentional 60 s-UI / 120 s-server margin.
+- **D5 `[L]` `[DONE]`** Confirmed `discard_mock_session` **hard-deletes** the `mock_chain_consumption` row (does not set `reclaimed=TRUE`). Fixed the mock-benchmark-spec.md schema comment + added a "Reclaim is a hard delete, not a flag-flip" note; the `reclaimed` column is vestigial in the current path.
 - **D6 `[L]` `[DONE]`** Pivot-card spec (mock.md §"Pivot card UX" + the Interview Loop walkthrough) said render the follow-up's `framing` text; `framing` is only the question *type* token ("scenario"). Reconciled 2026-06-09 to match the product: the card shows the human dimension label + a dimension-specific blurb from the 7-dimension taxonomy (via `mockModeConfig.js`), and the post-mortem marks follow-ups + uses human labels in analytics.
 
 ---
@@ -215,3 +215,8 @@ Three confirmed defects compounded at the Elite payoff moment:
   - B3: `backend/db.py` `get_mock_history` computes `time_used_s` (`EXTRACT(EPOCH FROM ended_at - started_at)`); `MockHub.js` history tables pass `s.time_used_s`. Test `test_history_row_includes_time_used_s`. Verified live: "23:13 used", "2:49 used", etc.
   - B4: `MockHub.js` access fetch extracted to a `fetchAccess` `useCallback`; Start disabled when `accessState` is null (failed); "Couldn't check your access — Retry" rail notice on failure. Test in `MockHub.test.js`. Verified live (happy path unchanged).
   - Backend mock 80 + frontend 140 green.
+- **2026-06-09 — D2 + D3 + D4 + D5 (docs-reconcile pass)** — docs-only, on `main`. Opus verified each claim against code firsthand, then reconciled the SoT to reality (docs serve the product). No code changed.
+  - D2: `mock.md` + `mock-benchmark-spec.md` `loop_summary` → real dict shape `{sessions, per_dimension_performance:{dim:{attempted,correct,accuracy_pct}}}`; dropped unemitted `chains_completed`/`weakest`/`strongest`; resolved the `accuracy` vs `accuracy_pct` cross-doc contradiction.
+  - D3: `mock.md` analytics section notes `readiness_scores`/`study_plan` come from `/api/dashboard/insights`, not `/api/mock/analytics`.
+  - D4: `mock.md` discard bullet rewritten to the real early-exit modal (no countdown chip); noted 60 s-UI / 120 s-server margin.
+  - D5: `mock-benchmark-spec.md` chain-reclaim corrected to "hard delete, not a flag-flip"; `reclaimed` column noted vestigial.
