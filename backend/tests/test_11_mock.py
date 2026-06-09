@@ -1383,3 +1383,41 @@ def test_sample_by_format_no_fallback_when_partitions_present():
     chosen, type_fallback = _sample_by_format(pool, ["scenario", "conceptual"], set())
     assert len(chosen) == 2
     assert type_fallback is False
+
+
+def test_interview_loop_follow_up_flag_persisted():
+    """Regression: is_follow_up must be persisted in mock_session_questions.
+    Parent → is_follow_up=False; each follow-up → is_follow_up=True with non-null follow_up_dimension.
+    Verified by reading back the session via GET /api/mock/:id after start.
+    """
+    with TestClient(app) as client:
+        _make_user(client, plan="elite")
+        r_start = client.post("/api/mock/start", json={
+            "mode": "interview_loop",
+            "track": "ml-fundamentals",
+            "difficulty": "hard",
+        })
+        assert r_start.status_code in (200, 201), r_start.text
+        session_id = r_start.json()["session_id"]
+
+        # Re-read the session from the DB via GET — this reflects the persisted rows
+        r_get = client.get(f"/api/mock/{session_id}")
+    assert r_get.status_code == 200, r_get.text
+    questions = r_get.json()["questions"]
+    assert len(questions) >= 2, "Interview Loop must have at least parent + 1 follow-up"
+
+    # Parent (position 1): is_follow_up must be False
+    parent = questions[0]
+    assert parent.get("is_follow_up") is False, (
+        f"Parent question has is_follow_up={parent.get('is_follow_up')!r}, expected False"
+    )
+    assert parent.get("follow_up_dimension") is None
+
+    # Follow-ups (positions 2+): is_follow_up must be True and follow_up_dimension must be set
+    for child in questions[1:]:
+        assert child.get("is_follow_up") is True, (
+            f"Follow-up question {child.get('id')} has is_follow_up={child.get('is_follow_up')!r}, expected True"
+        )
+        assert child.get("follow_up_dimension") is not None, (
+            f"Follow-up question {child.get('id')} missing follow_up_dimension"
+        )

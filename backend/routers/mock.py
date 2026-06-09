@@ -1234,6 +1234,7 @@ async def start_session(
                 "track": body.track,
                 "position": 1,
                 "follow_up_dimension": None,
+                "is_follow_up": False,
             }
         ]
         for i, fu in enumerate(follow_ups, start=2):
@@ -1242,6 +1243,7 @@ async def start_session(
                 "track": body.track,
                 "position": i,
                 "follow_up_dimension": fu.get("follow_up_dimension"),
+                "is_follow_up": True,
             })
 
         # Fetch question details for response

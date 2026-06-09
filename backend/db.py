@@ -1251,8 +1251,8 @@ async def create_mock_session(
                 text(
                     """
                     INSERT INTO mock_session_questions
-                        (session_id, question_id, track, position, follow_up_dimension)
-                    VALUES (:session_id, :question_id, :track, :position, :follow_up_dimension)
+                        (session_id, question_id, track, position, follow_up_dimension, is_follow_up)
+                    VALUES (:session_id, :question_id, :track, :position, :follow_up_dimension, :is_follow_up)
                     """
                 ),
                 {
@@ -1261,6 +1261,7 @@ async def create_mock_session(
                     "track": q["track"],
                     "position": q["position"],
                     "follow_up_dimension": q.get("follow_up_dimension"),
+                    "is_follow_up": bool(q.get("is_follow_up", False)),
                 },
             )
         # Atomically mark chain consumed for interview_loop sessions
