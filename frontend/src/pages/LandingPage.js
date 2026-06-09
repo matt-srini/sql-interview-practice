@@ -15,16 +15,16 @@ import { detectCurrency, PRICES } from '../utils/currency';
 // ── Role → track weighting ──────────────────────────────────────────────────
 const ROLES = [
   {
-    id: 'analyst',
-    label: 'Data Analyst',
-    tagline: 'SQL depth · statistical reasoning · Python for data',
-    tracks: ['sql', 'statistics', 'python-data', 'python'],
-  },
-  {
     id: 'engineer',
     label: 'Data Engineer',
     tagline: 'Python pipelines · distributed systems · DE concepts',
     tracks: ['python', 'sql', 'pyspark', 'data-engineering', 'data-modeling'],
+  },
+  {
+    id: 'analyst',
+    label: 'Data Analyst',
+    tagline: 'SQL depth · statistical reasoning · Python for data',
+    tracks: ['sql', 'statistics', 'python-data', 'python'],
   },
   {
     id: 'analytics_engineer',
@@ -596,7 +596,7 @@ function RoleSelectorSection({ dashData }) {
           <p className="lp-section-index">04&ensp;/&ensp;YOUR ROLE</p>
           <h2 className="lp-section-h2">Your role shapes which thinking matters.</h2>
           <p className="lp-section-sub">
-            Pick your role and see where to focus first.
+            Pick your data role and see where to focus first.
           </p>
         </Reveal>
 
@@ -685,7 +685,7 @@ function RoleSelectorSection({ dashData }) {
 // we don't drop you in a sea of problems. Four steps, one line each.
 function JourneyRibbon() {
   const STEPS = [
-    { n: '01', title: 'Pick your role', sub: 'Analyst · Engineer · Scientist' },
+    { n: '01', title: 'Pick your data role', sub: 'Engineer · Analyst · Scientist' },
     { n: '02', title: 'Get your tracks', sub: 'the skills that role needs' },
     { n: '03', title: 'Follow guided paths', sub: 'one pattern at a time' },
     { n: '04', title: 'Climb the tiers', sub: 'foundational → advanced' },
@@ -725,7 +725,7 @@ function ProofStripSection({ pathCount = 0 }) {
   const STATS = [
     { num: trackCount, label: 'tracks' },
     { num: pathsUp || '…', label: 'guided paths' },
-    { num: ROLES.length, label: 'career roles' },
+    { num: ROLES.length, label: 'data roles' },
     { text: 'foundational → advanced' },
     { text: 'real DuckDB + Python execution' },
     { text: 'timed benchmarks + weak-area coaching' },
@@ -1358,12 +1358,14 @@ export default function LandingPage() {
         {/* 01 HERO */}
         <HeroSection user={user} dashData={dashData} reduced={reduced} />
 
-        {/* 01.5 + 02 + 03: HOW-IT-WORKS + THESIS + WRONG/RIGHT — logged-out only */}
+        {/* 02 + 03 + 03.5: THESIS + WRONG/RIGHT + HOW-IT-WORKS — logged-out only.
+            "Why" (what data reasoning is) lands before the "how" (the journey ribbon),
+            which then hands straight off to the role selector below. */}
         {!user && (
           <>
-            <JourneyRibbon />
             <ThesisSection />
             <WrongRightSection />
+            <JourneyRibbon />
           </>
         )}
 

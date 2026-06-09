@@ -208,15 +208,17 @@ describe('LandingPage', () => {
       });
     });
 
-    it('Data Analyst tab is selected by default', async () => {
+    it('Data Engineer tab is selected by default', async () => {
       renderWithPlan(null);
       await waitFor(() => {
-        expect(screen.getByRole('tab', { name: 'Data Analyst' })).toHaveAttribute('aria-selected', 'true');
+        expect(screen.getByRole('tab', { name: 'Data Engineer' })).toHaveAttribute('aria-selected', 'true');
       });
     });
 
     it('Data Analyst panel shows SQL track', async () => {
       renderWithPlan(null);
+      await waitFor(() => screen.getByRole('tab', { name: 'Data Analyst' }));
+      fireEvent.click(screen.getByRole('tab', { name: 'Data Analyst' }));
       await waitFor(() => {
         const panel = screen.getByRole('tabpanel');
         expect(panel).toBeInTheDocument();
@@ -249,6 +251,8 @@ describe('LandingPage', () => {
 
     it('Data Analyst panel shows Statistics as an active track', async () => {
       renderWithPlan(null);
+      await waitFor(() => screen.getByRole('tab', { name: 'Data Analyst' }));
+      fireEvent.click(screen.getByRole('tab', { name: 'Data Analyst' }));
       await waitFor(() => {
         const panel = screen.getByRole('tabpanel');
         expect(panel.textContent).toMatch(/Statistics/);
