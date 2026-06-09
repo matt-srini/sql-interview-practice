@@ -925,7 +925,7 @@ function PathsShowcaseSection({ paths, user }) {
                   >
                     <span className="lp-track-dot" style={{ background: meta.color }} aria-hidden="true" />
                     <span className="lp-paths-trackchip-name">{meta.label}</span>
-                    <span className="lp-paths-trackchip-count">{count} path{count === 1 ? '' : 's'}</span>
+                    <span className="lp-paths-trackchip-count" aria-label={`${count} path${count === 1 ? '' : 's'}`}>{count}</span>
                   </Link>
                 </li>
               ))}

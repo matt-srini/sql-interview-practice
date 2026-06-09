@@ -400,8 +400,13 @@ describe('LandingPage', () => {
       expect(chips).toHaveLength(3);
       const sqlChip = chips.find(c => c.getAttribute('href') === '/learn/sql');
       expect(sqlChip).toBeTruthy();
-      expect(sqlChip.textContent).toMatch(/6 paths/);
-      expect(chips.find(c => c.getAttribute('href') === '/learn/python').textContent).toMatch(/1 path\b/);
+      // count is number-only on screen; the unit lives in the aria-label
+      const sqlCount = sqlChip.querySelector('.lp-paths-trackchip-count');
+      expect(sqlCount.textContent).toBe('6');
+      expect(sqlCount.getAttribute('aria-label')).toMatch(/6 paths/);
+      const pyCount = chips.find(c => c.getAttribute('href') === '/learn/python').querySelector('.lp-paths-trackchip-count');
+      expect(pyCount.textContent).toBe('1');
+      expect(pyCount.getAttribute('aria-label')).toMatch(/1 path\b/);
       // Stat reflects derived totals (3 tracks · 8 paths)
       const stat = container.querySelector('.lp-paths-breadth-stat').textContent;
       expect(stat).toMatch(/3/);
