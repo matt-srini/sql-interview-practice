@@ -1384,3 +1384,60 @@ def test_interview_loop_follow_up_flag_persisted():
         assert child.get("follow_up_dimension") is not None, (
             f"Follow-up question {child.get('id')} missing follow_up_dimension"
         )
+
+
+# ---------------------------------------------------------------------------
+# C3 regression: benchmark/interview_loop submit must NOT reveal verdict or answer key
+# ---------------------------------------------------------------------------
+
+def test_benchmark_submit_hides_verdict_and_answer_key():
+    """C3 regression: Elite benchmark SQL submit returns lean {submitted: true} ack —
+    no correct, expected_result, feedback, or hidden_summary exposed mid-session.
+    Pro custom SQL submit still returns the full result including correct.
+    """
+    # --- Elite benchmark: lean ack, no verdict or answer key ---
+    with TestClient(app) as client:
+        _make_user(client, plan="elite")
+        r_start = client.post("/api/mock/start", json={
+            "mode": "benchmark", "track": "sql", "difficulty": "easy",
+        })
+        assert r_start.status_code in (200, 201), r_start.text
+        session_id = r_start.json()["session_id"]
+        first_q = r_start.json()["questions"][0]
+
+        r_submit = client.post(f"/api/mock/{session_id}/submit", json={
+            "question_id": first_q["id"],
+            "track": "sql",
+            "code": "SELECT 1",
+        })
+
+    assert r_submit.status_code == 200, r_submit.text
+    body = r_submit.json()
+    # Must be the lean ack shape — no verdict or answer key
+    assert "correct" not in body, f"'correct' leaked in benchmark submit response: {body}"
+    assert "expected_result" not in body, f"'expected_result' leaked in benchmark submit response: {body}"
+    assert "feedback" not in body, f"'feedback' leaked in benchmark submit response: {body}"
+    assert "hidden_summary" not in body, f"'hidden_summary' leaked in benchmark submit response: {body}"
+    assert body.get("submitted") is True, f"Expected {{submitted: true}}, got: {body}"
+
+    # --- Pro custom: full result including correct ---
+    with TestClient(app) as client:
+        _make_user(client, plan="pro")
+        r_start = client.post("/api/mock/start", json={
+            "mode": "custom", "track": "sql", "difficulty": "easy",
+            "num_questions": 1, "time_minutes": 10,
+        })
+        assert r_start.status_code in (200, 201), r_start.text
+        session_id = r_start.json()["session_id"]
+        first_q = r_start.json()["questions"][0]
+
+        r_submit = client.post(f"/api/mock/{session_id}/submit", json={
+            "question_id": first_q["id"],
+            "track": "sql",
+            "code": "SELECT 1",
+        })
+
+    assert r_submit.status_code == 200, r_submit.text
+    body = r_submit.json()
+    # Custom drill must still reveal verdict
+    assert "correct" in body, f"'correct' missing from custom drill submit response: {body}"

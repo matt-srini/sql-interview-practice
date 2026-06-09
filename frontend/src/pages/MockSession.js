@@ -1063,7 +1063,7 @@ export default function MockSession() {
                       disabled={submitting || submitted[q.id] || !getCode(q)?.trim()}
                     >
                       <span>
-                        {submitting ? 'Checking…' : solved[q.id] ? '✓ Solved' : submitted[q.id] ? '✗ Submitted' : 'Submit'}
+                        {submitting ? 'Checking…' : solved[q.id] ? '✓ Solved' : submitted[q.id] ? (isBenchmarkMode ? '✓ Submitted' : '✗ Submitted') : 'Submit'}
                       </span>
                       <kbd className="shortcut-kbd">⌘⇧↵</kbd>
                     </button>

@@ -1447,11 +1447,13 @@ async def submit_answer(
             code=body.code,
         )
 
-    # Return lean result — no solutions mid-session
-    # Benchmark/Interview Loop + MCQ: also suppress correctness signal per spec invariant
-    # "No correctness reveal mid-session" (mock-benchmark-spec.md § Benchmark invariants)
-    if session.get("mode") in ("benchmark", "interview_loop") and get_track(body.track).eval_kind == "mcq":
-        result = {k: v for k, v in result.items() if k != "correct"}
+    # No correctness/solution reveal mid-session for benchmark + interview_loop (ALL tracks).
+    # The user already saw their own output via Run; submit is one-shot. Return a lean ack
+    # that exposes neither the verdict (correct/feedback) nor the answer key (expected_result,
+    # hidden_summary, public_results, error). Custom drills keep the full result.
+    # (mock-benchmark-spec.md § Benchmark invariants)
+    if session.get("mode") in ("benchmark", "interview_loop"):
+        return {"submitted": True}
     return result
 
 
