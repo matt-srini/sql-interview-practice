@@ -13175,3 +13175,160 @@ select {
 @media (max-width: 900px) {
   .lp-track-sample { display: none; }
 }
+
+/* ── Logged-in home: Continue paths ─────────────────────────────── */
+.lp-continue-paths-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  margin-top: 2rem;
+}
+.lp-continue-paths-empty {
+  margin-top: 1.5rem;
+  font-size: 1rem;
+  color: var(--text-secondary);
+}
+.lp-continue-paths-browse {
+  color: var(--accent);
+  font-weight: 500;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.lp-continue-paths-browse:hover { opacity: 0.75; }
+@media (max-width: 900px) {
+  .lp-continue-paths-grid { grid-template-columns: 1fr; }
+}
+
+/* ── Logged-in home: Your tracks ────────────────────────────────── */
+.lp-your-tracks-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-top: 2rem;
+}
+.lp-your-track-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 18px 20px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  background: var(--surface-card);
+  text-decoration: none;
+  transition: border-color 160ms, box-shadow 160ms, background 160ms;
+}
+.lp-your-track-card:hover {
+  border-color: color-mix(in srgb, var(--track-color, var(--accent)) 35%, var(--border-subtle));
+  box-shadow: 0 2px 10px color-mix(in srgb, var(--track-color, var(--accent)) 10%, transparent);
+  background: color-mix(in srgb, var(--surface-card) 97%, var(--track-color, var(--accent)));
+}
+.lp-your-track-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.lp-your-track-name {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-strong);
+}
+.lp-your-track-cta {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  color: var(--text-secondary);
+  margin-top: auto;
+}
+.lp-your-track-card:hover .lp-your-track-cta {
+  color: var(--track-color, var(--accent));
+}
+@media (max-width: 900px) {
+  .lp-your-tracks-grid { grid-template-columns: 1fr; }
+}
+
+/* ── Logged-in home: Weak spots ──────────────────────────────────── */
+.lp-weak-spots-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-top: 2rem;
+}
+.lp-weak-spot-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 18px 20px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  background: var(--surface-card);
+}
+.lp-weak-spot-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.lp-weak-spot-track {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.68rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+.lp-weak-spot-concept {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-strong);
+  line-height: 1.35;
+}
+.lp-weak-spot-drill {
+  font-size: 0.83rem;
+  font-weight: 500;
+  color: var(--accent);
+  margin-top: auto;
+}
+.lp-weak-spot-drill:hover { opacity: 0.75; }
+.lp-weak-spots-full {
+  display: inline-block;
+  margin-top: 1.5rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.lp-weak-spots-full:hover { color: var(--accent); }
+@media (max-width: 900px) {
+  .lp-weak-spots-grid { grid-template-columns: 1fr; }
+}
+
+/* ── Logged-in home: Upgrade nudge ──────────────────────────────── */
+.lp-upgrade-nudge { padding: 56px 0; }
+.lp-upgrade-nudge-inner {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  padding: 28px 32px;
+  border-radius: var(--radius-md);
+  border: 1px solid color-mix(in srgb, var(--accent) 20%, var(--border-subtle));
+  background: color-mix(in srgb, var(--accent) 5%, var(--surface-card));
+  flex-wrap: wrap;
+}
+.lp-upgrade-nudge-copy {
+  flex: 1;
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--text-strong);
+  min-width: 200px;
+}
+.lp-upgrade-nudge-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+@media (max-width: 900px) {
+  .lp-upgrade-nudge-inner { flex-direction: column; align-items: flex-start; gap: 16px; }
+  .lp-upgrade-nudge-actions { width: 100%; }
+}

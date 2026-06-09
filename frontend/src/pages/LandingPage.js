@@ -7,6 +7,8 @@ import { TRACK_META } from '../contexts/TopicContext';
 import { ALL_TRACK_SLUGS, TRACK_SLUGS } from '../trackRegistry';
 import { useCatalogCounts } from '../contexts/CatalogCountsContext';
 import Topbar from '../components/Topbar';
+import TrackProgressBar from '../components/TrackProgressBar';
+import PathProgressCard from '../components/PathProgressCard';
 import UpgradeButton from '../components/UpgradeButton';
 import { detectCurrency, PRICES } from '../utils/currency';
 
@@ -424,14 +426,19 @@ function HeroSection({ user, dashData, reduced }) {
       ? Object.values(dashData.tracks || {}).reduce((s, t) => s + (t?.solved ?? 0), 0)
       : 0;
 
+    const streakDays = user?.streak_days ?? 0;
+    const heroCopy = totalSolved > 0
+      ? (streakDays > 0
+          ? `${totalSolved} solved · ${streakDays}-day streak — keep it going.`
+          : `${totalSolved} solved so far — keep the streak going.`)
+      : 'Ready when you are.';
+
     return (
       <section className="lp-section lp-hero-loggedin">
         <div className="lp-inner">
           <p className="lp-eyebrow">Welcome back, {firstName}</p>
           <p className="lp-hero-li-copy">
-            {totalSolved > 0
-              ? `${totalSolved} solved so far — keep the streak going.`
-              : 'Ready when you are.'}
+            {heroCopy}
           </p>
           <div className="lp-hero-li-cards">
             <Link to={href} className="lp-li-card lp-li-card--primary" style={{ '--card-color': meta.color }}>
@@ -1080,6 +1087,159 @@ function PricingSection({ userPlan, currency }) {
   );
 }
 
+// ── Logged-in home: Continue paths ──────────────────────────────────────────
+function ContinuePathsSection({ paths }) {
+  const inProgress = paths
+    .filter(p => p.solved_count >= 1 && p.solved_count < p.question_count)
+    .slice()
+    .sort((a, b) => (b.solved_count / b.question_count) - (a.solved_count / a.question_count))
+    .slice(0, 3);
+
+  return (
+    <section className="lp-section lp-section-rule lp-continue-paths">
+      <div className="lp-inner">
+        <Reveal>
+          <p className="lp-section-index">+&ensp;PICK UP WHERE YOU LEFT OFF</p>
+          <h2 className="lp-section-h2">Continue your paths.</h2>
+        </Reveal>
+        {inProgress.length > 0 ? (
+          <div className="lp-continue-paths-grid">
+            {inProgress.map(p => (
+              <PathProgressCard key={p.slug} path={p} />
+            ))}
+          </div>
+        ) : (
+          <Reveal delay={80}>
+            <p className="lp-continue-paths-empty">
+              You haven't started a guided path yet.{' '}
+              <Link to="/learn" className="lp-continue-paths-browse">Browse paths →</Link>
+            </p>
+          </Reveal>
+        )}
+      </div>
+    </section>
+  );
+}
+
+// ── Logged-in home: Your tracks ──────────────────────────────────────────────
+function YourTracksSection({ dashData }) {
+  return (
+    <section className="lp-section lp-section-rule lp-your-tracks">
+      <div className="lp-inner">
+        <Reveal>
+          <p className="lp-section-index">+&ensp;YOUR TRACKS</p>
+          <h2 className="lp-section-h2">Jump back in.</h2>
+        </Reveal>
+        <div className="lp-your-tracks-grid">
+          {TRACK_SLUGS.map((slug, i) => {
+            const meta = TRACK_META[slug];
+            if (!meta) return null;
+            const trackData = dashData?.tracks?.[slug];
+            const solved = trackData?.solved ?? 0;
+            const total = trackData?.total ?? 0;
+            return (
+              <Reveal key={slug} delay={i * 40}>
+                <Link
+                  to={`/practice/${slug}`}
+                  className="lp-your-track-card"
+                  style={{ '--track-color': meta.color }}
+                >
+                  <div className="lp-your-track-header">
+                    <span className="lp-track-dot" style={{ background: meta.color }} aria-hidden="true" />
+                    <span className="lp-your-track-name">{meta.label}</span>
+                  </div>
+                  <TrackProgressBar solved={solved} total={total} color={meta.color} showLabel={true} />
+                  <span className="lp-your-track-cta">{solved > 0 ? 'Continue →' : 'Start →'}</span>
+                </Link>
+              </Reveal>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ── Logged-in home: Weak spots coaching ─────────────────────────────────────
+function WeakSpotsSection({ insights }) {
+  if (!insights) return null;
+  const weak = insights.weakest_concepts;
+  if (!weak || weak.length === 0) return null;
+
+  return (
+    <section className="lp-section lp-section-rule lp-weak-spots">
+      <div className="lp-inner">
+        <Reveal>
+          <p className="lp-section-index">+&ensp;COACHING</p>
+          <h2 className="lp-section-h2">Sharpen your weak spots.</h2>
+        </Reveal>
+        <div className="lp-weak-spots-grid">
+          {weak.slice(0, 3).map((entry, i) => {
+            const trackMeta = TRACK_META[entry.track];
+            const drillHref = entry.recommended_path_slug
+              ? `/learn/${entry.track}/${entry.recommended_path_slug}`
+              : `/practice/${entry.track}`;
+            return (
+              <Reveal key={`${entry.track}-${entry.concept}`} delay={i * 60}>
+                <div className="lp-weak-spot-card">
+                  <div className="lp-weak-spot-header">
+                    {trackMeta && (
+                      <span className="lp-track-dot" style={{ background: trackMeta.color }} aria-hidden="true" />
+                    )}
+                    <span className="lp-weak-spot-track">{trackMeta?.label ?? entry.track}</span>
+                  </div>
+                  <p className="lp-weak-spot-concept">{entry.concept}</p>
+                  <Link to={drillHref} className="lp-weak-spot-drill">Drill this →</Link>
+                </div>
+              </Reveal>
+            );
+          })}
+        </div>
+        <Reveal delay={120}>
+          <Link to="/dashboard" className="lp-weak-spots-full">See full coaching →</Link>
+        </Reveal>
+      </div>
+    </section>
+  );
+}
+
+// ── Logged-in home: Upgrade nudge (slim) ────────────────────────────────────
+function UpgradeNudge({ userPlan, currency }) {
+  if (userPlan === 'elite' || userPlan === 'lifetime_elite') return null;
+
+  const isProUser = userPlan === 'pro' || userPlan === 'lifetime_pro';
+
+  return (
+    <section className="lp-section lp-section-rule lp-upgrade-nudge">
+      <div className="lp-inner">
+        <div className="lp-upgrade-nudge-inner">
+          <p className="lp-upgrade-nudge-copy">
+            {isProUser
+              ? 'Add Interview Loop + deep analytics with Elite.'
+              : 'Unlock the full question bank + mock interviews.'}
+          </p>
+          <div className="lp-upgrade-nudge-actions">
+            {!isProUser && (
+              <UpgradeButton
+                tier="pro"
+                source="landing_home"
+                currency={currency}
+                successPath="/?upgraded=true"
+              />
+            )}
+            <UpgradeButton
+              tier="elite"
+              source="landing_home"
+              currency={currency}
+              successPath="/?upgraded=true"
+            />
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 // ── Section 08: Closer + Footer ─────────────────────────────────────────────
 function CloserSection() {
   return (
@@ -1105,6 +1265,7 @@ export default function LandingPage() {
 
   const [dashData, setDashData] = useState(null);
   const [paths, setPaths] = useState([]);
+  const [insights, setInsights] = useState(null);
   const [upgradeSuccess, setUpgradeSuccess] = useState(false);
 
   const [reduced] = useState(() =>
@@ -1160,6 +1321,14 @@ export default function LandingPage() {
   }, [user]);
 
   useEffect(() => {
+    if (user) {
+      api.get('/dashboard/insights').then(r => setInsights(r.data)).catch(() => {});
+    } else {
+      setInsights(null);
+    }
+  }, [user]);
+
+  useEffect(() => {
     api.get('/paths').then(r => setPaths(r.data)).catch(() => {});
   }, []);
 
@@ -1198,21 +1367,27 @@ export default function LandingPage() {
           </>
         )}
 
-        {/* 04 ROLE SELECTOR */}
-        <RoleSelectorSection dashData={dashData} />
+        {/* Middle content: utility for logged-in, marketing for logged-out */}
+        {user ? (
+          <>
+            <ContinuePathsSection paths={paths} />
+            <YourTracksSection dashData={dashData} />
+            <WeakSpotsSection insights={insights} />
+          </>
+        ) : (
+          <>
+            <RoleSelectorSection dashData={dashData} />
+            <ProofStripSection pathCount={paths.length} />
+            <TracksIndexSection />
+            <PathsShowcaseSection paths={paths} user={user} />
+          </>
+        )}
 
-        {/* 05 PROOF STRIP */}
-        <ProofStripSection pathCount={paths.length} />
-
-        {/* 06 TRACKS INDEX */}
-        <TracksIndexSection />
-
-        {/* Paths — shown for everyone */}
-        <PathsShowcaseSection paths={paths} user={user} />
-
-        {/* 07 PRICING */}
-        {showPricing && (
-          <PricingSection userPlan={userPlan} currency={currency} />
+        {/* Pricing: slim nudge for logged-in, full table for logged-out */}
+        {user ? (
+          <UpgradeNudge userPlan={userPlan} currency={currency} />
+        ) : (
+          showPricing && <PricingSection userPlan={userPlan} currency={currency} />
         )}
 
         {/* 08 CLOSER (logged-out only) */}

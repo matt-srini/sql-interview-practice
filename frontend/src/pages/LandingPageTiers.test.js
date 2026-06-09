@@ -114,11 +114,32 @@ function renderWithPlan(plan) {
   return render(<MemoryRouter><LandingPage /></MemoryRouter>);
 }
 
+const MOCK_DASHBOARD_DATA = {
+  tracks: {
+    sql:                { solved: 5, total: 37, by_difficulty: {} },
+    python:             { solved: 2, total: 33, by_difficulty: {} },
+    'python-data':      { solved: 0, total: 28, by_difficulty: {} },
+    pyspark:            { solved: 0, total: 40, by_difficulty: {} },
+    'data-engineering': { solved: 0, total: 30, by_difficulty: {} },
+    'data-modeling':    { solved: 0, total: 25, by_difficulty: {} },
+    statistics:         { solved: 0, total: 31, by_difficulty: {} },
+    'ml-fundamentals':  { solved: 0, total: 30, by_difficulty: {} },
+    experimentation:    { solved: 0, total: 30, by_difficulty: {} },
+  },
+  recent_activity: [{ topic: 'sql', question_id: 1 }],
+};
+
+const MOCK_INSIGHTS_DATA = {
+  weakest_concepts: [],
+  streak_days: 3,
+};
+
 beforeEach(() => {
   vi.clearAllMocks();
   api.get.mockImplementation((url) => {
-    if (url === '/dashboard') return Promise.resolve({ data: {} });
-    if (url === '/paths')     return Promise.resolve({ data: [] });
+    if (url === '/dashboard')          return Promise.resolve({ data: MOCK_DASHBOARD_DATA });
+    if (url === '/dashboard/insights') return Promise.resolve({ data: MOCK_INSIGHTS_DATA });
+    if (url === '/paths')              return Promise.resolve({ data: [] });
     return Promise.resolve({ data: {} });
   });
   api.post.mockResolvedValue({ data: {} });
@@ -303,30 +324,34 @@ describe('LandingPage', () => {
       await waitFor(() => expect(screen.getByText('Most popular')).toBeInTheDocument());
     });
 
-    it('free user sees "Current plan" in the Free column', async () => {
-      renderWithPlan('free');
-      await waitFor(() => expect(screen.getByText('Current plan')).toBeInTheDocument());
-    });
-
-    it('free user sees Upgrade to Pro and Upgrade to Elite buttons', async () => {
+    // Logged-in users see UpgradeNudge (slim banner), NOT the full PricingSection.
+    it('free logged-in user sees upgrade nudge — not the full pricing table', async () => {
       renderWithPlan('free');
       await waitFor(() => {
+        // Slim nudge copy — not the full pricing heading
+        expect(screen.queryByText('Practice free. Prepare seriously.')).not.toBeInTheDocument();
+        // Both Pro and Elite upgrade buttons are present in the slim nudge
         expect(screen.getByRole('button', { name: 'Upgrade to Pro' })).toBeInTheDocument();
         expect(screen.getByRole('button', { name: 'Upgrade to Elite' })).toBeInTheDocument();
       });
     });
 
-    it('hides the pricing section for lifetime_elite users', async () => {
-      renderWithPlan('lifetime_elite');
+    it('pro logged-in user sees Elite nudge — not the full pricing table', async () => {
+      renderWithPlan('pro');
       await waitFor(() => {
         expect(screen.queryByText('Practice free. Prepare seriously.')).not.toBeInTheDocument();
+        // Only the Elite upgrade button in the nudge
+        expect(screen.getByRole('button', { name: 'Upgrade to Elite' })).toBeInTheDocument();
+        expect(screen.queryByRole('button', { name: 'Upgrade to Pro' })).not.toBeInTheDocument();
       });
     });
 
-    it('shows pricing for pro users (so they can see Elite upgrade)', async () => {
-      renderWithPlan('pro');
+    it('lifetime_elite logged-in user sees neither pricing table nor nudge', async () => {
+      renderWithPlan('lifetime_elite');
       await waitFor(() => {
-        expect(screen.getByText('Practice free. Prepare seriously.')).toBeInTheDocument();
+        expect(screen.queryByText('Practice free. Prepare seriously.')).not.toBeInTheDocument();
+        expect(screen.queryByRole('button', { name: 'Upgrade to Pro' })).not.toBeInTheDocument();
+        expect(screen.queryByRole('button', { name: 'Upgrade to Elite' })).not.toBeInTheDocument();
       });
     });
   });
@@ -350,8 +375,9 @@ describe('LandingPage', () => {
 
     function mockPaths(paths) {
       api.get.mockImplementation((url) => {
-        if (url === '/dashboard') return Promise.resolve({ data: {} });
-        if (url === '/paths')     return Promise.resolve({ data: paths });
+        if (url === '/dashboard')          return Promise.resolve({ data: MOCK_DASHBOARD_DATA });
+        if (url === '/dashboard/insights') return Promise.resolve({ data: MOCK_INSIGHTS_DATA });
+        if (url === '/paths')              return Promise.resolve({ data: paths });
         return Promise.resolve({ data: {} });
       });
     }
@@ -420,12 +446,16 @@ describe('LandingPage', () => {
       expect(screen.queryByRole('button', { name: /shuffle/i })).not.toBeInTheDocument();
     });
 
-    it('shows a resume hook to the furthest-along in-progress path for logged-in users', async () => {
+    it('shows in-progress paths for logged-in users via ContinuePathsSection', async () => {
       mockPaths(MOCK_PATHS);
       renderWithPlan('pro');
-      // sql-window is the only in-progress path (3/9) → resume target
-      const resume = await screen.findByRole('link', { name: /continue: window functions/i });
-      expect(resume).toHaveAttribute('href', '/learn/sql/sql-window');
+      // sql-window is the only in-progress path (3/9) → appears in ContinuePathsSection
+      await waitFor(() => {
+        expect(screen.getByText('Window Functions')).toBeInTheDocument();
+      });
+      // The PathProgressCard links to /learn/sql/sql-window
+      const pathLinks = screen.getAllByRole('link', { name: /window functions/i });
+      expect(pathLinks.some(l => l.getAttribute('href') === '/learn/sql/sql-window')).toBe(true);
     });
 
     it('shows no resume hook for logged-out visitors even with prior progress', async () => {
@@ -441,6 +471,33 @@ describe('LandingPage', () => {
       // Other sections still render; the paths headline must be absent
       await waitFor(() => expect(screen.getByText('Practice free. Prepare seriously.')).toBeInTheDocument());
       expect(screen.queryByText('Systematic patterns, not scattered reps.')).not.toBeInTheDocument();
+    });
+  });
+
+  // ── Logged-in home vs. marketing pitch ───────────────────────────────────
+
+  describe('Logged-in home utility vs. logged-out marketing', () => {
+    it('logged-in user sees utility sections and NOT the marketing tracks pitch', async () => {
+      renderWithPlan('free');
+      await waitFor(() => {
+        // Utility sections present
+        expect(screen.getByText('Continue your paths.')).toBeInTheDocument();
+        expect(screen.getByText('Jump back in.')).toBeInTheDocument();
+      });
+      // Marketing tracks pitch absent
+      expect(screen.queryByText('A curriculum, not a question bank.')).not.toBeInTheDocument();
+      // Role selector absent
+      expect(screen.queryByRole('tablist', { name: /select your data role/i })).not.toBeInTheDocument();
+    });
+
+    it('logged-out user sees the marketing tracks pitch and NOT the utility home', async () => {
+      renderWithPlan(null);
+      await waitFor(() => {
+        expect(screen.getByText('A curriculum, not a question bank.')).toBeInTheDocument();
+      });
+      // Utility sections absent
+      expect(screen.queryByText('Jump back in.')).not.toBeInTheDocument();
+      expect(screen.queryByText('Continue your paths.')).not.toBeInTheDocument();
     });
   });
 
