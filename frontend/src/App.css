@@ -2755,127 +2755,126 @@ select {
   }
 }
 
+/* Hamburger button — used by app topbar ≤900px and landing topbar ≤640px.
+   Defined globally (outside any breakpoint) so the styles apply whenever
+   .topbar-mobile-actions becomes visible. At full desktop widths the wrapper
+   is display:none so these rules are harmless. */
+.topbar-hamburger {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  width: 36px;
+  height: 36px;
+  padding: 6px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  transition: background 0.15s;
+}
+.topbar-hamburger:hover {
+  background: var(--surface-raised);
+}
+.topbar-hamburger span {
+  display: block;
+  height: 2px;
+  background: var(--text-strong);
+  border-radius: 2px;
+  transition: transform 0.2s, opacity 0.2s;
+  transform-origin: center;
+}
+/* X state */
+.topbar-hamburger--open span:nth-child(1) {
+  transform: translateY(7px) rotate(45deg);
+}
+.topbar-hamburger--open span:nth-child(2) {
+  opacity: 0;
+  transform: scaleX(0);
+}
+.topbar-hamburger--open span:nth-child(3) {
+  transform: translateY(-7px) rotate(-45deg);
+}
+
+/* Dropdown menu — same rationale: global so it works at 640–900px too */
+.topbar-mobile-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 220px;
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  padding: 0.5rem 0;
+  z-index: 200;
+}
+
+.topbar-mobile-section-label {
+  padding: 0.5rem 1rem 0.25rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.topbar-mobile-divider {
+  height: 1px;
+  background: var(--border-subtle);
+  margin: 0.4rem 0;
+}
+
+.topbar-mobile-item {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.6rem 1rem;
+  font-size: 0.9rem;
+  color: var(--text-strong);
+  text-decoration: none;
+  background: none;
+  border: none;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.12s;
+}
+.topbar-mobile-item:hover {
+  background: var(--surface-raised);
+}
+.topbar-mobile-item--active {
+  color: var(--accent);
+  font-weight: 500;
+}
+
+.topbar-mobile-user {
+  display: block;
+  padding: 0.5rem 1rem;
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.topbar-mobile-signout {
+  color: var(--danger);
+}
+
 @media (max-width: 640px) {
-  /* Hide desktop nav links */
+  /* Hide desktop nav links on landing at narrow mobile */
   .landing-topbar-right {
     display: none;
   }
 
-  /* Show hamburger region */
+  /* Show hamburger region for landing topbar */
   .topbar-mobile-actions {
     display: flex;
     align-items: center;
     gap: 0.5rem;
     margin-left: auto;
     position: relative;
-  }
-
-  .topbar-mobile-theme {
-    /* reuse theme-toggle styles, already defined */
-  }
-
-  /* Hamburger button */
-  .topbar-hamburger {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    gap: 5px;
-    width: 36px;
-    height: 36px;
-    padding: 6px;
-    background: none;
-    border: none;
-    cursor: pointer;
-    border-radius: var(--radius-sm);
-    transition: background 0.15s;
-  }
-  .topbar-hamburger:hover {
-    background: var(--surface-raised);
-  }
-  .topbar-hamburger span {
-    display: block;
-    height: 2px;
-    background: var(--text-strong);
-    border-radius: 2px;
-    transition: transform 0.2s, opacity 0.2s;
-    transform-origin: center;
-  }
-  /* X state */
-  .topbar-hamburger--open span:nth-child(1) {
-    transform: translateY(7px) rotate(45deg);
-  }
-  .topbar-hamburger--open span:nth-child(2) {
-    opacity: 0;
-    transform: scaleX(0);
-  }
-  .topbar-hamburger--open span:nth-child(3) {
-    transform: translateY(-7px) rotate(-45deg);
-  }
-
-  /* Dropdown menu */
-  .topbar-mobile-menu {
-    position: absolute;
-    top: calc(100% + 8px);
-    right: 0;
-    min-width: 220px;
-    background: var(--surface-card);
-    border: 1px solid var(--border-subtle);
-    border-radius: var(--radius-md);
-    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
-    padding: 0.5rem 0;
-    z-index: 200;
-  }
-
-  .topbar-mobile-section-label {
-    padding: 0.5rem 1rem 0.25rem;
-    font-size: 0.7rem;
-    font-weight: 600;
-    letter-spacing: 0.07em;
-    text-transform: uppercase;
-    color: var(--text-secondary);
-  }
-
-  .topbar-mobile-divider {
-    height: 1px;
-    background: var(--border-subtle);
-    margin: 0.4rem 0;
-  }
-
-  .topbar-mobile-item {
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-    padding: 0.6rem 1rem;
-    font-size: 0.9rem;
-    color: var(--text-strong);
-    text-decoration: none;
-    background: none;
-    border: none;
-    width: 100%;
-    text-align: left;
-    cursor: pointer;
-    transition: background 0.12s;
-  }
-  .topbar-mobile-item:hover {
-    background: var(--surface-raised);
-  }
-  .topbar-mobile-item--active {
-    color: var(--accent);
-    font-weight: 500;
-  }
-
-  .topbar-mobile-user {
-    display: block;
-    padding: 0.5rem 1rem;
-    font-size: 0.82rem;
-    color: var(--text-secondary);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .topbar-mobile-signout {
-    color: var(--danger);
   }
 }
 
