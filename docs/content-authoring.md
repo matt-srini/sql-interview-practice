@@ -624,7 +624,7 @@ Level has no unlock semantics. Levels are used for sort order on TrackHub, the "
 
 #### Path-size policy
 
-Paths should hold **5–9 questions** in the sweet spot, **4 minimum** (hard floor), **15 maximum** (default cap). Paths can grow to 16–20 questions only with **explicit per-path approval** — captured in the commit message that introduces the over-cap size. The validator enforces the hard 4–20 range; cap-15-vs-20 is curation discipline, not machine-enforced.
+Paths should hold **5–9 questions** in the sweet spot, **3 minimum** (hard floor), **15 maximum** (default cap). The floor is 3 to allow intentionally **compact** paths that cover a genuinely-uncovered concept gap for which only ~3 practice questions exist (flagged "compact" in the path description, to grow when more practice questions are authored) — normal paths still target 5–9. Paths can grow to 16–20 questions only with **explicit per-path approval** — captured in the commit message that introduces the over-cap size. The `tests/test_paths_quality.py` sanity guard enforces the hard 3–20 range; cap-15-vs-20 and the 5–9 sweet spot are curation discipline, not machine-enforced.
 
 #### What this section explicitly rejects (historical)
 

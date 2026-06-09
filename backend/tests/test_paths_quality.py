@@ -87,14 +87,17 @@ def test_rule2_level_enum(all_paths):
         assert path["level"] in VALID_LEVELS, f"{path['slug']}: invalid level {path['level']!r}"
 
 
-def test_rule2_exactly_one_foundational_per_track(all_paths, valid_topics):
+def test_rule2_at_least_one_foundational_per_track(all_paths, valid_topics):
+    # Levels are content-driven (2026-06): a track may have multiple foundational
+    # entry points; the rule is >=1, not exactly one. See DECISIONS.md 2026-06-08
+    # "Path levels are content-driven" + docs/content-authoring.md §Paths.
     foundational_counts: dict[str, int] = defaultdict(int)
     for path in all_paths:
         if path["level"] == "foundational":
             foundational_counts[path["topic"]] += 1
     for topic in valid_topics:
-        assert foundational_counts[topic] == 1, (
-            f"Track {topic} must have exactly one foundational path "
+        assert foundational_counts[topic] >= 1, (
+            f"Track {topic} must have at least one foundational path "
             f"(found {foundational_counts[topic]})"
         )
 
@@ -233,25 +236,28 @@ def test_rule6_recommended_after_graph_is_acyclic(all_paths):
 # ──────────────────────────────────────────────────────────────────────────────
 
 def test_path_question_counts_in_curation_range(all_paths):
-    """Sanity guardrail: paths should be 4–20 questions (default 15; 16–20 with approval).
+    """Sanity guardrail: paths should be 3–20 questions (sweet spot 5–9; default cap 15).
 
-    The §Paths sweet spot is 5–9 (and an absolute lower floor of 4): below 5 →
-    not enough progression; above ~10 → completion stops being meaningful.
+    The §Paths sweet spot is 5–9. The absolute lower floor is **3**: a small set
+    of intentionally **compact** paths cover a genuinely-uncovered concept gap with
+    only 3 practice questions available (e.g. survival-analysis, algorithmic-fairness,
+    storage-and-lakehouse, data-quality-skepticism) — flagged "compact" in their
+    description, to grow when more practice questions are authored. See DECISIONS.md
+    2026-06-08 "Path levels are content-driven" + docs/content-authoring.md §Paths.
 
-    The upper bound is 15. Paths that grew beyond this during orphan recruitment
-    have been split (B5 splits, 2026-06). Any path exceeding 15 questions is a
-    candidate for further splitting.
+    The upper bound is 15 (16–20 only with explicit per-path approval). Paths that
+    grew beyond 15 during orphan recruitment have been split (2026-06).
 
-    This test catches only egregious violations (1–3 or 16+). The 5–9 sweet
-    spot is enforced by author judgment, not by the validator.
+    This test catches only egregious violations (1–2 or 21+). The 5–9 sweet spot
+    is enforced by author judgment, not by the validator.
     """
     out_of_range = []
     for p in all_paths:
         n = len(p["questions"])
-        if n < 4 or n > 20:
+        if n < 3 or n > 20:
             out_of_range.append((p["slug"], n))
     assert not out_of_range, (
-        f"Paths outside 4–15 question sanity range: {out_of_range}. "
+        f"Paths outside 3–20 question sanity range: {out_of_range}. "
         f"See docs/content-authoring.md §Paths."
     )
 
