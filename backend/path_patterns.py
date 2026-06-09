@@ -44,6 +44,7 @@ PATH_PATTERNS: dict[str, dict[str, str]] = {
         "funnel-analysis": "Funnel & Event Analysis",
         "period-over-period": "Period-over-Period Analysis",
         "pivot-and-unpivot": "Pivot & Conditional Aggregation",
+        "data-quality": "Data Quality & Skepticism",
     },
     "python": {
         "arrays-and-hashing": "Arrays & Hashing",
@@ -94,6 +95,7 @@ PATH_PATTERNS: dict[str, dict[str, str]] = {
         "data-quality-and-incident-response": "Data Quality & Incident Response",
         "cost-and-format-optimization": "Cost & Format Optimization",
         "streaming-vs-batch": "Streaming vs Batch Architecture",
+        "storage-architecture": "Storage Architecture & the Lakehouse",
     },
     "data-modeling": {
         "star-snowflake": "Star & Snowflake Schemas",
@@ -119,6 +121,7 @@ PATH_PATTERNS: dict[str, dict[str, str]] = {
         "bayesian-reasoning": "Bayesian Reasoning",
         "errors-and-power": "Errors, Power & Multiple Testing",
         "sampling-and-clt": "Sampling & CLT",
+        "survival-analysis": "Survival Analysis & Time-to-Event",
     },
     "ml-fundamentals": {
         "supervised-unsupervised": "Supervised vs Unsupervised Framing",

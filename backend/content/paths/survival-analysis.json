@@ -12,7 +12,7 @@
   "level": "advanced",
   "display_order": 5,
   "patterns": [
-    "descriptive-stats"
+    "survival-analysis"
   ],
   "focus_concepts": [
     "survival analysis & time-to-event",

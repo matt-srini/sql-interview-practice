@@ -123,6 +123,8 @@ The five-perspective pushback in § Standing instructions reads this section as 
 
   Skipping this checklist is the root cause of the ML Fundamentals correct_option inversion that persisted through the first audit pass and required a second pass to fully resolve (9 questions missed + 1 hint regression introduced by the fix commit itself).
 
+- **After any change to learning-path config (`backend/content/paths/*.json`, `backend/path_patterns.py`, or the `_validate_paths` rules), `validate_content.py` is necessary but NOT sufficient — also run the path pytest suites in the same session:** `cd backend && ../.venv/bin/python -m pytest tests/test_paths_quality.py tests/test_10_paths.py -q` (must be green). `validate_content.py` enforces the per-path field rules (patterns-in-registry, focus_concept→family resolution, rule-5 question coverage, 1:1 question→path uniqueness, ≥1 foundational), but the **path-size sanity range, foundational-count, prereq-DAG, and curation guards live only in `test_paths_quality.py`** — they will not fail the validator. This was learned when the 2026-06-08 path re-leveling ran only the validator (green) and landed two stale pytest guards (singleton-foundational, 4-question floor) that the compact paths violated.
+
 - **Keep `CLAUDE.md` in sync.** When content footprint, tech stack, or standing-instruction-relevant product behaviour changes, update the relevant section below in the same commit. Pure reference (routes, endpoints, design tokens, dev commands) lives in `docs/` — update there, not here.
 
 - **Parallelize coding work when possible.** If a coding task can be split safely and subagents are available, offload disjoint slices in parallel. Review and integrate results before finishing.

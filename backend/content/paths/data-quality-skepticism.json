@@ -12,7 +12,7 @@
   "level": "advanced",
   "display_order": 6,
   "patterns": [
-    "aggregation"
+    "data-quality"
   ],
   "focus_concepts": [
     "DATA QUALITY SKEPTICISM",
