@@ -792,7 +792,9 @@ function TracksIndexSection() {
           <p className="lp-tracks-editorial">
             Every track is mapped — broken into the patterns that matter, ordered foundational to advanced,
             and routed to the role you're targeting. About <span className="lp-tracks-editorial-n">{perTrack || '…'}</span> questions
-            per track, each one placed on purpose.
+            per track, each one placed on purpose. And that's just practice: Pro&nbsp;&amp;&nbsp;Elite unlock
+            another <span className="lp-tracks-editorial-n">1,000+</span> mock-only questions — interview-shaped, seen only under the clock —
+            that pressure-test the reasoning you've built.
           </p>
         </Reveal>
         <div className="lp-tracks-list" role="list">
