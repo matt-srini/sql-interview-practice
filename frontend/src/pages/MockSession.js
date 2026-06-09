@@ -182,7 +182,19 @@ export default function MockSession() {
   useEffect(() => {
     const sessionData = location.state?.sessionData;
     if (sessionData) {
+      // Optimistic instant paint from the start-navigation payload.
       initFromData(sessionData);
+      // location.state lives in history.state and survives a browser reload, so
+      // an 'active' session that has since completed (e.g. the user finished it
+      // and then refreshed) would otherwise stay frozen on a stale active view
+      // with a ticking timer instead of showing results. Reconcile only the
+      // active case against the server, and re-init only when the server reports
+      // a genuinely different status.
+      if (sessionData.status === 'active') {
+        api.get(`/mock/${id}`)
+          .then(r => { if (r.data?.status && r.data.status !== sessionData.status) initFromData(r.data); })
+          .catch(() => { /* keep optimistic paint; transient fetch failure */ });
+      }
     } else {
       api.get(`/mock/${id}`)
         .then(r => initFromData(r.data))
