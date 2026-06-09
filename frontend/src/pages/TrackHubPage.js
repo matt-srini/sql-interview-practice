@@ -342,11 +342,17 @@ export default function TrackHubPage() {
                 <span className="trackhub-twoways-item-desc">
                   {totalQuestions} questions, solved in any order from the list on the left.
                 </span>
+                <span className="trackhub-twoways-point">
+                  ↑ Click <strong>{totalSolved > 0 ? 'Continue' : 'Start'}</strong> above to {totalSolved > 0 ? 'resume' : 'begin'}
+                </span>
               </div>
               <Link to={`/learn/${topic}`} className="trackhub-twoways-item trackhub-twoways-item--link" style={{ '--tw-color': meta.color }}>
                 <span className="trackhub-twoways-item-label">Learning paths — guided routes</span>
                 <span className="trackhub-twoways-item-desc">
                   {sortedPaths.length} ordered walk{sortedPaths.length === 1 ? '' : 's'} — every concept, in sequence.
+                </span>
+                <span className="trackhub-twoways-point">
+                  ↓ Choose a <strong>path</strong> below
                 </span>
               </Link>
             </div>

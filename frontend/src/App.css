@@ -9579,6 +9579,18 @@ select {
   color: var(--text-secondary);
   line-height: 1.45;
 }
+/* small wayfinding pointer: orients the user to the Start button above / paths below */
+.trackhub-twoways-point {
+  margin-top: auto;
+  padding-top: 0.4rem;
+  font-size: 0.76rem;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+.trackhub-twoways-point strong {
+  font-weight: 700;
+  color: var(--accent);
+}
 .trackhub-twoways-caption {
   margin: 0.75rem 0 0;
   font-size: 0.78rem;
