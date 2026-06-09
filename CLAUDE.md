@@ -274,7 +274,7 @@ sql-interview-practice/
 │   │       ├── QuestionPage.js         # Topic-aware question page (all 4 tracks, question-form badges, prompt-guidance/evidence chrome, shortcuts, draft autosave, soft timer, bookmarks, unlock/streak milestone toasts)
 │   │       ├── TrackHubPage.js         # Per-track landing (progress, next-up summary, question-form preview, concept preview, paths)
 │   │       ├── LearningPath.js         # Curated path page at /learn/:topic/:slug (breadcrumb, progress, completion banner)
-│   │       ├── LearningPathsIndex.js   # Index of all paths at /learn and /learn/:topic (grouped + in-progress rail)
+│   │       ├── LearningPathsIndex.js   # Index of all paths at /learn and /learn/:topic (grouped)
 │   │       ├── ProgressDashboard.js    # Cross-track progress + coaching insights at /dashboard
 │   │       ├── MockHub.js              # Mock interview lobby at /mock — two-column desktop lobby (left: hero + mode cards + benchmark blueprint / drill planner + config; right rail: sticky session brief + start CTA); analytics and history below; collapses to single-column on mobile
 │   │       ├── MockSession.js          # Active mock session + post-mortem insights at /mock/:id with benchmark/drill-aware session framing and follow-up CTAs

@@ -35,6 +35,12 @@ Keep entries to 4–6 lines. Friction kills logs; if it's longer than the change
 
 ## Entries
 
+## 2026-06-09 — Drop the "In progress" rail from the /learn index; the per-tile progress bar is enough
+**Area:** frontend · product · **Status:** accepted
+**Decision:** `LearningPathsIndex` (`/learn` and `/learn/:topic`) rendered an "In progress" rail at the top listing **every** in-progress path, then re-listed those same paths inside their per-track grouped grids below — so each in-progress path appeared twice, and the page filled with duplicates for any user who had touched several paths. Removed the rail (computation + render + `.learn-index-progress-rail` CSS). Each `PathProgressCard` tile already carries its own progress bar, so the grouped grids are a sufficient single source.
+**Rejected:** (a) **cap the rail to top-3** (like the home's `ContinuePathsSection`) — would fix the duplication but still duplicate three tiles, and the capped fast-resume affordance already exists on the logged-in home; a second one on /learn isn't worth the visual cost. (b) **suppress in-progress paths from the grouped grids** so the rail is the only place they appear — breaks the "every path in its track group" mental model and makes a path vanish from its track the moment you start it.
+**Affects:** frontend/src/pages/LearningPathsIndex.js, frontend/src/App.css, docs/frontend.md, CLAUDE.md
+
 ## 2026-06-09 — Restore the role lens on the logged-in home + make /learn reachable everywhere
 **Area:** frontend · product · **Status:** accepted
 **Decision:** The dashboard-lean logged-in `/` had dropped the role lens (logged-out only) and buried `/learn` (reachable solely via a paths-empty-state link). Three fixes: (1) a persistent "All paths →" link in the `ContinuePathsSection` header; (2) a shared-Topbar "Paths" nav link between Practice ▾ and Mock — one change that fixes `/learn` reachability on every page for both auth states; (3) made `YourTracksSection` role-aware via a compact pill selector (All · Data Engineer · Data Analyst · Analytics Engineer · Data Scientist) reusing the existing `ROLES` config, filtering/ordering the grid to `ROLES[i].tracks` with each card's progress bar intact.

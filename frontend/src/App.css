@@ -10403,10 +10403,6 @@ select {
   border-color: rgba(45, 158, 107, 0.36);
 }
 
-.learn-index-progress-rail {
-  margin-bottom: 1.5rem;
-}
-
 .learn-index-empty {
   background: var(--surface-card);
   border: 1px solid var(--border-subtle);

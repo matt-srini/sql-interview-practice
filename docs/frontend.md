@@ -203,7 +203,6 @@ Index of all learning paths. Grouped by track. Topic-filter pills narrow to a si
 
 Current catalog footprint shown on this page: **96 paths total** (SQL 11, Python 11, Pandas 9, PySpark 14, Data Engineering 9, Data Modeling 11, Statistics 11, ML Fundamentals 12, Experimentation 8).
 
-- Adds an "In progress" rail above the grouped grids (`1 <= solved_count < question_count`), sorted by completion percentage descending.
 - Empty state upgraded from plain text to CTA card (`/practice/sql`, `/dashboard`).
 - Header sub frames paths as routes through the practice catalog ("the same questions, in a deliberate order"), with a **"Browse the full catalog →"** back-pointer to `/practice/:topic` (or `/practice/sql` on top-level `/learn`).
 

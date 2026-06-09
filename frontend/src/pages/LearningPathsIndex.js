@@ -29,14 +29,6 @@ export default function LearningPathsIndex() {
         p.focus_concepts?.some(c => c.toLowerCase().includes(q))
       )
     : topicFiltered;
-  const inProgressPaths = filtered
-    .filter((p) => p.solved_count >= 1 && p.solved_count < p.question_count)
-    .slice()
-    .sort((a, b) => {
-      const aPct = a.question_count > 0 ? a.solved_count / a.question_count : 0;
-      const bPct = b.question_count > 0 ? b.solved_count / b.question_count : 0;
-      return bPct - aPct;
-    });
 
   // Group by topic when showing all. Within each track, order paths by
   // (level, display_order) — foundational first, then intermediate, then
@@ -136,19 +128,6 @@ export default function LearningPathsIndex() {
       <section className="learn-index-body">
         <div className="container">
           {loading && <p className="loading">Loading paths…</p>}
-
-          {!loading && inProgressPaths.length > 0 && (
-            <div className="learn-index-progress-rail">
-              <div className="learn-index-group-header">
-                <h2 className="learn-index-group-title">In progress</h2>
-              </div>
-              <div className="learn-index-grid">
-                {inProgressPaths.map((p) => (
-                  <PathProgressCard key={`in-progress-${p.slug}`} path={p} />
-                ))}
-              </div>
-            </div>
-          )}
 
           {!loading && grouped.map(({ topic: t, meta, paths: tPaths }) => (
             <div key={t} className="learn-index-group">
