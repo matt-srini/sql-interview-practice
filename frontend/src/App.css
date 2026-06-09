@@ -12543,7 +12543,7 @@ select {
 .lp-proof-stat:last-child { border-right: none; }
 .lp-proof-stat strong {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 1.7rem;
+  font-size: 1.45rem;
   font-weight: 700;
   color: var(--text-strong);
   display: block;
