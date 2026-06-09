@@ -757,7 +757,7 @@ function ProofStripSection({ pathCount = 0 }) {
           ))}
         </div>
         <p className="lp-proof-sub">
-          Reasoning patterns drawn from real practitioner work and real interview shapes at Meta, Stripe, Airbnb, Google, Amazon, and Uber.
+          Reasoning patterns from real practitioner work — and, in the SQL track, real interview shapes at Meta, Stripe, Airbnb, Google, and Amazon, with a free company filter on every plan.
         </p>
       </div>
     </section>
