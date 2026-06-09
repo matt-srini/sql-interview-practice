@@ -715,6 +715,10 @@ function ProofStripSection() {
 function TracksIndexSection() {
   const counts = useCatalogCounts();
   const practiceTotal = TRACK_SLUGS.reduce((s, slug) => s + (counts[slug]?.total ?? 0), 0);
+  // Per-track depth (rounded to the nearest 10) is the honest headline here — a single
+  // grand total invites the wrong comparison to competitors' inflated "1,000s" counts and
+  // hides that the bank spans 9 tracks. The depth-per-track is what actually matters.
+  const perTrack = practiceTotal ? Math.round(practiceTotal / TRACK_SLUGS.length / 10) * 10 : 0;
   const FORMAT_LABELS = {
     sql:                'SQL · DuckDB',
     python:             'Python · sandbox',
@@ -733,7 +737,7 @@ function TracksIndexSection() {
           <p className="lp-section-index">06&ensp;/&ensp;ALL TRACKS</p>
           <h2 className="lp-section-h2">The full curriculum.</h2>
           <p className="lp-tracks-editorial">
-            Not 2,000. Just the <span className="lp-tracks-editorial-n">{practiceTotal || '…'}</span> that actually matter.
+            Not thousands to grind. About <span className="lp-tracks-editorial-n">{perTrack || '…'}</span> per track — every one built to matter.
           </p>
         </Reveal>
         <div className="lp-tracks-list" role="list">
