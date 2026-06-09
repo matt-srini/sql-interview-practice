@@ -340,7 +340,7 @@ ID scheme: **TXNNN** (T=track 1–9, X=difficulty 1–3, NNN=sequence 001–999)
 |---|---|---|
 | Backend API | `backend/tests/test_01_system.py` through `backend/tests/test_20_data_modeling.py` | System, auth, catalog, track endpoints, mock, dashboard, payments, rate limiting, security, account |
 | SQL evaluator | `backend/tests/test_05_sql.py` | SQL execution, normalization, comparison, ORDER BY sensitivity |
-| Mock interviews | `backend/tests/test_11_mock.py` | Access rules, session lifecycle, mixed sessions, company filter gating, summary visibility |
+| Mock interviews | `backend/tests/test_11_mock.py` | Access rules, session lifecycle, mixed sessions, chain atomicity, summary visibility |
 | Dashboard / insights | `backend/tests/test_12_dashboard.py` | Cross-track dashboard shape, insights metrics, weakest concepts, streaks, cache behavior |
 | Rate limiter | `backend/tests/test_15_rate_limiting.py` | Window reset, limit enforcement |
 | Frontend unit | `frontend/src/components/SidebarNav.test.js` | Question list collapse/expand, lock state rendering |

@@ -112,7 +112,6 @@ class MockStartRequest(BaseModel):
     role: str | None = None            # required when track='mixed'
     num_questions: int | None = None   # custom mode only, 1–5
     time_minutes: int | None = None    # custom mode only, 10–90
-    company_filter: str | None = None  # elite-only; e.g. "Meta", "Stripe"
     focus_concepts: list[str] | None = None  # elite-only; up to 3 concept names
 
 
@@ -1184,7 +1183,6 @@ async def start_session(
         daily_benchmark_used=daily_benchmark_used,
         daily_custom_used=daily_custom_used,
         weekly_benchmark_used=weekly_benchmark_used,
-        company_filter=bool(body.company_filter),
     )
     if not access["can_start"]:
         raise HTTPException(status_code=403, detail=access["block_copy"] or "Access denied.")

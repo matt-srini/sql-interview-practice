@@ -53,7 +53,6 @@ The entire `#landing-pricing` section is hidden only when `userPlan === 'lifetim
 | **Mock-only question pool + follow-up chains** | Blocked | ✓ | ✓ |
 | **Mock — `focus_concepts` filter** | Blocked | Blocked | ✓ |
 | **Mock — Interview Loop mode** | Blocked | Blocked | ✓ |
-| **Mock — company filter (SQL)** | Blocked | Blocked | ✓ |
 | **Mock — history analytics + trend** | Blocked | Detailed history | + Trend, dimension analysis |
 | **Mock — coaching debrief + readiness score + study plan** | Blocked | Blocked | ✓ |
 | Weakest concept coaching (dashboard) | Blocked | ✓ | ✓ |

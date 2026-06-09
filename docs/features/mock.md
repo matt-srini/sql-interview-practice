@@ -131,7 +131,6 @@ This is the single source of truth. Any other doc that mentions mock plan gates 
 | Follow-up chains | ❌ (Interview Loop is Elite only) | ❌ (Interview Loop is Elite only) | ✅ via Interview Loop |
 | `focus_concepts` filter | ❌ | ❌ | ✅ (benchmark + custom + Interview Loop) |
 | Interview Loop mode | ❌ | ❌ | ✅ |
-| Mock-only company filter (SQL) | ❌ | ❌ | ✅ |
 | Post-session score + per-Q solutions | ✅ | ✅ | ✅ |
 | Detailed history + concept breakdown | ❌ | ✅ | ✅ |
 | Cross-session trend, dimension analysis, readiness score, study plan, debrief | ❌ | ❌ | ✅ |
@@ -359,14 +358,6 @@ Populated only when Interview Loop sessions exist for the user. Computed from `m
 
 ---
 
-## Company Filter (Elite only)
-
-Elite users see a **Company** dropdown when the SQL track is selected. Selecting a company sends `company_filter: "Meta"` (etc.) in the start payload. The backend validates that the user has Elite tier.
-
-Available companies: Airbnb, Amazon, Amplitude, Databricks, Google, LinkedIn, Meta, Microsoft, Netflix, PayPal, Salesforce, Shopify, Snowflake, Stripe, Zendesk, eBay.
-
----
-
 ## Focus Mode (Elite only)
 
 Elite users can enable **Focus mode** on MockHub. When active, a concept pill multi-select appears (1–3 concepts max). The session pool is filtered to questions tagged with the selected concepts.
@@ -492,7 +483,7 @@ Shown after `POST /api/mock/:id/finish`:
 2. **Pick track** — single track or Mixed. Mixed always requires selecting a role (Data Analyst, Data Engineer, Analytics Engineer, Data Scientist).
 3. **Pick difficulty** — buttons show live access state (remaining daily/weekly sessions or upgrade CTAs). Medium/hard requires Pro or above for all modes.
 4. **(Benchmark or Custom + Mixed)** Select role.
-5. **(Elite)** Optionally enable **Focus mode** (1–3 concept families). For SQL benchmark, optionally select a **Company** filter.
+5. **(Elite)** Optionally enable **Focus mode** (1–3 concept families).
 6. **Start** — timer starts immediately. Interview Loop sessions draw a chain and lock it to you; discard within 2 minutes if you want to cancel penalty-free.
 7. **During the session** — run code as many times as you like. When ready, submit — **each question is one shot**. Blank code or unselected MCQ is rejected before counting. Interview Loop: read the pivot card after each answer and dismiss to advance.
 8. **End session** — click "End session" or let the timer run out.
@@ -507,7 +498,7 @@ Shown after `POST /api/mock/:id/finish`:
 | GET | `/api/mock/access` | Required | Pre-flight: per-difficulty access state for a given track and mode. Params: `track`, `mode`. Returns `weekly_benchmark_used` + `weekly_benchmark_limit` for Free + benchmark. |
 | GET | `/api/mock/history` | Required | Last 20 sessions |
 | GET | `/api/mock/analytics` | Required (Elite) | Aggregate analytics — benchmark/drill/loop summaries, trends, concept signals, per-dimension Loop performance |
-| POST | `/api/mock/start` | Required | Start a session. Body: `mode`, `track`, `difficulty`, `role` (required when `track="mixed"`), `num_questions` (custom only), `time_minutes` (custom only), `company_filter` (Elite + SQL), `focus_concepts` (Elite). Returns 409 if active session exists (body: `session_id`, `track`, `difficulty`, `mode`). |
+| POST | `/api/mock/start` | Required | Start a session. Body: `mode`, `track`, `difficulty`, `role` (required when `track="mixed"`), `num_questions` (custom only), `time_minutes` (custom only), `focus_concepts` (Elite). Returns 409 if active session exists (body: `session_id`, `track`, `difficulty`, `mode`). |
 | GET | `/api/mock/:id` | Required | Load/reload session state |
 | POST | `/api/mock/:id/submit` | Required | Submit one answer mid-session. Returns 409 if question already submitted. Returns 422 for blank input. |
 | POST | `/api/mock/:id/finish` | Required | End session — full summary with solutions and (Elite) debrief |

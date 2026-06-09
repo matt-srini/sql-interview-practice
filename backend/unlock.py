@@ -63,9 +63,6 @@ _FREE_HARD_THRESHOLDS_MCQ: list[tuple[int, int]] = [
 
 FREE_HARD_CAP_MCQ = 5
 
-# Company-filtered mocks require Elite (or lifetime equivalent)
-MOCK_COMPANY_FILTER_TIERS = {"elite", "lifetime_elite"}
-
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -299,7 +296,6 @@ def compute_mock_access(
     daily_benchmark_used: int = 0,
     daily_custom_used: int = 0,
     weekly_benchmark_used: int = 0,
-    company_filter: bool = False,
 ) -> dict[str, Any]:
     """
     Return whether a user can start a mock session with these parameters.
@@ -326,10 +322,6 @@ def compute_mock_access(
       weekly_benchmark_used (int | None): only for Free + benchmark
     """
     plan = normalize_plan(plan)
-
-    # Company-filtered mocks: Elite only
-    if company_filter and plan not in MOCK_COMPANY_FILTER_TIERS:
-        return _plan_locked("Company-filtered mocks are an Elite feature.", "elite")
 
     # ── interview_loop ────────────────────────────────────────────────────────
     if mode == "interview_loop":

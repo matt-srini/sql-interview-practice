@@ -86,7 +86,7 @@ The dashboard should connect track-level performance, weak concepts, pacing, and
 
 ## Filter policy
 
-- Company filters are currently justified only for SQL because the bank already carries structured company provenance there.
+- The company filter is a **practice-catalog convenience only** (free, all tiers, SQL), justified because the SQL bank already carries structured company provenance. It is **not** a paid/premium feature and is **not** offered in mock (the stubbed Elite mock company filter was removed 2026-06-09 — see `docs/decisions/DECISIONS.md`): a company filter is a grind-market lever that contradicts the reasoning-premium positioning, so we never gate or advertise it as a tier differentiator.
 - Do not spread company tags to other tracks unless the content provenance is real and broad enough to avoid becoming noisy theater.
 - For reasoning-heavy tracks, prefer industry, context, system domain, or interview-situation filters over pseudo-company filters.
 

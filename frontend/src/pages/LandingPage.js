@@ -1073,7 +1073,6 @@ function PricingSection({ userPlan, currency }) {
               <li>Per-dimension weak-spot detection (what kinds of pivots break you)</li>
               <li>Cross-session trend analytics + readiness score (per-track 0–100)</li>
               <li>Personalised study plan</li>
-              <li>SQL company filter — Meta, Google, Stripe, Airbnb</li>
             </ul>
             <div className="landing-tier-cta">
               {eliteColCta() === 'current' && <span className="landing-tier-current">Current plan</span>}

@@ -318,7 +318,7 @@ export default function AppShell() {
                       ? `${totalSolvedSidebar} question${totalSolvedSidebar !== 1 ? 's' : ''} down — or get full access instantly.`
                       : normalisedPlan === 'free'
                       ? 'Questions unlock as you solve — or get full access instantly.'
-                      : 'Add company filters and unlimited mocks.'}
+                      : 'Unlimited mocks, Interview Loop, and per-session coaching.'}
                   </p>
                   <div className="upgrade-actions">
                     {normalisedPlan === 'free' && (

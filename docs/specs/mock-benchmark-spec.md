@@ -111,8 +111,8 @@ Plan gating can change over time, but the premium split should follow this logic
 
 ## Filter philosophy
 
-- Company filtering is a narrow SQL-specific capability today, not a universal mock paradigm.
-- For the broader mock redesign, context or concept targeting is more defensible than forcing company filters across every track.
+- Company filtering exists **only in the practice catalog** (free, all tiers, SQL — the `companies` tag in `SidebarNav`). **Mock has no company filter** — the once-stubbed Elite mock company filter was deliberately removed (see `docs/decisions/DECISIONS.md` 2026-06-09): it is a grind-market lever at odds with the reasoning-premium positioning, the per-company pool is too thin to survive mock's no-repeat freshness model, and it's SQL-only so it doesn't generalise.
+- For any future targeting in mock, context / concept / interview-situation targeting is more defensible than company filters across tracks.
 
 ## Anti-patterns
 

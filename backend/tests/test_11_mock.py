@@ -103,20 +103,6 @@ def test_tc132_elite_benchmark_hard_unlimited():
     assert result["daily_limit"] is None
 
 
-def test_tc133_company_filter_non_elite_blocked():
-    """TC-133: Pro + company_filter → plan_locked; needs_upgrade: elite."""
-    result = compute_mock_access("pro", "sql", "easy", mode="benchmark", company_filter=True)
-    assert result["can_start"] is False
-    assert result["block_reason"] == "plan_locked"
-    assert result["needs_upgrade"] == "elite"
-
-
-def test_tc134_company_filter_elite_allowed():
-    """TC-134: Elite + company_filter → can_start: True."""
-    result = compute_mock_access("elite", "sql", "easy", mode="benchmark", company_filter=True)
-    assert result["can_start"] is True
-
-
 def test_tc134b_pro_custom_within_daily_limit():
     """TC-134B: Pro + custom + daily_custom_used=2 → can_start: True; daily_limit: 3."""
     result = compute_mock_access("pro", "sql", "easy", mode="custom", daily_custom_used=2)
@@ -471,29 +457,6 @@ def test_tc148_elite_user_4th_custom_same_day_allowed():
     with TestClient(app) as client:
         _make_user(client, plan="elite", existing_user=user)
         r = _start_pyspark_session(client, difficulty="hard")
-    assert r.status_code in (200, 201)
-
-
-def test_tc149_non_elite_company_filter_returns_403():
-    """TC-149: Pro user with company_filter → 403."""
-    with TestClient(app) as client:
-        _make_user(client, plan="pro")
-        r = client.post("/api/mock/start", json={
-            "mode": "benchmark", "track": "sql", "difficulty": "easy",
-            "company_filter": "Meta",
-        })
-    assert r.status_code == 403
-    assert "elite" in r.json().get("error", "").lower()
-
-
-def test_tc150_elite_company_filter_creates_session():
-    """TC-150: Elite user with valid company filter → session created."""
-    with TestClient(app) as client:
-        _make_user(client, plan="elite")
-        r = client.post("/api/mock/start", json={
-            "mode": "benchmark", "track": "sql", "difficulty": "medium",
-            "company_filter": "Meta",
-        })
     assert r.status_code in (200, 201)
 
 

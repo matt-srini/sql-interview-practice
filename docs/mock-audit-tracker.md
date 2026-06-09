@@ -41,7 +41,7 @@ Severity: **H** high · **M** medium · **L** low. Status: `TODO` · `WIP` · `D
 | **A1** | H | DONE | code | Reload after finishing reverts to stale **active** session with a live timer |
 | **A2** | H | DONE | code | Free **easy-only** benchmark bypassable via the **Mixed** difficulty |
 | **A3** | H | DONE | code | Interview Loop payoff under-delivers (raw pivot token + `is_follow_up` lost + debrief ignores pivots) |
-| C1 | H | TODO | doc+code | `company_filter` is a gated **phantom feature** (no UI, never applied; advertised in SoT) |
+| C1 | H | DONE | doc+code | `company_filter` was a gated **phantom feature** — resolved by **deleting** it (keep practice filter, free/all-tiers) |
 | C3 | M | TODO | code | Code-track benchmark submit leaks `correct` + `expected_result` mid-session |
 | B1 | M | TODO | code | Free sees an **"Elite"** badge on the Pro-tier Custom drill card |
 | B2 | M | DONE | code | Interview Loop summary titled **"Drill summary"** (fixed with A3) |
@@ -148,9 +148,10 @@ Three confirmed defects compounded at the Elite payoff moment:
 
 **Correct (verified firsthand):** per-tier pool gating (Free no mock-only; Pro drew mock-only ids 12069/12074 + practice); chain atomicity + consumption (consumed chain 12077/12078 not re-served; a 2nd Loop drew 12079/12080) + 2-min reclaim (204); Interview Loop Elite-only; focus_concepts Elite-only; role required for Mixed; Pro 3/day independent benchmark+custom; Free 1/rolling-7-day; benchmark composition (backend) matches mock.md.
 
-### C1 — `[H]` `[TODO]` `company_filter` is a gated **phantom feature**
-- Accepted at `backend/routers/mock.py:115`; passed only to the access gate at `:1187`; **never referenced in `_select_questions`/`_pool_for_track`** (grep: zero `companies` in selection). **Zero `company` references in `MockHub.js`** (no UI). Meanwhile `docs/features/mock.md` §"Company Filter (Elite only)" (~361-365) describes a Company dropdown for SQL, lists 16 companies; the plan-tier matrix (`:134`) lists it as an Elite ✅ perk; the API ref (`:509`) documents the param.
-- **Decision needed:** build it end-to-end (UI + apply `companies` filter in selection) **or** delete the param + gating + the SoT rows so Elite isn't sold an absent feature. Until decided, doc-drift + dead gating code.
+### C1 — `[H]` `[DONE]` `company_filter` was a gated **phantom feature** — resolved by deletion
+- **Was:** accepted at `mock.py:115`, gated to Elite in `compute_mock_access`, but **never applied to selection** and with **no UI** — while advertised as an Elite perk on the landing page, in `pricing.md`, in the AppShell upsell, and documented in `mock.md`. So Elite was partly sold on a feature that didn't exist and that Free already had (the *practice* filter is free/all-tiers).
+- **Decision (2026-06-09, user-approved):** **delete the mock company filter, keep the practice one.** A company filter is a grind-market lever at odds with the reasoning-premium positioning; the per-company pool is too thin for mock's no-repeat freshness model; and it's SQL-only. See `docs/decisions/DECISIONS.md`.
+- **Shipped:** removed `company_filter` from `unlock.py` (param + gate + `MOCK_COMPANY_FILTER_TIERS`), `mock.py` (field + call site), and tests `tc133/tc134/tc149/tc150`. Purged advertising: landing Elite bullet, `pricing.md` row, AppShell upsell copy. Reconciled `mock.md` (removed the §Company Filter section + matrix row + flow step + API param), `architecture.md`, `mock-benchmark-spec.md`, `platform-north-star.md`. The **practice** SQL filter (`SidebarNav`, free, all-tiers) is unchanged. Backend mock suite 78 green.
 
 ### C3 — `[M]` `[TODO]` Code-track benchmark submit leaks `correct` + `expected_result` mid-session
 - `backend/routers/mock.py:1453` — the "no correctness reveal mid-session" suppression applies **only when `eval_kind == "mcq"`**. Firsthand: SQL benchmark submit returned `correct`, `feedback`, **and `expected_result`** (the answer's output table) per question. Frontend doesn't display it, but it's transmitted — network inspection defeats one-shot integrity.
@@ -173,7 +174,7 @@ Three confirmed defects compounded at the Elite payoff moment:
 
 ## D — Doc / SoT drift
 
-- **D1** — Company filter (see C1).
+- **D1 `[DONE]`** — Company filter advertised in SoT but absent in code: resolved with C1 (deleted everywhere; `mock.md`/`pricing.md`/landing/AppShell/specs all reconciled 2026-06-09).
 - **D2 `[M]`** `[agent-located]` `loop_summary`: code returns `per_dimension_performance` as a **dict** and omits `chains_completed`/`weakest_dimension`/`strongest_dimension`; both specs show a **list** with those fields. mock.md uses `accuracy_pct` (matches code); mock-benchmark-spec.md uses `accuracy` (stale) — the two specs contradict each other.
 - **D3 `[M]`** `[agent-located]` `readiness_scores`/`study_plan` live in `/api/dashboard/insights`, not `/api/mock/analytics`; mock.md's analytics matrix row implies they're mock analytics.
 - **D4 `[L]`** `[agent-located]` Discard chip: frontend offers the prompt for 60s (`MockSession.js:341`); doc + server use 120s — 60s UI dead zone.
@@ -203,3 +204,8 @@ Three confirmed defects compounded at the Elite payoff moment:
   - A3: `frontend/src/mockModeConfig.js` `FOLLOW_UP_DIMENSIONS` + `dimensionLabel()`/`dimensionBlurb()` (aliases + humanize fallback); pivot card label-heading + dimension blurb, post-mortem "↩ Follow-up · {label}" chip, lobby analytics labels (`MockSession.js`, `MockHub.js`, `App.css`). B2 (Loop summary title) folded in. Unit tests added to `mockModeConfig.test.js`.
   - SoT: `docs/features/mock.md` pivot-card spec reconciled (D6 — label+blurb, not `framing`); `docs/decisions/DECISIONS.md` entry appended.
   - Spun off: **E1** (follow_up_dimension content/validator drift — needs the authoring agent).
+- **2026-06-09 — C1 + D1** — fixed on `main`. Decision: **delete the mock company filter, keep the practice one** (user-approved). Sonnet did the backend deletion; Opus did the frontend copy + docs + verification.
+  - Backend: removed `company_filter` from `backend/unlock.py` (param + gate + `MOCK_COMPANY_FILTER_TIERS`) and `backend/routers/mock.py` (field + call site); removed tests `tc133/tc134/tc149/tc150`. Mock suite 78 green.
+  - Frontend (advertising purge): `LandingPage.js` Elite bullet removed; `AppShell.js` upsell copy → "Unlimited mocks, Interview Loop, and per-session coaching."
+  - SoT: `mock.md` (§Company Filter section + matrix row + flow step + API param removed), `pricing.md` row, `architecture.md` test desc, `mock-benchmark-spec.md` + `platform-north-star.md` filter-policy notes reconciled; `DECISIONS.md` entry appended.
+  - Unchanged on purpose: the **practice** SQL company filter (`SidebarNav`, free/all-tiers) and the `companies` question tag; `frontend.md`/`CLAUDE.md` references to it are correct as-is.
