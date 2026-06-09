@@ -208,6 +208,14 @@ export default function Topbar({
                 </div>
 
                 <NavLink
+                  to="/learn"
+                  className={({ isActive }) =>
+                    `topbar-auth-link${isActive ? ' topbar-auth-link--active' : ''}`
+                  }
+                >
+                  Paths
+                </NavLink>
+                <NavLink
                   to="/mock"
                   className={({ isActive }) =>
                     `topbar-auth-link${isActive || active === 'mock' ? ' topbar-auth-link--active' : ''}`
@@ -320,6 +328,15 @@ export default function Topbar({
                         Try a sample
                       </NavLink>
                       <div className="topbar-mobile-divider" />
+                      <NavLink
+                        to="/learn"
+                        className={({ isActive }) =>
+                          `topbar-mobile-item${isActive ? ' topbar-mobile-item--active' : ''}`
+                        }
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        Paths
+                      </NavLink>
                       <NavLink
                         to="/mock"
                         className={({ isActive }) =>

@@ -13218,6 +13218,26 @@ select {
   .lp-track-sample { display: none; }
 }
 
+/* ── Logged-in home: section head with trailing link ────────────── */
+.lp-section-head-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.lp-section-head-link {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.78rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  color: var(--text-secondary);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color 140ms;
+}
+.lp-section-head-link:hover { color: var(--accent); }
+
 /* ── Logged-in home: Continue paths ─────────────────────────────── */
 .lp-continue-paths-grid {
   display: grid;
@@ -13242,11 +13262,40 @@ select {
 }
 
 /* ── Logged-in home: Your tracks ────────────────────────────────── */
+.lp-your-tracks-roles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 1.75rem;
+}
+.lp-your-tracks-role {
+  padding: 6px 14px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+  color: var(--text-secondary);
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 999px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color 140ms, border-color 140ms, background 140ms;
+}
+.lp-your-tracks-role:hover {
+  color: var(--text-strong);
+  border-color: color-mix(in srgb, var(--accent) 30%, var(--border-subtle));
+}
+.lp-your-tracks-role.is-active {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 8%, var(--surface-card));
+}
 .lp-your-tracks-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 16px;
-  margin-top: 2rem;
+  margin-top: 1.25rem;
 }
 .lp-your-track-card {
   display: flex;

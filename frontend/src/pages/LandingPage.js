@@ -1113,7 +1113,10 @@ function ContinuePathsSection({ paths }) {
       <div className="lp-inner">
         <Reveal>
           <p className="lp-section-index">+&ensp;PICK UP WHERE YOU LEFT OFF</p>
-          <h2 className="lp-section-h2">Continue your paths.</h2>
+          <div className="lp-section-head-row">
+            <h2 className="lp-section-h2">Continue your paths.</h2>
+            <Link to="/learn" className="lp-section-head-link">All paths →</Link>
+          </div>
         </Reveal>
         {inProgress.length > 0 ? (
           <div className="lp-continue-paths-grid">
@@ -1136,6 +1139,12 @@ function ContinuePathsSection({ paths }) {
 
 // ── Logged-in home: Your tracks ──────────────────────────────────────────────
 function YourTracksSection({ dashData }) {
+  // Restores the role lens for logged-in users. "All" first, then the same
+  // ROLES order as the logged-out role selector (Data Engineer first).
+  const ROLE_FILTERS = [{ id: 'all', label: 'All', tracks: TRACK_SLUGS }, ...ROLES];
+  const [roleIdx, setRoleIdx] = useState(0);
+  const activeTracks = ROLE_FILTERS[roleIdx].tracks;
+
   return (
     <section className="lp-section lp-section-rule lp-your-tracks">
       <div className="lp-inner">
@@ -1143,8 +1152,27 @@ function YourTracksSection({ dashData }) {
           <p className="lp-section-index">+&ensp;YOUR TRACKS</p>
           <h2 className="lp-section-h2">Jump back in.</h2>
         </Reveal>
+
+        <div
+          className="lp-your-tracks-roles"
+          role="group"
+          aria-label="Filter tracks by data role"
+        >
+          {ROLE_FILTERS.map((r, i) => (
+            <button
+              key={r.id}
+              type="button"
+              aria-pressed={roleIdx === i}
+              className={`lp-your-tracks-role${roleIdx === i ? ' is-active' : ''}`}
+              onClick={() => setRoleIdx(i)}
+            >
+              {r.label}
+            </button>
+          ))}
+        </div>
+
         <div className="lp-your-tracks-grid">
-          {TRACK_SLUGS.map((slug, i) => {
+          {activeTracks.map((slug, i) => {
             const meta = TRACK_META[slug];
             if (!meta) return null;
             const trackData = dashData?.tracks?.[slug];

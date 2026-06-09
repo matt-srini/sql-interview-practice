@@ -505,4 +505,58 @@ describe('LandingPage', () => {
     });
   });
 
+  // ── Logged-in home: Topbar Paths link, All-paths link, role filter ────────
+  describe('Logged-in home — Paths reachability & role filter', () => {
+    it('Topbar exposes a Paths link to /learn', async () => {
+      renderWithPlan('free');
+      await waitFor(() => {
+        const paths = screen.getByRole('link', { name: 'Paths' });
+        expect(paths).toHaveAttribute('href', '/learn');
+      });
+    });
+
+    it('logged-out also exposes the Topbar Paths link to /learn', async () => {
+      renderWithPlan(null);
+      await waitFor(() => {
+        const paths = screen.getByRole('link', { name: 'Paths' });
+        expect(paths).toHaveAttribute('href', '/learn');
+      });
+    });
+
+    it('ContinuePathsSection header has a persistent All paths → link to /learn', async () => {
+      renderWithPlan('free');
+      await waitFor(() => screen.getByText('Continue your paths.'));
+      const link = screen.getByRole('link', { name: /all paths/i });
+      expect(link).toHaveAttribute('href', '/learn');
+    });
+
+    it('YourTracksSection defaults to All — shows all 9 tracks', async () => {
+      const { container } = renderWithPlan('free');
+      await waitFor(() => screen.getByText('Jump back in.'));
+      const section = container.querySelector('.lp-your-tracks');
+      expect(section.querySelectorAll('.lp-your-track-card')).toHaveLength(9);
+      const allBtn = within(section).getByRole('button', { name: 'All' });
+      expect(allBtn).toHaveAttribute('aria-pressed', 'true');
+    });
+
+    it('selecting Data Engineer filters the grid to its 5 tracks in order', async () => {
+      const { container } = renderWithPlan('free');
+      await waitFor(() => screen.getByText('Jump back in.'));
+      const section = container.querySelector('.lp-your-tracks');
+      fireEvent.click(within(section).getByRole('button', { name: 'Data Engineer' }));
+      await waitFor(() => {
+        const cards = [...section.querySelectorAll('.lp-your-track-card')];
+        expect(cards).toHaveLength(5);
+        expect(cards.map((c) => c.getAttribute('href'))).toEqual([
+          '/practice/python',
+          '/practice/sql',
+          '/practice/pyspark',
+          '/practice/data-engineering',
+          '/practice/data-modeling',
+        ]);
+      });
+      expect(within(section).queryByText('Statistics')).not.toBeInTheDocument();
+    });
+  });
+
 });
