@@ -413,7 +413,7 @@ function Reveal({ children, delay = 0, className = '' }) {
 }
 
 // ── Section 01: Hero ────────────────────────────────────────────────────────
-function HeroSection({ user, dashData, reduced }) {
+function HeroSection({ user, dashData, paths = [], reduced }) {
   if (user) {
     const recent = dashData?.recent_activity?.[0];
     const topic = recent?.topic || 'sql';
@@ -422,16 +422,16 @@ function HeroSection({ user, dashData, reduced }) {
       ? `/practice/${topic}/questions/${recent.question_id}`
       : `/practice/${topic}`;
     const firstName = (user?.name || user?.email || '').split(/[\s@]/)[0] || 'there';
-    const totalSolved = dashData
-      ? Object.values(dashData.tracks || {}).reduce((s, t) => s + (t?.solved ?? 0), 0)
-      : 0;
-
+    const tracksMap = dashData?.tracks || {};
+    const totalSolved = Object.values(tracksMap).reduce((s, t) => s + (t?.solved ?? 0), 0);
+    const tracksStarted = Object.values(tracksMap).filter((t) => (t?.solved ?? 0) > 0).length;
+    const pathsInProgress = (paths || []).filter(
+      (p) => p.solved_count >= 1 && p.solved_count < p.question_count
+    ).length;
     const streakDays = user?.streak_days ?? 0;
     const heroCopy = totalSolved > 0
-      ? (streakDays > 0
-          ? `${totalSolved} solved · ${streakDays}-day streak — keep it going.`
-          : `${totalSolved} solved so far — keep the streak going.`)
-      : 'Ready when you are.';
+      ? 'Pick up where you left off.'
+      : 'Ready when you are — start anywhere below.';
 
     return (
       <section className="lp-section lp-hero-loggedin">
@@ -440,6 +440,18 @@ function HeroSection({ user, dashData, reduced }) {
           <p className="lp-hero-li-copy">
             {heroCopy}
           </p>
+          {totalSolved > 0 && (
+            <div className="lp-hero-li-stats" aria-label="Your progress at a glance">
+              <span className="lp-hero-li-stat"><strong>{totalSolved}</strong> solved</span>
+              {streakDays > 0 && (
+                <span className="lp-hero-li-stat"><strong>{streakDays}</strong>-day streak</span>
+              )}
+              <span className="lp-hero-li-stat"><strong>{tracksStarted}</strong>/{TRACK_SLUGS.length} tracks started</span>
+              {pathsInProgress > 0 && (
+                <span className="lp-hero-li-stat"><strong>{pathsInProgress}</strong> path{pathsInProgress === 1 ? '' : 's'} in progress</span>
+              )}
+            </div>
+          )}
           <div className="lp-hero-li-cards">
             <Link to={href} className="lp-li-card lp-li-card--primary" style={{ '--card-color': meta.color }}>
               <span className="lp-li-card-eye">Resume</span>
@@ -1356,7 +1368,7 @@ export default function LandingPage() {
         )}
 
         {/* 01 HERO */}
-        <HeroSection user={user} dashData={dashData} reduced={reduced} />
+        <HeroSection user={user} dashData={dashData} paths={paths} reduced={reduced} />
 
         {/* 02 + 03 + 03.5: THESIS + WRONG/RIGHT + HOW-IT-WORKS — logged-out only.
             "Why" (what data reasoning is) lands before the "how" (the journey ribbon),

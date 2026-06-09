@@ -12061,7 +12061,26 @@ select {
 .lp-hero-li-copy {
   font-size: 1rem;
   color: var(--text-secondary);
-  margin: 0 0 2rem;
+  margin: 0 0 0.85rem;
+}
+.lp-hero-li-stats {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  margin: 0 0 1.75rem;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+.lp-hero-li-stat { white-space: nowrap; }
+.lp-hero-li-stat strong {
+  color: var(--text-strong);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.lp-hero-li-stat:not(:last-child)::after {
+  content: "·";
+  margin: 0 0.55rem;
+  opacity: 0.5;
 }
 .lp-hero-li-cards {
   display: flex;
