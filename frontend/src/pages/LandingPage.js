@@ -673,21 +673,55 @@ function RoleSelectorSection({ dashData }) {
 }
 
 // ── Section 05: Proof strip ─────────────────────────────────────────────────
-function ProofStripSection() {
-  const counts = useCatalogCounts();
-  const practiceTotal = TRACK_SLUGS.reduce((s, slug) => s + (counts[slug]?.total ?? 0), 0);
+// ── Section 01.5: How-it-works journey ribbon (logged-out) ──────────────────
+// Makes the differentiator literal: we route you (role → track → path → tier),
+// we don't drop you in a sea of problems. Four steps, one line each.
+function JourneyRibbon() {
+  const STEPS = [
+    { n: '01', title: 'Pick your role', sub: 'Analyst · Engineer · Scientist' },
+    { n: '02', title: 'Get your tracks', sub: 'the skills that role needs' },
+    { n: '03', title: 'Follow guided paths', sub: 'one pattern at a time' },
+    { n: '04', title: 'Climb the tiers', sub: 'foundational → advanced' },
+  ];
+  return (
+    <section className="lp-section lp-journey lp-section-rule">
+      <div className="lp-inner">
+        <Reveal>
+          <p className="lp-section-index">+&ensp;HOW IT WORKS</p>
+          <h2 className="lp-section-h2">A mapped journey, not a pile of problems.</h2>
+        </Reveal>
+        <div className="lp-journey-steps" role="list">
+          {STEPS.map((s, i) => (
+            <Reveal key={s.n} delay={i * 70} className="lp-journey-step">
+              <div role="listitem" className="lp-journey-step-inner">
+                <span className="lp-journey-step-n">{s.n}</span>
+                <span className="lp-journey-step-title">{s.title}</span>
+                <span className="lp-journey-step-sub">{s.sub}</span>
+              </div>
+            </Reveal>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function ProofStripSection({ pathCount = 0 }) {
   const ref = useRef(null);
   const inView = useInView(ref, '-5%');
   const reduced = typeof window !== 'undefined' && typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const qCount = useCountUp(practiceTotal, 700, reduced || inView);
   const trackCount = useCountUp(ALL_TRACK_SLUGS.length, 500, reduced || inView);
+  const pathsUp = useCountUp(pathCount, 700, reduced || inView);
 
+  // Lead the proof with STRUCTURE (tracks · paths · roles · tier climb), not raw volume —
+  // the differentiator is how the material is organized, not how much of it there is.
   const STATS = [
     { num: trackCount, label: 'tracks' },
-    { num: `${qCount}+`, label: 'engineered questions' },
-    { text: 'real DuckDB execution' },
+    { num: pathsUp || '…', label: 'guided paths' },
+    { num: ROLES.length, label: 'career roles' },
+    { text: 'foundational → advanced' },
+    { text: 'real DuckDB + Python execution' },
     { text: 'timed benchmarks + weak-area coaching' },
-    { text: 'exclusive mock question bank' },
   ];
 
   return (
@@ -735,9 +769,11 @@ function TracksIndexSection() {
       <div className="lp-inner">
         <Reveal>
           <p className="lp-section-index">06&ensp;/&ensp;ALL TRACKS</p>
-          <h2 className="lp-section-h2">The full curriculum.</h2>
+          <h2 className="lp-section-h2">A curriculum, not a question bank.</h2>
           <p className="lp-tracks-editorial">
-            Not thousands to grind. About <span className="lp-tracks-editorial-n">{perTrack || '…'}</span> per track — every one built to matter.
+            Every track is mapped — broken into the patterns that matter, ordered foundational to advanced,
+            and routed to the role you're targeting. About <span className="lp-tracks-editorial-n">{perTrack || '…'}</span> questions
+            per track, each one placed on purpose.
           </p>
         </Reveal>
         <div className="lp-tracks-list" role="list">
@@ -834,11 +870,11 @@ function PathsShowcaseSection({ paths, user }) {
       <div className="lp-inner">
         <Reveal>
           <p className="lp-section-index">+&ensp;LEARNING PATHS</p>
-          <h2 className="lp-section-h2">Know what to practice, and in what order.</h2>
+          <h2 className="lp-section-h2">Systematic patterns, not scattered reps.</h2>
           <p className="lp-section-sub">
-            Each track is a graded sequence — foundational first, then the reasoning that builds on it.
-            Same questions as the Practice catalog, just put in order: solve one in either place and it's
-            marked done in both. {totalPaths} guided paths across {trackCount} tracks.
+            {totalPaths} guided paths across {trackCount} tracks — each takes one pattern from foundational
+            to advanced, so practice compounds into fluency instead of random problem-solving. It's the same
+            question bank as Practice, just put in order: solve a question in either place and it counts in both.
           </p>
         </Reveal>
 
@@ -1153,9 +1189,10 @@ export default function LandingPage() {
         {/* 01 HERO */}
         <HeroSection user={user} dashData={dashData} reduced={reduced} />
 
-        {/* 02 + 03: THESIS + WRONG/RIGHT — logged-out only */}
+        {/* 01.5 + 02 + 03: HOW-IT-WORKS + THESIS + WRONG/RIGHT — logged-out only */}
         {!user && (
           <>
+            <JourneyRibbon />
             <ThesisSection />
             <WrongRightSection />
           </>
@@ -1165,7 +1202,7 @@ export default function LandingPage() {
         <RoleSelectorSection dashData={dashData} />
 
         {/* 05 PROOF STRIP */}
-        <ProofStripSection />
+        <ProofStripSection pathCount={paths.length} />
 
         {/* 06 TRACKS INDEX */}
         <TracksIndexSection />

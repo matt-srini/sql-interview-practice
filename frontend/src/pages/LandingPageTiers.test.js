@@ -360,7 +360,7 @@ describe('LandingPage', () => {
       mockPaths(MOCK_PATHS);
       renderWithPlan(null);
       await waitFor(() => {
-        expect(screen.getByText('Know what to practice, and in what order.')).toBeInTheDocument();
+        expect(screen.getByText('Systematic patterns, not scattered reps.')).toBeInTheDocument();
       });
       const cta = screen.getByRole('link', { name: /explore all paths/i });
       expect(cta).toHaveAttribute('href', '/learn');
@@ -411,7 +411,7 @@ describe('LandingPage', () => {
     it('has no shuffle control (the old random-4 pattern is gone)', async () => {
       mockPaths(MOCK_PATHS);
       renderWithPlan(null);
-      await waitFor(() => screen.getByText('Know what to practice, and in what order.'));
+      await waitFor(() => screen.getByText('Systematic patterns, not scattered reps.'));
       expect(screen.queryByRole('button', { name: /shuffle/i })).not.toBeInTheDocument();
     });
 
@@ -426,7 +426,7 @@ describe('LandingPage', () => {
     it('shows no resume hook for logged-out visitors even with prior progress', async () => {
       mockPaths(MOCK_PATHS);
       renderWithPlan(null);
-      await waitFor(() => screen.getByText('Know what to practice, and in what order.'));
+      await waitFor(() => screen.getByText('Systematic patterns, not scattered reps.'));
       expect(screen.queryByText(/continue:/i)).not.toBeInTheDocument();
     });
 
@@ -435,7 +435,7 @@ describe('LandingPage', () => {
       renderWithPlan(null);
       // Other sections still render; the paths headline must be absent
       await waitFor(() => expect(screen.getByText('Practice free. Prepare seriously.')).toBeInTheDocument());
-      expect(screen.queryByText('Know what to practice, and in what order.')).not.toBeInTheDocument();
+      expect(screen.queryByText('Systematic patterns, not scattered reps.')).not.toBeInTheDocument();
     });
   });
 
