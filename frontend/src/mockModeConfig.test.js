@@ -9,6 +9,8 @@ import {
   getSessionTimeMinutes,
   isBenchmarkMockMode,
   supportsBenchmarkMode,
+  dimensionLabel,
+  dimensionBlurb,
 } from './mockModeConfig';
 
 describe('mockModeConfig', () => {
@@ -60,5 +62,49 @@ describe('mockModeConfig', () => {
   it('identifies benchmark mode explicitly', () => {
     expect(isBenchmarkMockMode('benchmark')).toBe(true);
     expect(isBenchmarkMockMode('30min')).toBe(false);
+  });
+});
+
+describe('dimensionLabel', () => {
+  it('returns the human label for a canonical _pivot token', () => {
+    expect(dimensionLabel('business_rule_pivot')).toBe('Business rules');
+  });
+
+  it('resolves an alias token (without _pivot suffix) to its label', () => {
+    expect(dimensionLabel('data_quality')).toBe('Data quality');
+  });
+
+  it('humanizes an unknown token by stripping _pivot and replacing underscores', () => {
+    expect(dimensionLabel('abstraction_pivot')).toBe('Abstraction');
+  });
+
+  it('returns empty string for null', () => {
+    expect(dimensionLabel(null)).toBe('');
+  });
+
+  it('returns empty string for undefined', () => {
+    expect(dimensionLabel(undefined)).toBe('');
+  });
+
+  it('returns empty string for an empty string', () => {
+    expect(dimensionLabel('')).toBe('');
+  });
+});
+
+describe('dimensionBlurb', () => {
+  it('returns the correct blurb for a canonical token', () => {
+    expect(dimensionBlurb('business_rule_pivot')).toBe('A business rule just changed. Adapt your solution to the new requirement.');
+  });
+
+  it('returns a non-empty blurb for an alias token', () => {
+    expect(dimensionBlurb('data_quality').length).toBeGreaterThan(0);
+  });
+
+  it('returns the generic fallback blurb for an unknown token', () => {
+    expect(dimensionBlurb('abstraction_pivot')).toBe('The interviewer shifts focus to a different dimension of the same problem.');
+  });
+
+  it('returns the generic fallback blurb for null', () => {
+    expect(dimensionBlurb(null)).toBe('The interviewer shifts focus to a different dimension of the same problem.');
   });
 });

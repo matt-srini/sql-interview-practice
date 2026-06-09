@@ -35,6 +35,13 @@ Keep entries to 4–6 lines. Friction kills logs; if it's longer than the change
 
 ## Entries
 
+## 2026-06-09 — Interview Loop pivot dimension is rendered from a label/blurb map, not the question's `framing` field
+**Area:** mock · frontend · **Status:** accepted
+**Decision:** The pivot card (and per-dimension analytics) showed the raw `follow_up_dimension` token (e.g. `business_rule_pivot`) with one generic sentence for every pivot, undercutting the Elite Loop's "feels like a real interviewer" promise (audit A3). Added a shared `FOLLOW_UP_DIMENSIONS` map in `mockModeConfig.js` (human label + dimension-specific interviewer blurb for the 7 canonical pivots, `_pivot`-less aliases, and a humanize fallback so no raw token ever renders); pivot card uses label-heading + blurb, post-mortem marks follow-ups with a "↩ Follow-up · {label}" chip (needed C5: persist `is_follow_up`), analytics use the label. Reconciled `docs/features/mock.md` to match (docs serve the product).
+**Rejected:** the prior spec's "render the follow-up's `framing` field" — `framing` holds only the question *type* token ("scenario"), not interviewer narrative, so it can't carry the pivot framing; a curated per-dimension map is the right source. Also rejected putting labels server-side — display concern, kept frontend-only.
+**Affects:** frontend/src/mockModeConfig.js, MockSession.js, MockHub.js, App.css; backend/db.py + routers/mock.py (C5); docs/features/mock.md; docs/mock-audit-tracker.md (A3/C5/B2/D6, E1)
+**Supersedes:** the `framing`-field pivot-card prescription previously in docs/features/mock.md (no dated decision entry; doc-only).
+
 ## 2026-06-09 — Free mock benchmark is gated on `difficulty != "easy"`, not a medium/hard blocklist
 **Area:** mock · gating · **Status:** accepted
 **Decision:** `compute_mock_access` blocked only `("medium","hard")` for Free benchmarks, so `difficulty="mixed"` (which draws medium/hard) slipped through as `can_start: True` — a Free user could start a mixed benchmark and receive medium questions, bypassing the easy-only spec and the Pro upsell (confirmed firsthand in the mock audit, finding A2). Changed the guard to `difficulty != "easy"` (covers mixed and any future value). Frontend needed no change — `getDifficultyButtonState` derives the blocked pill / Start-disable purely from `/access`.

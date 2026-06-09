@@ -287,7 +287,7 @@ Nullable. Set only for `track="mixed"` sessions. Values: `"data_analyst"`, `"dat
 The user picks a track and optionally a focus area, and the system composes a session of **exactly 1 chain** — parent question plus all its follow-ups in order. Within the chain the user experiences:
 
 1. The parent question (standard mock UX)
-2. After submitting the parent, an **interviewer-pivot card** appears inline: *"Good. Now…"* followed by the follow-up's framing text and a dimension label (e.g. "Scale pivot →"). The pivot card always appears, regardless of whether the parent answer was correct — real interviews continue either way. User dismisses the card to advance.
+2. After submitting the parent, an **interviewer-pivot card** appears inline showing the **human-readable dimension label** (e.g. "Business rules") and a **dimension-specific interviewer framing line** drawn from the [7-dimension taxonomy](../concept-taxonomy.md#the-7-universal-follow-up-dimensions-chain-pivots) (e.g. for `business_rule_pivot`: *"A business rule just changed. Adapt your solution to the new requirement."*). The pivot card always appears, regardless of whether the parent answer was correct — real interviews continue either way. User dismisses the card to advance.
 3. The follow-up question, building on the same dataset / problem / context
 4. Repeat for each follow-up in the chain
 
@@ -326,10 +326,11 @@ The user does **not** see total question count up front (preserves the dialogue-
 ### Pivot card UX (frontend specification)
 
 - **Trigger:** displayed after the user submits any non-final question in the chain (i.e. all except the last follow-up).
-- **Content:** dimension label (human-readable, e.g. "Scale pivot") + the follow-up question's `framing` field text.
+- **Content:** the human-readable **dimension label** + a **dimension-specific interviewer framing line**, both keyed off `follow_up_dimension` via the shared map in `frontend/src/mockModeConfig.js` (`dimensionLabel()` / `dimensionBlurb()`). **Not** the question's `framing` field — `framing` carries the question *type* token (e.g. `"scenario"`), not interviewer narrative; the label+blurb come from the [7-dimension taxonomy](../concept-taxonomy.md#the-7-universal-follow-up-dimensions-chain-pivots). Unknown/drifted tokens are humanized (never shown raw).
 - **Form:** inline card in MockSession, not a modal. Replaces the "Next question →" button. User must explicitly dismiss it to advance. Cannot be skipped.
 - **Wrong answer:** pivot card still appears. No answer reveal. The debrief surfaces the miss post-session.
-- **Styling:** visually distinct from the question area — use an interviewer-voice tone ("Good. Now think about…"). The `follow_up_dimension` renders as a small labelled chip.
+- **Styling:** visually distinct from the question area — use an interviewer-voice tone. The dimension label renders as the card heading.
+- **Post-mortem:** the session summary marks each follow-up question with a "↩ Follow-up · {dimension label}" chip (requires `is_follow_up` persisted on `mock_session_questions` — see audit C5). Per-dimension analytics in the lobby use the same human-readable labels (never the raw token).
 
 ### Mode interaction with focus
 

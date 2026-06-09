@@ -40,11 +40,11 @@ Severity: **H** high · **M** medium · **L** low. Status: `TODO` · `WIP` · `D
 |---|---|---|---|---|
 | **A1** | H | DONE | code | Reload after finishing reverts to stale **active** session with a live timer |
 | **A2** | H | DONE | code | Free **easy-only** benchmark bypassable via the **Mixed** difficulty |
-| **A3** | H | TODO | code | Interview Loop payoff under-delivers (raw pivot token + `is_follow_up` lost + debrief ignores pivots) |
+| **A3** | H | DONE | code | Interview Loop payoff under-delivers (raw pivot token + `is_follow_up` lost + debrief ignores pivots) |
 | C1 | H | TODO | doc+code | `company_filter` is a gated **phantom feature** (no UI, never applied; advertised in SoT) |
 | C3 | M | TODO | code | Code-track benchmark submit leaks `correct` + `expected_result` mid-session |
 | B1 | M | TODO | code | Free sees an **"Elite"** badge on the Pro-tier Custom drill card |
-| B2 | M | TODO | code | Interview Loop summary titled **"Drill summary"** |
+| B2 | M | DONE | code | Interview Loop summary titled **"Drill summary"** (fixed with A3) |
 | B3 | M | TODO | code | History **"Time"** column shows the limit, not time used |
 | B4 | M | TODO | code | Start button **enabled when `/access` fetch fails** (`accessState` null) |
 | A4a | M | TODO | code | Blocked difficulty pills clickable but silently inert (no tooltip/why) |
@@ -55,14 +55,15 @@ Severity: **H** high · **M** medium · **L** low. Status: `TODO` · `WIP` · `D
 | B5 | L | TODO | code | Elite analytics: network error indistinguishable from empty state |
 | B6 | L | TODO | code | Mixed-track shows two Role selectors |
 | B8 | L | TODO | code | Dead UI (`NO_MOCK_BANK_TRACKS` empty; first-run CTA hardcodes `/practice/sql`) |
-| C5 | L | TODO | code | `is_follow_up` never persisted (root cause of A3) |
+| C5 | L | DONE | code | `is_follow_up` never persisted (root cause of A3) |
 | C6 | L | TODO | code | `30min` legacy → generic "Invalid mode" instead of read-only message |
 | C7 | L | TODO | code | Daily-cap `CURRENT_DATE` not explicitly UTC; TOCTOU on check→create |
 | D2 | M | TODO | doc | `loop_summary` shape (dict vs list, missing fields); `accuracy` vs `accuracy_pct` across specs |
 | D3 | M | TODO | doc | `readiness_scores`/`study_plan` live in dashboard insights, not mock analytics |
 | D4 | L | TODO | doc | Discard chip window 60s (frontend) vs 120s (doc + server) |
 | D5 | L | TODO | doc | Chain reclaim: spec schema says `reclaimed=TRUE`; code deletes the row |
-| D6 | L | TODO | doc | Pivot-card spec says render `framing`; `framing` is only the type token |
+| D6 | L | DONE | doc | Pivot-card spec says render `framing`; `framing` is only the type token (reconciled with A3) |
+| **E1** | M | TODO | content+code+doc | `follow_up_dimension` drift: 16 chain children use non-canonical tokens; validator doesn't enforce the 7-list |
 
 > Several IDs (A4a/A4b/A5a/A6/B-series/D-series) map to the original audit's lettered findings;
 > the narrative report is preserved verbatim in the entries below.
@@ -87,8 +88,9 @@ Severity: **H** high · **M** medium · **L** low. Status: `TODO` · `WIP` · `D
 - **Fix applied:** guard on `difficulty != "easy"` (blocks medium, hard, mixed, and any future value) with an accurate message ("Medium, hard, and mixed benchmarks require a Pro plan."). **Backend-only** — the frontend's `getDifficultyButtonState` derives `blocked` purely from `access[diff].can_start`, so the Mixed pill, upgrade chip, and Start-disable all follow automatically.
 - **Verify:** `/access` returns `mixed.can_start=false` for Free; starting a Free Mixed benchmark returns 403; Pro/Elite Mixed still allowed; new backend test added.
 
-### A3 — `[H]` `[TODO]` Interview Loop's signature payoff under-delivers (the premium-value finding)
-Three confirmed defects compound at the Elite payoff moment:
+### A3 — `[H]` `[DONE]` Interview Loop's signature payoff under-delivers (the premium-value finding)
+**Fixed 2026-06-09.** Shipped: shared `FOLLOW_UP_DIMENSIONS` map + `dimensionLabel()`/`dimensionBlurb()` in `frontend/src/mockModeConfig.js` (7 canonical dimensions + `_pivot`-less aliases + humanize-unknown fallback so a raw token never shows); pivot card now renders the human label as heading + a dimension-specific interviewer blurb (`MockSession.js`); post-mortem marks each follow-up with a "↩ Follow-up · {label}" chip (depends on C5); lobby per-dimension analytics use the label (`MockHub.js`); the Loop summary title is fixed (B2). `mock.md` pivot-card spec reconciled (D6). Verified live (Elite Loop): pivot card "Edge cases" + blurb, post-mortem "Interview Loop summary" + "↩ Follow-up · Edge cases", analytics "Business rules"/"Edge cases" — zero raw `_pivot` tokens. Deferred (separate picks): dimension-specific text inside the *backend* debrief narrative (the debrief stays concept-focused; the per-question chip + analytics carry the pivot signal) and the content/validator drift (E1).
+Three confirmed defects compounded at the Elite payoff moment:
 1. **Pivot card shows a raw enum token + generic copy.** Firsthand the card read "INTERVIEW LOOP · PIVOT / `business_rule_pivot` / The interviewer is shifting focus. This follow-up explores a different dimension of the same problem." The dimension is raw snake_case; the body is **identical for every pivot**. (`frontend/src/pages/MockSession.js` pivot card ~1238-1255, hardcoded.)
 2. **`is_follow_up` never persisted** → post-mortem doesn't mark the follow-up (see C5). Firsthand: follow-up 12078 (`follow_up_dimension: business_rule_pivot`) reads `is_follow_up:false` from `GET /mock/:id` and `finish`; Elite summary showed Q1/Q2 with no ↩ badge.
 3. **Per-session debrief never mentions the pivot** — shows the same concept breakdown a Pro drill shows; the dimension the Loop is built around appears only in lobby analytics (and there too as the raw token "business_rule_pivot 0%").
@@ -158,8 +160,8 @@ Three confirmed defects compound at the Elite payoff moment:
 - `discard_mock_session` hard-deletes the row (`backend/db.py` ~1384); counters `COUNT(*)` only surviving rows. A Pro user can create→discard (within 2 min) to recover a benchmark/custom slot and re-roll without burning quota.
 - **Fix approach:** either count discarded sessions toward the cap (a `discarded` tombstone) or accept-and-document. Note the legitimate use (penalty-free re-roll within 2 min) when deciding.
 
-### C5 — `[L]` `[TODO]` `is_follow_up` never persisted (root cause of A3.2)
-- `backend/db.py` `mock_session_questions` INSERT (~1253) omits the `is_follow_up` column → defaults false; the start response sets it correctly but every subsequent DB read returns false for follow-ups. Add the column to the INSERT and carry it on the `selected` rows.
+### C5 — `[L]` `[DONE]` `is_follow_up` never persisted (root cause of A3.2)
+**Fixed 2026-06-09.** The column already existed (db.py:204, migration `20260429`) — no migration needed. `create_mock_session`'s INSERT (db.py:1253-1255) now carries `is_follow_up`, and `start_session` sets it on the loop `selected` rows (parent False, follow-ups True); benchmark/custom default False. Regression test `test_interview_loop_follow_up_flag_persisted` added. Verified live: GET now returns `is_follow_up=true` for the follow-up.
 
 ### C6 — `[L]` `[TODO]` `30min` legacy → generic "Invalid mode"
 - `MODE_CONFIGS` only contains `60min` (`mock.py:62-64`); `30min` isn't in `valid_start_modes`, so it returns "Invalid mode." rather than the legacy-specific copy `60min` gets. Cosmetic; both are correctly un-startable.
@@ -176,7 +178,17 @@ Three confirmed defects compound at the Elite payoff moment:
 - **D3 `[M]`** `[agent-located]` `readiness_scores`/`study_plan` live in `/api/dashboard/insights`, not `/api/mock/analytics`; mock.md's analytics matrix row implies they're mock analytics.
 - **D4 `[L]`** `[agent-located]` Discard chip: frontend offers the prompt for 60s (`MockSession.js:341`); doc + server use 120s — 60s UI dead zone.
 - **D5 `[L]`** `[agent-located]` Chain reclaim: mock-benchmark-spec.md schema implies `reclaimed=TRUE`; code **deletes** the row (mock.md is right).
-- **D6 `[L]`** Pivot-card spec (mock.md) says render the follow-up's `framing` text + a human-readable dimension; firsthand `framing` is just the type token ("scenario"), so the spec is impractical as written and code shows the raw dimension token + generic copy (see A3).
+- **D6 `[L]` `[DONE]`** Pivot-card spec (mock.md §"Pivot card UX" + the Interview Loop walkthrough) said render the follow-up's `framing` text; `framing` is only the question *type* token ("scenario"). Reconciled 2026-06-09 to match the product: the card shows the human dimension label + a dimension-specific blurb from the 7-dimension taxonomy (via `mockModeConfig.js`), and the post-mortem marks follow-ups + uses human labels in analytics.
+
+---
+
+## E — Content / taxonomy consistency
+
+### E1 — `[M]` `[TODO]` `follow_up_dimension` values drift from the canonical 7; validator doesn't enforce membership
+- **Found during A3.** Across the mock chain children actually reachable in Interview Loop, 16 questions carry **non-canonical** `follow_up_dimension` tokens: the `_pivot`-less form of 6 of the 7 (`data_quality` ×4, `business_rule` ×3, `performance` ×3, `ambiguity` ×3, `edge_case` ×3, `stakeholder` ×1) and **`abstraction_pivot` ×2**, which is not one of the canonical 7 at all.
+- **Doc/validator drift:** `docs/concept-taxonomy.md:1032` claims "Chain `follow_up_dimension` must be from the 7-dimension list. **Anything else crashes catalog load.**" — but `backend/scripts/validate_content.py:985` only checks that a chain child *has* a `follow_up_dimension`, not that it's one of the 7. So the claim is false and the drift went undetected.
+- **Why it matters:** these tokens reach the Elite pivot card + per-dimension analytics. The A3 frontend humanizes them (so nothing renders raw), and per-dimension analytics now bucket `data_quality` and `data_quality_pivot` *separately* (they alias to the same label for display but the backend keys are distinct) — splitting what should be one dimension's stats.
+- **Fix approach (separate pick — content edits MUST go through the authoring agent):** (1) normalize the bank's `follow_up_dimension` values to the canonical 7 (`_pivot` form) via the question-authoring agent — and decide whether `abstraction_pivot` becomes an 8th canonical dimension (update concept-taxonomy.md) or is remapped; (2) add a real validator rule in `validate_content.py` enforcing membership in the canonical set (make concept-taxonomy.md:1032 true); (3) once the bank is clean, the backend can key analytics on the canonical set directly. Do NOT hand-edit question JSON.
 
 ---
 
@@ -186,3 +198,8 @@ Three confirmed defects compound at the Elite payoff moment:
   - A2: `backend/unlock.py` free benchmark guard `difficulty != "easy"` (+ message); closes the Mixed bypass. Added `backend/tests/test_11_mock.py` coverage.
   - A1: `frontend/src/pages/MockSession.js` load effect reconciles cached nav-state status against the server.
   - SoT: `docs/features/mock.md` clarified Free = easy-only (mixed included); `docs/decisions/DECISIONS.md` entry appended.
+- **2026-06-09 — A3 + C5 (+ B2, D6)** — fixed on `main`. Sonnet implemented backend (C5) and frontend (A3) on disjoint files; Opus reviewed + verified live + wrote docs.
+  - C5: `backend/db.py` + `backend/routers/mock.py` persist `is_follow_up` (column pre-existed; no migration). Test `test_interview_loop_follow_up_flag_persisted`.
+  - A3: `frontend/src/mockModeConfig.js` `FOLLOW_UP_DIMENSIONS` + `dimensionLabel()`/`dimensionBlurb()` (aliases + humanize fallback); pivot card label-heading + dimension blurb, post-mortem "↩ Follow-up · {label}" chip, lobby analytics labels (`MockSession.js`, `MockHub.js`, `App.css`). B2 (Loop summary title) folded in. Unit tests added to `mockModeConfig.test.js`.
+  - SoT: `docs/features/mock.md` pivot-card spec reconciled (D6 — label+blurb, not `framing`); `docs/decisions/DECISIONS.md` entry appended.
+  - Spun off: **E1** (follow_up_dimension content/validator drift — needs the authoring agent).

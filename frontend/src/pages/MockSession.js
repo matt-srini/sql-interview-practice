@@ -14,7 +14,7 @@ import { TRACK_META } from '../contexts/TopicContext';
 import { TRACK_LABELS } from '../trackRegistry';
 import { track as trackEvent } from '../analytics';
 import { renderDescription } from '../utils/renderDescription';
-import { getMockSessionDescriptor } from '../mockModeConfig';
+import { getMockSessionDescriptor, dimensionLabel, dimensionBlurb } from '../mockModeConfig';
 import { normalizeRunResult, rowCountLabel } from '../normalizeResult';
 
 function formatTime(s) {
@@ -547,7 +547,11 @@ export default function MockSession() {
       <div className="mock-shell">
         <header className="mock-topbar">
           <Link to="/mock" className="btn btn-secondary btn-compact">← Back to Mock</Link>
-          <span className="mock-topbar-title">{summaryDescriptor.isBenchmark ? 'Benchmark summary' : 'Drill summary'}</span>
+          <span className="mock-topbar-title">
+            {(sum?.mode || session?.mode) === 'interview_loop'
+              ? 'Interview Loop summary'
+              : summaryDescriptor.isBenchmark ? 'Benchmark summary' : 'Drill summary'}
+          </span>
           <span />
         </header>
         <div className="mock-summary-scroll">
@@ -622,6 +626,9 @@ export default function MockSession() {
                   <div className="mock-summary-row-main">
                     <span className="mock-summary-qnum">Q{q.position ?? i + 1}</span>
                     <span className="mock-summary-qtitle">{q.title}</span>
+                    {(q.is_follow_up || q.follow_up_dimension) && (
+                      <span className="mock-followup-chip">↩ Follow-up · {dimensionLabel(q.follow_up_dimension)}</span>
+                    )}
                     <span className={`mock-summary-status ${isSolved ? 'solved' : 'unsolved'}`}>
                       {isSolved ? '✓ solved' : '✗ unsolved'}
                     </span>
@@ -1251,9 +1258,9 @@ export default function MockSession() {
         <div className="mock-modal-overlay mock-pivot-overlay">
           <div className="mock-modal mock-pivot-card">
             <div className="mock-pivot-card-kicker">Interview Loop · Pivot</div>
-            <h3 className="mock-pivot-card-dimension">{pivotCard.dimension}</h3>
+            <h3 className="mock-pivot-card-dimension">{dimensionLabel(pivotCard.dimension)}</h3>
             <p className="mock-modal-body mock-pivot-card-copy">
-              The interviewer is shifting focus. This follow-up explores a different dimension of the same problem.
+              {dimensionBlurb(pivotCard.dimension)}
             </p>
             <div className="mock-modal-actions">
               <button

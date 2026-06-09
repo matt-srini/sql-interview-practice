@@ -15,6 +15,7 @@ import {
   isBenchmarkMockMode,
   getSessionQuestionCount,
   getSessionTimeMinutes,
+  dimensionLabel,
 } from '../mockModeConfig';
 
 // Tracks that pool into a single mixed-track session (in_mixed_mock=True in backend).
@@ -889,7 +890,7 @@ export default function MockHub() {
                             .sort((a, b) => a[1].accuracy_pct - b[1].accuracy_pct)
                             .map(([dim, stats]) => (
                               <span key={dim} className="mock-loop-dimension-row">
-                                <span className="mock-loop-dimension-name">{dim}</span>
+                                <span className="mock-loop-dimension-name">{dimensionLabel(dim)}</span>
                                 <span className="mock-loop-dimension-acc">{stats.accuracy_pct}%</span>
                               </span>
                             ))}

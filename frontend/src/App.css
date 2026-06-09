@@ -8005,6 +8005,18 @@ select {
   color: var(--text-secondary);
   font-variant-numeric: tabular-nums;
 }
+.mock-followup-chip {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
+  border-radius: 4px;
+  padding: 1px 6px;
+  white-space: nowrap;
+}
 .mock-solution-toggle {
   font-size: 0.82rem;
   color: var(--accent);

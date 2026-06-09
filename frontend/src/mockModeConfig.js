@@ -1,3 +1,50 @@
+// The 7 universal follow-up (chain pivot) dimensions — canonical source:
+// docs/concept-taxonomy.md §"The 7 universal follow-up dimensions". `label` is the
+// human-readable name shown in the pivot card heading and analytics; `blurb` is the
+// interviewer-voiced framing shown in the pivot card body.
+export const FOLLOW_UP_DIMENSIONS = {
+  scale_pivot:         { label: 'Scale',            blurb: 'The interviewer pushes the data far past what your first answer assumed. Does your approach still hold?' },
+  business_rule_pivot: { label: 'Business rules',   blurb: 'A business rule just changed. Adapt your solution to the new requirement.' },
+  ambiguity_pivot:     { label: 'Ambiguity',        blurb: 'The ask is deliberately underspecified now. State your assumptions, then proceed.' },
+  edge_case_pivot:     { label: 'Edge cases',       blurb: 'The interviewer probes the cases your first answer glossed over.' },
+  performance_pivot:   { label: 'Performance',      blurb: 'It works — now make it efficient under real-world constraints.' },
+  data_quality_pivot:  { label: 'Data quality',     blurb: 'The data is dirtier than implied. Handle what your first answer assumed away.' },
+  stakeholder_pivot:   { label: 'Stakeholder needs',blurb: 'A stakeholder with a different agenda enters. How does that change what you deliver?' },
+};
+
+// Some chain children in the bank use the `_pivot`-less form of the same dimension; alias them.
+const DIMENSION_ALIASES = {
+  data_quality: 'data_quality_pivot',
+  business_rule: 'business_rule_pivot',
+  performance: 'performance_pivot',
+  ambiguity: 'ambiguity_pivot',
+  edge_case: 'edge_case_pivot',
+  stakeholder: 'stakeholder_pivot',
+  scale: 'scale_pivot',
+};
+
+function resolveDimension(token) {
+  if (!token) return null;
+  const key = DIMENSION_ALIASES[token] || token;
+  return FOLLOW_UP_DIMENSIONS[key] || null;
+}
+
+// Always returns a human string — never a raw snake_case token. Unknown tokens
+// (e.g. a drifted `abstraction_pivot`) are humanized: strip a trailing `_pivot`,
+// replace underscores with spaces, capitalize the first letter.
+export function dimensionLabel(token) {
+  const d = resolveDimension(token);
+  if (d) return d.label;
+  if (!token) return '';
+  const s = String(token).replace(/_pivot$/, '').replace(/_/g, ' ').trim();
+  return s ? s.charAt(0).toUpperCase() + s.slice(1) : '';
+}
+
+export function dimensionBlurb(token) {
+  const d = resolveDimension(token);
+  return d ? d.blurb : 'The interviewer shifts focus to a different dimension of the same problem.';
+}
+
 export const BENCHMARK_BLUEPRINTS = {
   sql: {
     numQuestions: 3,
