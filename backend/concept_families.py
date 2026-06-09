@@ -37,7 +37,7 @@ MOCK_ONLY_REALISM_FAMILIES: dict[str, set[str]] = {
     # Pandas Phase 2 (2026-05-24): MEMORY & VECTORIZATION REASONING is
     # practice-grounded (gradable via assert_frame_equal dtype checks; 33021
     # anchors it). Only the three judgment-lens families are mock-only realism.
-    "python-data": {
+    "pandas": {
         "METRIC INTERPRETATION & DENOMINATOR CHOICE",
         "OUTPUT SANITY VALIDATION",
         "PERFORMANCE-AWARE ANALYTICS",
@@ -731,7 +731,7 @@ CONCEPT_FAMILIES: dict[str, dict[str, list[str]]] = {
     # -----------------------------------------------------------------------
     # Pandas — 21 canonical families (docs/concept-taxonomy.md § Pandas)
     # -----------------------------------------------------------------------
-    "python-data": {
+    "pandas": {
         "WINDOW & ROLLING OPERATIONS": [
             "ROLLING",
             "EXPANDING",

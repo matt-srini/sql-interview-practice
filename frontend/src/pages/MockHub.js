@@ -19,17 +19,17 @@ import {
 } from '../mockModeConfig';
 
 // Tracks that pool into a single mixed-track session (in_mixed_mock=True in backend).
-const MIXED_MOCK_TRACKS = ['sql', 'python', 'python-data', 'pyspark'];
+const MIXED_MOCK_TRACKS = ['sql', 'python', 'pandas', 'pyspark'];
 
 // All tracks now have at least one dedicated mock-only question.
 // data-modeling: 63021 (2026-05-19). data-engineering: 53021 (2026-05-19). statistics: 73025–73029.
 const NO_MOCK_BANK_TRACKS = new Set();
 
 const MOCK_ROLES = [
-  { id: 'data_analyst',       label: 'Data Analyst',       tracks: ['sql', 'python-data', 'statistics'] },
+  { id: 'data_analyst',       label: 'Data Analyst',       tracks: ['sql', 'pandas', 'statistics'] },
   { id: 'data_engineer',      label: 'Data Engineer',      tracks: ['sql', 'python', 'pyspark', 'data-engineering'] },
-  { id: 'analytics_engineer', label: 'Analytics Engineer', tracks: ['sql', 'data-modeling', 'python-data'] },
-  { id: 'data_scientist',     label: 'Data Scientist',     tracks: ['python', 'python-data', 'statistics', 'ml-fundamentals'] },
+  { id: 'analytics_engineer', label: 'Analytics Engineer', tracks: ['sql', 'data-modeling', 'pandas'] },
+  { id: 'data_scientist',     label: 'Data Scientist',     tracks: ['python', 'pandas', 'statistics', 'ml-fundamentals'] },
 ];
 
 const DIFFICULTIES = ['easy', 'medium', 'hard', 'mixed'];
@@ -53,7 +53,7 @@ const MIXED_DIFF_TARGETS = ['easy', 'medium', 'hard', 'medium', 'hard'];
 const TRACK_CONCEPT_MAP = {
   sql: ['AGGREGATION','WINDOW FUNCTIONS','JOINS','SUBQUERY PATTERNS','CTEs','DATE FUNCTIONS','GROUP BY','FILTERING','COHORT RETENTION','FUNNEL ANALYSIS','RANKING','SELF JOIN','SET OPERATIONS','CASE WHEN','STRING FUNCTIONS'],
   python: ['SORTING','BINARY SEARCH','HASH MAPS','TWO POINTERS','SLIDING WINDOW','RECURSION','DYNAMIC PROGRAMMING','GRAPHS','TREES','LINKED LISTS','HEAPS','STACK / QUEUE','BIT MANIPULATION'],
-  'python-data': ['GROUPBY','MERGING','PIVOTING','FILTERING','AGGREGATION','WINDOW FUNCTIONS','RESHAPING','TIME SERIES','STRING METHODS','APPLY/MAP','COHORT ANALYSIS','MULTI-INDEX'],
+  'pandas': ['GROUPBY','MERGING','PIVOTING','FILTERING','AGGREGATION','WINDOW FUNCTIONS','RESHAPING','TIME SERIES','STRING METHODS','APPLY/MAP','COHORT ANALYSIS','MULTI-INDEX'],
   pyspark: ['DATAFRAME API','GROUPBY','JOINS','WINDOW FUNCTIONS','UDFs','PARTITIONING','AGGREGATION','STREAMING','CACHING','BROADCAST JOIN','SHUFFLE & PERFORMANCE','CATALYST & QUERY PLANNING','MEMORY MANAGEMENT','DATA SKEW','DELTA LAKE','AQE'],
   'ml-fundamentals': ['CLASSIFICATION METRICS','BIAS-VARIANCE TRADEOFF','DATA LEAKAGE DETECTION','OVERFITTING DIAGNOSIS','CROSS-VALIDATION DESIGN','ENSEMBLE STRATEGY','CLASS IMBALANCE HANDLING','REGULARIZATION EFFECT','HYPERPARAMETER SENSITIVITY','DIMENSIONALITY REDUCTION','TRAINING-SERVING SKEW','FEATURE SELECTION STRATEGY','MODEL MONITORING'],
   experimentation: ['EXPERIMENT DESIGN','CAUSAL INFERENCE','STATISTICAL POWER','METRIC SELECTION','MULTIPLE TESTING','NETWORK EFFECTS','VARIANCE REDUCTION','A/B TEST MECHANICS','TYPE I AND TYPE II ERRORS','EXPERIMENT DURATION','SEGMENTATION ANALYSIS','BAYESIAN EXPERIMENTATION','QUASI-EXPERIMENTAL METHODS'],

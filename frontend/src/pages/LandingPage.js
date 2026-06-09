@@ -24,13 +24,13 @@ const ROLES = [
     id: 'analyst',
     label: 'Data Analyst',
     tagline: 'SQL depth · statistical reasoning · Python for data',
-    tracks: ['sql', 'statistics', 'python-data', 'python'],
+    tracks: ['sql', 'statistics', 'pandas', 'python'],
   },
   {
     id: 'analytics_engineer',
     label: 'Analytics Engineer',
     tagline: 'SQL precision · data modeling · dbt patterns',
-    tracks: ['sql', 'data-modeling', 'python-data', 'python'],
+    tracks: ['sql', 'data-modeling', 'pandas', 'python'],
   },
   {
     id: 'scientist',
@@ -72,7 +72,7 @@ const IDE_TRACKS = [
     ],
   },
   {
-    slug: 'python-data',
+    slug: 'pandas',
     label: 'Pandas',
     color: '#C47F17',
     fname: 'channel_revenue.py',
@@ -775,7 +775,7 @@ function TracksIndexSection() {
   const FORMAT_LABELS = {
     sql:                'SQL · DuckDB',
     python:             'Python · sandbox',
-    'python-data':      'Pandas · sandbox',
+    'pandas':      'Pandas · sandbox',
     pyspark:            'reasoning · predict output',
     'data-engineering': 'reasoning · scenario',
     'data-modeling':    'reasoning · schema design',

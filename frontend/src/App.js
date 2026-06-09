@@ -192,6 +192,13 @@ function AppRoutes() {
         <Route path="/practice" element={<Navigate to="/practice/sql" replace />} />
         <Route path="/questions/:id" element={<LegacyQuestionRedirect />} />
 
+        {/* python-data → pandas back-compat redirects (slug rename) */}
+        <Route path="/practice/python-data" element={<Navigate to="/practice/pandas" replace />} />
+        <Route path="/practice/python-data/questions/:id" element={<LegacyPythonDataPracticeRedirect />} />
+        <Route path="/learn/python-data" element={<Navigate to="/learn/pandas" replace />} />
+        <Route path="/learn/python-data/:slug" element={<LegacyPythonDataLearnRedirect />} />
+        <Route path="/sample/python-data/:difficulty" element={<LegacyPythonDataSampleRedirect />} />
+
         {/* Policy pages */}
         <Route path="/privacy" element={<PrivacyPolicyPage />} />
         <Route path="/terms" element={<TermsPage />} />
@@ -249,6 +256,20 @@ function TopicShell() {
 function LegacyQuestionRedirect() {
   const { id } = useParams();
   return <Navigate to={`/practice/sql/questions/${id}`} replace />;
+}
+
+// python-data → pandas back-compat redirects (slug rename 2026-06-09)
+function LegacyPythonDataPracticeRedirect() {
+  const { id } = useParams();
+  return <Navigate to={`/practice/pandas/questions/${id}`} replace />;
+}
+function LegacyPythonDataLearnRedirect() {
+  const { slug } = useParams();
+  return <Navigate to={`/learn/pandas/${slug}`} replace />;
+}
+function LegacyPythonDataSampleRedirect() {
+  const { difficulty } = useParams();
+  return <Navigate to={`/sample/pandas/${difficulty}`} replace />;
 }
 
 // Legacy redirect: /sample/:difficulty → /sample/sql/:difficulty

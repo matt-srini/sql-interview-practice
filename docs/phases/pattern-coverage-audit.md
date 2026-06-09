@@ -23,7 +23,7 @@ Headline coverage tables reflect the **live state of paths**, not tag-derived hy
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
 | sql | 118 | 102 | 16 | 24 | 14 | 5 | 5 | 1 | 3 |
 | python | 81 | 76 | 5 | 20 | 9 | 2 | 4 | 2 | 1 |
-| python-data | 93 | 90 | 3 | 15 | 9 | 5 | 3 | 0 | 1 |
+| pandas | 93 | 90 | 3 | 15 | 9 | 5 | 3 | 0 | 1 |
 | pyspark | 127 | 127 | 0 | 28 | 7 | 3 | 3 | 0 | 1 |
 | data-engineering | 91 | 85 | 6 | 10 | 9 | 5 | 4 | 0 | 0 |
 | data-modeling | 81 | 73 | 8 | 0 | 14 | 6 | 1 | 4 | 3 |
@@ -255,7 +255,7 @@ a starting point for deciding which path (existing or new) should include them.
 - 🔴 **`streaming-and-online`** — 0 practice Qs (empty). No live path or no questions. Either create a path that aggregates this pattern, or author initial content.
 
 ---
-## python-data
+## pandas
 
 Practice questions: **93** (90 in live paths · 3 orphans · 15 divergent). Proposed canonical patterns: **9**.
 
@@ -1122,7 +1122,7 @@ the audit credits the question to. `Tag-suggested` = where tag-routing would pla
 | 23036 | hard | `graph-and-tree-patterns` | `graph-traversal` | `graph-traversal` |  | Valid Column Report Orderings |
 | 23037 | hard | _orphan_ | — | `graph-traversal` |  | Largest 3-D Voxel Region (6-Neighbor BFS) |
 
-### python-data
+### pandas
 
 | QID | Diff | Live path | Attributed | Tag-suggested | Divergent? | Title |
 |---|---|---|---|---|---|---|

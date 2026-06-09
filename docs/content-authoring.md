@@ -291,7 +291,7 @@ The 4-step verbatim lookup procedure lives in [`.github/agents/question-authorin
 |---|---|---|---|
 | SQL | ✅ | clean | Phase 2 closed |
 | Python | ✅ | clean | Phase 2 closed; no realism families by design |
-| Pandas (`python-data`) | ✅ | clean | Phase 2 closed; 3 realism families |
+| Pandas (`pandas`) | ✅ | clean | Phase 2 closed; 3 realism families |
 | PySpark | ✅ | clean (278 q, 0 orphans) | Phase 2 closed; added to set post-closure |
 | Data Engineering | ✅ | clean | Phase 2 closed; no realism families by design |
 | Data Modeling | ✅ | clean | Phase 2 closed; no realism families by design |
@@ -303,7 +303,7 @@ The 4-step verbatim lookup procedure lives in [`.github/agents/question-authorin
 
 **Closure rule.** A track joins `_TAXONOMY_VALIDATED_TRACKS` as the final durable-doc step of its Phase 2 closeout (see § Phase 2 closeout doc-hygiene below). Inclusion gates on: (a) registry fully populated for the Phase 2 scope, (b) zero orphans across all questions, (c) realism designation set in `MOCK_ONLY_REALISM_FAMILIES`.
 
-**solution_code presence guard** (`_validate_solution_code_presence` — NOT gated on `_TAXONOMY_VALIDATED_TRACKS`). Enforced unconditionally for all medium/hard mock-only questions in: `python-data` (all mock-only), `python` (all mock-only), and `statistics` (numerical subtype only — conceptual questions use `explanation` instead). Raises on any mock-only question missing a non-empty `solution_code`. Added 2026-05-29 after a 25-question Pandas backfill revealed the field was unguarded at authoring time.
+**solution_code presence guard** (`_validate_solution_code_presence` — NOT gated on `_TAXONOMY_VALIDATED_TRACKS`). Enforced unconditionally for all medium/hard mock-only questions in: `pandas` (all mock-only), `python` (all mock-only), and `statistics` (numerical subtype only — conceptual questions use `explanation` instead). Raises on any mock-only question missing a non-empty `solution_code`. Added 2026-05-29 after a 25-question Pandas backfill revealed the field was unguarded at authoring time.
 
 **Canonical-name-strict tag check (added 2026-06-01).** `_validate_concept_taxonomy` now enforces a second rule on top of resolution: every `concepts[]` entry must be written as the **canonical family name itself**, not a sub-pattern / alias that happens to resolve via `match_patterns`. For example, `'CLASSIFICATION METRICS & EVALUATION'` is rejected — author must write the canonical `'CLASSIFICATION METRICS'`. Resolution ≠ authoring permission. Comparison is case-insensitive (Statistics keeps its lowercase convention; every other track keeps uppercase). This closed the validator-gap that surfaced during the ML Fundamentals easy audit: sub-pattern aliases on samples 812/813 had resolved cleanly while drifting from the canonical naming contract. **Deterministic only — does NOT detect "tag resolves but the question doesn't actually test that family's reasoning."** Semantic-mismatch tags (e.g. tagging `CLUSTERING EVALUATION` on a paradigm-recognition question with no cluster-quality content) remain a manual-audit responsibility for the per-track Stage C audit.
 

@@ -12,7 +12,7 @@ router = APIRouter()
 BASE_URL = "https://datathink.co"
 
 _TRACK_LABELS = {
-    "sql": "SQL", "python": "Python", "python-data": "Pandas", "pyspark": "PySpark",
+    "sql": "SQL", "python": "Python", "pandas": "Pandas", "pyspark": "PySpark",
     "data-engineering": "Data Engineering", "data-modeling": "Data Modeling",
     "statistics": "Statistics", "ml-fundamentals": "ML Fundamentals", "experimentation": "Experimentation",
 }
@@ -38,7 +38,7 @@ def _get_track_counts() -> dict:
     _CFG = [
         ("sql",              "questions",                  "get_questions_by_difficulty"),
         ("python",           "python_questions",           "get_all_questions"),
-        ("python-data",      "python_data_questions",      "get_all_questions"),
+        ("pandas",           "pandas_questions",           "get_all_questions"),
         ("pyspark",          "pyspark_questions",          "get_all_questions"),
         ("data-engineering", "data_engineering_questions", "get_all_questions"),
         ("data-modeling",    "data_modeling_questions",    "get_all_questions"),
@@ -71,7 +71,7 @@ def _build_seo_meta() -> dict:
     _PRACTICE_DESC = {
         "sql":              f"Your SQL practice workspace. {tc.get('sql', 0)} questions by difficulty — joins, aggregations, window functions, and CTEs with instant DuckDB execution and solution analysis.",
         "python":           f"Your Python practice workspace. {tc.get('python', 0)} algorithm and data processing questions with automated test case feedback and step-by-step hints.",
-        "python-data":      f"Your Pandas practice workspace. {tc.get('python-data', 0)} DataFrame manipulation questions with live execution and side-by-side output comparison.",
+        "pandas":           f"Your Pandas practice workspace. {tc.get('pandas', 0)} DataFrame manipulation questions with live execution and side-by-side output comparison.",
         "pyspark":          f"Your PySpark practice workspace. {tc.get('pyspark', 0)} MCQ, predict-output, debug, and scenario questions covering core Spark concepts and performance.",
         "data-engineering": f"Your Data Engineering practice workspace. {tc.get('data-engineering', 0)} MCQ, scenario, and debug questions covering ETL, orchestration, and system design.",
         "data-modeling":    f"Your Data Modeling practice workspace. {tc.get('data-modeling', 0)} MCQ and scenario questions covering dimensional modeling, normalization, and dbt design.",
@@ -97,7 +97,7 @@ def _build_seo_meta() -> dict:
             "title": "Python Learning Paths — datathink",
             "description": "Curated Python learning paths covering algorithms, data structures, and data processing patterns.",
         },
-        "/learn/python-data": {
+        "/learn/pandas": {
             "title": "Pandas Learning Paths — datathink",
             "description": "Curated Pandas learning paths covering DataFrame manipulation, groupby, reshaping, and time series.",
         },
@@ -152,7 +152,7 @@ def _build_seo_meta() -> dict:
     _EASY_TRACK_CFG = [
         ("sql",         "SQL",     "questions",             "get_questions_by_difficulty"),
         ("python",      "Python",  "python_questions",      "get_all_questions"),
-        ("python-data", "Pandas",  "python_data_questions", "get_all_questions"),
+        ("pandas",      "Pandas",  "pandas_questions",      "get_all_questions"),
         ("pyspark",     "PySpark", "pyspark_questions",     "get_all_questions"),
     ]
     try:

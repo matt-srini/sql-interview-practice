@@ -2,7 +2,7 @@
   "slug": "data-quality-and-dedup",
   "title": "Data Quality & Deduplication",
   "description": "A focused, advanced path on the quality and deduplication patterns that separate a reliable Pandas pipeline from a brittle one: cross-table entity linking, multi-step dedup, and debugging subtle data-integrity failures.",
-  "topic": "python-data",
+  "topic": "pandas",
   "questions": [
     31006,
     32015,

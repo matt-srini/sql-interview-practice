@@ -7,7 +7,7 @@ import data_engineering_questions
 import data_modeling_questions
 import experimentation_questions
 import ml_fundamentals_questions
-import python_data_questions
+import pandas_questions
 import python_questions
 import pyspark_questions
 import questions as sql_questions
@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 _TOPIC_MODULES = {
     "sql": sql_questions,
     "python": python_questions,
-    "python_data": python_data_questions,
+    "pandas": pandas_questions,
     "pyspark": pyspark_questions,
     "data-engineering": data_engineering_questions,
     "data-modeling": data_modeling_questions,
@@ -127,16 +127,8 @@ async def get_dashboard(
             }
         )
 
-    def _remap(d: dict) -> dict:
-        """Rename python_data → python-data to match frontend topic slugs."""
-        return {("python-data" if k == "python_data" else k): v for k, v in d.items()}
-
-    for row in recent_activity:
-        if row["topic"] == "python_data":
-            row["topic"] = "python-data"
-
     return {
-        "tracks": _remap(tracks),
-        "concepts_by_track": _remap(concepts_by_track),
+        "tracks": tracks,
+        "concepts_by_track": concepts_by_track,
         "recent_activity": recent_activity,
     }

@@ -2,7 +2,7 @@
   {
     "id": 32001,
     "order": 1,
-    "topic": "python_data",
+    "topic": "pandas",
     "difficulty": "medium",
     "title": "Orders with User Info",
     "description": "You have two DataFrames: `df_orders` and `df_users`.\n\n**df_orders columns:** `order_id`, `user_id`, `order_date`, `status`, `gross_amount`, `discount_amount`, `net_amount`, `payment_status`\n**df_users columns:** `user_id`, `name`, `email`, `signup_date`, `country`, `acquisition_channel`, `plan_tier`, `is_active`\n\nPerform an **inner join** on `user_id`. Return a DataFrame with columns: `order_id`, `user_id`, `name`, `country`, `net_amount`, `status`. Sort by `order_id` ascending.",
@@ -49,7 +49,7 @@
   {
     "id": 32002,
     "order": 2,
-    "topic": "python_data",
+    "topic": "pandas",
     "difficulty": "medium",
     "title": "Users with No Orders",
     "description": "You have two DataFrames: `df_users` and `df_orders`.\n\n**df_users columns:** `user_id`, `name`, `email`, `signup_date`, `country`, `acquisition_channel`, `plan_tier`, `is_active`\n**df_orders columns:** `order_id`, `user_id`, `order_date`, `status`, `gross_amount`, `discount_amount`, `net_amount`, `payment_status`\n\nFind users who have placed **no orders**. Return a DataFrame with columns `user_id` and `name`, sorted by `user_id` ascending.",
@@ -95,7 +95,7 @@
   {
     "id": 32003,
     "order": 3,
-    "topic": "python_data",
+    "topic": "pandas",
     "difficulty": "medium",
     "title": "Monthly Revenue",
     "description": "You have a DataFrame `df_orders` loaded from the orders dataset.\n\n**Columns:** `order_id`, `user_id`, `order_date`, `status`, `gross_amount`, `discount_amount`, `net_amount`, `payment_status`\n\nCompute total revenue (`net_amount`) grouped by month. Return a DataFrame with columns `month` (format `'YYYY-MM'`) and `total_revenue` (rounded to 2 decimal places), sorted by `month` ascending.",
@@ -130,7 +130,7 @@
   {
     "id": 32004,
     "order": 4,
-    "topic": "python_data",
+    "topic": "pandas",
     "difficulty": "medium",
     "title": "Product Revenue from Order Items",
     "description": "You have two DataFrames: `df_order_items` and `df_products`.\n\n**df_order_items columns:** `order_item_id`, `order_id`, `product_id`, `quantity`, `unit_price`, `line_amount`\n**df_products columns:** `product_id`, `product_name`, `category_id`, `brand`, `price`, `launch_date`, `is_active`\n\nJoin the two DataFrames on `product_id`. Compute `total_revenue` as the sum of `line_amount` per product. Return a DataFrame with columns `product_id`, `product_name`, `total_revenue` (rounded to 2 decimal places), sorted by `total_revenue` descending.",
@@ -174,7 +174,7 @@
   {
     "id": 32005,
     "order": 5,
-    "topic": "python_data",
+    "topic": "pandas",
     "difficulty": "medium",
     "title": "User Average Order Amount per Row",
     "description": "You have a DataFrame `df_orders` loaded from the orders dataset.\n\n**Columns:** `order_id`, `user_id`, `order_date`, `status`, `gross_amount`, `discount_amount`, `net_amount`, `payment_status`\n\nAdd a column `user_avg_order` containing each user's mean `net_amount` applied to every row for that user (use `groupby` + `transform`). Round `user_avg_order` to 2 decimal places. Return columns: `order_id`, `user_id`, `net_amount`, `user_avg_order`, sorted by `order_id` ascending.",
@@ -210,7 +210,7 @@
   {
     "id": 32006,
     "order": 6,
-    "topic": "python_data",
+    "topic": "pandas",
     "difficulty": "medium",
     "title": "7-Day Rolling Revenue",
     "description": "You have a DataFrame `df_orders` loaded from the orders dataset.\n\n**Columns:** `order_id`, `user_id`, `order_date`, `status`, `gross_amount`, `discount_amount`, `net_amount`, `payment_status`\n\nAggregate `net_amount` to daily totals. Then compute a 7-day rolling sum of daily revenue. Return a DataFrame with columns: `date` (string `'YYYY-MM-DD'`), `daily_revenue`, `rolling_7d_revenue`. Fill any NaN rolling values with `0`. Sort by `date` ascending.",
@@ -246,7 +246,7 @@
   {
     "id": 32007,
     "order": 7,
-    "topic": "python_data",
+    "topic": "pandas",
     "difficulty": "medium",
     "title": "Rank Products by Price within Category",
     "description": "You have a DataFrame `df_products` loaded from the products dataset.\n\n**Columns:** `product_id`, `product_name`, `category_id`, `brand`, `price`, `launch_date`, `is_active`\n\nAssign a dense rank to each product based on `price` descending **within each `category_id`**. Return columns: `product_id`, `product_name`, `category_id`, `price`, `price_rank` (integer). Sort by `category_id` ascending, then `price_rank` ascending.",
@@ -281,7 +281,7 @@
   {
     "id": 32008,
     "order": 8,
-    "topic": "python_data",
+    "topic": "pandas",
     "difficulty": "medium",
     "title": "Revenue Contribution Percent",
     "description": "You have a DataFrame `df_order_items` loaded from the order_items dataset.\n\n**Columns:** `order_item_id`, `order_id`, `product_id`, `quantity`, `unit_price`, `line_amount`\n\nCompute `total_revenue` (sum of `line_amount`) per `product_id`. Then add a `pct_of_total` column: each product's revenue divided by the overall total revenue, multiplied by 100, rounded to 2 decimal places. Return columns: `product_id`, `total_revenue`, `pct_of_total`. Sort by `total_revenue` descending.",
@@ -314,7 +314,7 @@
   {
     "id": 32009,
     "order": 9,
-    "topic": "python_data",
+    "topic": "pandas",
     "difficulty": "medium",
     "title": "Orders Grouped by Month-Year",
     "description": "You have a DataFrame `df_orders` loaded from the orders dataset.\n\n**Columns:** `order_id`, `user_id`, `order_date`, `status`, `gross_amount`, `discount_amount`, `net_amount`, `payment_status`\n\nGroup orders by month using the `'YYYY-MM'` format. Return a DataFrame with columns: `month`, `order_count`, `avg_order_value` (mean of `net_amount`, rounded to 2 decimal places). Sort by `month` ascending.",
@@ -349,7 +349,7 @@
   {
     "id": 32010,
     "order": 10,
-    "topic": "python_data",
+    "topic": "pandas",
     "difficulty": "medium",
     "title": "Price Bucket Segmentation",
     "description": "You have a DataFrame `df_products` loaded from the products dataset.\n\n**Columns:** `product_id`, `product_name`, `category_id`, `brand`, `price`, `launch_date`, `is_active`\n\nSegment products into three price buckets using `pd.cut`:\n- `'budget'`: price < 50\n- `'mid'`: 50 ≤ price < 200\n- `'premium'`: price ≥ 200\n\nReturn columns: `product_id`, `product_name`, `price`, `price_bucket`. Sort by `price` ascending.",
@@ -383,7 +383,7 @@
   {
     "id": 32011,
     "order": 11,
-    "topic": "python_data",
+    "topic": "pandas",
     "difficulty": "medium",
     "title": "Top 10 Products by Revenue (Three-Table Join)",
     "description": "You have three DataFrames: `df_orders`, `df_order_items`, and `df_products`.\n\n**df_orders columns:** `order_id`, `user_id`, `order_date`, `status`, `gross_amount`, `discount_amount`, `net_amount`, `payment_status`\n**df_order_items columns:** `order_item_id`, `order_id`, `product_id`, `quantity`, `unit_price`, `line_amount`\n**df_products columns:** `product_id`, `product_name`, `category_id`, `brand`, `price`, `launch_date`, `is_active`\n\nJoin all three tables. Compute `total_revenue` (sum of `line_amount`) per product. Return the **top 10** products with columns: `product_name`, `category_id`, `total_revenue`. Sort by `total_revenue` descending.",
@@ -438,7 +438,7 @@
   {
     "id": 32012,
     "order": 12,
-    "topic": "python_data",
+    "topic": "pandas",
     "difficulty": "medium",
     "title": "Support Ticket Resolution Rate",
     "description": "You have a DataFrame `df_tickets` loaded from the support_tickets dataset.\n\n**Columns:** `ticket_id`, `user_id`, `created_at`, `issue_type`, `priority`, `status`, `resolution_hours`\n\nCompute the overall resolution rate. Return a single-row DataFrame with columns: `total_tickets` (int), `resolved_tickets` (int, where `status == 'resolved'`), `resolution_rate_pct` (rounded to 1 decimal place).",
@@ -472,7 +472,7 @@
   {
     "id": 32013,
     "order": 13,
-    "topic": "python_data",
+    "topic": "pandas",
     "difficulty": "medium",
     "title": "Cumulative Employee Salary by Department",
     "description": "You have a DataFrame `df_employees` loaded from the employees dataset.\n\n**Columns:** `employee_id`, `employee_name`, `email`, `salary`, `department_id`, `hire_date`, `country`\n\nSort employees by `department_id` ascending, then `salary` ascending. Add a column `cumulative_salary` containing the running cumulative sum of `salary` **within each department**. Return columns: `employee_id`, `department_id`, `employee_name`, `salary`, `cumulative_salary`. Sort by `department_id` ascending, `salary` ascending.",
@@ -507,7 +507,7 @@
   {
     "id": 32014,
     "order": 14,
-    "topic": "python_data",
+    "topic": "pandas",
     "difficulty": "medium",
     "title": "Merge Payments with Orders",
     "description": "You have two DataFrames: `df_orders` and `df_payments`.\n\n**df_orders columns:** `order_id`, `user_id`, `order_date`, `status`, `gross_amount`, `discount_amount`, `net_amount`, `payment_status`\n**df_payments columns:** `payment_id`, `order_id`, `payment_date`, `payment_method`, `amount`, `status`\n\nLeft-join `df_orders` to `df_payments` on `order_id`. Return columns: `order_id`, `user_id`, `net_amount`, `payment_method`, `status` (from payments — rename to `payment_status_detail`). Fill missing `payment_method` and `payment_status_detail` values with `'none'`. Sort by `order_id` ascending.",
@@ -552,7 +552,7 @@
   {
     "id": 32015,
     "order": 15,
-    "topic": "python_data",
+    "topic": "pandas",
     "difficulty": "medium",
     "title": "Users with Sessions from Multiple Device Types",
     "description": "You have a DataFrame `df_sessions` loaded from the sessions dataset.\n\n**Columns:** `session_id`, `user_id`, `session_start`, `device_type`, `traffic_source`, `country`\n\nFind users who have sessions from **more than one distinct device type** (e.g., a user who has both desktop and mobile sessions). Return a DataFrame with columns `user_id` and `device_count` (the number of distinct device types used), sorted by `user_id` ascending.",
@@ -586,7 +586,7 @@
   {
     "id": 32016,
     "order": 16,
-    "topic": "python_data",
+    "topic": "pandas",
     "difficulty": "medium",
     "title": "Top 20 Order Items by Revenue",
     "description": "You have a DataFrame `df_order_items` loaded from the order_items dataset.\n\n**Columns:** `order_item_id`, `order_id`, `product_id`, `quantity`, `unit_price`, `line_amount`\n\nCompute `item_revenue` as `unit_price * quantity` for each row. Return the top 20 rows by `item_revenue` (descending) with columns: `order_item_id`, `product_id`, `unit_price`, `quantity`, `item_revenue`. Sort by `item_revenue` descending.",
@@ -619,7 +619,7 @@
   {
     "id": 32017,
     "order": 17,
-    "topic": "python_data",
+    "topic": "pandas",
     "difficulty": "medium",
     "title": "Sessions per User by Device Type (Pivot)",
     "description": "You have a DataFrame `df_sessions` loaded from the sessions dataset.\n\n**Columns:** `session_id`, `user_id`, `session_start`, `device_type`, `traffic_source`, `country`\n\nCount the number of sessions each user had on each `device_type`. Pivot the result so each `device_type` becomes a column. Fill missing combinations with `0`. Return a DataFrame with `user_id` as a column and one column per device type. Sort by `user_id` ascending. Column order should be: `user_id` followed by device type columns sorted alphabetically.",
@@ -653,7 +653,7 @@
   {
     "id": 32018,
     "order": 18,
-    "topic": "python_data",
+    "topic": "pandas",
     "difficulty": "medium",
     "title": "Category Revenue Share",
     "description": "You have three DataFrames: `df_order_items`, `df_products`, and `df_categories`.\n\n**df_order_items columns:** `order_item_id`, `order_id`, `product_id`, `quantity`, `unit_price`, `line_amount`\n**df_products columns:** `product_id`, `product_name`, `category_id`, `brand`, `price`, `launch_date`, `is_active`\n**df_categories columns:** `category_id`, `category_name`, `parent_category`\n\nJoin the three tables. Compute `total_revenue` (sum of `line_amount`) per category. Add `pct_of_total` (revenue share %, rounded to 2 decimal places). Return columns: `category_name`, `total_revenue`, `pct_of_total`. Sort by `total_revenue` descending.",
@@ -702,7 +702,7 @@
   {
     "id": 32019,
     "order": 19,
-    "topic": "python_data",
+    "topic": "pandas",
     "difficulty": "medium",
     "title": "Employee Salary Percentile Rank",
     "description": "You have a DataFrame `df_employees` loaded from the employees dataset.\n\n**Columns:** `employee_id`, `employee_name`, `email`, `salary`, `department_id`, `hire_date`, `country`\n\nCompute `salary_percentile` as the percentile rank of each employee's salary across all employees (use `.rank(pct=True) * 100`, rounded to 1 decimal place). Return columns: `employee_id`, `employee_name`, `salary`, `salary_percentile`. Sort by `salary_percentile` descending.",
@@ -737,7 +737,7 @@
   {
     "id": 32020,
     "order": 20,
-    "topic": "python_data",
+    "topic": "pandas",
     "difficulty": "medium",
     "title": "Days Between Order and Payment",
     "description": "You have two DataFrames: `df_orders` and `df_payments`.\n\n**df_orders columns:** `order_id`, `user_id`, `order_date`, `status`, `gross_amount`, `discount_amount`, `net_amount`, `payment_status`\n**df_payments columns:** `payment_id`, `order_id`, `payment_date`, `payment_method`, `amount`, `status`\n\nInner-join orders and payments on `order_id`. Compute `days_to_payment` as the number of days between `payment_date` and `order_date` (as an integer). Return columns: `order_id`, `order_date`, `payment_date`, `days_to_payment`. Sort by `days_to_payment` descending.",
@@ -781,7 +781,7 @@
   {
     "id": 32021,
     "order": 21,
-    "topic": "python_data",
+    "topic": "pandas",
     "difficulty": "medium",
     "title": "Order Items Above Product Average Price",
     "description": "You have a DataFrame `df_order_items` loaded from the order_items dataset.\n\n**Columns:** `order_item_id`, `order_id`, `product_id`, `quantity`, `unit_price`, `line_amount`\n\nFor each product, compute its average `unit_price` across all order items. Add a column `avg_price` (per-product mean, rounded to 2 decimal places) and a boolean column `above_avg` that is `True` when the row's `unit_price` exceeds that product's average. Return all columns plus `avg_price` and `above_avg`. Sort by `order_item_id` ascending.",
@@ -815,7 +815,7 @@
   {
     "id": 32022,
     "order": 22,
-    "topic": "python_data",
+    "topic": "pandas",
     "difficulty": "medium",
     "title": "Top Product per Category by Revenue",
     "description": "You have two DataFrames: `df_order_items` and `df_products`.\n\n**df_order_items columns:** `order_item_id`, `order_id`, `product_id`, `quantity`, `unit_price`, `line_amount`\n**df_products columns:** `product_id`, `product_name`, `category_id`, `brand`, `price`, `launch_date`, `is_active`\n\nFor each `category_id`, find the **single product** with the highest total revenue (sum of `line_amount`). Return one row per category with columns: `category_id`, `product_id`, `total_revenue`. Sort by `category_id` ascending.",
@@ -859,7 +859,7 @@
   {
     "id": 32023,
     "order": 23,
-    "topic": "python_data",
+    "topic": "pandas",
     "difficulty": "medium",
     "title": "Revenue by Day of Week",
     "description": "You have a DataFrame `df_orders` loaded from the orders dataset.\n\n**Columns:** `order_id`, `user_id`, `order_date`, `status`, `gross_amount`, `discount_amount`, `net_amount`, `payment_status`\n\nExtract the `day_of_week` from `order_date` (Monday = 0, Sunday = 6). Map it to a `day_name` string (`'Monday'`, `'Tuesday'`, ..., `'Sunday'`). Return a DataFrame with columns: `day_of_week` (int), `day_name` (str), `total_revenue` (sum of `net_amount`, rounded to 2 dec), `avg_revenue` (mean of `net_amount`, rounded to 2 dec). Sort by `day_of_week` ascending.",
@@ -894,7 +894,7 @@
   {
     "id": 32024,
     "order": 24,
-    "topic": "python_data",
+    "topic": "pandas",
     "difficulty": "medium",
     "title": "Event Count per Session",
     "description": "You have two DataFrames: `df_events` and `df_sessions`.\n\n**df_events columns:** `event_id`, `session_id`, `user_id`, `event_time`, `event_name`, `product_id`\n**df_sessions columns:** `session_id`, `user_id`, `session_start`, `device_type`, `traffic_source`, `country`\n\nJoin events and sessions on `session_id`. Count the number of events per session. Return columns: `session_id`, `user_id`, `device_type`, `event_count`. Sort by `event_count` descending.",
@@ -936,7 +936,7 @@
   {
     "id": 32025,
     "order": 25,
-    "topic": "python_data",
+    "topic": "pandas",
     "difficulty": "medium",
     "title": "Employees Above Department Average Salary",
     "description": "You have a DataFrame `df_employees` loaded from the employees dataset.\n\n**Columns:** `employee_id`, `employee_name`, `email`, `salary`, `department_id`, `hire_date`, `country`\n\nFor each employee, add a column `dept_avg_salary` containing the average salary for their department (use `groupby` + `transform`, rounded to 2 decimal places). Add a boolean column `above_avg` that is `True` when the employee's `salary` exceeds `dept_avg_salary`. Return columns: `employee_id`, `employee_name`, `department_id`, `salary`, `dept_avg_salary`, `above_avg`. Sort by `department_id` ascending, then `salary` descending.",
@@ -971,7 +971,7 @@
   {
     "id": 32026,
     "order": 26,
-    "topic": "python_data",
+    "topic": "pandas",
     "difficulty": "medium",
     "title": "Weekly revenue with resample",
     "description": "You have a DataFrame `df_orders`.\n\n**Columns:** `order_id`, `user_id`, `order_date`, `status`, `gross_amount`, `discount_amount`, `net_amount`, `payment_status`\n\n1. Convert `order_date` to datetime and set it as the index.\n2. Resample to Monday-anchored weekly bins (`'W-MON'`) and sum `net_amount`.\n3. Return a DataFrame with columns `week_start` (Monday date as string `'YYYY-MM-DD'`) and `weekly_revenue` (rounded to 2 decimal places). Sort by `week_start` ascending.",
@@ -1006,7 +1006,7 @@
   {
     "id": 32027,
     "order": 27,
-    "topic": "python_data",
+    "topic": "pandas",
     "difficulty": "medium",
     "title": "Order status pivot table by country",
     "description": "You have two DataFrames: `df_orders` and `df_users`.\n\n**df_orders columns:** `order_id`, `user_id`, `order_date`, `status`, `net_amount`\n**df_users columns:** `user_id`, `name`, `country`\n\n1. Inner join on `user_id`.\n2. Create a pivot table: rows = `country`, columns = order `status`, values = sum of `net_amount`. Fill missing cells with `0`.\n3. Reset the index so `country` is a regular column. Sort by `country` ascending.",
@@ -1052,7 +1052,7 @@
   {
     "id": 32028,
     "order": 28,
-    "topic": "python_data",
+    "topic": "pandas",
     "difficulty": "medium",
     "title": "Salary rank and percentile by department",
     "description": "You have two DataFrames: `df_employees` and `df_departments`.\n\n**df_employees columns:** `employee_id`, `employee_name`, `salary`, `department_id` (salary is nullable — some rows have no salary recorded)\n**df_departments columns:** `department_id`, `department_name`, `region`\n\n1. Exclude employees with no recorded salary.\n2. Inner join on `department_id`.\n3. Within each `department_name`, compute:\n   - `salary_rank`: rank of salary descending (dense rank, 1 = highest)\n   - `salary_pct`: percentile rank using `rank(pct=True)` ascending (0–1 range, rounded to 2 dp)\n4. Return `employee_name`, `department_name`, `salary`, `salary_rank`, `salary_pct`. Sort by `department_name`, `salary_rank`.",
@@ -1094,7 +1094,7 @@
   {
     "id": 32029,
     "order": 29,
-    "topic": "python_data",
+    "topic": "pandas",
     "difficulty": "medium",
     "title": "Named aggregation: order stats by status",
     "description": "You have a DataFrame `df_orders`.\n\n**Columns:** `order_id`, `user_id`, `order_date`, `status`, `gross_amount`, `discount_amount`, `net_amount`, `payment_status`\n\nUsing pandas named aggregation syntax, compute per `status`:\n- `order_count`: number of orders\n- `avg_revenue`: mean `net_amount` (rounded to 2 dp)\n- `max_revenue`: max `net_amount`\n- `min_revenue`: min `net_amount`\n- `total_revenue`: sum `net_amount` (rounded to 2 dp)\n\nReturn a DataFrame with `status` as a column (not index), sorted by `total_revenue` descending.",
@@ -1129,7 +1129,7 @@
   {
     "id": 32030,
     "order": 30,
-    "topic": "python_data",
+    "topic": "pandas",
     "difficulty": "medium",
     "title": "Second-order retention rate by country",
     "description": "You have two DataFrames: `df_orders` and `df_users`.\n\n**df_orders columns:** `order_id`, `user_id`, `order_date`, `status`\n**df_users columns:** `user_id`, `name`, `country`\n\nCompute the **second-order retention rate** per country:\n1. Filter to completed orders only.\n2. Count completed orders per user → `order_count`.\n3. Join with `df_users` to get `country`.\n4. Per country, count:\n   - `single_order_users`: users with exactly 1 completed order\n   - `retained_users`: users with 2 or more completed orders\n5. Compute `retention_rate` = `retained_users / (single_order_users + retained_users)`, rounded to 2 dp.\n6. Return `country`, `single_order_users`, `retained_users`, `retention_rate`, sorted by `retention_rate` descending.",
@@ -1177,7 +1177,7 @@
   {
     "id": 32031,
     "order": 31,
-    "topic": "python_data",
+    "topic": "pandas",
     "difficulty": "medium",
     "title": "Orders with Most Line Items",
     "description": "You have two DataFrames: `df_orders` (orders dataset) and `df_order_items` (order_items dataset).\n\n**df_orders columns:** `order_id`, `user_id`, `order_date`, `status`, `net_amount`\n\n**df_order_items columns:** `order_item_id`, `order_id`, `product_id`, `quantity`, `unit_price`, `line_amount`\n\nJoin the two DataFrames on `order_id` and count the number of distinct line items (`order_item_id`) per order. Return columns `order_id` and `item_count`, sorted by `item_count` descending. Return only the top 10 orders.",
@@ -1222,7 +1222,7 @@
   {
     "id": 32032,
     "order": 32,
-    "topic": "python_data",
+    "topic": "pandas",
     "difficulty": "medium",
     "mock_only": true,
     "title": "Revenue and unique buyers by acquisition channel",
@@ -1269,7 +1269,7 @@
   {
     "id": 32033,
     "order": 33,
-    "topic": "python_data",
+    "topic": "pandas",
     "difficulty": "medium",
     "mock_only": true,
     "title": "Top 10 products by order frequency",
@@ -1314,7 +1314,7 @@
   {
     "id": 32034,
     "order": 34,
-    "topic": "python_data",
+    "topic": "pandas",
     "difficulty": "medium",
     "mock_only": true,
     "title": "Payment failure rate by method",
@@ -1348,7 +1348,7 @@
   {
     "id": 32035,
     "order": 35,
-    "topic": "python_data",
+    "topic": "pandas",
     "difficulty": "medium",
     "mock_only": true,
     "title": "Above-average spenders",
@@ -1395,7 +1395,7 @@
   {
     "id": 32036,
     "order": 36,
-    "topic": "python_data",
+    "topic": "pandas",
     "difficulty": "medium",
     "mock_only": true,
     "framing": "scenario",
@@ -1438,7 +1438,7 @@
   {
     "id": 32037,
     "order": 37,
-    "topic": "python_data",
+    "topic": "pandas",
     "difficulty": "medium",
     "mock_only": true,
     "title": "Category revenue share",
@@ -1488,7 +1488,7 @@
   {
     "id": 32038,
     "order": 38,
-    "topic": "python_data",
+    "topic": "pandas",
     "difficulty": "medium",
     "mock_only": true,
     "title": "Session breakdown by device type",
@@ -1522,7 +1522,7 @@
   {
     "id": 32039,
     "order": 39,
-    "topic": "python_data",
+    "topic": "pandas",
     "difficulty": "medium",
     "mock_only": true,
     "type": "debug",
@@ -1571,7 +1571,7 @@
   {
     "id": 32040,
     "order": 40,
-    "topic": "python_data",
+    "topic": "pandas",
     "difficulty": "medium",
     "mock_only": true,
     "type": "debug",
@@ -1609,7 +1609,7 @@
   {
     "id": 32041,
     "order": 41,
-    "topic": "python_data",
+    "topic": "pandas",
     "difficulty": "medium",
     "mock_only": true,
     "type": "debug",
@@ -1658,7 +1658,7 @@
   {
     "id": 32042,
     "order": 42,
-    "topic": "python_data",
+    "topic": "pandas",
     "difficulty": "medium",
     "title": "Match Events to Most Recent Prior Order",
     "description": "You have two DataFrames: `df_events` (event log) and `df_orders` (orders).\n\n**df_events columns:** `event_id`, `session_id`, `user_id`, `event_time`, `event_name`, `product_id`\n**df_orders columns:** `order_id`, `user_id`, `order_date`, `status`, `gross_amount`, `discount_amount`, `net_amount`, `payment_status`\n\nFor each event, find the most recent order placed by the **same user** at or before the event time. Use `pd.merge_asof` with `direction='backward'` and `by='user_id'`.\n\nReturn columns `event_id`, `user_id`, `event_time`, and `order_id` (NaN if the user has no prior order). Sort by `event_id`.",
@@ -1702,7 +1702,7 @@
   {
     "id": 32043,
     "order": 43,
-    "topic": "python_data",
+    "topic": "pandas",
     "difficulty": "medium",
     "title": "Fill Missing Emails with combine_first",
     "description": "You have a DataFrame `df_users`.\n\n**Columns:** `user_id`, `name`, `email`, `signup_date`, `country`, `acquisition_channel`, `plan_tier`, `is_active`\n\nSome users have a null `email`. Build a fallback `pd.Series` indexed by `user_id` that assigns `'user{user_id}@placeholder.com'` to every null-email user. Then use `Series.combine_first` to fill the nulls in the original email column from the fallback.\n\nReturn columns `user_id`, `name`, `email`, sorted by `user_id`.",
@@ -1737,7 +1737,7 @@
   {
     "id": 32044,
     "order": 44,
-    "topic": "python_data",
+    "topic": "pandas",
     "difficulty": "medium",
     "title": "Compute Discount Rate and Flag with assign",
     "description": "You have a DataFrame `df_orders`.\n\n**Columns:** `order_id`, `user_id`, `order_date`, `status`, `gross_amount`, `discount_amount`, `net_amount`, `payment_status`\n\nUsing two chained `.assign()` calls:\n1. Add `discount_pct` = `discount_amount / gross_amount` rounded to 4 decimal places.\n2. Add `is_discounted` = `True` where `discount_pct > 0`.\n\nReturn columns `order_id`, `gross_amount`, `discount_amount`, `discount_pct`, `is_discounted`, sorted by `order_id`.",
@@ -1772,7 +1772,7 @@
   {
     "id": 32045,
     "order": 45,
-    "topic": "python_data",
+    "topic": "pandas",
     "difficulty": "medium",
     "title": "Build a Transformation Pipeline with pipe",
     "description": "You have a DataFrame `df_orders`.\n\n**Columns:** `order_id`, `user_id`, `order_date`, `status`, `gross_amount`, `discount_amount`, `net_amount`, `payment_status`\n\nDefine two helper functions inside `solve`:\n- `add_discount_pct(df)`: returns a copy of `df` with `discount_pct = round(discount_amount / gross_amount, 4)`.\n- `flag_high_value(df, threshold)`: returns a copy of `df` with `high_value = net_amount > threshold`.\n\nChain them using `.pipe()`:\n```python\ndf_orders.pipe(add_discount_pct).pipe(flag_high_value, threshold=200)\n```\n\nReturn columns `order_id`, `net_amount`, `discount_pct`, `high_value`, sorted by `order_id`.",
@@ -1807,7 +1807,7 @@
   {
     "id": 32046,
     "order": 46,
-    "topic": "python_data",
+    "topic": "pandas",
     "difficulty": "medium",
     "title": "Convert Event Timestamps to New York Time",
     "description": "You have a DataFrame `df_events`.\n\n**Columns:** `event_id`, `session_id`, `user_id`, `event_time`, `event_name`, `product_id`\n\nThe `event_time` column contains timestamps stored as UTC (no timezone info). Convert them to New York time:\n1. Parse `event_time` with `pd.to_datetime`.\n2. Localize to UTC with `.dt.tz_localize('UTC')`.\n3. Convert to `'America/New_York'` with `.dt.tz_convert('America/New_York')`.\n\nReturn columns `event_id`, `hour_utc` (integer hour in UTC) and `hour_ny` (integer hour in New York time), sorted by `event_id`.",
@@ -1840,7 +1840,7 @@
   {
     "id": 32047,
     "order": 47,
-    "topic": "python_data",
+    "topic": "pandas",
     "difficulty": "medium",
     "mock_only": true,
     "title": "Unnest Product Lists with explode",
@@ -1874,7 +1874,7 @@
   {
     "id": 32048,
     "order": 48,
-    "topic": "python_data",
+    "topic": "pandas",
     "difficulty": "medium",
     "mock_only": true,
     "title": "Revenue Distribution by Quartile",
@@ -1911,7 +1911,7 @@
   {
     "id": 32049,
     "order": 49,
-    "topic": "python_data",
+    "topic": "pandas",
     "difficulty": "medium",
     "title": "Memory-optimised channel revenue summary",
     "description": "You have DataFrames `df_orders` and `df_users`.\n\nBefore computing any aggregation, **downcast low-cardinality string columns to `category` dtype** to reduce memory footprint:\n- In `df_orders`: cast `status` and `payment_status` to `category`\n- In `df_users`: cast `acquisition_channel` and `plan_tier` to `category`\n\nThen join the two tables on `user_id` and return a channel-level summary with columns:\n`acquisition_channel` (category), `order_count` (int64), `total_revenue` (float64, rounded to 2 dp)\n\nSort by `acquisition_channel` ascending.",
@@ -1958,7 +1958,7 @@
   {
     "id": 32050,
     "order": 50,
-    "topic": "python_data",
+    "topic": "pandas",
     "difficulty": "medium",
     "title": "Fix inflated user revenue from payment fan-out",
     "description": "A data engineer wrote the following function to compute total revenue per user by joining orders with payments:\n\n```python\ndef buggy_revenue(df_orders, df_payments):\n    merged = df_orders.merge(df_payments, on='order_id')\n    return (\n        merged.groupby('user_id')['amount']\n        .sum()\n        .reset_index()\n        .rename(columns={'amount': 'total_revenue'})\n    )\n```\n\n**The bug:** `df_payments` can contain multiple rows per `order_id` (e.g. a failed attempt followed by a successful payment). The unconstrained merge fans out: every order row is duplicated for each payment row, inflating `total_revenue`.\n\n**Fix the function.** Use only `paid` payments and deduplicate to one payment per order (keep the first). Return columns `user_id` (int64) and `total_revenue` (float64, rounded to 2 dp), sorted by `user_id` ascending.",
@@ -2003,7 +2003,7 @@
   {
     "id": 32051,
     "order": 51,
-    "topic": "python_data",
+    "topic": "pandas",
     "difficulty": "medium",
     "title": "Fix double-counted revenue after order-items join",
     "description": "A colleague wrote this function to compute total revenue per user by joining orders with order items:\n\n```python\ndef buggy_revenue(df_orders, df_order_items):\n    merged = df_orders.merge(df_order_items, on='order_id')\n    return (\n        merged.groupby('user_id')['net_amount']\n        .sum()\n        .reset_index()\n        .rename(columns={'net_amount': 'total_revenue'})\n    )\n```\n\n**The bug:** `df_order_items` contains one row per line item. When you merge, each order's `net_amount` is repeated once per line item in that order. Summing `net_amount` after the join multiplies each order's revenue by its item count.\n\n**Fix the function.** Use `line_amount` from `df_order_items` (the actual per-item revenue) instead. Return columns `user_id` (int64) and `total_item_revenue` (float64, rounded to 2 dp), sorted by `user_id` ascending.",
@@ -2048,7 +2048,7 @@
   {
     "id": 32052,
     "order": 52,
-    "topic": "python_data",
+    "topic": "pandas",
     "difficulty": "medium",
     "title": "Fix cumulative revenue running total (sort before cumsum)",
     "description": "A colleague wrote the following function to produce a running total of completed-order revenue over time:\n\n```python\ndef buggy_running_total(df_orders):\n    completed = df_orders[df_orders['status'] == 'completed'].copy()\n    completed['cumulative_revenue'] = completed['net_amount'].cumsum()  # bug here\n    return (\n        completed.assign(order_date=lambda x: pd.to_datetime(x['order_date']).dt.strftime('%Y-%m-%d'))\n        .sort_values('order_date')\n        [['order_date', 'net_amount', 'cumulative_revenue']]\n        .reset_index(drop=True)\n    )\n```\n\n**The bug:** `cumsum()` is applied before `sort_values`, so the running total accumulates in arbitrary (CSV load) order. Sorting *after* cumsum produces a visually sorted table but with incorrect cumulative values.\n\n**Fix the function.** Sort by `order_date` ascending **before** computing cumsum. Return columns `order_date` (string `YYYY-MM-DD`), `net_amount` (float64), `cumulative_revenue` (float64, rounded to 2 dp).",
@@ -2084,7 +2084,7 @@
   {
     "id": 32053,
     "order": 53,
-    "topic": "python_data",
+    "topic": "pandas",
     "difficulty": "medium",
     "mock_only": true,
     "framing": "scenario",
@@ -2131,7 +2131,7 @@
   {
     "id": 32054,
     "order": 54,
-    "topic": "python_data",
+    "topic": "pandas",
     "difficulty": "medium",
     "mock_only": true,
     "framing": "scenario",
@@ -2176,7 +2176,7 @@
   {
     "id": 32055,
     "order": 55,
-    "topic": "python_data",
+    "topic": "pandas",
     "difficulty": "medium",
     "mock_only": true,
     "framing": "scenario",
@@ -2221,7 +2221,7 @@
   {
     "id": 32056,
     "order": 56,
-    "topic": "python_data",
+    "topic": "pandas",
     "difficulty": "medium",
     "mock_only": true,
     "framing": "scenario",
@@ -2263,7 +2263,7 @@
   {
     "id": 32057,
     "order": 57,
-    "topic": "python_data",
+    "topic": "pandas",
     "difficulty": "medium",
     "mock_only": true,
     "framing": "scenario",
@@ -2303,7 +2303,7 @@
   {
     "id": 32058,
     "order": 58,
-    "topic": "python_data",
+    "topic": "pandas",
     "difficulty": "medium",
     "mock_only": true,
     "framing": "scenario",
@@ -2525,7 +2525,7 @@
       "GROUPED AGGREGATION"
     ],
     "order": 63,
-    "topic": "python_data",
+    "topic": "pandas",
     "solution_code": "import pandas as pd\n\ndef solve(df_orders, df_users):\n    df = df_orders.merge(df_users[['user_id', 'country']], on='user_id', how='inner')\n    result = (\n        df.groupby('country', as_index=False)\n        .agg(\n            total_orders=('order_id', 'count'),\n            completed_orders=('status', lambda x: (x == 'completed').sum())\n        )\n    )\n    result['completion_rate'] = (result['completed_orders'] / result['total_orders']).round(4)\n    return result.sort_values('completion_rate', ascending=False).reset_index(drop=True)\n",
     "explanation": "Merging on `user_id` attaches each order's country from the users table. `groupby('country')` then partitions orders by country. Within `agg()`, a plain `'count'` gives total orders and a lambda `(x == 'completed').sum()` counts only the completed ones. Dividing gives the completion rate — the denominator intentionally includes all order statuses so cancelled orders are not hidden."
   },
@@ -2559,7 +2559,7 @@
       "DOUBLE-COUNTING DETECTION"
     ],
     "order": 64,
-    "topic": "python_data",
+    "topic": "pandas",
     "solution_code": "import pandas as pd\n\ndef solve(df_payments):\n    total_orders = df_payments['order_id'].nunique()\n    orders_with_success = (\n        df_payments[df_payments['status'] == 'paid']['order_id']\n        .nunique()\n    )\n    rate = round(orders_with_success / total_orders, 4)\n    return pd.DataFrame({\n        'total_orders': [total_orders],\n        'orders_with_successful_payment': [orders_with_success],\n        'payment_success_rate': [rate]\n    })\n",
     "explanation": "`df_payments['order_id'].nunique()` counts every distinct order in the payments table. Filtering to `status == 'paid'` first and then calling `.nunique()` on `order_id` counts only orders that have at least one paid payment — avoiding double-counting orders with multiple payment rows. Dividing gives the fraction of orders that were ultimately paid."
   },
@@ -2636,7 +2636,7 @@
       "GROUPED AGGREGATION"
     ],
     "order": 66,
-    "topic": "python_data",
+    "topic": "pandas",
     "solution_code": "import pandas as pd\n\ndef solve(df_orders):\n    result = (\n        df_orders.groupby('payment_status', as_index=False)['net_amount']\n        .sum()\n        .rename(columns={'net_amount': 'total_revenue'})\n    )\n    result['total_revenue'] = result['total_revenue'].round(2)\n    return result.sort_values('total_revenue', ascending=False).reset_index(drop=True)\n",
     "explanation": "Grouping directly on `orders.payment_status` and summing `net_amount` gives correct revenue with no fan-out risk — each order contributes its `net_amount` exactly once. Joining to the payments table and summing `payments.amount` would inflate totals because one order may have multiple payment rows (retries, partial payments), causing the order's revenue to be counted multiple times."
   },
@@ -2713,7 +2713,7 @@
       "GROUPED AGGREGATION"
     ],
     "order": 68,
-    "topic": "python_data",
+    "topic": "pandas",
     "solution_code": "import pandas as pd\n\ndef solve(df_events, df_sessions):\n    merged = df_events.merge(df_sessions[['session_id', 'device_type']], on='session_id')\n    result = (\n        merged.groupby('device_type', as_index=False)\n        .agg(\n            active_users=('user_id', 'nunique'),\n            total_events=('event_id', 'count')\n        )\n        .sort_values('active_users', ascending=False)\n        .reset_index(drop=True)\n    )\n    return result\n",
     "explanation": "Joining on `session_id` attaches `device_type` to every event row. The subsequent `groupby('device_type').agg()` computes two metrics simultaneously: `nunique` on `user_id` counts each distinct user only once per device type regardless of how many events they generated, while `count` on `event_id` gives the raw event volume. Showing both side-by-side illustrates the difference between user reach and engagement volume."
   },
@@ -2923,7 +2923,7 @@
       "DATETIME OPERATIONS"
     ],
     "order": 74,
-    "topic": "python_data",
+    "topic": "pandas",
     "solution_code": "import pandas as pd\n\ndef solve(df_events):\n    df = df_events.copy()\n    df['event_time'] = pd.to_datetime(df['event_time'])\n    df = df.sort_values(['session_id', 'event_time'])\n    df['prev_ts'] = df.groupby('session_id')['event_time'].shift(1)\n    df['seconds_since_prev'] = (\n        (df['event_time'] - df['prev_ts']).dt.total_seconds()\n        .fillna(0).astype(int)\n    )\n    return (\n        df[['session_id', 'event_id', 'event_name', 'event_time', 'seconds_since_prev']]\n        .reset_index(drop=True)\n    )\n",
     "explanation": "Sorting by `['session_id', 'event_time']` ensures events are in chronological order within each session. `groupby('session_id')['event_time'].shift(1)` lags the timestamp by one row within each group, giving the previous event's time. Subtracting and calling `.dt.total_seconds()` gives the gap in seconds as a float; `.fillna(0)` handles the first event in each session (no predecessor), and `.astype(int)` converts to whole seconds."
   },
@@ -2993,7 +2993,7 @@
       "OUTPUT SHAPE & ORDERING"
     ],
     "order": 76,
-    "topic": "python_data",
+    "topic": "pandas",
     "solution_code": "import pandas as pd\n\ndef solve(df_users):\n    channel_order = ['referral', 'organic', 'paid_social', 'paid_search', 'partner', 'direct']\n    df = df_users.copy()\n    df['acquisition_channel'] = pd.Categorical(\n        df['acquisition_channel'],\n        categories=channel_order,\n        ordered=True\n    )\n    return (\n        df[['user_id', 'acquisition_channel', 'country']]\n        .sort_values(['acquisition_channel', 'user_id'])\n        .reset_index(drop=True)\n    )\n",
     "explanation": "`pd.Categorical(..., categories=channel_order, ordered=True)` assigns a business-defined rank to each channel value. Once the column is typed as an ordered categorical, `sort_values` uses that rank rather than lexicographic order — so `referral` (index 0 in the category list) sorts before `direct` (index 5), even though alphabetically `direct` would come first."
   },
@@ -3081,7 +3081,7 @@
       "BOOLEAN INDEXING & FILTERING"
     ],
     "order": 78,
-    "topic": "python_data",
+    "topic": "pandas",
     "solution_code": "import pandas as pd\n\ndef solve(df_orders, df_users):\n    completed = df_orders[df_orders['status'] == 'completed'].merge(\n        df_users[['user_id', 'country']], on='user_id', how='inner'\n    ).copy()\n    completed = completed.sort_values(\n        ['country', 'net_amount', 'order_id'],\n        ascending=[True, False, True]\n    )\n    top1 = completed.groupby('country').head(1)\n    return (\n        top1[['country', 'order_id', 'user_id', 'net_amount']]\n        .sort_values('country')\n        .reset_index(drop=True)\n    )\n",
     "explanation": "Filtering to `status == 'completed'` first reduces the working set. Merging on `user_id` brings in `country` from users. Sorting by `['country', 'net_amount', 'order_id']` with `ascending=[True, False, True]` puts the highest-revenue row first within each country, with ties broken by the lower `order_id`. `groupby('country').head(1)` then extracts that first row per group."
   },
@@ -3420,7 +3420,7 @@
       "GROUPED AGGREGATION"
     ],
     "order": 88,
-    "topic": "python_data",
+    "topic": "pandas",
     "solution_code": "import pandas as pd\n\ndef solve(df_sessions):\n    df = df_sessions.copy()\n    df['session_start'] = pd.to_datetime(df['session_start'])\n    df['month'] = df['session_start'].dt.to_period('M').astype(str)\n    result = (\n        df.groupby(['device_type', 'month'], as_index=False)\n        .agg(session_count=('session_id', 'count'))\n        .sort_values(['device_type', 'month'])\n        .reset_index(drop=True)\n    )\n    return result\n",
     "explanation": "`pd.to_datetime()` parses the session_start strings into Timestamp objects, enabling `.dt` accessor methods. `.dt.to_period('M')` truncates each timestamp to its calendar month (e.g. 2023-01), and `.astype(str)` converts it to a sortable string. Grouping by both `device_type` and `month` produces a time-series breakdown of session volume across device categories."
   },

@@ -67,7 +67,7 @@ def test_tc072_mock_only_questions_absent_from_practice_catalog():
     """
     from questions import get_all_questions
     from python_questions import get_all_questions as py_all
-    from python_data_questions import get_all_questions as pd_all
+    from pandas_questions import get_all_questions as pd_all
     from pyspark_questions import get_all_questions as spark_all
 
     # Count practice questions (exclude mock_only)
@@ -86,7 +86,7 @@ def test_tc072_mock_only_questions_absent_from_practice_catalog():
         _make_user(client, plan="elite")
         r_sql = client.get("/api/catalog")
         r_py = client.get("/api/python/catalog")
-        r_pd = client.get("/api/python-data/catalog")
+        r_pd = client.get("/api/pandas/catalog")
         r_spark = client.get("/api/pyspark/catalog")
 
     # Verify the catalogs return questions

@@ -2,7 +2,7 @@
   {
     "id": 311,
     "order": 1,
-    "topic": "python_data",
+    "topic": "pandas",
     "difficulty": "easy",
     "title": "Monthly Revenue from Completed Orders",
     "description": "You have a DataFrame `df_orders` with columns `order_id`, `user_id`, `order_date` (string, YYYY-MM-DD), `status`, `net_amount`.\n\nWrite `solve(df_orders)` that returns a DataFrame with columns `month` (string, YYYY-MM format) and `completed_revenue` (sum of `net_amount` for completed orders in that month). Sort ascending by `month`. Only include months that have at least one completed order.",
@@ -38,7 +38,7 @@
   {
     "id": 312,
     "order": 2,
-    "topic": "python_data",
+    "topic": "pandas",
     "difficulty": "easy",
     "title": "Active Users by Country",
     "description": "You have a DataFrame `df_users` with columns `user_id`, `name`, `email`, `signup_date`, `country`, `acquisition_channel`, `plan_tier`, `is_active`.\n\nWrite `solve(df_users)` that returns a DataFrame with columns `country` and `active_user_count` (count of users where `is_active == True`). Sort descending by `active_user_count`, then ascending by `country` for ties. Only include countries with at least one active user.",
@@ -74,7 +74,7 @@
   {
     "id": 313,
     "order": 3,
-    "topic": "python_data",
+    "topic": "pandas",
     "difficulty": "easy",
     "title": "Bin Support Tickets by Resolution Speed",
     "description": "You have a DataFrame `df_tickets` representing support tickets.\n\n**Columns:** `ticket_id`, `user_id`, `created_at`, `issue_type`, `priority`, `status`, `resolution_hours`\n\nSome tickets have not yet been resolved and have a null `resolution_hours` — exclude those entirely.\n\nFor each resolved ticket, add a `speed_tier` column that bins `resolution_hours` into three categories:\n- `'fast'` — resolved in 24 hours or less\n- `'standard'` — resolved in more than 24 hours but within 72 hours\n- `'slow'` — resolved in more than 72 hours\n\nReturn a DataFrame with columns `ticket_id`, `priority`, `resolution_hours`, `speed_tier`, sorted by `ticket_id` ascending.",
@@ -107,7 +107,7 @@
   {
     "id": 321,
     "order": 1,
-    "topic": "python_data",
+    "topic": "pandas",
     "difficulty": "medium",
     "title": "Revenue Per User With Order Count",
     "description": "You have DataFrames `df_users` (columns: `user_id`, `country`, `plan_tier`) and `df_orders` (columns: `order_id`, `user_id`, `net_amount`, `status`).\n\nWrite `solve(df_users, df_orders)` that returns a DataFrame with columns `user_id`, `country`, `plan_tier`, `order_count` (total orders per user, including non-completed), and `completed_revenue` (sum of `net_amount` for `status == 'completed'` orders). Include every user even if they have zero orders. Sort by `completed_revenue` descending, then `user_id` ascending.",
@@ -154,7 +154,7 @@
   {
     "id": 322,
     "order": 2,
-    "topic": "python_data",
+    "topic": "pandas",
     "difficulty": "medium",
     "title": "Session Count by Traffic Source and Device Type",
     "description": "You have a DataFrame `df_sessions` with columns `session_id`, `user_id`, `session_start`, `device_type`, `traffic_source`, `country`.\n\nWrite `solve(df_sessions)` that returns a **wide** DataFrame with one row per `traffic_source` and one column per `device_type` (`desktop`, `mobile`, `tablet`), where each cell contains the count of sessions for that combination. Fill any missing combinations with 0. Sort rows by `traffic_source` ascending; order device-type columns alphabetically.",
@@ -187,7 +187,7 @@
   {
     "id": 323,
     "order": 3,
-    "topic": "python_data",
+    "topic": "pandas",
     "difficulty": "medium",
     "title": "Per-User Revenue Percentile Rank",
     "description": "You have DataFrames `df_users` (columns: `user_id`, `country`) and `df_orders` (columns: `order_id`, `user_id`, `net_amount`, `status`).\n\nWrite `solve(df_users, df_orders)` that returns a DataFrame with columns `user_id`, `country`, `total_revenue`, and `revenue_pct_rank` — the percentile rank of the user's total completed revenue among all users (0.0 = lowest, 1.0 = highest, computed with `method='average'`). Include all users; users with no completed orders have `total_revenue = 0.0`. Sort by `revenue_pct_rank` descending, then `user_id` ascending.",
@@ -234,7 +234,7 @@
   {
     "id": 331,
     "order": 1,
-    "topic": "python_data",
+    "topic": "pandas",
     "difficulty": "hard",
     "title": "Month-Over-Month Revenue Change",
     "description": "You have DataFrames `df_users` and `df_orders` (columns: `user_id`, `order_date` YYYY-MM-DD, `net_amount`, `status`).\n\nWrite `solve(df_users, df_orders)` that returns a DataFrame with columns `month` (YYYY-MM string), `revenue` (sum of completed `net_amount`), `prev_revenue` (revenue from the previous month, NaN for the first month), and `mom_change` (month-over-month absolute change = `revenue - prev_revenue`, NaN for the first month). Sort by `month` ascending.",
@@ -281,7 +281,7 @@
   {
     "id": 332,
     "order": 2,
-    "topic": "python_data",
+    "topic": "pandas",
     "difficulty": "hard",
     "title": "Cohort Retention — Month 0 and Month 1",
     "description": "You have DataFrames `df_users` (columns: `user_id`, `signup_date` YYYY-MM-DD) and `df_orders` (columns: `order_id`, `user_id`, `order_date` YYYY-MM-DD, `status`).\n\nWrite `solve(df_users, df_orders)` that returns a DataFrame with columns `cohort_month` (YYYY-MM string — the signup month), `month_0_users` (users who placed at least one completed order in their signup month), and `month_1_retained` (of those, how many placed at least one completed order in the month immediately after their signup month). Sort by `cohort_month` ascending.",
@@ -328,7 +328,7 @@
   {
     "id": 333,
     "order": 3,
-    "topic": "python_data",
+    "topic": "pandas",
     "difficulty": "hard",
     "title": "Funnel Drop-Off by Traffic Source",
     "description": "You have DataFrames `df_sessions` (columns: `session_id`, `user_id`, `session_start`, `traffic_source`) and `df_events` (columns: `event_id`, `session_id`, `user_id`, `event_name`).\n\nWrite `solve(df_sessions, df_events)` that returns a DataFrame with columns `traffic_source`, `sessions` (total sessions per source), `reached_add_to_cart` (sessions that contain at least one `add_to_cart` event), and `reached_purchase` (sessions that contain at least one `purchase` event). Event presence — not ordering — determines whether a session counts for each step. Sort by `traffic_source` ascending.",

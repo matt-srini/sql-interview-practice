@@ -2,7 +2,7 @@
   "slug": "time-series-analysis",
   "title": "Time Series Analysis",
   "description": "Practice monthly and weekly trend analysis with rolling windows, growth rates, anomaly detection, and basic forecasting patterns.",
-  "topic": "python-data",
+  "topic": "pandas",
   "questions": [
     31010,
     31017,

@@ -42,7 +42,7 @@ Returns the track overview, recent activity, and concept tags for the current us
   "tracks": {
     "sql":         { "solved": 12, "total": 95, "by_difficulty": { "easy": {"solved": 10, "total": 32}, ... } },
     "python":      { ... },
-    "python-data": { ... },
+    "pandas": { ... },
     "pyspark":     { ... },
     "data-engineering": { ... },
     "data-modeling": { ... },
@@ -61,7 +61,7 @@ Returns the track overview, recent activity, and concept tags for the current us
 ```
 
 **Notes:**
-- `python_data` is remapped to `python-data` in all keys before returning.
+- `pandas` is remapped to `pandas` in all keys before returning.
 - `recent_activity` is ordered newest-first, capped at 10.
 - `concepts_by_track` only includes tracks where at least one concept exists.
 - `by_difficulty` values are objects `{solved, total}`, not plain integers.
@@ -79,7 +79,7 @@ Returns per-track coaching metrics, weakest concepts, the cross-track pace insig
   "per_track": {
     "sql":         { "solve_count": 12, "median_solve_seconds": 420, "accuracy_pct": 0.72 },
     "python":      { "solve_count": 5,  "median_solve_seconds": 180, "accuracy_pct": 0.60 },
-    "python-data": { "solve_count": 0,  "median_solve_seconds": null, "accuracy_pct": 0.0 },
+    "pandas": { "solve_count": 0,  "median_solve_seconds": null, "accuracy_pct": 0.0 },
     "pyspark":     { "solve_count": 3,  "median_solve_seconds": 30,  "accuracy_pct": 0.90 },
     "data-engineering": { "solve_count": 0, "median_solve_seconds": null, "accuracy_pct": 0.0 },
     "data-modeling": { "solve_count": 0, "median_solve_seconds": null, "accuracy_pct": 0.0 },

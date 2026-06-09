@@ -34,11 +34,11 @@ export const TRACK_META = {
     mixedSubtype: false,
     tagline: 'data processing · algorithms · scripting',
   },
-  'python-data': {
+  pandas: {
     label: 'Pandas',
     description: 'DataFrame manipulation, groupby aggregation, reshaping, time series, and the data wrangling fluency that analysts and data scientists rely on every day.',
     color: '#C47F17',
-    apiPrefix: '/python-data',
+    apiPrefix: '/pandas',
     language: 'python',
     hasRunCode: true,
     hasMCQ: false,

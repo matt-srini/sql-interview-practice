@@ -53,14 +53,14 @@ EXP_EASY   = _load_questions("experimentation_questions/easy.json")
 ALL_QUESTIONS: dict[str, dict[int, dict]] = {
     "sql": {**SQL_EASY, **SQL_MEDIUM, **SQL_HARD},
     "python": {**PY_EASY, **PY_MEDIUM, **PY_HARD},
-    "python-data": {},  # populated below
+    "pandas": {},  # populated below
     "pyspark": {**PYSPARK_E, **PYSPARK_M, **PYSPARK_H},
     "ml-fundamentals": ML_EASY,
     "experimentation": EXP_EASY,
 }
-ALL_QUESTIONS["python-data"] = _load_questions("python_data_questions/easy.json") | \
-                                _load_questions("python_data_questions/medium.json") | \
-                                _load_questions("python_data_questions/hard.json")
+ALL_QUESTIONS["pandas"] = _load_questions("pandas_questions/easy.json") | \
+                           _load_questions("pandas_questions/medium.json") | \
+                           _load_questions("pandas_questions/hard.json")
 
 MCQ_TRACKS = {"pyspark", "ml-fundamentals", "experimentation", "data-engineering", "data-modeling"}
 
@@ -72,7 +72,7 @@ def correct_payload(track: str, question_id: int) -> dict:
         return {"code": "SELECT 1"}
     if track in MCQ_TRACKS:
         return {"selected_option": q.get("correct_option", 1)}
-    if track in ("python", "python-data"):
+    if track in ("python", "pandas"):
         return {"code": q.get("solution_code", "def solve(): pass")}
     # SQL
     return {"code": q.get("solution_query", "SELECT 1")}
@@ -84,7 +84,7 @@ def wrong_payload(track: str, question_id: int) -> dict:
         q = ALL_QUESTIONS.get(track, {}).get(question_id, {})
         correct = q.get("correct_option", 1)
         return {"selected_option": (correct % 4) + 1}  # different option, wraps 1-4
-    if track in ("python", "python-data"):
+    if track in ("python", "pandas"):
         return {"code": "def solve(*args): return None"}
     return {"code": "SELECT 'wrong' AS answer"}
 
@@ -376,7 +376,7 @@ async def test_elite_user(client: httpx.AsyncClient, conn):
     sess_mix = await start_session(client, mode="30min", track="mixed", difficulty="mixed")
     check(len(sess_mix["questions"]) == 2, f"elite: mixed session has 2 Qs (got {len(sess_mix['questions'])})")
     for q in sess_mix["questions"]:
-        check(q["track"] in ("sql", "python", "python-data", "pyspark"),
+        check(q["track"] in ("sql", "python", "pandas", "pyspark"),
               f"elite: mixed Q track {q['track']} is a code-execution track")
         await submit_question(client, sess_mix["session_id"], q["id"], q["track"], correct=True)
     summary_mix = await finish_session(client, sess_mix["session_id"])

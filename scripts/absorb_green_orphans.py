@@ -41,9 +41,9 @@ GREEN_ABSORPTIONS: dict[tuple[str, str], str] = {
     # Python — 1 path, 1 Q
     ("python", "graph-traversal"): "graph-and-tree-patterns",
     # Pandas — 3 paths, 16 Qs
-    ("python-data", "time-series-pandas"): "time-series-analysis",
-    ("python-data", "dataframe-basics"): "dataframe-fundamentals",
-    ("python-data", "reshape-and-pivot"): "reshaping-and-pivoting",
+    ("pandas", "time-series-pandas"): "time-series-analysis",
+    ("pandas", "dataframe-basics"): "dataframe-fundamentals",
+    ("pandas", "reshape-and-pivot"): "reshaping-and-pivoting",
     # PySpark — 3 paths, 9 Qs
     ("pyspark", "streaming"): "streaming-fundamentals",
     ("pyspark", "query-optimization"): "query-optimization",

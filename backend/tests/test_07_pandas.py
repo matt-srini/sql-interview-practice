@@ -6,7 +6,7 @@ from starlette.testclient import TestClient
 
 import backend.main as main
 from conftest import _make_user
-from python_data_questions import get_questions_by_difficulty
+from pandas_questions import get_questions_by_difficulty
 
 app = main.app
 pytestmark = pytest.mark.usefixtures("isolated_state")
@@ -21,7 +21,7 @@ def test_tc101_correct_dataframe_returns_correct_true_and_solution():
     """TC-101: Correct pandas code → run-code passes, submit returns correct: true + solution."""
     with TestClient(app) as client:
         _make_user(client, plan="pro")
-        r_run = client.post("/api/python-data/run-code", json={
+        r_run = client.post("/api/pandas/run-code", json={
             "question_id": _easy_id,
             "code": _easy_solution,
         })
@@ -30,7 +30,7 @@ def test_tc101_correct_dataframe_returns_correct_true_and_solution():
         assert "test_results" in body_run
         assert any(tr.get("passed") for tr in body_run["test_results"])
 
-        r_submit = client.post("/api/python-data/submit", json={
+        r_submit = client.post("/api/pandas/submit", json={
             "question_id": _easy_id,
             "code": _easy_solution,
         })
@@ -49,7 +49,7 @@ def test_tc102_wrong_dataframe_values_returns_correct_false():
     )
     with TestClient(app) as client:
         _make_user(client, plan="pro")
-        r = client.post("/api/python-data/submit", json={
+        r = client.post("/api/pandas/submit", json={
             "question_id": _easy_id,
             "code": wrong_code,
         })
@@ -68,7 +68,7 @@ def test_tc103_wrong_dataframe_shape_returns_correct_false():
     )
     with TestClient(app) as client:
         _make_user(client, plan="pro")
-        r = client.post("/api/python-data/submit", json={
+        r = client.post("/api/pandas/submit", json={
             "question_id": _easy_id,
             "code": wrong_code,
         })
@@ -87,7 +87,7 @@ def test_tc104_timeout_enforced_in_pandas_sandbox():
     with TestClient(app) as client:
         _make_user(client, plan="pro")
         start = time.time()
-        r = client.post("/api/python-data/run-code", json={
+        r = client.post("/api/pandas/run-code", json={
             "question_id": _easy_id,
             "code": code,
         }, timeout=25)
@@ -102,7 +102,7 @@ def test_tc105_import_pandas_accepted():
     code = "import pandas as pd\ndef solve(df): return df.head()"
     with TestClient(app) as client:
         _make_user(client, plan="pro")
-        r = client.post("/api/python-data/run-code", json={
+        r = client.post("/api/pandas/run-code", json={
             "question_id": _easy_id,
             "code": code,
         })

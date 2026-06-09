@@ -351,7 +351,7 @@ async def run_topic_sample_code(topic: str, body: SampleRunCodeRequest) -> dict[
     if eval_kind in ("python", "mixed"):
         return await run_blocking_exec(python_evaluator.run_python_code, body.code, question)
     # pandas: compares against expected on the FULL result; returns a ~200-row preview.
-    return await run_blocking_exec(python_evaluator.run_python_data_code_checked, body.code, question)
+    return await run_blocking_exec(python_evaluator.run_pandas_code_checked, body.code, question)
 
 
 @router.post("/{topic}/{difficulty}/skip")
@@ -453,7 +453,7 @@ async def submit_topic_sample_answer(
         if eval_kind == "python":
             result = await run_blocking_exec(python_evaluator.evaluate_python_code, parsed.code, question)
         else:
-            result = await run_blocking_exec(python_evaluator.evaluate_python_data_code, parsed.code, question)
+            result = await run_blocking_exec(python_evaluator.evaluate_pandas_code, parsed.code, question)
         result["solution_code"] = question.get("expected_code", "")
         result["explanation"] = question.get("explanation", "")
         await _mark_sample_attempted(current_user, normalized_topic, question)

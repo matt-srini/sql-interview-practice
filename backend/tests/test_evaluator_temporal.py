@@ -13,7 +13,7 @@ import pandas as pd
 import pytest
 
 from evaluator import _canonicalize_temporal, normalize_dataframe
-from python_evaluator import evaluate_python_data_code
+from python_evaluator import evaluate_pandas_code
 
 BACKEND = Path(__file__).resolve().parent.parent
 
@@ -91,7 +91,7 @@ def test_null_and_float_canonicalization_unaffected():
 # ---------------------------------------------------------------------------
 def _load_q(qid: int):
     for diff in ("easy", "medium", "hard"):
-        path = BACKEND / "content" / "python_data_questions" / f"{diff}.json"
+        path = BACKEND / "content" / "pandas_questions" / f"{diff}.json"
         for q in json.loads(path.read_text(encoding="utf-8")):
             if q.get("id") == qid:
                 return q
@@ -117,14 +117,14 @@ def _mk_31017(date_expr: str) -> str:
 ])
 def test_date_question_accepts_trivial_representations(date_expr):
     q = _load_q(31017)
-    res = evaluate_python_data_code(_mk_31017(date_expr), q)
+    res = evaluate_pandas_code(_mk_31017(date_expr), q)
     assert res.get("correct") is True, res.get("error")
 
 
 def test_date_question_rejects_kept_real_time():
     # Returning the full timestamp keeps a time the prompt asked to drop → wrong.
     q = _load_q(31017)
-    res = evaluate_python_data_code(_mk_31017("df['order_date']"), q)
+    res = evaluate_pandas_code(_mk_31017("df['order_date']"), q)
     assert res.get("correct") is False
 
 
@@ -133,5 +133,5 @@ def test_datetime_returning_expected_no_longer_crashes():
     # reference solution as correct (no serialization crash).
     for qid in (31006, 31010, 31012, 31017, 31018, 31025, 32020, 32072, 32073, 32090):
         q = _load_q(qid)
-        res = evaluate_python_data_code(q["expected_code"], q)
+        res = evaluate_pandas_code(q["expected_code"], q)
         assert res.get("correct") is True, f"{qid}: {res.get('error')}"

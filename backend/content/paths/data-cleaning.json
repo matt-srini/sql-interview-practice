@@ -2,7 +2,7 @@
   "slug": "data-cleaning",
   "title": "Data Cleaning",
   "description": "Master the cleaning patterns every Pandas practitioner reaches for daily: deduplication, missing-value strategies, categorical binning, type fixes, and the subtle Pandas gotchas that distort results when uncaught.",
-  "topic": "python-data",
+  "topic": "pandas",
   "questions": [
     31016,
     31019,

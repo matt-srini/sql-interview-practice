@@ -178,7 +178,7 @@ Mock-only questions (`mock_only: true`) live in the same JSON files as practice 
 |---|---|---|---|---|---|
 | SQL | 37 + 0 | 50 + 62 | 31 + 103 | SQL query via DuckDB | `backend/content/questions/` |
 | Python | 33 + 0 | 30 + 50 | 18 + 53 | Algorithm function, test cases | `backend/content/python_questions/` |
-| Pandas | 28 + 0 | 40 + 51 | 25 + 63 | DataFrame function, output comparison | `backend/content/python_data_questions/` |
+| Pandas | 28 + 0 | 40 + 51 | 25 + 63 | DataFrame function, output comparison | `backend/content/pandas_questions/` |
 | PySpark | 40 + 0 | 45 + 75 | 42 + 75 | conceptual / predict_output / debug / scenario / optimization (MCQ) | `backend/content/pyspark_questions/` |
 | Data Engineering | 30 + 0 | 35 + 34 | 26 + 76 | conceptual / scenario / debug (MCQ) | `backend/content/data_engineering_questions/` |
 | Data Modeling | 25 + 0 | 31 + 46 | 25 + 51 | conceptual / scenario / debug (MCQ) | `backend/content/data_modeling_questions/` |
@@ -209,7 +209,7 @@ sql-interview-practice/
 ├── backend/
 │   ├── content/questions/          # SQL challenge question JSON (easy.json, medium.json, hard.json)
 │   ├── content/python_questions/   # Python algorithm questions
-│   ├── content/python_data_questions/ # Pandas questions
+│   ├── content/pandas_questions/ # Pandas questions
 │   ├── content/pyspark_questions/  # PySpark MCQ questions
 │   ├── content/paths/              # Learning path configs (slug, title, description, topic, questions[])
 │   ├── datasets/                   # Committed CSVs + metadata JSON
@@ -227,7 +227,7 @@ sql-interview-practice/
 │   ├── questions.py                # SQL catalog loader/validator
 │   ├── sample_questions.py         # SQL sample catalog loader
 │   ├── python_questions.py         # Python algorithm catalog loader
-│   ├── python_data_questions.py    # Pandas catalog loader
+│   ├── pandas_questions.py    # Pandas catalog loader
 │   ├── pyspark_questions.py        # PySpark catalog loader
 │   ├── data_engineering_questions.py # Data Engineering catalog loader
 │   ├── data_modeling_questions.py  # Data Modeling catalog loader
@@ -299,7 +299,7 @@ sql-interview-practice/
 
 Full route tree: [`docs/frontend.md`](docs/frontend.md) §Route tree.
 
-`:topic` values: `sql` | `python` | `python-data` | `pyspark` | `data-engineering` | `data-modeling` | `statistics` | `ml-fundamentals` | `experimentation`
+`:topic` values: `sql` | `python` | `pandas` | `pyspark` | `data-engineering` | `data-modeling` | `statistics` | `ml-fundamentals` | `experimentation`
 
 ---
 

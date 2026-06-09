@@ -40,7 +40,7 @@ from concept_families import CONCEPT_FAMILIES, MOCK_ONLY_REALISM_FAMILIES, resol
 TRACK_DIRS = {
     "sql":               REPO / "backend/content/questions",
     "python":            REPO / "backend/content/python_questions",
-    "python-data":       REPO / "backend/content/python_data_questions",
+    "pandas":       REPO / "backend/content/pandas_questions",
     "pyspark":           REPO / "backend/content/pyspark_questions",
     "data-engineering":  REPO / "backend/content/data_engineering_questions",
     "data-modeling":     REPO / "backend/content/data_modeling_questions",
@@ -83,7 +83,7 @@ PROPOSED_PATTERNS: dict[str, dict[str, str]] = {
         "streaming-and-online": "Streaming & Online Algorithms",
         "data-pipeline-scripting": "Data Pipeline Scripting",
     },
-    "python-data": {
+    "pandas": {
         "dataframe-basics": "DataFrame Basics",
         "groupby": "GroupBy Aggregation",
         "joins-and-merges": "Joins & Merges",
@@ -236,7 +236,7 @@ ROUTING: dict[str, dict[str, str]] = {
         "MODULAR ARITHMETIC & NUMBER THEORY": None,  # rare
         "BACKTRACKING & COMBINATORIAL SEARCH": None,
     },
-    "python-data": {
+    "pandas": {
         "GROUPED AGGREGATION": "groupby",
         "TRANSFORM VS AGGREGATE": "groupby",
         "MULTI-DATAFRAME ENTITY LINKING": "joins-and-merges",
@@ -422,7 +422,7 @@ ANALYTICAL_PATTERNS: dict[str, set[str]] = {
     "python": {
         "streaming-and-online", "data-pipeline-scripting",
     },
-    "python-data": {
+    "pandas": {
         "customer-analytics", "data-cleaning", "top-n-and-ranking",
     },
     "pyspark": set(),  # all PySpark patterns are construct/architecture
@@ -558,7 +558,7 @@ NORMALIZE_PATTERN: dict[str, dict[str, str]] = {
     "python": {
         "data-pipelines": "data-pipeline-scripting",
     },
-    "python-data": {
+    "pandas": {
         "joins": "joins-and-merges",
         "time-series": "time-series-pandas",
     },

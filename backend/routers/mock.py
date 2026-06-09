@@ -47,7 +47,7 @@ from deps import get_current_user
 from evaluator import evaluate
 from exceptions import BadRequestError
 from offload import run_blocking_exec, run_blocking_sql
-from python_evaluator import evaluate_python_code, evaluate_python_data_code
+from python_evaluator import evaluate_python_code, evaluate_pandas_code
 from routers.insights import _CONCEPTS_LOOKUP, build_session_debrief
 from tracks import TRACKS, VALID_MOCK_ROLES, get_track, mixed_mock_slugs, role_tracks
 from unlock import compute_mock_access, compute_unlock_state, normalize_plan
@@ -66,7 +66,7 @@ MODE_CONFIGS: dict[str, dict[str, int]] = {
 BENCHMARK_CONFIGS: dict[str, dict[str, int]] = {
     "sql": {"num_questions": 3, "time_limit_s": 3600},
     "python": {"num_questions": 2, "time_limit_s": 3000},
-    "python-data": {"num_questions": 2, "time_limit_s": 3000},
+    "pandas": {"num_questions": 2, "time_limit_s": 3000},
     "statistics": {"num_questions": 3, "time_limit_s": 2700},
     "pyspark": {"num_questions": 6, "time_limit_s": 2400},
     "data-engineering": {"num_questions": 6, "time_limit_s": 2400},
@@ -79,7 +79,7 @@ BENCHMARK_CONFIGS: dict[str, dict[str, int]] = {
 # Each role maps to a fixed per-track slot allocation for benchmark sessions.
 MIXED_BENCHMARK_CONFIGS: dict[str, dict] = {
     "data_analyst": {
-        "slots": {"sql": 2, "python-data": 1, "statistics": 1},
+        "slots": {"sql": 2, "pandas": 1, "statistics": 1},
         "time_limit_s": 3300,  # 55 min
     },
     "data_engineer": {
@@ -87,11 +87,11 @@ MIXED_BENCHMARK_CONFIGS: dict[str, dict] = {
         "time_limit_s": 3300,
     },
     "analytics_engineer": {
-        "slots": {"sql": 2, "data-modeling": 1, "python-data": 1},
+        "slots": {"sql": 2, "data-modeling": 1, "pandas": 1},
         "time_limit_s": 3300,
     },
     "data_scientist": {
-        "slots": {"python": 1, "python-data": 1, "statistics": 1, "ml-fundamentals": 1},
+        "slots": {"python": 1, "pandas": 1, "statistics": 1, "ml-fundamentals": 1},
         "time_limit_s": 3300,
     },
 }
@@ -107,7 +107,7 @@ TRACK_TO_TOPIC: dict[str, str] = {t.slug: t.db_topic for t in TRACKS}
 
 class MockStartRequest(BaseModel):
     mode: str           # 'benchmark' | 'custom' | 'interview_loop'
-    track: str          # 'sql' | 'python' | 'python-data' | 'pyspark' | 'mixed' | ...
+    track: str          # 'sql' | 'python' | 'pandas' | 'pyspark' | 'mixed' | ...
     difficulty: str     # 'easy' | 'medium' | 'hard' | 'mixed'
     role: str | None = None            # required when track='mixed'
     num_questions: int | None = None   # custom mode only, 1–5
@@ -647,7 +647,7 @@ def _public_question_payload(question: dict, track: str) -> dict:
         payload["interaction_mode"] = question.get("interaction_mode")
     # result_preview, debug_error, starter_code only apply to SQL and Pandas;
     # PySpark uses "debug" type differently (MCQ-style, no code editor).
-    if track in ("sql", "python-data"):
+    if track in ("sql", "pandas"):
         payload["result_preview"] = question.get("result_preview") if question.get("type") == "reverse" else None
         payload["debug_error"] = question.get("debug_error") if question.get("type") == "debug" else None
         # starter_query for SQL, starter_code for Pandas
@@ -670,7 +670,7 @@ def _public_question_payload(question: dict, track: str) -> dict:
             for tc in all_cases[:public_count]
         ]
     # Pandas: include available dataframes info
-    if track == "python-data":
+    if track == "pandas":
         payload["dataframes"] = {
             name: {"description": info.get("description", "") if isinstance(info, dict) else str(info)}
             for name, info in question.get("dataframes", {}).items()
@@ -712,7 +712,7 @@ def _solution_payload(question: dict, track: str) -> dict:
             "solution_query": solution_text,
             "explanation": question.get("explanation", ""),
         }
-    if track in ("python", "python-data"):
+    if track in ("python", "pandas"):
         solution_text = question.get("expected_code", "")
         return {
             "solution": solution_text,
@@ -788,10 +788,10 @@ async def _evaluate_submission(
             "hidden_summary": result.get("hidden_summary"),
         }
 
-    if track == "python-data":
+    if track == "pandas":
         if not code:
             return False, {"error": "No code provided"}
-        result = await run_blocking_exec(evaluate_python_data_code, code, question)
+        result = await run_blocking_exec(evaluate_pandas_code, code, question)
         accepted = bool(result.get("correct"))
         return accepted, {
             "correct": accepted,
@@ -838,7 +838,7 @@ def _validate_non_empty_input(
     Called BEFORE any DB write so blank/missing submissions never consume
     the question's one-submit slot.
     """
-    if track in ("sql", "python", "python-data"):
+    if track in ("sql", "python", "pandas"):
         if not code or not code.strip():
             raise HTTPException(status_code=422, detail="Code cannot be blank")
     elif get_track(track).eval_kind == "mcq":

@@ -37,7 +37,7 @@
 
 ### Multi-track samples
 - `/sample/python/easy` — Python algorithm question, code editor, TestCasePanel
-- `/sample/python-data/easy` — Pandas question, VariablesPanel, DataFrame output
+- `/sample/pandas/easy` — Pandas question, VariablesPanel, DataFrame output
 - `/sample/pyspark/easy` — MCQ radio options, no code editor, explanation on submit
 - Data Engineering, Data Modeling, Statistics, ML Fundamentals, Experimentation — auto-sliced from first 3 practice questions per difficulty (no dedicated sample IDs)
 - Topbar label reflects track ("Python sample", "Pandas sample", etc.)
@@ -60,7 +60,7 @@
 - Run Code → TestCasePanel (public test cases) + PrintOutputPanel (stdout)
 - Submit → public + hidden test results; `solution_code` revealed on correct
 
-### Pandas (`/practice/python-data`)
+### Pandas (`/practice/pandas`)
 - Sidebar: Easy (28), Medium (40), Hard (24) — total 92
 - VariablesPanel shows available DataFrames with schema
 - Run Code → DataFrame output table + PrintOutputPanel

@@ -139,7 +139,7 @@ def test_tc117_all_4_sample_tracks_accessible():
     with TestClient(app) as client:
         r_sql = client.get("/api/sample/sql/easy")
         r_python = client.get("/api/sample/python/easy")
-        r_pandas = client.get("/api/sample/python-data/easy")
+        r_pandas = client.get("/api/sample/pandas/easy")
         r_pyspark = client.get("/api/sample/pyspark/easy")
 
     assert r_sql.status_code == 200
@@ -212,7 +212,7 @@ def test_tc119_sample_summary_returns_all_tracks_with_zero_tried():
 
     # Every active track (9) appears with all 3 difficulties.
     expected_slugs = {
-        "sql", "python", "python-data", "pyspark",
+        "sql", "python", "pandas", "pyspark",
         "data-engineering", "data-modeling", "statistics",
         "ml-fundamentals", "experimentation",
     }
@@ -250,8 +250,8 @@ def test_tc120_sample_summary_tracks_attempted_count():
     assert body["tracks"]["python"]["easy"]["tried"] == 0
 
 
-def test_tc118_sample_run_code_for_python_data_executes_pandas():
-    """TC-118: Sample run-code for python-data → 200 with test results.
+def test_tc118_sample_run_code_for_pandas_executes():
+    """TC-118: Sample run-code for pandas → 200 with test results.
     Uses dedicated sample question 311 (not a practice question).
     """
     import json as _json
@@ -262,7 +262,7 @@ def test_tc118_sample_run_code_for_python_data_executes_pandas():
 
     code = easy_q["solution_code"]
     with TestClient(app) as client:
-        r = client.post("/api/sample/python-data/run-code", json={
+        r = client.post("/api/sample/pandas/run-code", json={
             "question_id": easy_q["id"],
             "code": code,
         })

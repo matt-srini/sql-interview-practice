@@ -69,7 +69,7 @@ import openai  # noqa: E402
 import database  # noqa: E402
 from evaluator import evaluate, run_query  # noqa: E402
 from python_evaluator import (  # noqa: E402
-    evaluate_python_code, evaluate_python_data_code, run_python_data_code,
+    evaluate_python_code, evaluate_pandas_code, run_pandas_code,
 )
 from python_guard import validate_code  # noqa: E402
 from exceptions import BadRequestError  # noqa: E402
@@ -78,7 +78,7 @@ from exceptions import BadRequestError  # noqa: E402
 TRACKS: dict[str, dict[str, str]] = {
     "sql":    {"dir": "content/questions",            "kind": "sql"},
     "python": {"dir": "content/python_questions",     "kind": "python"},
-    "pandas": {"dir": "content/python_data_questions", "kind": "pandas"},
+    "pandas": {"dir": "content/pandas_questions", "kind": "pandas"},
     # Statistics-numerical: graded via python_evaluator.evaluate_python_code (same as
     # the Python track), but the candidate guard runs under the "statistics" allowlist
     # (numpy/statistics allowed). Only the numerical subtype is code; conceptual is MCQ
@@ -266,7 +266,7 @@ def deterministic_check(q: dict[str, Any], kind: str) -> dict[str, Any]:
             return {"ok": True, "defect": None, "detail": "expected_code reproduces all test cases"}
 
         if kind == "pandas":
-            out = run_python_data_code(q.get("expected_code", ""), q)
+            out = run_pandas_code(q.get("expected_code", ""), q)
             if out.get("error"):
                 return {"ok": False, "defect": "expected_runtime_error", "detail": str(out["error"])[:300]}
             rows = (out.get("result") or {}).get("rows", out.get("rows"))
@@ -307,10 +307,10 @@ def run_candidate(q: dict[str, Any], kind: str, code: str) -> dict[str, Any]:
             return {"status": "reproduces" if res.get("correct") else "mismatch",
                     "detail": f"hidden={res.get('hidden_summary')}"}
         # pandas
-        errs = validate_code(code, "python_data")
+        errs = validate_code(code, "pandas")
         if errs:
             return {"status": "guard_reject", "detail": "; ".join(errs)[:300]}
-        res = evaluate_python_data_code(code, q)
+        res = evaluate_pandas_code(code, q)
         if res.get("error"):
             return {"status": "candidate_error", "detail": str(res["error"])[:300]}
         return {"status": "reproduces" if res.get("correct") else "mismatch",

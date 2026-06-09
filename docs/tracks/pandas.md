@@ -1,6 +1,6 @@
 # Pandas Track
 
-> **Authoring rule, no exceptions:** Every Pandas question is created or modified via [`.github/agents/question-authoring.agent.md`](../../.github/agents/question-authoring.agent.md). Direct edits to `backend/content/python_data_questions/*.json` bypass the difficulty arc, the concept-taxonomy contract, and the pandas-idiomatic discipline.
+> **Authoring rule, no exceptions:** Every Pandas question is created or modified via [`.github/agents/question-authoring.agent.md`](../../.github/agents/question-authoring.agent.md). Direct edits to `backend/content/pandas_questions/*.json` bypass the difficulty arc, the concept-taxonomy contract, and the pandas-idiomatic discipline.
 
 ## What this track trains
 
@@ -44,9 +44,9 @@ Required output discipline:
 
 | Difficulty | ID range | File |
 |---|---|---|
-| Easy | 31001–31999 | `backend/content/python_data_questions/easy.json` |
-| Medium | 32001–32999 | `backend/content/python_data_questions/medium.json` |
-| Hard | 33001–33999 | `backend/content/python_data_questions/hard.json` |
+| Easy | 31001–31999 | `backend/content/pandas_questions/easy.json` |
+| Medium | 32001–32999 | `backend/content/pandas_questions/medium.json` |
+| Hard | 33001–33999 | `backend/content/pandas_questions/hard.json` |
 
 Pandas has **dedicated sample questions** in `backend/content/sample_questions/pandas.json` (IDs 311–313 easy, 321–323 medium, 331–333 hard). Sample questions are completely separate from the practice and mock pools and must never duplicate practice content.
 
@@ -195,7 +195,7 @@ Required:
 # 1. Reference solution produces the documented expected output AND passes the full sandbox path
 cd backend && ../.venv/bin/python -c "
 import pandas as pd, json
-q = json.load(open('content/python_data_questions/hard.json'))[INDEX]
+q = json.load(open('content/pandas_questions/hard.json'))[INDEX]
 # load each CSV listed in q['dataframes']
 orders = pd.read_csv('datasets/orders.csv')
 ns = {}
@@ -224,7 +224,7 @@ print(f'Row count: {len(result)} OK (full result is graded; UI previews first 20
 # (membership checks alone are insufficient — order matters for the schema panel)
 python3 -c "
 import json, csv
-q = json.load(open('content/python_data_questions/hard.json'))[INDEX]
+q = json.load(open('content/pandas_questions/hard.json'))[INDEX]
 for df_name, csv_file in q.get('dataframes', {}).items():
     with open(f'datasets/{csv_file}') as f:
         csv_cols = next(csv.reader(f))

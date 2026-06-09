@@ -2,7 +2,7 @@
   "slug": "joins-and-merges",
   "title": "DataFrame Joins & Merges",
   "description": "Master multi-DataFrame entity linking in Pandas: inner/left/outer merges, three-table joins, fan-out detection, and the double-counting gotchas that silently inflate revenue when joins multiply rows.",
-  "topic": "python-data",
+  "topic": "pandas",
   "questions": [
     32001,
     32002,

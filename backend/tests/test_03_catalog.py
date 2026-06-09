@@ -274,14 +274,14 @@ def test_tc063_pro_all_unlocked():
 def test_tc064_elite_all_tracks_unlocked():
     """TC-064: Elite user → full catalog across all 4 tracks."""
     from python_questions import get_questions_by_difficulty as py_qs
-    from python_data_questions import get_questions_by_difficulty as pd_qs
+    from pandas_questions import get_questions_by_difficulty as pd_qs
     from pyspark_questions import get_questions_by_difficulty as spark_qs
     from questions import get_questions_by_difficulty as sql_qs
 
     for track_name, catalog_fn in [
         ("sql", sql_qs),
         ("python", py_qs),
-        ("python-data", pd_qs),
+        ("pandas", pd_qs),
         ("pyspark", spark_qs),
     ]:
         catalog = catalog_fn()

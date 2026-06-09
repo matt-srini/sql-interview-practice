@@ -4,13 +4,13 @@ import json
 from pathlib import Path
 from typing import Any, Optional
 
-_CONTENT_DIR = Path(__file__).resolve().parent / "content" / "python_data_questions"
+_CONTENT_DIR = Path(__file__).resolve().parent / "content" / "pandas_questions"
 _SCHEMA_CONFIG_PATH = _CONTENT_DIR / "schemas.json"
 _DATASETS_DIR = Path(__file__).resolve().parent / "datasets"
 
 
 def _fail(question_id: int, reason: str) -> None:
-    raise ValueError(f"Invalid python_data question (id={int(question_id)}): {reason}")
+    raise ValueError(f"Invalid pandas question (id={int(question_id)}): {reason}")
 
 
 def _load_json(path: Path) -> Any:

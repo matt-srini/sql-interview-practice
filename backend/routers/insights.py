@@ -640,7 +640,7 @@ def _track_family(track: str, questions: list[dict[str, Any]]) -> str:
     - statistics: resolved from actual subtype mix — 'executable' if any numerical question
       is present (code was written), 'reasoning' if all conceptual
     - mixed: defaults to 'executable' (SQL/Python/Pandas dominate the mixed pool 3:1)
-    - all other tracks (sql, python, python-data): 'executable'
+    - all other tracks (sql, python, pandas): 'executable'
     """
     if track == "mixed":
         return "executable"
@@ -860,7 +860,7 @@ def build_session_debrief(
             priority_action = f'Work through the "{title}" path to reinforce {concept_name}.'
         else:
             _TRACK_DISPLAY = {
-                "sql": "SQL", "python": "Python", "python-data": "Pandas",
+                "sql": "SQL", "python": "Python", "pandas": "Pandas",
                 "pyspark": "PySpark", "data-engineering": "Data Engineering",
                 "data-modeling": "Data Modeling", "ml-fundamentals": "ML Fundamentals",
                 "experimentation": "Experimentation", "statistics": "Statistics",

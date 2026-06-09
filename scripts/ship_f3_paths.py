@@ -44,7 +44,7 @@ NEW_PATTERN_REGISTRATIONS: dict[str, dict[str, str]] = {
         "string-and-text-processing": "String & Text Processing",
         "heap-and-priority": "Heaps & Priority Queues",
     },
-    "python-data": {
+    "pandas": {
         "top-n-and-ranking": "Top-N & Ranking",
     },
     "pyspark": {
@@ -96,7 +96,7 @@ NEW_PATH_SPECS: dict[str, dict] = {
         "recommended_after": ["arrays-and-hashing"],
     },
     "top-n-and-ranking": {
-        "track": "python-data",
+        "track": "pandas",
         "title": "Top-N & Ranking",
         "description": "Master the Top-N-per-group pattern that dominates Pandas analytics interviews: rank-within-group, percentile rank, latest-row-per-key, and the multi-table top-N that production dashboards depend on.",
         "tier": "free",

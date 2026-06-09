@@ -414,7 +414,7 @@ export default function SampleQuestionPage() {
   }
 
   const showSchema = topic === 'sql';
-  const showVariables = topic === 'python-data';
+  const showVariables = topic === 'pandas';
   const schemaTableCount = Object.keys(question.schema ?? {}).length;
   const pythonRunResults = runResult?.results ?? runResult?.test_results ?? [];
   const pythonSubmitResults = submitResult?.public_results ?? submitResult?.test_results ?? [];
@@ -693,7 +693,7 @@ export default function SampleQuestionPage() {
               </>
             )}
 
-            {topic === 'python-data' && pandasRunResult && (
+            {topic === 'pandas' && pandasRunResult && (
               <>
                 <div className="results-card">
                   <div className="results-header">
@@ -771,7 +771,7 @@ export default function SampleQuestionPage() {
               </>
             )}
 
-            {topic === 'python-data' && submitResult?.user_result && (
+            {topic === 'pandas' && submitResult?.user_result && (
               <div className="results-compare-grid">
                 <div className="results-card">
                   <div className="results-header">

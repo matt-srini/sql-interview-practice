@@ -33,7 +33,7 @@ ELITE_UID = "134883f7-237b-401b-8047-cbb5a4d53dee"   # admin@datathink.co
 # ── Track db_topic values ─────────────────────────────────────────────────────
 SQL   = "sql"
 PY    = "python"
-PYDAT = "python_data"
+PYDAT = "pandas"
 SPARK = "pyspark"
 DE    = "data-engineering"
 DM    = "data-modeling"
@@ -344,7 +344,7 @@ ELITE_UID = "134883f7-237b-401b-8047-cbb5a4d53dee"   # admin@datathink.co
 # ── Track db_topic values ─────────────────────────────────────────────────────
 SQL   = "sql"
 PY    = "python"
-PYDAT = "python_data"
+PYDAT = "pandas"
 SPARK = "pyspark"
 DE    = "data-engineering"
 DM    = "data-modeling"

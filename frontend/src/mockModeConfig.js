@@ -58,7 +58,7 @@ export const BENCHMARK_BLUEPRINTS = {
     summary: '2 executable problems',
     description: 'Fixed-shape Python benchmark with deeper algorithmic or data-processing problems.',
   },
-  'python-data': {
+  'pandas': {
     numQuestions: 2,
     timeMinutes: 50,
     summary: '2 executable problems',

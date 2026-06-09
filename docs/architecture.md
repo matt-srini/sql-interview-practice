@@ -56,7 +56,7 @@ POST /api/submit
 ## Request lifecycle — Python / Pandas
 
 ```
-POST /api/python/submit  (or /api/python-data/submit)
+POST /api/python/submit  (or /api/pandas/submit)
   1. Session cookie → look up user in PostgreSQL
   2. validate_python_code() — AST-based guard (import allowlist per track)
   3. Spawn python_sandbox_harness.py subprocess (512 MB RLIMIT_AS; 5s timeout for algorithm, 12s for pandas data — full-result grading serializes a larger result)
@@ -290,8 +290,8 @@ PostgreSQL   Redis Cluster
 
 | Field | Type | Purpose |
 |---|---|---|
-| `slug` | `str` | URL/API slug (e.g. `"python-data"`); matches `:topic` route param |
-| `db_topic` | `str` | Topic string stored in DB tables (equals slug except `"python_data"` legacy alias) |
+| `slug` | `str` | URL/API slug (e.g. `"pandas"`); matches `:topic` route param |
+| `db_topic` | `str` | Topic string stored in DB tables (equals slug for all tracks) |
 | `catalog_module` | module | Exposes `get_questions_by_difficulty()`, `get_mock_questions_by_difficulty()`, `get_public_question()` |
 | `label` | `str` | Human-readable name (e.g. `"Pandas"`) |
 | `eval_kind` | `str` | `"sql" \| "python" \| "pandas" \| "mcq"` — drives submission dispatch |
@@ -313,7 +313,7 @@ All files that previously hardcoded track lists — `unlock.py`, `routers/mock.p
 
 **SQL questions:** JSON files in `backend/content/questions/` — `easy.json`, `medium.json`, `hard.json`. Loaded and validated at startup by `questions.py`. Schema validated against committed CSV column headers.
 
-**Other tracks' questions:** Same pattern in the per-track content dirs — `python_questions/`, `python_data_questions/`, `pyspark_questions/`, `data_engineering_questions/`, `data_modeling_questions/`, `statistics_questions/`, `ml_fundamentals_questions/`, `experimentation_questions/`. Each directory has a `schemas.json` that defines ID ranges and required fields.
+**Other tracks' questions:** Same pattern in the per-track content dirs — `python_questions/`, `pandas_questions/`, `pyspark_questions/`, `data_engineering_questions/`, `data_modeling_questions/`, `statistics_questions/`, `ml_fundamentals_questions/`, `experimentation_questions/`. Each directory has a `schemas.json` that defines ID ranges and required fields.
 
 **Sample questions:** Every track has a dedicated sample file at `backend/content/sample_questions/<track>.json` (9 files total: `sql.json`, `python.json`, `pandas.json`, `pyspark.json`, `data_engineering.json`, `data_modeling.json`, `statistics.json`, `ml_fundamentals.json`, `experimentation.json`). Each file contains exactly 9 questions (3 per difficulty × 3 difficulties) using the compact 3-digit **TXS ID scheme** (T = track digit 1–9, X = difficulty digit 1/2/3, S = within-difficulty index 1–3). The loader `sample_questions.py:_load_track_samples` enforces field presence (every sample carries 2 hints + 1–4 canonical concept tags) and per-difficulty count (exactly 3 each) at module import. SQL samples additionally pass `_validate_sample_questions` for schema/CSV-header integrity. Sample content is completely separate from practice and mock pools — samples never duplicate practice or mock questions. Sample IDs (3-digit TXS) never collide with practice/mock IDs (5-digit TXNNN).
 

@@ -65,7 +65,7 @@ function makeDashboardPayload(overrides = {}) {
           hard:   { solved: 0, total: 24 },
         },
       },
-      'python-data': {
+      'pandas': {
         solved: 0,
         total: 86,
         by_difficulty: {
@@ -140,7 +140,7 @@ function makeInsightsPayload(overrides = {}) {
     per_track: {
       sql: { solve_count: 47, median_solve_seconds: 540, accuracy_pct: 0.82 },
       python: { solve_count: 0, median_solve_seconds: null, accuracy_pct: 0 },
-      'python-data': { solve_count: 0, median_solve_seconds: null, accuracy_pct: 0 },
+      'pandas': { solve_count: 0, median_solve_seconds: null, accuracy_pct: 0 },
       pyspark: { solve_count: 0, median_solve_seconds: null, accuracy_pct: 0 },
       'data-engineering': { solve_count: 0, median_solve_seconds: null, accuracy_pct: 0 },
       'data-modeling': { solve_count: 0, median_solve_seconds: null, accuracy_pct: 0 },

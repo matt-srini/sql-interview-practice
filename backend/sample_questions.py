@@ -116,7 +116,6 @@ def _validate_sample_questions(questions: list[dict[str, Any]]) -> None:
 
 
 # Build alias map from the registry: both slug and db_topic resolve to db_topic.
-# This preserves "python-data" → "python_data" without any hardcoding here.
 _TOPIC_ALIASES: dict[str, str] = {}
 for _t in TRACKS:
     _TOPIC_ALIASES[_t.slug] = _t.db_topic
@@ -135,7 +134,7 @@ _SAMPLE_DIR = Path(__file__).resolve().parent / "content" / "sample_questions"
 _TRACK_SAMPLE_FILES: dict[str, str] = {
     "sql": "sql.json",
     "python": "python.json",
-    "python_data": "pandas.json",
+    "pandas": "pandas.json",
     "pyspark": "pyspark.json",
     "data-engineering": "data_engineering.json",
     "data-modeling": "data_modeling.json",

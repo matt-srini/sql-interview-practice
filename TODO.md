@@ -17,7 +17,7 @@ multi-user flow simulation**. Two intertwined deliverables:
   `await asyncio.to_thread`), so a 5–12 s execution stalls the whole event loop → all requests
   freeze. The concurrency semaphore added this cycle (`main._execution_semaphore`,
   `MAX_CONCURRENT_EXECUTIONS`) is therefore largely cosmetic. Fix = offload to a thread inside
-  the semaphore across all 6 code-exec endpoints (questions / python / python_data / statistics
+  the semaphore across all 6 code-exec endpoints (questions / python / pandas / statistics
   / sample / mock); subprocess paths are safe concurrently, **SQL/DuckDB is in-process →
   serialize behind a lock**.
 - **The load-test capability we don't have:** simulate N concurrent virtual users running real

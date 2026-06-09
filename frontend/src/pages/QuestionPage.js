@@ -67,7 +67,7 @@ export default function QuestionPage() {
   }, [pathSlug]);
 
   // Derive API paths from topic
-  const apiPrefix = meta.apiPrefix; // '', '/python', '/python-data', '/pyspark'
+  const apiPrefix = meta.apiPrefix; // '', '/python', '/pandas', '/pyspark'
 
   const questionApiPath = apiPrefix ? `${apiPrefix}/questions/${id}` : `/questions/${id}`;
   const runApiPath = apiPrefix ? `${apiPrefix}/run-code` : '/run-query';
@@ -888,7 +888,7 @@ export default function QuestionPage() {
   const schemaTableCount = Object.keys(question.schema ?? {}).length;
 
   const showSchema = topic === 'sql';
-  const showVariables = topic === 'python-data';
+  const showVariables = topic === 'pandas';
 
   // For Python run results — detect shape
   const isPythonRunResult = topic !== 'sql' && runResult;
@@ -1441,7 +1441,7 @@ export default function QuestionPage() {
             </>
           )}
 
-          {isPythonRunResult && topic === 'python-data' && (
+          {isPythonRunResult && topic === 'pandas' && (
             <>
               {runResult.columns && (
                 <div className="results-card">
@@ -1577,7 +1577,7 @@ export default function QuestionPage() {
           )}
 
           {/* Python-Data submit: show DataFrame output only on wrong answers */}
-          {submitResult && !submitResult.correct && topic === 'python-data' && submitResult.user_result && (
+          {submitResult && !submitResult.correct && topic === 'pandas' && submitResult.user_result && (
             <div className="results-compare-grid">
               <div className="results-card">
                 <div className="results-header">

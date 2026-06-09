@@ -471,7 +471,7 @@ Run every item before pushing the launch commit.
 |---|---|---|---|
 | 1 | SQL | `sql` | Live |
 | 2 | Python | `python` | Live |
-| 3 | Pandas | `python-data` | Live |
+| 3 | Pandas | `pandas` | Live |
 | 4 | PySpark | `pyspark` | Live |
 | 5 | Data Engineering | `data-engineering` | Live |
 | 6 | Data Modeling | `data-modeling` | Live |

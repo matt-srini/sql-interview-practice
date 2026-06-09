@@ -56,7 +56,7 @@ describe('PathProgressCard', () => {
         slug: 'time-series-analysis',
         title: 'Time Series Analysis',
         description: 'Practice rolling windows and resample workflows.',
-        topic: 'python-data',
+        topic: 'pandas',
         tier: 'free',
         role: 'advanced',
         question_count: 6,

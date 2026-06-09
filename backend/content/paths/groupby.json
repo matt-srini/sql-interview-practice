@@ -2,7 +2,7 @@
   "slug": "groupby",
   "title": "GroupBy Aggregation",
   "description": "Master the GroupBy patterns every Pandas analyst reaches for: aggregation, transform-vs-aggregate, named aggregation, multi-level grouping, pipeline composition, and the subtle pitfalls of group-then-rank.",
-  "topic": "python-data",
+  "topic": "pandas",
   "questions": [
     31002,
     31005,

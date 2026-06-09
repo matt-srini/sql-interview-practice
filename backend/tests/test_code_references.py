@@ -33,11 +33,11 @@ import pytest
 
 import database
 from evaluator import evaluate, run_query
-from python_evaluator import evaluate_python_data_code, run_python_data_code
+from python_evaluator import evaluate_pandas_code, run_pandas_code
 
 BACKEND = Path(__file__).resolve().parent.parent
 SQL_DIR = BACKEND / "content" / "questions"
-PANDAS_DIR = BACKEND / "content" / "python_data_questions"
+PANDAS_DIR = BACKEND / "content" / "pandas_questions"
 DATASETS = BACKEND / "datasets"
 DIFFS = ("easy", "medium", "hard")
 
@@ -127,7 +127,7 @@ def test_pandas_reference_executes_and_solution_agrees(q):
     qid = q.get("id")
 
     # 1 + 2: expected_code runs against the real CSVs and is non-degenerate.
-    out = run_python_data_code(q["expected_code"], q)
+    out = run_pandas_code(q["expected_code"], q)
     assert not out.get("error"), (
         f"Pandas {qid}: expected_code raised: {str(out.get('error'))[:300]}"
     )
@@ -139,7 +139,7 @@ def test_pandas_reference_executes_and_solution_agrees(q):
 
     # 3: solution_code agrees with expected_code through the real grader.
     if q.get("solution_code"):
-        graded = evaluate_python_data_code(q["solution_code"], q)
+        graded = evaluate_pandas_code(q["solution_code"], q)
         assert graded.get("correct"), (
             f"Pandas {qid}: solution_code does not reproduce expected_code: "
             f"{str(graded.get('error'))[:300]}"

@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException
 
 import python_guard
 import python_evaluator
-import python_data_questions as catalog
+import pandas_questions as catalog
 from db import get_solved_ids, mark_solved, record_submission
 from deps import get_current_user
 from offload import run_blocking_exec
@@ -13,27 +13,27 @@ from middleware.request_context import get_request_id
 from models import RunCodeRequest, SubmitCodeRequest
 from unlock import compute_unlock_state, get_next_questions
 
-router = APIRouter(prefix="/api/python-data")
+router = APIRouter(prefix="/api/pandas")
 
 logger = logging.getLogger(__name__)
 
 
-async def _get_python_data_unlock_state(
+async def _get_pandas_unlock_state(
     current_user: dict[str, Any],
 ) -> tuple[dict[int, str], dict[str, int | None]]:
     grouped = catalog.get_questions_by_difficulty()
-    solved_ids = await get_solved_ids(current_user["id"], topic="python_data")
+    solved_ids = await get_solved_ids(current_user["id"], topic="pandas")
     unlock_state = compute_unlock_state(current_user["plan"], solved_ids, grouped)
     next_questions = get_next_questions(unlock_state, grouped)
     return unlock_state, next_questions
 
 
 @router.get("/catalog")
-async def get_python_data_catalog(
+async def get_pandas_catalog(
     current_user: dict[str, Any] = Depends(get_current_user),
 ) -> dict[str, Any]:
     grouped = catalog.get_questions_by_difficulty()
-    solved_ids = await get_solved_ids(current_user["id"], topic="python_data")
+    solved_ids = await get_solved_ids(current_user["id"], topic="pandas")
     unlock_state = compute_unlock_state(current_user["plan"], solved_ids, grouped)
     next_questions = get_next_questions(unlock_state, grouped)
 
@@ -70,7 +70,7 @@ async def get_python_data_catalog(
 
 
 @router.get("/questions/{question_id}")
-async def get_python_data_question_detail(
+async def get_pandas_question_detail(
     question_id: int,
     current_user: dict[str, Any] = Depends(get_current_user),
 ) -> dict[str, Any]:
@@ -78,7 +78,7 @@ async def get_python_data_question_detail(
     if q is None:
         raise HTTPException(status_code=404, detail="Question not found")
 
-    unlock_state, next_questions = await _get_python_data_unlock_state(current_user)
+    unlock_state, next_questions = await _get_pandas_unlock_state(current_user)
     state = unlock_state.get(int(q["id"]), "locked")
     unlocked = state != "locked"
     is_next = state == "unlocked" and next_questions.get(q["difficulty"]) == int(q["id"])
@@ -99,13 +99,13 @@ async def get_python_data_question_detail(
 
 
 @router.post("/run-code")
-async def run_python_data_code_endpoint(
+async def run_pandas_code_endpoint(
     body: RunCodeRequest,
     current_user: dict[str, Any] = Depends(get_current_user),
 ) -> dict[str, Any]:
     request_id = get_request_id()
     logger.info(
-        "[request_id=%s] /api/python-data/run-code: user_id=%s question_id=%s",
+        "[request_id=%s] /api/pandas/run-code: user_id=%s question_id=%s",
         request_id,
         current_user["id"],
         body.question_id,
@@ -114,11 +114,11 @@ async def run_python_data_code_endpoint(
     if q is None:
         raise HTTPException(status_code=404, detail="Question not found")
 
-    unlock_state, _ = await _get_python_data_unlock_state(current_user)
+    unlock_state, _ = await _get_pandas_unlock_state(current_user)
     if unlock_state.get(int(q["id"]), "locked") == "locked":
         raise HTTPException(status_code=403, detail="Question is locked for your current plan or progress.")
 
-    guard_errors = python_guard.validate_code(body.code, topic="python_data")
+    guard_errors = python_guard.validate_code(body.code, topic="pandas")
     if guard_errors:
         raise HTTPException(
             status_code=400,
@@ -126,17 +126,17 @@ async def run_python_data_code_endpoint(
         )
 
     # Compares against expected on the FULL result; returns a ~200-row display preview.
-    return await run_blocking_exec(python_evaluator.run_python_data_code_checked, body.code, q)
+    return await run_blocking_exec(python_evaluator.run_pandas_code_checked, body.code, q)
 
 
 @router.post("/submit")
-async def submit_python_data_code(
+async def submit_pandas_code(
     body: SubmitCodeRequest,
     current_user: dict[str, Any] = Depends(get_current_user),
 ) -> dict[str, Any]:
     request_id = get_request_id()
     logger.info(
-        "[request_id=%s] /api/python-data/submit: user_id=%s question_id=%s",
+        "[request_id=%s] /api/pandas/submit: user_id=%s question_id=%s",
         request_id,
         current_user["id"],
         body.question_id,
@@ -145,18 +145,18 @@ async def submit_python_data_code(
     if q is None:
         raise HTTPException(status_code=404, detail="Question not found")
 
-    unlock_state, _ = await _get_python_data_unlock_state(current_user)
+    unlock_state, _ = await _get_pandas_unlock_state(current_user)
     if unlock_state.get(int(q["id"]), "locked") == "locked":
         raise HTTPException(status_code=403, detail="Question is locked for your current plan or progress.")
 
-    guard_errors = python_guard.validate_code(body.code, topic="python_data")
+    guard_errors = python_guard.validate_code(body.code, topic="pandas")
     if guard_errors:
         raise HTTPException(
             status_code=400,
             detail={"error": "Code contains disallowed constructs.", "guard_errors": guard_errors},
         )
 
-    result = await run_blocking_exec(python_evaluator.evaluate_python_data_code, body.code, q)
+    result = await run_blocking_exec(python_evaluator.evaluate_pandas_code, body.code, q)
 
     accepted = bool(result.get("correct"))
 
@@ -164,7 +164,7 @@ async def submit_python_data_code(
     result["test_results"] = [{"passed": accepted, "actual": result.get("user_result"), "expected": result.get("expected_result")}]
 
     if accepted:
-        await mark_solved(current_user["id"], int(q["id"]), topic="python_data")
+        await mark_solved(current_user["id"], int(q["id"]), topic="pandas")
 
     result["solution_code"] = q.get("expected_code", "")
     result["solution"] = q.get("expected_code", "")
@@ -172,7 +172,7 @@ async def submit_python_data_code(
 
     await record_submission(
         user_id=current_user["id"],
-        track="python-data",
+        track="pandas",
         question_id=int(body.question_id),
         is_correct=accepted,
         code=body.code,

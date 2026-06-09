@@ -301,7 +301,7 @@ Update this section after each track closes / each retro-cleanup completes.
 
 ### 6.2 Validator coverage state (`_TAXONOMY_VALIDATED_TRACKS`)
 
-In set: SQL, Python, Pandas (`python-data`), PySpark, Data Engineering, Data Modeling, Statistics, ML Fundamentals, Experimentation.
+In set: SQL, Python, Pandas (`pandas`), PySpark, Data Engineering, Data Modeling, Statistics, ML Fundamentals, Experimentation.
 Out of set: none (all 9 active tracks enrolled).
 
 ### 6.3 Precedent table (sizing-benchmark anchor for next Stage A)

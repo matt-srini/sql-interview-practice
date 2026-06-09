@@ -258,14 +258,14 @@ def validate_code(code: str, topic: str = "python") -> list[str]:
     Validate user code. Returns a list of error strings (empty = ok).
 
     topic: "python" (algorithm) → no imports allowed
-           "python_data" → allowlist imports only
+           "pandas" → allowlist imports only
     """
     try:
         tree = ast.parse(code)
     except SyntaxError as e:
         return [f"Syntax error: {e}"]
 
-    if topic == "python_data":
+    if topic == "pandas":
         allowlist = _DATA_ALLOWLIST
     elif topic == "python":
         allowlist = _ALGORITHM_ALLOWLIST

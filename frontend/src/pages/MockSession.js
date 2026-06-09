@@ -41,7 +41,7 @@ function conceptSlug(concept) {
 const DEFAULT_CODE = {
   sql: '-- Write your SQL query here\n',
   python: '# Write your Python solution here\n\ndef solution():\n    pass\n',
-  'python-data': '# Write your pandas/numpy code here\n# result should be assigned to a variable named `result`\n',
+  'pandas': '# Write your pandas/numpy code here\n# result should be assigned to a variable named `result`\n',
   pyspark: '',
 };
 
@@ -961,7 +961,7 @@ export default function MockSession() {
                 </div>
               )}
 
-              {q.track === 'python-data' && Object.keys(q.dataframes ?? {}).length > 0 && (
+              {q.track === 'pandas' && Object.keys(q.dataframes ?? {}).length > 0 && (
                 <VariablesPanel dataframes={q.dataframes} schema={{}} />
               )}
             </>
@@ -994,7 +994,7 @@ export default function MockSession() {
               <div className="editor-wrapper editor-workspace">
                 <div className="editor-topbar">
                   <span className="editor-title">
-                    {q.track === 'sql' ? 'SQL Editor' : q.track === 'python' ? 'Python' : q.track === 'python-data' ? 'Pandas' : 'Code Editor'}
+                    {q.track === 'sql' ? 'SQL Editor' : q.track === 'python' ? 'Python' : q.track === 'pandas' ? 'Pandas' : 'Code Editor'}
                   </span>
                   <div className="editor-topbar-actions">
                     <button className="editor-expand-btn" onClick={() => adjustFontSize(-1)} title="Decrease font size" aria-label="Decrease font size">A−</button>
@@ -1106,7 +1106,7 @@ export default function MockSession() {
               )}
 
               {/* Pandas run result */}
-              {q.track === 'python-data' && currentRunResult && !currentRunResult.error && (
+              {q.track === 'pandas' && currentRunResult && !currentRunResult.error && (
                 <div ref={resultsCardRef}>
                   {currentRunResult.columns && (
                     <div className="results-card">

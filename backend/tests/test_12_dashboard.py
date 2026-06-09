@@ -22,7 +22,7 @@ _sql_hard_qs = get_sql_qs()["hard"]
 def test_tc172_dashboard_returns_all_4_tracks():
     """TC-172: GET /api/dashboard → 200; tracks has all 4 entries with by_difficulty."""
     from python_questions import get_questions_by_difficulty as get_py_qs
-    from python_data_questions import get_questions_by_difficulty as get_pd_qs
+    from pandas_questions import get_questions_by_difficulty as get_pd_qs
     from pyspark_questions import get_questions_by_difficulty as get_ps_qs
 
     with TestClient(app) as client:
@@ -30,7 +30,7 @@ def test_tc172_dashboard_returns_all_4_tracks():
     # Insert one solve per track
     _insert_progress(user["id"], _sql_easy_qs[0]["id"], track="sql")
     _insert_progress(user["id"], get_py_qs()["easy"][0]["id"], track="python")
-    _insert_progress(user["id"], get_pd_qs()["easy"][0]["id"], track="python_data")
+    _insert_progress(user["id"], get_pd_qs()["easy"][0]["id"], track="pandas")
     _insert_progress(user["id"], get_ps_qs()["easy"][0]["id"], track="pyspark")
 
     with TestClient(app) as client:
@@ -39,7 +39,7 @@ def test_tc172_dashboard_returns_all_4_tracks():
     assert r.status_code == 200
     body = r.json()
     tracks = body.get("tracks", {})
-    for key in ("sql", "python", "python-data", "pyspark"):
+    for key in ("sql", "python", "pandas", "pyspark"):
         assert key in tracks, f"Missing track: {key}"
         t = tracks[key]
         assert "by_difficulty" in t
@@ -50,14 +50,15 @@ def test_tc172_dashboard_returns_all_4_tracks():
             assert "total" in bd[diff]
 
 
-def test_tc173_python_data_key_normalized():
-    """TC-173: Dashboard track key is 'python-data' (hyphen, not underscore)."""
+def test_tc173_pandas_key_present():
+    """TC-173: Dashboard track key is 'pandas' (canonical slug)."""
     with TestClient(app) as client:
         _make_user(client, plan="pro")
         r = client.get("/api/dashboard")
     assert r.status_code == 200
     tracks = r.json().get("tracks", {})
-    assert "python-data" in tracks
+    assert "pandas" in tracks
+    assert "python-data" not in tracks
     assert "python_data" not in tracks
 
 
@@ -89,14 +90,14 @@ def test_tc175_recent_activity_present():
 def test_tc176_insights_returns_per_track_for_all_4():
     """TC-176: GET /api/dashboard/insights → per_track with all 4 tracks."""
     from python_questions import get_questions_by_difficulty as get_py_qs
-    from python_data_questions import get_questions_by_difficulty as get_pd_qs
+    from pandas_questions import get_questions_by_difficulty as get_pd_qs
     from pyspark_questions import get_questions_by_difficulty as get_ps_qs
 
     with TestClient(app) as client:
         user = _make_user(client, plan="pro")
     _insert_submission(user["id"], _sql_easy_qs[0]["id"], is_correct=True, track="sql")
     _insert_submission(user["id"], get_py_qs()["easy"][0]["id"], is_correct=True, track="python")
-    _insert_submission(user["id"], get_pd_qs()["easy"][0]["id"], is_correct=True, track="python_data")
+    _insert_submission(user["id"], get_pd_qs()["easy"][0]["id"], is_correct=True, track="pandas")
     _insert_submission(user["id"], get_ps_qs()["easy"][0]["id"], is_correct=True, track="pyspark")
 
     with TestClient(app) as client:
@@ -104,7 +105,7 @@ def test_tc176_insights_returns_per_track_for_all_4():
         r = client.get("/api/dashboard/insights")
     assert r.status_code == 200
     per_track = r.json().get("per_track", {})
-    for key in ("sql", "python", "python-data", "pyspark"):
+    for key in ("sql", "python", "pandas", "pyspark"):
         assert key in per_track, f"Missing track: {key}"
         t = per_track[key]
         assert "solve_count" in t
@@ -473,7 +474,7 @@ def test_tc194_elite_user_readiness_scores_present():
     body = r.json()
     scores = body.get("readiness_scores")
     assert scores is not None
-    for key in ("sql", "python", "python-data", "pyspark"):
+    for key in ("sql", "python", "pandas", "pyspark"):
         assert key in scores
         t = scores[key]
         assert "score" in t
@@ -536,7 +537,7 @@ def test_tc198_practice_coverage_0_solves():
         effective_plan="elite",
     )
     assert result is not None
-    for track in ("sql", "python", "python-data", "pyspark"):
+    for track in ("sql", "python", "pandas", "pyspark"):
         assert result[track]["components"]["practice"] == 0.0
 
 
@@ -573,7 +574,7 @@ def test_tc200_mock_accuracy_no_sessions():
         concept_correct={},
         effective_plan="elite",
     )
-    for track in ("sql", "python", "python-data", "pyspark"):
+    for track in ("sql", "python", "pandas", "pyspark"):
         assert result[track]["components"]["mock_accuracy"] == 0.0
 
 

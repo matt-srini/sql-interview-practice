@@ -58,7 +58,7 @@ DISPLAY_ORDER: dict[str, dict[str, int]] = {
         "dynamic-programming": 3,
         "practical-data-python": 4,
     },
-    "python-data": {
+    "pandas": {
         # foundational
         "dataframe-fundamentals": 1,
         # intermediate (reshaping moved here — pivot/melt is everyday pandas)

@@ -8,7 +8,7 @@ import data_engineering_questions as de_mod
 import data_modeling_questions as dm_mod
 import experimentation_questions as exp_mod
 import ml_fundamentals_questions as ml_mod
-import python_data_questions as pandas_mod
+import pandas_questions as pandas_mod
 import python_questions as python_mod
 import pyspark_questions as pyspark_mod
 import questions as sql_mod
@@ -24,7 +24,7 @@ router = APIRouter()
 _TOPIC_MOD = {
     "sql": sql_mod,
     "python": python_mod,
-    "python-data": pandas_mod,
+    "pandas": pandas_mod,
     "pyspark": pyspark_mod,
     "data-engineering": de_mod,
     "data-modeling": dm_mod,
@@ -37,7 +37,7 @@ _TOPIC_MOD = {
 _TOPIC_DB = {
     "sql": "sql",
     "python": "python",
-    "python-data": "python-data",
+    "pandas": "pandas",
     "pyspark": "pyspark",
     "data-engineering": "data-engineering",
     "data-modeling": "data-modeling",

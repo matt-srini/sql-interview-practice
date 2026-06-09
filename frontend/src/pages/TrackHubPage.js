@@ -37,7 +37,7 @@ function pickFirstQuestionId(catalog) {
 const HUB_DESC_TEMPLATES = {
   sql:              n => `Your SQL practice workspace. ${n} questions by difficulty — joins, aggregations, window functions, and CTEs with instant DuckDB execution and solution analysis.`,
   python:           n => `Your Python practice workspace. ${n} algorithm and data processing questions with automated test case feedback and step-by-step hints.`,
-  'python-data':    n => `Your Pandas practice workspace. ${n} DataFrame manipulation questions with live execution and side-by-side output comparison.`,
+  'pandas':    n => `Your Pandas practice workspace. ${n} DataFrame manipulation questions with live execution and side-by-side output comparison.`,
   pyspark:          n => `Your PySpark practice workspace. ${n} reasoning prompts across predict-output, debug, and scenario formats covering Spark behavior and performance trade-offs.`,
   'data-engineering': n => `Your Data Engineering practice workspace. ${n} questions covering ETL, orchestration, streaming, and system design.`,
   'data-modeling':  n => `Your Data Modeling practice workspace. ${n} questions covering dimensional modeling, normalization, and dbt design.`,

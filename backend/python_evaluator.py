@@ -553,7 +553,7 @@ def evaluate_python_code(code: str, question: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def run_python_data_code(code: str, question: dict[str, Any]) -> dict[str, Any]:
+def run_pandas_code(code: str, question: dict[str, Any]) -> dict[str, Any]:
     """
     Run user pandas/numpy code and return the resulting DataFrame.
     Used by /run-code endpoint for the Pandas track.
@@ -562,7 +562,7 @@ def run_python_data_code(code: str, question: dict[str, Any]) -> dict[str, Any]:
       ``print_output``      → ``stdout``
       ``result.columns``    → top-level ``columns``
       ``result.rows``       → top-level ``rows``
-    The nested ``result`` dict is kept for internal use by ``evaluate_python_data_code``.
+    The nested ``result`` dict is kept for internal use by ``evaluate_pandas_code``.
     """
     dataframes = question.get("dataframes", {})
     payload = {
@@ -584,7 +584,7 @@ def run_python_data_code(code: str, question: dict[str, Any]) -> dict[str, Any]:
     return raw
 
 
-def run_python_data_code_checked(code: str, question: dict[str, Any]) -> dict[str, Any]:
+def run_pandas_code_checked(code: str, question: dict[str, Any]) -> dict[str, Any]:
     """Run user code, compare against expected on the FULL result, and return a
     display-preview payload with a per-case ``test_results`` entry.
 
@@ -592,12 +592,12 @@ def run_python_data_code_checked(code: str, question: dict[str, Any]) -> dict[st
     runs on the complete result; only a ~200-row preview is sent to the client, so a
     correct answer over a large dataset is not blocked by payload/render cost.
     """
-    raw = run_python_data_code(code, question)
+    raw = run_pandas_code(code, question)
     if raw.get("error"):
         raw["test_results"] = [{"passed": False, "error": raw.get("error")}]
         return raw
 
-    expected_raw = run_python_data_code(question.get("expected_code", ""), question)
+    expected_raw = run_pandas_code(question.get("expected_code", ""), question)
     try:
         user_df = pd.DataFrame(raw["result"]["rows"]) if raw.get("result") else pd.DataFrame()
         exp_df = pd.DataFrame(expected_raw["result"]["rows"]) if expected_raw.get("result") else pd.DataFrame()
@@ -616,12 +616,12 @@ def run_python_data_code_checked(code: str, question: dict[str, Any]) -> dict[st
     return raw
 
 
-def evaluate_python_data_code(code: str, question: dict[str, Any]) -> dict[str, Any]:
+def evaluate_pandas_code(code: str, question: dict[str, Any]) -> dict[str, Any]:
     """
     Run user code AND expected code, normalize both DataFrames, compare.
     """
     # Run user code
-    user_output = run_python_data_code(code, question)
+    user_output = run_pandas_code(code, question)
     if user_output.get("error"):
         return {
             "correct": False,

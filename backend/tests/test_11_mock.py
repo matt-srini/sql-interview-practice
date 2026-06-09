@@ -958,7 +958,7 @@ def test_tc176_track_family_helper_resolves_correctly():
 
     assert _track_family("sql", []) == "executable"
     assert _track_family("python", []) == "executable"
-    assert _track_family("python-data", []) == "executable"
+    assert _track_family("pandas", []) == "executable"
     assert _track_family("pyspark", []) == "reasoning"
     assert _track_family("data-engineering", []) == "reasoning"
     assert _track_family("data-modeling", []) == "reasoning"

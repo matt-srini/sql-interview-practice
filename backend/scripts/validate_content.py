@@ -19,13 +19,13 @@ QUESTION_DIRS: dict[str, Path] = {t.slug: t.content_dir for t in TRACKS}
 # Sample-question files participate in the same canonical-name + duplicate-family
 # taxonomy checks as practice/mock. The mapping mirrors
 # backend/sample_questions.py:_TRACK_SAMPLE_FILES but keys by validator-style
-# track slug (e.g. "python-data", not "python_data") so the iteration aligns
-# with QUESTION_DIRS and _TAXONOMY_VALIDATED_TRACKS membership.
+# track slug (e.g. "pandas") so the iteration aligns with QUESTION_DIRS
+# and _TAXONOMY_VALIDATED_TRACKS membership.
 _SAMPLE_DIR = BACKEND_ROOT / "content" / "sample_questions"
 SAMPLE_FILES: dict[str, Path] = {
     "sql": _SAMPLE_DIR / "sql.json",
     "python": _SAMPLE_DIR / "python.json",
-    "python-data": _SAMPLE_DIR / "pandas.json",
+    "pandas": _SAMPLE_DIR / "pandas.json",
     "pyspark": _SAMPLE_DIR / "pyspark.json",
     "data-engineering": _SAMPLE_DIR / "data_engineering.json",
     "data-modeling": _SAMPLE_DIR / "data_modeling.json",
@@ -456,7 +456,7 @@ def _validate_mock_fields() -> None:
                 )
 
             # type: "reverse" requires non-empty result_preview (SQL and Pandas only)
-            if q.get("type") == "reverse" and track in ("sql", "python-data"):
+            if q.get("type") == "reverse" and track in ("sql", "pandas"):
                 result_preview = q.get("result_preview")
                 if not isinstance(result_preview, list) or len(result_preview) == 0:
                     errors.append(
@@ -469,7 +469,7 @@ def _validate_mock_fields() -> None:
 
             # type: "debug" requires debug_error and starter_code/starter_query (SQL, Pandas, Python)
             # Note: PySpark uses "debug" type differently (MCQ-style), no debug_error needed there
-            if q.get("type") == "debug" and track in ("sql", "python-data", "python"):
+            if q.get("type") == "debug" and track in ("sql", "pandas", "python"):
                 if not str(q.get("debug_error", "") or "").strip():
                     errors.append(
                         f"{track} {qid} {title}: type=debug requires non-empty debug_error string"
@@ -494,7 +494,7 @@ def _validate_mock_fields() -> None:
 _TAXONOMY_VALIDATED_TRACKS: frozenset[str] = frozenset({
     "sql",
     "python",             # Python Phase 2: registry complete, all practice/mock tags validated
-    "python-data",        # Pandas Phase 2: registry complete, all 112 practice tags validated
+    "pandas",             # Pandas Phase 2: registry complete, all 112 practice tags validated
     "pyspark",            # PySpark Phase 2: registry complete (23 families), no realism families by design (MCQ-only), 0e/75m/75h mock-only validated; added 2026-05-25 post-closure cleanup (0 orphans across 278 questions)
     "data-engineering",   # DE Phase 2: registry complete, 21 families, 0e/50m/60h mock-only validated
     "data-modeling",      # DM Phase 2: registry complete (22 families), 0 realism families by design (MCQ-only), 0e/45m/51h mock-only validated
@@ -805,9 +805,9 @@ def _validate_solution_code_presence() -> None:
 
     solution_code is the Elite post-session debrief teaching artifact. Its absence
     causes a silent quality gap — no runtime error, just a degraded Elite experience.
-    Required on all medium/hard mock_only questions in the python-data and python tracks.
+    Required on all medium/hard mock_only questions in the pandas and python tracks.
     """
-    CODE_EXECUTION_TRACKS = frozenset({"python-data", "python"})
+    CODE_EXECUTION_TRACKS = frozenset({"pandas", "python"})
     errors: list[str] = []
 
     for track, file_path in _iter_question_files():

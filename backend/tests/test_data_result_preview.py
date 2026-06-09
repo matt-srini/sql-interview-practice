@@ -9,7 +9,7 @@ from pathlib import Path
 import pytest
 
 from python_evaluator import (
-    DATA_PREVIEW_ROWS, evaluate_python_data_code, run_python_data_code_checked,
+    DATA_PREVIEW_ROWS, evaluate_pandas_code, run_pandas_code_checked,
 )
 
 BACKEND = Path(__file__).resolve().parent.parent
@@ -17,7 +17,7 @@ BACKEND = Path(__file__).resolve().parent.parent
 
 def _load_q(qid: int):
     for diff in ("easy", "medium", "hard"):
-        for q in json.loads((BACKEND / "content/python_data_questions" / f"{diff}.json").read_text()):
+        for q in json.loads((BACKEND / "content/pandas_questions" / f"{diff}.json").read_text()):
             if q.get("id") == qid:
                 return q
     raise AssertionError(f"question {qid} not found")
@@ -26,7 +26,7 @@ def _load_q(qid: int):
 def test_large_result_grades_correct_and_preview_capped():
     # 31024 "Drop Events Without a Product" → ~43k correct rows (was ungradeable).
     q = _load_q(31024)
-    res = evaluate_python_data_code(q["expected_code"], q)
+    res = evaluate_pandas_code(q["expected_code"], q)
     assert res["correct"] is True, res.get("error")
     ur = res["user_result"]
     assert ur["total_rows"] > DATA_PREVIEW_ROWS          # truly large
@@ -46,14 +46,14 @@ def test_grading_uses_full_result_not_preview():
         ".sort_values('event_id').reset_index(drop=True)\n"
         "    return r.head(200)\n"
     )
-    res = evaluate_python_data_code(head_only, q)
+    res = evaluate_pandas_code(head_only, q)
     assert res["correct"] is False
 
 
 def test_small_result_not_truncated():
     # 31002 aggregates to a handful of rows — well under the preview window.
     q = _load_q(31002)
-    res = evaluate_python_data_code(q["expected_code"], q)
+    res = evaluate_pandas_code(q["expected_code"], q)
     assert res["correct"] is True
     ur = res["user_result"]
     assert ur["total_rows"] < DATA_PREVIEW_ROWS
@@ -63,7 +63,7 @@ def test_small_result_not_truncated():
 
 def test_run_code_checked_returns_preview_and_pass():
     q = _load_q(31024)
-    out = run_python_data_code_checked(q["expected_code"], q)
+    out = run_pandas_code_checked(q["expected_code"], q)
     tr = out["test_results"][0]
     assert tr["passed"] is True
     assert tr["actual"]["total_rows"] > DATA_PREVIEW_ROWS

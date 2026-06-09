@@ -18,7 +18,7 @@ import pytest
 
 import questions as sql_questions
 import python_questions
-import python_data_questions
+import pandas_questions
 import pyspark_questions
 import data_engineering_questions
 import data_modeling_questions
@@ -33,7 +33,7 @@ DIFFS = ("easy", "medium", "hard")
 TRACKS = [
     ("questions", sql_questions),  # SQL
     ("python_questions", python_questions),
-    ("python_data_questions", python_data_questions),
+    ("pandas_questions", pandas_questions),
     ("pyspark_questions", pyspark_questions),
     ("data_engineering_questions", data_engineering_questions),
     ("data_modeling_questions", data_modeling_questions),

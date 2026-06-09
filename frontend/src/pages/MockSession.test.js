@@ -56,7 +56,7 @@ vi.mock('../contexts/TopicContext', () => ({
   TRACK_META: {
     sql: { label: 'SQL', hasRunCode: true, hasMCQ: false, mixedSubtype: false },
     python: { label: 'Python', hasRunCode: true, hasMCQ: false, mixedSubtype: false },
-    'python-data': { label: 'Pandas', hasRunCode: true, hasMCQ: false, mixedSubtype: false },
+    'pandas': { label: 'Pandas', hasRunCode: true, hasMCQ: false, mixedSubtype: false },
     pyspark: { label: 'PySpark', hasRunCode: false, hasMCQ: true, mixedSubtype: false },
     'data-engineering': { label: 'Data Engineering', hasRunCode: false, hasMCQ: true, mixedSubtype: false },
     statistics: { label: 'Statistics', hasRunCode: true, hasMCQ: true, mixedSubtype: true },

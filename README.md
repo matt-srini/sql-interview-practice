@@ -54,7 +54,7 @@ sql-interview-practice/
 │   ├── content/
 │   │   ├── questions/                  # SQL challenge JSON (easy/medium/hard.json)
 │   │   ├── python_questions/           # Python algorithm questions
-│   │   ├── python_data_questions/      # Pandas questions
+│   │   ├── pandas_questions/      # Pandas questions
 │   │   ├── pyspark_questions/          # PySpark MCQ questions
 │   │   ├── data_engineering_questions/ # Data Engineering MCQ / scenario / debug
 │   │   ├── data_modeling_questions/    # Data Modeling MCQ / scenario

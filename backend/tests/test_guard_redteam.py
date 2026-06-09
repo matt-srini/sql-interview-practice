@@ -61,14 +61,14 @@ _ESCAPE_ATTEMPTS = [
      "def solve(): return f\"{().__class__.__bases__[0].__subclasses__()}\""),
 
     # --- pandas/data track: blocked imports ---
-    ("import_os_pandas",      "python_data", "import os\ndef solve(df): return df"),
-    ("import_subprocess_pd",  "python_data", "import subprocess\ndef solve(df): return df"),
-    ("from_os_pandas",        "python_data", "from os.path import exists\ndef solve(df): return df"),
+    ("import_os_pandas",      "pandas", "import os\ndef solve(df): return df"),
+    ("import_subprocess_pd",  "pandas", "import subprocess\ndef solve(df): return df"),
+    ("from_os_pandas",        "pandas", "from os.path import exists\ndef solve(df): return df"),
 
     # --- pandas read_csv / filesystem via attribute ---
-    ("attr_read_csv",         "python_data",
+    ("attr_read_csv",         "pandas",
      "import pandas as pd\ndef solve(df): return pd.read_csv('/etc/passwd')"),
-    ("attr_to_csv",           "python_data",
+    ("attr_to_csv",           "pandas",
      "import pandas as pd\ndef solve(df): df.to_csv('/tmp/x.csv')"),
 
     # --- breakpoint ---
@@ -119,7 +119,7 @@ _LEGIT_SNIPPETS = [
     ("math_use", "statistics",
      "import math\ndef solve(x): return math.sqrt(abs(x))"),
 
-    ("pandas_groupby", "python_data",
+    ("pandas_groupby", "pandas",
      "import pandas as pd\ndef solve(df):\n    return df.groupby('a')['b'].sum().reset_index()"),
 
     ("try_except_value", "python",

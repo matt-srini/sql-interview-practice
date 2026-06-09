@@ -12,9 +12,9 @@ import UpgradeButton from '../components/UpgradeButton';
 
 // Role → tracks filter for Track overview section
 const ROLE_TRACK_FILTERS = [
-  { id: 'analyst',   label: 'Data Analyst',       tracks: ['sql', 'statistics', 'python-data', 'python'] },
+  { id: 'analyst',   label: 'Data Analyst',       tracks: ['sql', 'statistics', 'pandas', 'python'] },
   { id: 'engineer',  label: 'Data Engineer',      tracks: ['python', 'sql', 'pyspark', 'data-engineering', 'data-modeling'] },
-  { id: 'ae',        label: 'Analytics Eng',      tracks: ['sql', 'data-modeling', 'python-data', 'python'] },
+  { id: 'ae',        label: 'Analytics Eng',      tracks: ['sql', 'data-modeling', 'pandas', 'python'] },
   { id: 'scientist', label: 'Data Scientist',     tracks: ['ml-fundamentals', 'statistics', 'experimentation', 'python', 'sql'] },
 ];
 

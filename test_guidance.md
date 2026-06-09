@@ -130,7 +130,7 @@ def _consume_oauth_state_token(state_token)
 def verify_test_user(user_id)  # marks email_verified=true directly in DB
 ```
 
-Note: `_insert_progress` maps track slugs to `db_topic` values (`python-data` → `python_data`).
+Note: `_insert_progress` maps track slugs to `db_topic` values (`pandas` → `pandas`).
 
 ### 0.4 Email service
 
@@ -913,13 +913,13 @@ PySpark, Data Engineering, and Data Modeling all share the same MCQ profile thre
 - Expected: 200
 - Tier: all
 
-**TC-117 · All 4 dedicated sample tracks are accessible (sql, python, python-data, pyspark)**
+**TC-117 · All 4 dedicated sample tracks are accessible (sql, python, pandas, pyspark)**
 - Expected: all four return 200 with appropriate schemas
 - Note: DE, DM, Stats, ML, Experimentation samples are auto-sliced from first 3 practice
   questions per difficulty — no dedicated sample IDs; they share the standard catalog routes.
 - Tier: all
 
-**TC-118 · Sample run-code for python-data executes Pandas code**
+**TC-118 · Sample run-code for pandas executes Pandas code**
 - Expected: 200 with test results
 - Tier: all
 
@@ -935,7 +935,7 @@ PySpark, Data Engineering, and Data Modeling all share the same MCQ profile thre
 - Preconditions: authenticated user (any plan)
 - Steps: `GET /api/paths`
 - Expected: 200; `paths` array; each path has `slug`, `title`, `topic`, `solved_count`; all 9
-  track slugs represented: `sql`, `python`, `python-data`, `pyspark`, `data-engineering`,
+  track slugs represented: `sql`, `python`, `pandas`, `pyspark`, `data-engineering`,
   `data-modeling`, `statistics`, `ml-fundamentals`, `experimentation`; total count ≥ 18
   (floor check — current bank holds 46, but this assertion trips only if the loader breaks).
 - Tier: all
@@ -1439,17 +1439,17 @@ per user in-process — cleared between test functions by `isolated_state`.
 ### 12A. Dashboard endpoint
 
 **TC-172 (dashboard) · GET /api/dashboard returns track stats for code tracks**
-- Preconditions: pro user with solves in sql, python, python-data, pyspark (via `_insert_progress`)
+- Preconditions: pro user with solves in sql, python, pandas, pyspark (via `_insert_progress`)
 - Steps: `GET /api/dashboard`
-- Expected: 200; `tracks` contains entries for `sql`, `python`, `python-data`, `pyspark`;
+- Expected: 200; `tracks` contains entries for `sql`, `python`, `pandas`, `pyspark`;
   each has `by_difficulty` with `easy`, `medium`, `hard` sub-objects having `solved` and `total`
 - Note: The dashboard router handles all 9 tracks (including DE, DM, Stats, ML, Exp).
   TC-172 verifies at minimum the 4 code tracks; additional reasoning track solves would appear
   under their respective slugs.
 - Tier: all
 
-**TC-173 · python-data key is normalized (not python_data)**
-- Expected: track key is `"python-data"` (hyphen)
+**TC-173 · pandas key is normalized (not pandas)**
+- Expected: track key is `"pandas"` (hyphen)
 - Tier: all
 
 **TC-174 · Unauthenticated GET /api/dashboard returns 401**
@@ -1468,7 +1468,7 @@ per user in-process — cleared between test functions by `isolated_state`.
 ### 12B. Insights — basic per-track stats
 
 **TC-176 (insights) · GET /api/dashboard/insights returns per_track for code tracks**
-- Preconditions: pro user with solves in sql, python, python-data, pyspark
+- Preconditions: pro user with solves in sql, python, pandas, pyspark
 - Steps: `GET /api/dashboard/insights`
 - Expected: 200; `per_track` has entries for those tracks; each has `solve_count`,
   `median_solve_seconds`, `accuracy_pct`
@@ -1507,7 +1507,7 @@ per user in-process — cleared between test functions by `isolated_state`.
 
 **TC-194 · Elite user: readiness_scores present for all 9 tracks**
 - Expected: `readiness_scores` is an object with keys for all 9 track slugs:
-  `sql`, `python`, `python-data`, `pyspark`, `data-engineering`, `data-modeling`,
+  `sql`, `python`, `pandas`, `pyspark`, `data-engineering`, `data-modeling`,
   `statistics`, `ml-fundamentals`, `experimentation`; each has `score` (int 0–100),
   `label` (string), `components` with `practice`, `mock_accuracy`, `concept_strength`
 - Tier: Elite

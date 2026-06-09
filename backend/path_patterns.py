@@ -59,7 +59,7 @@ PATH_PATTERNS: dict[str, dict[str, str]] = {
         "list-transformations": "List & Array Transformations",
         "streaming-and-online": "Streaming & Online Reductions",
     },
-    "python-data": {
+    "pandas": {
         "dataframe-basics": "DataFrame Basics",
         "groupby": "GroupBy Aggregation",
         "joins": "DataFrame Joins",

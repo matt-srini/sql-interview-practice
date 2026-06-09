@@ -33,7 +33,7 @@ Defined in `frontend/src/App.js`:
 /questions/:id                   → redirect → /practice/sql/questions/:id  (legacy)
 ```
 
-`:topic` values: `sql` | `python` | `python-data` | `pyspark` | `data-engineering` | `data-modeling` | `statistics` | `ml-fundamentals` | `experimentation`
+`:topic` values: `sql` | `python` | `pandas` | `pyspark` | `data-engineering` | `data-modeling` | `statistics` | `ml-fundamentals` | `experimentation`
 
 Active tracks (`TRACK_SLUGS`): all 9 tracks above. `ALL_TRACK_SLUGS` is the same set (no more `comingSoon` tracks).
 
@@ -294,7 +294,7 @@ Provides current topic and track metadata to the entire component tree.
   label: 'Pandas',
   description: 'pandas and numpy data manipulation',
   color: '#C47F17',
-  apiPrefix: '/python-data',   // used to build API paths
+  apiPrefix: '/pandas',   // used to build API paths
   language: 'python',
   hasRunCode: true,
   hasMCQ: false,
@@ -304,7 +304,7 @@ Provides current topic and track metadata to the entire component tree.
 
 `TopicProvider` reads `:topic` from URL params via `useParams()`. `useTopic()` returns `{ topic, meta }`.
 
-**Track registry (`frontend/src/trackRegistry.js`):** Single source of truth for all track metadata (`TRACK_META`). Adding a track here is the only frontend change needed — catalog paths, sidebar, TrackHub, and SidebarNav all read from it. Current tracks: `sql`, `python`, `python-data`, `pyspark`, `data-engineering`, `data-modeling`, `statistics`, `ml-fundamentals`, `experimentation`.
+**Track registry (`frontend/src/trackRegistry.js`):** Single source of truth for all track metadata (`TRACK_META`). Adding a track here is the only frontend change needed — catalog paths, sidebar, TrackHub, and SidebarNav all read from it. Current tracks: `sql`, `python`, `pandas`, `pyspark`, `data-engineering`, `data-modeling`, `statistics`, `ml-fundamentals`, `experimentation`.
 
 `data-engineering` entry: `color: '#B9762B'`, `hasMCQ: true`, `hasRunCode: false`, `apiPrefix: '/data-engineering'`.
 
@@ -317,7 +317,7 @@ Reasoning-first practice now reads additive `interaction_mode` metadata across P
 Fetches catalog for the current topic on mount. URL determined by `useTopic()` using each track's `apiPrefix` from the registry:
 - `sql` → `/catalog`
 - `python` → `/python/catalog`
-- `python-data` → `/python-data/catalog`
+- `pandas` → `/pandas/catalog`
 - `pyspark` → `/pyspark/catalog`
 - `data-engineering` → `/data-engineering/catalog`
 
@@ -358,10 +358,10 @@ All requests use `withCredentials: true` so the `session_token` cookie is sent d
 5. On correct: solution_code + explanation revealed
 
 ### Pandas
-1. `/practice/python-data/questions/:id` → fetch `/api/python-data/questions/:id`
+1. `/practice/pandas/questions/:id` → fetch `/api/pandas/questions/:id`
 2. VariablesPanel shows available DataFrames from `question.dataframes`
-3. Run → `POST /api/python-data/run-code` → ResultsTable + PrintOutputPanel
-4. Submit → `POST /api/python-data/submit` → correct/incorrect + DataFrame comparison
+3. Run → `POST /api/pandas/run-code` → ResultsTable + PrintOutputPanel
+4. Submit → `POST /api/pandas/submit` → correct/incorrect + DataFrame comparison
 
 ### PySpark reasoning
 1. `/practice/pyspark/questions/:id` → fetch `/api/pyspark/questions/:id`

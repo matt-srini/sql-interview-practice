@@ -29,7 +29,7 @@ vi.mock('../contexts/TopicContext', () => ({
   TRACK_META: {
     sql:                { label: 'SQL',              description: 'SQL queries',                color: '#5B6AF0', totalQuestions: 112, tagline: 'SQL · DuckDB' },
     python:             { label: 'Python',           description: 'Python algorithms',           color: '#2D9E6B', totalQuestions: 95,  tagline: 'Python · sandbox' },
-    'python-data':      { label: 'Pandas',           description: 'Pandas wrangling',            color: '#C47F17', totalQuestions: 86,  tagline: 'Pandas · sandbox' },
+    'pandas':      { label: 'Pandas',           description: 'Pandas wrangling',            color: '#C47F17', totalQuestions: 86,  tagline: 'Pandas · sandbox' },
     pyspark:            { label: 'PySpark',          description: 'Spark concepts',              color: '#D94F3D', totalQuestions: 106, tagline: 'reasoning · predict output' },
     'data-engineering': { label: 'Data Engineering', description: 'DE concepts',                 color: '#B9762B', totalQuestions: 86,  tagline: 'reasoning · scenario' },
     'data-modeling':    { label: 'Data Modeling',    description: 'Dimensional modeling',        color: '#3F8E8C', totalQuestions: 76,  tagline: 'reasoning · schema design' },
@@ -43,12 +43,12 @@ vi.mock('../contexts/TopicContext', () => ({
 
 // trackRegistry mock — must match TRACK_META above
 vi.mock('../trackRegistry', () => ({
-  TRACK_SLUGS:     ['sql', 'python', 'python-data', 'pyspark', 'data-engineering', 'data-modeling', 'statistics', 'ml-fundamentals', 'experimentation'],
-  ALL_TRACK_SLUGS: ['sql', 'python', 'python-data', 'pyspark', 'data-engineering', 'data-modeling', 'statistics', 'ml-fundamentals', 'experimentation'],
+  TRACK_SLUGS:     ['sql', 'python', 'pandas', 'pyspark', 'data-engineering', 'data-modeling', 'statistics', 'ml-fundamentals', 'experimentation'],
+  ALL_TRACK_SLUGS: ['sql', 'python', 'pandas', 'pyspark', 'data-engineering', 'data-modeling', 'statistics', 'ml-fundamentals', 'experimentation'],
   TRACK_META: {
     sql:                { label: 'SQL',              description: 'SQL queries',              color: '#5B6AF0', totalQuestions: 112, tagline: 'SQL · DuckDB' },
     python:             { label: 'Python',           description: 'Python algorithms',         color: '#2D9E6B', totalQuestions: 95,  tagline: 'Python · sandbox' },
-    'python-data':      { label: 'Pandas',           description: 'Pandas wrangling',          color: '#C47F17', totalQuestions: 86,  tagline: 'Pandas · sandbox' },
+    'pandas':      { label: 'Pandas',           description: 'Pandas wrangling',          color: '#C47F17', totalQuestions: 86,  tagline: 'Pandas · sandbox' },
     pyspark:            { label: 'PySpark',          description: 'Spark concepts',            color: '#D94F3D', totalQuestions: 106, tagline: 'reasoning · predict output' },
     'data-engineering': { label: 'Data Engineering', description: 'DE concepts',               color: '#B9762B', totalQuestions: 86,  tagline: 'reasoning · scenario' },
     'data-modeling':    { label: 'Data Modeling',    description: 'Dimensional modeling',      color: '#3F8E8C', totalQuestions: 76,  tagline: 'reasoning · schema design' },
@@ -57,7 +57,7 @@ vi.mock('../trackRegistry', () => ({
     experimentation:    { label: 'Experimentation',  description: 'A/B testing and inference', color: '#0EA5E9', totalQuestions: 80,  tagline: 'experiment reasoning · scenario · predict output' },
   },
   TRACK_LABELS: {
-    sql: 'SQL', python: 'Python', 'python-data': 'Pandas', pyspark: 'PySpark',
+    sql: 'SQL', python: 'Python', 'pandas': 'Pandas', pyspark: 'PySpark',
     'data-engineering': 'Data Engineering', 'data-modeling': 'Data Modeling',
     statistics: 'Statistics', 'ml-fundamentals': 'ML Fundamentals', experimentation: 'Experimentation', mixed: 'Mixed',
   },
@@ -118,7 +118,7 @@ const MOCK_DASHBOARD_DATA = {
   tracks: {
     sql:                { solved: 5, total: 37, by_difficulty: {} },
     python:             { solved: 2, total: 33, by_difficulty: {} },
-    'python-data':      { solved: 0, total: 28, by_difficulty: {} },
+    'pandas':      { solved: 0, total: 28, by_difficulty: {} },
     pyspark:            { solved: 0, total: 40, by_difficulty: {} },
     'data-engineering': { solved: 0, total: 30, by_difficulty: {} },
     'data-modeling':    { solved: 0, total: 25, by_difficulty: {} },

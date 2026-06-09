@@ -35,7 +35,7 @@ Registered in `backend/main.py`:
 | `routers/plan.py` | `/api/user` | User profile, plan, unlock state |
 | `routers/razorpay.py` | `/api/razorpay` | Order/Subscription creation, client verify, webhook handler |
 | `routers/python_questions.py` | `/api/python` | Python algorithm catalog, detail, run-code, submit |
-| `routers/python_data_questions.py` | `/api/python-data` | Pandas catalog, detail, run-code, submit |
+| `routers/pandas_questions.py` | `/api/pandas` | Pandas catalog, detail, run-code, submit |
 | `routers/pyspark_questions.py` | `/api/pyspark` | PySpark catalog, detail, submit (reasoning track; additive `interaction_mode` metadata) |
 | `routers/data_engineering_questions.py` | `/api/data-engineering` | Data Engineering catalog, detail, submit (constructed-reasoning track; additive `interaction_mode` metadata) |
 | `routers/data_modeling_questions.py` | `/api/data-modeling` | Data Modeling catalog, detail, submit (constructed-reasoning track; additive `interaction_mode` metadata) |
@@ -170,16 +170,16 @@ Signature formulas:
 | POST | `/api/python/run-code` | `{ code, question_id }` → test case results (public cases only). Guard checked first. |
 | POST | `/api/python/submit` | `{ code, question_id, duration_ms? }` → verdict + hidden test summary + solution on correct |
 
-### Pandas — `/api/python-data`
+### Pandas — `/api/pandas`
 
 | Method | Path | Description |
 |---|---|---|
-| GET | `/api/python-data/catalog` | Pandas catalog |
-| GET | `/api/python-data/questions/{id}` | Question detail including `dataframes` and `schema` maps |
-| POST | `/api/python-data/run-code` | `{ code, question_id }` → DataFrame result + `print_output` |
-| POST | `/api/python-data/submit` | `{ code, question_id, duration_ms? }` → correct/incorrect + DataFrame comparison + solution on correct |
+| GET | `/api/pandas/catalog` | Pandas catalog |
+| GET | `/api/pandas/questions/{id}` | Question detail including `dataframes` and `schema` maps |
+| POST | `/api/pandas/run-code` | `{ code, question_id }` → DataFrame result + `print_output` |
+| POST | `/api/pandas/submit` | `{ code, question_id, duration_ms? }` → correct/incorrect + DataFrame comparison + solution on correct |
 
-> **Pandas full-result grading with display preview.** Correctness is decided on the **complete** result (user vs expected DataFrame, normalized), so a correct answer over a large dataset is graded soundly — but only a **~200-row preview** is returned to the client (`python_evaluator._preview_result` / `DATA_PREVIEW_ROWS`; the result dict carries `total_rows` + `truncated` so the panel shows "showing first 200 of N"). The /run-code path routes through the single `run_python_data_code_checked` helper (used by both `python_data_questions.py` and `sample.py`); submit through `evaluate_python_data_code`. The sandbox safety cap is `_MAX_DATA_RESULT_ROWS = 100,000` (data mode) and data-mode spawns use a 12s wall timeout (`DATA_CODE_TIMEOUT_SECONDS`) since a large result serializes a few MB for the grade. **SQL grades on the same full-result/preview model:** `evaluator.run_query(query, question, preview=False)` returns the full result (capped at `MAX_GRADING_ROWS = 100,000`) and `evaluate()` compares it exactly, then returns a `MAX_RESULT_ROWS = 200` preview (`_preview_sql_result`, with `total_rows`/`truncated`). The display endpoints call `run_query` with the default `preview=True`. This closed the prior soundness gap where SQL graded only `head(200)` — a query that diverged only beyond row 200 (or an unordered result whose `head(200)` was non-deterministic) is no longer mis-graded.
+> **Pandas full-result grading with display preview.** Correctness is decided on the **complete** result (user vs expected DataFrame, normalized), so a correct answer over a large dataset is graded soundly — but only a **~200-row preview** is returned to the client (`python_evaluator._preview_result` / `DATA_PREVIEW_ROWS`; the result dict carries `total_rows` + `truncated` so the panel shows "showing first 200 of N"). The /run-code path routes through the single `run_pandas_code_checked` helper (used by both `pandas_questions.py` and `sample.py`); submit through `evaluate_pandas_code`. The sandbox safety cap is `_MAX_DATA_RESULT_ROWS = 100,000` (data mode) and data-mode spawns use a 12s wall timeout (`DATA_CODE_TIMEOUT_SECONDS`) since a large result serializes a few MB for the grade. **SQL grades on the same full-result/preview model:** `evaluator.run_query(query, question, preview=False)` returns the full result (capped at `MAX_GRADING_ROWS = 100,000`) and `evaluate()` compares it exactly, then returns a `MAX_RESULT_ROWS = 200` preview (`_preview_sql_result`, with `total_rows`/`truncated`). The display endpoints call `run_query` with the default `preview=True`. This closed the prior soundness gap where SQL graded only `head(200)` — a query that diverged only beyond row 200 (or an unordered result whose `head(200)` was non-deterministic) is no longer mis-graded.
 
 > **MCQ answer evaluation (all MCQ tracks + sample + mock).** Every MCQ submit path routes through the single shared helper `backend/mcq.py` → `is_mcq_correct(selected_option, question)` (the 0-indexed `selected_option == correct_option` comparison; `correct_option` is 0-indexed: 0→A, 1→B, 2→C, 3→D, matching the A–D labels the frontend renders). `correct_letter(question)` returns the key's canonical letter. No track re-implements the comparison — this prevents per-track index drift (added 2026-06-03; replaced 10 duplicated call-sites across the 6 track routers, `sample.py`, and `mock.py`).
 
@@ -242,7 +242,7 @@ This track uses `eval_kind="mixed"` with `mixed_subtype=True`. Each question has
 | GET | `/api/dashboard/insights` | Coaching metrics derived from submissions (per-track solve speed + accuracy, weakest concepts, streak, cross-track insight) |
 | GET | `/api/submissions` | Submission history for a question (`track`, `question_id`, `limit` query params; max 20) including optional `duration_ms` when provided by clients |
 
-Response shape includes every active track: `{ tracks: { sql, python, python_data, pyspark, data-engineering, data-modeling, statistics, ml-fundamentals, experimentation }, concepts_by_track, recent_activity }`. Each track includes `by_difficulty: { easy: { solved, total }, medium: { solved, total }, hard: { solved, total } }` — note both `solved` and `total` are included in each difficulty object, not bare integers.
+Response shape includes every active track: `{ tracks: { sql, python, pandas, pyspark, data-engineering, data-modeling, statistics, ml-fundamentals, experimentation }, concepts_by_track, recent_activity }`. Each track includes `by_difficulty: { easy: { solved, total }, medium: { solved, total }, hard: { solved, total } }` — note both `solved` and `total` are included in each difficulty object, not bare integers.
 
 `GET /api/dashboard/insights` response shape:
 
@@ -251,7 +251,7 @@ Response shape includes every active track: `{ tracks: { sql, python, python_dat
     "per_track": {
         "sql": { "solve_count": 28, "median_solve_seconds": 512, "accuracy_pct": 0.82 },
         "python": { "solve_count": 12, "median_solve_seconds": 740, "accuracy_pct": 0.71 },
-        "python-data": { "solve_count": 5, "median_solve_seconds": 930, "accuracy_pct": 0.8 },
+        "pandas": { "solve_count": 5, "median_solve_seconds": 930, "accuracy_pct": 0.8 },
         "pyspark": { "solve_count": 18, "median_solve_seconds": 120, "accuracy_pct": 0.88 }
     },
     "weakest_concepts": [
@@ -413,7 +413,7 @@ Solved questions remain solved permanently regardless of plan changes.
 - `offload.run_blocking_exec(fn, …)` — runs a subprocess-backed evaluator (Python/Pandas/statistics) in a worker thread (`asyncio.to_thread`) under a global `asyncio.Semaphore` (default **cores − 2**, `MAX_CONCURRENT_EXECUTIONS`). Sandboxes are process-isolated, so several run concurrently up to the cap.
 - `offload.run_blocking_sql(fn, …)` — runs a DuckDB evaluator (`evaluate` / `run_query`) in a worker thread, serialized behind a process-wide async lock (DuckDB is a single in-process engine; concurrent connection use segfaults — see § SQL evaluation path). The SQL lock is acquired *before* the semaphore so SQL never consumes more than one slot.
 
-Both keep the loop free regardless, so reads (`/health`, catalog, other users) stay fast while executions run. Applied uniformly across **all** code-exec paths: practice SQL/Python/Pandas (`questions.py`, `python_questions.py`, `python_data_questions.py`), statistics (`statistics_questions.py`), sample (`sample.py` — including the formerly-sync `run-query`/`run-code` endpoints, now `async`), and mock (`mock.py` `_evaluate_submission`). Previously the semaphore wrapped only 6 endpoints and was largely cosmetic (the blocking call serialized requests on the loop *before* the semaphore could parallelize them); statistics/sample/mock bypassed it entirely. The `cores − 2` default leaves CPU headroom and bounds peak sandbox memory (concurrency × `RLIMIT_AS` 512 MB), which the Railway container RAM cap must be sized above. See `docs/decisions/DECISIONS.md` (2026-06-08 head-of-line offload entry) and `backend/loadtest/` for the harness that measured this.
+Both keep the loop free regardless, so reads (`/health`, catalog, other users) stay fast while executions run. Applied uniformly across **all** code-exec paths: practice SQL/Python/Pandas (`questions.py`, `python_questions.py`, `pandas_questions.py`), statistics (`statistics_questions.py`), sample (`sample.py` — including the formerly-sync `run-query`/`run-code` endpoints, now `async`), and mock (`mock.py` `_evaluate_submission`). Previously the semaphore wrapped only 6 endpoints and was largely cosmetic (the blocking call serialized requests on the loop *before* the semaphore could parallelize them); statistics/sample/mock bypassed it entirely. The `cores − 2` default leaves CPU headroom and bounds peak sandbox memory (concurrency × `RLIMIT_AS` 512 MB), which the Railway container RAM cap must be sized above. See `docs/decisions/DECISIONS.md` (2026-06-08 head-of-line offload entry) and `backend/loadtest/` for the harness that measured this.
 
 **Off-loop password hashing** (`offload.run_blocking_hash`) — Password hashing is the *other* blocking-CPU call on the request path: `db._hash_password` / `db.verify_password` run `hashlib.pbkdf2_hmac` with 260k iterations (~22 ms each, synchronous; PBKDF2 releases the GIL). Run directly on the loop they serialize an auth burst (e.g. 100 concurrent logins ≈ 2.2 s of loop block, stalling every unrelated request). The async wrappers `db.hash_password` / `db.verify_password_async` offload the work to a worker thread under a **separate** `asyncio.Semaphore` (`MAX_CONCURRENT_HASHES`, default **cores − 1**); the sync helpers stay the implementation and are still used by offline scripts/seeding. The hash cap is intentionally **independent** of `MAX_CONCURRENT_EXECUTIONS` — auth hashing (a small CPU burst) and sandbox execution (a heavy 512 MB subprocess) are different resource classes and must not contend for each other's slots. Request-path callers — register (`upgrade_anonymous_to_registered`, `add_password_to_existing_user`), login (incl. the constant-time dummy verify that blocks account enumeration), and reset-password (`update_password`) — all go through the async wrappers. The 260k iteration count is unchanged (a security parameter). Guarded by `tests/test_concurrency_smoke.py`. See `docs/decisions/DECISIONS.md` (2026-06-08 off-loop password hashing entry).
 
@@ -461,7 +461,7 @@ Prefix: `/api/mock`
 
 **`POST /start`**
 ```json
-{ "mode": "benchmark|custom|interview_loop", "track": "sql|python|python-data|pyspark|data-engineering|data-modeling|statistics|ml-fundamentals|experimentation|mixed",
+{ "mode": "benchmark|custom|interview_loop", "track": "sql|python|pandas|pyspark|data-engineering|data-modeling|statistics|ml-fundamentals|experimentation|mixed",
   "difficulty": "easy|medium|hard|mixed",
   "role": "data_analyst|data_engineer|analytics_engineer|data_scientist",  // required when track="mixed", else null
   "num_questions": 2,   // custom only, 1-5
@@ -519,7 +519,7 @@ mock_session_questions (id BIGSERIAL, session_id BIGINT→mock_sessions, questio
 The mock submit endpoint reuses the same evaluators as the practice tracks:
 - SQL: `evaluator.evaluate()`
 - Python: `python_evaluator.evaluate_python_code()`
-- Pandas: `python_evaluator.evaluate_python_data_code()`
+- Pandas: `python_evaluator.evaluate_pandas_code()`
 - PySpark: direct `selected_option == correct_option` comparison
 
 Correct submissions also call `mark_solved()` and `record_submission()` to update challenge progress.
@@ -532,7 +532,7 @@ Correct submissions also call `mark_solved()` and `record_submission()` to updat
 
 **Lookup helpers:**
 - `get_track(slug)` — by URL slug (raises `ValueError` if unknown)
-- `get_track_by_db_topic(db_topic)` — by DB topic string (handles `python_data` legacy alias)
+- `get_track_by_db_topic(db_topic)` — by DB topic string (handles `pandas` legacy alias)
 - `all_slugs()` — ordered list of all track slugs
 - `mixed_mock_slugs()` — slugs with `in_mixed_mock=True` (all four currently)
 
@@ -544,4 +544,4 @@ All routers and utilities use these helpers instead of hardcoded track lists:
 - `sample_questions.py` — `get_topic_sample_pool()` uses `catalog_module` instead of per-track imports
 - `scripts/validate_content.py` — question dirs, concept blocklists, hint rules, and path validation all derive from the registry
 
-The `db_topic` ↔ `slug` mismatch for Pandas (`python_data` ↔ `python-data`) is the only legacy wart and lives exclusively in the registry entry.
+The `db_topic` ↔ `slug` mismatch for Pandas (`pandas` ↔ `pandas`) is the only legacy wart and lives exclusively in the registry entry.

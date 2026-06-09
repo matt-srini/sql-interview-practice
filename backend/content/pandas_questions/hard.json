@@ -2,7 +2,7 @@
   {
     "id": 33001,
     "order": 1,
-    "topic": "python_data",
+    "topic": "pandas",
     "difficulty": "hard",
     "title": "Monthly Cohort Retention",
     "description": "You have two DataFrames: `df_users` (users dataset) and `df_orders` (orders dataset).\n\n**df_users columns:** `user_id`, `name`, `email`, `signup_date`, `country`, `acquisition_channel`, `plan_tier`, `is_active`\n**df_orders columns:** `order_id`, `user_id`, `order_date`, `status`, `gross_amount`, `discount_amount`, `net_amount`, `payment_status`\n\nCompute monthly cohort retention:\n1. Define each user's **cohort** as the month-year of their **first order** (format `YYYY-MM`).\n2. For each user-order pair, compute `months_since_first` = the number of whole months between the cohort month and the order month.\n3. For each cohort, count how many distinct users ordered in each `months_since_first` bucket.\n4. Divide by the cohort size (users at `months_since_first=0`) to get the retention fraction (rounded to 2 decimal places).\n5. Return a pivot table where:\n   - **rows** are `cohort_month` (sorted ascending)\n   - **columns** are `months_since_first` (0, 1, 2, … sorted ascending)\n   - **values** are the retention fraction (0.0–1.0)\n   - Fill missing values with `0.0`\n\nThe returned DataFrame's index should be `cohort_month` and its columns should be integers.",
@@ -50,7 +50,7 @@
   {
     "id": 33002,
     "order": 2,
-    "topic": "python_data",
+    "topic": "pandas",
     "difficulty": "hard",
     "title": "Revenue Percentile Rank by Category",
     "description": "You have two DataFrames: `df_order_items` (order_items dataset) and `df_products` (products dataset).\n\n**df_order_items columns:** `order_item_id`, `order_id`, `product_id`, `quantity`, `unit_price`, `line_amount`\n**df_products columns:** `product_id`, `product_name`, `category_id`, `brand`, `price`, `launch_date`, `is_active`\n\n1. Compute each product's **total revenue** as the sum of `line_amount` from `df_order_items`.\n2. Join with `df_products` to get `category_id`.\n3. Within each `category_id`, assign a **percentile rank** using `rank(pct=True)` on `total_revenue`.\n4. Return a DataFrame with columns `product_id`, `category_id`, `total_revenue`, `revenue_percentile` (rounded to 2 decimal places).\n5. Sort by `category_id` ascending, then `revenue_percentile` descending.",
@@ -94,7 +94,7 @@
   {
     "id": 33003,
     "order": 3,
-    "topic": "python_data",
+    "topic": "pandas",
     "difficulty": "hard",
     "title": "30-Day Moving Average Revenue",
     "description": "You have a DataFrame `df_orders` loaded from the orders dataset.\n\n**Columns:** `order_id`, `user_id`, `order_date`, `status`, `gross_amount`, `discount_amount`, `net_amount`, `payment_status`\n\n1. Aggregate orders to **daily total revenue** (sum of `net_amount` per day).\n2. Sort by date ascending.\n3. Compute a **30-day rolling mean** of daily revenue with `min_periods=1`.\n4. Return a DataFrame with columns:\n   - `date` — date as a string in `YYYY-MM-DD` format\n   - `daily_revenue` — sum of `net_amount` for that day (rounded to 2 dp)\n   - `ma_30d` — 30-day rolling mean (rounded to 2 dp)\n5. Sort by `date` ascending.",
@@ -130,7 +130,7 @@
   {
     "id": 33004,
     "order": 4,
-    "topic": "python_data",
+    "topic": "pandas",
     "difficulty": "hard",
     "title": "User Lifetime Value Rank",
     "description": "You have a DataFrame `df_orders` loaded from the orders dataset.\n\n**Columns:** `order_id`, `user_id`, `order_date`, `status`, `gross_amount`, `discount_amount`, `net_amount`, `payment_status`\n\n1. Compute each user's **lifetime value** as the sum of `net_amount` across all their orders.\n2. Add a **rank** column where rank 1 = highest lifetime value (use `method='min'` for ties).\n3. Return columns `user_id`, `lifetime_value` (rounded to 2 dp), `ltv_rank`.\n4. Sort by `ltv_rank` ascending.",
@@ -165,7 +165,7 @@
   {
     "id": 33005,
     "order": 5,
-    "topic": "python_data",
+    "topic": "pandas",
     "difficulty": "hard",
     "title": "Cumulative Revenue per User",
     "description": "You have a DataFrame `df_orders` loaded from the orders dataset.\n\n**Columns:** `order_id`, `user_id`, `order_date`, `status`, `gross_amount`, `discount_amount`, `net_amount`, `payment_status`\n\nFor each user, compute the **running cumulative sum** of `net_amount` sorted by `order_date`.\n\nReturn a DataFrame with columns:\n- `order_id`\n- `user_id`\n- `order_date` (as string YYYY-MM-DD)\n- `net_amount` (rounded to 2 dp)\n- `cumulative_revenue` (running sum of `net_amount` per user up to and including each order, rounded to 2 dp)\n\nSort by `user_id` ascending, then `order_date` ascending.",
@@ -201,7 +201,7 @@
   {
     "id": 33006,
     "order": 6,
-    "topic": "python_data",
+    "topic": "pandas",
     "difficulty": "hard",
     "title": "Monthly Revenue Trend with Growth Rate",
     "description": "You have a DataFrame `df_orders` loaded from the orders dataset.\n\n**Columns:** `order_id`, `user_id`, `order_date`, `status`, `gross_amount`, `discount_amount`, `net_amount`, `payment_status`\n\n1. Aggregate `net_amount` to **monthly revenue** (format: `YYYY-MM`).\n2. Compute `mom_growth_pct` = month-over-month % change rounded to 1 dp (NaN for the first month).\n3. Compute `rolling_3m_avg` = 3-month trailing rolling mean of `revenue` with `min_periods=1`, rounded to 2 dp.\n4. Return columns: `month` (string `YYYY-MM`), `revenue` (rounded to 2 dp), `mom_growth_pct`, `rolling_3m_avg`.\n5. Sort by `month` ascending.",
@@ -237,7 +237,7 @@
   {
     "id": 33007,
     "order": 7,
-    "topic": "python_data",
+    "topic": "pandas",
     "difficulty": "hard",
     "title": "Support Ticket Resolution Rate by Month",
     "description": "You have a DataFrame `df_support_tickets` loaded from the support_tickets dataset.\n\n**Columns:** `ticket_id`, `user_id`, `created_at`, `issue_type`, `priority`, `status`, `resolution_hours`\n\n1. Parse `created_at` to datetime and extract the month as `YYYY-MM`.\n2. Per month, compute:\n   - `total_tickets` — count of all tickets\n   - `resolved_tickets` — count of tickets where `status == 'resolved'`\n   - `resolution_rate_pct` — `resolved_tickets / total_tickets * 100`, rounded to 1 dp\n3. Return columns: `month`, `total_tickets`, `resolved_tickets`, `resolution_rate_pct`.\n4. Sort by `month` ascending.",
@@ -271,7 +271,7 @@
   {
     "id": 33008,
     "order": 8,
-    "topic": "python_data",
+    "topic": "pandas",
     "difficulty": "hard",
     "title": "Employee Salary Distribution by Department",
     "description": "You have two DataFrames: `df_employees` (employees dataset) and `df_departments` (departments dataset).\n\n**df_employees columns:** `employee_id`, `employee_name`, `email`, `salary`, `department_id`, `hire_date`, `country`\n**df_departments columns:** `department_id`, `department_name`, `region`\n\n1. Join employees with departments on `department_id`.\n2. Per `department_name`, compute:\n   - `employee_count`\n   - `min_salary` (rounded to 2 dp)\n   - `max_salary` (rounded to 2 dp)\n   - `avg_salary` (rounded to 2 dp)\n   - `median_salary` (rounded to 2 dp)\n3. Return columns: `department_name`, `employee_count`, `min_salary`, `max_salary`, `avg_salary`, `median_salary`.\n4. Sort by `avg_salary` descending.",
@@ -311,7 +311,7 @@
   {
     "id": 33009,
     "order": 9,
-    "topic": "python_data",
+    "topic": "pandas",
     "difficulty": "hard",
     "title": "Cross-Tab: Country × Order Status",
     "description": "You have two DataFrames: `df_orders` (orders dataset) and `df_users` (users dataset).\n\n**df_orders columns:** `order_id`, `user_id`, `order_date`, `status`, `gross_amount`, `discount_amount`, `net_amount`, `payment_status`\n**df_users columns:** `user_id`, `name`, `email`, `signup_date`, `country`, `acquisition_channel`, `plan_tier`, `is_active`\n\n1. Join orders with users on `user_id` to get `country`.\n2. Use `pd.crosstab` to produce a table: **rows = country**, **columns = status**, **values = count of orders**.\n3. Add a `Total` column = sum across all status columns.\n4. Sort by `Total` descending.\n5. Drop the `Total` column before returning.\n\nThe returned DataFrame's index should be `country` and columns should be the distinct order statuses.",
@@ -358,7 +358,7 @@
   {
     "id": 33010,
     "order": 10,
-    "topic": "python_data",
+    "topic": "pandas",
     "difficulty": "hard",
     "title": "Stack/Unstack: Order Status × Month",
     "description": "You have a DataFrame `df_orders` loaded from the orders dataset.\n\n**Columns:** `order_id`, `user_id`, `order_date`, `status`, `gross_amount`, `discount_amount`, `net_amount`, `payment_status`\n\n1. Extract `month` as `YYYY-MM` string from `order_date`.\n2. Create a **pivot table**: rows = `status`, columns = `month`, values = count of orders. Fill NaN with 0 (as int).\n3. **Stack** the pivot back to a long-format DataFrame with columns: `status`, `month`, `count`.\n4. Sort by `status` ascending, then `month` ascending.\n5. Return the long-format DataFrame with a reset index.",
@@ -393,7 +393,7 @@
   {
     "id": 33011,
     "order": 11,
-    "topic": "python_data",
+    "topic": "pandas",
     "difficulty": "hard",
     "title": "User Engagement Score",
     "description": "You have three DataFrames: `df_events` (events dataset), `df_sessions` (sessions dataset), and `df_orders` (orders dataset).\n\n**df_events columns:** `event_id`, `session_id`, `user_id`, `event_time`, `event_name`, `product_id`\n**df_sessions columns:** `session_id`, `user_id`, `session_start`, `device_type`, `traffic_source`, `country`\n**df_orders columns:** `order_id`, `user_id`, `order_date`, `status`, `gross_amount`, `discount_amount`, `net_amount`, `payment_status`\n\n1. Per `user_id`, compute: `event_count`, `session_count`, `order_count`.\n2. Min-max normalise each count to the range [0, 1] (if max == min, set to 0).\n3. `engagement_score = 0.3 * norm_events + 0.3 * norm_sessions + 0.4 * norm_orders` (rounded to 3 dp).\n4. Return columns: `user_id`, `event_count`, `session_count`, `order_count`, `engagement_score`.\n5. Sort by `engagement_score` descending, then `user_id` ascending.",
@@ -446,7 +446,7 @@
   {
     "id": 33012,
     "order": 12,
-    "topic": "python_data",
+    "topic": "pandas",
     "difficulty": "hard",
     "title": "Multi-Step Funnel Analysis",
     "description": "You have three DataFrames: `df_events` (events dataset), `df_sessions` (sessions dataset), and `df_orders` (orders dataset).\n\n**df_events columns:** `event_id`, `session_id`, `user_id`, `event_time`, `event_name`, `product_id`\n**df_sessions columns:** `session_id`, `user_id`, `session_start`, `device_type`, `traffic_source`, `country`\n**df_orders columns:** `order_id`, `user_id`, `order_date`, `status`, `gross_amount`, `discount_amount`, `net_amount`, `payment_status`\n\nBuild a 3-stage funnel:\n1. **Stage 1 — Has Event:** users present in `df_events`\n2. **Stage 2 — Has Session:** users present in both events and sessions\n3. **Stage 3 — Has Order:** users present in events, sessions, and orders\n\nReturn a DataFrame with **3 rows** and columns:\n- `stage` — `'has_event'`, `'has_session'`, `'has_order'`\n- `user_count` — number of distinct users at that stage\n- `pct_of_event_users` — percentage relative to stage-1 user count, rounded to 1 dp",
@@ -499,7 +499,7 @@
   {
     "id": 33013,
     "order": 13,
-    "topic": "python_data",
+    "topic": "pandas",
     "difficulty": "hard",
     "title": "Revenue Anomaly Detection (IQR)",
     "description": "You have a DataFrame `df_orders` loaded from the orders dataset.\n\n**Columns:** `order_id`, `user_id`, `order_date`, `status`, `gross_amount`, `discount_amount`, `net_amount`, `payment_status`\n\n1. Aggregate `net_amount` to **daily revenue** (sum per calendar day).\n2. Compute the IQR of daily revenue: Q1 (25th percentile) and Q3 (75th percentile).\n3. Flag each day as `is_anomaly = True` if `daily_revenue < Q1 - 1.5 * IQR` **or** `daily_revenue > Q3 + 1.5 * IQR`.\n4. Return columns: `date` (string `YYYY-MM-DD`), `daily_revenue` (rounded to 2 dp), `is_anomaly` (bool).\n5. Sort by `date` ascending.",
@@ -535,7 +535,7 @@
   {
     "id": 33014,
     "order": 14,
-    "topic": "python_data",
+    "topic": "pandas",
     "difficulty": "hard",
     "title": "Product Affinity Pairs",
     "description": "You have a DataFrame `df_order_items` loaded from the order_items dataset.\n\n**Columns:** `order_item_id`, `order_id`, `product_id`, `quantity`, `unit_price`, `line_amount`\n\nFind pairs of products that are frequently **co-purchased** in the same order:\n1. Self-join `df_order_items` on `order_id` to create all (product_a, product_b) pairs where `product_a < product_b` (to avoid duplicates).\n2. Count the number of distinct orders each pair co-occurs in (`co_occurrence_count`).\n3. Return columns: `product_a_id`, `product_b_id`, `co_occurrence_count`.\n4. Sort by `co_occurrence_count` descending.\n5. Return the **top 10** pairs.",
@@ -568,7 +568,7 @@
   {
     "id": 33015,
     "order": 15,
-    "topic": "python_data",
+    "topic": "pandas",
     "difficulty": "hard",
     "title": "Forecast Next Month Revenue",
     "description": "You have a DataFrame `df_orders` loaded from the orders dataset.\n\n**Columns:** `order_id`, `user_id`, `order_date`, `status`, `gross_amount`, `discount_amount`, `net_amount`, `payment_status`\n\n1. Aggregate to **monthly revenue** (sum of `net_amount`, format `YYYY-MM`), sorted ascending.\n2. Use `pct_change()` on the monthly revenue series to compute month-over-month growth rates, then take the **mean** of all non-NaN growth rates.\n3. **Forecast** the next month's revenue = `last_month_revenue * (1 + avg_growth)`, rounded to 2 dp.\n4. Compute the next calendar month label from the last observed month.\n5. Return a DataFrame with all historical rows **plus** the forecast row, columns:\n   - `month` (string `YYYY-MM`)\n   - `revenue` (rounded to 2 dp)\n   - `is_forecast` (bool — `False` for historical, `True` for forecast row)\n6. Sort by `month` ascending.",
@@ -604,7 +604,7 @@
   {
     "id": 33016,
     "order": 16,
-    "topic": "python_data",
+    "topic": "pandas",
     "difficulty": "hard",
     "title": "Employee Tenure Calculation",
     "description": "You have a DataFrame `df_employees` loaded from the employees dataset.\n\n**Columns:** `employee_id`, `employee_name`, `email`, `salary`, `department_id`, `hire_date`, `country`\n\n1. Compute `tenure_days` = number of days from `hire_date` to **2026-04-01** (use this fixed reference date).\n2. Compute `tenure_years` = `tenure_days / 365.25`, rounded to 1 dp.\n3. Assign `tenure_band`:\n   - `'junior'` if `tenure_years < 2`\n   - `'mid'` if `2 <= tenure_years <= 5`\n   - `'senior'` if `tenure_years > 5`\n4. Return columns: `employee_id`, `employee_name`, `hire_date` (as string `YYYY-MM-DD`), `tenure_days` (int), `tenure_years`, `tenure_band`.\n5. Sort by `tenure_days` descending.",
@@ -638,7 +638,7 @@
   {
     "id": 33017,
     "order": 17,
-    "topic": "python_data",
+    "topic": "pandas",
     "difficulty": "hard",
     "title": "Churn Proxy — Users Inactive 90 Days",
     "description": "You have a DataFrame `df_orders` loaded from the orders dataset.\n\n**Columns:** `order_id`, `user_id`, `order_date`, `status`, `gross_amount`, `discount_amount`, `net_amount`, `payment_status`\n\n1. Per user, compute their **last order date**.\n2. Compute `days_since_last_order` = (max order date in dataset) − last_order_date, in days (integer).\n3. Flag `is_churned = True` if `days_since_last_order > 90`.\n4. Return columns: `user_id`, `last_order_date` (string `YYYY-MM-DD`), `days_since_last_order` (int), `is_churned` (bool).\n5. Sort by `days_since_last_order` descending.",
@@ -673,7 +673,7 @@
   {
     "id": 33018,
     "order": 18,
-    "topic": "python_data",
+    "topic": "pandas",
     "difficulty": "hard",
     "title": "Session-to-Order Attribution Rate",
     "description": "You have two DataFrames: `df_sessions` (sessions dataset) and `df_orders` (orders dataset).\n\n**df_sessions columns:** `session_id`, `user_id`, `session_start`, `device_type`, `traffic_source`, `country`\n**df_orders columns:** `order_id`, `user_id`, `order_date`, `status`, `gross_amount`, `discount_amount`, `net_amount`, `payment_status`\n\nA session is **attributed** to an order if the **same user** placed an order within **24 hours** after `session_start`.\n\n1. For each session, check whether any order from the same user has `order_date` in the window `[session_start, session_start + 24h)`.\n2. Compute:\n   - `total_sessions` — total number of sessions\n   - `attributed_sessions` — sessions with at least one attributed order\n   - `attribution_rate_pct` — `attributed_sessions / total_sessions * 100`, rounded to 1 dp\n3. Return a **single-row** DataFrame with columns: `total_sessions`, `attributed_sessions`, `attribution_rate_pct`.",
@@ -717,7 +717,7 @@
   {
     "id": 33019,
     "order": 19,
-    "topic": "python_data",
+    "topic": "pandas",
     "difficulty": "hard",
     "title": "Geographic Revenue Heatmap",
     "description": "You have two DataFrames: `df_orders` (orders dataset) and `df_users` (users dataset).\n\n**df_orders columns:** `order_id`, `user_id`, `order_date`, `status`, `gross_amount`, `discount_amount`, `net_amount`, `payment_status`\n**df_users columns:** `user_id`, `name`, `email`, `signup_date`, `country`, `acquisition_channel`, `plan_tier`, `is_active`\n\n1. Join orders with users on `user_id` to get `country`.\n2. Pivot: **rows = country**, **columns = order status**, **values = total `net_amount`** (sum).\n3. Fill NaN with `0.0`, round all values to 2 dp.\n4. Add a `Total` column = sum across all status columns (rounded to 2 dp).\n5. Sort by `Total` descending.\n6. Return the pivot DataFrame with `country` as the index, status columns, and `Total` column.",
@@ -764,7 +764,7 @@
   {
     "id": 33020,
     "order": 20,
-    "topic": "python_data",
+    "topic": "pandas",
     "difficulty": "hard",
     "title": "Customer RFM Segmentation",
     "description": "You have a DataFrame `df_orders` loaded from the orders dataset.\n\n**Columns:** `order_id`, `user_id`, `order_date`, `status`, `gross_amount`, `discount_amount`, `net_amount`, `payment_status`\n\nCompute **RFM segmentation** for each user:\n\n1. Use the **maximum order date** in the dataset as the reference date.\n2. Per user compute:\n   - `recency` = days since last order (integer)\n   - `frequency` = number of orders (integer)\n   - `monetary` = sum of `net_amount` (rounded to 2 dp)\n3. Score each dimension 1–3:\n   - **Recency:** ≤ 30 days → 3, 31–90 days → 2, > 90 days → 1\n   - **Frequency:** 1 order → 1, 2–3 orders → 2, ≥ 4 orders → 3\n   - **Monetary:** bottom third of users → 1, middle third → 2, top third → 3 (use `pd.qcut` with 3 equal-sized buckets; label as 1, 2, 3)\n4. `rfm_score` = recency_score + frequency_score + monetary_score\n5. `segment`:\n   - `rfm_score` 7–9 → `'Champions'`\n   - `rfm_score` 5–6 → `'Loyal'`\n   - `rfm_score` 3–4 → `'At Risk'`\n6. Return columns: `user_id`, `recency`, `frequency`, `monetary`, `rfm_score`, `segment`.\n7. Sort by `rfm_score` descending, then `user_id` ascending.",
@@ -799,7 +799,7 @@
   {
     "id": 33021,
     "order": 21,
-    "topic": "python_data",
+    "topic": "pandas",
     "difficulty": "hard",
     "title": "Memory optimization with dtype conversion",
     "description": "You have a DataFrame `df_orders`.\n\n**Columns:** `order_id`, `user_id`, `order_date`, `status`, `gross_amount`, `discount_amount`, `net_amount`, `payment_status`\n\nDemonstrate memory optimization:\n1. Compute `original_bytes` = `df.memory_usage(deep=True).sum()`\n2. Convert `status` and `payment_status` to `pd.Categorical` dtype\n3. Convert `order_id` and `user_id` to `int32`\n4. Compute `optimized_bytes` after these changes\n5. Return a DataFrame with columns `metric` and `value`:\n   - Row 0: `'original_bytes'`, original memory\n   - Row 1: `'optimized_bytes'`, new memory\n   - Row 2: `'reduction_pct'`, `round((original - optimized) / original * 100, 1)`",
@@ -834,7 +834,7 @@
   {
     "id": 33022,
     "order": 22,
-    "topic": "python_data",
+    "topic": "pandas",
     "difficulty": "hard",
     "title": "MultiIndex salary analysis",
     "description": "You have two DataFrames: `df_employees` and `df_departments`.\n\n**df_employees columns:** `employee_id`, `employee_name`, `salary`, `department_id`\n**df_departments columns:** `department_id`, `department_name`, `region`\n\n1. Merge on `department_id` (inner join).\n2. Compute mean salary per (`region`, `department_name`) using `groupby`.\n3. Set the index to a MultiIndex of (`region`, `department_name`).\n4. Use `.xs('EMEA', level='region')` to extract the sub-DataFrame for the `'EMEA'` region.\n5. Return a DataFrame with `department_name` as a regular column and `mean_salary` (rounded to 2 dp), sorted by `mean_salary` descending.",
@@ -874,7 +874,7 @@
   {
     "id": 33023,
     "order": 23,
-    "topic": "python_data",
+    "topic": "pandas",
     "difficulty": "hard",
     "title": "Funnel conversion analysis from events",
     "description": "You have a DataFrame `df_events`.\n\n**Columns:** `event_id`, `session_id`, `user_id`, `event_time`, `event_name`, `product_id`\n\nCompute a 3-stage conversion funnel:\n- **Stage 1** (`view_product`): users with at least one `'view_product'` event\n- **Stage 2** (`add_to_cart`): users who also have at least one `'add_to_cart'` event\n- **Stage 3** (`purchase`): users who also have at least one `'purchase'` event\n\nEach stage must be a subset of the previous.\n\nReturn a DataFrame with columns `stage`, `user_count`, `conversion_from_top` (rate vs stage 1 user count, rounded to 2 dp — 1.00 for stage 1). Rows ordered: stage 1, 2, 3.",
@@ -907,7 +907,7 @@
   {
     "id": 33024,
     "order": 24,
-    "topic": "python_data",
+    "topic": "pandas",
     "difficulty": "hard",
     "mock_only": true,
     "title": "Monthly revenue by acquisition channel",
@@ -958,7 +958,7 @@
   {
     "id": 33025,
     "order": 25,
-    "topic": "python_data",
+    "topic": "pandas",
     "difficulty": "hard",
     "mock_only": true,
     "title": "Top 3 products per category with revenue rank",
@@ -1009,7 +1009,7 @@
   {
     "id": 33026,
     "order": 26,
-    "topic": "python_data",
+    "topic": "pandas",
     "difficulty": "hard",
     "mock_only": true,
     "framing": "scenario",
@@ -1061,7 +1061,7 @@
   {
     "id": 33027,
     "order": 27,
-    "topic": "python_data",
+    "topic": "pandas",
     "difficulty": "hard",
     "mock_only": true,
     "framing": "scenario",
@@ -1100,7 +1100,7 @@
   {
     "id": 33028,
     "order": 28,
-    "topic": "python_data",
+    "topic": "pandas",
     "difficulty": "hard",
     "mock_only": true,
     "framing": "scenario",
@@ -1152,7 +1152,7 @@
   {
     "id": 33029,
     "order": 29,
-    "topic": "python_data",
+    "topic": "pandas",
     "difficulty": "hard",
     "mock_only": true,
     "framing": "scenario",
@@ -1194,7 +1194,7 @@
   {
     "id": 33030,
     "order": 30,
-    "topic": "python_data",
+    "topic": "pandas",
     "difficulty": "hard",
     "mock_only": true,
     "framing": "scenario",
@@ -1245,7 +1245,7 @@
   {
     "id": 33031,
     "order": 31,
-    "topic": "python_data",
+    "topic": "pandas",
     "difficulty": "hard",
     "mock_only": true,
     "title": "Month-over-month change in paid revenue",
@@ -1281,7 +1281,7 @@
   {
     "id": 33032,
     "order": 32,
-    "topic": "python_data",
+    "topic": "pandas",
     "difficulty": "hard",
     "mock_only": true,
     "title": "Loyalty tier breakdown by country",
@@ -1331,7 +1331,7 @@
   {
     "id": 33033,
     "order": 33,
-    "topic": "python_data",
+    "topic": "pandas",
     "difficulty": "hard",
     "mock_only": true,
     "framing": "scenario",
@@ -1378,7 +1378,7 @@
   {
     "id": 33034,
     "order": 34,
-    "topic": "python_data",
+    "topic": "pandas",
     "difficulty": "hard",
     "mock_only": true,
     "type": "debug",
@@ -1421,7 +1421,7 @@
   {
     "id": 33035,
     "order": 35,
-    "topic": "python_data",
+    "topic": "pandas",
     "difficulty": "hard",
     "mock_only": true,
     "type": "debug",
@@ -1473,7 +1473,7 @@
   {
     "id": 33036,
     "order": 36,
-    "topic": "python_data",
+    "topic": "pandas",
     "difficulty": "hard",
     "mock_only": true,
     "title": "User churn identification",
@@ -1521,7 +1521,7 @@
   {
     "id": 33037,
     "order": 37,
-    "topic": "python_data",
+    "topic": "pandas",
     "difficulty": "hard",
     "mock_only": true,
     "title": "Monthly order volume and revenue trend (2024)",
@@ -1557,7 +1557,7 @@
   {
     "id": 33038,
     "order": 38,
-    "topic": "python_data",
+    "topic": "pandas",
     "difficulty": "hard",
     "title": "Discount Classification Performance",
     "description": "An analyst wrote the following function that classifies each order by discount depth and computes summary statistics per class:\n\n```python\nimport pandas as pd\n\ndef slow_classify(df_orders):\n    def classify(row):\n        pct = row['discount_amount'] / row['gross_amount']\n        if row['discount_amount'] == 0:\n            return 'no_discount'\n        elif pct <= 0.05:\n            return 'low'\n        elif pct <= 0.10:\n            return 'medium'\n        else:\n            return 'high'\n    df_orders = df_orders.copy()\n    df_orders['discount_class'] = df_orders.apply(classify, axis=1)\n    return (\n        df_orders.groupby('discount_class', as_index=False)\n        .agg(order_count=('order_id', 'count'), avg_net_amount=('net_amount', 'mean'))\n        .assign(avg_net_amount=lambda x: x['avg_net_amount'].round(2))\n        .sort_values('discount_class')\n        .reset_index(drop=True)\n    )\n```\n\n**Rewrite this function** so that the discount classification uses `np.select` (vectorized) instead of `apply(axis=1)`. The result must be identical to the original. Return columns: `discount_class` (str), `order_count` (int64), `avg_net_amount` (float64, rounded to 2 dp), sorted by `discount_class` ascending.",
@@ -1645,7 +1645,7 @@
   {
     "id": 33039,
     "order": 39,
-    "topic": "python_data",
+    "topic": "pandas",
     "difficulty": "hard",
     "mock_only": true,
     "parent_id": 33024,
@@ -2725,7 +2725,7 @@
       "DATA QUALITY SKEPTICISM"
     ],
     "solution_code": "import pandas as pd\n\ndef solve(df_tickets):\n    df = df_tickets.copy()\n    total_by_priority = df.groupby('priority', as_index=False).agg(\n        total_count=('ticket_id', 'count')\n    )\n    non_open = df[df['status'] != 'open'].copy()\n    non_open_by_priority = non_open.groupby('priority', as_index=False).agg(\n        non_open_count=('ticket_id', 'count'),\n        resolved_count=('status', lambda x: (x == 'resolved').sum())\n    )\n    merged = total_by_priority.merge(non_open_by_priority, on='priority')\n    merged['naive_rate'] = (merged['resolved_count'] / merged['total_count']).round(4)\n    merged['actionable_rate'] = (merged['resolved_count'] / merged['non_open_count']).round(4)\n    result = merged[['priority', 'total_count', 'non_open_count', 'resolved_count', 'naive_rate', 'actionable_rate']]\n    return result.sort_values('priority').reset_index(drop=True)\n",
-    "topic": "python_data",
+    "topic": "pandas",
     "explanation": "Two denominators tell different stories: the naive denominator treats every ticket (including unstarted 'open' ones) as equally available for resolution, which deflates the apparent rate since many are not yet actionable. The actionable denominator restricts to tickets that have been worked on (non-open), revealing the true resolution rate for tickets agents actually handled. Surfacing both per priority lets you see whether low-priority tickets are being deprioritized (lower actionable_rate) versus genuinely not yet started."
   },
   {
@@ -2795,7 +2795,7 @@
       "GROUPED AGGREGATION"
     ],
     "solution_code": "import pandas as pd\n\ndef solve(df_orders):\n    completed = df_orders[df_orders['status'] == 'completed']\n    result = (\n        completed.groupby('payment_status', as_index=False)\n        .agg(\n            total_revenue=('net_amount', 'sum'),\n            order_count=('order_id', 'count'),\n            avg_discount=('discount_amount', 'mean')\n        )\n    )\n    result['total_revenue'] = result['total_revenue'].round(2)\n    result['avg_discount'] = result['avg_discount'].round(4)\n    return result.sort_values('payment_status').reset_index(drop=True)\n",
-    "topic": "python_data",
+    "topic": "pandas",
     "explanation": "Passing a dictionary of named aggregations to `.agg()` computes all metrics in a single scan of the data. Storing the filtered DataFrame in a variable and grouping once avoids re-applying the filter and re-scanning three separate times. The named-aggregation syntax `(col, func)` produces clean column names directly, eliminating a separate rename step."
   },
   {
@@ -2864,7 +2864,7 @@
       "GROUPED AGGREGATION"
     ],
     "solution_code": "import pandas as pd\n\ndef solve(df_orders):\n    completed = df_orders[df_orders['status'] == 'completed'].copy()\n    completed['group_total'] = completed.groupby('payment_status')['net_amount'].transform('sum')\n    completed['pct_of_group'] = (completed['net_amount'] / completed['group_total']).round(4)\n    return (\n        completed[['order_id', 'user_id', 'payment_status', 'net_amount', 'pct_of_group']]\n        .sort_values(['payment_status', 'pct_of_group', 'order_id'], ascending=[True, False, True])\n        .reset_index(drop=True)\n    )\n",
-    "topic": "python_data",
+    "topic": "pandas",
     "explanation": "`.groupby().transform()` broadcasts a group-level aggregation back to every row in the group, preserving the original row count. This is the idiomatic pattern for per-row within-group ratios: compute the group total with transform('sum'), then divide each row's value by its group total. A plain `.groupby().sum()` would collapse to one row per group, losing the individual order context needed for per-order percentage."
   },
   {
@@ -3328,7 +3328,7 @@
       "CATEGORICAL & BINNING"
     ],
     "solution_code": "import pandas as pd\n\ndef solve(df_tickets):\n    ref_date = pd.to_datetime(df_tickets['created_at']).max()\n    df = df_tickets.copy()\n    df['priority'] = pd.Categorical(\n        df['priority'],\n        categories=['low', 'medium', 'high', 'urgent'],\n        ordered=True\n    )\n    urgent = df[df['priority'] == 'urgent'].copy()\n    urgent['priority'] = urgent['priority'].cat.remove_unused_categories()\n    urgent['days_open'] = (ref_date - pd.to_datetime(urgent['created_at'])).dt.days\n    return (\n        urgent[['ticket_id', 'priority', 'status', 'days_open']]\n        .sort_values('days_open', ascending=False)\n        .reset_index(drop=True)\n    )\n",
-    "topic": "python_data",
+    "topic": "pandas",
     "explanation": "Filtering a Categorical Series does not automatically prune unused categories — pandas preserves all category metadata for alignment stability. `cat.remove_unused_categories()` explicitly strips levels with zero observations from the category list. This matters when downstream code iterates over categories (e.g. `groupby` on a Categorical column will include empty groups unless unused categories are removed), or when the category list is used as a schema contract for downstream validation."
   },
   {
@@ -3394,7 +3394,7 @@
       "WINDOW & ROLLING OPERATIONS"
     ],
     "solution_code": "import pandas as pd\n\ndef solve(df_events):\n    df = df_events.copy()\n    df['event_time'] = pd.to_datetime(df['event_time'])\n    df = df.sort_values(['session_id', 'event_name', 'event_time', 'event_id'])\n    deduped = df.drop_duplicates(subset=['session_id', 'event_name'], keep='first')\n    result = (\n        deduped.groupby('session_id', as_index=False)\n        .agg(\n            unique_event_count=('event_name', 'nunique'),\n            first_event_time=('event_time', 'min'),\n            last_event_time=('event_time', 'max')\n        )\n    )\n    result['session_duration_s'] = (\n        (result['last_event_time'] - result['first_event_time']).dt.total_seconds().astype(int)\n    )\n    result['first_event_time'] = result['first_event_time'].dt.strftime('%Y-%m-%dT%H:%M:%S')\n    return (\n        result[['session_id', 'unique_event_count', 'first_event_time', 'session_duration_s']]\n        .sort_values('session_id')\n        .reset_index(drop=True)\n    )",
-    "topic": "python_data",
+    "topic": "pandas",
     "explanation": "Sorting by (session_id, event_name, event_time, event_id) before `drop_duplicates(keep='first')` ensures the retained row for each (session, event_name) pair is the true earliest occurrence with a deterministic tiebreaker. After deduplication, a single groupby aggregation over the retained rows computes all three session-level metrics: the distinct event count, the min event_time (first_event_time), and the max event_time (used to derive session_duration_s). Converting `first_event_time` to a string before returning avoids Timestamp serialization issues."
   },
   {
@@ -3441,7 +3441,7 @@
       "MULTI-DATAFRAME ENTITY LINKING"
     ],
     "solution_code": "import pandas as pd\n\ndef solve(df_users, df_orders):\n    completed = df_orders[df_orders['status'] == 'completed'].copy()\n    completed['order_date'] = pd.to_datetime(completed['order_date'])\n    completed = completed.sort_values(['user_id', 'order_date', 'order_id'], ascending=[True, False, False])\n    latest = completed.drop_duplicates(subset='user_id', keep='first').copy()\n    latest['order_date'] = latest['order_date'].dt.strftime('%Y-%m-%d')\n    latest = latest[['user_id', 'order_id', 'order_date', 'net_amount']].rename(\n        columns={'order_id': 'last_order_id', 'order_date': 'last_order_date', 'net_amount': 'last_order_amount'}\n    )\n    result = df_users[['user_id', 'country', 'acquisition_channel']].merge(latest, on='user_id', how='left')\n    return result.sort_values('user_id').reset_index(drop=True)\n",
-    "topic": "python_data",
+    "topic": "pandas",
     "explanation": "To isolate the most recent completed order per user: sort completed orders descending by order_date (with order_id as tiebreaker for same-day orders), then call `drop_duplicates(subset='user_id', keep='first')` — the first row per user after descending-date sort is the latest order. A left join from the user table preserves all users regardless of whether they have any completed orders, producing nulls for order columns when no match exists."
   },
   {
@@ -3519,7 +3519,7 @@
       "GROUPED AGGREGATION"
     ],
     "solution_code": "import pandas as pd\n\ndef solve(df_orders):\n    completed = df_orders[df_orders['status'] == 'completed']\n    by_group = (\n        completed.groupby('payment_status', as_index=False)['net_amount']\n        .sum()\n        .rename(columns={'net_amount': 'total_revenue'})\n    )\n    expected_total = completed['net_amount'].sum()\n    actual_total = by_group['total_revenue'].sum()\n    checks = [\n        {'check_name': 'expected_group_count', 'passed': bool(len(by_group) == 4)},\n        {'check_name': 'no_null_revenue', 'passed': bool(by_group['total_revenue'].isna().sum() == 0)},\n        {'check_name': 'revenue_sum_matches', 'passed': bool(abs(actual_total - expected_total) < 0.01)},\n    ]\n    return pd.DataFrame(checks).sort_values('check_name').reset_index(drop=True)\n",
-    "topic": "python_data",
+    "topic": "pandas",
     "explanation": "A validation_report pattern makes aggregation correctness explicit and machine-checkable: the row count check verifies no groups were silently dropped or duplicated; the null check catches columns where groupby produced NaN (e.g. if grouping key had nulls that were excluded); and the sum reconciliation catches floating-point accumulation errors or dropped rows. The 0.01 tolerance makes the sum check robust to floating-point precision without masking real discrepancies."
   },
   {

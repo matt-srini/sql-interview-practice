@@ -39,7 +39,7 @@ from audit_pattern_coverage import (
 # ---------------------------------------------------------------------------
 SPLITS: dict[str, dict] = {
     "groupby-and-joins": {
-        "track": "python-data",
+        "track": "pandas",
         "targets": ["groupby", "joins-and-merges"],
     },
     "dimensional-modeling-deep-dive": {
@@ -116,7 +116,7 @@ NEW_PATH_SPECS: dict[str, dict] = {
     "groupby": {
         "title": "GroupBy Aggregation",
         "description": "Master the GroupBy patterns every Pandas analyst reaches for: aggregation, transform-vs-aggregate, named aggregation, multi-level grouping, pipeline composition, and the subtle pitfalls of group-then-rank.",
-        "topic": "python-data",
+        "topic": "pandas",
         "tier": "free",
         "level": "intermediate",
         "patterns": ["groupby"],
@@ -127,7 +127,7 @@ NEW_PATH_SPECS: dict[str, dict] = {
     "joins-and-merges": {
         "title": "DataFrame Joins & Merges",
         "description": "Master multi-DataFrame entity linking in Pandas: inner/left/outer merges, three-table joins, fan-out detection, and the double-counting gotchas that silently inflate revenue when joins multiply rows.",
-        "topic": "python-data",
+        "topic": "pandas",
         "tier": "free",
         "level": "intermediate",
         "patterns": ["joins"],

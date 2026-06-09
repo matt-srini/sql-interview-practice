@@ -156,7 +156,7 @@ export default function AppShell() {
   const unlockNudgeByTrack = {
     sql: 'Medium unlocks at 8, 15, and 25 easy solves. Hard unlocks at 8, 15, and 22 medium solves (capped at 15 hard).',
     python: 'Medium unlocks at 8, 15, and 25 easy solves. Hard unlocks at 8, 15, and 22 medium solves (capped at 15 hard).',
-    'python-data': 'Medium unlocks at 8, 15, and 25 easy solves. Hard unlocks at 8, 15, and 22 medium solves (capped at 15 hard).',
+    'pandas': 'Medium unlocks at 8, 15, and 25 easy solves. Hard unlocks at 8, 15, and 22 medium solves (capped at 15 hard).',
     pyspark: 'Medium unlocks at 10, 17, and 25 easy solves. Hard unlocks at 12 medium solves (capped at 5 hard).',
     'data-engineering': 'Medium unlocks at 10, 17, and 25 easy solves. Hard unlocks at 12 medium solves (capped at 5 hard).',
   };

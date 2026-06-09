@@ -124,7 +124,7 @@ def compute_unlock_state(
         plan: 'free' | 'pro' | 'elite'
         solved_ids: set of question IDs the user has solved in this track
         catalog: {'easy': [...], 'medium': [...], 'hard': [...]}
-        track: track slug — 'sql' | 'python' | 'python-data' | 'pyspark'.
+        track: track slug — 'sql' | 'python' | 'pandas' | 'pyspark'.
                Affects Free-tier thresholds (PySpark uses higher thresholds).
     """
     plan = normalize_plan(plan)

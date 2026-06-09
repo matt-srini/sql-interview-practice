@@ -40,7 +40,7 @@ def test_tc119_get_paths_returns_all_paths():
         assert "solved_count" in p
     # Every track represented (starter or intermediate exists for each)
     topics_present = {p["topic"] for p in paths}
-    expected_topics = {"sql", "python", "python-data", "pyspark", "data-engineering",
+    expected_topics = {"sql", "python", "pandas", "pyspark", "data-engineering",
                        "data-modeling", "statistics", "ml-fundamentals", "experimentation"}
     assert expected_topics.issubset(topics_present), f"Missing tracks in paths: {expected_topics - topics_present}"
 

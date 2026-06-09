@@ -22,7 +22,7 @@ import data_engineering_questions
 import data_modeling_questions
 import experimentation_questions
 import ml_fundamentals_questions
-import python_data_questions
+import pandas_questions
 import python_questions
 import pyspark_questions
 import questions as sql_questions
@@ -36,12 +36,11 @@ class TrackConfig:
     """All per-track metadata in one place."""
 
     slug: str
-    """URL/API slug, e.g. 'python-data'.  Matches :topic route param."""
+    """URL/API slug, e.g. 'pandas'.  Matches :topic route param."""
 
     db_topic: str
     """Topic string stored in user_progress / submissions tables.
-    Equals slug for all new tracks (D3). The legacy 'python_data' alias
-    is the one wart and lives *only* here."""
+    Equals slug for all tracks."""
 
     catalog_module: Any
     """Module exposing get_questions_by_difficulty(), get_mock_questions_by_difficulty(),
@@ -174,13 +173,13 @@ TRACKS: tuple[TrackConfig, ...] = (
         in_mixed_mock=True,
     ),
     TrackConfig(
-        slug="python-data",
-        db_topic="python_data",   # legacy DB alias — lives here and nowhere else
-        catalog_module=python_data_questions,
+        slug="pandas",
+        db_topic="pandas",
+        catalog_module=pandas_questions,
         label="Pandas",
         eval_kind="pandas",
         unlock_profile="code",
-        content_dir=BACKEND_ROOT / "content" / "python_data_questions",
+        content_dir=BACKEND_ROOT / "content" / "pandas_questions",
         concept_blocklist={
             "groupby",
             "merge",
@@ -494,7 +493,7 @@ def get_track(slug: str) -> TrackConfig:
 
 
 def get_track_by_db_topic(db_topic: str) -> TrackConfig:
-    """Look up a track by its DB topic string (e.g. 'python_data')."""
+    """Look up a track by its DB topic string (e.g. 'pandas')."""
     try:
         return _BY_DB_TOPIC[db_topic]
     except KeyError:
@@ -514,10 +513,10 @@ def mixed_mock_slugs() -> list[str]:
 # Role → tracks mapping for Mixed mock sessions.
 # Each role defines the pool of tracks drawn from in benchmark and custom drill.
 _ROLE_TRACKS: dict[str, list[str]] = {
-    "data_analyst":        ["sql", "python-data", "statistics"],
+    "data_analyst":        ["sql", "pandas", "statistics"],
     "data_engineer":       ["sql", "python", "pyspark", "data-engineering"],
-    "analytics_engineer":  ["sql", "data-modeling", "python-data"],
-    "data_scientist":      ["python", "python-data", "statistics", "ml-fundamentals"],
+    "analytics_engineer":  ["sql", "data-modeling", "pandas"],
+    "data_scientist":      ["python", "pandas", "statistics", "ml-fundamentals"],
 }
 
 VALID_MOCK_ROLES = set(_ROLE_TRACKS)
