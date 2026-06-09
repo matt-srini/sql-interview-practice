@@ -205,6 +205,14 @@ Current catalog footprint shown on this page: **96 paths total** (SQL 11, Python
 
 - Adds an "In progress" rail above the grouped grids (`1 <= solved_count < question_count`), sorted by completion percentage descending.
 - Empty state upgraded from plain text to CTA card (`/practice/sql`, `/dashboard`).
+- Header sub frames paths as routes through the practice catalog ("the same questions, in a deliberate order"), with a **"Browse the full catalog →"** back-pointer to `/practice/:topic` (or `/practice/sql` on top-level `/learn`).
+
+#### Practice ↔ Paths messaging (consistent across surfaces)
+
+Practice (the per-track catalog) and Learning Paths are two layouts over the **same** question bank with **shared progress** — solving a question in either place marks it done in both. This is stated consistently on three surfaces so the two never read as competing offerings:
+- **TrackHubPage** (`/practice/:topic`): a compact **"Two ways to work {track}"** strip (`.trackhub-twoways`) sits between the progress stat card and the Learning-paths section — labels the full catalog vs. guided routes and carries the canonical caption *"Same questions — solve one in either place and it's marked done in both. You never redo a question."* The "Learning paths" item links to `/learn/:topic`.
+- **LandingPage** `PathsShowcaseSection`: the sub-copy weaves in "Same questions as the Practice catalog, just put in order: solve one in either place and it's marked done in both."
+- **LearningPathsIndex** (`/learn`): the header sub + catalog back-pointer (above).
 
 ### LearningPath (`/learn/:topic/:slug`)
 

@@ -106,8 +106,15 @@ export default function LearningPathsIndex() {
           </nav>
           <h1 className="learn-index-title">{pageTitle}</h1>
           <p className="learn-index-sub">
-            Curated question sequences that build a skill from fundamentals to advanced.
+            Curated routes through the practice catalog — the same questions, in a deliberate order.
+            Solve one in either place and it's marked done in both.
           </p>
+          <Link
+            to={topic ? `/practice/${topic}` : '/practice/sql'}
+            className="learn-index-catalog-link"
+          >
+            Browse the full catalog →
+          </Link>
 
           {!topic && (
             <div className="learn-index-topic-pills">

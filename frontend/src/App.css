@@ -9527,6 +9527,65 @@ select {
   padding-top: 0.35rem;
 }
 
+/* ── TrackHub two-ways framing strip ─────────────── */
+.trackhub-twoways {
+  margin-top: 1.25rem;
+  padding: 1rem 1.1rem;
+  background: var(--surface-card-alt);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+}
+.trackhub-twoways-heading {
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  margin: 0 0 0.75rem;
+}
+.trackhub-twoways-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+@media (max-width: 600px) {
+  .trackhub-twoways-grid {
+    grid-template-columns: 1fr;
+  }
+}
+.trackhub-twoways-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.65rem 0.8rem;
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+}
+.trackhub-twoways-item--link {
+  transition: border-color 0.14s;
+}
+.trackhub-twoways-item--link:hover {
+  border-color: var(--tw-color, var(--accent));
+}
+.trackhub-twoways-item-label {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text-strong);
+}
+.trackhub-twoways-item-desc {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  line-height: 1.45;
+}
+.trackhub-twoways-caption {
+  margin: 0.75rem 0 0;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
 /* ── TrackHub paths section ───────────────────────── */
 .trackhub-paths {
   margin-top: 1.5rem;
@@ -10161,6 +10220,18 @@ select {
   text-decoration: none;
 }
 .learn-index-group-link:hover { text-decoration: underline; }
+.learn-index-catalog-link {
+  display: inline-block;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-decoration: none;
+  margin-bottom: 1rem;
+}
+.learn-index-catalog-link:hover {
+  color: var(--accent);
+  text-decoration: underline;
+}
 .learn-index-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));

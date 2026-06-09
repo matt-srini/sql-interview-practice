@@ -334,6 +334,29 @@ export default function TrackHubPage() {
         )}
 
         {sortedPaths.length > 0 && (
+          <div className="trackhub-twoways">
+            <h3 className="trackhub-twoways-heading">Two ways to work {meta.label}</h3>
+            <div className="trackhub-twoways-grid">
+              <div className="trackhub-twoways-item">
+                <span className="trackhub-twoways-item-label">Practice — the full catalog</span>
+                <span className="trackhub-twoways-item-desc">
+                  {totalQuestions} questions, solved in any order from the list on the left.
+                </span>
+              </div>
+              <Link to={`/learn/${topic}`} className="trackhub-twoways-item trackhub-twoways-item--link" style={{ '--tw-color': meta.color }}>
+                <span className="trackhub-twoways-item-label">Learning paths — guided routes</span>
+                <span className="trackhub-twoways-item-desc">
+                  {sortedPaths.length} ordered walk{sortedPaths.length === 1 ? '' : 's'} — every concept, in sequence.
+                </span>
+              </Link>
+            </div>
+            <p className="trackhub-twoways-caption">
+              Same questions — solve one in either place and it's marked done in both. You never redo a question.
+            </p>
+          </div>
+        )}
+
+        {sortedPaths.length > 0 && (
           <section className="trackhub-paths">
             <div className="trackhub-paths-header">
               <h3 className="trackhub-paths-title">Learning paths</h3>

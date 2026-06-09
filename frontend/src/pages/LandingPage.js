@@ -832,8 +832,9 @@ function PathsShowcaseSection({ paths, user }) {
           <p className="lp-section-index">+&ensp;LEARNING PATHS</p>
           <h2 className="lp-section-h2">Know what to practice, and in what order.</h2>
           <p className="lp-section-sub">
-            Each track is a graded sequence — foundational patterns first, then the intermediate
-            and advanced reasoning that builds on them. {totalPaths} guided paths across {trackCount} tracks.
+            Each track is a graded sequence — foundational first, then the reasoning that builds on it.
+            Same questions as the Practice catalog, just put in order: solve one in either place and it's
+            marked done in both. {totalPaths} guided paths across {trackCount} tracks.
           </p>
         </Reveal>
 
