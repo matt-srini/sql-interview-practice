@@ -434,9 +434,10 @@ export default function MockHub() {
                   >
                     <div className="mock-mode-card-label-row">
                       <span className="mock-mode-card-label">{card.label}</span>
-                      {card.locked && <span className="mock-elite-badge-inline mock-mode-card-badge">Elite</span>}
-                      {!card.locked && card.key === 'custom' && !isPro && !isElite && (
-                        <span className="mock-mode-card-badge mock-mode-card-badge--pro">Pro</span>
+                      {card.locked && card.requiredTier && (
+                        <span className={`mock-mode-card-badge ${card.requiredTier === 'elite' ? 'mock-elite-badge-inline' : 'mock-mode-card-badge--pro'}`}>
+                          {card.requiredTier === 'elite' ? 'Elite' : 'Pro'}
+                        </span>
                       )}
                     </div>
                     <div className="mock-mode-card-sublabel">{card.sublabel}</div>

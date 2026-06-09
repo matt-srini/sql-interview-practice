@@ -42,8 +42,8 @@ Severity: **H** high · **M** medium · **L** low. Status: `TODO` · `WIP` · `D
 | **A2** | H | DONE | code | Free **easy-only** benchmark bypassable via the **Mixed** difficulty |
 | **A3** | H | DONE | code | Interview Loop payoff under-delivers (raw pivot token + `is_follow_up` lost + debrief ignores pivots) |
 | C1 | H | DONE | doc+code | `company_filter` was a gated **phantom feature** — resolved by **deleting** it (keep practice filter, free/all-tiers) |
-| C3 | M | TODO | code | Code-track benchmark submit leaks `correct` + `expected_result` mid-session |
-| B1 | M | TODO | code | Free sees an **"Elite"** badge on the Pro-tier Custom drill card |
+| C3 | M | DONE | code | Code-track benchmark submit leaks `correct` + `expected_result` mid-session (+ folded the F-06 button-label leak) |
+| B1 | M | DONE | code | Free sees an **"Elite"** badge on the Pro-tier Custom drill card |
 | B2 | M | DONE | code | Interview Loop summary titled **"Drill summary"** (fixed with A3) |
 | B3 | M | TODO | code | History **"Time"** column shows the limit, not time used |
 | B4 | M | TODO | code | Start button **enabled when `/access` fetch fails** (`accessState` null) |
@@ -117,9 +117,8 @@ Three confirmed defects compounded at the Elite payoff moment:
 
 ## B — UI findings
 
-### B1 — `[M]` `[TODO]` Free sees an **"Elite"** badge on the Pro-tier Custom drill card
-- `frontend/src/pages/MockHub.js:436` — `{card.locked && <span ...>Elite</span>}` renders "Elite" for **any** locked card; Custom is locked for Free but is a **Pro** feature. The intended "Pro" badge (`:437-439`) only renders when `!card.locked`, so it never fires for Free (`card.locked = !isPro`). Net: Free is told Custom needs *Elite* (badge) while the text says *Pro or Elite* — mis-steers the upgrade.
-- **Fix approach:** badge text should reflect the unlocking tier (Pro for custom, Elite for interview_loop). Drive from `card` config (e.g. `card.requiredTier`), not a hardcoded "Elite". Remove the dead `:437-439` branch.
+### B1 — `[M]` `[DONE]` Free sees an **"Elite"** badge on the Pro-tier Custom drill card
+**Fixed 2026-06-09.** Added a `requiredTier` field to each card in `getMockModeCards` (`mockModeConfig.js`: benchmark `null`, custom `'pro'`, loop `'elite'`) and rewrote the `MockHub.js` badge to a single config-driven branch (`card.locked && card.requiredTier` → "Pro"/"Elite" with the matching class); deleted the dead `!card.locked` Pro branch. Verified live: Free sees **"Pro"** on Custom drill + "Elite" on Interview Loop; Pro sees "Elite" on Interview Loop only (custom no badge); Elite sees none. Unit tests added to `mockModeConfig.test.js`.
 
 ### B2 — `[M]` `[TODO]` Interview Loop summary titled "Drill summary"
 - `MockSession.js:538` — `summaryDescriptor.isBenchmark ? 'Benchmark summary' : 'Drill summary'`; Loop has `isBenchmark:false`. Add an explicit Interview-Loop title.
@@ -153,9 +152,8 @@ Three confirmed defects compounded at the Elite payoff moment:
 - **Decision (2026-06-09, user-approved):** **delete the mock company filter, keep the practice one.** A company filter is a grind-market lever at odds with the reasoning-premium positioning; the per-company pool is too thin for mock's no-repeat freshness model; and it's SQL-only. See `docs/decisions/DECISIONS.md`.
 - **Shipped:** removed `company_filter` from `unlock.py` (param + gate + `MOCK_COMPANY_FILTER_TIERS`), `mock.py` (field + call site), and tests `tc133/tc134/tc149/tc150`. Purged advertising: landing Elite bullet, `pricing.md` row, AppShell upsell copy. Reconciled `mock.md` (removed the §Company Filter section + matrix row + flow step + API param), `architecture.md`, `mock-benchmark-spec.md`, `platform-north-star.md`. The **practice** SQL filter (`SidebarNav`, free, all-tiers) is unchanged. Backend mock suite 78 green.
 
-### C3 — `[M]` `[TODO]` Code-track benchmark submit leaks `correct` + `expected_result` mid-session
-- `backend/routers/mock.py:1453` — the "no correctness reveal mid-session" suppression applies **only when `eval_kind == "mcq"`**. Firsthand: SQL benchmark submit returned `correct`, `feedback`, **and `expected_result`** (the answer's output table) per question. Frontend doesn't display it, but it's transmitted — network inspection defeats one-shot integrity.
-- **Fix approach:** for benchmark/interview_loop, strip `correct`/`feedback`/`expected_result` (and any solution-bearing fields) for **all** tracks, not just MCQ. Keep run-output (the user's own result) so "Run" still works; suppress the verdict + expected.
+### C3 — `[M]` `[DONE]` Code-track benchmark submit leaks `correct` + `expected_result` mid-session
+**Fixed 2026-06-09.** The mid-session suppression was MCQ-only, so code-track (SQL/Python/Pandas/Stats-numerical) benchmark + interview_loop submits returned `correct`, `feedback`, and (SQL) `expected_result` — the verdict + answer key — over the wire. Replaced the MCQ-only strip in `submit_answer` (`mock.py`) with a blanket lean ack: benchmark/interview_loop return `{"submitted": True}` for **all** tracks (progress recording happens earlier via `accepted`, unaffected); custom drills keep the full result. Also folded in the coupled **F-06** leak — the code-track submit button label now shows a neutral "✓ Submitted" in benchmark/loop (was "✓ Solved"/"✗ Submitted", which revealed correctness), mirroring the MCQ button (`MockSession.js`). Regression test `test_benchmark_submit_hides_verdict_and_answer_key`. Verified live: Elite benchmark SQL submit returns only `{submitted}` — no `correct`/`expected_result`/`feedback`/`hidden_summary`. (Run, a separate endpoint, still shows the user's own output.)
 
 ### C4 — `[M]` `[TODO]` Discarded sessions don't count vs rate limits → cap reset `[mechanism confirmed]`
 - `discard_mock_session` hard-deletes the row (`backend/db.py` ~1384); counters `COUNT(*)` only surviving rows. A Pro user can create→discard (within 2 min) to recover a benchmark/custom slot and re-roll without burning quota.
@@ -209,3 +207,7 @@ Three confirmed defects compounded at the Elite payoff moment:
   - Frontend (advertising purge): `LandingPage.js` Elite bullet removed; `AppShell.js` upsell copy → "Unlimited mocks, Interview Loop, and per-session coaching."
   - SoT: `mock.md` (§Company Filter section + matrix row + flow step + API param removed), `pricing.md` row, `architecture.md` test desc, `mock-benchmark-spec.md` + `platform-north-star.md` filter-policy notes reconciled; `DECISIONS.md` entry appended.
   - Unchanged on purpose: the **practice** SQL company filter (`SidebarNav`, free/all-tiers) and the `companies` question tag; `frontend.md`/`CLAUDE.md` references to it are correct as-is.
+- **2026-06-09 — C3 (+ F-06) + B1** — fixed on `main`. Two parallel Sonnet agents on disjoint files; Opus reviewed + verified live + committed.
+  - C3: `backend/routers/mock.py` submit now returns lean `{"submitted": true}` for benchmark + interview_loop (all tracks) — no verdict/answer-key leak; custom unchanged. `MockSession.js` code-track button label neutralised to "✓ Submitted" in those modes (folds in F-06). Test `test_benchmark_submit_hides_verdict_and_answer_key`. Verified live (lean response confirmed via network).
+  - B1: `mockModeConfig.js` cards gain `requiredTier`; `MockHub.js` badge is config-driven (Pro/Elite by tier, dead branch removed). Verified live: Free → "Pro" on Custom + "Elite" on Loop; Pro → "Elite" on Loop only.
+  - Backend mock 79 + frontend 139 green.

@@ -28,6 +28,51 @@ describe('mockModeConfig', () => {
     expect(cards[1]).toMatchObject({ key: 'custom', label: 'Custom drill' });
   });
 
+  describe('getMockModeCards requiredTier — Free plan', () => {
+    it('benchmark card: requiredTier is null and locked is false', () => {
+      const [benchmark] = getMockModeCards('sql', 'free');
+      expect(benchmark.requiredTier).toBeNull();
+      expect(benchmark.locked).toBe(false);
+    });
+
+    it('custom card: requiredTier is "pro" and locked is true', () => {
+      const [, custom] = getMockModeCards('sql', 'free');
+      expect(custom.requiredTier).toBe('pro');
+      expect(custom.locked).toBe(true);
+    });
+
+    it('loop card: requiredTier is "elite" and locked is true', () => {
+      const [,, loop] = getMockModeCards('sql', 'free');
+      expect(loop.requiredTier).toBe('elite');
+      expect(loop.locked).toBe(true);
+    });
+  });
+
+  describe('getMockModeCards requiredTier — Pro plan', () => {
+    it('custom card: locked is false (Pro unlocks it)', () => {
+      const [, custom] = getMockModeCards('sql', 'pro');
+      expect(custom.locked).toBe(false);
+    });
+
+    it('loop card: locked is true with requiredTier "elite"', () => {
+      const [,, loop] = getMockModeCards('sql', 'pro');
+      expect(loop.locked).toBe(true);
+      expect(loop.requiredTier).toBe('elite');
+    });
+  });
+
+  describe('getMockModeCards requiredTier — Elite plan', () => {
+    it('custom card: locked is false', () => {
+      const [, custom] = getMockModeCards('sql', 'elite');
+      expect(custom.locked).toBe(false);
+    });
+
+    it('loop card: locked is false', () => {
+      const [,, loop] = getMockModeCards('sql', 'elite');
+      expect(loop.locked).toBe(false);
+    });
+  });
+
   it('returns display labels and session shape values for benchmark mode', () => {
     expect(getMockModeDisplayLabel('benchmark')).toBe('Benchmark');
     expect(getMockModeDisplayLabel('60min')).toBe('Full (legacy)');

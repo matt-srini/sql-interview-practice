@@ -175,6 +175,7 @@ export function getMockModeCards(track, plan = 'free') {
     disabled: false,
     locked: false,
     lockedReason: null,
+    requiredTier: null,
   };
 
   const customCard = {
@@ -185,6 +186,7 @@ export function getMockModeCards(track, plan = 'free') {
     disabled: false,
     locked: !isPro,
     lockedReason: isPro ? null : 'Custom drills require a Pro or Elite plan.',
+    requiredTier: 'pro',
   };
 
   const loopCard = {
@@ -195,6 +197,7 @@ export function getMockModeCards(track, plan = 'free') {
     disabled: track === 'mixed',
     locked: !isElite,
     lockedReason: isElite ? null : 'Interview Loop requires an Elite plan.',
+    requiredTier: 'elite',
   };
 
   return [benchmarkCard, customCard, loopCard];
