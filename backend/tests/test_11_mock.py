@@ -65,6 +65,21 @@ def test_tc129_free_benchmark_hard_plan_locked():
     assert result["needs_upgrade"] == "pro"
 
 
+def test_tc129b_free_benchmark_mixed_plan_locked():
+    """TC-129b: Free + benchmark + mixed → plan_locked (mixed contains medium/hard;
+    must not bypass the Free easy-only gate). Regression for the audit A2 finding."""
+    result = compute_mock_access("free", "sql", "mixed", mode="benchmark", weekly_benchmark_used=0)
+    assert result["can_start"] is False
+    assert result["block_reason"] == "plan_locked"
+    assert result["needs_upgrade"] == "pro"
+
+
+def test_tc129c_pro_and_elite_benchmark_mixed_allowed():
+    """TC-129c: Mixed difficulty is only gated for Free — Pro/Elite may run it."""
+    assert compute_mock_access("pro", "sql", "mixed", mode="benchmark", daily_benchmark_used=0)["can_start"] is True
+    assert compute_mock_access("elite", "sql", "mixed", mode="benchmark")["can_start"] is True
+
+
 def test_tc130_pro_benchmark_hard_within_daily_limit():
     """TC-130: Pro + benchmark + hard + daily_used=2 → can_start: True; daily_limit: 3."""
     result = compute_mock_access("pro", "sql", "hard", mode="benchmark", daily_benchmark_used=2)

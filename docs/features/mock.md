@@ -167,7 +167,7 @@ After 120 s the quota slot is locked in regardless of submission state.
 `GET /api/mock/access?track=<track>&mode=<mode>` is called every time the track or mode selector changes. Returns per-difficulty `can_start`, `daily_limit`, `daily_used`, `weekly_limit`, `weekly_used` (Free benchmark), `needs_upgrade`, `block_copy` so the UI can render gate state without a round-trip on Start.
 
 **`mode` param is required.** Access rules are mode-dependent:
-- `mode=benchmark`: Free → easy only (medium/hard → `plan_locked`); Free weekly limit check; Pro → difficulty unrestricted; daily cap per plan.
+- `mode=benchmark`: Free → easy only (`medium`/`hard`/`mixed` → `plan_locked` — `mixed` is gated too, since it draws medium/hard questions); Free weekly limit check; Pro → difficulty unrestricted; daily cap per plan.
 - `mode=custom`: Free → `plan_locked` entirely for all difficulties; Pro/Elite → daily cap check.
 - `mode=interview_loop`: Free/Pro → `plan_locked`; Elite → soft-cap check only.
 

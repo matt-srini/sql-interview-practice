@@ -391,10 +391,13 @@ def compute_mock_access(
     # ── benchmark ─────────────────────────────────────────────────────────────
     # (default branch; unknown modes fall through as benchmark-equivalent)
     if plan == "free":
-        # Free: easy only, 1 per rolling 7 days
-        if difficulty in ("medium", "hard"):
+        # Free: easy only, 1 per rolling 7 days.
+        # Guard on != "easy" (not a ("medium","hard") blocklist) so the
+        # "mixed" difficulty — which draws medium/hard questions — is also
+        # plan-locked, and any future difficulty value defaults to locked.
+        if difficulty != "easy":
             return _plan_locked(
-                "Medium and hard benchmarks require a Pro plan.",
+                "Medium, hard, and mixed benchmarks require a Pro plan.",
                 "pro",
             )
         # easy: weekly cap

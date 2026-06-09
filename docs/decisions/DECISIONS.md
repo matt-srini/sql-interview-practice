@@ -35,6 +35,12 @@ Keep entries to 4–6 lines. Friction kills logs; if it's longer than the change
 
 ## Entries
 
+## 2026-06-09 — Free mock benchmark is gated on `difficulty != "easy"`, not a medium/hard blocklist
+**Area:** mock · gating · **Status:** accepted
+**Decision:** `compute_mock_access` blocked only `("medium","hard")` for Free benchmarks, so `difficulty="mixed"` (which draws medium/hard) slipped through as `can_start: True` — a Free user could start a mixed benchmark and receive medium questions, bypassing the easy-only spec and the Pro upsell (confirmed firsthand in the mock audit, finding A2). Changed the guard to `difficulty != "easy"` (covers mixed and any future value). Frontend needed no change — `getDifficultyButtonState` derives the blocked pill / Start-disable purely from `/access`.
+**Rejected:** enumerating `("medium","hard","mixed")` — same effect today but re-opens the hole the moment a new difficulty is added; the `!= "easy"` invariant is the cleaner, future-proof expression of "Free is easy-only."
+**Affects:** backend/unlock.py, backend/tests/test_11_mock.py (TC-129b/c), docs/features/mock.md, docs/mock-audit-tracker.md (A2)
+
 ## 2026-06-08 — Practice and Paths are framed as two layouts of one shared question bank
 **Area:** frontend · **Status:** accepted
 **Decision:** The per-track Practice catalog and Learning Paths were presented adjacently (landing §06 tracks + §07 paths; the track hub's progress card + paths section) with no stated relationship, so they read as competing offerings. Added a consistent cross-surface message — *same questions, two layouts, shared progress (solve once anywhere = done everywhere)* — on three surfaces: a compact "Two ways to work {track}" strip on TrackHubPage (between the stat card and the paths section), a connective clause in the landing PathsShowcase sub-copy, and a clarified `/learn` header + "Browse the full catalog →" back-pointer. Canonical caption: "Same questions — solve one in either place and it's marked done in both. You never redo a question."
