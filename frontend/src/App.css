@@ -3723,6 +3723,7 @@ select {
   font-weight: 600;
   cursor: pointer;
   border: 1px solid transparent;
+  white-space: nowrap;
   transition: transform 0.15s ease, opacity 0.15s ease, background 0.15s ease, border-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
 }
 
@@ -13286,18 +13287,22 @@ select {
   background: var(--accent);
   color: var(--accent-on-color, #fff);
 }
+/* ≤ 900px: hide the supplementary CTA + breadcrumb pill (track name visible in
+   the select); let the center shrink so the brand stays comfortable */
+@media (max-width: 900px) {
+  .sample-topbar-right { display: none; }
+  .sample-page-topbar .shell-pill-mode-sample { display: none; }
+  .sample-topbar-center { flex-shrink: 1; }
+}
+/* ≤ 640px: compact the switcher and reduce topbar padding */
 @media (max-width: 640px) {
   .sample-switcher { gap: 6px; }
   .sample-switcher-diff { padding: 4px 7px; font-size: 0.7rem; }
-  /* Topbar: drop right CTA + duplicated track pill; reduce padding; allow center to shrink */
-  .sample-topbar-right { display: none; }
-  .sample-page-topbar .shell-pill-mode-sample { display: none; }
   .sample-page-topbar { padding: 0 1rem; gap: 0.5rem; }
-  .sample-topbar-center { flex-shrink: 1; }
   .sample-switcher-track { max-width: 130px; }
 }
+/* ≤ 480px: drop brand wordmark text; shrink track select further */
 @media (max-width: 480px) {
-  /* Keep only the logo mark on very narrow screens to free up space */
   .sample-page-topbar .brand-wordmark-text { display: none; }
   .sample-switcher-track { max-width: 105px; }
 }
