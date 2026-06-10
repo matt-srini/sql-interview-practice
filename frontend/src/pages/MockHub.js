@@ -21,10 +21,6 @@ import {
 // Tracks that pool into a single mixed-track session (in_mixed_mock=True in backend).
 const MIXED_MOCK_TRACKS = ['sql', 'python', 'pandas', 'pyspark'];
 
-// All tracks now have at least one dedicated mock-only question.
-// data-modeling: 63021 (2026-05-19). data-engineering: 53021 (2026-05-19). statistics: 73025–73029.
-const NO_MOCK_BANK_TRACKS = new Set();
-
 const MOCK_ROLES = [
   { id: 'data_analyst',       label: 'Data Analyst',       tracks: ['sql', 'pandas', 'statistics'] },
   { id: 'data_engineer',      label: 'Data Engineer',      tracks: ['sql', 'python', 'pyspark', 'data-engineering'] },
@@ -42,8 +38,8 @@ const PYSPARK_FORMAT_LABELS = {
 };
 
 const PYSPARK_FORMAT_TARGETS = {
-  easy:   ['conceptual', 'predict_output', 'conceptual', 'predict_output', 'debug', 'conceptual'],
-  medium: ['conceptual', 'scenario', 'debug', 'predict_output', 'conceptual', 'optimization'],
+  easy:   ['predict_output', 'conceptual', 'predict_output', 'debug', 'predict_output', 'conceptual'],
+  medium: ['predict_output', 'debug', 'predict_output', 'debug', 'conceptual', 'scenario'],
   hard:   ['conceptual', 'scenario', 'predict_output', 'conceptual', 'scenario', 'conceptual'],
   mixed:  ['conceptual', 'scenario', 'predict_output', 'debug', 'conceptual', 'scenario'],
 };
@@ -162,6 +158,7 @@ export default function MockHub() {
   // Analytics — Elite only
   const [analytics, setAnalytics] = useState(null);
   const [analyticsLoading, setAnalyticsLoading] = useState(false);
+  const [analyticsError, setAnalyticsError] = useState(false);
 
   // Pre-flight access state
   const [accessState, setAccessState] = useState(null);
@@ -245,14 +242,16 @@ export default function MockHub() {
       .finally(() => setHistoryLoading(false));
   }, []);
 
-  useEffect(() => {
-    if (!isElite) return;
+  const fetchAnalytics = useCallback(() => {
     setAnalyticsLoading(true);
+    setAnalyticsError(false);
     api.get('/mock/analytics')
-      .then(r => setAnalytics(r.data))
-      .catch(() => setAnalytics(null))
+      .then(r => { setAnalytics(r.data); setAnalyticsError(false); })
+      .catch(() => { setAnalytics(null); setAnalyticsError(true); })
       .finally(() => setAnalyticsLoading(false));
-  }, [isElite]);
+  }, []);
+
+  useEffect(() => { if (isElite) fetchAnalytics(); }, [isElite, fetchAnalytics]);
 
   const fetchAccess = useCallback(() => {
     setAccessState(null);
@@ -355,7 +354,6 @@ export default function MockHub() {
   }
 
   const isMixedTrack = track === 'mixed';
-  const hasMockBank  = !NO_MOCK_BANK_TRACKS.has(track);
 
   // Rail access state
   const railDiffState = getDifficultyButtonState(difficulty);
@@ -533,7 +531,8 @@ export default function MockHub() {
             <section className="mock-hub-section">
               <div className="mock-hub-config">
 
-                {/* Role filter */}
+                {/* Role filter — hidden on mixed track (mixed has its own required role selector below) */}
+                {!isMixedTrack && (
                 <div className="mock-hub-config-row">
                   <span className="mock-hub-config-label">Role</span>
                   <div className="mock-role-pills">
@@ -556,6 +555,7 @@ export default function MockHub() {
                     ))}
                   </div>
                 </div>
+                )}
 
                 {/* Track */}
                 <div className="mock-hub-config-row">
@@ -630,13 +630,6 @@ export default function MockHub() {
                   </div>
                 )}
               </section>
-            )}
-
-            {/* No dedicated mock bank note */}
-            {!isMixedTrack && !hasMockBank && (
-              <div className="mock-track-note mock-track-note--info">
-                No dedicated mock question bank yet for this track — this session draws from practice questions.
-              </div>
             )}
 
             {/* Focus mode — shown to all, locked for non-Elite */}
@@ -941,8 +934,10 @@ export default function MockHub() {
                 {analytics.mode_breakdown?.drill > 0 ? ` You already have ${analytics.mode_breakdown.drill} drill session${analytics.mode_breakdown.drill !== 1 ? 's' : ''} tracked separately.` : ''}
               </p>
             )}
-            {!analyticsLoading && !analytics && (
-              <p className="mock-analytics-empty">Complete your first benchmark session to see analytics here.</p>
+            {!analyticsLoading && analyticsError && (
+              <p className="mock-analytics-empty">
+                Couldn't load analytics. <button type="button" className="mock-link-button" onClick={fetchAnalytics}>Retry</button>
+              </p>
             )}
           </section>
         )}
@@ -1197,7 +1192,9 @@ export default function MockHub() {
               </div>
             </div>
             <div className="mock-hub-empty-actions">
-              <Link to="/practice/sql" className="btn btn-secondary btn-compact">Warm up in SQL</Link>
+              {(() => { const warmupTrack = isMixedTrack ? 'sql' : track; return (
+                <Link to={`/practice/${warmupTrack}`} className="btn btn-secondary btn-compact">Warm up in {TRACK_LABELS[warmupTrack]}</Link>
+              ); })()}
               <Link to="/dashboard" className="btn btn-secondary btn-compact">View progress dashboard</Link>
             </div>
           </section>

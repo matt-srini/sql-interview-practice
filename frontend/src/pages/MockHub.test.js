@@ -203,6 +203,35 @@ describe('MockHub B4: access-fetch failure disables Start and shows Retry', () =
   });
 });
 
+describe('MockHub B5: analytics fetch error', () => {
+  it('shows error message with Retry button when /mock/analytics rejects', async () => {
+    mockApiGet.mockImplementation((path) => {
+      if (path === '/mock/history') return Promise.resolve({ data: [] });
+      if (path === '/mock/analytics') return Promise.reject(new Error('network error'));
+      if (path === '/mock/access') {
+        return Promise.resolve({
+          data: {
+            access: {
+              easy: { can_start: true },
+              medium: { can_start: true },
+              hard: { can_start: true },
+              mixed: { can_start: true },
+            },
+          },
+        });
+      }
+      return Promise.resolve({ data: {} });
+    });
+
+    renderHub();
+
+    await waitFor(() => {
+      expect(screen.getByText(/Couldn't load analytics/i)).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /Retry/i })).toBeInTheDocument();
+    });
+  });
+});
+
 describe('MockHub mixed-track framing', () => {
   it('shows role selector for mixed track in benchmark mode (Phase 3: role-based benchmark)', async () => {
     // Phase 3 replaced "Mixed is drill-only" with a role-selection flow for mixed benchmark
