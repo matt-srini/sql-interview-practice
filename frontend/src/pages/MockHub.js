@@ -1076,7 +1076,7 @@ export default function MockHub() {
                     <td>{TRACK_LABELS[s.track] || s.track}</td>
                     <td>{s.difficulty && <span className={`badge badge-${s.difficulty}`}>{s.difficulty}</span>}</td>
                     <td>{s.solved_count}/{s.total_count}</td>
-                    <td>{formatDuration(s.time_limit_s, s.time_used_s)}</td>
+                    <td className="mock-history-time">{formatDuration(s.time_limit_s, s.time_used_s)}</td>
                     <td>
                       <Link to={`/mock/${s.session_id}`} className="mock-review-link">
                         {s.status === 'completed' ? 'Review →' : 'Resume →'}
@@ -1105,7 +1105,7 @@ export default function MockHub() {
                     <td>{TRACK_LABELS[s.track] || s.track}</td>
                     <td>{s.difficulty && <span className={`badge badge-${s.difficulty}`}>{s.difficulty}</span>}</td>
                     <td>{s.solved_count}/{s.total_count}</td>
-                    <td>{formatDuration(s.time_limit_s, s.time_used_s)}</td>
+                    <td className="mock-history-time">{formatDuration(s.time_limit_s, s.time_used_s)}</td>
                     <td>
                       <Link to={`/mock/${s.session_id}`} className="mock-review-link">
                         {s.status === 'completed' ? 'Review →' : 'Resume →'}
@@ -1134,7 +1134,7 @@ export default function MockHub() {
                     <td>{TRACK_LABELS[s.track] || s.track}</td>
                     <td>{s.difficulty && <span className={`badge badge-${s.difficulty}`}>{s.difficulty}</span>}</td>
                     <td>{s.solved_count}/{s.total_count}</td>
-                    <td>{formatDuration(s.time_limit_s, s.time_used_s)}</td>
+                    <td className="mock-history-time">{formatDuration(s.time_limit_s, s.time_used_s)}</td>
                     <td>
                       <Link to={`/mock/${s.session_id}`} className="mock-review-link">
                         {s.status === 'completed' ? 'Review →' : 'Resume →'}

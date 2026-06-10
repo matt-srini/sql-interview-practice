@@ -8892,6 +8892,9 @@ select {
   color: var(--text-primary);
   vertical-align: middle;
 }
+.mock-history-time {
+  white-space: nowrap;
+}
 .mock-history-table tr:last-child td {
   border-bottom: none;
 }

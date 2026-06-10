@@ -1516,3 +1516,64 @@ def test_tc183_discard_blocked_after_daily_cap_keeps_session_active():
         g = client.get(f"/api/mock/{sid}")
         assert g.status_code == 200, g.text
         assert g.json().get("status") == "active"
+
+
+def test_history_time_used_clamped_to_limit():
+    """Regression: a session finished far past its start must report time_used_s == time_limit_s,
+    not the raw elapsed seconds (~11 days).  Tests both the SQL clamp in get_mock_history and
+    the Python clamp in finish_mock_session."""
+    # Phase 1: start + finish the session and capture the user for re-login.
+    with TestClient(app) as client:
+        user = _make_user(client, plan="elite")
+        # Start a benchmark session; Elite can always start one.
+        r_start = _start_pyspark_session(client, mode="benchmark", difficulty="easy")
+        assert r_start.status_code in (200, 201), r_start.text
+        session_id = r_start.json()["session_id"]
+        time_limit_s = r_start.json()["time_limit_s"]
+
+        # Finish the session (sets ended_at = now).
+        r_finish = client.post(f"/api/mock/{session_id}/finish")
+        assert r_finish.status_code == 200, r_finish.text
+        # Confirm the finish summary itself is already clamped.
+        finish_body = r_finish.json()
+        assert finish_body.get("time_used_s") is not None, "finish body missing time_used_s"
+        assert finish_body["time_used_s"] <= time_limit_s, (
+            f"finish time_used_s {finish_body['time_used_s']} exceeds limit {time_limit_s}"
+        )
+        assert finish_body["time_used_s"] >= 0, "finish time_used_s is negative"
+
+    # Phase 2: backdate started_at so raw elapsed (~11 days) >> time_limit_s.
+    conn = _db_conn()
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                "UPDATE mock_sessions SET started_at = ended_at - interval '11 days' WHERE id = %s",
+                (session_id,),
+            )
+        conn.commit()
+    finally:
+        conn.close()
+
+    # Phase 3: re-login as the same user and fetch history; clamped value must equal time_limit_s.
+    with TestClient(app) as client:
+        _make_user(client, plan="elite", existing_user=user)
+        r_history = client.get("/api/mock/history")
+    assert r_history.status_code == 200, r_history.text
+    body = r_history.json()
+    sessions = body if isinstance(body, list) else body.get("sessions", [])
+    matching = [s for s in sessions if str(s.get("session_id")) == str(session_id)]
+    assert matching, f"Session {session_id} not found in history (got {[s.get('session_id') for s in sessions]})"
+    row = matching[0]
+    assert row["time_used_s"] is not None, "time_used_s should not be None for a completed session"
+    # 11 days = 950400 s — far beyond any time_limit_s; clamped value must equal the limit.
+    eleven_days_s = 11 * 24 * 60 * 60
+    assert row["time_used_s"] != eleven_days_s, (
+        f"time_used_s was not clamped: got {row['time_used_s']} (raw 11-day value)"
+    )
+    assert row["time_used_s"] <= time_limit_s, (
+        f"time_used_s {row['time_used_s']} exceeds time_limit_s {time_limit_s}"
+    )
+    assert row["time_used_s"] >= 0, f"time_used_s is negative: {row['time_used_s']}"
+    assert row["time_used_s"] == time_limit_s, (
+        f"Expected time_used_s == time_limit_s ({time_limit_s}), got {row['time_used_s']}"
+    )

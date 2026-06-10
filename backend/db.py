@@ -1553,7 +1553,14 @@ async def finish_mock_session(session_id: int, user_id: str) -> dict[str, Any] |
         first = rows[0]
         started = first["started_at"]
         ended = first["ended_at"]
-        time_used_s = int((ended - started).total_seconds()) if started and ended else None
+        # Clamp to [0, time_limit_s]: a session finished long after it started (left open
+        # past its timer) would otherwise report a "time used" larger than the cap.
+        if started and ended:
+            _raw = int((ended - started).total_seconds())
+            _limit = first["time_limit_s"]
+            time_used_s = max(0, _raw if _limit is None else min(_raw, _limit))
+        else:
+            time_used_s = None
         session_out = {
             "session_id": first["session_id"],
             "mode": first["mode"],
@@ -1700,7 +1707,9 @@ async def get_mock_history(user_id: str, limit: int = 20) -> list[dict[str, Any]
                     ms.id AS session_id,
                     ms.mode, ms.track, ms.difficulty, ms.role,
                     ms.started_at, ms.ended_at, ms.time_limit_s,
-                    EXTRACT(EPOCH FROM (ms.ended_at - ms.started_at))::int AS time_used_s,
+                    CASE WHEN ms.ended_at IS NOT NULL
+                         THEN GREATEST(0, LEAST(EXTRACT(EPOCH FROM (ms.ended_at - ms.started_at))::int, ms.time_limit_s))
+                         END AS time_used_s,
                     ms.status,
                     COUNT(msq.id) AS total_count,
                     COUNT(CASE WHEN msq.is_solved THEN 1 END) AS solved_count

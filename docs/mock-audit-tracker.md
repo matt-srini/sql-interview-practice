@@ -239,3 +239,7 @@ Three confirmed defects compounded at the Elite payoff moment:
   - Frontend: `handleDiscard` keeps the session on 429 + shows the limit message; Discard button hidden while errored (`MockSession.js`). Tests added.
   - Also fixed a pre-existing **`_SCHEMA_SQL` gap**: the `plan_override` columns were in the migration but not `_SCHEMA_SQL`, breaking the test DB (every user query) — added the idempotent ALTERs (executes the 2026-06-10 two-track-schema discipline).
   - Verified live (3× 204 → 4th 429, session active). Backend mock 82 + frontend 153 green.
+- **2026-06-10 — Mock history Time column: clamp time-used + single-line (user-reported, post-audit)** — two parallel Sonnet agents; Opus reviewed + verified live + committed.
+  - Bug: a session finished long after it started (left open past its timer) reported `time_used = ended_at − started_at` uncapped — history showed e.g. "15757:01 / 40:00" (~262 h). Clamped time-used to `[0, time_limit_s]` in both `get_mock_history` (SQL `CASE … GREATEST(0, LEAST(…, time_limit_s))`, NULL preserved for in-progress) and `finish_mock_session` (`db.py`). Read-time fix — no data migration. Test `test_history_time_used_clamped_to_limit`. Verified live: no history row exceeds its limit.
+  - UX: the "0:12 / 60:00" Time cell wrapped to two lines on mobile; added `white-space: nowrap` (`.mock-history-time` in `App.css` + class on the 3 history Time `<td>`s). Verified live (computed `white-space: nowrap`).
+  - Backend mock 83 + frontend 153 green.
