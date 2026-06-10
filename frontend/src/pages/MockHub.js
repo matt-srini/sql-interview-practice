@@ -1015,9 +1015,10 @@ export default function MockHub() {
                   localStorage.setItem('mock_elite_panel_open', String(next));
                 }}
                 aria-expanded={elitePanelOpen}
-                aria-label={elitePanelOpen ? 'Collapse' : 'Expand'}
+                aria-label={elitePanelOpen ? 'Hide panel' : 'Show panel'}
               >
-                {elitePanelOpen ? '▴' : '▾'}
+                <span>{elitePanelOpen ? 'Hide' : 'Show'}</span>
+                <span className="mock-elite-panel-toggle-arrow" aria-hidden="true">{elitePanelOpen ? '▴' : '▾'}</span>
               </button>
             </div>
 

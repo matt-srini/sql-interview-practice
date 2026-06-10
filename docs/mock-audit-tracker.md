@@ -50,6 +50,7 @@ Severity: **H** high · **M** medium · **L** low. Status: `TODO` · `WIP` · `D
 | A4a | M | DONE | code | Blocked difficulty pills — added hover tooltip (notice/upgrade already shown on click) |
 | A4b | M | WONTFIX | code | Locked mode cards — already gated (tooltip + lock-notice + badge + rail upsell on click) |
 | A5a | M | DONE | code | Concept tags exposed on the live question (telegraphs the approach) |
+| A6 | M | DONE | code | Harsh "0/X, Y% below your historical accuracy" headline tone on poor sessions |
 | C4 | M | TODO | code | Discarded sessions don't count vs rate limits → create-discard cap reset |
 | B7 | L | TODO | code | PySpark lobby blueprint shows a composition the backend doesn't serve |
 | B5 | L | TODO | code | Elite analytics: network error indistinguishable from empty state |
@@ -108,8 +109,8 @@ Three confirmed defects compounded at the Elite payoff moment:
 
 ### A5b — `[L]` `[TODO]` Free benchmark time generous (60 min for 3 easy SQL) — realism tuning, optional.
 
-### A6 — `[M]` `[TODO]` Harsh "0/X, Y% below your historical accuracy" headline tone
-- Accurate but demoralizing on poor sessions for interview-week users. Consider a gentler frame when score is low. `MockSession.js` summary headline (~552-565).
+### A6 — `[M]` `[DONE]` Harsh "0/X, Y% below your historical accuracy" headline tone
+**Fixed 2026-06-09.** Dropped the danger-red on a 0-score (now neutral `--text-strong`; green kept only for >half). Replaced the quantified shortfall: a wipeout reads "{N}/{total} solved — a tough one"; below-baseline reads "a step below your usual" (no percentage); on-par/above keep "on par with your usual" / "{delta}% above your usual". The concept breakdown + debrief below carry the "what to work on" signal, so the headline no longer piles on. `MockSession.js`; tests added. Verified live: "0/3 solved — a tough one" and "1/3 solved — a step below your usual", both neutral.
 
 **What works (do not regress):** one-shot/timed realism, freshness scoring + chain consumption (no repeats), the Pro→Elite summary differentiation, and the Elite *debrief content* (headline + patterns + deep-linked NEXT STEP).
 
@@ -225,3 +226,7 @@ Three confirmed defects compounded at the Elite payoff moment:
   - A5a: removed concept-tag pills from the active mock question render (`MockSession.js`); kept in the post-mortem. Verified live (no tags during session). DECISIONS entry appended.
   - History time-format (B3 follow-up, per user request): `formatDuration` now renders "used / limit" (e.g. "23:13 / 40:00") instead of "X used" — pacing context since caps vary by track/difficulty; mirrors the table's "Score 2/3" idiom. Verified live.
   - Frontend 145 green.
+- **2026-06-09 — A6 + elite-panel toggle** — fixed on `main`. Two parallel Sonnet agents (disjoint files); Opus reviewed + verified live + committed.
+  - A6: gentler post-mock headline (`MockSession.js`) — no danger-red on 0; "a tough one" (wipeout) / "a step below your usual" (below) / "{delta}% above your usual" (above). Tests added. Verified live: "0/3 solved — a tough one", "1/3 solved — a step below your usual" (neutral).
+  - Elite-panel toggle (user-reported, not an audit finding): the collapse control was a bare muted arrow — added a "Hide"/"Show" text label + larger, higher-contrast arrow (`MockHub.js` + `App.css`). Verified live: shows "Hide ▴"/"Show ▾", toggles the panel.
+  - Frontend 147 green.

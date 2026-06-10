@@ -11544,21 +11544,29 @@ select {
 /* Pill toggle — visible but understated */
 .mock-elite-panel-toggle {
   margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.32rem;
   background: none;
   border: 1px solid var(--border-strong);
   border-radius: 99px;
-  color: var(--text-secondary);
-  font-size: 0.7rem;
+  color: var(--text-strong);
+  font-size: 0.78rem;
+  font-weight: 600;
   line-height: 1;
-  padding: 0.22rem 0.55rem;
+  padding: 0.32rem 0.72rem;
   cursor: pointer;
   transition: background 0.15s, color 0.15s, border-color 0.15s;
   flex-shrink: 0;
 }
 .mock-elite-panel-toggle:hover {
   background: var(--surface-highlight);
-  border-color: var(--border-strong);
+  border-color: var(--accent);
   color: var(--text-strong);
+}
+.mock-elite-panel-toggle-arrow {
+  font-size: 0.9rem;
+  line-height: 1;
 }
 /* Body fades in below a thin separator */
 .mock-elite-panel-body {
