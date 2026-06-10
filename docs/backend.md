@@ -34,6 +34,7 @@ Registered in `backend/main.py`:
 | `routers/sample.py` | `/api/sample` | Topic-aware sample questions, run, submit, reset |
 | `routers/plan.py` | `/api/user` | User profile, plan, unlock state |
 | `routers/razorpay.py` | `/api/razorpay` | Order/Subscription creation, client verify, webhook handler |
+| `routers/admin.py` | `/api/admin` | Operator plan-grant endpoints — grant/revoke/list time-limited plan overrides (`ADMIN_SECRET` Bearer token required) |
 | `routers/python_questions.py` | `/api/python` | Python algorithm catalog, detail, run-code, submit |
 | `routers/pandas_questions.py` | `/api/pandas` | Pandas catalog, detail, run-code, submit |
 | `routers/pyspark_questions.py` | `/api/pyspark` | PySpark catalog, detail, submit (reasoning track; additive `interaction_mode` metadata) |

@@ -89,7 +89,7 @@ Schema is defined as a raw SQL string `_SCHEMA_SQL` in `backend/db.py` and appli
 
 | Table | Purpose | Key columns |
 |---|---|---|
-| `users` | All users (anonymous + registered) | `id`, `email`, `name`, `plan` |
+| `users` | All users (anonymous + registered) | `id`, `email`, `name`, `plan`, `plan_override`, `plan_override_until` |
 | `sessions` | Session tokens | `token`, `user_id`, `expires_at` |
 | `user_progress` | Solved questions per topic | `user_id`, `question_id`, `topic`, `solved_at` |
 | `user_sample_seen` | Sample question exposure | `user_id`, `difficulty`, `question_id`, `topic` |
@@ -126,6 +126,8 @@ Locked MCQ questions return 200 with `locked: true` and no `options` / `correct_
 **Learning paths and unlocks:** Paths are curated walks through the practice catalog and do not influence unlock state — `compute_unlock_state` is threshold-only. A user who solves a question via the path UI gets the same `solved` mark and threshold advancement as solving via practice. See [`docs/content-authoring.md`](./content-authoring.md) §Paths for the canonical path model.
 
 Solved questions remain solved permanently regardless of plan changes or threshold reversals.
+
+**Operator plan overrides:** The `users` table carries two nullable columns — `plan_override` (text) and `plan_override_until` (timestamptz). At every auth resolution point (`get_session_user`, login via `get_user_credentials_by_email`, `get_user_by_id/email`, OAuth flows), the `_effective_plan()` helper in `db.py` checks whether an active override is present. If `plan_override IS NOT NULL` and `plan_override_until > now()`, the override is used as the user's plan instead of the base `plan` column; otherwise the base `plan` is returned. No cron job is needed — expiry is evaluated lazily per request. Overrides are managed via `POST/DELETE /api/admin/grant-plan` (operator-only, Bearer-token protected). See [`docs/features/pricing.md`](./features/pricing.md) §Admin operator grants and [`docs/backend.md`](./backend.md) §Admin for the full API contract.
 
 ---
 

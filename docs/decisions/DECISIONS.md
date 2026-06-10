@@ -35,6 +35,12 @@ Keep entries to 4–6 lines. Friction kills logs; if it's longer than the change
 
 ## Entries
 
+## 2026-06-10 — Admin grant system for beta/trial access (operator-only, lazy expiry, no cron)
+**Area:** ops · gating · **Status:** accepted
+**Decision:** Added `POST/DELETE /api/admin/grant-plan` (Bearer-token–protected) so the platform operator can give specific users time-limited Pro/Elite access for beta testing or invited cohorts. Override stored as `plan_override` + `plan_override_until` on `users`; resolved lazily via `_effective_plan()` at every auth point — no cron, no background task, expiry is per-request. Migration `20260610_000001` applied to prod immediately.
+**Rejected:** (a) **coupon codes / user self-redemption** — adds UI surface, session state, abuse surface, and support overhead; this is operator tooling, not a user-facing flow. (b) **background expiry cron** — operational complexity with zero correctness benefit; lazy evaluation at auth time is correct because every protected route reads the session user through `_effective_plan()`. (c) **manual DB edits** — no audit trail, error-prone, not reproducible.
+**Affects:** `backend/db.py` (`_effective_plan`, all user-returning queries), `backend/routers/admin.py`, `backend/config.py` (`ADMIN_SECRET`), `backend/alembic/versions/20260610_000001_*`, `docs/backend.md`, `docs/architecture.md`, `docs/features/pricing.md`, `docs/deployment.md`, `CLAUDE.md`
+
 ## 2026-06-09 — Drop the "In progress" rail from the /learn index; the per-tile progress bar is enough
 **Area:** frontend · product · **Status:** accepted
 **Decision:** `LearningPathsIndex` (`/learn` and `/learn/:topic`) rendered an "In progress" rail at the top listing **every** in-progress path, then re-listed those same paths inside their per-track grouped grids below — so each in-progress path appeared twice, and the page filled with duplicates for any user who had touched several paths. Removed the rail (computation + render + `.learn-index-progress-rail` CSS). Each `PathProgressCard` tile already carries its own progress bar, so the grouped grids are a sufficient single source.

@@ -166,6 +166,26 @@ All webhook events are deduped on `event.id` using the `payment_events` table:
 
 ---
 
+## Admin operator grants
+
+Operators can give specific users time-limited Pro or Elite access for beta testing, invited cohorts, or trial extensions — without going through Razorpay. This is **internal tooling only**; users cannot grant or extend their own access.
+
+**Mechanism:** Two nullable columns on `users` — `plan_override` (text) and `plan_override_until` (timestamptz) — store the override. At every auth resolution point, `_effective_plan()` in `db.py` checks if an active override exists and returns it in place of the base `plan` column. Expiry is **lazy** — evaluated per request, no cron job needed. After expiry the user silently reverts to their base plan at next session load.
+
+**Endpoints** (all require `Authorization: Bearer <ADMIN_SECRET>`):
+
+| Method | Path | Description |
+|---|---|---|
+| POST | `/api/admin/grant-plan` | Grant a time-limited Pro or Elite override. Body: `{ email, plan: "pro"│"elite", days: 1–365 }`. Safe to re-call — overwrites the existing override (use to extend or upgrade). |
+| DELETE | `/api/admin/grant-plan` | Revoke the override immediately. User returns to base `plan`. |
+| GET | `/api/admin/grants` | List all users with a `plan_override` set (active and expired). |
+
+`ADMIN_SECRET` must be set in the Railway environment (generate with `python3 -c "import secrets; print(secrets.token_urlsafe(32))"`). If unset, all admin endpoints return 503.
+
+**What it is not:** This is not a user-facing coupon or redemption flow. It produces no invoice, no webhook, and no `plan_changes` audit row. It does not affect the Razorpay subscription lifecycle.
+
+---
+
 ## API reference
 
 ### `POST /api/razorpay/create-order`
