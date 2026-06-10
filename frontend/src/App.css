@@ -8957,6 +8957,20 @@ select {
   background: linear-gradient(135deg, rgba(91, 106, 240, 0.08), rgba(255, 255, 255, 0.96));
   border-color: rgba(91, 106, 240, 0.14);
 }
+/* Dark mode: the light-mode gradients fade to near-white, which made the
+   light card text (—text-strong / —text-secondary) invisible. Fade to a
+   dark surface instead, keeping the per-card accent tint. */
+[data-theme="dark"] .mock-hub-empty-card {
+  background: var(--surface-card-alt);
+}
+[data-theme="dark"] .mock-hub-empty-card--benchmark {
+  background: linear-gradient(135deg, rgba(74, 222, 128, 0.14), var(--surface-card-alt));
+  border-color: rgba(74, 222, 128, 0.22);
+}
+[data-theme="dark"] .mock-hub-empty-card--drill {
+  background: linear-gradient(135deg, rgba(91, 106, 240, 0.20), var(--surface-card-alt));
+  border-color: rgba(91, 106, 240, 0.30);
+}
 .mock-hub-empty-card-kicker,
 .mock-hub-history-empty-kicker {
   font-size: 0.72rem;
