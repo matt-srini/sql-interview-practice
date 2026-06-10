@@ -3732,6 +3732,29 @@ select {
 [data-theme="dark"] .btn-primary {
   color: #0D1A10;
 }
+/* Same root cause as .btn-primary, across the rest of the app: these all
+   render text on the bright --accent fill (#4ADE80) in dark mode with
+   hardcoded white text (~1.7:1, harsh). Flip on-accent text to forest ink
+   (~11:1). The .active/.selected/.is-active overrides are specific enough
+   (0,3,0) to also win over the pills' :hover green-text rules. Light mode is
+   untouched (white on the deep-green #166534 fill). New accent-filled
+   elements should prefer color: var(--accent-on-color) over hardcoding #fff. */
+[data-theme="dark"] .auth-submit-btn,
+[data-theme="dark"] .acct-save-btn,
+[data-theme="dark"] .path-nav-btn--next,
+[data-theme="dark"] .lp-paths-cta-primary,
+[data-theme="dark"] .hint-step-num,
+[data-theme="dark"] .sidebar-filters-badge,
+[data-theme="dark"] .mock-config-pill.active,
+[data-theme="dark"] .mock-role-pill.active,
+[data-theme="dark"] .mock-focus-concept-pill.selected,
+[data-theme="dark"] .mock-follow-up-badge,
+[data-theme="dark"] .mock-analytics-elite-badge,
+[data-theme="dark"] .mock-elite-badge-inline,
+[data-theme="dark"] .study-plan-badge,
+[data-theme="dark"] .sample-switcher-diff.is-active {
+  color: #0D1A10;
+}
 
 .btn-primary:not(:disabled):hover {
   transform: translateY(-1px);
