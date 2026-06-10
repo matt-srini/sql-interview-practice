@@ -256,7 +256,7 @@ export default function Topbar({
                     `topbar-auth-link${isActive ? ' topbar-auth-link--active' : ''}`
                   }
                 >
-                  {user.name ? user.name.split(' ')[0] : 'Account'}
+                  {user.name ? (n => n.length > 15 ? n.slice(0, 14) + '…' : n)(user.name.split(' ')[0]) : 'Account'}
                 </NavLink>
                 <button
                   type="button"
@@ -367,7 +367,7 @@ export default function Topbar({
                         }
                         onClick={() => setMobileMenuOpen(false)}
                       >
-                        {user.name ? user.name.split(' ')[0] : 'Account'}
+                        {user.name ? (n => n.length > 15 ? n.slice(0, 14) + '…' : n)(user.name.split(' ')[0]) : 'Account'}
                       </NavLink>
                       <button
                         type="button"
