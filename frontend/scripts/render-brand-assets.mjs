@@ -20,19 +20,23 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const publicDir = resolve(__dirname, '../public');
 
 const TARGETS = [
-  { output: 'favicon-16.png',       source: 'favicon.svg',        width: 16,   height: 16  },
-  { output: 'favicon-32.png',       source: 'favicon.svg',        width: 32,   height: 32  },
-  { output: 'favicon-48.png',       source: 'favicon.svg',        width: 48,   height: 48  },
-  { output: 'apple-touch-icon.png', source: 'icon-maskable.svg',  width: 180,  height: 180 },
-  { output: 'icon-192.png',         source: 'icon-maskable.svg',  width: 192,  height: 192 },
-  { output: 'icon-512.png',         source: 'icon-maskable.svg',  width: 512,  height: 512 },
-  { output: 'og-image.png',         source: 'og-image.svg',       width: 1200, height: 630 },
+  { output: 'favicon-16.png',       source: 'favicon.svg',        width: 16,   height: 16,  colorScheme: 'dark'  },
+  { output: 'favicon-32.png',       source: 'favicon.svg',        width: 32,   height: 32,  colorScheme: 'dark'  },
+  { output: 'favicon-48.png',       source: 'favicon.svg',        width: 48,   height: 48,  colorScheme: 'dark'  },
+  { output: 'favicon-light-16.png', source: 'favicon.svg',        width: 16,   height: 16,  colorScheme: 'light' },
+  { output: 'favicon-light-32.png', source: 'favicon.svg',        width: 32,   height: 32,  colorScheme: 'light' },
+  { output: 'favicon-light-48.png', source: 'favicon.svg',        width: 48,   height: 48,  colorScheme: 'light' },
+  { output: 'apple-touch-icon.png', source: 'icon-maskable.svg',  width: 180,  height: 180, colorScheme: 'dark'  },
+  { output: 'icon-192.png',         source: 'icon-maskable.svg',  width: 192,  height: 192, colorScheme: 'dark'  },
+  { output: 'icon-512.png',         source: 'icon-maskable.svg',  width: 512,  height: 512, colorScheme: 'dark'  },
+  { output: 'og-image.png',         source: 'og-image.svg',       width: 1200, height: 630, colorScheme: 'dark'  },
+  { output: 'og-image-light.png',   source: 'og-image-light.svg', width: 1200, height: 630, colorScheme: 'light' },
 ];
 
 const browser = await chromium.launch();
 
-for (const { output, source, width, height } of TARGETS) {
-  const isOG = source === 'og-image.svg';
+for (const { output, source, width, height, colorScheme = 'dark' } of TARGETS) {
+  const isOG = source.startsWith('og-image');
   const svgText = readFileSync(resolve(publicDir, source), 'utf8');
 
   // Strip the XML declaration so the inline SVG is valid HTML
@@ -65,6 +69,7 @@ for (const { output, source, width, height } of TARGETS) {
 </html>`;
 
   const page = await browser.newPage();
+  await page.emulateMedia({ colorScheme });
   await page.setViewportSize({ width, height, deviceScaleFactor: 1 });
   await page.setContent(html, { waitUntil: 'networkidle' });
 

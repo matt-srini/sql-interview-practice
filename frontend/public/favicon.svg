@@ -1,12 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- datathink favicon — Forest & Ink.
-     Canonical two-diagonal-squares mark (thought-bubble motif) on a deep
-     forest-ink chip. Bright-green mark colours read at 16px on light or
-     dark browser chrome. Source of truth for favicon-16/32/48.png. -->
+<!-- datathink favicon — Forest & Ink, theme-adaptive.
+     Canonical two-diagonal-squares mark on a chip that flips with the
+     browser/OS colour scheme via an internal prefers-color-scheme query:
+       dark  → forest-ink chip #0D1A10 + bright mark #4ADE80/#87B09A
+       light → white chip + hairline + deep-green mark #166534/#4B6858
+     Chip geometry is full-bleed in both modes (a light-only inset border
+     adds edge definition), so the dark raster is identical to before.
+     Source for favicon-16/32/48.png (dark, default scheme) and
+     favicon-light-16/32/48.png (rendered with colorScheme=light). -->
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="datathink">
-  <rect width="64" height="64" rx="14" fill="#0D1A10"/>
+  <style>
+    .chip   { fill: #0D1A10; }
+    .border { stroke: none; }
+    .big    { fill: #4ADE80; }
+    .small  { fill: #87B09A; }
+    @media (prefers-color-scheme: light) {
+      .chip   { fill: #FFFFFF; }
+      .border { stroke: rgba(20, 41, 27, 0.12); stroke-width: 1.5; }
+      .big    { fill: #166534; }
+      .small  { fill: #4B6858; }
+    }
+  </style>
+  <rect class="chip" width="64" height="64" rx="14"/>
+  <rect class="border" x="0.75" y="0.75" width="62.5" height="62.5" rx="13.25" fill="none"/>
   <g transform="translate(12.5,6)">
-    <rect x="2" y="22" width="26" height="26" rx="6" fill="#4ADE80"/>
-    <rect x="22" y="4" width="15" height="15" rx="4" fill="#87B09A"/>
+    <rect class="big" x="2" y="22" width="26" height="26" rx="6"/>
+    <rect class="small" x="22" y="4" width="15" height="15" rx="4"/>
   </g>
 </svg>
