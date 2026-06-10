@@ -249,6 +249,25 @@ def _admin_engine(database_url: str | None = None) -> AsyncEngine:
     )
 
 
+def _effective_plan(row: RowMapping) -> str:
+    """Return the plan the user should actually experience.
+
+    If a time-limited override is active (plan_override IS NOT NULL and
+    plan_override_until > now), return that.  Otherwise fall back to the
+    subscription plan stored in `plan`.
+    """
+    override = row.get("plan_override")
+    until = row.get("plan_override_until")
+    if override and until:
+        if until.tzinfo is None:
+            # Ensure offset-aware for comparison
+            from datetime import timezone as _tz
+            until = until.replace(tzinfo=_tz.utc)
+        if until > datetime.now(timezone.utc):
+            return override
+    return row["plan"]
+
+
 def _user_from_mapping(row: RowMapping | None) -> dict[str, Any] | None:
     if row is None:
         return None
@@ -256,12 +275,15 @@ def _user_from_mapping(row: RowMapping | None) -> dict[str, Any] | None:
         "id": str(row["id"]),
         "email": row["email"],
         "name": row["name"],
-        "plan": row["plan"],
+        "plan": _effective_plan(row),
         "email_verified": bool(row.get("email_verified", False)),
         "razorpay_customer_id": row.get("razorpay_customer_id"),
         "razorpay_subscription_id": row.get("razorpay_subscription_id"),
         "created_at": row.get("created_at"),
         "upgraded_at": row.get("upgraded_at"),
+        # Surface override metadata so the account page can show a notice
+        "plan_override": row.get("plan_override"),
+        "plan_override_until": row.get("plan_override_until"),
     }
 
 
@@ -405,7 +427,8 @@ async def get_user_by_id(user_id: str) -> dict[str, Any] | None:
         result = await session.execute(
             text(
                 """
-                SELECT id, email, name, plan, razorpay_customer_id, razorpay_subscription_id, created_at, upgraded_at
+                SELECT id, email, name, plan, plan_override, plan_override_until,
+                       razorpay_customer_id, razorpay_subscription_id, created_at, upgraded_at
                 FROM users
                 WHERE id = CAST(:user_id AS UUID)
                 """
@@ -421,7 +444,8 @@ async def get_user_by_email(email: str) -> dict[str, Any] | None:
         result = await session.execute(
             text(
                 """
-                SELECT id, email, name, plan, razorpay_customer_id, razorpay_subscription_id, created_at, upgraded_at
+                SELECT id, email, name, plan, plan_override, plan_override_until,
+                       razorpay_customer_id, razorpay_subscription_id, created_at, upgraded_at
                 FROM users
                 WHERE email = :email
                 """
@@ -437,7 +461,8 @@ async def get_user_by_razorpay_customer_id(customer_id: str) -> dict[str, Any] |
         result = await session.execute(
             text(
                 """
-                SELECT id, email, name, plan, razorpay_customer_id, razorpay_subscription_id, created_at, upgraded_at
+                SELECT id, email, name, plan, plan_override, plan_override_until,
+                       razorpay_customer_id, razorpay_subscription_id, created_at, upgraded_at
                 FROM users
                 WHERE razorpay_customer_id = :customer_id
                 """
@@ -453,7 +478,8 @@ async def get_user_credentials_by_email(email: str) -> dict[str, Any] | None:
         result = await session.execute(
             text(
                 """
-                SELECT id, email, name, plan, email_verified, pwd_hash, pwd_salt, failed_login_attempts, login_locked_until
+                SELECT id, email, name, plan, plan_override, plan_override_until,
+                       email_verified, pwd_hash, pwd_salt, failed_login_attempts, login_locked_until
                 FROM users
                 WHERE email = :email
                 """
@@ -467,7 +493,7 @@ async def get_user_credentials_by_email(email: str) -> dict[str, Any] | None:
             "id": str(row["id"]),
             "email": row["email"],
             "name": row["name"],
-            "plan": row["plan"],
+            "plan": _effective_plan(row),
             "email_verified": bool(row["email_verified"]),
             "pwd_hash": row["pwd_hash"],
             "pwd_salt": row["pwd_salt"],
@@ -625,7 +651,10 @@ async def get_session_user(token: str) -> dict[str, Any] | None:
         result = await session.execute(
             text(
                 """
-                SELECT u.id, u.email, u.name, u.plan, u.email_verified, u.razorpay_customer_id, u.razorpay_subscription_id, u.created_at, u.upgraded_at
+                SELECT u.id, u.email, u.name, u.plan, u.email_verified,
+                       u.razorpay_customer_id, u.razorpay_subscription_id,
+                       u.created_at, u.upgraded_at,
+                       u.plan_override, u.plan_override_until
                 FROM sessions s
                 JOIN users u ON u.id = s.user_id
                 WHERE s.token = :token
@@ -1849,7 +1878,8 @@ async def get_or_create_oauth_user(
         result = await session.execute(
             text(
                 """
-                SELECT u.id, u.email, u.name, u.plan, u.email_verified, u.razorpay_customer_id, u.created_at, u.upgraded_at
+                SELECT u.id, u.email, u.name, u.plan, u.plan_override, u.plan_override_until,
+                       u.email_verified, u.razorpay_customer_id, u.created_at, u.upgraded_at
                 FROM oauth_accounts oa
                 JOIN users u ON u.id = oa.user_id
                 WHERE oa.provider = :provider
@@ -1902,7 +1932,8 @@ async def get_or_create_oauth_user(
             result4 = await session.execute(
                 text(
                     """
-                    SELECT id, email, name, plan, email_verified, razorpay_customer_id, created_at, upgraded_at
+                    SELECT id, email, name, plan, plan_override, plan_override_until,
+                           email_verified, razorpay_customer_id, created_at, upgraded_at
                     FROM users WHERE id = CAST(:user_id AS UUID)
                     """
                 ),
@@ -2430,3 +2461,119 @@ async def get_consumed_chain_parent_ids(user_id: str) -> set[int]:
         )
         rows = result.mappings().all()
     return {row["parent_id"] for row in rows}
+
+
+# ---------------------------------------------------------------------------
+# Admin: time-limited plan override (beta / invited-user grants)
+# ---------------------------------------------------------------------------
+
+async def grant_plan_override(email: str, plan: str, days: int) -> dict[str, Any] | None:
+    """Set a time-limited plan override on the user with the given email.
+
+    Returns the updated user row, or None if no user was found.
+    Overwrites any existing override (idempotent — safe to call again to
+    extend or change the tier).
+    """
+    until = datetime.now(timezone.utc) + timedelta(days=days)
+    session_factory = _session_factory_or_raise()
+    async with session_factory() as session:
+        result = await session.execute(
+            text(
+                """
+                UPDATE users
+                SET plan_override = :plan_override,
+                    plan_override_until = :until
+                WHERE lower(email) = lower(:email)
+                RETURNING id, email, name, plan,
+                          plan_override, plan_override_until,
+                          razorpay_customer_id, razorpay_subscription_id,
+                          created_at, upgraded_at
+                """
+            ),
+            {"plan_override": plan, "until": until, "email": email},
+        )
+        row = result.mappings().first()
+        if row is None:
+            await session.rollback()
+            return None
+        await session.commit()
+        return {
+            "id": str(row["id"]),
+            "email": row["email"],
+            "name": row["name"],
+            "effective_plan": _effective_plan(row),
+            "plan_override": row["plan_override"],
+            "plan_override_until": row["plan_override_until"].isoformat() if row["plan_override_until"] else None,
+        }
+
+
+async def revoke_plan_override(email: str) -> dict[str, Any] | None:
+    """Clear the plan override for the given user.
+
+    Returns the updated user row, or None if no user was found.
+    """
+    session_factory = _session_factory_or_raise()
+    async with session_factory() as session:
+        result = await session.execute(
+            text(
+                """
+                UPDATE users
+                SET plan_override = NULL,
+                    plan_override_until = NULL
+                WHERE lower(email) = lower(:email)
+                RETURNING id, email, name, plan,
+                          plan_override, plan_override_until,
+                          razorpay_customer_id, razorpay_subscription_id,
+                          created_at, upgraded_at
+                """
+            ),
+            {"email": email},
+        )
+        row = result.mappings().first()
+        if row is None:
+            await session.rollback()
+            return None
+        await session.commit()
+        return {
+            "id": str(row["id"]),
+            "email": row["email"],
+            "name": row["name"],
+            "effective_plan": _effective_plan(row),
+            "plan_override": None,
+            "plan_override_until": None,
+        }
+
+
+async def list_plan_overrides() -> list[dict[str, Any]]:
+    """Return all users with an active or future plan override."""
+    session_factory = _session_factory_or_raise()
+    async with session_factory() as session:
+        result = await session.execute(
+            text(
+                """
+                SELECT id, email, name, plan,
+                       plan_override, plan_override_until,
+                       created_at
+                FROM users
+                WHERE plan_override IS NOT NULL
+                ORDER BY plan_override_until DESC
+                """
+            )
+        )
+        rows = result.mappings().all()
+    now = datetime.now(timezone.utc)
+    return [
+        {
+            "id": str(r["id"]),
+            "email": r["email"],
+            "name": r["name"],
+            "base_plan": r["plan"],
+            "plan_override": r["plan_override"],
+            "plan_override_until": r["plan_override_until"].isoformat() if r["plan_override_until"] else None,
+            "active": (
+                r["plan_override_until"] is not None
+                and r["plan_override_until"].replace(tzinfo=timezone.utc if r["plan_override_until"].tzinfo is None else r["plan_override_until"].tzinfo) > now
+            ),
+        }
+        for r in rows
+    ]

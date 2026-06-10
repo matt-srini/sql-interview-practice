@@ -22,6 +22,7 @@ from middleware.request_context import get_request_id, request_context_middlewar
 from rate_limiter import BaseRateLimiter, create_rate_limiter
 from routers import auth, catalog, questions, sample, spa, system
 from routers import plan
+from routers import admin as admin_router
 from routers import razorpay as razorpay_router
 from routers import account as account_router
 from routers import python_questions as python_questions_router
@@ -324,6 +325,7 @@ app.include_router(insights_router.router)
 app.include_router(submissions_router.router)
 app.include_router(mock_router.router)
 app.include_router(paths_router.router)
+app.include_router(admin_router.router)
 app.include_router(spa.router)
 
 if __name__ == "__main__":

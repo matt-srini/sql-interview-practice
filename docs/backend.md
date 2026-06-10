@@ -284,6 +284,24 @@ Current footprint: **96 paths total** (SQL 11, Python 11, Pandas 9, PySpark 14, 
 
 The `GET /api/dashboard/insights` endpoint uses `focus_concepts` to attach `recommended_path_slug` and `recommended_path_title` to each entry in `weakest_concepts`, routing users from a diagnosed weak area directly to the most relevant accessible path. Matching is **family-aware**: both the weak concept and the path's `focus_concepts` are resolved to their canonical concept family before comparison (same resolver Mock's `focus_concepts` filter uses). Foundational paths take priority over intermediate, which take priority over advanced.
 
+### Admin — `/api/admin`
+
+Operator-only endpoints for granting time-limited plan access (beta testers, invited users, etc.). All requests require `Authorization: Bearer <ADMIN_SECRET>` where `ADMIN_SECRET` is set in the environment. If `ADMIN_SECRET` is not configured, all endpoints return 503.
+
+| Method | Path | Description |
+|---|---|---|
+| POST | `/api/admin/grant-plan` | Grant a time-limited Pro or Elite override to a user by email |
+| DELETE | `/api/admin/grant-plan` | Revoke the override immediately (user returns to base plan) |
+| GET | `/api/admin/grants` | List all users who have (or had) a `plan_override` set |
+
+**Grant request body:** `{ email: string, plan: "pro"|"elite", days: 1–365 }`
+
+**How overrides work:** The `users` table has two nullable columns — `plan_override` (text) and `plan_override_until` (timestamptz). At every auth resolution point (`get_session_user`, `get_user_credentials_by_email` login path, `get_user_by_id/email`, OAuth flows), the `_effective_plan()` helper checks whether an active override exists. If `plan_override IS NOT NULL` and `plan_override_until > now()`, the override is returned as the user's plan. Otherwise, the base `plan` column is used. No cron job is needed — override expiry is evaluated lazily on each request. After expiry the user silently reverts to their base plan at next session load.
+
+POST and DELETE are idempotent: calling grant again on an already-granted user overwrites (useful to extend duration or upgrade from Pro to Elite). Calling DELETE on a user without an override is a no-op (returns the base plan).
+
+**Security:** This router is internal tooling and is never accessible to end users. The `ADMIN_SECRET` should be a strong random value (at least 32 bytes of URL-safe entropy). Route is registered in `main.py` before `spa.router` so it won't be caught by the SPA fallback.
+
 ---
 
 ## Query execution pipeline

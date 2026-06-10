@@ -132,6 +132,10 @@ GITHUB_CLIENT_ID = _getenv("GITHUB_CLIENT_ID")
 GITHUB_CLIENT_SECRET = _getenv("GITHUB_CLIENT_SECRET")
 GITHUB_REDIRECT_URI = _getenv("GITHUB_REDIRECT_URI")
 
+# Admin operations (grant plan overrides, etc.)
+# Set a strong random value in production: python -c "import secrets; print(secrets.token_urlsafe(32))"
+ADMIN_SECRET = _getenv("ADMIN_SECRET")
+
 # Email / password reset
 RESEND_API_KEY = _getenv("RESEND_API_KEY")
 EMAIL_FROM = _getenv("EMAIL_FROM", "datathink <noreply@datathink.co>")

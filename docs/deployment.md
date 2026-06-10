@@ -28,7 +28,7 @@ After confirming, move the entries below from "Currently pending" to "Already ap
 
 ### Currently pending
 
-_Nothing. Production is at head (`20260528_000003`)._
+_Nothing. Production is at head (`20260610_000001`)._
 
 ---
 
@@ -41,6 +41,7 @@ _Nothing. Production is at head (`20260528_000003`)._
 | `20260528_000002` | Add `follow_up_dimension TEXT` column to `mock_session_questions` | 2026-05-28 |
 | `20260528_000003` | Create `mock_chain_consumption` table + index | 2026-05-28 |
 | `20260609_000001` | Rename `python_data`/`python-data` topic → `pandas` in `user_progress`, `user_sample_seen`, `submissions`, `mock_sessions`, `mock_session_questions` (Pandas slug/db-topic cleanup) | 2026-06-09 |
+| `20260610_000001` | Add `plan_override TEXT` and `plan_override_until TIMESTAMPTZ` to `users` (time-limited beta-access grants via `/api/admin/grant-plan`) | 2026-06-10 |
 
 ---
 
