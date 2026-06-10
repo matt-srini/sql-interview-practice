@@ -53,6 +53,15 @@ After the MCQ debiasing, ml-fundamentals' "pick-the-longest" rate landed at ~17%
 gameability hole and not validator-flagged; evening it out carries content-regression risk.
 Optional re-center if ever revisited.
 
+## P3 — CI runner Node 20 deprecation  (warning only today)
+The CI workflow uses `actions/checkout@v4` + `actions/setup-python@v5`, which run on
+**Node.js 20**. GitHub forces Node 24 as the runner default on **2026-06-16** and removes
+Node 20 from the runner on **2026-09-16** (per the deprecation notice in the CI logs). Today
+it is only a warning — CI passes green. Fix when convenient: bump those actions to versions
+that ship Node 24 (newer `checkout`/`setup-python` patch tags already do), or temporarily set
+`FORCE_JAVASCRIPT_ACTIONS_TO_NODE24=true` on the job. Recorded so the September removal doesn't
+silently break CI.
+
 ---
 
 ### Config notes (operator)
