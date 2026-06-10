@@ -1475,3 +1475,44 @@ def test_history_row_includes_time_used_s():
         f"time_used_s should be int, got {type(latest['time_used_s'])}: {latest['time_used_s']}"
     )
     assert latest["time_used_s"] >= 0, f"time_used_s should be >= 0, got {latest['time_used_s']}"
+
+
+def test_tc182_discard_within_window_succeeds_and_removes_session():
+    """TC-182: a penalty-free discard within the window deletes the session (204) and
+    refunds the slot — the session no longer exists."""
+    with TestClient(app) as client:
+        _make_user(client, plan="elite")
+        r = client.post("/api/mock/start", json={"mode": "benchmark", "track": "sql", "difficulty": "easy"})
+        assert r.status_code in (200, 201), r.text
+        sid = r.json()["session_id"]
+        d = client.delete(f"/api/mock/{sid}")
+        assert d.status_code == 204, d.text
+        # Session is gone — a new start is not blocked by an active-session 409.
+        g = client.get(f"/api/mock/{sid}")
+        assert g.status_code == 404, g.text
+
+
+def test_tc183_discard_blocked_after_daily_cap_keeps_session_active():
+    """TC-183 (audit C4): after MAX_PENALTY_FREE_DISCARDS_PER_DAY penalty-free discards,
+    the next discard returns 429 and the session stays ACTIVE (not deleted, not counted) —
+    the user can keep going or end it normally."""
+    from routers.mock import MAX_PENALTY_FREE_DISCARDS_PER_DAY as CAP
+    with TestClient(app) as client:
+        _make_user(client, plan="elite")
+        # Use up the daily penalty-free discard budget.
+        for _ in range(CAP):
+            r = client.post("/api/mock/start", json={"mode": "benchmark", "track": "sql", "difficulty": "easy"})
+            assert r.status_code in (200, 201), r.text
+            d = client.delete(f"/api/mock/{r.json()['session_id']}")
+            assert d.status_code == 204, d.text
+        # One more start; its discard is now blocked.
+        r = client.post("/api/mock/start", json={"mode": "benchmark", "track": "sql", "difficulty": "easy"})
+        assert r.status_code in (200, 201), r.text
+        sid = r.json()["session_id"]
+        d = client.delete(f"/api/mock/{sid}")
+        assert d.status_code == 429, d.text
+        assert "penalty-free" in d.json().get("error", "").lower()
+        # The session was NOT discarded — still active and resumable.
+        g = client.get(f"/api/mock/{sid}")
+        assert g.status_code == 200, g.text
+        assert g.json().get("status") == "active"

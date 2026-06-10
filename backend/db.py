@@ -218,11 +218,24 @@ CREATE TABLE IF NOT EXISTS mock_chain_consumption (
 
 CREATE INDEX IF NOT EXISTS idx_mcc_user_active ON mock_chain_consumption(user_id) WHERE NOT reclaimed;
 
+-- Append-only log of penalty-free mock-session discards, used to cap them per day.
+-- Discarded sessions are hard-deleted (no trace in mock_sessions), so the per-day
+-- discard count is tracked here. One row per allowed discard.
+CREATE TABLE IF NOT EXISTS mock_discards (
+    id BIGSERIAL PRIMARY KEY,
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    discarded_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_mock_discards_user_day ON mock_discards(user_id, discarded_at);
+
 ALTER TABLE mock_session_questions ADD COLUMN IF NOT EXISTS is_follow_up BOOLEAN NOT NULL DEFAULT false;
 ALTER TABLE mock_session_questions ADD COLUMN IF NOT EXISTS follow_up_dimension TEXT;
 ALTER TABLE mock_sessions ADD COLUMN IF NOT EXISTS focus_fallback BOOLEAN NOT NULL DEFAULT false;
 ALTER TABLE mock_sessions ADD COLUMN IF NOT EXISTS role TEXT;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS razorpay_subscription_id TEXT;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS plan_override TEXT;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS plan_override_until TIMESTAMPTZ;
 """
 
 
@@ -2404,6 +2417,40 @@ async def get_weekly_benchmark_usage(user_id: str) -> int:
         )
         row = result.mappings().first()
     return int(row["cnt"]) if row else 0
+
+
+async def get_daily_discard_usage(user_id: str) -> int:
+    """Count penalty-free mock-session discards today (UTC). Used to cap re-roll abuse.
+
+    Same UTC assumption as the daily-cap counters: CURRENT_DATE is the Postgres
+    server-timezone date and the server runs UTC (true on Railway).
+    """
+    session_factory = _session_factory_or_raise()
+    async with session_factory() as session:
+        result = await session.execute(
+            text(
+                """
+                SELECT COUNT(*) AS cnt
+                FROM mock_discards
+                WHERE user_id = CAST(:user_id AS UUID)
+                  AND discarded_at >= CURRENT_DATE
+                """
+            ),
+            {"user_id": user_id},
+        )
+        row = result.mappings().first()
+    return int(row["cnt"]) if row else 0
+
+
+async def record_discard(user_id: str) -> None:
+    """Log one penalty-free discard for the per-day discard cap."""
+    session_factory = _session_factory_or_raise()
+    async with session_factory() as session:
+        await session.execute(
+            text("INSERT INTO mock_discards (user_id) VALUES (CAST(:user_id AS UUID))"),
+            {"user_id": user_id},
+        )
+        await session.commit()
 
 
 # ── Chain consumption ──────────────────────────────────────────────────────────

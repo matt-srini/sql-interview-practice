@@ -11,9 +11,10 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, waitFor, cleanup } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 
-const { mockApiGet, mockApiPost, mockUseAuth } = vi.hoisted(() => ({
+const { mockApiGet, mockApiPost, mockApiDelete, mockUseAuth } = vi.hoisted(() => ({
   mockApiGet: vi.fn(),
   mockApiPost: vi.fn(),
+  mockApiDelete: vi.fn(),
   mockUseAuth: vi.fn(),
 }));
 
@@ -21,6 +22,7 @@ vi.mock('../api', () => ({
   default: {
     get: (...a) => mockApiGet(...a),
     post: (...a) => mockApiPost(...a),
+    delete: (...a) => mockApiDelete(...a),
   },
 }));
 
@@ -568,5 +570,118 @@ describe('MockSession summary headline — A6 gentle framing', () => {
     // The score element must not carry the CSS danger variable
     const scoreEl = screen.getByText(/0\/2 solved/);
     expect(scoreEl.style.color).not.toBe('var(--danger)');
+  });
+});
+
+// ── Discard prompt — 429 daily-cap handling ───────────────────────────────────
+
+function makeEarlySessionData(numQuestions = 2) {
+  // started_at within the last 10 s → elapsedS < 60 → isEarlyExit = true
+  return {
+    ...makeSessionData(numQuestions),
+    started_at: new Date(Date.now() - 10000).toISOString(),
+  };
+}
+
+describe('MockSession discard prompt — 429 daily cap', () => {
+  it('navigates to /mock when discard succeeds', async () => {
+    mockApiDelete.mockResolvedValueOnce({});
+    renderSession(makeEarlySessionData());
+
+    // Open the discard prompt via the Exit button (isEarlyExit path)
+    const exitBtn = await screen.findByRole('button', { name: /◀ Exit/ });
+    fireEvent.click(exitBtn);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Barely started/)).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: /Discard session/ }));
+
+    await waitFor(() => {
+      expect(screen.getByText('Mock Hub')).toBeInTheDocument();
+    });
+  });
+
+  it('shows the 429 error message and does NOT navigate away on a 429 response', async () => {
+    const limitMsg = 'Daily discard limit reached. Try again tomorrow.';
+    mockApiDelete.mockRejectedValueOnce({
+      response: { status: 429, data: { error: limitMsg } },
+    });
+    renderSession(makeEarlySessionData());
+
+    const exitBtn = await screen.findByRole('button', { name: /◀ Exit/ });
+    fireEvent.click(exitBtn);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Barely started/)).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: /Discard session/ }));
+
+    await waitFor(() => {
+      expect(screen.getByText(limitMsg)).toBeInTheDocument();
+    });
+
+    // Must still be on the session page (not navigated to Mock Hub)
+    expect(screen.queryByText('Mock Hub')).not.toBeInTheDocument();
+  });
+
+  it('hides the "Discard session" button after a 429 error', async () => {
+    mockApiDelete.mockRejectedValueOnce({
+      response: { status: 429, data: { error: 'limit reached' } },
+    });
+    renderSession(makeEarlySessionData());
+
+    fireEvent.click(await screen.findByRole('button', { name: /◀ Exit/ }));
+    await waitFor(() => expect(screen.getByText(/Barely started/)).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: /Discard session/ }));
+
+    await waitFor(() => {
+      expect(screen.getByText('limit reached')).toBeInTheDocument();
+    });
+
+    expect(screen.queryByRole('button', { name: /Discard session/ })).not.toBeInTheDocument();
+    // Keep going and End normally remain visible
+    expect(screen.getByRole('button', { name: /Keep going/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /End normally/ })).toBeInTheDocument();
+  });
+
+  it('uses a fallback message when 429 response has no error body', async () => {
+    mockApiDelete.mockRejectedValueOnce({
+      response: { status: 429, data: {} },
+    });
+    renderSession(makeEarlySessionData());
+
+    fireEvent.click(await screen.findByRole('button', { name: /◀ Exit/ }));
+    await waitFor(() => expect(screen.getByText(/Barely started/)).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: /Discard session/ }));
+
+    await waitFor(() => {
+      expect(screen.getByText(/penalty-free discards/i)).toBeInTheDocument();
+    });
+  });
+
+  it('clears the error and shows "Discard session" again when the prompt is re-opened after Keep going', async () => {
+    mockApiDelete.mockRejectedValueOnce({
+      response: { status: 429, data: { error: 'limit reached' } },
+    });
+    renderSession(makeEarlySessionData());
+
+    // First open — get the 429 error
+    fireEvent.click(await screen.findByRole('button', { name: /◀ Exit/ }));
+    await waitFor(() => expect(screen.getByText(/Barely started/)).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: /Discard session/ }));
+    await waitFor(() => expect(screen.getByText('limit reached')).toBeInTheDocument());
+
+    // Dismiss via Keep going
+    fireEvent.click(screen.getByRole('button', { name: /Keep going/ }));
+    await waitFor(() => expect(screen.queryByText(/Barely started/)).not.toBeInTheDocument());
+
+    // Re-open — error must be gone and Discard button must be back
+    fireEvent.click(screen.getByRole('button', { name: /◀ Exit/ }));
+    await waitFor(() => expect(screen.getByText(/Barely started/)).toBeInTheDocument());
+    expect(screen.queryByText('limit reached')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Discard session/ })).toBeInTheDocument();
   });
 });

@@ -51,7 +51,7 @@ Severity: **H** high · **M** medium · **L** low. Status: `TODO` · `WIP` · `D
 | A4b | M | WONTFIX | code | Locked mode cards — already gated (tooltip + lock-notice + badge + rail upsell on click) |
 | A5a | M | DONE | code | Concept tags exposed on the live question (telegraphs the approach) |
 | A6 | M | DONE | code | Harsh "0/X, Y% below your historical accuracy" headline tone on poor sessions |
-| C4 | M | TODO | code | Discarded sessions don't count vs rate limits → create-discard cap reset |
+| C4 | M | DONE | code | Discarded sessions don't count vs rate limits → create-discard cap reset |
 | B7 | L | DONE | code | PySpark lobby blueprint shows a composition the backend doesn't serve |
 | B5 | L | DONE | code | Elite analytics: network error indistinguishable from empty state |
 | B6 | L | DONE | code | Mixed-track shows two Role selectors |
@@ -157,9 +157,8 @@ Three confirmed defects compounded at the Elite payoff moment:
 ### C3 — `[M]` `[DONE]` Code-track benchmark submit leaks `correct` + `expected_result` mid-session
 **Fixed 2026-06-09.** The mid-session suppression was MCQ-only, so code-track (SQL/Python/Pandas/Stats-numerical) benchmark + interview_loop submits returned `correct`, `feedback`, and (SQL) `expected_result` — the verdict + answer key — over the wire. Replaced the MCQ-only strip in `submit_answer` (`mock.py`) with a blanket lean ack: benchmark/interview_loop return `{"submitted": True}` for **all** tracks (progress recording happens earlier via `accepted`, unaffected); custom drills keep the full result. Also folded in the coupled **F-06** leak — the code-track submit button label now shows a neutral "✓ Submitted" in benchmark/loop (was "✓ Solved"/"✗ Submitted", which revealed correctness), mirroring the MCQ button (`MockSession.js`). Regression test `test_benchmark_submit_hides_verdict_and_answer_key`. Verified live: Elite benchmark SQL submit returns only `{submitted}` — no `correct`/`expected_result`/`feedback`/`hidden_summary`. (Run, a separate endpoint, still shows the user's own output.)
 
-### C4 — `[M]` `[TODO]` Discarded sessions don't count vs rate limits → cap reset `[mechanism confirmed]`
-- `discard_mock_session` hard-deletes the row (`backend/db.py` ~1384); counters `COUNT(*)` only surviving rows. A Pro user can create→discard (within 2 min) to recover a benchmark/custom slot and re-roll without burning quota.
-- **Fix approach:** either count discarded sessions toward the cap (a `discarded` tombstone) or accept-and-document. Note the legitimate use (penalty-free re-roll within 2 min) when deciding.
+### C4 — `[M]` `[DONE]` Discarded sessions don't count vs rate limits → cap reset
+**Fixed 2026-06-10 (user chose "cap penalty-free discards").** A discard hard-deletes the row and refunds the quota, so start→discard→repeat let a user re-roll/preview sets indefinitely. Capped penalty-free discards at **3/UTC day** (`MAX_PENALTY_FREE_DISCARDS_PER_DAY`, tracked in a new `mock_discards` table; migration `20260610_000002`, applied to prod). Beyond the cap, `DELETE /mock/:id` returns **429 and the session is left active** — the user continues or ends normally (it then counts as used). A blocked discard is **not** counted against the user (per the operator's refinement). Frontend keeps the session on 429 and shows the limit message (Discard button hidden; Keep going / End normally remain). Verified live (3× 204 → 4th 429, session still active) + tests `tc182`/`tc183`. Rejected: tombstone-count (punishes legit misclick recovery) and a server no-activity check (runs are ephemeral, undetectable). See `docs/decisions/DECISIONS.md` 2026-06-10.
 
 ### C5 — `[L]` `[DONE]` `is_follow_up` never persisted (root cause of A3.2)
 **Fixed 2026-06-09.** The column already existed (db.py:204, migration `20260429`) — no migration needed. `create_mock_session`'s INSERT (db.py:1253-1255) now carries `is_follow_up`, and `start_session` sets it on the loop `selected` rows (parent False, follow-ups True); benchmark/custom default False. Regression test `test_interview_loop_follow_up_flag_persisted` added. Verified live: GET now returns `is_follow_up=true` for the follow-up.
@@ -235,3 +234,8 @@ Three confirmed defects compounded at the Elite payoff moment:
   - B5: analytics error+retry state (was indistinguishable from empty). B6: hid the duplicate top Role filter on Mixed (1 selector now). B7: aligned `PYSPARK_FORMAT_TARGETS` to the backend (no phantom `optimization`). B8: removed dead `NO_MOCK_BANK_TRACKS`/note; first-run CTA follows the selected track. (`MockHub.js`)
   - C6: `30min` added to `MODE_CONFIGS` → read-only-legacy message (`mock.py`, verified live). C7: documented the UTC + accepted-TOCTOU assumptions on the daily-usage queries (`db.py`); no SQL change.
   - Frontend 148 + backend mock 80 green.
+- **2026-06-10 — C4 (penalty-free discard cap)** — fixed on `main`. Opus owned the backend + migration (interlocked + prod-apply mandatory); one Sonnet agent did the frontend 429 handling. **The audit is now complete** (only E1 remains, needing the authoring agent).
+  - Backend: `mock_discards` table (`_SCHEMA_SQL` + Alembic `20260610_000002`, **applied to prod**); `get_daily_discard_usage`/`record_discard` (`db.py`); discard endpoint caps at `MAX_PENALTY_FREE_DISCARDS_PER_DAY=3` → 429 + session left active (`mock.py`). Tests `tc182`/`tc183`.
+  - Frontend: `handleDiscard` keeps the session on 429 + shows the limit message; Discard button hidden while errored (`MockSession.js`). Tests added.
+  - Also fixed a pre-existing **`_SCHEMA_SQL` gap**: the `plan_override` columns were in the migration but not `_SCHEMA_SQL`, breaking the test DB (every user query) — added the idempotent ALTERs (executes the 2026-06-10 two-track-schema discipline).
+  - Verified live (3× 204 → 4th 429, session active). Backend mock 82 + frontend 153 green.

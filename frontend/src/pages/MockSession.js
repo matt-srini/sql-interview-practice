@@ -96,6 +96,7 @@ export default function MockSession() {
   const [summary, setSummary] = useState(null);
   const [showExitConfirm, setShowExitConfirm] = useState(false);
   const [showDiscardPrompt, setShowDiscardPrompt] = useState(false);
+  const [discardError, setDiscardError] = useState(null);
   const [questionView, setQuestionView] = useState('description');  // 'description'|'schema'
   const [mobileQuestionOpen, setMobileQuestionOpen] = useState(false);
   const [expandedSolutions, setExpandedSolutions] = useState({}); // {qId: bool}
@@ -353,13 +354,27 @@ export default function MockSession() {
   const isEarlyExit = status === 'active' && elapsedS < 60 && hasNoActivity;
 
   function handleExitClick() {
-    if (isEarlyExit) setShowDiscardPrompt(true);
+    if (isEarlyExit) { setDiscardError(null); setShowDiscardPrompt(true); }
     else setShowExitConfirm(true);
   }
 
   async function handleDiscard() {
-    try { await api.delete(`/mock/${id}`); } catch (_) {}
-    navigate('/mock');
+    try {
+      await api.delete(`/mock/${id}`);
+      navigate('/mock');
+    } catch (err) {
+      if (err?.response?.status === 429) {
+        // Daily penalty-free discard limit reached — keep the session active so the
+        // user can continue answering or end it normally (it will count as used).
+        setDiscardError(
+          err.response?.data?.error
+          || "You've used today's penalty-free discards. Keep going, or end this session normally."
+        );
+      } else {
+        // Preserve prior behavior for other errors.
+        navigate('/mock');
+      }
+    }
   }
 
   function toggleFlag(qId) {
@@ -1284,16 +1299,19 @@ export default function MockSession() {
               You can discard this session and it won't appear in your history or affect any stats.
               {session?.mode === 'interview_loop' && ' This chain will return to your pool.'}
             </p>
+            {discardError && <p className="mock-modal-error">{discardError}</p>}
             <div className="mock-modal-actions">
-              <button className="btn btn-secondary" onClick={() => setShowDiscardPrompt(false)}>
+              <button className="btn btn-secondary" onClick={() => { setDiscardError(null); setShowDiscardPrompt(false); }}>
                 Keep going
               </button>
               <button className="btn btn-secondary" onClick={() => { setShowDiscardPrompt(false); setShowExitConfirm(true); }}>
                 End normally
               </button>
-              <button className="btn btn-danger" onClick={handleDiscard}>
-                Discard session
-              </button>
+              {!discardError && (
+                <button className="btn btn-danger" onClick={handleDiscard}>
+                  Discard session
+                </button>
+              )}
             </div>
           </div>
         </div>

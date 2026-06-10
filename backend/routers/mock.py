@@ -33,6 +33,7 @@ from db import (
     get_consumed_chain_parent_ids,
     get_daily_benchmark_usage,
     get_daily_custom_usage,
+    get_daily_discard_usage,
     get_loop_question_events,
     get_mock_history,
     get_mock_session,
@@ -40,6 +41,7 @@ from db import (
     get_submission_events,
     get_weekly_benchmark_usage,
     mark_solved,
+    record_discard,
     record_submission,
     submit_mock_question,
 )
@@ -63,6 +65,11 @@ MODE_CONFIGS: dict[str, dict[str, int]] = {
     "30min": {"num_questions": 2, "time_limit_s": 1800},
     "60min": {"num_questions": 3, "time_limit_s": 3600},
 }
+
+# Max penalty-free mock-session discards per UTC day (shared across modes). A discard
+# refunds the rate-limit quota, so this caps re-roll/preview abuse while leaving ample
+# room for genuine misclick/wrong-track recovery. Tunable.
+MAX_PENALTY_FREE_DISCARDS_PER_DAY = 3
 
 BENCHMARK_CONFIGS: dict[str, dict[str, int]] = {
     "sql": {"num_questions": 3, "time_limit_s": 3600},
@@ -1524,4 +1531,21 @@ async def discard_session(
             detail="Session is too old to discard (must be within 2 minutes of starting)",
         )
 
+    # Cap penalty-free discards per day. The discard window is a misclick/wrong-track
+    # recovery, but because a discard refunds the rate-limit quota (the session row is
+    # deleted), uncapped discards let a user re-roll/preview question sets indefinitely.
+    # Once the daily cap is hit we DO NOT discard — the session stays active so the user
+    # can keep going or end it normally (it then counts as used). We do not "count" a
+    # blocked discard against the user.
+    discards_today = await get_daily_discard_usage(current_user["id"])
+    if discards_today >= MAX_PENALTY_FREE_DISCARDS_PER_DAY:
+        raise HTTPException(
+            status_code=429,
+            detail=(
+                f"You've used today's {MAX_PENALTY_FREE_DISCARDS_PER_DAY} penalty-free discards. "
+                "Keep going, or end this session normally."
+            ),
+        )
+
     await discard_mock_session(session_id, current_user["id"])
+    await record_discard(current_user["id"])
