@@ -86,12 +86,12 @@ The five-perspective pushback in § Standing instructions reads this section as 
 - **Every new Alembic migration MUST be applied to production immediately — in the same session that authors it.** The production database is NEVER updated automatically (`ENV=production` disables auto-migrate at startup). A migration that exists only locally is worthless — prod is the real product, not the local build. The exact steps, every time, without exception:
   1. Write the migration file.
   2. **Also update `_SCHEMA_SQL` in `backend/db.py` to include the same change.** The schema lives in two places: `_SCHEMA_SQL` (used by local dev startup and the test suite via `ensure_schema_admin()`) and the Alembic migration chain (used by production). They are never auto-synced. For additive changes (new column/table), add `ALTER TABLE ... ADD COLUMN IF NOT EXISTS ...` at the bottom of `_SCHEMA_SQL`. For new tables, add the full `CREATE TABLE IF NOT EXISTS` block. If you skip this step, every test that touches the new column will fail with `column does not exist` — the test DB is built from `_SCHEMA_SQL`, not from Alembic. This is the exact root cause of the 2026-06-10 `plan_override` outage (see `docs/decisions/DECISIONS.md`).
-  3. Run it against production: `cd backend && DATABASE_URL="postgresql+asyncpg://postgres:<RAILWAY_DB_PASSWORD>@shuttle.proxy.rlwy.net:39347/railway" ../.venv/bin/alembic upgrade head`
+  3. Run it against production using the DATABASE_URL from `backend/.env` line 4 (commented out — uncomment or read it directly): `cd backend && DATABASE_URL="<from backend/.env line 4>" ../.venv/bin/alembic upgrade head`
   4. Confirm: `../.venv/bin/alembic current` must print the new revision ID followed by `(head)`.
   5. Update `docs/deployment.md` § Pending production DB migrations: add a row to "Already applied" (not "Currently pending" — it was applied immediately). Never leave a row in "Currently pending" after a session ends.
   6. Commit everything together: migration file + `_SCHEMA_SQL` update + applied confirmation + doc update.
 
-  The production DATABASE_URL is in `backend/.env` line 4 (commented out). Never ask the user to run the migration — run it yourself.
+  The production DATABASE_URL is in `backend/.env` line 4 (commented out). Read it from there — never hardcode it into any doc or instruction. Never ask the user to run the migration — run it yourself.
 
 - **Never author or modify a question without the authoring agent.** Every new question, every edit to an existing question, MUST go through `.github/agents/question-authoring.agent.md`. Direct edits to question JSON files bypass the taxonomy contract, the difficulty arc, the hint guardrails, the concept-family registry, and the verification checklist — and have historically been the single largest source of content drift on this platform. If you are tempted to edit a question file by hand, stop and invoke the agent instead. This rule has no exceptions.
 

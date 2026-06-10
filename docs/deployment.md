@@ -10,16 +10,15 @@
 
 ### How to apply on production
 
-The production DATABASE_URL is in `backend/.env` (line 4, commented out). Uncomment it temporarily, or pass inline:
+The production DATABASE_URL is in `backend/.env` (line 4, commented out). Read it from there — never paste it into a doc or command history. Uncomment the line temporarily or pass it inline:
 
 ```bash
 cd backend
-DATABASE_URL="postgresql+asyncpg://postgres:<RAILWAY_DB_PASSWORD>@shuttle.proxy.rlwy.net:39347/railway" \
-  ../.venv/bin/alembic upgrade head
+# Read DATABASE_URL from backend/.env line 4
+DATABASE_URL="<from backend/.env line 4>" ../.venv/bin/alembic upgrade head
 
 # Confirm — must print the latest revision ID followed by (head):
-DATABASE_URL="postgresql+asyncpg://postgres:<RAILWAY_DB_PASSWORD>@shuttle.proxy.rlwy.net:39347/railway" \
-  ../.venv/bin/alembic current
+DATABASE_URL="<from backend/.env line 4>" ../.venv/bin/alembic current
 ```
 
 After confirming, move the entries below from "Currently pending" to "Already applied."
