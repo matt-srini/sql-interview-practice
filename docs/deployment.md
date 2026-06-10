@@ -14,11 +14,11 @@ The production DATABASE_URL is in `backend/.env` (line 4, commented out). Uncomm
 
 ```bash
 cd backend
-DATABASE_URL="postgresql+asyncpg://postgres:oSLmxqaswbDKweFoZbiPoTTLlkiwDnWg@shuttle.proxy.rlwy.net:39347/railway" \
+DATABASE_URL="postgresql+asyncpg://postgres:<RAILWAY_DB_PASSWORD>@shuttle.proxy.rlwy.net:39347/railway" \
   ../.venv/bin/alembic upgrade head
 
 # Confirm — must print the latest revision ID followed by (head):
-DATABASE_URL="postgresql+asyncpg://postgres:oSLmxqaswbDKweFoZbiPoTTLlkiwDnWg@shuttle.proxy.rlwy.net:39347/railway" \
+DATABASE_URL="postgresql+asyncpg://postgres:<RAILWAY_DB_PASSWORD>@shuttle.proxy.rlwy.net:39347/railway" \
   ../.venv/bin/alembic current
 ```
 
