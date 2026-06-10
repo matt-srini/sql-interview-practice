@@ -663,11 +663,13 @@ export default function SampleQuestionPage() {
                   <div className="button-row question-action-row">
                     {meta.hasRunCode && (
                       <button className="btn btn-secondary" onClick={handleRun} disabled={running || submitting}>
-                        {running ? 'Running…' : meta.language === 'python' ? 'Run Code' : 'Run Query'}
+                        <span>{running ? 'Running…' : meta.language === 'python' ? 'Run Code' : 'Run Query'}</span>
+                        <kbd className="shortcut-kbd">⌘↵</kbd>
                       </button>
                     )}
                     <button className="btn btn-primary" onClick={handleSubmit} disabled={running || submitting}>
-                      {submitting ? 'Checking…' : 'Submit Answer'}
+                      <span>{submitting ? 'Checking…' : 'Submit Answer'}</span>
+                      <kbd className="shortcut-kbd">⌘⇧↵</kbd>
                     </button>
                   </div>
                 </div>

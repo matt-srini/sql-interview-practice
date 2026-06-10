@@ -3621,6 +3621,21 @@ select {
   line-height: 1.4;
   white-space: nowrap;
 }
+/* The shortcut chip sitting on the green primary button must match the
+   button's text colour, not the default light-on-dark chip (which rendered as
+   a white box on the green fill). White in light mode (button text is white),
+   forest ink in dark mode (button text is #0D1A10). The Run button keeps the
+   default light chip — btn-secondary is dark/neutral, so it's fine there. */
+.btn-primary .shortcut-kbd {
+  border-color: rgba(255, 255, 255, 0.45);
+  background: rgba(255, 255, 255, 0.18);
+  color: #FFFFFF;
+}
+[data-theme="dark"] .btn-primary .shortcut-kbd {
+  border-color: rgba(13, 26, 16, 0.32);
+  background: rgba(13, 26, 16, 0.16);
+  color: #0D1A10;
+}
 
 .editor-expand-btn {
   display: inline-flex;

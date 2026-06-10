@@ -221,6 +221,43 @@ export default function MockSession() {
     return () => clearInterval(t);
   }, [remainingS === null, status]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // ── Leave-guard for an in-progress session ───────────────────────────────
+  // The session is server-persisted and resumable, so leaving isn't
+  // destructive — but a silent browser Back / refresh shouldn't yank the user
+  // out of a timed run without a heads-up. beforeunload covers refresh /
+  // tab-close / external nav (native dialog). A popstate "sentinel" entry traps
+  // the in-SPA Back button and confirms before leaving (without finalizing the
+  // session — the timer keeps running and the user can resume). Active only
+  // while status === 'active'.
+  useEffect(() => {
+    if (status !== 'active') return;
+
+    const onBeforeUnload = (e) => { e.preventDefault(); e.returnValue = ''; };
+    window.addEventListener('beforeunload', onBeforeUnload);
+
+    // Push a duplicate history entry so the first Back press fires popstate
+    // here instead of leaving the page immediately.
+    window.history.pushState(null, '', window.location.href);
+    const onPopState = () => {
+      const leave = window.confirm(
+        'Leave your active mock session?\n\nYour timer keeps running while you\'re away — you can resume from where you left off.'
+      );
+      if (leave) {
+        window.removeEventListener('popstate', onPopState);
+        navigate('/mock');
+      } else {
+        // Re-arm the trap so a later Back press is caught too.
+        window.history.pushState(null, '', window.location.href);
+      }
+    };
+    window.addEventListener('popstate', onPopState);
+
+    return () => {
+      window.removeEventListener('beforeunload', onBeforeUnload);
+      window.removeEventListener('popstate', onPopState);
+    };
+  }, [status, navigate]);
+
   const currentQuestion = questions[activeQ] || null;
   const sessionTrack = session?.track || currentQuestion?.track || 'sql';
   const sessionDescriptor = getMockSessionDescriptor(session?.mode, sessionTrack);
