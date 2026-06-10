@@ -1203,9 +1203,30 @@ function YourTracksSection({ dashData }) {
 
 // ── Logged-in home: Weak spots coaching ─────────────────────────────────────
 function WeakSpotsSection({ insights }) {
+  const { user } = useAuth();
+  const isPaid = user?.plan && user.plan !== 'free';
+
   if (!insights) return null;
   const weak = insights.weakest_concepts;
   if (!weak || weak.length === 0) return null;
+
+  // Free users with weak data see an upgrade teaser (no concept names leaked); no data → nothing
+  if (!isPaid) {
+    return (
+      <section className="lp-section lp-section-rule lp-weak-spots">
+        <div className="lp-inner">
+          <Reveal>
+            <p className="lp-section-index">+&ensp;COACHING</p>
+            <h2 className="lp-section-h2">Sharpen your weak spots.</h2>
+          </Reveal>
+          <div className="lp-weak-spot-gate">
+            <p>Upgrade to Pro to see your weak concepts and drill them.</p>
+            <UpgradeButton tier="pro" source="landing_weak_spots_gate" successPath="/?upgraded=true" />
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="lp-section lp-section-rule lp-weak-spots">
@@ -1217,9 +1238,7 @@ function WeakSpotsSection({ insights }) {
         <div className="lp-weak-spots-grid">
           {weak.slice(0, 3).map((entry, i) => {
             const trackMeta = TRACK_META[entry.track];
-            const drillHref = entry.recommended_path_slug
-              ? `/learn/${entry.track}/${entry.recommended_path_slug}`
-              : `/practice/${entry.track}`;
+            const drillHref = `/practice/${entry.track}?drill=${encodeURIComponent(entry.concept)}`;
             return (
               <Reveal key={`${entry.track}-${entry.concept}`} delay={i * 60}>
                 <div className="lp-weak-spot-card">
@@ -1231,6 +1250,11 @@ function WeakSpotsSection({ insights }) {
                   </div>
                   <p className="lp-weak-spot-concept">{entry.concept}</p>
                   <Link to={drillHref} className="lp-weak-spot-drill">Drill this →</Link>
+                  {entry.recommended_path_slug && (
+                    <Link to={`/learn/${entry.track}/${entry.recommended_path_slug}`} className="lp-weak-spot-drill-secondary">
+                      Or take the {entry.recommended_path_title} path →
+                    </Link>
+                  )}
                 </div>
               </Reveal>
             );
@@ -1335,7 +1359,7 @@ export default function LandingPage() {
   }, [location.search, navigate, refreshUser]);
 
   // Scroll to a named section delivered via router state — used by TierBanner,
-  // InsightStrip, AccountPage, and the path sidebar so they can land at a section
+  // AccountPage, and the path sidebar so they can land at a section
   // without leaving a hash or query param in the URL.
   useEffect(() => {
     const target = location.state?.scrollTo;

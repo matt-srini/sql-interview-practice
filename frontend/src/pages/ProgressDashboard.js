@@ -282,20 +282,12 @@ export default function ProgressDashboard() {
                   let focusCtaLabel = 'Go →';
                   let focusSubline = null;
 
-                  if (isElite && insights?.study_plan?.length > 0) {
-                    const step = insights.study_plan[0];
-                    focusTitle = step.title;
-                    focusHref = step.cta_href;
-                    focusCtaLabel = step.cta_label ?? 'Go →';
-                    focusSubline = step.description;
-                  } else if (isPaying && insights?.weakest_concepts?.length > 0) {
+                  if (isPaying && insights?.weakest_concepts?.length > 0) {
                     const w = insights.weakest_concepts[0];
                     const trackLabel = TRACK_LABELS[w.track] || w.track;
                     focusTitle = `Drill ${w.concept}`;
-                    const firstReco = w.recommended_question_ids?.[0];
-                    focusHref = firstReco
-                      ? `/practice/${w.track}/questions/${firstReco}`
-                      : `/practice/${w.track}?concepts=${encodeURIComponent(w.concept)}`;
+                    focusHref = `/practice/${w.track}?drill=${encodeURIComponent(w.concept)}`;
+                    focusCtaLabel = 'Go →';
                     focusSubline = `Your weakest concept in ${trackLabel} — ${Math.round(w.accuracy_pct * 100)}% accuracy across ${w.attempts} attempts`;
                   } else if (insights?.cross_track_insight) {
                     focusTitle = 'Coaching insight';
@@ -440,12 +432,7 @@ export default function ProgressDashboard() {
                           <div className="db-weak-list">
                             {visibleConcepts.map((item, i) => {
                               const trackLabel = TRACK_LABELS[item.track] || item.track;
-                              const firstReco = item.recommended_question_ids?.[0];
-                              const drillHref = item.recommended_path_slug
-                                ? `/learn/${item.track}/${item.recommended_path_slug}`
-                                : firstReco
-                                  ? `/practice/${item.track}/questions/${firstReco}`
-                                  : `/practice/${item.track}?concepts=${encodeURIComponent(item.concept)}`;
+                              const drillHref = `/practice/${item.track}?drill=${encodeURIComponent(item.concept)}`;
                               return (
                                 <div key={i} className="db-weak-row">
                                   <div className="db-weak-header">
@@ -455,8 +442,13 @@ export default function ProgressDashboard() {
                                   </div>
                                   <AccuracyBar pct={item.accuracy_pct} />
                                   <Link to={drillHref} className="db-weak-drill">
-                                    {item.recommended_path_slug ? `Study: ${item.recommended_path_title ?? 'path'} →` : 'Drill this concept →'}
+                                    Drill this concept →
                                   </Link>
+                                  {item.recommended_path_slug && (
+                                    <Link to={`/learn/${item.track}/${item.recommended_path_slug}`} className="db-weak-drill-secondary">
+                                      Or take the {item.recommended_path_title ?? 'path'} path →
+                                    </Link>
+                                  )}
                                 </div>
                               );
                             })}

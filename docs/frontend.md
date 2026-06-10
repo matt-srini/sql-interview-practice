@@ -65,6 +65,7 @@ Editorial 8-section layout (Phase E redesign). All sections use the `lp-*` CSS n
 - `Reveal({ children, delay, className })` — wrapper adding `lp-reveal` + `is-visible` on intersection
 - `ROLES` config defines the 4 role tab entries with ordered `tracks[]` slugs and role tagline — also hardcoded, must be updated when a new track is added
 - `trackRegistry.js`: `TRACK_SLUGS` (active non-comingSoon tracks, for routing/catalog/mock) and `ALL_TRACK_SLUGS` (all tracks including coming-soon, for landing tracks index and proof strip count)
+- **Logged-in home coaching** (`WeakSpotsSection`, below `ContinuePathsSection` + `YourTracksSection`): **Pro/Elite** see up to 3 weak-concept cards, each a primary *Drill this →* ([concept drill](#concept-drill), `?drill=`) plus an honest secondary *Or take the … path →* when a path matches. **Free** users with weak data see an upgrade gate (`.lp-weak-spot-gate`) that never leaks concept names; free users with no data see nothing (the section is hidden). The dead, never-mounted `InsightStrip` component that once duplicated this surface was removed.
 
 ### AuthPage (`/auth`)
 
@@ -127,6 +128,12 @@ Main practice screen. Layout and behavior vary by modality and topic:
 - Submission history fetched with `limit: 20`; `priorAttemptCountRef` tracks attempt count before each submit to compute insight text
 - **Path context**: when `?path=slug` is in the URL, fetches path data and shows a path nav bar (breadcrumb + position counter + prev/next links)
 - **Path context persistence**: sidebar question links preserve `?path=slug` so breadcrumb/path nav remains active while moving within a path.
+
+#### Concept drill
+
+When `?drill=<concept>` is present, `QuestionPage` fetches `GET /api/practice/drill?track={topic}&concept={concept}` into a `drillContext` (mirroring `pathContext`) and renders a **drill nav bar** — the `.path-nav-bar` markup reused with a `.path-nav-bar--drill` accent edge, a *Drilling: {concept}* label, a position counter, and prev/next links that preserve `?drill=`. The post-solve Next ladder gains two branches: **Next in drill** (walks only the concept's questions) and, on the last question, **Drill complete →** (navigates to `/dashboard`). Path context takes precedence if both `?path=` and `?drill=` are somehow present.
+
+Entry: every coaching *Drill* CTA (dashboard focus card + weak-areas rows, logged-in landing weak-spots, mock post-mortem) links to `/practice/{track}?drill={concept}`. `AppShell`'s hub effect redirects that to the first **unsolved** matching question while **preserving** the `?drill=` param (the old `?concepts=` redirect dropped it — that was the "drill dumps you into the full catalog" bug). The backend endpoint is **Pro+ only**, so Free users never reach a live drill. This is the practice-side weak-concept drill — distinct from the mock **custom-drill** mode (`focus_concepts`, Pro/Elite, in `MockHub`/`MockSession`).
 - **Keyboard shortcuts** (wired via Monaco `onMount` / `editor.addCommand`; refs prevent stale-closure bugs):
   - `Cmd/Ctrl + Enter` → Run Query / Run Code (safe, reversible; guarded by `running`, `submitting`, `isLocked`, `meta.hasRunCode`)
   - `Cmd/Ctrl + Shift + Enter` → Submit Answer (permanent; guarded by `running`, `submitting`, `isLocked`)
@@ -191,7 +198,7 @@ Loading state now renders a skeleton card instead of plain text while fetching a
 Cross-track progress overview. Fetches `GET /api/dashboard`, `GET /api/dashboard/insights`, and `GET /api/mock/history` on mount.
 
 - Renders one overview card per active track (all 9 tracks), not just the original executable slice.
-- Returning users see an `InsightStrip` with 3 tiles: cross-track coaching sentence, streak days, weakest concept. The weakest concept tile shows a `summary` coaching sentence (from the insights payload), a primary link to the recommended learning path when `recommended_path_slug` is present ("Study in {title} →"), and a secondary "Practice a question →" link to the first unsolved `recommended_question_ids` entry.
+- Returning **Pro/Elite** users see a **focus card** (hero CTA — *Drill {top weak concept} → Go*, the [concept drill](#concept-drill); falls back to a cross-track pace insight or continue-practice nudge) and a **"Where to focus"** panel of weak-concept rows, each with a primary *Drill this concept →* (`?drill=`) and an honest secondary *Or take the … path →* when a matching path exists. **Free** users see an upgrade teaser there. The solve streak shows on the dashboard hero stat (`.db-streak-at-risk`). Full coaching spec: [dashboard.md](features/dashboard.md). *(The previously-documented `InsightStrip` component was dead code — never mounted — and has been removed.)*
 - Track cards now include `median_solve_seconds` and `accuracy_pct` rows from `/api/dashboard/insights`.
 - New users (no solves yet) see a dedicated empty state with CTAs into practice and learning paths.
 - `by_difficulty` still renders as "X/Y" counts per difficulty level (`{ solved, total }` objects, not plain integers).
@@ -263,7 +270,6 @@ OG cards: `og-image.png` (1200×630, dark), `og-image-light.png` (1200×630, lig
 | VariablesPanel | `components/VariablesPanel.js` | Available DataFrame variables with CSV source and column list |
 | MCQPanel | `components/MCQPanel.js` | Radio-button response panel with configurable explanation/lock copy; still used for option-based reasoning tracks |
 | ConceptPanel | `components/ConceptPanel.js` | Slide-in concept detail panel opened from concept pills on `QuestionPage` |
-| InsightStrip | `components/InsightStrip.js` | Dashboard coaching strip: cross-track insight, streak tile, weakest concept tile. Weakest concept tile shows a coaching `summary` sentence, a primary path link ("Study in …") when `recommended_path_slug` is present, and a secondary "Practice a question →" link from `recommended_question_ids`. |
 | Skeleton | `components/Skeleton.js` | Reusable shimmer primitive (`skeleton-block` + `skeleton-shimmer`) used in QuestionPage, SidebarNav, TrackHubPage, ProgressDashboard |
 | TrackProgressBar | `components/TrackProgressBar.js` | Reusable horizontal progress bar with configurable color and label |
 | PathProgressCard | `components/PathProgressCard.js` | Path card with track color dot, progress bar, and CTA; used on LandingPage and TrackHubPage. Accepts optional `recommendationLabel` prop that replaces the tier badge with a contextual label ("Start here", "Recommended next", "Continue"). |

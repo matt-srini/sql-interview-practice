@@ -66,6 +66,20 @@ export default function QuestionPage() {
       .catch(() => setPathContext(null));
   }, [pathSlug]);
 
+  // Drill context — set when arriving from a concept drill (?drill=<concept>)
+  const drillConcept = searchParams.get('drill');
+  const [drillContext, setDrillContext] = useState(null);
+  useEffect(() => {
+    if (!drillConcept) { setDrillContext(null); return; }
+    api.get('/practice/drill', { params: { track: topic, concept: drillConcept } })
+      .then(r => {
+        const data = r.data;
+        if (!data || !(data.questions ?? []).length) { setDrillContext(null); return; }
+        setDrillContext({ concept: data.concept, trackLabel: data.track_label, questions: data.questions });
+      })
+      .catch(() => setDrillContext(null));
+  }, [drillConcept, topic]);
+
   // Derive API paths from topic
   const apiPrefix = meta.apiPrefix; // '', '/python', '/pandas', '/pyspark'
 
@@ -829,6 +843,17 @@ export default function QuestionPage() {
     return { path: pathContext, currentIndex, total: questions.length, prev, next };
   }, [pathContext, id]);
 
+  // Drill nav bar derived values — must be before early returns (Rules of Hooks)
+  const drillNavBar = useMemo(() => {
+    if (!drillContext) return null;
+    const questions = drillContext.questions ?? [];
+    const currentIndex = questions.findIndex(q => String(q.id) === String(id));
+    if (currentIndex === -1) return null;
+    const prev = questions[currentIndex - 1] ?? null;
+    const next = questions[currentIndex + 1] ?? null;
+    return { concept: drillContext.concept, trackLabel: drillContext.trackLabel, questions, currentIndex, total: questions.length, prev, next };
+  }, [drillContext, id]);
+
   // These memos depend on question (possibly null) but must be declared before early returns
   const questionFormLabel = useMemo(() => getQuestionFormLabel(question), [question]);
   const questionPromptGuidance = useMemo(
@@ -956,6 +981,36 @@ export default function QuestionPage() {
               </Link>
             ) : pathNavBar.next ? (
               <span className="path-nav-btn path-nav-btn--disabled" title="Locked — solve more questions to unlock">Next 🔒</span>
+            ) : (
+              <span className="path-nav-btn path-nav-btn--disabled">Last question</span>
+            )}
+          </div>
+        </div>
+      )}
+      {drillNavBar && !pathNavBar && (
+        <div className="path-nav-bar path-nav-bar--drill">
+          <span className="path-nav-back">
+            Drilling: {drillNavBar.concept}
+          </span>
+          <span className="path-nav-pos">
+            {drillNavBar.currentIndex + 1} / {drillNavBar.total}
+          </span>
+          <div className="path-nav-arrows">
+            {drillNavBar.prev ? (
+              <Link
+                to={`/practice/${topic}/questions/${drillNavBar.prev.id}?drill=${encodeURIComponent(drillConcept)}`}
+                className="path-nav-btn"
+              >
+                ← Prev
+              </Link>
+            ) : <span className="path-nav-btn path-nav-btn--disabled">← Prev</span>}
+            {drillNavBar.next ? (
+              <Link
+                to={`/practice/${topic}/questions/${drillNavBar.next.id}?drill=${encodeURIComponent(drillConcept)}`}
+                className="path-nav-btn path-nav-btn--next"
+              >
+                Next →
+              </Link>
             ) : (
               <span className="path-nav-btn path-nav-btn--disabled">Last question</span>
             )}
@@ -1231,6 +1286,20 @@ export default function QuestionPage() {
                     >
                       Next in Path
                     </button>
+                  ) : drillNavBar?.next ? (
+                    <button
+                      className="btn btn-success"
+                      onClick={() => navigate(`/practice/${topic}/questions/${drillNavBar.next.id}?drill=${encodeURIComponent(drillConcept)}`)}
+                    >
+                      Next in drill
+                    </button>
+                  ) : drillNavBar && !drillNavBar.next ? (
+                    <button
+                      className="btn btn-success"
+                      onClick={() => navigate('/dashboard')}
+                    >
+                      Drill complete →
+                    </button>
                   ) : !pathNavBar && nextQuestionId ? (
                     <button
                       className="btn btn-success"
@@ -1387,6 +1456,20 @@ export default function QuestionPage() {
                       onClick={() => navigate(`/practice/${topic}/questions/${pathNavBar.next.id}?path=${pathSlug}`)}
                     >
                       Next in Path
+                    </button>
+                  ) : drillNavBar?.next ? (
+                    <button
+                      className="btn btn-success"
+                      onClick={() => navigate(`/practice/${topic}/questions/${drillNavBar.next.id}?drill=${encodeURIComponent(drillConcept)}`)}
+                    >
+                      Next in drill
+                    </button>
+                  ) : drillNavBar && !drillNavBar.next ? (
+                    <button
+                      className="btn btn-success"
+                      onClick={() => navigate('/dashboard')}
+                    >
+                      Drill complete →
                     </button>
                   ) : !pathNavBar && nextQuestionId ? (
                     <button

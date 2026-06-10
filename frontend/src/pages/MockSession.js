@@ -30,14 +30,6 @@ function timerClass(s) {
   return 'mock-timer';
 }
 
-function conceptSlug(concept) {
-  return String(concept || '')
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '');
-}
-
 const DEFAULT_CODE = {
   sql: '-- Write your SQL query here\n',
   python: '# Write your Python solution here\n\ndef solution():\n    pass\n',
@@ -488,11 +480,9 @@ export default function MockSession() {
     } else {
       drillTrack = sessionTrack;
     }
-    const drillConcepts = conceptRows
-      .filter((row) => row.track === drillTrack && row.attempts > 0 && row.accuracy < 1)
-      .slice(0, 2)
-      .map((row) => conceptSlug(row.concept))
-      .filter(Boolean);
+    const topDrillConcept = conceptRows.find(
+      (row) => row.track === drillTrack && row.attempts > 0 && row.accuracy < 1
+    )?.concept ?? null;
     const recommendedDrillDifficulty = (sum?.difficulty || session?.difficulty || 'easy') === 'mixed'
       ? 'medium'
       : (sum?.difficulty || session?.difficulty || 'easy');
@@ -694,31 +684,29 @@ export default function MockSession() {
                     );
                   })}
                 </div>
-                {summaryDescriptor.isBenchmark && drillConcepts.length > 0 && (() => {
-                  // Elite: prefer a path recommendation for the top weak session concept
-                  if (isElite) {
-                    const topWeak = conceptRows.find(r => r.track === drillTrack && r.accuracy < 1);
-                    const matchedInsight = topWeak && insights?.weakest_concepts?.find(
-                      w => w.concept === topWeak.concept && w.track === topWeak.track
-                    );
-                    if (matchedInsight?.recommended_path_slug) {
-                      return (
+                {summaryDescriptor.isBenchmark && topDrillConcept && (() => {
+                  // Elite: prefer a path recommendation for the top weak session concept (secondary)
+                  const topWeak = conceptRows.find(r => r.track === drillTrack && r.accuracy < 1);
+                  const matchedInsight = isElite && topWeak && insights?.weakest_concepts?.find(
+                    w => w.concept === topWeak.concept && w.track === topWeak.track
+                  );
+                  return (
+                    <>
+                      <Link
+                        to={`/practice/${drillTrack}?drill=${encodeURIComponent(topDrillConcept)}`}
+                        className="btn btn-secondary btn-compact"
+                      >
+                        Drill weak concepts →
+                      </Link>
+                      {matchedInsight?.recommended_path_slug && (
                         <Link
                           to={`/learn/${matchedInsight.track}/${matchedInsight.recommended_path_slug}`}
                           className="btn btn-secondary btn-compact"
                         >
                           Study {matchedInsight.recommended_path_title} →
                         </Link>
-                      );
-                    }
-                  }
-                  return (
-                    <Link
-                      to={`/practice/${drillTrack}?concepts=${drillConcepts.join(',')}`}
-                      className="btn btn-secondary btn-compact"
-                    >
-                      Drill weak concepts →
-                    </Link>
+                      )}
+                    </>
                   );
                 })()}
               </div>
@@ -745,9 +733,9 @@ export default function MockSession() {
                 </>
               ) : (
                 <>
-                  {isProOrElite && drillConcepts.length > 0 ? (
+                  {isProOrElite && topDrillConcept ? (
                     <Link
-                      to={`/practice/${drillTrack}?concepts=${drillConcepts.join(',')}`}
+                      to={`/practice/${drillTrack}?drill=${encodeURIComponent(topDrillConcept)}`}
                       className="btn btn-primary"
                     >
                       Drill weak concepts →

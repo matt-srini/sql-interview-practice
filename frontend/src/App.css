@@ -6124,6 +6124,16 @@ select {
   text-decoration: none;
 }
 .db-weak-drill:hover { text-decoration: underline; }
+/* Honest secondary: the curated path that also covers this concept (drill is primary). */
+.db-weak-drill-secondary {
+  display: block;
+  margin-top: 0.3rem;
+  font-size: 0.74rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  text-decoration: none;
+}
+.db-weak-drill-secondary:hover { color: var(--accent); text-decoration: underline; }
 
 /* Locked concepts blur overlay */
 .db-weak-locked {
@@ -10195,6 +10205,15 @@ select {
   cursor: default;
   border-color: var(--border-subtle);
 }
+/* Concept drill nav bar — reuses .path-nav-* with an accent edge to read as a
+   focused weak-concept walk rather than a curated learning path. */
+.path-nav-bar--drill {
+  border-left: 3px solid var(--accent);
+}
+.path-nav-bar--drill .path-nav-back {
+  font-weight: 600;
+  color: var(--text-strong);
+}
 
 /* ── LearningPathsIndex page (/learn, /learn/:topic) ─── */
 .learn-index-page {
@@ -13415,6 +13434,31 @@ select {
   margin-top: auto;
 }
 .lp-weak-spot-drill:hover { opacity: 0.75; }
+/* Honest secondary path link under the primary drill CTA on the landing weak-spot card. */
+.lp-weak-spot-drill-secondary {
+  font-size: 0.76rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  text-decoration: none;
+}
+.lp-weak-spot-drill-secondary:hover { color: var(--accent); }
+/* Free-user upgrade teaser shown in place of the weak-spot cards (no concept names leaked). */
+.lp-weak-spot-gate {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 24px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--surface-card);
+  max-width: 520px;
+}
+.lp-weak-spot-gate p {
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+}
 .lp-weak-spots-full {
   display: inline-block;
   margin-top: 1.5rem;

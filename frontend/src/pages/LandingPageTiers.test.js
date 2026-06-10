@@ -560,3 +560,65 @@ describe('LandingPage', () => {
   });
 
 });
+
+// ---------------------------------------------------------------------------
+// Weak-spots coaching — concept drill vs path, and the Pro+ gate
+// ---------------------------------------------------------------------------
+
+describe('LandingPage — Weak spots coaching (drill)', () => {
+  const WEAK_INSIGHTS = {
+    weakest_concepts: [
+      {
+        concept: 'WINDOW & ROLLING OPERATIONS',
+        track: 'pandas',
+        accuracy_pct: 0.25,
+        attempts: 4,
+        recommended_path_slug: 'reshaping-and-pivoting',
+        recommended_path_title: 'Reshaping & Pivoting',
+      },
+    ],
+    streak_days: 0,
+  };
+
+  function wireInsights(insights) {
+    api.get.mockImplementation((url) => {
+      if (url === '/dashboard') return Promise.resolve({ data: MOCK_DASHBOARD_DATA });
+      if (url === '/dashboard/insights') return Promise.resolve({ data: insights });
+      if (url === '/paths') return Promise.resolve({ data: [] });
+      return Promise.resolve({ data: {} });
+    });
+  }
+
+  it('paid user: the weak-spot CTA drills the concept (primary), with the path demoted to an honest secondary', async () => {
+    wireInsights(WEAK_INSIGHTS);
+    renderWithPlan('pro');
+
+    const drill = await screen.findByText('Drill this →');
+    expect(drill.closest('a').getAttribute('href')).toMatch(/^\/practice\/pandas\?drill=/);
+
+    // The matching path is still offered, but clearly as a secondary "path", not as the drill.
+    const secondary = screen.getByText(/Or take the Reshaping & Pivoting path/i);
+    expect(secondary.closest('a').getAttribute('href')).toBe('/learn/pandas/reshaping-and-pivoting');
+  });
+
+  it('free user with weak data: shows an upgrade gate and never leaks a concept name or a drill link', async () => {
+    wireInsights(WEAK_INSIGHTS);
+    renderWithPlan('free');
+
+    expect(await screen.findByText(/Upgrade to Pro to see your weak concepts/i)).toBeInTheDocument();
+    // The concept name and any drill affordance must NOT be exposed to free users.
+    expect(screen.queryByText('WINDOW & ROLLING OPERATIONS')).not.toBeInTheDocument();
+    expect(screen.queryByText('Drill this →')).not.toBeInTheDocument();
+  });
+
+  it('free user with no weak data: the section is hidden entirely (no dangling upsell)', async () => {
+    wireInsights({ weakest_concepts: [], streak_days: 0 });
+    renderWithPlan('free');
+
+    // Wait for the insights fetch to resolve into render, then assert the coaching heading is absent.
+    await waitFor(() => expect(api.get).toHaveBeenCalledWith('/dashboard/insights'));
+    await waitFor(() => {
+      expect(screen.queryByText('Sharpen your weak spots.')).not.toBeInTheDocument();
+    });
+  });
+});

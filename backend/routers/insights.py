@@ -4,6 +4,7 @@ from collections import defaultdict
 from datetime import UTC, datetime, timedelta
 from statistics import median
 from typing import Any
+from urllib.parse import quote
 
 from fastapi import APIRouter, Depends
 
@@ -543,13 +544,12 @@ def build_study_plan(
                     track=lowest_track,
                 )
             else:
-                concept_slug = concept.lower().replace(" ", "_")
                 _add(
                     "concept_drill",
                     f"Drill {concept.title()} — {track_label}",
                     f"Your {track_label} readiness is lowest. More focused practice on {concept.title()} will move the needle fastest.",
                     "Drill now →",
-                    f"/practice/{lowest_track}?concepts={concept_slug}",
+                    f"/practice/{lowest_track}?drill={quote(concept)}",
                     track=lowest_track,
                 )
 
@@ -571,13 +571,12 @@ def build_study_plan(
                 track=track,
             )
         else:
-            concept_slug = concept.lower().replace(" ", "_")
             _add(
                 "concept_drill",
                 f"Drill {concept.title()} — {track_label}",
                 f"You're at {accuracy_pct}% accuracy. Deliberate repetition on {concept.title()} will close this gap.",
                 "Drill now →",
-                f"/practice/{track}?concepts={concept_slug}",
+                f"/practice/{track}?drill={quote(concept)}",
                 track=track,
             )
 
@@ -868,14 +867,13 @@ def build_session_debrief(
             track_label = _TRACK_DISPLAY.get(track, track)
             if family == "executable":
                 priority_action = (
-                    f"Drill {concept_name} in {track_label} practice mode — "
-                    "filter by that concept tag and aim for 3 consecutive correct answers."
+                    f"Drill {concept_name} in {track_label} — a focused set of just this concept. "
+                    "Aim for 3 consecutive correct."
                 )
             else:
                 priority_action = (
-                    f"Drill {concept_name} in {track_label} practice mode — "
-                    "filter by that concept tag and focus on being able to state the tradeoffs "
-                    "and reasoning clearly without backtracking."
+                    f"Drill {concept_name} in {track_label} — a focused set of just this concept. "
+                    "Aim to state the tradeoffs and reasoning clearly without backtracking."
                 )
 
         # Recommend unseen drill questions

@@ -272,6 +272,29 @@ Notes:
 - `streak_days` counts consecutive calendar days ending today with at least one correct submission.
 - Endpoint is cached in-process for 60 seconds per user.
 
+### Concept drill — `/api/practice`
+
+| Method | Path | Description |
+|---|---|---|
+| GET | `/api/practice/drill` | All PRACTICE questions in one track whose concept tags resolve to the supplied concept family — the data behind a focused weak-concept drill walk. **Pro/Elite only** (403 for Free). |
+
+Query params: `track` (slug) and `concept` (a concept **family** name, e.g. `GROUPED AGGREGATION`). Matching is **family-aware** via `concept_matches_focus` (the same resolver Mock's `focus_concepts` filter uses), so tag variants that resolve to the same family are included. Solved state is read per-track via `get_solved_ids(user_id, topic=track.db_topic)` (not the SQL-hardcoded `progress.get_solved_question_ids`). Response:
+
+```json
+{
+  "track": "pandas",
+  "track_label": "Pandas",
+  "concept": "GROUPED AGGREGATION",
+  "total": 46,
+  "solved_count": 7,
+  "questions": [
+    { "id": 31011, "title": "…", "difficulty": "easy", "order": 1, "concepts": ["GROUPED AGGREGATION"], "state": "unlocked" }
+  ]
+}
+```
+
+Questions are ordered **unsolved-first → easy→hard → order asc** (a drill leads with what you haven't mastered; solved questions trail for review, so the entry point lands at position 1). Unknown `track` → 404; a concept with no matches → 200 with `questions: []`. The frontend consumes this as a `?drill=<concept>` context on `QuestionPage` (see [frontend.md §Concept drill](frontend.md#concept-drill)). Lives in `backend/routers/practice.py`; tests in `backend/tests/test_practice_drill.py`. This is the practice-side weak-concept drill — distinct from the mock custom-drill (`focus_concepts`) mode.
+
 ### Learning paths — `/api/paths`
 
 | Method | Path | Description |
@@ -283,7 +306,7 @@ Paths are defined as JSON files in `backend/content/paths/`. The `path_loader.py
 
 Current footprint: **96 paths total** (SQL 11, Python 11, Pandas 9, PySpark 14, Data Engineering 9, Data Modeling 11, Statistics 11, ML Fundamentals 12, Experimentation 8). Path records also include `tier` (`free`/`pro` — controls path-listing visibility only), `level` (`foundational`/`intermediate`/`advanced` — UX badge, see canonical definition in [`docs/content-authoring.md`](./content-authoring.md) §Paths), `patterns[]` (practitioner-skill slugs from `backend/path_patterns.py`), `focus_concepts[]` (concept-family tags used by insights), `outcomes`, and `recommended_after[]` (prerequisite path slugs forming a DAG).
 
-The `GET /api/dashboard/insights` endpoint uses `focus_concepts` to attach `recommended_path_slug` and `recommended_path_title` to each entry in `weakest_concepts`, routing users from a diagnosed weak area directly to the most relevant accessible path. Matching is **family-aware**: both the weak concept and the path's `focus_concepts` are resolved to their canonical concept family before comparison (same resolver Mock's `focus_concepts` filter uses). Foundational paths take priority over intermediate, which take priority over advanced.
+The `GET /api/dashboard/insights` endpoint uses `focus_concepts` to attach `recommended_path_slug` and `recommended_path_title` to each entry in `weakest_concepts`. Matching is **family-aware**: both the weak concept and the path's `focus_concepts` are resolved to their canonical concept family before comparison (same resolver Mock's `focus_concepts` filter uses). Foundational paths take priority over intermediate, which take priority over advanced. **Routing note:** the coaching UI (dashboard focus card + weak-areas panel, logged-in landing weak-spots, mock post-mortem) now leads with the [concept drill](#concept-drill--apipractice) (`/practice/{track}?drill={concept}`) as the primary "Drill" action and offers `recommended_path_slug` only as an honest secondary (*Or take the … path →*). The Elite `study_plan` remains a curated mixed planner where a `learning_path` step is still legitimate (labelled *Start path →*).
 
 ### Admin — `/api/admin`
 

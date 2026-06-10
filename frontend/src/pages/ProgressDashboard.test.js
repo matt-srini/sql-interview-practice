@@ -5,7 +5,7 @@
  * against the current 9-track track-overview and mock-history UI.
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import ProgressDashboard from './ProgressDashboard';
 
@@ -20,13 +20,11 @@ vi.mock('../api', () => ({
   },
 }));
 
-vi.mock('../contexts/AuthContext', () => {
-  // Stable reference so useEffect([authLoading, user]) doesn't re-fire on every render
-  const stableUser = { name: 'Test User', email: 'test@example.com' };
-  return {
-    useAuth: () => ({ user: stableUser, loading: false }),
-  };
-});
+// Mutable auth so individual tests can exercise free / pro / elite branches.
+const { mockUseAuth } = vi.hoisted(() => ({ mockUseAuth: vi.fn() }));
+vi.mock('../contexts/AuthContext', () => ({
+  useAuth: () => mockUseAuth(),
+}));
 
 // Topbar uses useTheme — provide a minimal stub so it doesn't crash in jsdom
 vi.mock('../App', () => ({
@@ -157,6 +155,8 @@ function makeInsightsPayload(overrides = {}) {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  // Default: an authenticated free user (no plan) — individual tests override the plan.
+  mockUseAuth.mockReturnValue({ user: { name: 'Test User', email: 'test@example.com' }, loading: false });
   // Default: mock history returns empty list
   api.get.mockImplementation((url) => {
     if (url === '/mock/history') return Promise.resolve({ data: [] });
@@ -295,5 +295,41 @@ describe('ProgressDashboard', () => {
       expect(screen.getByText('1/2')).toBeInTheDocument();
       expect(screen.getByText('Review →')).toBeInTheDocument();
     });
+  });
+
+  // ── Concept drill coaching (drill-primary, path-secondary) ─────────────────
+
+  function wirePaidInsights(weakest_concepts) {
+    api.get.mockImplementation((url) => {
+      if (url === '/mock/history') return Promise.resolve({ data: [] });
+      if (url === '/dashboard/insights') return Promise.resolve({ data: makeInsightsPayload({ weakest_concepts }) });
+      return Promise.resolve({ data: makeDashboardPayload() });
+    });
+  }
+
+  it('focus card drills the top weak concept for paying users (?drill=, not a question deep-link)', async () => {
+    mockUseAuth.mockReturnValue({ user: { name: 'P', email: 'p@e.com', plan: 'pro' }, loading: false });
+    wirePaidInsights([{ concept: 'GROUPED AGGREGATION', track: 'pandas', accuracy_pct: 0.33, attempts: 21 }]);
+
+    renderDashboard();
+
+    const card = (await screen.findByText('Drill GROUPED AGGREGATION')).closest('.db-focus-card');
+    const cta = within(card).getByText('Go →');
+    expect(cta.closest('a').getAttribute('href')).toMatch(/^\/practice\/pandas\?drill=/);
+  });
+
+  it('weak row offers a concept drill (primary) and the matching path as an honest secondary', async () => {
+    mockUseAuth.mockReturnValue({ user: { name: 'P', email: 'p@e.com', plan: 'pro' }, loading: false });
+    wirePaidInsights([{
+      concept: 'GROUPED AGGREGATION', track: 'pandas', accuracy_pct: 0.33, attempts: 21,
+      recommended_path_slug: 'groupby', recommended_path_title: 'GroupBy Aggregation',
+    }]);
+
+    renderDashboard();
+
+    const primary = await screen.findByText('Drill this concept →');
+    expect(primary.closest('a').getAttribute('href')).toMatch(/^\/practice\/pandas\?drill=/);
+    const secondary = screen.getByText(/Or take the GroupBy Aggregation path/i);
+    expect(secondary.closest('a').getAttribute('href')).toBe('/learn/pandas/groupby');
   });
 });

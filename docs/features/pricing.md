@@ -398,7 +398,8 @@ Direct upgrade buttons (all `UpgradeButton` instances) skip the landing page ent
 | **Question page — locked callout** | `UpgradeButton` | "Unlock now with Pro" | `free` plan, question is threshold-locked | Opens Razorpay |
 | **Question page — hard gate** | `UpgradeButton` | "Upgrade to Pro" | `free` plan, hard question beyond free cap | Opens Razorpay |
 | **Track hub — TierBanner** | `<button>` | "See plans →" | `free` plan | Navigates to `/ + state.scrollTo` |
-| **Dashboard — InsightStrip** | `<button>` | "Upgrade to Pro" | `free` plan, weakest-concept section | Navigates to `/ + state.scrollTo` |
+| **Dashboard — weak-areas gate** | `UpgradeButton` | "Upgrade to Pro" | `free` plan, "Where to focus" panel | Opens Razorpay |
+| **Landing — weak-spots gate** | `UpgradeButton` | "Upgrade to Pro" | `free` logged-in user with weak data | Opens Razorpay |
 | **Mock hub — difficulty button** | `UpgradeButton` | "Pro unlocks this" / "Elite unlocks this" | Plan blocked for that difficulty | Opens Razorpay |
 | **Mock hub — notice strip** | `UpgradeButton` | "Unlock more with Pro" | `free` hard or mixed blocked | Opens Razorpay |
 | **Account page** | `<button>` | "Upgrade to Pro or Elite" | `free` plan | Navigates to `/ + state.scrollTo` |

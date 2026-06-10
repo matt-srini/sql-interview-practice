@@ -44,12 +44,41 @@ export default function AppShell() {
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [mobileOpen]);
 
-  // When landing on the hub with ?concepts=..., auto-navigate to the first
-  // matching accessible question so the user goes straight to the question page.
+  // When landing on the hub with ?concepts=... or ?drill=..., auto-navigate to
+  // the first matching accessible question so the user goes straight to the question page.
   useEffect(() => {
     if (!isAtHub || loading || error || !catalog) return;
     const params = new URLSearchParams(location.search);
     const rawConcepts = params.get('concepts');
+    const rawDrill = params.get('drill');
+
+    // Handle ?drill=<raw concept family name>
+    if (rawDrill) {
+      const requestedDrill = rawDrill.trim().toLowerCase().replace(/_/g, ' ').replace(/-/g, ' ');
+      if (requestedDrill) {
+        const groups = catalog?.groups ?? [];
+        let firstMatch = null;
+        let firstMatchAny = null;
+        outer_drill: for (const group of groups) {
+          for (const q of group.questions) {
+            if (q.state === 'locked') continue;
+            const qConcepts = (q.concepts ?? []).map((c) => String(c).toLowerCase());
+            const hit = qConcepts.some((qc) => qc.includes(requestedDrill) || requestedDrill.includes(qc));
+            if (hit) {
+              if (firstMatchAny === null) firstMatchAny = q;
+              if (q.state !== 'solved') { firstMatch = q; break outer_drill; }
+            }
+          }
+        }
+        const target = firstMatch ?? firstMatchAny;
+        if (target) {
+          navigate(`${location.pathname}/questions/${target.id}?drill=${encodeURIComponent(rawDrill)}`, { replace: true });
+        }
+        return;
+      }
+    }
+
+    // Handle ?concepts=... (existing branch — unchanged)
     if (!rawConcepts) return;
 
     // Normalise incoming values: underscores → spaces, trim, lowercase

@@ -10,8 +10,8 @@ The dashboard is the cross-track progress hub at `/dashboard` (`ProgressDashboar
 |---|---|
 | **Track Overview** | One card per active track (all 9 tracks). Each shows solved/total, an animated progress bar, median solve time, accuracy %, easy/medium/hard breakdown, and (Elite) a per-track readiness score badge. Data from `/api/dashboard` + `/api/dashboard/insights`. |
 | **Personalised study plan** | **(Elite)** An ordered list of 3–5 next steps based on weak concepts, practice gaps, and mock frequency. Non-Elite users see a gated upgrade prompt. |
-| **Coaching Insights strip** | Three tiles: Cross-track pace coaching, Current streak, Weakest concept. Hidden when `totalSolved === 0` and replaced by an empty-state CTA. |
-| **Top-3 Weak Areas** | **(Elite)** Concept rows with accuracy %, coaching summary, and drill/path links. |
+| **Focus card** | A single hero CTA. For Pro/Elite with weak-concept data: *Drill {top weak concept} → Go* — the [concept drill](../frontend.md#concept-drill), a Pro+ focused practice walk. Otherwise a cross-track pace insight or a continue-practice nudge. |
+| **Where to focus (weak areas)** | **(Pro/Elite)** Concept rows with accuracy %, a coaching summary, a primary *Drill this concept →* CTA (the concept drill), and an **honest secondary** *Or take the … path →* when a matching learning path exists. Pro sees the top gap (further gaps teased as Elite-locked); Elite sees up to 4. |
 | **Recent Activity** | Up to 10 most-recently-solved questions across all tracks. Each row shows track, difficulty badge, question title, and relative time. |
 | **Concepts by Track** | Tags of concepts covered by solved questions, grouped by track. Only rendered when at least one concept exists. |
 | **Mock Interviews** | Last 5 mock sessions in a compact table with date, mode, track, difficulty, score, and a Review/Resume link. Hidden when no mock history exists. |
@@ -23,8 +23,8 @@ The dashboard is the cross-track progress hub at `/dashboard` (`ProgressDashboar
 | Section | Free | Pro | Elite |
 |---|---|---|---|
 | Track Overview (basic stats) | ✅ | ✅ | ✅ |
-| Coaching Insights strip | ✅ (streak + pace only) | ✅ (all 3 tiles) | ✅ |
-| Top-3 Weak Areas panel | ❌ | ❌ | ✅ |
+| Focus card (hero CTA) | ✅ (pace / continue nudge) | ✅ (drill top weak concept) | ✅ (drill top weak concept) |
+| Where to focus (weak areas + concept drill) | ❌ (upgrade teaser) | ✅ (top gap) | ✅ (up to 4 gaps) |
 | Per-track readiness score badges | ❌ (upgrade teaser shown) | ❌ (upgrade teaser shown) | ✅ |
 | Personalised study plan | ❌ (locked section shown) | ❌ (locked section shown) | ✅ |
 
@@ -128,7 +128,7 @@ A concept appears in `weakest_concepts` if it is tagged on a question the user h
 Each entry is enriched with:
 - `summary` — a deterministic one-sentence coaching note keyed to accuracy bucket (< 30% → "highest-priority gap"; < 50% → "pattern isn't sticking"; < 70% → "breaks under new angles"; ≥ 70% → "not fully consistent yet").
 - `recommended_path_slug` / `recommended_path_title` — the most foundational accessible learning path that covers this concept (foundational paths preferred over intermediate / advanced). Matching is **family-aware** — both the weak concept and the path's `focus_concepts` are resolved to their canonical concept family before comparison (same resolver Mock's `focus_concepts` filter uses). Only present when a matching path exists and its tier is accessible under the user's plan.
-- `recommended_question_ids` — up to 2 unsolved question IDs on this concept, easiest-first. Free users only get easy questions; Pro/Elite get any difficulty.
+- `recommended_question_ids` — up to 2 unsolved question IDs on this concept, easiest-first. Free users only get easy questions; Pro/Elite get any difficulty. **Retained in the payload but no longer the primary nav** — the dashboard and the logged-in landing now surface each weak concept as a **concept drill** (`/practice/{track}?drill={concept}`, a Pro+ focused practice walk — see [frontend.md §Concept drill](../frontend.md#concept-drill)) rather than deep-linking a single question. The `recommended_path_slug` path is offered as an **honest secondary** (*Or take the … path →*) when present, never as the primary "drill" CTA.
 
 ### Interview readiness score (Elite only)
 
@@ -151,10 +151,12 @@ The score badge on each track card is colour-coded: green (Strong/Interview read
 - `title`, `description`, `cta_label`, `cta_href`, `track`, `priority`
 
 **Generation algorithm:**
-1. Lowest-readiness track → target its worst concept (path if available, else drill link)
-2. Top 2 weakest concepts across all tracks → path or drill action
+1. Lowest-readiness track → target its worst concept (path if available, else a `concept_drill`)
+2. Top 2 weakest concepts across all tracks → path or `concept_drill` action
 3. Track with < 30% hard question coverage → `practice_hard` action
 4. Fewer than 3 completed mocks in the last 14 days → `mock_session` action
+
+A `concept_drill` step's `cta_href` is `/practice/{track}?drill={concept}` (the focused [concept drill](../frontend.md#concept-drill) walk); a `learning_path` step's is `/learn/{track}/{slug}`. The study plan is a curated mixed planner, so a `learning_path` step (labelled *Start path →*) is legitimate here — unlike the explicit *Drill this concept →* affordances on the focus card / weak-areas panel, which always lead with the concept drill.
 
 Actions are deduplicated (no two of the same type + track), and capped at 5 total.
 
@@ -176,14 +178,7 @@ If only one track has data, or the gap is < 60 s, `cross_track_insight` is `null
 - If today has a correct submission but yesterday does not: `streak_days = 1`.
 - The count extends back as long as consecutive days all have at least one correct submission.
 
-`streak_at_risk` (from `GET /api/auth/me`) is `true` when `streak_days = 0` **and** yesterday had at least one correct submission — i.e. the user had a streak that will break unless they solve something today. This field is not part of the insights payload; it is read from the `AuthContext` (`user.streak_at_risk`) by the `InsightStrip` component to determine the streak tile message.
-
-**InsightStrip streak tile messages:**
-| State | Message |
-|---|---|
-| `streak_days = 0` | "Solve one question today to start a streak." |
-| `streak_days > 0` and `streak_at_risk = true` | "Solve one today to keep it alive." |
-| `streak_days > 0` and `streak_at_risk = false` (already solved today) | "Great work! Come back tomorrow to keep it going." |
+`streak_at_risk` (from `GET /api/auth/me`) is `true` when `streak_days = 0` **and** yesterday had at least one correct submission — i.e. the user had a streak that will break unless they solve something today. This field is not part of the insights payload; it is read from the `AuthContext` (`user.streak_at_risk`). The streak is surfaced on the **dashboard hero stat** (the day count with a *Streak at risk ⚡* flag, `ProgressDashboard.js`) and on the **workspace topbar pill** (`AppShell.js`, `.shell-pill-streak` / `.shell-pill-streak-risk`); streak **milestone toasts** fire on solves in `QuestionPage.js`.
 
 ---
 
