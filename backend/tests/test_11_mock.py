@@ -1228,14 +1228,16 @@ def test_tc180_discard_interview_loop_reclaims_chain():
 
 
 def test_tc181_legacy_30min_start_returns_400():
-    """TC-181: POST /api/mock/start with mode='30min' → 400 (legacy modes cannot be started)."""
+    """TC-181: POST /api/mock/start with mode='30min' → 400 with read-only legacy message (not 'Invalid mode')."""
     with TestClient(app) as client:
         _make_user(client, plan="pro")
         r = client.post("/api/mock/start", json={
             "mode": "30min", "track": "pyspark", "difficulty": "easy",
         })
     assert r.status_code == 400
-    assert "mode" in r.json().get("error", "").lower()
+    error_text = r.json().get("error", "").lower()
+    # Must say "read-only" or "legacy" — not the generic "invalid mode" fallthrough
+    assert "read-only" in error_text or "legacy" in error_text, f"Expected read-only/legacy message, got: {error_text!r}"
 
 
 def test_tc182_mixed_custom_without_role_returns_400():

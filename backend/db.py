@@ -2305,7 +2305,15 @@ async def get_daily_mock_usage(user_id: str) -> dict[str, int]:
 
 
 async def get_daily_benchmark_usage(user_id: str) -> int:
-    """Count benchmark sessions started today (UTC). Used for Pro 3/day cap."""
+    """Count benchmark sessions started today (UTC). Used for Pro 3/day cap.
+
+    CURRENT_DATE is the Postgres server-timezone date; the daily window assumes the
+    server runs UTC (true on Railway). If the server timezone ever changes, the daily
+    reset shifts — revisit then.
+    The usage check and session creation are not transactionally guarded against a
+    concurrent start (TOCTOU); accepted for a non-financial daily cap (worst case: a
+    user squeaks one extra session via a race).
+    """
     session_factory = _session_factory_or_raise()
     async with session_factory() as session:
         result = await session.execute(
@@ -2325,7 +2333,10 @@ async def get_daily_benchmark_usage(user_id: str) -> int:
 
 
 async def get_daily_custom_usage(user_id: str) -> int:
-    """Count custom sessions started today (UTC). Used for Pro 3/day cap."""
+    """Count custom sessions started today (UTC). Used for Pro 3/day cap.
+
+    Same UTC + TOCTOU assumptions as get_daily_benchmark_usage — see that docstring.
+    """
     session_factory = _session_factory_or_raise()
     async with session_factory() as session:
         result = await session.execute(

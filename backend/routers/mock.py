@@ -60,6 +60,7 @@ router = APIRouter(prefix="/api/mock")
 
 # Legacy read-only modes — still appear in session history but cannot be started new.
 MODE_CONFIGS: dict[str, dict[str, int]] = {
+    "30min": {"num_questions": 2, "time_limit_s": 1800},
     "60min": {"num_questions": 3, "time_limit_s": 3600},
 }
 

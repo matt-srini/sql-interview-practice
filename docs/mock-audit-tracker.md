@@ -52,13 +52,13 @@ Severity: **H** high · **M** medium · **L** low. Status: `TODO` · `WIP` · `D
 | A5a | M | DONE | code | Concept tags exposed on the live question (telegraphs the approach) |
 | A6 | M | DONE | code | Harsh "0/X, Y% below your historical accuracy" headline tone on poor sessions |
 | C4 | M | TODO | code | Discarded sessions don't count vs rate limits → create-discard cap reset |
-| B7 | L | TODO | code | PySpark lobby blueprint shows a composition the backend doesn't serve |
-| B5 | L | TODO | code | Elite analytics: network error indistinguishable from empty state |
-| B6 | L | TODO | code | Mixed-track shows two Role selectors |
-| B8 | L | TODO | code | Dead UI (`NO_MOCK_BANK_TRACKS` empty; first-run CTA hardcodes `/practice/sql`) |
+| B7 | L | DONE | code | PySpark lobby blueprint shows a composition the backend doesn't serve |
+| B5 | L | DONE | code | Elite analytics: network error indistinguishable from empty state |
+| B6 | L | DONE | code | Mixed-track shows two Role selectors |
+| B8 | L | DONE | code | Dead UI (`NO_MOCK_BANK_TRACKS` empty; first-run CTA hardcodes `/practice/sql`) |
 | C5 | L | DONE | code | `is_follow_up` never persisted (root cause of A3) |
-| C6 | L | TODO | code | `30min` legacy → generic "Invalid mode" instead of read-only message |
-| C7 | L | TODO | code | Daily-cap `CURRENT_DATE` not explicitly UTC; TOCTOU on check→create |
+| C6 | L | DONE | code | `30min` legacy → generic "Invalid mode" instead of read-only message |
+| C7 | L | DONE | code | Daily-cap `CURRENT_DATE` not explicitly UTC; TOCTOU on check→create |
 | D2 | M | DONE | doc | `loop_summary` shape (dict vs list, missing fields); `accuracy` vs `accuracy_pct` across specs |
 | D3 | M | DONE | doc | `readiness_scores`/`study_plan` live in dashboard insights, not mock analytics |
 | D4 | L | DONE | doc | Discard chip window 60s (frontend) vs 120s (doc + server) |
@@ -107,7 +107,8 @@ Three confirmed defects compounded at the Elite payoff moment:
 ### A5a — `[M]` `[DONE]` Concept tags exposed on the live question
 **Fixed 2026-06-09.** Removed the concept-tag pills from the active mock question render (`MockSession.js`). Naming the pattern (e.g. "WINDOW FUNCTIONS") telegraphs the approach and turns recognition into recall — the opposite of what a mock should test. The post-mortem's concept breakdown still surfaces them afterward for learning. Verified live: a benchmark question whose data carries `["STRING PARSING & PATTERN MATCHING"]` renders no concept tags during the session. See `docs/decisions/DECISIONS.md` 2026-06-09.
 
-### A5b — `[L]` `[TODO]` Free benchmark time generous (60 min for 3 easy SQL) — realism tuning, optional.
+### A5b — `[L]` `[DEFERRED]` Free benchmark time generous (60 min for 3 easy SQL) — realism tuning, optional
+**Deferred 2026-06-09 (recommend leaving as-is).** Tightening benchmark time caps is a product-feel decision that risks frustrating users; "give enough time to measure ability, not induce panic" is a defensible stance and the generous cap isn't harmful. Only revisit if we deliberately want a more pressured benchmark — a per-track cap-tuning pass (`BENCHMARK_CONFIGS` / `MIXED_BENCHMARK_CONFIGS`), not a quick fix. Not blocking anything.
 
 ### A6 — `[M]` `[DONE]` Harsh "0/X, Y% below your historical accuracy" headline tone
 **Fixed 2026-06-09.** Dropped the danger-red on a 0-score (now neutral `--text-strong`; green kept only for >half). Replaced the quantified shortfall: a wipeout reads "{N}/{total} solved — a tough one"; below-baseline reads "a step below your usual" (no percentage); on-par/above keep "on par with your usual" / "{delta}% above your usual". The concept breakdown + debrief below carry the "what to work on" signal, so the headline no longer piles on. `MockSession.js`; tests added. Verified live: "0/3 solved — a tough one" and "1/3 solved — a step below your usual", both neutral.
@@ -130,17 +131,17 @@ Three confirmed defects compounded at the Elite payoff moment:
 ### B4 — `[M]` `[DONE]` Start button enabled when `/access` fetch fails (`accessState` null)
 **Fixed 2026-06-09.** The guard `(accessState && !...can_start)` short-circuited to enabled when `accessState` was null (failed fetch). Changed to `(!accessState || !...can_start)` so a null/failed access keeps Start disabled (`accessLoading` still covers the in-flight state). Extracted the access fetch into a `fetchAccess` `useCallback` and added a rail notice — "Couldn't check your access. Retry" — shown only on genuine failure (`!accessLoading && !accessState`). Test added in `MockHub.test.js` (rejected `/access` → Start disabled + Retry present). Verified live: happy path unchanged (Start enabled, no notice).
 
-### B5 — `[L]` `[TODO]` Elite analytics: network error indistinguishable from empty state `[agent-located]`
-- `MockHub.js:925-927` — `analytics` is null on both initial state and `.catch`. Add a distinct error+retry state.
+### B5 — `[L]` `[DONE]` Elite analytics: network error indistinguishable from empty state
+**Fixed 2026-06-09.** Added an `analyticsError` state + extracted the fetch into a `fetchAnalytics` `useCallback`; on failure the panel now shows "Couldn't load analytics. Retry" (retry re-fetches) instead of the first-timer "Complete your first benchmark" copy. The true 0-sessions empty state is still the `total_sessions === 0` branch. `MockHub.js`; unit test added (rejected `/analytics` → error + Retry shown).
 
-### B6 — `[L]` `[TODO]` Mixed-track shows two Role selectors `[agent-located]`
-- `MockHub.js:526-547` (top filter, has "All") + `:591-620` (mixed-specific, no "All") render together; redundant, two "Role" labels.
+### B6 — `[L]` `[DONE]` Mixed-track shows two Role selectors
+**Fixed 2026-06-09.** Hid the always-on top "Role" filter when `track === 'mixed'` (wrapped in `{!isMixedTrack && …}`), so Mixed shows only its purpose-built "Role (required)" selector. `MockHub.js`. Verified live: Mixed now shows exactly 1 role selector (was 2).
 
-### B7 — `[L]` `[TODO]` PySpark lobby blueprint shows a composition the backend doesn't serve
-- `MockHub.js:43-45` `PYSPARK_FORMAT_TARGETS` (display-only, used at `:67`) diverges from backend selection/`mock.md`: frontend easy = `conceptual×3 + predict_output×2 + debug×1` and medium includes `optimization`; backend easy = `predict_output×3 + conceptual×2 + debug×1`. Confirmed firsthand. Align the display constant to the backend targets.
+### B7 — `[L]` `[DONE]` PySpark lobby blueprint shows a composition the backend doesn't serve
+**Fixed 2026-06-09.** Aligned the frontend `PYSPARK_FORMAT_TARGETS` display constant to the backend's `_pyspark_format_targets` exactly (easy/medium were wrong; medium no longer references a phantom `optimization`). `MockHub.js`. Verified: no stale `optimization` text for PySpark.
 
-### B8 — `[L]` `[TODO]` Dead UI `[agent-located]`
-- `MockHub.js:25` `NO_MOCK_BANK_TRACKS = new Set()` makes the "no mock bank" note (`:624-628`) unreachable; first-run "Warm up in SQL" CTA (`:1180`) hardcodes `/practice/sql` regardless of selected role/track. Remove dead code; route the CTA to the selected track.
+### B8 — `[L]` `[DONE]` Dead UI
+**Fixed 2026-06-09.** Removed `NO_MOCK_BANK_TRACKS` (empty Set), `hasMockBank`, and the unreachable "no mock bank" note. The first-run "Warm up" CTA now routes to the selected track (`/practice/${isMixedTrack ? 'sql' : track}`, labeled "Warm up in {TRACK_LABELS[…]}") instead of hardcoded SQL. `MockHub.js`.
 
 ---
 
@@ -163,11 +164,11 @@ Three confirmed defects compounded at the Elite payoff moment:
 ### C5 — `[L]` `[DONE]` `is_follow_up` never persisted (root cause of A3.2)
 **Fixed 2026-06-09.** The column already existed (db.py:204, migration `20260429`) — no migration needed. `create_mock_session`'s INSERT (db.py:1253-1255) now carries `is_follow_up`, and `start_session` sets it on the loop `selected` rows (parent False, follow-ups True); benchmark/custom default False. Regression test `test_interview_loop_follow_up_flag_persisted` added. Verified live: GET now returns `is_follow_up=true` for the follow-up.
 
-### C6 — `[L]` `[TODO]` `30min` legacy → generic "Invalid mode"
-- `MODE_CONFIGS` only contains `60min` (`mock.py:62-64`); `30min` isn't in `valid_start_modes`, so it returns "Invalid mode." rather than the legacy-specific copy `60min` gets. Cosmetic; both are correctly un-startable.
+### C6 — `[L]` `[DONE]` `30min` legacy → generic "Invalid mode"
+**Fixed 2026-06-09.** Added `"30min": {num_questions:2, time_limit_s:1800}` to `MODE_CONFIGS` (`mock.py`), so it joins `valid_start_modes` and hits the read-only-legacy guard. Verified live: `POST /api/mock/start {mode:"30min"}` now returns 400 "Mode '30min' is read-only legacy and cannot be started." (was generic "Invalid mode"). TC-181 tightened to assert the read-only message.
 
-### C7 — `[L]` `[TODO]` Daily-cap `CURRENT_DATE` tz + TOCTOU `[agent-located]`
-- `db.py:2314/2334` use `CURRENT_DATE` (server-tz, not explicitly UTC); no atomicity between usage check and `create_mock_session` (concurrent starts can exceed the cap). Not currently broken on UTC Railway.
+### C7 — `[L]` `[DONE — documented/accepted]` Daily-cap `CURRENT_DATE` tz + TOCTOU
+**Resolved 2026-06-09 by documenting, not refactoring.** `CURRENT_DATE` is the server-tz date and the check→create has no transactional guard. Both are correct on Railway (Postgres runs UTC) and acceptable for a non-financial daily cap; refactoring prod date-math risks an off-by-a-day bug for a latent non-issue. Added docstring notes to `get_daily_benchmark_usage` (UTC assumption + accepted TOCTOU) and a pointer on `get_daily_custom_usage` (`db.py`). No SQL changed.
 
 ---
 
@@ -230,3 +231,7 @@ Three confirmed defects compounded at the Elite payoff moment:
   - A6: gentler post-mock headline (`MockSession.js`) — no danger-red on 0; "a tough one" (wipeout) / "a step below your usual" (below) / "{delta}% above your usual" (above). Tests added. Verified live: "0/3 solved — a tough one", "1/3 solved — a step below your usual" (neutral).
   - Elite-panel toggle (user-reported, not an audit finding): the collapse control was a bare muted arrow — added a "Hide"/"Show" text label + larger, higher-contrast arrow (`MockHub.js` + `App.css`). Verified live: shows "Hide ▴"/"Show ▾", toggles the panel.
   - Frontend 147 green.
+- **2026-06-09 — B5 + B6 + B7 + B8 + C6 + C7 (low-priority cleanup batch)** — fixed on `main`. Two parallel Sonnet agents (frontend MockHub / backend); Opus reviewed + verified live + committed. A5b deferred (recommend leaving generous benchmark time as-is).
+  - B5: analytics error+retry state (was indistinguishable from empty). B6: hid the duplicate top Role filter on Mixed (1 selector now). B7: aligned `PYSPARK_FORMAT_TARGETS` to the backend (no phantom `optimization`). B8: removed dead `NO_MOCK_BANK_TRACKS`/note; first-run CTA follows the selected track. (`MockHub.js`)
+  - C6: `30min` added to `MODE_CONFIGS` → read-only-legacy message (`mock.py`, verified live). C7: documented the UTC + accepted-TOCTOU assumptions on the daily-usage queries (`db.py`); no SQL change.
+  - Frontend 148 + backend mock 80 green.
