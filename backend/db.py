@@ -2085,6 +2085,24 @@ async def update_password(user_id: str, new_password: str) -> None:
         await session.commit()
 
 
+async def update_user_name(user_id: str, name: str) -> None:
+    """Update a user's display name (stripped, max 120 chars)."""
+    name = name.strip()[:120]
+    session_factory = _session_factory_or_raise()
+    async with session_factory() as session:
+        await session.execute(
+            text(
+                """
+                UPDATE users
+                SET name = :name
+                WHERE id = CAST(:user_id AS UUID)
+                """
+            ),
+            {"name": name, "user_id": user_id},
+        )
+        await session.commit()
+
+
 # ── Email verification tokens ─────────────────────────────────────────────────
 
 async def create_email_verification_token(user_id: str) -> str:

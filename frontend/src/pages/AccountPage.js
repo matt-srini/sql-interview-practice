@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../api';
@@ -521,7 +521,7 @@ function DeleteAccountModal({ userPlan, onClose }) {
 // ── Main page ─────────────────────────────────────────────────────────────────
 
 export default function AccountPage() {
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
 
   const authPlan = user?.plan ?? 'free';
   const normPlan = normalisePlan(authPlan);
@@ -530,6 +530,50 @@ export default function AccountPage() {
   const planPillNode = isPaying
     ? <span className={`shell-pill shell-pill-plan shell-pill-plan-${normPlan}`}>{PLAN_LABELS[authPlan] ?? authPlan}</span>
     : null;
+
+  // ── Profile state ────────────────────────────────────────────────────────
+  const [nameEditing, setNameEditing] = useState(false);
+  const [nameValue, setNameValue] = useState('');
+  const [nameSaving, setNameSaving] = useState(false);
+  const [nameError, setNameError] = useState(null);
+  const [idCopied, setIdCopied] = useState(false);
+  const nameInputRef = useRef(null);
+
+  function handleNameEdit() {
+    setNameValue(user?.name || '');
+    setNameError(null);
+    setNameEditing(true);
+    setTimeout(() => nameInputRef.current?.focus(), 0);
+  }
+
+  function handleNameCancel() {
+    setNameEditing(false);
+    setNameError(null);
+  }
+
+  async function handleNameSave() {
+    const trimmed = nameValue.trim();
+    if (!trimmed) { setNameError('Name cannot be empty.'); return; }
+    setNameSaving(true);
+    setNameError(null);
+    try {
+      await api.patch('/account/profile', { name: trimmed });
+      await refreshUser();
+      setNameEditing(false);
+    } catch (err) {
+      setNameError(err.response?.data?.error || 'Could not save name.');
+    } finally {
+      setNameSaving(false);
+    }
+  }
+
+  function handleCopyId() {
+    if (!user?.id) return;
+    navigator.clipboard.writeText(user.id).then(() => {
+      setIdCopied(true);
+      setTimeout(() => setIdCopied(false), 2000);
+    }).catch(() => {});
+  }
 
   // ── Billing state ────────────────────────────────────────────────────────
   const [billing, setBilling] = useState(null);
@@ -597,14 +641,74 @@ export default function AccountPage() {
       <Topbar userExtras={planPillNode} />
 
       <main className="container" style={{ maxWidth: 680, padding: '3rem 1.5rem 4rem' }}>
-        <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-strong)', margin: '0 0 0.35rem' }}>
+        <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-strong)', margin: '0 0 1.5rem' }}>
           Account
         </h1>
-        {user?.name && (
-          <p style={{ color: 'var(--text-secondary)', fontSize: '0.925rem', margin: '0 0 2rem' }}>
-            {user.name}
-          </p>
-        )}
+
+        {/* ── Profile card ─────────────────────────────────────────── */}
+        <Card style={{ marginBottom: '1.25rem' }}>
+          <div style={{ fontWeight: 600, color: 'var(--text-strong)', fontSize: '1rem', marginBottom: '0.875rem' }}>
+            Profile
+          </div>
+
+          {/* Name row */}
+          <div className="acct-field-row">
+            <span className="acct-field-label">Name</span>
+            {nameEditing ? (
+              <div className="acct-name-edit">
+                <input
+                  ref={nameInputRef}
+                  className="acct-name-input"
+                  value={nameValue}
+                  onChange={e => setNameValue(e.target.value)}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter') handleNameSave();
+                    if (e.key === 'Escape') handleNameCancel();
+                  }}
+                  maxLength={120}
+                  disabled={nameSaving}
+                  placeholder="Your name"
+                />
+                <button className="acct-save-btn" onClick={handleNameSave} disabled={nameSaving}>
+                  {nameSaving ? 'Saving…' : 'Save'}
+                </button>
+                <button className="acct-cancel-btn" onClick={handleNameCancel} disabled={nameSaving}>
+                  Cancel
+                </button>
+                {nameError && <span className="acct-name-error">{nameError}</span>}
+              </div>
+            ) : (
+              <div className="acct-name-display">
+                <span style={{ color: user?.name ? 'var(--text-strong)' : 'var(--text-muted)', fontStyle: user?.name ? 'normal' : 'italic' }}>
+                  {user?.name || 'Not set'}
+                </span>
+                <button className="acct-edit-btn" onClick={handleNameEdit} title="Edit name" aria-label="Edit name">
+                  ✎
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Email row */}
+          <div className="acct-field-row">
+            <span className="acct-field-label">Email</span>
+            <span className="acct-field-value">{user?.email}</span>
+          </div>
+
+          {/* Account ID row */}
+          <div className="acct-field-row">
+            <span className="acct-field-label">Account ID</span>
+            <button
+              className="acct-id-chip"
+              onClick={handleCopyId}
+              title={idCopied ? 'Copied!' : 'Click to copy full ID'}
+              aria-label="Copy account ID"
+            >
+              <span className="acct-id-chip-text">{user?.id?.slice(0, 8)}…</span>
+              <span className="acct-id-chip-icon">{idCopied ? '✓' : '⧉'}</span>
+            </button>
+          </div>
+        </Card>
 
         {/* ── Billing section ───────────────────────────────────────────── */}
         {billingLoading ? (

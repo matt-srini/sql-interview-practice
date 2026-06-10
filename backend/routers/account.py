@@ -17,7 +17,7 @@ from config import (
     RAZORPAY_PLAN_PRO,
     RAZORPAY_PLAN_ELITE,
 )
-from db import clear_user_subscription_id, delete_user_account  # noqa: F401
+from db import clear_user_subscription_id, delete_user_account, update_user_name  # noqa: F401
 from deps import clear_session_cookie, require_authenticated_user
 
 try:
@@ -230,6 +230,30 @@ async def get_billing(
 
     _base["invoices"] = invoices
     return _base
+
+
+# ---------------------------------------------------------------------------
+# PATCH /api/account/profile
+# ---------------------------------------------------------------------------
+
+class ProfileUpdateRequest(BaseModel):
+    name: str
+
+
+@router.patch("/profile")
+async def update_profile(
+    body: ProfileUpdateRequest,
+    current_user: dict[str, Any] = Depends(require_authenticated_user),
+) -> dict[str, Any]:
+    """Update the authenticated user's display name."""
+    name = body.name.strip()
+    if not name:
+        raise HTTPException(status_code=400, detail="Name cannot be empty.")
+    if len(name) > 120:
+        raise HTTPException(status_code=400, detail="Name must be 120 characters or fewer.")
+
+    await update_user_name(current_user["id"], name)
+    return {"ok": True, "name": name}
 
 
 # ---------------------------------------------------------------------------
