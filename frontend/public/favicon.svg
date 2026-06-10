@@ -1,11 +1,12 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
-  <rect width="32" height="32" rx="7" fill="#141413"/>
-  <text
-    font-family="'JetBrains Mono', 'SFMono-Regular', Consolas, monospace"
-    font-size="19"
-    font-weight="600"
-    text-anchor="middle"
-    x="16"
-    y="23"
-  ><tspan fill="#F0EEE9">d</tspan><tspan fill="#5B6AF0">t</tspan></text>
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- datathink favicon — Forest & Ink.
+     Canonical two-diagonal-squares mark (thought-bubble motif) on a deep
+     forest-ink chip. Bright-green mark colours read at 16px on light or
+     dark browser chrome. Source of truth for favicon-16/32/48.png. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="datathink">
+  <rect width="64" height="64" rx="14" fill="#0D1A10"/>
+  <g transform="translate(12.5,6)">
+    <rect x="2" y="22" width="26" height="26" rx="6" fill="#4ADE80"/>
+    <rect x="22" y="4" width="15" height="15" rx="4" fill="#87B09A"/>
+  </g>
 </svg>

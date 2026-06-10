@@ -133,7 +133,7 @@ def _build_seo_meta() -> dict:
     for path in ["/auth", "/dashboard", "/mock"]:
         meta[path] = {"noindex": True}
 
-    # Dynamic: 22 learning paths (filesystem reads)
+    # Dynamic: per-path SEO pages (filesystem reads)
     try:
         from path_loader import get_all_paths
         for p in get_all_paths():
@@ -202,7 +202,7 @@ def _inject_seo(html: str, url_path: str) -> str:
     title = html_escape(m["title"])
     desc = html_escape(m["description"])
     canonical = f"{BASE_URL}{url_path}"
-    og_image = f"{BASE_URL}/og-image.png"
+    og_image = f"{BASE_URL}/og-image.png?v=2"
 
     html = re.sub(r"<title>[^<]*</title>", f"<title>{title}</title>", html, count=1)
     html = re.sub(

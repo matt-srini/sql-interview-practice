@@ -182,10 +182,10 @@ export default function TrackHubPage() {
         <meta property="og:title" content={`${meta.label} Interview Practice — datathink`} />
         <meta property="og:description" content={hubDescription} />
         <meta property="og:url" content={`https://datathink.co/practice/${topic}`} />
-        <meta property="og:image" content="https://datathink.co/og-image.png" />
+        <meta property="og:image" content="https://datathink.co/og-image.png?v=2" />
         <link rel="canonical" href={`https://datathink.co/practice/${topic}`} />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:image" content="https://datathink.co/og-image.png" />
+        <meta name="twitter:image" content="https://datathink.co/og-image.png?v=2" />
         <script type="application/ld+json">{JSON.stringify({
           "@context": "https://schema.org",
           "@type": "Course",

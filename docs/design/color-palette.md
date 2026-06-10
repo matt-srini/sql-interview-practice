@@ -84,6 +84,8 @@ Two diagonal rounded squares — big block anchored bottom-left, small block flo
 
 Files: `frontend/public/branding/lockup-bar-no-bg.svg` (light) · `lockup-bar-reverse-no-bg.svg` (dark)
 
+The same mark drives every favicon, app icon, and the Open Graph social card — rendered on the deep forest-ink ground `#0D1A10` with the bright-green (dark-theme) mark colours so it reads on any browser chrome. Sources + the render pipeline: see [`docs/frontend.md`](../frontend.md) § Brand icons & social card.
+
 ### Track colors (fixed — do not override with theme accent)
 
 These are each track's own brand identity and must remain stable across theme changes:

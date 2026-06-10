@@ -221,6 +221,28 @@ When `solved_count === question_count`, a completion banner is shown with a "Wha
 
 ---
 
+#### Brand icons & social card
+
+All brand icons derive from the canonical two-diagonal-squares mark on the Forest & Ink ground `#0D1A10` (bright-green mark `#4ADE80`/`#87B09A`).
+
+**Source SVGs** (do not modify — these are the design source of truth):
+- `frontend/public/favicon.svg` — 64×64 rounded chip; source for `favicon-16/32/48.png`
+- `frontend/public/icon-maskable.svg` — 512×512 full-bleed (no corner rounding; platforms apply their own mask); source for `apple-touch-icon.png`, `icon-192.png`, `icon-512.png`
+- `frontend/public/og-image.svg` — 1200×630 social card with wordmark, tagline, and durable stat copy ("9 tracks · 850+ questions"); source for `og-image.png`
+
+**Rasterized PNGs** (generated; do not hand-edit — re-run the script instead):
+`favicon-16.png` (16×16), `favicon-32.png` (32×32), `favicon-48.png` (48×48), `apple-touch-icon.png` (180×180), `icon-192.png` (192×192), `icon-512.png` (512×512), `og-image.png` (1200×630).
+
+**Render script:** `frontend/scripts/render-brand-assets.mjs` — Node ESM, uses Playwright Chromium. Run from `frontend/`: `node scripts/render-brand-assets.mjs`. It inlines each SVG directly into the DOM (required for OG web-font pickup), sets an exact-pixel viewport, and screenshots with `deviceScaleFactor: 1`.
+
+**Web app manifest:** `frontend/public/site.webmanifest` — `theme_color` and `background_color` both `#0D1A10`; references `icon-192.png` and `icon-512.png` with `"purpose": "any maskable"`.
+
+**`index.html` wiring:** SVG favicon is first (modern browsers), followed by PNG 32×16 fallbacks, `apple-touch-icon`, manifest link, and `<meta name="theme-color" content="#0D1A10">`.
+
+**OG image versioning:** The OG image URL is versioned (`og-image.png?v=2`) in `index.html`, `backend/routers/spa.py` (server-side injection), and all pages that set `og:image`/`twitter:image` via Helmet (`LandingPage.js`, `LearningPath.js`, `SampleQuestionPage.js`, `TrackHubPage.js`, `LearningPathsIndex.js`). When the OG art changes: re-render via the script, bump `?v=N` in all these locations simultaneously.
+
+---
+
 ## Components
 
 | Component | File | Purpose |
