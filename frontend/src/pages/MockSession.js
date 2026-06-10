@@ -493,11 +493,15 @@ export default function MockSession() {
     };
 
     let comparisonCopy = null;
-    if (typeof baselineAccuracy === 'number') {
+    if (solvedCount === 0 && totalCount > 0) {
+      // Gentle frame for a wipeout — acknowledge it, no demoralizing percentage. The
+      // concept breakdown + debrief below carry the "what to work on" signal.
+      comparisonCopy = 'a tough one';
+    } else if (typeof baselineAccuracy === 'number') {
       const delta = Math.round((sessionAccuracy - baselineAccuracy) * 100);
-      if (delta > 0) comparisonCopy = `${delta}% above your historical accuracy`;
-      else if (delta < 0) comparisonCopy = `${Math.abs(delta)}% below your historical accuracy`;
-      else comparisonCopy = 'on par with your historical accuracy';
+      if (delta > 0) comparisonCopy = `${delta}% above your usual`;
+      else if (delta < 0) comparisonCopy = 'a step below your usual';
+      else comparisonCopy = 'on par with your usual';
     }
 
     function shareText() {
@@ -566,12 +570,12 @@ export default function MockSession() {
               )}
             </div>
             <div className="mock-summary-score" style={{
-              color: solvedCount === 0 ? 'var(--danger)' : solvedCount > totalCount / 2 ? 'var(--success)' : 'var(--text-strong)',
+              color: solvedCount > totalCount / 2 ? 'var(--success)' : 'var(--text-strong)',
             }}>
               {status === 'finishing'
                 ? 'Finishing…'
                 : comparisonCopy
-                  ? `${solvedCount}/${totalCount} correct, ${comparisonCopy}`
+                  ? `${solvedCount}/${totalCount} solved — ${comparisonCopy}`
                   : `${solvedCount}/${totalCount} questions solved`}
             </div>
             {timeUsedS != null && (

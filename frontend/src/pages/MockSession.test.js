@@ -525,3 +525,48 @@ describe('MockSession summary actions', () => {
     });
   });
 });
+
+// ── A6: summary headline tone on poor sessions ────────────────────────────────
+
+describe('MockSession summary headline — A6 gentle framing', () => {
+  it('shows "a tough one" (not "below your historical accuracy") for a 0-solved session', async () => {
+    const completedSession = { ...makeSessionData(2), status: 'completed', mode: 'benchmark' };
+    mockApiPost.mockResolvedValueOnce({
+      data: makeCompletedSummary({
+        mode: 'benchmark',
+        solved_count: 0,
+        total_count: 2,
+        score: 0,
+      }),
+    });
+
+    renderSession(completedSession);
+
+    await waitFor(() => {
+      // headline should contain the gentle "a tough one" label
+      expect(screen.getByText(/a tough one/)).toBeInTheDocument();
+      // the old demoralizing copy must not appear
+      expect(screen.queryByText(/below your historical accuracy/)).not.toBeInTheDocument();
+    });
+  });
+
+  it('does NOT use danger red for the score headline when solved_count is 0', async () => {
+    const completedSession = { ...makeSessionData(2), status: 'completed', mode: 'benchmark' };
+    mockApiPost.mockResolvedValueOnce({
+      data: makeCompletedSummary({
+        mode: 'benchmark',
+        solved_count: 0,
+        total_count: 2,
+        score: 0,
+      }),
+    });
+
+    renderSession(completedSession);
+
+    await waitFor(() => screen.getByText(/a tough one/));
+
+    // The score element must not carry the CSS danger variable
+    const scoreEl = screen.getByText(/0\/2 solved/);
+    expect(scoreEl.style.color).not.toBe('var(--danger)');
+  });
+});
