@@ -3721,13 +3721,22 @@ select {
   background: var(--accent);
   border-color: transparent;
   color: #FFFFFF;
-  box-shadow: 0 1px 3px rgba(91, 106, 240, 0.25);
+  box-shadow: 0 1px 3px rgba(20, 41, 27, 0.18);
+}
+/* Dark mode: --accent is bright (#4ADE80), so white text on it is harsh and
+   fails contrast (~1.7:1). Use forest-ink text instead (~11:1) — matches the
+   existing .mcq-option-letter precedent. One override covers all primary CTAs
+   and both upgrade buttons (UpgradeButton renders with .btn-primary, incl. the
+   elite green→teal gradient). Light mode keeps white text on the deep-green
+   #166534 fill, which already passes. */
+[data-theme="dark"] .btn-primary {
+  color: #0D1A10;
 }
 
 .btn-primary:not(:disabled):hover {
   transform: translateY(-1px);
   background: var(--accent-strong);
-  box-shadow: 0 6px 20px rgba(91, 106, 240, 0.30);
+  box-shadow: 0 6px 20px rgba(20, 41, 27, 0.22);
 }
 
 .btn-secondary {
