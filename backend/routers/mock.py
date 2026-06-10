@@ -48,6 +48,7 @@ from db import (
 from deps import get_current_user
 from evaluator import evaluate
 from exceptions import BadRequestError
+from follow_up_dimensions import canonical_dimension
 from offload import run_blocking_exec, run_blocking_sql
 from python_evaluator import evaluate_python_code, evaluate_pandas_code
 from routers.insights import _CONCEPTS_LOOKUP, build_session_debrief
@@ -1046,7 +1047,9 @@ def _compute_mock_analytics(
     dim_attempts: dict[str, int] = defaultdict(int)
     dim_correct: dict[str, int] = defaultdict(int)
     for ev in (loop_events or []):
-        dim = ev.get("follow_up_dimension")
+        # Canonicalise so alias spellings (e.g. `data_quality` vs `data_quality_pivot`)
+        # count as one dimension instead of splitting the per-dimension breakdown.
+        dim = canonical_dimension(ev.get("follow_up_dimension"))
         if not dim:
             continue
         dim_attempts[dim] += 1

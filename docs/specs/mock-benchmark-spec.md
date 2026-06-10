@@ -130,7 +130,7 @@ The current Quick / Full / Custom system is an implementation starting point, no
 
 ## Chain atomicity contract (Phase 3)
 
-Cross-reference: full chain mechanics live in [`docs/features/mock.md`](../features/mock.md#follow-up-chain-atomicity-interview-loop-only). The 7 universal `follow_up_dimension` values are defined in [`docs/concept-taxonomy.md`](../concept-taxonomy.md#the-7-universal-follow-up-dimensions-chain-pivots).
+Cross-reference: full chain mechanics live in [`docs/features/mock.md`](../features/mock.md#follow-up-chain-atomicity-interview-loop-only). The 8 universal `follow_up_dimension` values are defined in [`docs/concept-taxonomy.md`](../concept-taxonomy.md#the-8-universal-follow-up-dimensions-chain-pivots).
 
 This section establishes the spec-level invariants the mock subsystem must enforce; the feature doc owns the user-facing contract.
 
@@ -163,7 +163,7 @@ Follow-up (mock-only) question JSON:
   "id": <int>,
   "mock_only": true,
   "parent_id": <int>,                            // must back-reference the parent
-  "follow_up_dimension": "scale_pivot",          // one of the 7 universal dimensions
+  "follow_up_dimension": "scale_pivot",          // one of the 8 universal dimensions
   ...
 }
 ```
@@ -181,7 +181,7 @@ Follow-up (mock-only) question JSON:
 - Two consecutive entries in a chain sharing the same `follow_up_dimension`
 - Chain members spanning multiple tracks
 - Follow-up easier difficulty than parent (chain difficulty must be same-or-escalating)
-- Any `follow_up_dimension` value not in the 7-dimension registry
+- Any `follow_up_dimension` value not in the 8-dimension registry (canonical set or accepted alias)
 
 ### Selection algorithm extension
 

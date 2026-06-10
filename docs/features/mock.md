@@ -185,7 +185,7 @@ Plan-tier rules must be visible to the user, not buried in account settings. Req
 
 **Chains appear exclusively in Interview Loop sessions.** Benchmark and custom drill sessions contain only standalone questions — no `follow_up_id` injection, no dynamic follow-up insertion.
 
-Follow-up chains simulate real interviewer pivots — the moment a senior interviewer says "now exclude refunded orders" or "what if the dataset were 10× larger?" Every chain is anchored to a parent question and travels as an atomic unit. Each follow-up escalates exactly one [dimension](../concept-taxonomy.md#the-7-universal-follow-up-dimensions-chain-pivots); they never introduce an unseen concept.
+Follow-up chains simulate real interviewer pivots — the moment a senior interviewer says "now exclude refunded orders" or "what if the dataset were 10× larger?" Every chain is anchored to a parent question and travels as an atomic unit. Each follow-up escalates exactly one [dimension](../concept-taxonomy.md#the-8-universal-follow-up-dimensions-chain-pivots); they never introduce an unseen concept.
 
 ### The atomicity rule (locked decision)
 
@@ -204,7 +204,7 @@ On each **follow-up** question JSON:
 ```json
 "mock_only": true,
 "parent_id": <parent_id>,             // back-ref, validated at catalog load
-"follow_up_dimension": "scale_pivot"  // one of the 7 universal dimensions below
+"follow_up_dimension": "scale_pivot"  // one of the 8 universal dimensions below
 ```
 
 ### Selection rules
@@ -222,9 +222,9 @@ On each **follow-up** question JSON:
 - Consume at first submission — allows users to read all questions and never submit, enabling infinite re-rolls.
 - Consume at finish — same abuse vector as above.
 
-### The 7 universal follow-up dimensions
+### The 8 universal follow-up dimensions
 
-Every follow-up escalates exactly one dimension. Full taxonomy in `docs/concept-taxonomy.md`.
+Every follow-up escalates exactly one dimension. Full taxonomy in `docs/concept-taxonomy.md`. The `_pivot`-less spelling (e.g. `data_quality`) is an accepted alias, normalised by `backend/follow_up_dimensions.py`.
 
 | Dimension | What it tests | Cross-track example |
 |---|---|---|
@@ -235,6 +235,7 @@ Every follow-up escalates exactly one dimension. Full taxonomy in `docs/concept-
 | `performance_pivot` | How would you reduce cost/latency? | SQL: "reduce repeated scans"; PySpark: "minimise shuffle"; DE: "cost optimisation" |
 | `ambiguity_pivot` | The business question is unclear — what would you ask? | Cross-track: "what counts as 'active'?"; Exp: "is this even testable?" |
 | `stakeholder_pivot` | A stakeholder wants a different answer — how do you respond? | "Exec wants weekly not monthly"; "PM wants simpler explanation"; "Finance wants attribution" |
+| `abstraction_pivot` | Step up a level — generalise from the instance, or reframe under a different lens | Stats: "frequentist CI → Bayesian credible interval on the same data"; "spot the collider → classify any variable's causal role"; SQL: "make it work for any N tiers, not just 3" |
 
 ### Authoring rules for chains (enforced by `validate_content.py`)
 
@@ -286,7 +287,7 @@ Nullable. Set only for `track="mixed"` sessions. Values: `"data_analyst"`, `"dat
 The user picks a track and optionally a focus area, and the system composes a session of **exactly 1 chain** — parent question plus all its follow-ups in order. Within the chain the user experiences:
 
 1. The parent question (standard mock UX)
-2. After submitting the parent, an **interviewer-pivot card** appears inline showing the **human-readable dimension label** (e.g. "Business rules") and a **dimension-specific interviewer framing line** drawn from the [7-dimension taxonomy](../concept-taxonomy.md#the-7-universal-follow-up-dimensions-chain-pivots) (e.g. for `business_rule_pivot`: *"A business rule just changed. Adapt your solution to the new requirement."*). The pivot card always appears, regardless of whether the parent answer was correct — real interviews continue either way. User dismisses the card to advance.
+2. After submitting the parent, an **interviewer-pivot card** appears inline showing the **human-readable dimension label** (e.g. "Business rules") and a **dimension-specific interviewer framing line** drawn from the [8-dimension taxonomy](../concept-taxonomy.md#the-8-universal-follow-up-dimensions-chain-pivots) (e.g. for `business_rule_pivot`: *"A business rule just changed. Adapt your solution to the new requirement."*). The pivot card always appears, regardless of whether the parent answer was correct — real interviews continue either way. User dismisses the card to advance.
 3. The follow-up question, building on the same dataset / problem / context
 4. Repeat for each follow-up in the chain
 
@@ -325,7 +326,7 @@ The user does **not** see total question count up front (preserves the dialogue-
 ### Pivot card UX (frontend specification)
 
 - **Trigger:** displayed after the user submits any non-final question in the chain (i.e. all except the last follow-up).
-- **Content:** the human-readable **dimension label** + a **dimension-specific interviewer framing line**, both keyed off `follow_up_dimension` via the shared map in `frontend/src/mockModeConfig.js` (`dimensionLabel()` / `dimensionBlurb()`). **Not** the question's `framing` field — `framing` carries the question *type* token (e.g. `"scenario"`), not interviewer narrative; the label+blurb come from the [7-dimension taxonomy](../concept-taxonomy.md#the-7-universal-follow-up-dimensions-chain-pivots). Unknown/drifted tokens are humanized (never shown raw).
+- **Content:** the human-readable **dimension label** + a **dimension-specific interviewer framing line**, both keyed off `follow_up_dimension` via the shared map in `frontend/src/mockModeConfig.js` (`dimensionLabel()` / `dimensionBlurb()`). **Not** the question's `framing` field — `framing` carries the question *type* token (e.g. `"scenario"`), not interviewer narrative; the label+blurb come from the [8-dimension taxonomy](../concept-taxonomy.md#the-8-universal-follow-up-dimensions-chain-pivots). Unknown/drifted tokens are humanized (never shown raw).
 - **Form:** inline card in MockSession, not a modal. Replaces the "Next question →" button. User must explicitly dismiss it to advance. Cannot be skipped.
 - **Wrong answer:** pivot card still appears. No answer reveal. The debrief surfaces the miss post-session.
 - **Styling:** visually distinct from the question area — use an interviewer-voice tone. The dimension label renders as the card heading.

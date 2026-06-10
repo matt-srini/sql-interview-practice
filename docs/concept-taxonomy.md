@@ -57,13 +57,15 @@ For each `tag` in a question's `concepts` array, find its family by trying in or
 
 ---
 
-## The 7 universal follow-up dimensions (chain pivots)
+## The 8 universal follow-up dimensions (chain pivots)
 
-Used by every track's mock-only follow-up chains. Each follow-up in a chain must carry a `follow_up_dimension` value from this list; consecutive follow-ups in a chain must use different dimensions (no two `scale_pivot` follow-ups in a row).
+Used by every track's mock-only follow-up chains. Each follow-up in a chain must carry a `follow_up_dimension` value from this list; consecutive follow-ups in a chain must use different dimensions (no two `scale_pivot` follow-ups in a row). **Both rules are machine-enforced** by `backend/scripts/validate_content.py` against the canonical set in `backend/follow_up_dimensions.py` (mirrored in the frontend's `mockModeConfig.js`).
+
+**Spelling / aliases.** The canonical token carries the `_pivot` suffix (`data_quality_pivot`). Some chains in the bank — notably Data Engineering — authored the `_pivot`-less form (`data_quality`); these are accepted as **aliases** and normalised to the canonical token by `canonical_dimension()`, so analytics and validation treat the two spellings as one dimension. New content should prefer the canonical `_pivot` form, but the alias is valid and requires no re-authoring (see `docs/decisions/DECISIONS.md` 2026-06-10).
 
 Full chain mechanics live in [`docs/features/mock.md`](features/mock.md#follow-up-chain-atomicity-proelite--mock-only-content). This taxonomy is the universal vocabulary used across all tracks.
 
-The five most common pivots — `scale_pivot`, `business_rule_pivot`, `ambiguity_pivot`, `edge_case_pivot`, `performance_pivot` — cover the bulk of natural interviewer escalations. `data_quality_pivot` (dirtier data than implied — distinct from `edge_case_pivot`) and `stakeholder_pivot` (a human with a different agenda changes the delivery) round out the set. A follow-up escalates **exactly one** dimension at a time; that single-axis escalation is what makes a chain feel like an interviewer extending the discussion rather than a new question.
+The five most common pivots — `scale_pivot`, `business_rule_pivot`, `ambiguity_pivot`, `edge_case_pivot`, `performance_pivot` — cover the bulk of natural interviewer escalations. `data_quality_pivot` (dirtier data than implied — distinct from `edge_case_pivot`), `stakeholder_pivot` (a human with a different agenda changes the delivery), and `abstraction_pivot` (step up a level — generalise from the instance, or reframe under a different lens) round out the set. A follow-up escalates **exactly one** dimension at a time; that single-axis escalation is what makes a chain feel like an interviewer extending the discussion rather than a new question.
 
 ### `scale_pivot`
 The numbers change by an order of magnitude. The question itself doesn't morph; the answer's shape does.
@@ -148,6 +150,16 @@ A real human with a different agenda enters the picture. The technical answer do
 - Stats: "PM wants a simpler explanation than a p-value. Frame the answer."
 - ML: "Risk team blocks deployment because the model isn't explainable enough. What do you do?"
 - Experimentation: "Leadership wants to ship despite an inconclusive test. Frame your push-back."
+
+### `abstraction_pivot`
+The interviewer steps up a level: generalise the specific case to the underlying principle, or re-frame the same problem under a different conceptual lens / framework. The data and scenario need not change — the *level of abstraction* does. This tests whether the candidate can move between the concrete and the general (and recognise the same problem in a new framing), which separates genuine understanding from pattern-matching on a memorised template.
+- SQL: "You solved this for 3 tiers. Now write it so it works for any number of tiers without changing the query shape."
+- Python: "That handles this graph. State the general invariant your algorithm relies on."
+- Stats: "You explained the frequentist 95% CI for this conversion rate — now what does a Bayesian credible interval on the same data claim?" / "You spotted the collider here — now classify any variable as confounder, mediator, or collider in general."
+- ML: "You diagnosed this leak. Generalise: what's the *class* of feature that causes train-serve skew?"
+- DE: "You fixed this pipeline. Abstract the failure mode into a data-contract rule that prevents the whole class."
+
+**Why it's a distinct dimension (reasoning-depth defense):** the other seven keep the candidate at the same level of abstraction and change an *external* property of the problem (more data, a new rule, dirtier inputs, a stakeholder). `abstraction_pivot` instead changes the *candidate's vantage point* — concrete ↔ general, or one framework ↔ another — a different and harder reasoning move that strong interviewers use to separate "knows the recipe" from "understands the principle." Added 2026-06-10 to fit high-quality Statistics chains the original 7 couldn't cleanly label — **docs serve the product** (see `docs/decisions/DECISIONS.md`).
 
 ### Authoring rules summary
 
@@ -1029,8 +1041,8 @@ The `validate_content.py` script (Phase 2 work item) must enforce:
 2. **Family count per question: 2–4** (5 max for hard questions teaching multiple dependent patterns). Outside that range = warning.
 3. **No duplicate families on a single question.** Two tags resolving to the same family is redundant — keep only the more specific tag.
 4. **No mock-only-specific families in practice content.** If we add follow-up-only families later (e.g. families that only make sense in chain follow-ups), they must be tagged as `mock_only=true` in the registry.
-5. **Chain `follow_up_dimension` must be from the 7-dimension list.** Anything else crashes catalog load.
-6. **Consecutive `follow_up_dimension` values within a chain must differ.** Validator flags two scale_pivots in a row.
+5. **Chain `follow_up_dimension` must resolve to one of the 8 canonical dimensions.** Either a canonical `*_pivot` token or an accepted `_pivot`-less alias (normalised via `backend/follow_up_dimensions.py` `canonical_dimension()`); anything else is an ERROR in `validate_content.py`.
+6. **Consecutive `follow_up_dimension` values within a chain must differ.** `validate_content.py` flags two of the same canonical dimension back-to-back (e.g. two `scale_pivot` in a row).
 7. **Mock-only introduces no unseen concept families.** Every family a `mock_only: true` question (or chain) tests must already appear in the practice bank for that track at that difficulty or lower. Mock-only recombines learned reasoning under fresh framing; it never debuts a concept the curriculum skipped. (Differentiation is framing/realism/ambiguity, not concept novelty — see [`docs/content-authoring.md`](content-authoring.md#what-separates-practice-from-mock-only).)
 
 These validators are the discipline. They are intentionally strict: the cost of catalog-load-crash on a bad tag is small (the author fixes it before commit); the cost of accumulated tag drift is large (we just paid it).

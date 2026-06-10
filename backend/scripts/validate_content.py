@@ -8,6 +8,7 @@ from pathlib import Path
 # Allow running from backend/ as `python scripts/validate_content.py`
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
+from follow_up_dimensions import CANONICAL_FOLLOW_UP_DIMENSIONS, canonical_dimension
 from path_loader import get_all_paths
 from tracks import TRACKS
 
@@ -948,6 +949,7 @@ def _validate_chain_integrity() -> None:
                         f"{track} {qid} {title}: chain has {child_count} follow-ups (max 3, chain length 2-4)"
                     )
 
+                chain_dims: list[str | None] = []
                 for child_id in follow_ups:
                     child_id = int(child_id)
                     if child_id in all_children_seen[track]:
@@ -964,6 +966,7 @@ def _validate_chain_integrity() -> None:
 
                     child, child_diff = track_lookup[child_id]
                     c_title = child.get("title", "<untitled>")
+                    chain_dims.append(canonical_dimension(child.get("follow_up_dimension")))
 
                     # Child difficulty must be >= parent difficulty
                     if _DIFFICULTY_ORDER.get(child_diff, 0) < _DIFFICULTY_ORDER.get(difficulty, 0):
@@ -982,14 +985,27 @@ def _validate_chain_integrity() -> None:
                             f"{track} {child_id} {c_title}: parent_id {child.get('parent_id')!r} does not match parent {qid}"
                         )
 
-                    if not child.get("follow_up_dimension"):
+                    _dim = child.get("follow_up_dimension")
+                    if not _dim:
                         errors.append(
                             f"{track} {child_id} {c_title}: chain child must have follow_up_dimension"
+                        )
+                    elif canonical_dimension(_dim) is None:
+                        errors.append(
+                            f"{track} {child_id} {c_title}: follow_up_dimension {_dim!r} is not a canonical "
+                            f"dimension (must be one of {sorted(CANONICAL_FOLLOW_UP_DIMENSIONS)} or an accepted alias)"
                         )
 
                     if child.get("follow_ups"):
                         errors.append(
                             f"{track} {child_id} {c_title}: nested chains not allowed (child has follow_ups)"
+                        )
+
+                for i in range(len(chain_dims) - 1):
+                    if chain_dims[i] is not None and chain_dims[i] == chain_dims[i + 1]:
+                        errors.append(
+                            f"{track} {qid} {title}: consecutive follow-ups share dimension "
+                            f"{chain_dims[i]!r} — consecutive pivots must differ"
                         )
 
             # No mock_only at easy

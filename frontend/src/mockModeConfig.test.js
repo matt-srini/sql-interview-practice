@@ -119,8 +119,12 @@ describe('dimensionLabel', () => {
     expect(dimensionLabel('data_quality')).toBe('Data quality');
   });
 
-  it('humanizes an unknown token by stripping _pivot and replacing underscores', () => {
+  it('returns the label for the abstraction_pivot canonical dimension', () => {
     expect(dimensionLabel('abstraction_pivot')).toBe('Abstraction');
+  });
+
+  it('humanizes an unknown token by stripping _pivot and replacing underscores', () => {
+    expect(dimensionLabel('made_up_pivot')).toBe('Made up');
   });
 
   it('returns empty string for null', () => {
@@ -145,8 +149,12 @@ describe('dimensionBlurb', () => {
     expect(dimensionBlurb('data_quality').length).toBeGreaterThan(0);
   });
 
+  it('returns the specific blurb for the abstraction_pivot canonical dimension', () => {
+    expect(dimensionBlurb('abstraction_pivot')).toBe('The interviewer steps up a level — generalise from this specific case, or reframe it under a different lens.');
+  });
+
   it('returns the generic fallback blurb for an unknown token', () => {
-    expect(dimensionBlurb('abstraction_pivot')).toBe('The interviewer shifts focus to a different dimension of the same problem.');
+    expect(dimensionBlurb('made_up_pivot')).toBe('The interviewer shifts focus to a different dimension of the same problem.');
   });
 
   it('returns the generic fallback blurb for null', () => {

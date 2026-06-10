@@ -64,7 +64,7 @@ Severity: **H** high · **M** medium · **L** low. Status: `TODO` · `WIP` · `D
 | D4 | L | DONE | doc | Discard chip window 60s (frontend) vs 120s (doc + server) |
 | D5 | L | DONE | doc | Chain reclaim: spec schema says `reclaimed=TRUE`; code deletes the row |
 | D6 | L | DONE | doc | Pivot-card spec says render `framing`; `framing` is only the type token (reconciled with A3) |
-| **E1** | M | TODO | content+code+doc | `follow_up_dimension` drift: 16 chain children use non-canonical tokens; validator doesn't enforce the 7-list |
+| **E1** | M | DONE | code+doc | `follow_up_dimension` drift — resolved by growing the taxonomy to 8 + accepting aliases (no content edits) |
 
 > Several IDs (A4a/A4b/A5a/A6/B-series/D-series) map to the original audit's lettered findings;
 > the narrative report is preserved verbatim in the entries below.
@@ -184,11 +184,12 @@ Three confirmed defects compounded at the Elite payoff moment:
 
 ## E — Content / taxonomy consistency
 
-### E1 — `[M]` `[TODO]` `follow_up_dimension` values drift from the canonical 7; validator doesn't enforce membership
-- **Found during A3.** Across the mock chain children actually reachable in Interview Loop, 16 questions carry **non-canonical** `follow_up_dimension` tokens: the `_pivot`-less form of 6 of the 7 (`data_quality` ×4, `business_rule` ×3, `performance` ×3, `ambiguity` ×3, `edge_case` ×3, `stakeholder` ×1) and **`abstraction_pivot` ×2**, which is not one of the canonical 7 at all.
-- **Doc/validator drift:** `docs/concept-taxonomy.md:1032` claims "Chain `follow_up_dimension` must be from the 7-dimension list. **Anything else crashes catalog load.**" — but `backend/scripts/validate_content.py:985` only checks that a chain child *has* a `follow_up_dimension`, not that it's one of the 7. So the claim is false and the drift went undetected.
-- **Why it matters:** these tokens reach the Elite pivot card + per-dimension analytics. The A3 frontend humanizes them (so nothing renders raw), and per-dimension analytics now bucket `data_quality` and `data_quality_pivot` *separately* (they alias to the same label for display but the backend keys are distinct) — splitting what should be one dimension's stats.
-- **Fix approach (separate pick — content edits MUST go through the authoring agent):** (1) normalize the bank's `follow_up_dimension` values to the canonical 7 (`_pivot` form) via the question-authoring agent — and decide whether `abstraction_pivot` becomes an 8th canonical dimension (update concept-taxonomy.md) or is remapped; (2) add a real validator rule in `validate_content.py` enforcing membership in the canonical set (make concept-taxonomy.md:1032 true); (3) once the bank is clean, the backend can key analytics on the canonical set directly. Do NOT hand-edit question JSON.
+### E1 — `[M]` `[DONE]` `follow_up_dimension` values drift from the canonical 7; validator didn't enforce membership
+**Resolved 2026-06-10 — docs/system grew to fit the (good) content; no question JSON edited.** Read the 19 drifted chain children firsthand: all are high-quality, genuine pivots. The drift was two things — 17 DE children using the `_pivot`-less spelling of canonical dimensions, and 2 Statistics children using `abstraction_pivot` (a real pivot the 7 couldn't label). Fix (option B + promote):
+1. **`abstraction_pivot` promoted to a canonical 8th dimension** — `concept-taxonomy.md` entry + reasoning-depth defense; frontend label/blurb in `mockModeConfig.js`; analytics + validator recognise it.
+2. **`_pivot`-less spellings accepted as aliases** — new `backend/follow_up_dimensions.py` `canonical_dimension()` normalises them; wired into the mock **analytics keying** (fixes the per-dimension stat split — verified live: a DE loop's raw `ambiguity` keys as `ambiguity_pivot`) and the **validator**. Frontend already aliased for display (A3); added the `abstraction` alias.
+3. **Validator made real** — `validate_content.py` now enforces canonical-membership (8 + aliases) + the consecutive-differ rule (both previously claimed-but-unenforced in `concept-taxonomy.md`); zero errors on the real bank, 12 new tests.
+4. **Docs reconciled** — `concept-taxonomy.md` (7→8, rules 5/6 made true, aliases documented), `mock.md`, `mock-benchmark-spec.md`; the **"docs serve the product"** rule added to `CLAUDE.md` + `content-authoring.md`. See `docs/decisions/DECISIONS.md` 2026-06-10.
 
 ---
 
@@ -243,3 +244,7 @@ Three confirmed defects compounded at the Elite payoff moment:
   - Bug: a session finished long after it started (left open past its timer) reported `time_used = ended_at − started_at` uncapped — history showed e.g. "15757:01 / 40:00" (~262 h). Clamped time-used to `[0, time_limit_s]` in both `get_mock_history` (SQL `CASE … GREATEST(0, LEAST(…, time_limit_s))`, NULL preserved for in-progress) and `finish_mock_session` (`db.py`). Read-time fix — no data migration. Test `test_history_time_used_clamped_to_limit`. Verified live: no history row exceeds its limit.
   - UX: the "0:12 / 60:00" Time cell wrapped to two lines on mobile; added `white-space: nowrap` (`.mock-history-time` in `App.css` + class on the 3 history Time `<td>`s). Verified live (computed `white-space: nowrap`).
   - Backend mock 83 + frontend 153 green.
+- **2026-06-10 — E1 (follow_up_dimension drift) — resolved by growing the taxonomy, not re-authoring.** **The mock audit is now fully complete.** Opus read the questions + owned the taxonomy/docs/constants; one Sonnet agent did the validator rule + tests.
+  - Read the 19 drifted chain children — all genuine, high-quality pivots. Promoted `abstraction_pivot` to a canonical **8th** dimension (taxonomy entry + reasoning defense + frontend label/blurb). Accepted `_pivot`-less spellings as **aliases** via new `backend/follow_up_dimensions.py` `canonical_dimension()`, wired into mock analytics (fixes the per-dimension stat split — verified live: DE loop's raw `ambiguity` → `ambiguity_pivot`) + the validator. Made `validate_content.py` actually enforce membership + consecutive-differ (12 new tests; zero errors on the real bank). **No question JSON edited.**
+  - Docs: `concept-taxonomy.md` (7→8, rules made true, aliases), `mock.md`, `mock-benchmark-spec.md` reconciled; the **"docs serve the product"** rule added to `CLAUDE.md` + `content-authoring.md`; DECISIONS entry appended.
+  - validate_content.py clean; backend 95 (mock 83 + 12 dimension tests) + frontend 155 green.

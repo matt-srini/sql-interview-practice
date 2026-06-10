@@ -60,6 +60,8 @@ When this doc and a track doc disagree, the **track doc wins** for per-track spe
 
 Reasoning depth — not syntax recall, not trivia, not concept-stacking — is the product. If the primary answer is no, reject.
 
+**Docs serve the product, not the other way around.** Good content is the product; these authoring docs (this file, the per-track docs, the concept/dimension taxonomies) are a *derived contract* that describes and protects it. When a genuinely strong question, chain, or pattern doesn't fit a documented rule — a missing concept family, a follow-up dimension the taxonomy hasn't named, a blueprint shape the bank can't honor — **the default is to grow/fix the doc to match the good content, not to mangle the content to satisfy a stale rule.** (Canonical example: 2026-06-10 — high-quality Statistics chains exercised an `abstraction_pivot` the 7-dimension list didn't cover, so the taxonomy grew to 8. See [`docs/decisions/DECISIONS.md`](decisions/DECISIONS.md).) This is *not* a license to skip the discipline: the question/chain must genuinely clear "the one test" above and align with the datathink positioning, and any doc change is deliberate and recorded in the decision log. But the goal is a great learning experience, never fidelity to a doc we may never revisit. (Mirrors [`docs/specs/mock-benchmark-spec.md`](specs/mock-benchmark-spec.md) § Blueprint feasibility.)
+
 ---
 
 ## Cross-track quality bar

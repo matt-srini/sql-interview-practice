@@ -10,9 +10,11 @@ export const FOLLOW_UP_DIMENSIONS = {
   performance_pivot:   { label: 'Performance',      blurb: 'It works — now make it efficient under real-world constraints.' },
   data_quality_pivot:  { label: 'Data quality',     blurb: 'The data is dirtier than implied. Handle what your first answer assumed away.' },
   stakeholder_pivot:   { label: 'Stakeholder needs',blurb: 'A stakeholder with a different agenda enters. How does that change what you deliver?' },
+  abstraction_pivot:   { label: 'Abstraction',      blurb: 'The interviewer steps up a level — generalise from this specific case, or reframe it under a different lens.' },
 };
 
 // Some chain children in the bank use the `_pivot`-less form of the same dimension; alias them.
+// Mirror of backend/follow_up_dimensions.py — keep the two in sync.
 const DIMENSION_ALIASES = {
   data_quality: 'data_quality_pivot',
   business_rule: 'business_rule_pivot',
@@ -21,6 +23,7 @@ const DIMENSION_ALIASES = {
   edge_case: 'edge_case_pivot',
   stakeholder: 'stakeholder_pivot',
   scale: 'scale_pivot',
+  abstraction: 'abstraction_pivot',
 };
 
 function resolveDimension(token) {
