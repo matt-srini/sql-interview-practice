@@ -69,6 +69,11 @@ body {
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* Prevent momentary horizontal overflow from animations / JS content
+     changes from opening a scroll channel and causing mobile side-wobble.
+     `clip` (not `hidden`) so it doesn't create a scroll container and
+     break position:sticky on the topbar. */
+  overflow-x: clip;
 }
 
 a {
