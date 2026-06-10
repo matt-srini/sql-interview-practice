@@ -589,16 +589,15 @@ describe('LandingPage — Weak spots coaching (drill)', () => {
     });
   }
 
-  it('paid user: the weak-spot CTA drills the concept (primary), with the path demoted to an honest secondary', async () => {
+  it('paid user: the weak-spot CTA drills the concept and offers no path secondary (drill-only tile)', async () => {
     wireInsights(WEAK_INSIGHTS);
     renderWithPlan('pro');
 
     const drill = await screen.findByText('Drill this →');
     expect(drill.closest('a').getAttribute('href')).toMatch(/^\/practice\/pandas\?drill=/);
 
-    // The matching path is still offered, but clearly as a secondary "path", not as the drill.
-    const secondary = screen.getByText(/Or take the Reshaping & Pivoting path/i);
-    expect(secondary.closest('a').getAttribute('href')).toBe('/learn/pandas/reshaping-and-pivoting');
+    // Landing keeps the coaching tile minimal — no path option here (the dashboard carries the path secondary).
+    expect(screen.queryByText(/Or take the .* path/i)).not.toBeInTheDocument();
   });
 
   it('free user with weak data: shows an upgrade gate and never leaks a concept name or a drill link', async () => {

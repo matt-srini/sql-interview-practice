@@ -9924,6 +9924,20 @@ select {
   margin-bottom: 0.5rem;
 }
 .path-sidebar-back:hover { color: var(--accent); }
+/* Concept-drill variant of the scoped sidebar — accent edge + kicker distinguish it from a curated path. */
+.path-sidebar--drill .path-sidebar-header {
+  border-left: 3px solid var(--accent);
+  padding-left: calc(0.75rem - 3px);
+}
+.path-sidebar-kicker {
+  display: block;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 0.4rem;
+}
 .path-sidebar-title {
   font-size: 0.9rem;
   font-weight: 700;
@@ -13457,14 +13471,6 @@ select {
   margin-top: auto;
 }
 .lp-weak-spot-drill:hover { opacity: 0.75; }
-/* Honest secondary path link under the primary drill CTA on the landing weak-spot card. */
-.lp-weak-spot-drill-secondary {
-  font-size: 0.76rem;
-  font-weight: 500;
-  color: var(--text-secondary);
-  text-decoration: none;
-}
-.lp-weak-spot-drill-secondary:hover { color: var(--accent); }
 /* Free-user upgrade teaser shown in place of the weak-spot cards (no concept names leaked). */
 .lp-weak-spot-gate {
   display: flex;

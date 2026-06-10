@@ -1250,11 +1250,6 @@ function WeakSpotsSection({ insights }) {
                   </div>
                   <p className="lp-weak-spot-concept">{entry.concept}</p>
                   <Link to={drillHref} className="lp-weak-spot-drill">Drill this →</Link>
-                  {entry.recommended_path_slug && (
-                    <Link to={`/learn/${entry.track}/${entry.recommended_path_slug}`} className="lp-weak-spot-drill-secondary">
-                      Or take the {entry.recommended_path_title} path →
-                    </Link>
-                  )}
                 </div>
               </Reveal>
             );

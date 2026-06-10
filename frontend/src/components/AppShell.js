@@ -135,6 +135,7 @@ export default function AppShell() {
 
   const { topic, meta } = useTopic();
   const pathSlug = new URLSearchParams(location.search).get('path');
+  const drillConcept = new URLSearchParams(location.search).get('drill');
   const focusMode = new URLSearchParams(location.search).get('focus') === '1';
 
   // Path data — fetched when ?path= is present
@@ -146,7 +147,19 @@ export default function AppShell() {
       .catch(() => setPathData(null));
   }, [pathSlug]);
 
-  const modeLabel = pathData ? pathData.title : pathSlug ? `${meta.label} · Path` : `${meta.label} · Challenge`;
+  // Drill data — fetched when ?drill= is present; scopes the sidebar to one concept (like a path)
+  const [drillData, setDrillData] = useState(null);
+  useEffect(() => {
+    if (!drillConcept) { setDrillData(null); return; }
+    api.get('/practice/drill', { params: { track: topic, concept: drillConcept } })
+      .then(r => setDrillData(r.data))
+      .catch(() => setDrillData(null));
+  }, [drillConcept, topic]);
+
+  const modeLabel = pathData ? pathData.title
+    : pathSlug ? `${meta.label} · Path`
+    : drillConcept ? `Drilling: ${drillData?.concept ?? drillConcept}`
+    : `${meta.label} · Challenge`;
 
   // Session goal tracking
   const [sessionGoal, setSessionGoal] = useState(() => {
@@ -206,7 +219,7 @@ export default function AppShell() {
 
   const modePillNode = !isAtHub ? (
     <span
-      className={`shell-pill shell-pill-mode${pathSlug ? ' shell-pill-mode-path' : ''}`}
+      className={`shell-pill shell-pill-mode${(pathSlug || drillConcept) ? ' shell-pill-mode-path' : ''}`}
       style={{ '--mode-dot-color': meta.color }}
       aria-label={modeLabel}
     >
@@ -266,7 +279,7 @@ export default function AppShell() {
       />
 
       <div className="app-body">
-        <aside id="sidebar" className={`sidebar ${mobileOpen ? 'sidebar-open' : ''} ${pathSlug ? 'sidebar--path-mode' : ''}`}>
+        <aside id="sidebar" className={`sidebar ${mobileOpen ? 'sidebar-open' : ''} ${(pathSlug || drillConcept) ? 'sidebar--path-mode' : ''}`}>
           {!isMobile && (
             <button
               className="sidebar-collapse-btn"
@@ -286,6 +299,15 @@ export default function AppShell() {
               currentId={location.pathname.match(/\/questions\/([^/?]+)/)?.[1]}
               onNavigate={handleNavigateFromSidebar}
               plan={user?.plan ?? 'free'}
+            />
+          ) : drillConcept ? (
+            <DrillSidebar
+              drillData={drillData}
+              drillConcept={drillConcept}
+              topic={topic}
+              meta={meta}
+              currentId={location.pathname.match(/\/questions\/([^/?]+)/)?.[1]}
+              onNavigate={handleNavigateFromSidebar}
             />
           ) : (
             <>
@@ -539,6 +561,74 @@ function PathSidebar({ pathData, pathSlug, topic, meta, currentId, onNavigate, p
       <div className="path-sidebar-footer">
         <Link to={`/practice/${topic}`} className="path-sidebar-exit">
           Exit path → Practice
+        </Link>
+      </div>
+    </div>
+  );
+}
+
+// Scoped sidebar for a concept drill (?drill=<concept>). Mirrors PathSidebar but
+// sources its questions from GET /api/practice/drill instead of a curated path.
+// Pro+ only, so every question is accessible — no locked-state handling needed.
+function DrillSidebar({ drillData, drillConcept, topic, meta, currentId, onNavigate }) {
+  if (!drillData) {
+    return (
+      <div className="path-sidebar-loading">
+        <div className="path-sidebar-shimmer" />
+        <div className="path-sidebar-shimmer path-sidebar-shimmer--short" />
+      </div>
+    );
+  }
+
+  const questions = drillData.questions ?? [];
+  const solvedCount = questions.filter(q => q.state === 'solved').length;
+  const conceptParam = encodeURIComponent(drillConcept);
+
+  return (
+    <div className="path-sidebar path-sidebar--drill">
+      <div className="path-sidebar-header">
+        <span className="path-sidebar-kicker">Concept drill</span>
+        <div className="path-sidebar-title">{drillData.concept}</div>
+        <div className="path-sidebar-meta">
+          <span className="path-sidebar-dot" style={{ background: meta.color }} />
+          {meta.label} · {questions.length} question{questions.length === 1 ? '' : 's'}
+        </div>
+        <div className="path-sidebar-progress-bar">
+          <div
+            className="path-sidebar-progress-fill"
+            style={{ width: `${questions.length > 0 ? (solvedCount / questions.length) * 100 : 0}%`, background: meta.color }}
+          />
+        </div>
+        <span className="path-sidebar-progress-label">{solvedCount}/{questions.length} cleared</span>
+      </div>
+
+      <nav className="path-sidebar-list" aria-label="Drill questions">
+        {questions.map((q, i) => {
+          const isCurrent = String(q.id) === String(currentId);
+          const isSolved = q.state === 'solved';
+          const url = `/practice/${topic}/questions/${q.id}?drill=${conceptParam}`;
+
+          return (
+            <Link
+              key={q.id}
+              to={url}
+              className={`path-sidebar-item${isCurrent ? ' path-sidebar-item--active' : ''}${isSolved ? ' path-sidebar-item--solved' : ''}`}
+              aria-current={isCurrent ? 'page' : undefined}
+              onClick={onNavigate}
+            >
+              <span className="path-sidebar-item-num">{i + 1}</span>
+              <span className="path-sidebar-item-title">{q.title}</span>
+              <span className="path-sidebar-item-state" aria-hidden="true">
+                {isSolved ? '✓' : null}
+              </span>
+            </Link>
+          );
+        })}
+      </nav>
+
+      <div className="path-sidebar-footer">
+        <Link to={`/practice/${topic}`} className="path-sidebar-exit">
+          Exit drill → Practice
         </Link>
       </div>
     </div>
