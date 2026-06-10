@@ -85,7 +85,12 @@ No code execution. Entirely answer-matching.
 
 ## PostgreSQL schema
 
-Schema is defined as a raw SQL string `_SCHEMA_SQL` in `backend/db.py` and applied idempotently at startup via `ensure_schema()`.
+Schema is defined in **two independent places that must be kept in sync manually:**
+
+- **`_SCHEMA_SQL`** — a raw SQL string in `backend/db.py`, executed by `ensure_schema()` at startup (local dev) and by `ensure_schema_admin()` in `backend/tests/conftest.py` (test suite). Every fresh test database is built from this string — it never sees Alembic.
+- **Alembic migrations** — `backend/alembic/versions/`. Applied to production only, manually via `alembic upgrade head`. Production never calls `ensure_schema()`.
+
+**The invariant:** every Alembic migration that adds or alters columns must also have a matching change in `_SCHEMA_SQL` (additive: `ALTER TABLE ... ADD COLUMN IF NOT EXISTS`; new tables: full `CREATE TABLE IF NOT EXISTS` block). There is no tooling to enforce this — it is a manual discipline. Violating it produces `column does not exist` errors in tests while production succeeds silently. Root cause of the 2026-06-10 `plan_override` test failure. Full rule in `CLAUDE.md` § migration checklist step 2 and `docs/deployment.md` § Two-track schema.
 
 | Table | Purpose | Key columns |
 |---|---|---|

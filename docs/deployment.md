@@ -161,6 +161,23 @@ DATABASE_URL="postgresql+asyncpg://postgres:postgres@localhost:5432/sql_practice
 
 Review the generated file in `alembic/versions/` before applying.
 
+### ⚠️ Two-track schema — always update `_SCHEMA_SQL` alongside the migration
+
+The schema is defined in **two independent places** that are never auto-synced:
+
+| Track | Location | Used by |
+|---|---|---|
+| `_SCHEMA_SQL` | `backend/db.py` (hardcoded SQL string) | Local dev (`ensure_schema()` at startup) + test suite (`ensure_schema_admin()` in `conftest.py`) |
+| Alembic migrations | `backend/alembic/versions/` | Production only (applied manually via `alembic upgrade head`) |
+
+**Every time you write a migration that adds or alters schema, you must also update `_SCHEMA_SQL`:**
+
+- **New column:** append `ALTER TABLE <table> ADD COLUMN IF NOT EXISTS <col> <type>;` at the bottom of `_SCHEMA_SQL`.
+- **New table:** append the full `CREATE TABLE IF NOT EXISTS <table> (...)` block.
+- **Column rename / type change:** update the `CREATE TABLE` definition inside `_SCHEMA_SQL` and add a matching `ALTER TABLE` if needed for `IF NOT EXISTS` safety.
+
+If you skip this, the test suite will fail with `column <name> does not exist` because `conftest.py` builds the test DB from `_SCHEMA_SQL`, not from Alembic. This was the root cause of the 2026-06-10 `plan_override` bug — migration added the columns, `_SCHEMA_SQL` did not. See `docs/decisions/DECISIONS.md` 2026-06-10 entry.
+
 ---
 
 ## Full Docker stack (optional)

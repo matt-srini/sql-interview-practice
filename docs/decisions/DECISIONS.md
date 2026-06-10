@@ -35,6 +35,12 @@ Keep entries to 4–6 lines. Friction kills logs; if it's longer than the change
 
 ## Entries
 
+## 2026-06-10 — Schema lives in two places; both must be updated on every migration
+**Area:** architecture · process · **Status:** accepted
+**Decision:** The `_SCHEMA_SQL` string in `backend/db.py` and the Alembic migration chain are independent, never auto-synced. `_SCHEMA_SQL` is the source for local-dev startup (`ensure_schema()`) and the test suite (`ensure_schema_admin()` in `conftest.py`); Alembic is the source for production. Writing a migration without updating `_SCHEMA_SQL` causes tests to fail with `column does not exist` while production is unaffected — the exact failure mode of the 2026-06-10 `plan_override` bug. The rule is now explicit in `CLAUDE.md` § migration checklist (step 2), `docs/deployment.md` § Two-track schema, and `docs/architecture.md` § PostgreSQL schema.
+**Rejected:** (a) **making tests run Alembic instead of `_SCHEMA_SQL`** — heavier test setup, slower, more fragile on connection/env config; `_SCHEMA_SQL` + `IF NOT EXISTS` guards is the right fast path for the test harness. (b) **removing `_SCHEMA_SQL` and always calling Alembic** — would force every local dev startup to run Alembic, breaking the clean "app starts itself" model and making local setup more complex. (c) **adding a CI diff-check** — useful future hardening but the immediate fix is the documented discipline.
+**Affects:** `CLAUDE.md` (step 2 in migration checklist), `docs/deployment.md` (§ Two-track schema), `docs/architecture.md` (§ PostgreSQL schema intro)
+
 ## 2026-06-10 — Admin grant system for beta/trial access (operator-only, lazy expiry, no cron)
 **Area:** ops · gating · **Status:** accepted
 **Decision:** Added `POST/DELETE /api/admin/grant-plan` (Bearer-token–protected) so the platform operator can give specific users time-limited Pro/Elite access for beta testing or invited cohorts. Override stored as `plan_override` + `plan_override_until` on `users`; resolved lazily via `_effective_plan()` at every auth point — no cron, no background task, expiry is per-request. Migration `20260610_000001` applied to prod immediately.
