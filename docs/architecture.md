@@ -102,7 +102,9 @@ Schema is defined in **two independent places that must be kept in sync manually
 | `payment_events` | Idempotent payment provider (Razorpay) event records | `event_id`, `event_type`, `processed_at` |
 | `submissions` | Every submit attempt per user | `user_id`, `track`, `question_id`, `is_correct`, `code`, `submitted_at` |
 | `mock_sessions` | Mock interview session records | `user_id`, `mode`, `track`, `difficulty`, `status`, `started_at`, `ended_at` |
-| `mock_session_questions` | Per-question answers within a mock session | `session_id`, `question_id`, `track`, `is_solved`, `final_code`, `time_spent_s` |
+| `mock_session_questions` | Per-question answers within a mock session | `session_id`, `question_id`, `track`, `is_solved`, `final_code`, `time_spent_s`, `is_follow_up`, `follow_up_dimension` |
+| `mock_chain_consumption` | Interview Loop chains a user has consumed (so a chain is served once) | `user_id`, `parent_id`, `session_id`, `reclaimed` |
+| `mock_discards` | Append-only log of penalty-free mock-session discards (per-day discard cap) | `user_id`, `discarded_at` |
 
 **`user_progress` and `user_sample_seen` carry a `topic` column** (DEFAULT `'sql'`). Progress is completely independent per topic — solving SQL does not affect Python unlock state.
 
