@@ -85,15 +85,22 @@ function formatDate(iso) {
   return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
+// Renders the history "Time" cell as "used / limit" (e.g. "14:56 / 60:00") — the time
+// limit varies by track/difficulty/mode, so the ratio gives pacing context the bare
+// time-used can't, and it mirrors the table's "Score 2/3" (solved/total) idiom. Falls
+// back to "— / limit" for sessions with no recorded time-used (active/abandoned).
 function formatDuration(timeLimitS, timeUsedS) {
-  const used = timeUsedS != null ? timeUsedS : null;
-  const limit = timeLimitS ? Math.floor(timeLimitS / 60) : null;
-  if (used != null) {
-    const m = Math.floor(used / 60);
-    const s = used % 60;
-    return `${m}:${String(s).padStart(2, '0')} used`;
-  }
-  return limit ? `${limit} min` : '—';
+  const clock = (s) => {
+    const m = Math.floor(s / 60);
+    const sec = Math.round(s % 60);
+    return `${m}:${String(sec).padStart(2, '0')}`;
+  };
+  const limit = timeLimitS != null ? clock(timeLimitS) : null;
+  const used = timeUsedS != null ? clock(timeUsedS) : null;
+  if (used != null && limit != null) return `${used} / ${limit}`;
+  if (limit != null) return `— / ${limit}`;
+  if (used != null) return used;
+  return '—';
 }
 
 export default function MockHub() {
@@ -581,6 +588,7 @@ export default function MockHub() {
                           className={`mock-config-pill ${isSelected ? 'active' : ''} ${btnState.blocked ? 'mock-config-pill--blocked' : ''}`}
                           onClick={() => { setDifficulty(d); setStartError(null); }}
                           aria-disabled={btnState.blocked}
+                          title={btnState.blocked && typeof btnState.chip === 'string' ? btnState.chip : undefined}
                         >
                           {DIFFICULTY_LABELS[d]}
                         </button>

@@ -47,9 +47,9 @@ Severity: **H** high · **M** medium · **L** low. Status: `TODO` · `WIP` · `D
 | B2 | M | DONE | code | Interview Loop summary titled **"Drill summary"** (fixed with A3) |
 | B3 | M | DONE | code | History **"Time"** column shows the limit, not time used |
 | B4 | M | DONE | code | Start button **enabled when `/access` fetch fails** (`accessState` null) |
-| A4a | M | TODO | code | Blocked difficulty pills clickable but silently inert (no tooltip/why) |
-| A4b | M | TODO | code | Locked mode cards clickable, silently switch mode with no upsell-at-click |
-| A5a | M | TODO | code | Concept tags exposed on the live question (telegraphs the approach) |
+| A4a | M | DONE | code | Blocked difficulty pills — added hover tooltip (notice/upgrade already shown on click) |
+| A4b | M | WONTFIX | code | Locked mode cards — already gated (tooltip + lock-notice + badge + rail upsell on click) |
+| A5a | M | DONE | code | Concept tags exposed on the live question (telegraphs the approach) |
 | C4 | M | TODO | code | Discarded sessions don't count vs rate limits → create-discard cap reset |
 | B7 | L | TODO | code | PySpark lobby blueprint shows a composition the backend doesn't serve |
 | B5 | L | TODO | code | Elite analytics: network error indistinguishable from empty state |
@@ -97,14 +97,14 @@ Three confirmed defects compounded at the Elite payoff moment:
 - **Fix approach:** (a) add a human-readable dimension label map (scale/business-rule/dirty-data/ambiguity/…) used by BOTH the pivot card and analytics; (b) persist `is_follow_up` (C5); (c) consider dimension-specific pivot copy and a per-dimension line in the Loop post-mortem. Reconcile with mock.md's pivot-card spec (D6) — `framing` is just the type token, so a label map is the right source, not `framing`.
 - **Verify:** pivot card + analytics show friendly labels; Loop summary marks the follow-up and references the pivot dimension.
 
-### A4a — `[M]` `[TODO]` Blocked difficulty pills are clickable but silently inert
-- Free clicking Medium/Hard does nothing, no `title`/tooltip explaining why. Add an explanatory affordance (tooltip or inline note) at the point of interaction. `frontend/src/pages/MockHub.js` difficulty pills (~567-587).
+### A4a — `[M]` `[DONE]` Blocked difficulty pills are clickable but silently inert
+**Largely already handled; finished 2026-06-09.** Re-verified live: clicking a blocked pill already selects it and surfaces the block notice + an Upgrade button (difficulty notice + rail) with Start disabled — it is *not* silently inert. The only gap was no hover affordance, so added a `title` tooltip on blocked pills (`MockHub.js`) — e.g. "Medium, hard, and mixed benchmarks require a Pro plan." / the weekly-cap message — so the reason shows on hover without a click.
 
-### A4b — `[M]` `[TODO]` Locked mode cards clickable; silently switch mode with no upsell-at-click
-- `MockHub.js:427` only short-circuits `card.disabled`, not `card.locked` — a Free user can click "Custom drill", land fully-configured in a mode they can't run. Premium pattern: surface the upgrade on click. (Related to B1.)
+### A4b — `[M]` `[WONTFIX]` Locked mode cards clickable; switch mode "with no upsell"
+**Re-verified live 2026-06-09 — already gated, no change made.** A Free user clicking the locked Custom card already sees, *before* click, a `title` tooltip + a visible lock-notice + a "Pro" badge; *after* click the rail shows a prominent upsell ("Custom drills require a Pro or Elite plan. Upgrade to practise on your own schedule. Pro unlocks this" + Upgrade button) with Start disabled. Letting the user open the locked mode and see what it offers, with a clear upgrade CTA, is a legitimate premium pattern (Linear/Notion). The original "silently switches with no upsell" framing was stale (the access-notice/upgrade machinery, reinforced by B1, already covers it). No redundant UI added.
 
-### A5a — `[M]` `[TODO]` Concept tags exposed on the live question
-- `MockSession.js:937-943` renders concept tags during the active session, telegraphing the approach — in tension with the "reasoning, not recognition" positioning. Consider hiding during active mock sessions (still show in the post-mortem).
+### A5a — `[M]` `[DONE]` Concept tags exposed on the live question
+**Fixed 2026-06-09.** Removed the concept-tag pills from the active mock question render (`MockSession.js`). Naming the pattern (e.g. "WINDOW FUNCTIONS") telegraphs the approach and turns recognition into recall — the opposite of what a mock should test. The post-mortem's concept breakdown still surfaces them afterward for learning. Verified live: a benchmark question whose data carries `["STRING PARSING & PATTERN MATCHING"]` renders no concept tags during the session. See `docs/decisions/DECISIONS.md` 2026-06-09.
 
 ### A5b — `[L]` `[TODO]` Free benchmark time generous (60 min for 3 easy SQL) — realism tuning, optional.
 
@@ -220,3 +220,8 @@ Three confirmed defects compounded at the Elite payoff moment:
   - D3: `mock.md` analytics section notes `readiness_scores`/`study_plan` come from `/api/dashboard/insights`, not `/api/mock/analytics`.
   - D4: `mock.md` discard bullet rewritten to the real early-exit modal (no countdown chip); noted 60 s-UI / 120 s-server margin.
   - D5: `mock-benchmark-spec.md` chain-reclaim corrected to "hard delete, not a flag-flip"; `reclaimed` column noted vestigial.
+- **2026-06-09 — A4a + A5a (+ A4b WONTFIX, + history time-format)** — fixed on `main`. Opus did these directly (scope collapsed after live re-verification — A4a/A4b were largely pre-handled). No Sonnet needed.
+  - A4a: `MockHub.js` blocked difficulty pills get a `title` tooltip (notice + upgrade already shown on click). A4b verified already-gated → WONTFIX (no redundant UI).
+  - A5a: removed concept-tag pills from the active mock question render (`MockSession.js`); kept in the post-mortem. Verified live (no tags during session). DECISIONS entry appended.
+  - History time-format (B3 follow-up, per user request): `formatDuration` now renders "used / limit" (e.g. "23:13 / 40:00") instead of "X used" — pacing context since caps vary by track/difficulty; mirrors the table's "Score 2/3" idiom. Verified live.
+  - Frontend 145 green.

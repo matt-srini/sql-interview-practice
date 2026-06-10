@@ -953,13 +953,10 @@ export default function MockSession() {
                 <SchemaViewer schema={q.schema || {}} />
               )}
 
-              {q.concepts?.length > 0 && (
-                <div className="concept-tags" style={{ marginTop: '1rem' }}>
-                  {q.concepts.map(c => (
-                    <span key={c} className="tag-concept">{c}</span>
-                  ))}
-                </div>
-              )}
+              {/* Concept tags are intentionally NOT shown during an active mock session:
+                  naming the pattern (e.g. "WINDOW FUNCTIONS") telegraphs the approach and
+                  turns recognition into recall — the opposite of what a mock should test.
+                  The post-mortem's concept breakdown surfaces them afterward for learning. */}
 
               {q.track === 'pandas' && Object.keys(q.dataframes ?? {}).length > 0 && (
                 <VariablesPanel dataframes={q.dataframes} schema={{}} />
