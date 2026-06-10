@@ -1383,7 +1383,7 @@ export default function LandingPage() {
         <meta property="og:title" content="datathink — SQL, Python &amp; Data Interview Practice" />
         <meta property="og:description" content="9 tracks training the reasoning that makes data professionals genuinely effective — SQL, Python, Pandas, PySpark, Data Engineering, Data Modeling, Statistics, ML, Experimentation. Interview success follows." />
         <meta property="og:url" content="https://datathink.co/" />
-        <meta property="og:image" content="https://datathink.co/og-image.png?v=2" />
+        <meta property="og:image" content="https://datathink.co/og-image.png?v=3" />
         <link rel="canonical" href="https://datathink.co/" />
       </Helmet>
 

@@ -59,10 +59,10 @@ export default function LearningPathsIndex() {
         <meta property="og:title" content={`${pageTitle} — datathink`} />
         <meta property="og:description" content={topic ? `Curated ${TRACK_META[topic]?.label ?? topic} learning paths to build interview-ready skills step by step.` : 'Curated SQL, Python, Pandas, and PySpark learning paths to build interview-ready skills step by step.'} />
         <meta property="og:url" content={topic ? `https://datathink.co/learn/${topic}` : 'https://datathink.co/learn'} />
-        <meta property="og:image" content="https://datathink.co/og-image.png?v=2" />
+        <meta property="og:image" content="https://datathink.co/og-image.png?v=3" />
         <link rel="canonical" href={topic ? `https://datathink.co/learn/${topic}` : 'https://datathink.co/learn'} />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:image" content="https://datathink.co/og-image.png?v=2" />
+        <meta name="twitter:image" content="https://datathink.co/og-image.png?v=3" />
         {paths.length > 0 && <script type="application/ld+json">{JSON.stringify({
           "@context": "https://schema.org",
           "@type": "ItemList",
