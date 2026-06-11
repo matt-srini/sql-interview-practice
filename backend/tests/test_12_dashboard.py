@@ -695,9 +695,13 @@ def test_tc203_cache_is_per_user():
 # ---------------------------------------------------------------------------
 
 def test_tc204_mock_booster_one_completed_session():
-    """TC-204: One completed SQL session (1/2 solved) → sql components.mock == 15.0."""
+    """TC-204: One completed SQL session (1/2 solved, attempted_count=2) → sql components.mock == 3.8.
+
+    accuracy = 1/2 = 0.5, n_engaged = 1, confidence = min(1/4, 1) = 0.25
+    mock_pts = 0.5 * 30.0 * 0.25 = 3.75 → round(3.75, 1) = 3.8 (Python banker's rounding)
+    """
     mock_sessions = [
-        {"status": "completed", "track": "sql", "total_count": 2, "solved_count": 1}
+        {"status": "completed", "track": "sql", "total_count": 2, "attempted_count": 2, "solved_count": 1}
     ]
     result = _compute_readiness_scores(
         per_track_solved_question_ids={},
@@ -707,11 +711,14 @@ def test_tc204_mock_booster_one_completed_session():
     )
     assert result is not None
     mock_pts = result["sql"]["components"]["mock"]
-    assert mock_pts == 15.0, f"Expected mock 15.0, got {mock_pts}"
+    assert mock_pts == 3.8, f"Expected mock 3.8, got {mock_pts}"
 
 
 def test_tc205_full_practice_full_ftc_perfect_mock_score_100():
-    """TC-205: All SQL practice + ftc + perfect mock (3/3) → score == 100, label == 'Strong', mock_limited False."""
+    """TC-205: All SQL practice + ftc + 4 perfect mock sessions → score == 100, label == 'Strong', mock_limited False.
+
+    Requires 4 engaged sessions for confidence == 1.0 → full 30 mock_pts → score 100.
+    """
     from questions import get_questions_by_difficulty as get_sql
     sql_qs = get_sql()
     easy_ids = {int(q["id"]) for q in sql_qs["easy"]}
@@ -720,7 +727,10 @@ def test_tc205_full_practice_full_ftc_perfect_mock_score_100():
     all_practice_ids = easy_ids | medium_ids | hard_ids
 
     mock_sessions = [
-        {"status": "completed", "track": "sql", "total_count": 3, "solved_count": 3}
+        {"status": "completed", "track": "sql", "total_count": 3, "attempted_count": 3, "solved_count": 3},
+        {"status": "completed", "track": "sql", "total_count": 3, "attempted_count": 3, "solved_count": 3},
+        {"status": "completed", "track": "sql", "total_count": 3, "attempted_count": 3, "solved_count": 3},
+        {"status": "completed", "track": "sql", "total_count": 3, "attempted_count": 3, "solved_count": 3},
     ]
     result = _compute_readiness_scores(
         per_track_solved_question_ids={"sql": all_practice_ids},
@@ -769,7 +779,11 @@ def test_tc206_quality_is_ftc_based_not_solve_based():
 
 
 def test_tc207_mock_limited_flag():
-    """TC-207: Full practice + full ftc → mock_limited True (no mock); add perfect mock → mock_limited False."""
+    """TC-207: Full practice + full ftc + no mock → mock_limited True; add 4 perfect engaged sessions → mock_limited False.
+
+    mock_limited = (coverage + quality) >= 50 AND n_engaged < 4 AND total < 80.
+    Case A: n_engaged=0 → True. Case B: n_engaged=4 → False.
+    """
     from questions import get_questions_by_difficulty as get_sql
     sql_qs = get_sql()
     easy_ids = {int(q["id"]) for q in sql_qs["easy"]}
@@ -777,7 +791,7 @@ def test_tc207_mock_limited_flag():
     hard_ids = {int(q["id"]) for q in sql_qs["hard"]}
     all_practice_ids = easy_ids | medium_ids | hard_ids
 
-    # No mock: practice-strong + quality-strong → mock_limited True
+    # Case A: No mock sessions → n_engaged=0 < 4 → mock_limited True
     result_no_mock = _compute_readiness_scores(
         per_track_solved_question_ids={"sql": all_practice_ids},
         per_track_ftc_question_ids={"sql": all_practice_ids},
@@ -788,9 +802,12 @@ def test_tc207_mock_limited_flag():
     assert result_no_mock["sql"]["mock_limited"] is True, \
         f"Expected mock_limited True with no mock, got {result_no_mock['sql']['mock_limited']}"
 
-    # Perfect mock: coverage+quality ≥ 50 but mock ≥ 10 → mock_limited False
+    # Case B: 4 perfect engaged sessions → n_engaged=4 → mock_limited False
     mock_sessions = [
-        {"status": "completed", "track": "sql", "total_count": 3, "solved_count": 3}
+        {"status": "completed", "track": "sql", "total_count": 3, "attempted_count": 3, "solved_count": 3},
+        {"status": "completed", "track": "sql", "total_count": 3, "attempted_count": 3, "solved_count": 3},
+        {"status": "completed", "track": "sql", "total_count": 3, "attempted_count": 3, "solved_count": 3},
+        {"status": "completed", "track": "sql", "total_count": 3, "attempted_count": 3, "solved_count": 3},
     ]
     result_with_mock = _compute_readiness_scores(
         per_track_solved_question_ids={"sql": all_practice_ids},
@@ -800,4 +817,123 @@ def test_tc207_mock_limited_flag():
     )
     assert result_with_mock is not None
     assert result_with_mock["sql"]["mock_limited"] is False, \
-        f"Expected mock_limited False with perfect mock, got {result_with_mock['sql']['mock_limited']}"
+        f"Expected mock_limited False with 4 perfect engaged sessions, got {result_with_mock['sql']['mock_limited']}"
+
+
+def test_tc208_abandoned_session_excluded():
+    """TC-208: Abandoned session (attempted_count=0) is excluded from engaged reps.
+
+    (a) Only an abandoned session → mock == 0.0 (not engaged, so n_engaged=0).
+    (b) Full practice+ftc + abandoned session → mock_limited True (n_engaged still 0).
+    """
+    from questions import get_questions_by_difficulty as get_sql
+    sql_qs = get_sql()
+    easy_ids = {int(q["id"]) for q in sql_qs["easy"]}
+    medium_ids = {int(q["id"]) for q in sql_qs["medium"]}
+    hard_ids = {int(q["id"]) for q in sql_qs["hard"]}
+    all_practice_ids = easy_ids | medium_ids | hard_ids
+
+    abandoned = {"status": "completed", "track": "sql", "total_count": 3, "attempted_count": 0, "solved_count": 0}
+
+    # (a) Abandoned session only → mock_pts == 0.0
+    result_a = _compute_readiness_scores(
+        per_track_solved_question_ids={},
+        per_track_ftc_question_ids={},
+        mock_sessions=[abandoned],
+        effective_plan="elite",
+    )
+    assert result_a is not None
+    assert result_a["sql"]["components"]["mock"] == 0.0, \
+        f"Expected mock 0.0 for abandoned session, got {result_a['sql']['components']['mock']}"
+
+    # (b) Full practice+ftc + abandoned session → mock_limited True (abandoned not counted)
+    result_b = _compute_readiness_scores(
+        per_track_solved_question_ids={"sql": all_practice_ids},
+        per_track_ftc_question_ids={"sql": all_practice_ids},
+        mock_sessions=[abandoned],
+        effective_plan="elite",
+    )
+    assert result_b is not None
+    assert result_b["sql"]["mock_limited"] is True, \
+        f"Expected mock_limited True (abandoned excluded), got {result_b['sql']['mock_limited']}"
+
+
+def test_tc209_accuracy_over_attempted_not_total():
+    """TC-209: Session with total_count=3 but attempted_count=2, solved_count=2.
+
+    accuracy = solved/attempted = 2/2 = 1.0 (NOT 2/3 = 0.667)
+    n_engaged=1, confidence=0.25 → mock_pts = 1.0 * 30.0 * 0.25 = 7.5
+    If wrongly using solved/total: 2/3 * 30 * 0.25 = 5.0 — this would fail.
+    """
+    mock_sessions = [
+        {"status": "completed", "track": "sql", "total_count": 3, "attempted_count": 2, "solved_count": 2}
+    ]
+    result = _compute_readiness_scores(
+        per_track_solved_question_ids={},
+        per_track_ftc_question_ids={},
+        mock_sessions=mock_sessions,
+        effective_plan="elite",
+    )
+    assert result is not None
+    mock_pts = result["sql"]["components"]["mock"]
+    assert mock_pts == 7.5, f"Expected mock 7.5 (accuracy over attempted), got {mock_pts}"
+
+
+def test_tc210_confidence_scales_with_volume():
+    """TC-210: Confidence scales from 0.25 (1 session) to 1.0 (4 sessions).
+
+    One perfect session (solved==attempted==2): mock = 1.0 * 30.0 * 0.25 = 7.5
+    Four identical sessions: mock = 1.0 * 30.0 * 1.0 = 30.0
+    """
+    one_session = [
+        {"status": "completed", "track": "sql", "total_count": 2, "attempted_count": 2, "solved_count": 2}
+    ]
+    four_sessions = one_session * 4
+
+    result_one = _compute_readiness_scores(
+        per_track_solved_question_ids={},
+        per_track_ftc_question_ids={},
+        mock_sessions=one_session,
+        effective_plan="elite",
+    )
+    result_four = _compute_readiness_scores(
+        per_track_solved_question_ids={},
+        per_track_ftc_question_ids={},
+        mock_sessions=four_sessions,
+        effective_plan="elite",
+    )
+    assert result_one is not None
+    assert result_four is not None
+    mock_one = result_one["sql"]["components"]["mock"]
+    mock_four = result_four["sql"]["components"]["mock"]
+    assert mock_one == 7.5, f"Expected 7.5 for one session, got {mock_one}"
+    assert mock_four == 30.0, f"Expected 30.0 for four sessions, got {mock_four}"
+
+
+def test_tc211_recency_uses_newest_5():
+    """TC-211: 6 sessions newest-first; first 5 are perfect, 6th is 0/3.
+
+    Only the newest 5 ([:5]) are used → avg_accuracy=1.0, n=5, confidence=1.0 → mock=30.0.
+    If code used oldest 5 ([-5:]) the 6th (0-correct) would be included → 24.0.
+    """
+    # Newest-first (as returned by get_mock_history): 5 perfect then 1 zero
+    sessions = [
+        {"status": "completed", "track": "sql", "total_count": 3, "attempted_count": 3, "solved_count": 3},
+        {"status": "completed", "track": "sql", "total_count": 3, "attempted_count": 3, "solved_count": 3},
+        {"status": "completed", "track": "sql", "total_count": 3, "attempted_count": 3, "solved_count": 3},
+        {"status": "completed", "track": "sql", "total_count": 3, "attempted_count": 3, "solved_count": 3},
+        {"status": "completed", "track": "sql", "total_count": 3, "attempted_count": 3, "solved_count": 3},
+        {"status": "completed", "track": "sql", "total_count": 3, "attempted_count": 3, "solved_count": 0},
+    ]
+    result = _compute_readiness_scores(
+        per_track_solved_question_ids={},
+        per_track_ftc_question_ids={},
+        mock_sessions=sessions,
+        effective_plan="elite",
+    )
+    assert result is not None
+    mock_pts = result["sql"]["components"]["mock"]
+    assert mock_pts == 30.0, (
+        f"Expected mock 30.0 (newest-5 all perfect), got {mock_pts}; "
+        "if got 24.0 the code is using [-5:] (oldest 5) instead of [:5] (newest 5)"
+    )

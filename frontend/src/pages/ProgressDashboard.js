@@ -338,7 +338,7 @@ export default function ProgressDashboard() {
                     </div>
                   </div>
                   {isElite && (
-                    <p className="db-readiness-note">Readiness blends coverage, first-time solve quality, and mock performance. Practice tops out at &#8220;Getting there&#8221; — run a timed mock to reach &#8220;Interview ready&#8221;.</p>
+                    <p className="db-readiness-note">Readiness blends coverage, first-time solve quality, and mock performance. Practice tops out at &#8220;Getting there&#8221; — log a few timed mocks to reach &#8220;Interview ready&#8221;.</p>
                   )}
                   <div className="db-track-table" key={activeRoleId ?? 'all'}>
                     {visibleTracks.map(topic => {
@@ -378,7 +378,7 @@ export default function ProgressDashboard() {
                             {readiness ? (
                               <div
                                 className={`db-readiness-chip db-readiness-chip--${readiness.label.toLowerCase().replace(/\s+/g, '-')}`}
-                                title={readiness.mock_limited ? 'Practice-strong — run a timed mock to raise this score' : undefined}
+                                title={readiness.mock_limited ? 'Practice-strong — log a few timed mocks to raise this score' : undefined}
                               >
                                 <span className="db-readiness-score">{readiness.score}</span>
                                 <span className="db-readiness-label">{readiness.label}</span>

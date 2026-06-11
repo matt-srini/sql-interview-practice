@@ -138,7 +138,7 @@ Each entry is enriched with:
 |---|---|---|
 | Coverage | 45 max | Difficulty-weighted breadth of *distinct* solves. Easy: `min(solved/total, 1) × 12`. Medium: `min(solved/total, 1) × 18`. Hard: `min(solved/(total × 0.5), 1) × 15` — 50% hard coverage earns full hard credit (hard questions weighted highest per question). |
 | Solve quality | 25 max | First-time-correct (FTC) mastery: `min(ftc / (0.4 × total_practice), 1) × 25`. A question is FTC if the user's *first* submission on it was correct. Question-level, so re-running or re-submitting never dilutes this term. |
-| Mock performance | 30 max | Average solve-rate over the last 5 completed track-or-mixed sessions × 30. Returns 0 when no mock history exists for the track. |
+| Mock performance | 30 max | Confidence-weighted accuracy over **engaged** completed sessions (those where `attempted_count ≥ 1`; abandoned/timed-out/seed sessions with 0 attempts are excluded). Per-session accuracy = `solved_count / attempted_count` (not over total — unanswered questions aren't counted as wrong). The most-recent **5** engaged sessions are averaged, then multiplied: `avg_accuracy × 30 × confidence`, where `confidence = min(n_engaged / 4, 1)`. A handful of sessions can't pin the top bands; mock reaches full weight (~4+ engaged sessions), at which point it is the decisive signal for "Interview ready" and above. Returns 0 when no engaged mock history exists for the track. |
 
 **Label thresholds:** < 40 → "Early stage" · 40–64 → "Building" · 65–79 → "Getting there" · 80–89 → "Interview ready" · 90+ → "Strong"
 
@@ -150,7 +150,9 @@ The score badge on each track card is colour-coded along a calm ramp (no red —
 - **Solve time is intentionally excluded.** The platform's reasoning-over-speed positioning means time pressure surfaces through mock (which is timed), not through the readiness metric. Time remains a displayed per-track insight only.
 - **Coverage + quality cap at 70 ("Getting there").** Reaching "Interview ready" (80+) or "Strong" (90+) requires mock performance. This is deliberate: genuine interview readiness should require having performed under timed conditions, not just accumulated practice solves.
 
-Each track object also carries `mock_limited` (bool): `true` when `coverage + quality ≥ 50` and `mock < 10` and `total < 80` — meaning the user is practice-strong but has little mock history, so the score's binding constraint is lack of timed reps. The UI uses this flag to nudge those tracks toward a benchmark mock.
+Each track object also carries `mock_limited` (bool): `true` when `coverage + quality ≥ 50` and `n_engaged < 4` and `total < 80` — meaning the user is practice-strong but does not yet have enough engaged mock sessions for the confidence factor to reach full weight. A user who has mocked frequently but scores poorly is genuinely mock-weak, not `mock_limited`. The UI uses this flag to nudge practice-strong tracks toward a benchmark mock.
+
+**Note on mock metric vs. analytics score:** The readiness mock metric (accuracy over *attempted*, engaged sessions only, confidence-weighted) is intentionally distinct from the post-session analytics headline `avg_score_pct` (`solved_count / total_count`, which counts unanswered questions as misses). Readiness measures demonstrated skill on questions the user engaged with; `avg_score_pct` measures session outcome including gaps. Both are valid; the divergence is by design, not a bug.
 
 ### Personalised study plan (Elite only)
 

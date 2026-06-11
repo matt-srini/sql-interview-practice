@@ -466,22 +466,39 @@ def _compute_readiness_scores(
         ftc_target = total_practice * 0.4
         quality_pts = (min(ftc_practice / ftc_target, 1.0) * 25) if ftc_target else 0.0
 
-        # Component 3: mock performance (30 pts) — booster, not gate
-        track_sessions = [
+        # Component 3: mock performance (30 pts) — confidence-weighted, accuracy
+        # over *attempted*, the strongest single readiness signal but also the
+        # noisiest (benchmark mocks are 2–3 questions).
+        #   • Only "engaged" sessions count (≥1 question actually answered), so an
+        #     abandoned / timed-out / seed session no longer drags the average to 0.
+        #   • Per-session score is solved / attempted (accuracy), matching what a
+        #     user sees as their real mock correctness — not solved / total, which
+        #     would penalise simply not reaching a question as if it were wrong.
+        #   • The 5 most-recent engaged sessions (get_mock_history is newest-first,
+        #     so [:5], not [-5:] — the old slice averaged the 5 *oldest* of 20).
+        #   • confidence = min(n_engaged / 4, 1): one good 3-question mock can't make
+        #     you "Strong"; mock reaches its full weight only with a real track record
+        #     (≈4+ engaged mocks), at which point it is the decisive top-band signal.
+        engaged_sessions = [
             s for s in mock_sessions
             if s.get("status") == "completed"
             and (s.get("track") == track or s.get("track") == "mixed")
-            and (s.get("total_count") or 0) > 0
-        ][-5:]
-        if track_sessions:
-            avg_mock = sum(s["solved_count"] / s["total_count"] for s in track_sessions) / len(track_sessions)
-            mock_pts = avg_mock * 30.0
+            and (s.get("attempted_count") or 0) > 0
+        ][:5]
+        n_engaged = len(engaged_sessions)
+        if n_engaged:
+            avg_accuracy = sum(s["solved_count"] / s["attempted_count"] for s in engaged_sessions) / n_engaged
+            confidence = min(n_engaged / 4.0, 1.0)
+            mock_pts = avg_accuracy * 30.0 * confidence
         else:
             mock_pts = 0.0
 
         total = round(min(coverage_pts + quality_pts + mock_pts, 100.0))
-        # Practice-strong but mock-poor → mocks are the binding constraint.
-        mock_limited = (coverage_pts + quality_pts) >= 50.0 and mock_pts < 10.0 and total < 80
+        # Practice-strong but not enough timed reps to trust the mock signal →
+        # the binding constraint is mock *volume*, not mock performance. (Keyed on
+        # confidence, not points, so a user who has mocked a lot but scores poorly
+        # is honestly "mock-weak", not nudged to merely do more.)
+        mock_limited = (coverage_pts + quality_pts) >= 50.0 and n_engaged < 4 and total < 80
         scores[track] = {
             "score": total,
             "label": _label(total),

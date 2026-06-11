@@ -1712,7 +1712,8 @@ async def get_mock_history(user_id: str, limit: int = 20) -> list[dict[str, Any]
                          END AS time_used_s,
                     ms.status,
                     COUNT(msq.id) AS total_count,
-                    COUNT(CASE WHEN msq.is_solved THEN 1 END) AS solved_count
+                    COUNT(CASE WHEN msq.is_solved THEN 1 END) AS solved_count,
+                    COUNT(CASE WHEN msq.submitted_at IS NOT NULL THEN 1 END) AS attempted_count
                 FROM mock_sessions ms
                 LEFT JOIN mock_session_questions msq ON msq.session_id = ms.id
                 WHERE ms.user_id = CAST(:user_id AS UUID)
@@ -1738,6 +1739,7 @@ async def get_mock_history(user_id: str, limit: int = 20) -> list[dict[str, Any]
                 "status": row["status"],
                 "total_count": row["total_count"],
                 "solved_count": row["solved_count"],
+                "attempted_count": row["attempted_count"],
             }
             for row in rows
         ]
