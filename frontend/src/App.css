@@ -8998,6 +8998,24 @@ select {
 .mock-history-table-wrap {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: #b0aaa3 transparent;
+}
+.mock-history-table-wrap::-webkit-scrollbar {
+  height: 5px;
+}
+.mock-history-table-wrap::-webkit-scrollbar-track {
+  background: transparent;
+}
+.mock-history-table-wrap::-webkit-scrollbar-thumb {
+  background: #b0aaa3;
+  border-radius: 3px;
+}
+[data-theme="dark"] .mock-history-table-wrap {
+  scrollbar-color: #4a4740 transparent;
+}
+[data-theme="dark"] .mock-history-table-wrap::-webkit-scrollbar-thumb {
+  background: #4a4740;
 }
 .mock-history-table {
   width: 100%;
