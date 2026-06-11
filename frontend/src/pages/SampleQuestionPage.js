@@ -107,6 +107,7 @@ export default function SampleQuestionPage() {
   const handleSubmitRef = useRef(null);
   const runningRef = useRef(false);
   const submittingRef = useRef(false);
+  const editorRef = useRef(null);
   const draftHydratedRef = useRef(false);
   const draftSaveTimerRef = useRef(null);
 
@@ -280,6 +281,7 @@ export default function SampleQuestionPage() {
   submittingRef.current = submitting;
 
   function handleEditorMount(editor, monaco) {
+    editorRef.current = editor;
     editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, () => {
       if (!runningRef.current && !submittingRef.current && meta.hasRunCode) {
         handleRunRef.current();
@@ -293,6 +295,17 @@ export default function SampleQuestionPage() {
         }
       }
     );
+  }
+
+  async function handlePaste() {
+    try {
+      const text = await navigator.clipboard.readText();
+      if (!text || !editorRef.current) return;
+      const editor = editorRef.current;
+      const selection = editor.getSelection();
+      editor.executeEdits('paste-btn', [{ range: selection, text, forceMoveMarkers: true }]);
+      editor.focus();
+    } catch (_) { /* permission denied or clipboard empty — silently skip */ }
   }
 
   function toggleEditorHeight() {
@@ -631,6 +644,7 @@ export default function SampleQuestionPage() {
                     >
                       ✕
                     </button>
+                    <button className="editor-paste-btn" onClick={handlePaste} title="Paste from clipboard" aria-label="Paste from clipboard">Paste</button>
                     <button
                       className="editor-expand-btn"
                       onClick={() => setCode(meta.language === 'python' && question?.starter_code ? question.starter_code : defaultCode)}
