@@ -211,6 +211,12 @@ async def get_dashboard_insights(
     per_track_attempts: dict[str, int] = defaultdict(int)
     per_track_correct: dict[str, int] = defaultdict(int)
     per_track_solved_question_ids: dict[str, set[int]] = defaultdict(set)
+    # First-time-correct: a question whose *first* (oldest) submission was correct.
+    # Events arrive oldest-first, so the first time we see a (track, question_id)
+    # decides its FTC status. This is the readiness "solve quality" signal — a
+    # question-level mastery measure that is immune to run-spam and submit-spam.
+    per_track_first_seen: dict[str, set[int]] = defaultdict(set)
+    per_track_ftc_question_ids: dict[str, set[int]] = defaultdict(set)
     concept_attempts: dict[tuple[str, str], int] = defaultdict(int)
     concept_correct: dict[tuple[str, str], int] = defaultdict(int)
     # Recency-weighted tallies: attempts from the last 14 days count 1.5×,
@@ -233,6 +239,10 @@ async def get_dashboard_insights(
         weight = 1.5 if (submitted_at is not None and submitted_at >= recency_cutoff) else 1.0
 
         per_track_attempts[track] += 1
+        if question_id not in per_track_first_seen[track]:
+            per_track_first_seen[track].add(question_id)
+            if is_correct:
+                per_track_ftc_question_ids[track].add(question_id)
         if is_correct:
             per_track_correct[track] += 1
             per_track_solved_question_ids[track].add(question_id)
@@ -332,9 +342,8 @@ async def get_dashboard_insights(
         mock_sessions_for_elite = await get_mock_history(user_id, limit=20)
         readiness_scores = _compute_readiness_scores(
             per_track_solved_question_ids=per_track_solved_question_ids,
+            per_track_ftc_question_ids=per_track_ftc_question_ids,
             mock_sessions=mock_sessions_for_elite,
-            concept_attempts=concept_attempts,
-            concept_correct=concept_correct,
             effective_plan=effective_plan,
         )
         study_plan = build_study_plan(
@@ -364,25 +373,43 @@ async def get_dashboard_insights(
 
 def _compute_readiness_scores(
     per_track_solved_question_ids: dict[str, set[int]],
+    per_track_ftc_question_ids: dict[str, set[int]],
     mock_sessions: list[dict[str, Any]],
-    concept_attempts: dict[tuple[str, str], int],
-    concept_correct: dict[tuple[str, str], int],
     effective_plan: str,
 ) -> dict[str, dict[str, Any]] | None:
     """
     Compute per-track interview readiness scores (0–100) for Elite users.
 
-    Score components (each track scored independently):
-      1. Practice coverage (40 pts):
-           Easy:   min(solved_easy / total_easy, 1.0) × 10
-           Medium: min(solved_medium / total_medium, 1.0) × 20
-           Hard:   min(solved_hard / (total_hard × 0.4), 1.0) × 10
-      2. Mock accuracy (35 pts):
-           Average score across last 5 completed sessions for this track.
-           0 pts when the user has never run a mock for this track.
-      3. Concept strength (25 pts):
-           Counts concepts with ≥3 attempts. Strong (≥70% accuracy) − weak (<60%)
-           gaps scaled to a max of 8 well-rounded concepts.
+    Three components, each scored independently per track. Every component is
+    *monotonic* — solving more questions, or solving them more cleanly, can only
+    raise the score, never lower it. (The pre-2026-06-11 model had a concept-
+    strength term that subtracted 1.5× per weak concept and clamped at 0, so a
+    normally-progressing user scored 0 there and engaging with new material could
+    *lower* readiness. See docs/decisions/DECISIONS.md.)
+
+      1. Coverage (45 pts) — difficulty-weighted breadth of distinct solves:
+           Easy:   min(solved_easy   / total_easy,        1.0) × 12
+           Medium: min(solved_medium / total_medium,      1.0) × 18
+           Hard:   min(solved_hard   / (total_hard×0.5),  1.0) × 15
+         Hard is weighted highest per question; 50% hard coverage = full credit.
+      2. Solve quality (25 pts) — first-time-correct mastery:
+           min(ftc_practice / (0.4 × total_practice), 1.0) × 25
+         where ftc_practice = distinct practice questions whose *first* submission
+         was correct. Question-level, so repeated submits/runs never dilute it.
+      3. Mock performance (30 pts) — a *booster*, not a gate:
+           avg(solved/total) over the last 5 completed track-or-mixed sessions × 30.
+           0 when the user has never completed a mock for this track.
+
+    Coverage + quality cap at 70 → top of "Getting there". Reaching "Interview
+    ready" (80) or "Strong" (90) therefore *requires* mock evidence — readiness
+    for a timed interview should require having performed under timed conditions.
+    Solve time is intentionally NOT a factor (reasoning-over-speed positioning;
+    time pressure surfaces through mock, which is timed) — it stays a displayed
+    insight only.
+
+    `mock_limited` is True when a track is practice-strong but mock-poor (the
+    binding constraint is lack of mocks), so the UI can nudge the user toward a
+    timed mock instead of more practice.
 
     Returns None for non-Elite plans.
     Labels: <40 Early stage · 40–64 Building · 65–79 Getting there · 80–89 Interview ready · 90+ Strong
@@ -408,29 +435,38 @@ def _compute_readiness_scores(
 
     for track in _TRACK_ORDER:
         solved_ids = per_track_solved_question_ids.get(track, set())
+        ftc_ids = per_track_ftc_question_ids.get(track, set())
         module = _TOPIC_MODULES[track]
         grouped = module.get_questions_by_difficulty()
 
         easy_ids   = {int(q["id"]) for q in grouped.get("easy", [])}
         medium_ids = {int(q["id"]) for q in grouped.get("medium", [])}
         hard_ids   = {int(q["id"]) for q in grouped.get("hard", [])}
+        practice_ids = easy_ids | medium_ids | hard_ids
 
         total_easy   = len(easy_ids)
         total_medium = len(medium_ids)
         total_hard   = len(hard_ids)
+        total_practice = len(practice_ids)
 
         solved_easy   = len(solved_ids & easy_ids)
         solved_medium = len(solved_ids & medium_ids)
         solved_hard   = len(solved_ids & hard_ids)
 
-        # Component 1: practice coverage (40 pts)
-        easy_pts   = (min(solved_easy   / total_easy,   1.0) * 10) if total_easy   else 0.0
-        medium_pts = (min(solved_medium / total_medium, 1.0) * 20) if total_medium else 0.0
-        hard_threshold = total_hard * 0.4
-        hard_pts = (min(solved_hard / hard_threshold, 1.0) * 10) if hard_threshold else 0.0
-        practice_pts = easy_pts + medium_pts + hard_pts
+        # Component 1: coverage (45 pts) — difficulty-weighted breadth
+        easy_pts   = (min(solved_easy   / total_easy,   1.0) * 12) if total_easy   else 0.0
+        medium_pts = (min(solved_medium / total_medium, 1.0) * 18) if total_medium else 0.0
+        hard_threshold = total_hard * 0.5
+        hard_pts = (min(solved_hard / hard_threshold, 1.0) * 15) if hard_threshold else 0.0
+        coverage_pts = easy_pts + medium_pts + hard_pts
 
-        # Component 2: mock accuracy (35 pts)
+        # Component 2: solve quality (25 pts) — first-time-correct over the
+        # practice catalog (mock-only/sample IDs are excluded by the intersect)
+        ftc_practice = len(ftc_ids & practice_ids)
+        ftc_target = total_practice * 0.4
+        quality_pts = (min(ftc_practice / ftc_target, 1.0) * 25) if ftc_target else 0.0
+
+        # Component 3: mock performance (30 pts) — booster, not gate
         track_sessions = [
             s for s in mock_sessions
             if s.get("status") == "completed"
@@ -439,34 +475,21 @@ def _compute_readiness_scores(
         ][-5:]
         if track_sessions:
             avg_mock = sum(s["solved_count"] / s["total_count"] for s in track_sessions) / len(track_sessions)
-            mock_pts = avg_mock * 35.0
+            mock_pts = avg_mock * 30.0
         else:
             mock_pts = 0.0
 
-        # Component 3: concept strength (25 pts)
-        strong = 0
-        weak = 0
-        for (t, _concept), attempts in concept_attempts.items():
-            if t != track or attempts < 3:
-                continue
-            correct = concept_correct.get((t, _concept), 0)
-            accuracy = correct / attempts
-            if accuracy >= 0.70:
-                strong += 1
-            elif accuracy < 0.60:
-                weak += 1
-        max_expected_strong = 8
-        raw_concept = max(0.0, (strong - weak * 1.5)) / max_expected_strong * 25.0
-        concept_pts = min(raw_concept, 25.0)
-
-        total = round(min(practice_pts + mock_pts + concept_pts, 100.0))
+        total = round(min(coverage_pts + quality_pts + mock_pts, 100.0))
+        # Practice-strong but mock-poor → mocks are the binding constraint.
+        mock_limited = (coverage_pts + quality_pts) >= 50.0 and mock_pts < 10.0 and total < 80
         scores[track] = {
             "score": total,
             "label": _label(total),
+            "mock_limited": mock_limited,
             "components": {
-                "practice": round(practice_pts, 1),
-                "mock_accuracy": round(mock_pts, 1),
-                "concept_strength": round(concept_pts, 1),
+                "coverage": round(coverage_pts, 1),
+                "quality": round(quality_pts, 1),
+                "mock": round(mock_pts, 1),
             },
         }
 

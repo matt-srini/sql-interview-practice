@@ -136,13 +136,21 @@ Each entry is enriched with:
 
 | Component | Points | How it is computed |
 |---|---|---|
-| Practice coverage | 40 max | Easy (10): `min(solved/total, 1) × 10`. Medium (20): `min(solved/total, 1) × 20`. Hard (10): `min(solved/(total×0.4), 1) × 10` — only 40% hard coverage needed for full 10 pts. |
-| Mock accuracy | 35 max | Average score across last 5 completed sessions for this track. 0 pts if no mock history for this track. |
-| Concept strength | 25 max | `max(0, strong_count − weak_count×1.5) / 8 × 25` — where strong = concepts ≥ 70% accuracy (≥3 attempts), weak = concepts < 60% (≥3 attempts). Max denominator of 8 represents a well-rounded candidate. |
+| Coverage | 45 max | Difficulty-weighted breadth of *distinct* solves. Easy: `min(solved/total, 1) × 12`. Medium: `min(solved/total, 1) × 18`. Hard: `min(solved/(total × 0.5), 1) × 15` — 50% hard coverage earns full hard credit (hard questions weighted highest per question). |
+| Solve quality | 25 max | First-time-correct (FTC) mastery: `min(ftc / (0.4 × total_practice), 1) × 25`. A question is FTC if the user's *first* submission on it was correct. Question-level, so re-running or re-submitting never dilutes this term. |
+| Mock performance | 30 max | Average solve-rate over the last 5 completed track-or-mixed sessions × 30. Returns 0 when no mock history exists for the track. |
 
 **Label thresholds:** < 40 → "Early stage" · 40–64 → "Building" · 65–79 → "Getting there" · 80–89 → "Interview ready" · 90+ → "Strong"
 
-The score badge on each track card is colour-coded: green (Strong/Interview ready), amber (Getting there), grey (Building/Early stage).
+The score badge on each track card is colour-coded along a calm ramp (no red — "Early stage" is a neutral starting point, not a failure state): grey/sage (Early stage), amber (Building → Getting there), green (Interview ready), blue (Strong).
+
+**Key properties:**
+
+- **Monotonic.** Every component only increases as the user practises more or solves more cleanly — engaging with new material or attempting a question a second time can never lower the score.
+- **Solve time is intentionally excluded.** The platform's reasoning-over-speed positioning means time pressure surfaces through mock (which is timed), not through the readiness metric. Time remains a displayed per-track insight only.
+- **Coverage + quality cap at 70 ("Getting there").** Reaching "Interview ready" (80+) or "Strong" (90+) requires mock performance. This is deliberate: genuine interview readiness should require having performed under timed conditions, not just accumulated practice solves.
+
+Each track object also carries `mock_limited` (bool): `true` when `coverage + quality ≥ 50` and `mock < 10` and `total < 80` — meaning the user is practice-strong but has little mock history, so the score's binding constraint is lack of timed reps. The UI uses this flag to nudge those tracks toward a benchmark mock.
 
 ### Personalised study plan (Elite only)
 

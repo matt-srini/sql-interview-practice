@@ -88,13 +88,13 @@ function ReadinessModal({ onClose }) {
           <button className="readiness-modal-close" onClick={onClose} aria-label="Close">×</button>
         </div>
         <p className="readiness-modal-desc">
-          A <strong>0–100 score per track</strong> that tells you how interview-ready you are right now — updated after every practice session and mock.
+          A <strong>0–100 score per track</strong> that tells you how interview-ready you are right now — updated after every practice session and mock. Practice alone caps at "Getting there"; reaching the top bands requires timed mock performance.
         </p>
         <div className="readiness-modal-signals">
           {[
             { label: 'Practice coverage', desc: "How broadly you've solved across easy, medium, and hard difficulties in this track." },
-            { label: 'Mock accuracy', desc: 'Your accuracy under timed mock interview conditions — weighted toward recent sessions.' },
-            { label: 'Concept strength', desc: 'Accuracy across the concept tags in this track — surfaces gaps in specific areas.' },
+            { label: 'Solve quality', desc: 'Whether you solve cleanly on the first attempt — first-time-correct mastery, not just eventual solves.' },
+            { label: 'Mock performance', desc: 'Your accuracy under timed mock-interview conditions — practice alone tops out at "Getting there"; mocks unlock the top bands.' },
           ].map(s => (
             <div key={s.label} className="readiness-modal-signal">
               <span className="readiness-signal-dot" />
@@ -106,7 +106,7 @@ function ReadinessModal({ onClose }) {
           ))}
         </div>
         <div className="readiness-modal-labels">
-          {['Beginner', 'Developing', 'Proficient', 'Strong', 'Expert'].map(label => (
+          {['Early stage', 'Building', 'Getting there', 'Interview ready', 'Strong'].map(label => (
             <span key={label} className="readiness-label-chip">{label}</span>
           ))}
         </div>
@@ -337,6 +337,9 @@ export default function ProgressDashboard() {
                       ))}
                     </div>
                   </div>
+                  {isElite && (
+                    <p className="db-readiness-note">Readiness blends coverage, first-time solve quality, and mock performance. Practice tops out at &#8220;Getting there&#8221; — run a timed mock to reach &#8220;Interview ready&#8221;.</p>
+                  )}
                   <div className="db-track-table" key={activeRoleId ?? 'all'}>
                     {visibleTracks.map(topic => {
                       const meta = TRACK_META[topic];
@@ -373,7 +376,10 @@ export default function ProgressDashboard() {
                           </div>
                           <div className="db-track-right-col">
                             {readiness ? (
-                              <div className={`db-readiness-chip db-readiness-chip--${readiness.label.toLowerCase().replace(/\s+/g, '-')}`}>
+                              <div
+                                className={`db-readiness-chip db-readiness-chip--${readiness.label.toLowerCase().replace(/\s+/g, '-')}`}
+                                title={readiness.mock_limited ? 'Practice-strong — run a timed mock to raise this score' : undefined}
+                              >
                                 <span className="db-readiness-score">{readiness.score}</span>
                                 <span className="db-readiness-label">{readiness.label}</span>
                               </div>
@@ -385,6 +391,9 @@ export default function ProgressDashboard() {
                                 Readiness <span className="db-elite-badge">Elite</span>
                               </button>
                             ) : null}
+                            {readiness?.mock_limited && (
+                              <span className="db-readiness-mocknudge">Mock to level up</span>
+                            )}
                             <span className="db-track-arrow">→</span>
                           </div>
                         </Link>

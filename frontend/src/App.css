@@ -6014,16 +6014,18 @@ select {
   font-weight: 700;
   white-space: nowrap;
 }
-.db-readiness-chip--beginner { background: #fee2e2; color: #991b1b; }
-.db-readiness-chip--developing { background: #fef3c7; color: #92400e; }
-.db-readiness-chip--proficient { background: #d1fae5; color: #065f46; }
+/* Label modifiers — calm grey→amber→green→blue ramp. "Early stage" is a neutral
+   sage (a starting point, not a failure) — never red; this is a long-session pro tool. */
+.db-readiness-chip--early-stage { background: #e9eeec; color: #5e6f67; }
+.db-readiness-chip--building { background: #fef3c7; color: #92400e; }
+.db-readiness-chip--getting-there { background: #fde9b3; color: #7a4a10; }
+.db-readiness-chip--interview-ready { background: #d1fae5; color: #065f46; }
 .db-readiness-chip--strong { background: #dbeafe; color: #1e40af; }
-.db-readiness-chip--expert { background: #ede9fe; color: #5b21b6; }
-[data-theme="dark"] .db-readiness-chip--beginner { background: rgba(153,27,27,0.25); color: #fca5a5; }
-[data-theme="dark"] .db-readiness-chip--developing { background: rgba(146,64,14,0.25); color: #fcd34d; }
-[data-theme="dark"] .db-readiness-chip--proficient { background: rgba(6,95,70,0.25); color: #6ee7b7; }
+[data-theme="dark"] .db-readiness-chip--early-stage { background: rgba(122,148,133,0.18); color: #a7c0b4; }
+[data-theme="dark"] .db-readiness-chip--building { background: rgba(146,64,14,0.25); color: #fcd34d; }
+[data-theme="dark"] .db-readiness-chip--getting-there { background: rgba(124,74,16,0.30); color: #fcd34d; }
+[data-theme="dark"] .db-readiness-chip--interview-ready { background: rgba(6,95,70,0.25); color: #6ee7b7; }
 [data-theme="dark"] .db-readiness-chip--strong { background: rgba(30,64,175,0.25); color: #93c5fd; }
-[data-theme="dark"] .db-readiness-chip--expert { background: rgba(91,33,182,0.25); color: #c4b5fd; }
 .db-readiness-score { font-weight: 800; font-size: 0.78rem; }
 .db-readiness-label { font-size: 0.68rem; font-weight: 600; }
 
@@ -6039,6 +6041,24 @@ select {
   gap: 4px;
 }
 .db-readiness-gate:hover { color: var(--text-strong); }
+
+/* Readiness section note (Elite — mocks raise readiness) */
+.db-readiness-note {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin: 0 0 0.85rem;
+  line-height: 1.55;
+  font-style: italic;
+}
+
+/* Per-track mock nudge badge (mock_limited flag) */
+.db-readiness-mocknudge {
+  font-size: 0.66rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  white-space: nowrap;
+  pointer-events: none;
+}
 
 /* Track overview — role filter */
 .db-track-overview-head {

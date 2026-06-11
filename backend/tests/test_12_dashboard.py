@@ -479,11 +479,13 @@ def test_tc194_elite_user_readiness_scores_present():
         t = scores[key]
         assert "score" in t
         assert "label" in t
+        assert "mock_limited" in t
+        assert isinstance(t["mock_limited"], bool)
         assert "components" in t
         comps = t["components"]
-        assert "practice" in comps
-        assert "mock_accuracy" in comps
-        assert "concept_strength" in comps
+        assert "coverage" in comps
+        assert "quality" in comps
+        assert "mock" in comps
 
 
 def test_tc195_elite_user_study_plan_present():
@@ -528,59 +530,80 @@ def test_tc197_no_duplicate_type_track_pairs_in_study_plan():
 # ---------------------------------------------------------------------------
 
 def test_tc198_practice_coverage_0_solves():
-    """TC-198: 0 solves → components.practice == 0.0."""
+    """TC-198: 0 solves, empty ftc, no mock → all component values 0, score 0, label 'Early stage', mock_limited False."""
     result = _compute_readiness_scores(
         per_track_solved_question_ids={},
+        per_track_ftc_question_ids={},
         mock_sessions=[],
-        concept_attempts={},
-        concept_correct={},
         effective_plan="elite",
     )
     assert result is not None
     for track in ("sql", "python", "pandas", "pyspark"):
-        assert result[track]["components"]["practice"] == 0.0
+        comps = result[track]["components"]
+        assert comps["coverage"] == 0.0, f"{track}: expected coverage 0.0, got {comps['coverage']}"
+        assert comps["quality"] == 0.0, f"{track}: expected quality 0.0, got {comps['quality']}"
+        assert comps["mock"] == 0.0, f"{track}: expected mock 0.0, got {comps['mock']}"
+        assert result[track]["score"] == 0, f"{track}: expected score 0"
+        assert result[track]["label"] == "Early stage", f"{track}: expected 'Early stage'"
+        assert result[track]["mock_limited"] is False, f"{track}: expected mock_limited False"
 
 
-def test_tc199_practice_coverage_100_easy_medium_40_hard():
-    """TC-199: 100% easy, 100% medium, 40% hard → components.practice ≈ 40."""
+def test_tc199_full_practice_full_ftc_no_mock_sql():
+    """TC-199: All SQL practice IDs in solved + ftc, no mock → coverage==45.0, quality==25.0, score==70, label=='Getting there', mock_limited True."""
     from questions import get_questions_by_difficulty as get_sql
     sql_qs = get_sql()
     easy_ids = {int(q["id"]) for q in sql_qs["easy"]}
     medium_ids = {int(q["id"]) for q in sql_qs["medium"]}
     hard_ids = {int(q["id"]) for q in sql_qs["hard"]}
-    # 40% of hard
-    hard_40_count = int(len(hard_ids) * 0.4)
-    hard_sample = set(list(hard_ids)[:hard_40_count])
+    all_practice_ids = easy_ids | medium_ids | hard_ids
 
-    solved = easy_ids | medium_ids | hard_sample
     result = _compute_readiness_scores(
-        per_track_solved_question_ids={"sql": solved},
+        per_track_solved_question_ids={"sql": all_practice_ids},
+        per_track_ftc_question_ids={"sql": all_practice_ids},
         mock_sessions=[],
-        concept_attempts={},
-        concept_correct={},
         effective_plan="elite",
     )
-    practice = result["sql"]["components"]["practice"]
-    # 10 (easy 100%) + 20 (medium 100%) + 10 (hard 40%) = 40
-    assert abs(practice - 40.0) < 5.0, f"Expected ~40.0, got {practice}"
+    assert result is not None
+    sql = result["sql"]
+    comps = sql["components"]
+    assert comps["coverage"] == 45.0, f"Expected coverage 45.0, got {comps['coverage']}"
+    assert comps["quality"] == 25.0, f"Expected quality 25.0, got {comps['quality']}"
+    assert sql["score"] == 70, f"Expected score 70, got {sql['score']}"
+    assert sql["label"] == "Getting there", f"Expected 'Getting there', got {sql['label']}"
+    assert sql["mock_limited"] is True, f"Expected mock_limited True"
 
 
-def test_tc200_mock_accuracy_no_sessions():
-    """TC-200: No mock sessions → components.mock_accuracy == 0.0."""
+def test_tc200_mock_component_no_sessions():
+    """TC-200: No mock sessions → components.mock == 0.0."""
     result = _compute_readiness_scores(
         per_track_solved_question_ids={},
+        per_track_ftc_question_ids={},
         mock_sessions=[],
-        concept_attempts={},
-        concept_correct={},
         effective_plan="elite",
     )
+    assert result is not None
     for track in ("sql", "python", "pandas", "pyspark"):
-        assert result[track]["components"]["mock_accuracy"] == 0.0
+        assert result[track]["components"]["mock"] == 0.0, \
+            f"{track}: expected mock 0.0, got {result[track]['components']['mock']}"
 
 
 def test_tc201_readiness_label_thresholds():
-    """TC-201: Label thresholds: <40→'Early stage', 40-64→'Building', etc."""
-    from routers.insights import _compute_readiness_scores as _crs
+    """TC-201: Label thresholds under new signature: <40→'Early stage', 40–64→'Building', 65–79→'Getting there', 80–89→'Interview ready', 90+→'Strong'."""
+    # Verify the label lookup function directly using the same logic as _compute_readiness_scores
+    label_fn_map = [
+        (90, "Strong"),
+        (80, "Interview ready"),
+        (65, "Getting there"),
+        (40, "Building"),
+        (0, "Early stage"),
+    ]
+
+    def _label(score):
+        for threshold, lbl in label_fn_map:
+            if score >= threshold:
+                return lbl
+        return "Early stage"
+
     cases = [
         (0, "Early stage"),
         (39, "Early stage"),
@@ -593,21 +616,26 @@ def test_tc201_readiness_label_thresholds():
         (90, "Strong"),
         (100, "Strong"),
     ]
-    label_fn_map = [
-        (90, "Strong"),
-        (80, "Interview ready"),
-        (65, "Getting there"),
-        (40, "Building"),
-        (0, "Early stage"),
-    ]
-    def _label(score):
-        for threshold, lbl in label_fn_map:
-            if score >= threshold:
-                return lbl
-        return "Early stage"
-
     for score, expected_label in cases:
         assert _label(score) == expected_label, f"Score {score}: expected '{expected_label}'"
+
+    # Also confirm via the real function: 0 solves/ftc/mock → score 0 → "Early stage"
+    result_zero = _compute_readiness_scores(
+        per_track_solved_question_ids={},
+        per_track_ftc_question_ids={},
+        mock_sessions=[],
+        effective_plan="elite",
+    )
+    assert result_zero is not None
+    assert result_zero["sql"]["label"] == "Early stage"
+
+    # Non-elite → None (unchanged)
+    assert _compute_readiness_scores(
+        per_track_solved_question_ids={},
+        per_track_ftc_question_ids={},
+        mock_sessions=[],
+        effective_plan="pro",
+    ) is None
 
 
 # ---------------------------------------------------------------------------
@@ -660,3 +688,116 @@ def test_tc203_cache_is_per_user():
     assert b_solve_count >= 0  # B has its own isolated cache
     # They are different users with different data
     _ = a_solve_count  # both are valid
+
+
+# ---------------------------------------------------------------------------
+# TC-204 to TC-208: New readiness score unit tests
+# ---------------------------------------------------------------------------
+
+def test_tc204_mock_booster_one_completed_session():
+    """TC-204: One completed SQL session (1/2 solved) → sql components.mock == 15.0."""
+    mock_sessions = [
+        {"status": "completed", "track": "sql", "total_count": 2, "solved_count": 1}
+    ]
+    result = _compute_readiness_scores(
+        per_track_solved_question_ids={},
+        per_track_ftc_question_ids={},
+        mock_sessions=mock_sessions,
+        effective_plan="elite",
+    )
+    assert result is not None
+    mock_pts = result["sql"]["components"]["mock"]
+    assert mock_pts == 15.0, f"Expected mock 15.0, got {mock_pts}"
+
+
+def test_tc205_full_practice_full_ftc_perfect_mock_score_100():
+    """TC-205: All SQL practice + ftc + perfect mock (3/3) → score == 100, label == 'Strong', mock_limited False."""
+    from questions import get_questions_by_difficulty as get_sql
+    sql_qs = get_sql()
+    easy_ids = {int(q["id"]) for q in sql_qs["easy"]}
+    medium_ids = {int(q["id"]) for q in sql_qs["medium"]}
+    hard_ids = {int(q["id"]) for q in sql_qs["hard"]}
+    all_practice_ids = easy_ids | medium_ids | hard_ids
+
+    mock_sessions = [
+        {"status": "completed", "track": "sql", "total_count": 3, "solved_count": 3}
+    ]
+    result = _compute_readiness_scores(
+        per_track_solved_question_ids={"sql": all_practice_ids},
+        per_track_ftc_question_ids={"sql": all_practice_ids},
+        mock_sessions=mock_sessions,
+        effective_plan="elite",
+    )
+    assert result is not None
+    sql = result["sql"]
+    assert sql["score"] == 100, f"Expected score 100, got {sql['score']}"
+    assert sql["label"] == "Strong", f"Expected 'Strong', got {sql['label']}"
+    assert sql["mock_limited"] is False, f"Expected mock_limited False"
+
+
+def test_tc206_quality_is_ftc_based_not_solve_based():
+    """TC-206: Solved set non-empty but ftc empty → quality 0.0; ftc ≥ 40% of catalog → quality 25.0."""
+    from questions import get_questions_by_difficulty as get_sql
+    sql_qs = get_sql()
+    easy_ids = {int(q["id"]) for q in sql_qs["easy"]}
+    medium_ids = {int(q["id"]) for q in sql_qs["medium"]}
+    hard_ids = {int(q["id"]) for q in sql_qs["hard"]}
+    all_practice_ids = easy_ids | medium_ids | hard_ids
+
+    # Case A: solved some questions but ftc is empty → quality must be 0
+    result_no_ftc = _compute_readiness_scores(
+        per_track_solved_question_ids={"sql": all_practice_ids},
+        per_track_ftc_question_ids={},
+        mock_sessions=[],
+        effective_plan="elite",
+    )
+    assert result_no_ftc is not None
+    quality_no_ftc = result_no_ftc["sql"]["components"]["quality"]
+    assert quality_no_ftc == 0.0, f"Expected quality 0.0 with empty ftc, got {quality_no_ftc}"
+
+    # Case B: ftc covers the full catalog (≥ 40% by a comfortable margin) → quality must be 25
+    # Using the full set guarantees ftc_practice / (0.4 * total_practice) ≥ 1.0 → capped at 25.
+    result_with_ftc = _compute_readiness_scores(
+        per_track_solved_question_ids={"sql": all_practice_ids},
+        per_track_ftc_question_ids={"sql": all_practice_ids},
+        mock_sessions=[],
+        effective_plan="elite",
+    )
+    assert result_with_ftc is not None
+    quality_with_ftc = result_with_ftc["sql"]["components"]["quality"]
+    assert quality_with_ftc == 25.0, f"Expected quality 25.0 with full ftc coverage, got {quality_with_ftc}"
+
+
+def test_tc207_mock_limited_flag():
+    """TC-207: Full practice + full ftc → mock_limited True (no mock); add perfect mock → mock_limited False."""
+    from questions import get_questions_by_difficulty as get_sql
+    sql_qs = get_sql()
+    easy_ids = {int(q["id"]) for q in sql_qs["easy"]}
+    medium_ids = {int(q["id"]) for q in sql_qs["medium"]}
+    hard_ids = {int(q["id"]) for q in sql_qs["hard"]}
+    all_practice_ids = easy_ids | medium_ids | hard_ids
+
+    # No mock: practice-strong + quality-strong → mock_limited True
+    result_no_mock = _compute_readiness_scores(
+        per_track_solved_question_ids={"sql": all_practice_ids},
+        per_track_ftc_question_ids={"sql": all_practice_ids},
+        mock_sessions=[],
+        effective_plan="elite",
+    )
+    assert result_no_mock is not None
+    assert result_no_mock["sql"]["mock_limited"] is True, \
+        f"Expected mock_limited True with no mock, got {result_no_mock['sql']['mock_limited']}"
+
+    # Perfect mock: coverage+quality ≥ 50 but mock ≥ 10 → mock_limited False
+    mock_sessions = [
+        {"status": "completed", "track": "sql", "total_count": 3, "solved_count": 3}
+    ]
+    result_with_mock = _compute_readiness_scores(
+        per_track_solved_question_ids={"sql": all_practice_ids},
+        per_track_ftc_question_ids={"sql": all_practice_ids},
+        mock_sessions=mock_sessions,
+        effective_plan="elite",
+    )
+    assert result_with_mock is not None
+    assert result_with_mock["sql"]["mock_limited"] is False, \
+        f"Expected mock_limited False with perfect mock, got {result_with_mock['sql']['mock_limited']}"
