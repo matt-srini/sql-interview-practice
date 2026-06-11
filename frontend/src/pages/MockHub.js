@@ -1062,6 +1062,7 @@ export default function MockHub() {
         {!historyLoading && benchmarkHistory.length > 0 && (
           <section className="mock-hub-section mock-hub-history">
             <h2 className="mock-hub-history-title">Recent benchmark sessions</h2>
+            <div className="mock-history-table-wrap">
             <table className="mock-history-table">
               <thead>
                 <tr>
@@ -1086,12 +1087,14 @@ export default function MockHub() {
                 ))}
               </tbody>
             </table>
+            </div>
           </section>
         )}
 
         {!historyLoading && drillHistory.length > 0 && (
           <section className="mock-hub-section mock-hub-history">
             <h2 className="mock-hub-history-title">Recent custom drills</h2>
+            <div className="mock-history-table-wrap">
             <table className="mock-history-table">
               <thead>
                 <tr>
@@ -1115,12 +1118,14 @@ export default function MockHub() {
                 ))}
               </tbody>
             </table>
+            </div>
           </section>
         )}
 
         {!historyLoading && loopHistory.length > 0 && (
           <section className="mock-hub-section mock-hub-history">
             <h2 className="mock-hub-history-title">Recent Interview Loops</h2>
+            <div className="mock-history-table-wrap">
             <table className="mock-history-table">
               <thead>
                 <tr>
@@ -1144,6 +1149,7 @@ export default function MockHub() {
                 ))}
               </tbody>
             </table>
+            </div>
           </section>
         )}
 

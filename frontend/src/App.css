@@ -8951,6 +8951,10 @@ select {
   color: var(--text-strong);
   margin: 0 0 1rem;
 }
+.mock-history-table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
 .mock-history-table {
   width: 100%;
   border-collapse: collapse;
