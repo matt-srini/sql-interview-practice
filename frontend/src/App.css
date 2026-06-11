@@ -3659,32 +3659,16 @@ select {
   color: #F0EEE9;
 }
 
-/* Paste button — same visual weight as editor-expand-btn but auto-width.
-   Hidden on mouse/trackpad devices (pointer: fine); shown on touch (pointer: coarse). */
-.editor-paste-btn {
-  display: none; /* hidden by default; shown below for coarse-pointer devices */
+/* Copy + Paste icon button group — hidden on mouse devices (pointer: fine),
+   shown on touch (pointer: coarse). Buttons reuse editor-expand-btn styles. */
+.editor-clipboard-group {
+  display: none;
+  align-items: center;
+  gap: 1px;
 }
 @media (pointer: coarse) {
-  .editor-paste-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    height: 26px;
-    padding: 0 8px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 6px;
-    background: transparent;
-    color: #9B9891;
-    font-size: 0.8rem;
-    font-weight: 600;
-    cursor: pointer;
-    flex-shrink: 0;
-    transition: background 0.15s, border-color 0.15s, color 0.15s;
-  }
-  .editor-paste-btn:hover {
-    background: rgba(255, 255, 255, 0.07);
-    border-color: rgba(255, 255, 255, 0.2);
-    color: #F0EEE9;
+  .editor-clipboard-group {
+    display: flex;
   }
 }
 
