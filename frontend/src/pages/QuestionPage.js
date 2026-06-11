@@ -758,6 +758,17 @@ export default function QuestionPage() {
     });
   }
 
+  async function handlePaste() {
+    try {
+      const text = await navigator.clipboard.readText();
+      if (!text || !editorRef.current) return;
+      const editor = editorRef.current;
+      const selection = editor.getSelection();
+      editor.executeEdits('paste-btn', [{ range: selection, text, forceMoveMarkers: true }]);
+      editor.focus();
+    } catch (_) { /* permission denied or clipboard empty — silently skip */ }
+  }
+
   function clearDraft() {
     if (renderMode === 'mcq') return;
     const resetCode = meta.language === 'python' && question?.starter_code ? question.starter_code : defaultCode;
@@ -1359,6 +1370,7 @@ export default function QuestionPage() {
                     <button className="editor-expand-btn" onClick={() => adjustFontSize(-1)} title="Decrease font size" aria-label="Decrease font size">A−</button>
                     <button className="editor-expand-btn" onClick={() => adjustFontSize(+1)} title="Increase font size" aria-label="Increase font size">A+</button>
                   </div>
+                  <button className="editor-paste-btn" onClick={handlePaste} title="Paste from clipboard" aria-label="Paste from clipboard">Paste</button>
                   <button
                     className="editor-expand-btn"
                     onClick={() => setShortcutHelpOpen((open) => !open)}

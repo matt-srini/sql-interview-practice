@@ -116,6 +116,7 @@ export default function MockSession() {
   const runningRef = useRef(false);
   const submittingRef = useRef(false);
   const resultsCardRef = useRef(null);
+  const editorRef = useRef(null);
 
   const handleFinish = useCallback(async () => {
     if (finishCalled.current) return;
@@ -434,6 +435,7 @@ export default function MockSession() {
   }
 
   function handleEditorMount(editor, monaco) {
+    editorRef.current = editor;
     editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, () => {
       if (!runningRef.current && !submittingRef.current) handleRunRef.current?.();
     });
@@ -441,6 +443,17 @@ export default function MockSession() {
       monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.Enter,
       () => { if (!submittingRef.current) handleSubmitRef.current?.(); }
     );
+  }
+
+  async function handlePaste() {
+    try {
+      const text = await navigator.clipboard.readText();
+      if (!text || !editorRef.current) return;
+      const editor = editorRef.current;
+      const selection = editor.getSelection();
+      editor.executeEdits('paste-btn', [{ range: selection, text, forceMoveMarkers: true }]);
+      editor.focus();
+    } catch (_) { /* permission denied or clipboard empty — silently skip */ }
   }
 
   // ── Loading / error states ─────────────────────────────────────────────────
@@ -1040,6 +1053,7 @@ export default function MockSession() {
                   <div className="editor-topbar-actions">
                     <button className="editor-expand-btn" onClick={() => adjustFontSize(-1)} title="Decrease font size" aria-label="Decrease font size">A−</button>
                     <button className="editor-expand-btn" onClick={() => adjustFontSize(+1)} title="Increase font size" aria-label="Increase font size">A+</button>
+                    <button className="editor-paste-btn" onClick={handlePaste} title="Paste from clipboard" aria-label="Paste from clipboard">Paste</button>
                     <button
                       className="editor-expand-btn"
                       onClick={() => setShortcutHelpOpen(v => !v)}
