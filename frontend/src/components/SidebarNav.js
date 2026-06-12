@@ -110,9 +110,6 @@ function QuestionContent({ q, position, isActive = false }) {
         </span>
         <span className="sidebar-question-main">
           <span className="sidebar-question-title">{q.title}</span>
-          {questionFormLabel && (
-            <span className="sidebar-question-form-badge">{questionFormLabel}</span>
-          )}
         </span>
       </div>
       <QuestionStateLabel q={q} isActive={isActive} />
