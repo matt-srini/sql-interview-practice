@@ -2421,7 +2421,7 @@ select {
 }
 
 .topbar-signout-btn:hover {
-  color: var(--text-primary);
+  color: var(--accent);
 }
 
 .topbar-auth-link {
@@ -2431,7 +2431,7 @@ select {
 }
 
 .topbar-auth-link:hover {
-  color: var(--text-primary);
+  color: var(--accent);
 }
 
 /* .landing-tabs-nav, .landing-tab-btn, .landing-tab-label replaced by .landing-track-nav + .landing-track-pill */
