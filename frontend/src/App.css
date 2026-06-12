@@ -12254,6 +12254,14 @@ select {
   color: var(--text-secondary);
   margin-bottom: 1.25rem;
 }
+/* Dark mode: lift the eyebrow from the neutral --text-secondary gray into a
+   muted sage so the hero/sample kickers carry a faint brand-green tinge instead
+   of reading as pure charcoal. Scoped to .lp-eyebrow only (3 instances: landing
+   logged-out, landing logged-in, Sample Hub) — deliberately NOT the global
+   --text-secondary token, which colors ~280 secondary-text elements app-wide. */
+[data-theme="dark"] .lp-eyebrow {
+  color: #96AE9F;
+}
 .lp-section-index {
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.68rem;
