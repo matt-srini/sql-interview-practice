@@ -65,8 +65,13 @@ vi.mock('../trackRegistry', () => ({
 
 vi.mock('../utils/currency', () => ({
   detectCurrency: () => 'INR',
+  getStoredCurrency: () => 'INR',
+  setStoredCurrency: () => {},
+  SUPPORTED_CURRENCIES: ['INR', 'USD'],
+  railForCurrency: (c) => (c === 'INR' ? 'razorpay' : 'paddle'),
   PRICES: {
     INR: { pro: '₹999', elite: '₹1,999', period: '/mo', lifetimePro: '₹11,999', lifetimeElite: '₹19,999' },
+    USD: { pro: '$12', elite: '$22', period: '/mo', lifetimePro: '$129', lifetimeElite: '$229' },
   },
 }));
 

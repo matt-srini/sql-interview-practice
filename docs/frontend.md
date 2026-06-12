@@ -280,7 +280,7 @@ OG cards: `og-image.png` (1200×630, dark), `og-image-light.png` (1200×630, lig
 | ToastViewport | `components/ToastViewport.js` | Global in-app toast stack (first-solve, unlock, and streak milestone feedback) rendered by `ToastProvider` |
 | LoggedInWelcome | `components/LoggedInWelcome.js` | Welcome-back block on `/` for authenticated users. Three cards: Resume (last-solved question via `/api/dashboard` recent_activity), Dashboard, Mock. Replaces the marketing hero for returning users. |
 | TierBanner | `components/TierBanner.js` | Inline upgrade prompt shown when a user hits a plan gate (e.g. locked hard questions); renders contextual copy and upgrade CTA |
-| UpgradeButton | `components/UpgradeButton.js` | Reusable upgrade CTA button; opens Razorpay Checkout for the target plan tier |
+| UpgradeButton | `components/UpgradeButton.js` | Reusable upgrade CTA. Picks the billing rail from the selected currency (`railForCurrency` in `utils/currency.js`): INR → Razorpay Checkout, any other currency → Paddle.js overlay (Merchant of Record). Defaults to the stored/detected currency so every surface is rail-consistent. The landing pricing table + logged-in nudge expose an explicit `CurrencyToggle` (🇮🇳 ₹ INR / 🌍 $ USD) that persists the choice via `setStoredCurrency` |
 
 ### AppShell
 
@@ -446,8 +446,8 @@ Initialized via `analytics.js` when `VITE_POSTHOG_KEY` is available. In local de
 | `sample_submitted` | SampleQuestionPage | `track`, `difficulty`, `question_id`, `correct` |
 | `mock_started` | MockHub | `mode`, `track`, `difficulty`, `session_id` |
 | `mock_completed` | MockSession | `session_id`, `score`, `total`, `track` |
-| `plan_upgrade_started` | UpgradeButton | `tier`, `source` |
-| `plan_upgraded` | UpgradeButton | `tier`, `source` |
+| `plan_upgrade_started` | UpgradeButton | `tier`, `source`, `rail` (`razorpay` \| `paddle`) |
+| `plan_upgraded` | UpgradeButton | `tier`, `source`, `rail` (`razorpay` \| `paddle`) |
 
 **Funnel:** Landing → Track selection → First question → First solve → Registration → Plan upgrade.
 

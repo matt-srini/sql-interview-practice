@@ -41,6 +41,12 @@ from models import (
     VerifyPaymentRequest,
     VerifyPaymentResponse,
 )
+from plan_policy import (
+    ALL_PAID_PLANS,
+    LIFETIME_PLANS,
+    SUBSCRIPTION_PLANS,  # re-exported for back-compat; not used directly here
+    target_plan_is_allowed as _target_plan_is_allowed,
+)
 
 try:
     import razorpay
@@ -51,11 +57,6 @@ except ImportError:
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/razorpay", tags=["razorpay"])
-
-
-LIFETIME_PLANS = {"lifetime_pro", "lifetime_elite"}
-SUBSCRIPTION_PLANS = {"pro", "elite"}
-ALL_PAID_PLANS = LIFETIME_PLANS | SUBSCRIPTION_PLANS
 
 
 def _plan_ids() -> dict[str, str | None]:
@@ -86,17 +87,6 @@ def _require_razorpay_client() -> Any:
     if not RAZORPAY_KEY_ID or not RAZORPAY_KEY_SECRET:
         raise HTTPException(status_code=503, detail="Razorpay is not configured for checkout.")
     return razorpay.Client(auth=(RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET))
-
-
-def _target_plan_is_allowed(current_plan: str, target_plan: str) -> bool:
-    allowed_targets: dict[str, set[str]] = {
-        "free":           {"pro", "elite", "lifetime_pro", "lifetime_elite"},
-        "pro":            {"elite", "lifetime_pro", "lifetime_elite"},
-        "lifetime_pro":   {"elite", "lifetime_elite"},
-        "elite":          {"lifetime_elite"},
-        "lifetime_elite": set(),
-    }
-    return target_plan in allowed_targets.get(current_plan, set())
 
 
 def _normalized_uuid_or_none(value: Any) -> str | None:

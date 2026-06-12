@@ -141,6 +141,7 @@ ALTER TABLE users ADD COLUMN IF NOT EXISTS email_verified BOOLEAN NOT NULL DEFAU
 ALTER TABLE users ADD COLUMN IF NOT EXISTS failed_login_attempts INTEGER NOT NULL DEFAULT 0;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS login_locked_until TIMESTAMPTZ;
 ALTER TABLE submissions ADD COLUMN IF NOT EXISTS duration_ms INTEGER;
+ALTER TABLE payment_events ADD COLUMN IF NOT EXISTS provider TEXT NOT NULL DEFAULT 'razorpay';
 
 CREATE TABLE IF NOT EXISTS email_verification_tokens (
     token TEXT PRIMARY KEY,
@@ -988,6 +989,7 @@ async def record_payment_event(
     *,
     user_id: str | None = None,
     payload_summary: Any = None,
+    provider: str = "razorpay",
 ) -> None:
     normalized_user_id = _normalize_uuid_or_none(user_id)
     session_factory = _session_factory_or_raise()
@@ -995,8 +997,8 @@ async def record_payment_event(
         await session.execute(
             text(
                 """
-                INSERT INTO payment_events (event_id, event_type, user_id, payload_summary)
-                VALUES (:event_id, :event_type, CAST(:user_id AS UUID), CAST(:payload_summary AS JSONB))
+                INSERT INTO payment_events (event_id, event_type, user_id, provider, payload_summary)
+                VALUES (:event_id, :event_type, CAST(:user_id AS UUID), :provider, CAST(:payload_summary AS JSONB))
                 ON CONFLICT (event_id) DO NOTHING
                 """
             ),
@@ -1004,6 +1006,7 @@ async def record_payment_event(
                 "event_id": event_id,
                 "event_type": event_type,
                 "user_id": normalized_user_id,
+                "provider": provider,
                 "payload_summary": json.dumps(payload_summary) if payload_summary is not None else None,
             },
         )

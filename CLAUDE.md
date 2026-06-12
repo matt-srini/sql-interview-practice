@@ -166,7 +166,7 @@ A data interview practice platform covering nine tracks. Users write SQL or Pyth
 | Backend | Python, FastAPI, Uvicorn |
 | App state | PostgreSQL (identity, sessions, progress, plans, billing) |
 | Query execution | DuckDB (in-memory, loaded once at startup from CSVs) |
-| Payments | Razorpay (Orders + Subscriptions) + verified webhooks |
+| Payments | Dual-rail: Razorpay (Orders + Subscriptions, INR/India) + Paddle (Merchant of Record, USD/global) — both with verified webhooks |
 | Rate limiting | Redis (production) / in-memory fallback (development) |
 | Testing | pytest + httpx (backend), Vitest + React Testing Library (frontend unit), Playwright (frontend e2e) |
 | Observability | Sentry (backend + frontend error capture), PostHog (product analytics) |

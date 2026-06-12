@@ -107,7 +107,33 @@ normalize_plan("free")           # → "free"  (unchanged)
 
 ---
 
+## Global payments — dual-rail (Razorpay + Paddle)
+
+datathink bills through two rails, chosen by the selected currency (see § Currency detection and the billing rail):
+
+| Rail | Currency | Serves | Role |
+|---|---|---|---|
+| **Razorpay** | INR | India | Payment gateway — UPI / cards / netbanking, INR settlement, per-transaction eFIRC. Detailed below. |
+| **Paddle** | USD (every non-INR currency) | Rest of world | **Merchant of Record** — Paddle is the legal seller to the customer and collects + remits global VAT/GST/sales tax on our behalf; we receive a net payout. |
+
+**Why Paddle is a Merchant of Record, not just a second gateway.** Selling a digital subscription to consumers worldwide makes the seller liable for each buyer's local consumption tax (EU VAT with no threshold, UK VAT, US economic-nexus sales tax, …) — compliance a small team cannot operate. As MoR, Paddle assumes that liability. The trade is a ~5% + fees MoR cut (≈7–8% all-in after payout FX) in exchange for never touching global tax. Razorpay stays the India rail because it is best-in-class locally and its per-transaction eFIRC keeps GST-export treatment clean; the one residual friction — Paddle pays out monthly with a per-payout (not per-sale) FIRC — is contained to the global slice. Full rationale + rejected alternatives (Razorpay-international-only, Stripe+Stripe Tax, PPP-at-launch): [`docs/decisions/DECISIONS.md`](../decisions/DECISIONS.md) (2026-06-13).
+
+**Shared invariants.** Both rails enforce the identical upgrade-path matrix (`backend/plan_policy.py`, § Backend upgrade path matrix) and feed one idempotency log (`payment_events`). Paddle events are stored with a `paddle:` id prefix and a `provider` column, so a Paddle event id can never collide with a Razorpay one in the shared `event_id` primary key.
+
+### Paddle endpoints + webhook
+
+| Endpoint | Purpose |
+|---|---|
+| `POST /api/paddle/create-checkout` | Returns the Paddle.js overlay config (`client_token`, `environment`, `price_id`, `is_subscription`, `customer_email`, `custom_data`). No server-side Paddle API call — the overlay is price-id driven. Requires auth + verified email; enforces the upgrade-path matrix; returns 503 until Paddle env vars are configured. |
+| `POST /api/paddle/webhook` | Source of truth. Verifies the `Paddle-Signature` header (`ts=<unix>;h1=<hmac>`, where `h1 = HMAC-SHA256(PADDLE_WEBHOOK_SECRET, "{ts}:{body}")`), then **grants** on `transaction.completed` / `subscription.activated` / `subscription.updated` and **revokes** (→ `free`) on `subscription.canceled`. Lifetime plans are protected from stray cancels (mirrors Razorpay). |
+
+The frontend `UpgradeButton` loads Paddle.js, calls `create-checkout`, and opens the overlay with `custom_data = { user_id, target_plan }` — Paddle echoes this back on the webhook so the user + plan resolve (its equivalent of Razorpay `notes`). The webhook is the only plan-grant authority (no client-verifiable signature exists), so checkout completion navigates to the success page and the webhook applies the plan shortly after. Env vars: `PADDLE_ENVIRONMENT`, `PADDLE_CLIENT_TOKEN`, `PADDLE_WEBHOOK_SECRET`, `PADDLE_PRICE_{PRO,ELITE,LIFETIME_PRO,LIFETIME_ELITE}` — see [`docs/deployment.md`](../deployment.md).
+
+---
+
 ## Razorpay integration
+
+> The **India rail** (INR). The global rail is Paddle — see § Global payments above.
 
 ### Order vs Subscription
 
@@ -127,9 +153,14 @@ The `amount` for subscriptions is `0` — the actual amount is resolved from the
 
 Monthly amounts are set in the Razorpay dashboard plan and not stored in the application.
 
-### Currency detection
+### Currency detection and the billing rail
 
-`detectCurrency()` in `frontend/src/utils/currency.js` uses `Intl.DateTimeFormat().resolvedOptions().timeZone`. Users in `Asia/Kolkata` or `Asia/Calcutta` get INR; all others get USD. The detected currency is passed as `currency` in the create-order request.
+Currency selection is **explicit and persisted**, with geo-detection as the first-visit default — all in `frontend/src/utils/currency.js`:
+- `detectCurrency()` seeds the default from the timezone — `Asia/Kolkata` / `Asia/Calcutta` → INR, everything else → USD.
+- `getStoredCurrency()` returns the user's saved choice (localStorage) if set, else the detected default; `setStoredCurrency()` persists the pick from the `CurrencyToggle` (🇮🇳 ₹ INR / 🌍 $ USD) shown on the landing pricing table and the logged-in upgrade nudge.
+- `railForCurrency()` maps currency → rail: **INR → Razorpay**, any other currency → **Paddle**. `UpgradeButton` defaults its `currency` prop to `getStoredCurrency()`, so every upgrade surface (sidebar, question page, dashboard, mock) routes to the correct rail without each caller threading the value. For Razorpay the currency is passed to `create-order`; for Paddle the rail is implied (`create-checkout` is USD via the Paddle catalog price).
+
+See § Global payments above for the rail split and why Paddle is a Merchant of Record.
 
 ### HMAC verification (`verify-payment`)
 

@@ -156,6 +156,17 @@ Signature formulas:
 - Subscription callback: HMAC-SHA256 of `"{payment_id}|{subscription_id}"` with `RAZORPAY_KEY_SECRET`
 - Webhook: HMAC-SHA256 of the raw request body with `RAZORPAY_WEBHOOK_SECRET`
 
+### Paddle — `/api/paddle`
+
+The global billing rail (Merchant of Record): used for every non-INR currency; INR uses Razorpay above. Full contract: [`docs/features/pricing.md`](features/pricing.md) § Global payments.
+
+| Method | Path | Description |
+|---|---|---|
+| POST | `/api/paddle/create-checkout` | Returns the Paddle.js overlay config `{ client_token, environment, price_id, is_subscription, customer_email, custom_data }` for the target plan. No server-side Paddle API call (the overlay is price-id driven — no SDK dependency). Requires auth + verified email; enforces the shared upgrade-path matrix (`plan_policy.py`). Returns 503 until Paddle env vars are set |
+| POST | `/api/paddle/webhook` | Source of truth. Verifies the `Paddle-Signature` header, applies/revokes the plan, dedupes on a `paddle:`-prefixed event id, records `provider='paddle'`. Grants on `transaction.completed` / `subscription.activated` / `subscription.updated`; revokes (→ `free`) on `subscription.canceled`. Lifetime plans protected against stray cancels (mirrors Razorpay) |
+
+Paddle signature: header `Paddle-Signature: ts=<unix>;h1=<hmac>` where `h1 = HMAC-SHA256(PADDLE_WEBHOOK_SECRET, "{ts}:{raw_body}")`. The user + target plan resolve from the transaction/subscription `custom_data` (Paddle's equivalent of Razorpay `notes`, set at create-checkout). Webhook is CSRF/Origin-exempt like the Razorpay webhook.
+
 ### SPA / static
 
 `GET /` and `GET /{asset_path:path}` serve `frontend/dist` assets. Falls back to `index.html` for SPA routes. `/api/*` paths are excluded from fallback.
@@ -403,7 +414,7 @@ Files: `db.py`, `progress.py`, `unlock.py`
 | `user_progress` | Per-user solved question records |
 | `user_sample_seen` | Per-user sample exposure records |
 | `plan_changes` | Audit log of plan tier changes |
-| `payment_events` | Idempotent payment provider event records (Razorpay webhook ids + synthetic `verify:<payment_id>` ids from client callback) |
+| `payment_events` | Idempotent payment-provider event log across both billing rails. `provider` column (`razorpay` \| `paddle`). Ids: Razorpay webhook ids + synthetic `verify:<payment_id>` (client callback); Paddle ids stored `paddle:`-prefixed so the two rails can never collide in the shared `event_id` PK |
 
 **`user_progress` and `user_sample_seen` carry a `topic` column** (DEFAULT `'sql'`). All `db.py` progress functions accept `topic: str = "sql"`. Progress is independent per topic — solving SQL questions does not affect Python unlock state.
 

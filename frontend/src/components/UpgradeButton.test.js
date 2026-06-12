@@ -82,9 +82,12 @@ afterEach(() => {
 });
 
 function renderButton(props = {}) {
+  // Default to INR so these suites exercise the Razorpay rail; the Paddle suite
+  // overrides with currency="USD". (Without an explicit prop the button now
+  // falls back to the stored/detected currency, which is env-dependent.)
   return render(
     <MemoryRouter>
-      <UpgradeButton {...props} />
+      <UpgradeButton currency="INR" {...props} />
     </MemoryRouter>
   );
 }
@@ -251,6 +254,82 @@ describe('Error path', () => {
       expect(screen.getByRole('button')).not.toBeDisabled();
     });
     expect(mockAssign).not.toHaveBeenCalled();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Paddle flow (USD / global rail)
+// ---------------------------------------------------------------------------
+
+describe('Paddle flow (USD / global rail)', () => {
+  let lastPaddleCheckout;
+  let paddleEventCb;
+
+  const checkoutResponse = {
+    data: {
+      client_token: 'live_token_123',
+      environment: 'sandbox',
+      price_id: 'pri_pro_usd',
+      is_subscription: true,
+      customer_email: 'u@example.com',
+      custom_data: { user_id: 'user-1', target_plan: 'pro' },
+    },
+  };
+
+  beforeEach(() => {
+    lastPaddleCheckout = null;
+    paddleEventCb = null;
+    window.Paddle = {
+      Environment: { set: vi.fn() },
+      Initialize: vi.fn((opts) => { paddleEventCb = opts?.eventCallback ?? null; }),
+      Checkout: { open: vi.fn((opts) => { lastPaddleCheckout = opts; }) },
+    };
+  });
+
+  afterEach(() => {
+    delete window.Paddle;
+  });
+
+  it('routes USD checkout to /paddle/create-checkout, not Razorpay', async () => {
+    mockApiPost.mockResolvedValueOnce(checkoutResponse);
+    renderButton({ tier: 'pro', currency: 'USD' });
+    fireEvent.click(screen.getByRole('button'));
+    await waitFor(() => {
+      expect(mockApiPost).toHaveBeenCalledWith('/paddle/create-checkout', { plan: 'pro' });
+    });
+    expect(window.Razorpay).not.toHaveBeenCalled();
+  });
+
+  it('opens the Paddle overlay with price id, customer email, and custom_data', async () => {
+    mockApiPost.mockResolvedValueOnce(checkoutResponse);
+    renderButton({ tier: 'pro', currency: 'USD' });
+    fireEvent.click(screen.getByRole('button'));
+    await waitFor(() => expect(window.Paddle.Checkout.open).toHaveBeenCalled());
+    expect(lastPaddleCheckout.items).toEqual([{ priceId: 'pri_pro_usd', quantity: 1 }]);
+    expect(lastPaddleCheckout.customData).toEqual({ user_id: 'user-1', target_plan: 'pro' });
+    expect(lastPaddleCheckout.customer).toEqual({ email: 'u@example.com' });
+  });
+
+  it('redirects to successPath and tracks upgrade on checkout.completed', async () => {
+    mockApiPost.mockResolvedValueOnce(checkoutResponse);
+    renderButton({ tier: 'pro', currency: 'USD', successPath: '/?upgraded=true' });
+    fireEvent.click(screen.getByRole('button'));
+    await waitFor(() => expect(paddleEventCb).toBeTypeOf('function'));
+    paddleEventCb({ name: 'checkout.completed' });
+    await waitFor(() => {
+      expect(mockTrack).toHaveBeenCalledWith('plan_upgraded', expect.objectContaining({ tier: 'pro', rail: 'paddle' }));
+      expect(mockAssign).toHaveBeenCalledWith('/?upgraded=true');
+    });
+  });
+
+  it('re-enables the button when the overlay is closed without paying', async () => {
+    mockApiPost.mockResolvedValueOnce(checkoutResponse);
+    renderButton({ tier: 'pro', currency: 'USD' });
+    fireEvent.click(screen.getByRole('button'));
+    await waitFor(() => expect(window.Paddle.Checkout.open).toHaveBeenCalled());
+    expect(screen.getByRole('button')).toBeDisabled();
+    paddleEventCb({ name: 'checkout.closed' });
+    await waitFor(() => expect(screen.getByRole('button')).not.toBeDisabled());
   });
 });
 

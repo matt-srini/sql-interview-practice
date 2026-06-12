@@ -90,6 +90,21 @@ RAZORPAY_PLAN_ELITE_USD            = _getenv("RAZORPAY_PLAN_ELITE_USD")
 RAZORPAY_AMOUNT_LIFETIME_PRO_USD   = _get_int("RAZORPAY_AMOUNT_LIFETIME_PRO_USD", "12900")  # $129
 RAZORPAY_AMOUNT_LIFETIME_ELITE_USD = _get_int("RAZORPAY_AMOUNT_LIFETIME_ELITE_USD", "22900") # $229
 
+# Paddle (global rail — Merchant of Record for non-INR customers).
+# India checks out through Razorpay above; the rest of the world goes through
+# Paddle, which is the Merchant of Record and collects + remits global VAT/GST/
+# sales tax on our behalf. All values are unset by default, so the Paddle
+# endpoints return 503 until configured — exactly like the Razorpay USD plan IDs.
+PADDLE_ENVIRONMENT      = (_getenv("PADDLE_ENVIRONMENT", "sandbox") or "sandbox").strip().lower()
+PADDLE_CLIENT_TOKEN     = _getenv("PADDLE_CLIENT_TOKEN")     # client-side token for Paddle.js
+PADDLE_API_KEY          = _getenv("PADDLE_API_KEY")          # server-side API key (reserved — cancel/portal later)
+PADDLE_WEBHOOK_SECRET   = _getenv("PADDLE_WEBHOOK_SECRET")   # notification-destination signing secret
+# Price IDs (USD) from the Paddle catalog — recurring (pro/elite) + one-time (lifetime_*)
+PADDLE_PRICE_PRO            = _getenv("PADDLE_PRICE_PRO")
+PADDLE_PRICE_ELITE          = _getenv("PADDLE_PRICE_ELITE")
+PADDLE_PRICE_LIFETIME_PRO   = _getenv("PADDLE_PRICE_LIFETIME_PRO")
+PADDLE_PRICE_LIFETIME_ELITE = _getenv("PADDLE_PRICE_LIFETIME_ELITE")
+
 RATE_LIMIT_REQUESTS = _get_int("RATE_LIMIT_REQUESTS", "60")
 RATE_LIMIT_WINDOW_SECONDS = _get_int("RATE_LIMIT_WINDOW_SECONDS", "60")
 REDIS_URL = _getenv("REDIS_URL")

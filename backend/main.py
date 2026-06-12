@@ -24,6 +24,7 @@ from routers import auth, catalog, questions, sample, spa, system
 from routers import plan
 from routers import admin as admin_router
 from routers import razorpay as razorpay_router
+from routers import paddle as paddle_router
 from routers import account as account_router
 from routers import python_questions as python_questions_router
 from routers import pandas_questions as pandas_questions_router
@@ -181,7 +182,7 @@ async def csrf_origin_protection_middleware(request: Request, call_next):
     if method in {"GET", "HEAD", "OPTIONS"} or not path.startswith("/api/"):
         return await call_next(request)
 
-    if path in {"/api/razorpay/webhook"}:
+    if path in {"/api/razorpay/webhook", "/api/paddle/webhook"}:
         return await call_next(request)
 
     if not IS_PROD:
@@ -312,6 +313,7 @@ app.include_router(questions.router)
 app.include_router(sample.router)
 app.include_router(plan.router)
 app.include_router(razorpay_router.router)
+app.include_router(paddle_router.router)
 app.include_router(account_router.router)
 app.include_router(python_questions_router.router)
 app.include_router(pandas_questions_router.router)

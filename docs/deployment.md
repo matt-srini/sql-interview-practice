@@ -27,7 +27,7 @@ After confirming, move the entries below from "Currently pending" to "Already ap
 
 ### Currently pending
 
-_Nothing. Production is at head (`20260610_000002`)._
+_Nothing. Production is at head (`20260612_000001`)._
 
 ---
 
@@ -42,6 +42,7 @@ _Nothing. Production is at head (`20260610_000002`)._
 | `20260609_000001` | Rename `python_data`/`python-data` topic → `pandas` in `user_progress`, `user_sample_seen`, `submissions`, `mock_sessions`, `mock_session_questions` (Pandas slug/db-topic cleanup) | 2026-06-09 |
 | `20260610_000001` | Add `plan_override TEXT` and `plan_override_until TIMESTAMPTZ` to `users` (time-limited beta-access grants via `/api/admin/grant-plan`) | 2026-06-10 |
 | `20260610_000002` | Create `mock_discards` table + index — per-day penalty-free discard cap (audit C4) | 2026-06-10 |
+| `20260612_000001` | Add `provider TEXT NOT NULL DEFAULT 'razorpay'` to `payment_events` (dual-rail Razorpay + Paddle) | 2026-06-13 |
 
 ---
 
@@ -88,6 +89,14 @@ RAZORPAY_PLAN_ELITE=plan_...          # monthly subscription plan id
 RAZORPAY_AMOUNT_LIFETIME_PRO=1199900   # amount in paise (₹11,999)
 RAZORPAY_AMOUNT_LIFETIME_ELITE=1999900 # amount in paise (₹19,999)
 RAZORPAY_CURRENCY=INR
+# Paddle (global rail — Merchant of Record; set after Paddle onboarding)
+PADDLE_ENVIRONMENT=sandbox            # 'sandbox' or 'production'
+PADDLE_CLIENT_TOKEN=test_...          # client-side token for Paddle.js
+PADDLE_WEBHOOK_SECRET=pdl_ntfset_...  # notification-destination signing secret
+PADDLE_PRICE_PRO=pri_...              # USD monthly Pro price id
+PADDLE_PRICE_ELITE=pri_...            # USD monthly Elite price id
+PADDLE_PRICE_LIFETIME_PRO=pri_...     # USD one-time Lifetime Pro price id
+PADDLE_PRICE_LIFETIME_ELITE=pri_...   # USD one-time Lifetime Elite price id
 ```
 
 ### 3. Start backend
@@ -252,6 +261,12 @@ The `FRONTEND_DIST_DIR` env var defaults to `/app/frontend/dist` inside the imag
 | `RAZORPAY_PLAN_ELITE_USD` | — | Razorpay Plan id for the monthly Elite subscription billed in USD (set after international approval) |
 | `RAZORPAY_AMOUNT_LIFETIME_PRO_USD` | — | Amount in cents for the USD Lifetime Pro one-time order (default `12900` = $129) |
 | `RAZORPAY_AMOUNT_LIFETIME_ELITE_USD` | — | Amount in cents for the USD Lifetime Elite one-time order (default `22900` = $229) |
+| `PADDLE_ENVIRONMENT` | — | Paddle.js environment: `sandbox` (default) or `production` |
+| `PADDLE_CLIENT_TOKEN` | — | Paddle client-side token for the checkout overlay. Unset → `/api/paddle/create-checkout` returns 503 (global rail off) |
+| `PADDLE_WEBHOOK_SECRET` | — | Paddle notification-destination signing secret (verifies the `Paddle-Signature` header). Unset → `/api/paddle/webhook` returns 503 |
+| `PADDLE_PRICE_PRO` / `PADDLE_PRICE_ELITE` | — | USD Paddle price ids for the monthly Pro / Elite subscriptions |
+| `PADDLE_PRICE_LIFETIME_PRO` / `PADDLE_PRICE_LIFETIME_ELITE` | — | USD Paddle price ids for the one-time Lifetime Pro / Elite purchases |
+| `PADDLE_API_KEY` | — | Paddle server-side API key (reserved for future cancel / customer-portal flows; unused at launch) |
 | `ALLOWED_ORIGINS` | — | Comma-separated CORS origins; defaults to localhost dev origins |
 | `FRONTEND_DIST_DIR` | — | Path to built SPA assets; defaults to `../frontend/dist` |
 | `RATE_LIMIT_REQUESTS` | — | Requests per window per IP; default `60` |

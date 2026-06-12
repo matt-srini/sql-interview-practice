@@ -68,6 +68,25 @@ class VerifyPaymentResponse(BaseModel):
     plan: str
 
 
+class PaddleCheckoutRequest(BaseModel):
+    plan: str
+
+
+class PaddleCheckoutResponse(BaseModel):
+    # Paddle.js is price-ID-driven and opens the overlay client-side; the backend
+    # returns the config it needs. The actual amount + currency are resolved by
+    # Paddle from the price in its catalog (overlay-controlled), mirroring how
+    # Razorpay subscription amounts are dashboard-controlled.
+    client_token: str
+    environment: str            # 'sandbox' | 'production'
+    price_id: str
+    is_subscription: bool
+    customer_email: Optional[str] = None
+    # Echoed back verbatim on the transaction/subscription webhook so we can
+    # resolve the user + target plan (Paddle's equivalent of Razorpay notes).
+    custom_data: dict[str, str]
+
+
 class RunCodeRequest(BaseModel):
     code: str
     question_id: int
