@@ -1616,7 +1616,7 @@ select {
 .brand-mark-img {
   display: block;
   height: 19px;
-  width: auto;
+  width: 16px;
   flex-shrink: 0;
 }
 /* Wordmark text alongside the mark */
