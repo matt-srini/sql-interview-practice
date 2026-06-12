@@ -3752,26 +3752,31 @@ select {
   color: #FFFFFF;
   box-shadow: 0 1px 3px rgba(20, 41, 27, 0.18);
 }
-/* Dark mode: --accent is bright (#4ADE80), so white text on it is harsh and
-   fails contrast (~1.7:1). Use forest-ink text instead (~11:1) — matches the
-   existing .mcq-option-letter precedent. One override covers all primary CTAs
-   and both upgrade buttons (UpgradeButton renders with .btn-primary, incl. the
-   elite green→teal gradient). Light mode keeps white text on the deep-green
-   #166534 fill, which already passes. */
+/* Dark mode primary button: the bright --accent (#4ADE80) is reserved for
+   small accents/active states, so the primary CTA uses the deep "action green"
+   #1C8A4F with WHITE text (~4.4:1 on a 600-weight label) — the approved /mock
+   prototype, promoted site-wide 2026-06-12. One override covers every
+   .btn-primary, including both upgrade buttons (UpgradeButton renders with
+   .btn-primary: Pro inherits this deep green; Elite overrides with its
+   green→teal gradient below). Light mode keeps white on the deep-green #166534
+   fill, which already passes. */
 [data-theme="dark"] .btn-primary {
-  color: #0D1A10;
+  background: #1C8A4F;
+  color: #FFFFFF;
 }
-/* Same root cause as .btn-primary, across the rest of the app: these all
-   render text on the bright --accent fill (#4ADE80) in dark mode with
-   hardcoded white text (~1.7:1, harsh). Flip on-accent text to forest ink
-   (~11:1). The .active/.selected/.is-active overrides are specific enough
-   (0,3,0) to also win over the pills' :hover green-text rules. Light mode is
-   untouched (white on the deep-green #166534 fill). New accent-filled
-   elements should prefer color: var(--accent-on-color) over hardcoding #fff. */
-[data-theme="dark"] .auth-submit-btn,
-[data-theme="dark"] .acct-save-btn,
-[data-theme="dark"] .path-nav-btn--next,
-[data-theme="dark"] .lp-paths-cta-primary,
+[data-theme="dark"] .btn-primary:not(:disabled):hover {
+  background: #229B5A;
+}
+/* Decorative accent-filled chips/badges: dark-ink text on the bright --accent
+   fill reads ~11:1 in dark mode (vs ~1.7:1 for white-on-accent). These are
+   small, non-button accents, so they keep the lively emerald fill with ink
+   text. The .active/.selected/.is-active overrides are specific enough (0,3,0)
+   to also win over the pills' :hover green-text rules. Light mode is untouched.
+   (The primary ACTION buttons that used to live here — auth submit, account
+   save, path next, landing paths CTA — were promoted to the deep-green
+   #1C8A4F + white treatment below to match .btn-primary, so the whole app
+   has a single primary-button language.) New accent-filled chips should prefer
+   color: var(--accent-on-color) over hardcoding #fff. */
 [data-theme="dark"] .hint-step-num,
 [data-theme="dark"] .sidebar-filters-badge,
 [data-theme="dark"] .mock-config-pill.active,
@@ -3781,8 +3786,31 @@ select {
 [data-theme="dark"] .mock-analytics-elite-badge,
 [data-theme="dark"] .mock-elite-badge-inline,
 [data-theme="dark"] .study-plan-badge,
+[data-theme="dark"] .db-role-btn--active,
 [data-theme="dark"] .sample-switcher-diff.is-active {
   color: #0D1A10;
+}
+
+/* Primary action buttons that aren't literally .btn-primary share its
+   dark-mode language: deep green #1C8A4F + white (the approved /mock primary),
+   hover #229B5A. One consistent primary-button look across auth, account
+   settings, learning-path nav, and the landing paths CTA — so a user never
+   sees two different "primary" greens. Light mode untouched (white on the
+   deep-green #166534 fill defined on each base rule). */
+[data-theme="dark"] .auth-submit-btn,
+[data-theme="dark"] .acct-save-btn,
+[data-theme="dark"] .path-nav-btn--next,
+[data-theme="dark"] .lp-paths-cta-primary {
+  background: #1C8A4F;
+  color: #FFFFFF;
+  border-color: #1C8A4F;
+}
+[data-theme="dark"] .auth-submit-btn:not(:disabled):hover,
+[data-theme="dark"] .acct-save-btn:not(:disabled):hover,
+[data-theme="dark"] .path-nav-btn--next:hover,
+[data-theme="dark"] .lp-paths-cta-primary:hover {
+  background: #229B5A;
+  border-color: #229B5A;
 }
 
 .btn-primary:not(:disabled):hover {
@@ -6542,19 +6570,21 @@ select {
    ============================================================ */
 [data-theme="dark"] {
   color-scheme: dark;
-  --bg-page:           #0D1A10;
-  --surface-canvas:    #132218;
-  --surface-card:      #132218;
-  --surface-card-alt:  #1B2E22;
-  --surface-card-soft: #162A1C;
-  --surface-highlight: #1F3828;
-  --border-subtle: rgba(200, 230, 210, 0.08);
-  --border-strong: rgba(200, 230, 210, 0.14);
-  --text-strong:    #E8F5E9;
-  --text-primary:   #C8DFD0;
-  --text-secondary: #87B09A;
-  --text-muted:     #5A7F6A;
-  --text-soft:      #3A5445;
+  /* CHARCOAL dark theme — near-neutral surfaces (WhatsApp/ChatGPT-style) so the
+     brand green reads as an ACCENT, not the environment. Promoted site-wide. */
+  --bg-page:           #121315;
+  --surface-canvas:    #1A1B1E;
+  --surface-card:      #1A1B1E;
+  --surface-card-alt:  #212327;
+  --surface-card-soft: #1B1C1F;
+  --surface-highlight: #282A2E;
+  --border-subtle: rgba(228, 231, 235, 0.08);
+  --border-strong: rgba(228, 231, 235, 0.14);
+  --text-strong:    #ECEEF0;
+  --text-primary:   #CDD1D6;
+  --text-secondary: #9BA1A9;
+  --text-muted:     #6E747D;
+  --text-soft:      #474C54;
   --accent:             #4ADE80;
   --accent-strong:      #6EF09A;
   --accent-soft:        rgba(74, 222, 128, 0.12);
@@ -8316,6 +8346,60 @@ select {
 .mock-hub-page {
   min-height: 100vh;
   background: var(--bg-page);
+}
+/* ── MockHub dark — mock-specific accents ─────────────────────────────────
+   The charcoal surfaces, the deep "action green" #1C8A4F + white primary button
+   (.mock-start-btn and .upgrade-btn-pro both inherit .btn-primary), and the
+   Elite green→teal gradient (.upgrade-btn-elite) that were PROTOTYPED here
+   became the GLOBAL dark language on 2026-06-12 — so those overrides were
+   deleted as redundant (they now live in the global [data-theme="dark"] token
+   block and the global .btn-primary / .upgrade-btn-elite rules). What remains
+   below is genuinely mock-only and has no global equivalent. */
+
+/* Benchmark blueprint keeps its green→blue gradient identity, with more presence
+   than the light-mode 0.08 tints so it survives on the dark canvas. */
+[data-theme="dark"] .mock-hub-page .mock-benchmark-blueprint {
+  background: linear-gradient(135deg, rgba(74, 222, 128, 0.14), rgba(91, 106, 240, 0.16));
+  border-color: rgba(91, 106, 240, 0.24);
+}
+
+/* Reserve green for interactive/active elements. The mock hub is green-dense,
+   so decorative secondary TEXT coloured with var(--accent) — the section
+   eyebrow, the mode-card sublabels, the blueprint label — is neutralized to
+   --text-secondary. Mock-scoped on purpose: other pages have less green and
+   keep theirs. */
+[data-theme="dark"] .mock-hub-page .mock-hub-kicker,
+[data-theme="dark"] .mock-hub-page .mock-setup-recommendation-kicker,
+[data-theme="dark"] .mock-hub-page .mock-mode-card-sublabel,
+[data-theme="dark"] .mock-hub-page .mock-benchmark-blueprint-kicker {
+  color: var(--text-secondary);
+}
+
+/* The big Start button reads as genuinely OFF when disabled (neutral surface),
+   not a dim green — overrides the global .btn-primary:disabled. */
+[data-theme="dark"] .mock-hub-page .mock-start-btn:disabled {
+  background: var(--surface-card-alt);
+  color: var(--text-muted);
+  opacity: 1;
+}
+
+/* The blueprint "time" pill (blue) — brighten the dark indigo to a light indigo
+   so it reads on the dark gradient and balances the green "shape" pill. */
+[data-theme="dark"] .mock-hub-page .mock-benchmark-blueprint-time {
+  background: rgba(91, 106, 240, 0.18);
+  color: #A6B0F7;
+}
+
+/* Tier badges echo the tier language: Pro = green, Elite = teal (the premium
+   end of the Elite green→teal gradient). Soft, label-weight. */
+[data-theme="dark"] .mock-hub-page .mock-mode-card-badge--pro {
+  background: rgba(74, 222, 128, 0.16);
+  color: #62E195;
+}
+[data-theme="dark"] .mock-hub-page .mock-elite-badge-inline,
+[data-theme="dark"] .mock-hub-page .mock-analytics-elite-badge {
+  background: rgba(45, 212, 191, 0.18);
+  color: #5FE0CC;
 }
 .mock-hub-main {
   max-width: 1060px;
@@ -10442,8 +10526,8 @@ select {
 .upgrade-btn { font-weight: 600; }
 .upgrade-btn-elite { background: linear-gradient(135deg, #166534, #0D9488); }
 .upgrade-btn-elite:not(:disabled):hover { background: linear-gradient(135deg, #0F4F26, #0B7A70); }
-[data-theme="dark"] .upgrade-btn-elite { background: linear-gradient(135deg, #4ADE80, #2DD4BF); }
-[data-theme="dark"] .upgrade-btn-elite:not(:disabled):hover { background: linear-gradient(135deg, #6EF09A, #4ECDC4); }
+[data-theme="dark"] .upgrade-btn-elite { background: linear-gradient(135deg, #1C8A4F, #109488); }
+[data-theme="dark"] .upgrade-btn-elite:not(:disabled):hover { background: linear-gradient(135deg, #229B5A, #14A498); }
 
 /* ── TierBanner ────────────────────────────────────── */
 .tier-banner {

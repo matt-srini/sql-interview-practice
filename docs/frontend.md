@@ -467,20 +467,32 @@ Single global stylesheet: `frontend/src/App.css`. No CSS framework, no CSS modul
 
 Defined in `:root` in `App.css`. Dark-mode overrides under `[data-theme="dark"]`; light-mode force under `[data-theme="light"]`. Theme managed by `ThemeProvider` in `App.js` (`{ theme, setTheme, isDark, cycleTheme, themeIcon, themeLabel }`), persisted to `localStorage.theme`.
 
+Light mode is **Forest & Ink** (deep-green on warm paper). Dark mode is
+**charcoal** (near-neutral surfaces; brand green as an accent, not the
+environment — 2026-06-12). Full rationale + the primary-button rule in the
+palette doc.
+
 | Token | Light | Dark | Use |
 |---|---|---|---|
-| `--bg-page` | `#F5F7F4` | `#0D1A10` | Page background |
-| `--surface-card` | `#FFFFFF` | `#132218` | Cards, panels |
-| `--surface-card-alt` | `#EDF3EF` | `#1B2E22` | Sidebar, secondary surfaces |
-| `--border-subtle` | `rgba(20,41,27,0.08)` | `rgba(200,230,210,0.08)` | Default borders |
-| `--text-strong` | `#14291B` | `#E8F5E9` | Headings |
-| `--text-primary` | `#1D3526` | `#C8DFD0` | Body text |
-| `--text-secondary` | `#4B6858` | `#87B09A` | Labels, metadata |
-| `--text-muted` | `#7A9485` | `#5A7F6A` | Placeholders, disabled |
-| `--accent` | `#166534` | `#4ADE80` | Interactive elements, links |
+| `--bg-page` | `#F5F7F4` | `#121315` | Page background |
+| `--surface-card` | `#FFFFFF` | `#1A1B1E` | Cards, panels |
+| `--surface-card-alt` | `#EDF3EF` | `#212327` | Sidebar, secondary surfaces |
+| `--border-subtle` | `rgba(20,41,27,0.08)` | `rgba(228,231,235,0.08)` | Default borders |
+| `--text-strong` | `#14291B` | `#ECEEF0` | Headings |
+| `--text-primary` | `#1D3526` | `#CDD1D6` | Body text |
+| `--text-secondary` | `#4B6858` | `#9BA1A9` | Labels, metadata |
+| `--text-muted` | `#7A9485` | `#6E747D` | Placeholders, disabled |
+| `--accent` | `#166534` | `#4ADE80` | Active states, links, small accents |
 | `--success` | `#15803D` | `#4CAF82` | Correct answer |
 | `--warning` | `#C47F17` | `#D4973A` | Hints, locked |
 | `--danger` | `#D94F3D` | `#E06B5A` | Errors, wrong answer |
+
+> **Primary button is not `--accent` in dark mode.** `.btn-primary` (and
+> everything composing it — `.mock-start-btn`, both `UpgradeButton` tiers,
+> `.auth-submit-btn`, `.acct-save-btn`, `.path-nav-btn--next`,
+> `.lp-paths-cta-primary`) uses the deep **action green `#1C8A4F` + white**,
+> hover `#229B5A`; Elite keeps the green→teal gradient. `--accent` stays
+> reserved for accents. See the palette doc.
 
 Track colors (`--track-sql`, `--track-python`, etc.) are **fixed** and do not change with the site theme — see palette doc for values.
 
