@@ -12695,6 +12695,9 @@ select {
   text-decoration: line-through;
   text-decoration-color: rgba(107,104,98,0.4);
 }
+[data-theme="dark"] .lp-wr-row--wrong {
+  text-decoration-color: rgba(240,238,233,0.35);
+}
 .lp-wr-col--right { padding-left: 28px; }
 .lp-wr-row--right {
   color: var(--text-strong);
@@ -12933,13 +12936,6 @@ select {
   background: color-mix(in srgb, var(--accent) 6%, transparent);
   border-left: 3px solid var(--accent);
   border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
-}
-.lp-tracks-editorial-n {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: var(--accent);
-  letter-spacing: -0.02em;
 }
 .lp-tracks-list {
   display: flex;
