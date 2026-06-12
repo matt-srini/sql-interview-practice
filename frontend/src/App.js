@@ -49,12 +49,13 @@ export function useToast() {
   return useContext(ToastContext) ?? { notify: () => {} };
 }
 
-function getSystemTheme() {
-  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-}
-
 function ThemeProvider({ children }) {
-  const [theme, setThemeState] = useState(() => localStorage.getItem('theme') || getSystemTheme());
+  // Default new visitors to LIGHT — the brand's dominant face (Forest & Ink) and
+  // the intended landing first impression — rather than following the OS
+  // prefers-color-scheme (which would show charcoal dark to a dark-OS visitor on
+  // their very first load). A returning user's explicit choice is persisted in
+  // localStorage and always wins; anyone can toggle to dark and it sticks.
+  const [theme, setThemeState] = useState(() => localStorage.getItem('theme') || 'light');
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);

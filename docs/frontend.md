@@ -465,7 +465,7 @@ Single global stylesheet: `frontend/src/App.css`. No CSS framework, no CSS modul
 
 **Active theme: Forest & Ink.** Full token table with all values: [`docs/design/color-palette.md`](../design/color-palette.md).
 
-Defined in `:root` in `App.css`. Dark-mode overrides under `[data-theme="dark"]`; light-mode force under `[data-theme="light"]`. Theme managed by `ThemeProvider` in `App.js` (`{ theme, setTheme, isDark, cycleTheme, themeIcon, themeLabel }`), persisted to `localStorage.theme`.
+Defined in `:root` in `App.css`. Dark-mode overrides under `[data-theme="dark"]`; light-mode force under `[data-theme="light"]`. Theme managed by `ThemeProvider` in `App.js` (`{ theme, setTheme, isDark, cycleTheme, themeIcon, themeLabel }`), persisted to `localStorage.theme`. **New visitors default to light** (the brand's dominant face / intended landing first impression) — `localStorage.getItem('theme') || 'light'`, which intentionally does *not* follow the OS `prefers-color-scheme`; a returning user's persisted choice always wins, and anyone can toggle to dark (it sticks).
 
 Light mode is **Forest & Ink** (deep-green on warm paper). Dark mode is
 **charcoal** (near-neutral surfaces; brand green as an accent, not the
