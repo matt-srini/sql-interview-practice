@@ -767,11 +767,6 @@ function ProofStripSection({ pathCount = 0 }) {
 // ── Section 06: Tracks index ────────────────────────────────────────────────
 function TracksIndexSection() {
   const counts = useCatalogCounts();
-  const practiceTotal = TRACK_SLUGS.reduce((s, slug) => s + (counts[slug]?.total ?? 0), 0);
-  // Per-track depth (rounded to the nearest 10) is the honest headline here — a single
-  // grand total invites the wrong comparison to competitors' inflated "1,000s" counts and
-  // hides that the bank spans 9 tracks. The depth-per-track is what actually matters.
-  const perTrack = practiceTotal ? Math.round(practiceTotal / TRACK_SLUGS.length / 10) * 10 : 0;
   const FORMAT_LABELS = {
     sql:                'SQL · DuckDB',
     python:             'Python · sandbox',
@@ -790,11 +785,10 @@ function TracksIndexSection() {
           <p className="lp-section-index">06&ensp;/&ensp;ALL TRACKS</p>
           <h2 className="lp-section-h2">A curriculum, not a question bank.</h2>
           <p className="lp-tracks-editorial">
-            Every track is mapped — broken into the patterns that matter, ordered foundational to advanced,
-            and routed to the role you're targeting. About <span className="lp-tracks-editorial-n">{perTrack || '…'}</span> questions
-            per track, each one placed on purpose. And that's just practice: Pro&nbsp;&amp;&nbsp;Elite unlock
-            another <span className="lp-tracks-editorial-n">1,000+</span> mock-only questions — interview-shaped, seen only under the clock —
-            that pressure-test the reasoning you've built.
+            This isn't a pile of problems to grind through. Every track is mapped into the patterns
+            that matter, foundational to advanced — each question placed to grow how you reason, not to
+            pad a count. The conceptual depth is the point; interview-readiness is the byproduct, and
+            Pro&nbsp;&amp;&nbsp;Elite mock-only sets pressure-test that reasoning under the clock.
           </p>
         </Reveal>
         <div className="lp-tracks-list" role="list">
