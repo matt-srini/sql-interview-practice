@@ -785,10 +785,11 @@ function TracksIndexSection() {
           <p className="lp-section-index">06&ensp;/&ensp;ALL TRACKS</p>
           <h2 className="lp-section-h2">A curriculum, not a question bank.</h2>
           <p className="lp-tracks-editorial">
-            This isn't a pile of problems to grind through. Every track is mapped into the patterns
-            that matter, foundational to advanced — each question placed to grow how you reason, not to
-            pad a count. The conceptual depth is the point; interview-readiness is the byproduct, and
-            Pro&nbsp;&amp;&nbsp;Elite mock-only sets pressure-test that reasoning under the clock.
+            Every track is mapped — broken into the patterns that matter, ordered foundational to
+            advanced, and routed to the role you're targeting. Each question is placed to deepen how
+            you reason — because the reasoning that cracks the interview is the same reasoning the job
+            runs on. Pro&nbsp;&amp;&nbsp;Elite add mock-only sets, interview-shaped and seen only under
+            the clock, that pressure-test what you've built.
           </p>
         </Reveal>
         <div className="lp-tracks-list" role="list">
