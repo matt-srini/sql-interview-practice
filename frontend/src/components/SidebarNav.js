@@ -96,7 +96,6 @@ function QuestionStateLabel({ q, isActive = false }) {
 
 function QuestionContent({ q, position, isActive = false }) {
   const orderState = isActive ? 'current' : q.state === 'solved' ? 'solved' : q.state === 'locked' ? 'locked' : q.is_next ? 'next' : 'open';
-  const questionFormLabel = getQuestionFormLabel(q);
   // Use sequential 1-indexed position within the practice group, not the raw
   // `order` field (which is shared with mock-only questions and can exceed the
   // practice-only count, e.g. showing "51" when there are only 30 questions).
