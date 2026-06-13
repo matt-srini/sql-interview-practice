@@ -32,6 +32,7 @@ import TermsPage from './pages/TermsPage';
 import RefundPolicyPage from './pages/RefundPolicyPage';
 import ContactPage from './pages/ContactPage';
 import FAQPage from './pages/FAQPage';
+import PricingPage from './pages/PricingPage';
 import AccountPage from './pages/AccountPage';
 import ToastViewport from './components/ToastViewport';
 import { trackPageView } from './analytics';
@@ -206,6 +207,7 @@ function AppRoutes() {
         <Route path="/refund-policy" element={<RefundPolicyPage />} />
         <Route path="/contact" element={<ContactPage />} />
         <Route path="/faq" element={<FAQPage />} />
+        <Route path="/pricing" element={<PricingPage />} />
 
         {/* Learning paths */}
         <Route path="/learn" element={<LearningPathsIndex />} />

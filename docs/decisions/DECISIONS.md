@@ -35,6 +35,12 @@ Keep entries to 4–6 lines. Friction kills logs; if it's longer than the change
 
 ## Entries
 
+## 2026-06-13 — Public /pricing page: spell out every tier feature (transparency as the selling point), from one data source
+**Area:** pricing · frontend · product · **Status:** accepted
+**Decision:** Added a dedicated public `/pricing` page (`PricingPage.js`) laying out the full Free/Pro/Elite comparison in plain language + the Free-tier difficulty-unlock ladders, reached from a "Compare every feature in detail →" link below the landing pricing cards. Rationale: a reasoning-premium product should be transparent about exactly what each tier offers — helping a user honestly self-select (even to "Free/Pro is enough") builds trust and yields better-quality conversions. The three landing cards stay **brief** (brevity converts); the full honesty lives one click away (**progressive disclosure**). Copy is concrete — no vague adjectives.
+**Rejected:** (a) inline-expanding the matrix under the cards / a modal — chose a real **shareable page** (linkable from emails, topbar, upgrade CTAs; room to breathe). (b) reusing the internal `docs/tier-wise-features.html` directly — that's a file-path-referencing internal doc, not a themed customer surface. (c) hardcoding the matrix in the page — instead **one source `frontend/src/data/tierFeatures.js`** feeds it, to fight the drift of entitlements living in pricing.md + mock.md + unlock.py + the landing cards + the docs HTML.
+**Affects:** `frontend/src/data/tierFeatures.js` (new, single source) · `frontend/src/pages/PricingPage.js` (+ `.test.js`) · `frontend/src/App.js` (route) · `frontend/src/App.css` · `frontend/src/pages/LandingPage.js` (compare link) · `docs/frontend.md` · `docs/features/pricing.md`. Keep `tierFeatures.js` synced with the entitlement SoT.
+
 ## 2026-06-13 — Weak-areas coaching panel ungated to Pro+ (was Pro=1 / Elite=full); Elite differentiates on the prescription
 **Area:** dashboard · pricing · product · **Status:** accepted
 **Decision:** The dashboard "Where to focus" panel gated Pro to the **single top** weak concept and Elite-locked the rest ("Elite members see all gaps"), while the logged-in landing already showed Pro **all** weak concepts — an inconsistency that also undercut the Elite upsell (Pro saw on the landing exactly what the dashboard charged Elite for). Reconciled by **ungating the dashboard to match the landing**: any paying user (Pro+) sees the full gap list; Free still sees the upgrade teaser. Removed the Elite-lock overlay + its dead `.db-weak-locked*` CSS.

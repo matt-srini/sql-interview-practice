@@ -1090,6 +1090,7 @@ function PricingSection({ userPlan, currency }) {
           </div>
 
         </div>
+        <Link to="/pricing" className="lp-pricing-compare-link">Compare every feature in detail →</Link>
       </div>
     </section>
   );
@@ -1289,6 +1290,7 @@ function UpgradeNudge({ userPlan, currency }) {
               successPath="/?upgraded=true"
             />
           </div>
+          <Link to="/pricing" className="lp-pricing-compare-link">Compare every feature in detail →</Link>
         </div>
       </div>
     </section>

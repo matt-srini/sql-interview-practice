@@ -1,0 +1,1149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>datathink — dark mode color audit</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --ui-font: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --mono-font: "SF Mono", "JetBrains Mono", "Fira Code", Consolas, ui-monospace, monospace;
+
+    /* track colors — constant across all themes */
+    --tc-sql:#5B6AF0; --tc-python:#2D9E6B; --tc-pandas:#C47F17; --tc-pyspark:#D94F3D;
+    --tc-de:#B9762B; --tc-dm:#3F8E8C; --tc-stats:#7A5AF0; --tc-ml:#E0456A; --tc-exp:#0EA5E9;
+
+    /* code editor — constant across all themes (the "forest-dark" Monaco theme) */
+    --ed-bg:#0F2218; --ed-line:#152D1E; --ed-gutter:#4A6654; --ed-text:#D4D4D4;
+    --ed-comment:#6A9955; --ed-keyword:#569CD6; --ed-string:#CE9178; --ed-number:#B5CEA8; --ed-func:#DCDCAA;
+  }
+
+  .theme-light {
+    --bg-page:#F5F7F4; --surface-canvas:#FFFFFF; --surface-card:#FFFFFF; --surface-card-alt:#EDF3EF;
+    --surface-card-soft:#F0F5F1; --surface-highlight:#E3EDE6;
+    --border-subtle:rgba(20,41,27,0.08); --border-strong:rgba(20,41,27,0.16);
+    --text-strong:#14291B; --text-primary:#1D3526; --text-secondary:#4B6858; --text-muted:#7A9485; --text-soft:#A8BDB4;
+    --accent:#166534; --accent-strong:#0F4F26; --accent-soft:rgba(22,101,52,0.08); --accent-soft-strong:rgba(22,101,52,0.18); --on-accent:#FFFFFF;
+    --success:#15803D; --success-soft:rgba(21,128,61,0.10); --success-text:#14532D;
+    --warning:#C47F17; --warning-soft:rgba(196,127,23,0.10); --warning-text:#7A4A0A;
+    --danger:#D94F3D; --danger-soft:rgba(217,79,61,0.10); --danger-text:#7A1A12;
+    --info-soft:rgba(14,99,165,0.10); --info-text:#0C447C;
+  }
+
+  .theme-darkcur {
+    --bg-page:#121315; --surface-canvas:#1A1B1E; --surface-card:#1A1B1E; --surface-card-alt:#212327;
+    --surface-card-soft:#1B1C1F; --surface-highlight:#282A2E;
+    --border-subtle:rgba(228,231,235,0.08); --border-strong:rgba(228,231,235,0.14);
+    --text-strong:#ECEEF0; --text-primary:#CDD1D6; --text-secondary:#9BA1A9; --text-muted:#6E747D; --text-soft:#474C54;
+    --accent:#43D27C; --accent-strong:#5BDD90; --accent-soft:rgba(67,210,124,0.12); --accent-soft-strong:rgba(67,210,124,0.22); --on-accent:#0A1F12;
+    --success:#4CAF82; --success-soft:rgba(76,175,130,0.12); --success-text:#8BD2B0;
+    --warning:#D4973A; --warning-soft:rgba(212,151,58,0.12); --warning-text:#E2BD79;
+    --danger:#E06B5A; --danger-soft:rgba(224,107,90,0.12); --danger-text:#F0B8B1;
+    --info-soft:rgba(30,64,175,0.20); --info-text:#93C5FD;
+  }
+
+  .theme-darkpro {
+    --bg-page:#0E130F; --surface-canvas:#18211B; --surface-card:#18211B; --surface-card-alt:#1E2922;
+    --surface-card-soft:#141B16; --surface-highlight:#25312A;
+    --border-subtle:rgba(200,224,205,0.09); --border-strong:rgba(200,224,205,0.15);
+    --text-strong:#E8EDE6; --text-primary:#C6D0C7; --text-secondary:#8F9C91; --text-muted:#69756B; --text-soft:#465048;
+    --accent:#3DBE76; --accent-strong:#54CB85; --accent-soft:rgba(61,190,118,0.12); --accent-soft-strong:rgba(61,190,118,0.22); --on-accent:#08130C;
+    --success:#4CB585; --success-soft:rgba(76,181,133,0.13); --success-text:#8BD2B0;
+    --warning:#D4973A; --warning-soft:rgba(212,151,58,0.13); --warning-text:#E2BD79;
+    --danger:#E06B5A; --danger-soft:rgba(224,107,90,0.13); --danger-text:#F0B8B1;
+    --info-soft:rgba(91,106,240,0.18); --info-text:#9DB0F2;
+  }
+
+  /* ─── Page chrome ─────────────────────────────────────────────── */
+  body {
+    background: #C9CBC9;
+    color: #1c1c1c;
+    font-family: var(--ui-font);
+    min-width: 1760px;
+  }
+
+  .page-head {
+    padding: 28px 28px 20px;
+    border-bottom: 1px solid rgba(0,0,0,0.12);
+    background: #C9CBC9;
+  }
+
+  .page-head h1 {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+    margin-bottom: 10px;
+    color: #111;
+  }
+
+  .page-legend {
+    max-width: 880px;
+    font-size: 13.5px;
+    line-height: 1.7;
+    color: #333;
+  }
+
+  .page-legend strong {
+    color: #111;
+  }
+
+  .page-legend code {
+    font-family: var(--mono-font);
+    background: rgba(0,0,0,0.08);
+    padding: 1px 5px;
+    border-radius: 4px;
+    font-size: 12px;
+  }
+
+  /* ─── Sticky column header ─────────────────────────────────────── */
+  .sticky-cols {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: rgba(201,203,201,0.97);
+    backdrop-filter: blur(4px);
+    padding: 10px 28px;
+    border-bottom: 1px solid rgba(0,0,0,0.10);
+  }
+
+  .col-label {
+    padding: 8px 12px;
+    background: rgba(255,255,255,0.18);
+    border-radius: 8px;
+    border: 1px solid rgba(0,0,0,0.08);
+  }
+
+  .col-label-name {
+    font-weight: 700;
+    font-size: 14px;
+    color: #111;
+    margin-bottom: 3px;
+  }
+
+  .col-label-desc {
+    font-size: 12px;
+    color: #444;
+    margin-bottom: 8px;
+  }
+
+  .col-swatches {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+  }
+
+  .col-swatch {
+    width: 14px;
+    height: 14px;
+    border-radius: 3px;
+    border: 1px solid rgba(0,0,0,0.15);
+  }
+
+  .swatch-bg   { background: var(--bg-page); }
+  .swatch-card { background: var(--surface-card); }
+  .swatch-acc  { background: var(--accent); }
+
+  /* ─── Grid system ──────────────────────────────────────────────── */
+  .scroll-outer {
+    overflow-x: auto;
+    padding: 0 28px;
+  }
+
+  .grid3 {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(520px, 560px));
+    gap: 22px;
+  }
+
+  /* ─── Section wrapper ──────────────────────────────────────────── */
+  .section {
+    padding: 22px 0;
+    border-bottom: 1px solid rgba(0,0,0,0.10);
+  }
+
+  .section-meta {
+    margin-bottom: 14px;
+  }
+
+  .section-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #111;
+    margin-bottom: 4px;
+  }
+
+  .section-cap {
+    font-size: 12.5px;
+    color: #444;
+    max-width: 900px;
+    line-height: 1.6;
+  }
+
+  .section-cap code {
+    font-family: var(--mono-font);
+    background: rgba(0,0,0,0.09);
+    padding: 1px 4px;
+    border-radius: 3px;
+    font-size: 11.5px;
+  }
+
+  /* ─── Device frame ─────────────────────────────────────────────── */
+  .mk-frame {
+    background: var(--bg-page);
+    color: var(--text-primary);
+    border-radius: 14px;
+    padding: 16px;
+    border: 1px solid rgba(0,0,0,0.18);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.18);
+    overflow: hidden;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  /* ─── Component classes ────────────────────────────────────────── */
+  .mk-card {
+    background: var(--surface-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: 12px;
+    padding: 12px;
+  }
+
+  .mk-btn-primary {
+    background: var(--accent);
+    color: var(--on-accent);
+    border: none;
+    border-radius: 10px;
+    padding: 8px 14px;
+    font-weight: 600;
+    font-size: 13px;
+    cursor: default;
+    display: inline-block;
+    font-family: var(--ui-font);
+  }
+
+  .mk-btn-secondary {
+    background: var(--surface-card-alt);
+    color: var(--text-primary);
+    border: 1px solid var(--border-subtle);
+    border-radius: 10px;
+    padding: 8px 14px;
+    font-weight: 600;
+    font-size: 13px;
+    cursor: default;
+    display: inline-block;
+    font-family: var(--ui-font);
+  }
+
+  .mk-badge {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-weight: 600;
+    display: inline-block;
+  }
+  .mk-badge.is-easy    { background: var(--success-soft); color: var(--success-text); }
+  .mk-badge.is-medium  { background: var(--warning-soft); color: var(--warning-text); }
+  .mk-badge.is-hard    { background: var(--danger-soft);  color: var(--danger-text);  }
+
+  .mk-pill {
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    background: var(--surface-highlight);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-subtle);
+    display: inline-block;
+    cursor: default;
+  }
+  .mk-pill.is-active {
+    background: var(--accent-soft);
+    color: var(--accent);
+    border-color: var(--accent-soft-strong);
+  }
+
+  .mk-chip {
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    display: inline-block;
+  }
+  .mk-chip.is-ready    { background: var(--success-soft); color: var(--success-text); }
+  .mk-chip.is-building { background: var(--warning-soft); color: var(--warning-text); }
+  .mk-chip.is-early    { background: var(--surface-highlight); color: var(--text-muted); }
+  .mk-chip.is-strong   { background: var(--info-soft); color: var(--info-text); }
+
+  .mk-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+    flex-shrink: 0;
+  }
+
+  .mk-progress {
+    height: 7px;
+    border-radius: 999px;
+    background: var(--surface-highlight);
+    overflow: hidden;
+  }
+  .mk-progress-fill {
+    height: 100%;
+    background: var(--accent);
+  }
+
+  .mk-input {
+    background: var(--surface-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: 8px;
+    padding: 7px 10px;
+    color: var(--text-muted);
+    font-size: 12px;
+    width: 100%;
+    font-family: var(--ui-font);
+  }
+
+  .mk-token {
+    background: var(--surface-card-soft);
+    border: 1px solid var(--border-subtle);
+    border-radius: 6px;
+    padding: 4px 8px;
+    font-family: var(--mono-font);
+    font-size: 11px;
+    color: var(--text-secondary);
+    display: inline-block;
+  }
+
+  .mk-stat {
+    background: var(--surface-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: 10px;
+    padding: 10px 12px;
+  }
+  .mk-stat-label {
+    color: var(--text-muted);
+    font-size: 11px;
+    margin-bottom: 4px;
+  }
+  .mk-stat-num {
+    color: var(--text-strong);
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1.2;
+  }
+
+  .mk-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 13px;
+    margin-bottom: 14px;
+  }
+
+  .mk-wordmark {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 700;
+    font-size: 14px;
+  }
+
+  .mk-wordmark-square {
+    width: 8px;
+    height: 8px;
+    background: var(--accent);
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+
+  .mk-wordmark-data  { color: var(--text-secondary); }
+  .mk-wordmark-think { color: var(--text-strong); font-weight: 700; }
+
+  .mk-nav {
+    display: flex;
+    gap: 12px;
+    color: var(--text-secondary);
+  }
+
+  .mk-signin {
+    color: var(--text-strong);
+    font-weight: 600;
+  }
+
+  .mk-editor {
+    background: var(--ed-bg);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 10px;
+    padding: 10px;
+    font-family: var(--mono-font);
+    font-size: 12px;
+    color: var(--ed-text);
+    line-height: 1.5;
+    overflow: hidden;
+  }
+
+  .mk-editor-chrome {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+
+  .mk-editor-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .mk-editor-dots {
+    display: flex;
+    gap: 4px;
+  }
+
+  .mk-editor-filename {
+    color: var(--ed-comment);
+    font-size: 11px;
+  }
+
+  .mk-editor-badge {
+    font-size: 10px;
+    background: rgba(255,255,255,0.07);
+    color: var(--ed-gutter);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: var(--ui-font);
+    margin-left: auto;
+  }
+
+  .ed-line {
+    display: flex;
+    gap: 10px;
+    font-size: 10.5px;
+    white-space: nowrap;
+    overflow: hidden;
+  }
+
+  .ed-ln {
+    color: var(--ed-gutter);
+    user-select: none;
+    min-width: 16px;
+    text-align: right;
+    flex-shrink: 0;
+  }
+
+  .ed-code { flex: 1; white-space: nowrap; }
+
+  .kw { color: var(--ed-keyword); }
+  .fn { color: var(--ed-func); }
+  .cm { color: var(--ed-comment); }
+  .st { color: var(--ed-string); }
+  .nm { color: var(--ed-number); }
+
+  /* ─── Utility ──────────────────────────────────────────────────── */
+  .gap-8  { gap: 8px; }
+  .gap-10 { gap: 10px; }
+  .gap-12 { gap: 12px; }
+
+  .flex        { display: flex; }
+  .flex-col    { display: flex; flex-direction: column; }
+  .flex-center { display: flex; align-items: center; }
+  .flex-between{ display: flex; align-items: center; justify-content: space-between; }
+  .flex-wrap   { flex-wrap: wrap; }
+
+  .mt-4  { margin-top: 4px; }
+  .mt-6  { margin-top: 6px; }
+  .mt-8  { margin-top: 8px; }
+  .mt-10 { margin-top: 10px; }
+  .mt-12 { margin-top: 12px; }
+  .mb-4  { margin-bottom: 4px; }
+  .mb-6  { margin-bottom: 6px; }
+  .mb-8  { margin-bottom: 8px; }
+  .mb-10 { margin-bottom: 10px; }
+
+  .w-full { width: 100%; }
+
+  .text-strong    { color: var(--text-strong); }
+  .text-primary   { color: var(--text-primary); }
+  .text-secondary { color: var(--text-secondary); }
+  .text-muted     { color: var(--text-muted); }
+  .text-accent    { color: var(--accent); }
+
+  .fs-11 { font-size: 11px; }
+  .fs-12 { font-size: 12px; }
+  .fs-13 { font-size: 13px; }
+  .fs-22 { font-size: 22px; }
+
+  .fw-600 { font-weight: 600; }
+  .fw-700 { font-weight: 700; }
+  .fw-800 { font-weight: 800; }
+
+  .mono { font-family: var(--mono-font); }
+  .upper { text-transform: uppercase; letter-spacing: 0.04em; }
+
+  .divider {
+    height: 1px;
+    background: var(--border-subtle);
+    margin: 10px 0;
+  }
+
+  /* ─── Section-specific layout helpers ─────────────────────────── */
+
+  /* Landing hero 2-col */
+  .landing-hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 14px;
+    align-items: start;
+    margin-top: 10px;
+  }
+
+  .landing-result-row {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    font-family: var(--mono-font);
+    font-size: 11px;
+    color: var(--ed-text);
+    padding: 3px 0;
+    border-top: 1px solid rgba(255,255,255,0.05);
+  }
+
+  .landing-result-row:first-child { border-top: none; }
+
+  .rr-col {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .landing-results {
+    padding: 8px;
+    margin-top: 6px;
+    background: rgba(255,255,255,0.04);
+    border-radius: 6px;
+  }
+
+  /* Paths 3-up grid */
+  .path-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+
+  /* Mock 2-col */
+  .mock-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 10px;
+  }
+
+  .mock-mode-card {
+    border-radius: 10px;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    border: 1px solid var(--border-subtle);
+    background: var(--surface-card);
+  }
+
+  .mock-mode-card.is-active {
+    background: var(--accent-soft);
+    border: 1.5px solid var(--accent-soft-strong);
+  }
+
+  .mock-mode-card.is-active .mk-mode-title {
+    color: var(--accent);
+  }
+
+  .mk-mode-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-strong);
+    margin-bottom: 4px;
+  }
+
+  /* Dashboard readiness rows */
+  .readiness-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+  .readiness-row:last-child { border-bottom: none; }
+
+  .readiness-progress {
+    flex: 1;
+  }
+
+  /* Question workspace 3-pane */
+  .question-layout {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+    min-height: 340px;
+  }
+
+  .q-pane-sidebar {
+    width: 128px;
+    flex-shrink: 0;
+    background: var(--surface-card-alt);
+    border: 1px solid var(--border-subtle);
+    border-radius: 10px;
+    padding: 10px;
+    overflow: hidden;
+  }
+
+  .q-pane-middle {
+    width: 180px;
+    flex-shrink: 0;
+  }
+
+  .q-pane-right {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .q-row {
+    padding: 5px 6px;
+    border-radius: 6px;
+    cursor: default;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    margin-bottom: 3px;
+  }
+
+  .q-row.is-active {
+    background: var(--accent-soft);
+    border-left: 2px solid var(--accent);
+    padding-left: 4px;
+  }
+
+  .q-row-title { color: var(--text-primary); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .q-row.is-active .q-row-title { color: var(--text-strong); }
+
+  .q-current-tag {
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--accent);
+    flex-shrink: 0;
+  }
+
+  .q-group-header {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin: 8px 0 4px;
+  }
+</style>
+</head>
+<body>
+
+<div class="page-head">
+  <h1>datathink — dark mode color audit</h1>
+  <p class="page-legend">
+    Three columns per section, left to right:
+    <strong>Current Light</strong> (forest-ink monochrome — warm greens, the praised mode),
+    <strong>Current Dark</strong> (neutral charcoal <code>#121315</code> with a green accent — the current production dark theme), and
+    <strong>Proposed Dark</strong> (re-based on the green axis, same family as the editor).
+    The code editor background <code>#0F2218</code> is <strong>byte-for-byte identical in every column</strong> — same hex, same syntax colors, same markup.
+    In Light and Proposed it sits inside surfaces that share its green DNA, so it reads as part of one continuous family.
+    In Current Dark it floats as a warm-green island inside a cool neutral-grey room.
+    The proposed token values are a starting direction for review, not final production tokens.
+  </p>
+</div>
+
+<div class="sticky-cols">
+  <div class="grid3">
+    <div class="col-label theme-light">
+      <div class="col-label-name">Current · Light</div>
+      <div class="col-label-desc">Forest-ink — the praised mode</div>
+      <div class="col-swatches">
+        <div class="col-swatch swatch-bg"></div>
+        <div class="col-swatch swatch-card"></div>
+        <div class="col-swatch swatch-acc"></div>
+        <span style="font-size:11px;color:#555;margin-left:4px;">page · card · accent</span>
+      </div>
+    </div>
+    <div class="col-label theme-darkcur">
+      <div class="col-label-name">Current · Dark</div>
+      <div class="col-label-desc">Neutral charcoal + green accent</div>
+      <div class="col-swatches">
+        <div class="col-swatch swatch-bg"></div>
+        <div class="col-swatch swatch-card"></div>
+        <div class="col-swatch swatch-acc"></div>
+        <span style="font-size:11px;color:#888;margin-left:4px;">page · card · accent</span>
+      </div>
+    </div>
+    <div class="col-label theme-darkpro">
+      <div class="col-label-name">Proposed · Dark</div>
+      <div class="col-label-desc">Re-based on the editor's green axis</div>
+      <div class="col-swatches">
+        <div class="col-swatch swatch-bg"></div>
+        <div class="col-swatch swatch-card"></div>
+        <div class="col-swatch swatch-acc"></div>
+        <span style="font-size:11px;color:#777;margin-left:4px;">page · card · accent</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="scroll-outer" id="main-content"></div>
+
+<script>
+const MONO = '"SF Mono", "JetBrains Mono", "Fira Code", Consolas, ui-monospace, monospace';
+
+// ─── Shared editor markup (identical in every column) ──────────────────────
+const EDITOR = `
+<div class="mk-editor">
+  <div class="mk-editor-chrome">
+    <div class="mk-editor-dots">
+      <div class="mk-editor-dot" style="background:#ff5f57"></div>
+      <div class="mk-editor-dot" style="background:#febc2e"></div>
+      <div class="mk-editor-dot" style="background:#28c840"></div>
+    </div>
+    <span class="mk-editor-filename">dau_trend.sql</span>
+    <span class="mk-editor-badge">SQL · DuckDB</span>
+  </div>
+  <div class="ed-line"><span class="ed-ln">1</span><span class="ed-code"><span class="cm">-- daily active users with 7-day rolling avg</span></span></div>
+  <div class="ed-line"><span class="ed-ln">2</span><span class="ed-code"><span class="kw">SELECT</span></span></div>
+  <div class="ed-line"><span class="ed-ln">3</span><span class="ed-code">&nbsp;&nbsp;event_date,</span></div>
+  <div class="ed-line"><span class="ed-ln">4</span><span class="ed-code">&nbsp;&nbsp;<span class="fn">COUNT</span>(<span class="kw">DISTINCT</span> user_id) <span class="kw">AS</span> dau,</span></div>
+  <div class="ed-line"><span class="ed-ln">5</span><span class="ed-code">&nbsp;&nbsp;<span class="fn">ROUND</span>(<span class="fn">AVG</span>(<span class="fn">COUNT</span>(<span class="kw">DISTINCT</span> user_id)) <span class="kw">OVER</span> (</span></div>
+  <div class="ed-line"><span class="ed-ln">6</span><span class="ed-code">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">ORDER BY</span> event_date <span class="kw">ROWS BETWEEN</span> <span class="nm">6</span> <span class="kw">PRECEDING AND CURRENT ROW</span></span></div>
+  <div class="ed-line"><span class="ed-ln">7</span><span class="ed-code">&nbsp;&nbsp;), <span class="nm">1</span>) <span class="kw">AS</span> rolling_7d_avg</span></div>
+  <div class="ed-line"><span class="ed-ln">8</span><span class="ed-code"><span class="kw">FROM</span> events</span></div>
+  <div class="ed-line"><span class="ed-ln">9</span><span class="ed-code"><span class="kw">GROUP BY</span> event_date</span></div>
+  <div class="ed-line"><span class="ed-ln">10</span><span class="ed-code"><span class="kw">ORDER BY</span> event_date;</span></div>
+</div>`;
+
+// ─── Sections definition ───────────────────────────────────────────────────
+const SECTIONS = [
+
+  // 1. Landing — hero
+  {
+    id: 'landing',
+    title: 'Landing — hero',
+    caption: `The forest IDE (<code>#0F2218</code>) is constant — watch how it relates to the page behind it in each theme. In Light and Proposed, the editor's dark green sits at the end of a continuous tonal ramp. In Current Dark, it reads as a warm island in a cool-grey room.`,
+    html: `
+      <div class="mk-topbar">
+        <div class="mk-wordmark">
+          <div class="mk-wordmark-square"></div>
+          <span class="mk-wordmark-data">data</span><span class="mk-wordmark-think">think</span>
+        </div>
+        <div class="mk-nav">
+          <span>Practice ▾</span>
+          <span>Paths</span>
+          <span>Mock</span>
+          <span>Dashboard</span>
+        </div>
+        <span class="mk-signin">Sign in</span>
+      </div>
+
+      <div class="landing-hero">
+        <div>
+          <div class="mono upper fs-11 text-muted mb-6">For data professionals — and those becoming one</div>
+          <div style="font-size:20px;font-weight:800;line-height:1.25;color:var(--text-strong);margin-bottom:10px;">
+            Develop the reasoning that makes you effective with data.
+          </div>
+          <p class="fs-12 text-secondary mb-10">
+            SQL, Python, statistics, and machine learning — practiced through real engines, real datasets, and problems that demand actual judgment.
+          </p>
+          <div class="flex gap-8 flex-wrap">
+            <div class="mk-btn-primary">Try a free sample →</div>
+            <div class="mk-btn-secondary">Find your role ↓</div>
+          </div>
+        </div>
+
+        <div>
+          ${EDITOR}
+          <div class="landing-results">
+            <div class="landing-result-row">
+              <span class="rr-col" style="color:var(--ed-comment);font-size:10px;">event_date</span>
+              <span class="rr-col" style="color:var(--ed-comment);font-size:10px;">dau</span>
+              <span class="rr-col" style="color:var(--ed-comment);font-size:10px;">rolling_7d_avg</span>
+            </div>
+            <div class="landing-result-row">
+              <span class="rr-col"><span style="color:var(--ed-string);">2024-06-01</span></span>
+              <span class="rr-col"><span style="color:var(--ed-number);">4821</span></span>
+              <span class="rr-col"><span style="color:var(--ed-number);">4190.4</span></span>
+            </div>
+            <div class="landing-result-row">
+              <span class="rr-col"><span style="color:var(--ed-string);">2024-06-02</span></span>
+              <span class="rr-col"><span style="color:var(--ed-number);">5103</span></span>
+              <span class="rr-col"><span style="color:var(--ed-number);">4341.1</span></span>
+            </div>
+            <div class="landing-result-row">
+              <span class="rr-col"><span style="color:var(--ed-string);">2024-06-03</span></span>
+              <span class="rr-col"><span style="color:var(--ed-number);">4977</span></span>
+              <span class="rr-col"><span style="color:var(--ed-number);">4508.9</span></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    `
+  },
+
+  // 2. Learning paths — tiles
+  {
+    id: 'paths',
+    title: 'Learning paths — tiles',
+    caption: `Track dots and accent progress fills on each page ground. The fills and completion text use <code>var(--accent)</code>, so they shift warmth with the theme while the track identity dots stay fixed.`,
+    html: `
+      <div class="mk-topbar mb-8">
+        <div class="mk-wordmark">
+          <div class="mk-wordmark-square"></div>
+          <span class="mk-wordmark-data">data</span><span class="mk-wordmark-think">think</span>
+        </div>
+        <div class="mk-nav"><span>Paths</span></div>
+        <span class="mk-signin">My account</span>
+      </div>
+
+      <div class="fs-11 upper mono text-muted mb-10">Guided progressions · 96 paths across 9 tracks</div>
+
+      <div class="path-grid">
+        <div class="mk-card">
+          <div class="flex-center gap-8 mb-6">
+            <div class="mk-dot" style="background:var(--tc-sql)"></div>
+            <span class="mono upper fs-11 text-muted">SQL</span>
+          </div>
+          <div class="fw-700 text-strong fs-13 mb-4">Window function mastery</div>
+          <div class="fs-12 text-secondary mb-8">Ranking, frames, running aggregates — from first window to analytical fluency.</div>
+          <div class="mk-progress mb-8"><div class="mk-progress-fill" style="width:40%"></div></div>
+          <div class="flex-between">
+            <span class="fs-11 text-muted">5 steps · foundational</span>
+            <span class="fs-12 text-accent fw-600">Continue →</span>
+          </div>
+        </div>
+
+        <div class="mk-card">
+          <div class="flex-center gap-8 mb-6">
+            <div class="mk-dot" style="background:var(--tc-stats)"></div>
+            <span class="mono upper fs-11 text-muted">Statistics</span>
+          </div>
+          <div class="fw-700 text-strong fs-13 mb-4">Hypothesis testing in practice</div>
+          <div class="fs-12 text-secondary mb-8">From p-values to power analysis — grounded in real experimental data.</div>
+          <div class="mk-progress mb-8"><div class="mk-progress-fill" style="width:70%"></div></div>
+          <div class="flex-between">
+            <span class="fs-11 text-muted">7 steps · intermediate</span>
+            <span class="fs-12 text-accent fw-600">Continue →</span>
+          </div>
+        </div>
+
+        <div class="mk-card">
+          <div class="flex-center gap-8 mb-6">
+            <div class="mk-dot" style="background:var(--tc-exp)"></div>
+            <span class="mono upper fs-11 text-muted">Experimentation</span>
+          </div>
+          <div class="fw-700 text-strong fs-13 mb-4">Experiment design fundamentals</div>
+          <div class="fs-12 text-secondary mb-8">Randomization, SRM detection, novelty effects — before you touch the data.</div>
+          <div class="mk-progress mb-8"><div class="mk-progress-fill" style="width:25%"></div></div>
+          <div class="flex-between">
+            <span class="fs-11 text-muted">6 steps · foundational</span>
+            <span class="fs-12 text-accent fw-600">Continue →</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-12 flex-between">
+        <span class="fs-12 text-muted">Showing 3 of 96 paths</span>
+        <div class="mk-btn-secondary" style="font-size:12px;padding:6px 12px;">Explore all paths →</div>
+      </div>
+    `
+  },
+
+  // 3. Mock hub — lobby
+  {
+    id: 'mock',
+    title: 'Mock hub — lobby',
+    caption: `Selected vs unselected mode cards, the primary CTA, difficulty pill states, and the semantic Elite badge. The active card uses <code>accent-soft</code> background with an <code>accent-soft-strong</code> border — a pattern that recurs in the sidebar and concept drill chip.`,
+    html: `
+      <div class="mk-topbar mb-8">
+        <div class="mk-wordmark">
+          <div class="mk-wordmark-square"></div>
+          <span class="mk-wordmark-data">data</span><span class="mk-wordmark-think">think</span>
+        </div>
+        <div class="mk-nav"><span>Mock interview</span></div>
+        <span class="mk-signin">Pro</span>
+      </div>
+
+      <div class="fw-700 text-strong" style="font-size:15px;margin-bottom:4px;">Mock interview</div>
+      <div class="fs-12 text-secondary mb-10">Simulate the pressure of a live data interview. Choose your format below.</div>
+
+      <div class="mock-layout">
+        <div>
+          <div class="mock-mode-card is-active">
+            <div class="mk-mode-title">Benchmark</div>
+            <div class="fs-12 text-secondary">Fixed-format track readiness signal. 5 questions, calibrated difficulty mix.</div>
+          </div>
+
+          <div class="mock-mode-card">
+            <div class="mk-mode-title">Custom drill</div>
+            <div class="fs-12 text-secondary">You choose the track, difficulty, and duration. Great for targeted gaps.</div>
+          </div>
+
+          <div class="mock-mode-card">
+            <div class="flex-between mb-4">
+              <div class="mk-mode-title" style="margin-bottom:0">Interview loop</div>
+              <span class="mk-pill" style="background:var(--warning-soft);color:var(--warning-text);border-color:transparent;font-size:11px;">Elite</span>
+            </div>
+            <div class="fs-12 text-secondary">Chain-driven iterative questioning. One concept, pursued in depth.</div>
+          </div>
+
+          <div class="flex gap-8 flex-wrap mt-4">
+            <span class="mk-pill is-active">Easy</span>
+            <span class="mk-pill">Medium</span>
+            <span class="mk-pill">Hard</span>
+          </div>
+        </div>
+
+        <div>
+          <div class="mk-card" style="background:var(--surface-card-alt);">
+            <div class="fw-700 text-strong mb-10">Session brief</div>
+            <div class="divider" style="margin-top:0;"></div>
+            <div class="flex-between mt-6 mb-6">
+              <span class="fs-12 text-muted">Track</span>
+              <span class="fs-12 text-strong fw-600">SQL</span>
+            </div>
+            <div class="flex-between mb-6">
+              <span class="fs-12 text-muted">Questions</span>
+              <span class="fs-12 text-strong fw-600">5</span>
+            </div>
+            <div class="flex-between mb-10">
+              <span class="fs-12 text-muted">Time</span>
+              <span class="fs-12 text-strong fw-600">25 min</span>
+            </div>
+            <div class="divider" style="margin-top:0;"></div>
+            <div class="mk-btn-primary w-full mt-8" style="text-align:center;display:block;">Start session →</div>
+          </div>
+        </div>
+      </div>
+    `
+  },
+
+  // 4. Dashboard — progress & insights
+  {
+    id: 'dashboard',
+    title: 'Dashboard — progress & insights',
+    caption: `Semantic chips (success / warning / info / early-stage), progress bars on a dark ground, and the numeric hierarchy (<code>text-strong</code> for big numbers, <code>text-muted</code> for labels). The streak chip reuses the same <code>success-soft</code> / <code>success-text</code> pairing as the readiness "Interview-ready" row.`,
+    html: `
+      <div class="mk-topbar mb-10">
+        <div class="mk-wordmark">
+          <div class="mk-wordmark-square"></div>
+          <span class="mk-wordmark-data">data</span><span class="mk-wordmark-think">think</span>
+        </div>
+        <div class="mk-nav"><span>Dashboard</span></div>
+        <div class="flex-center gap-8">
+          <span class="mk-chip is-ready">12-day streak</span>
+          <span class="fs-12 text-secondary">srinivas</span>
+        </div>
+      </div>
+
+      <div class="grid3" style="grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px;">
+        <div class="mk-stat">
+          <div class="mk-stat-label">Solved</div>
+          <div class="mk-stat-num">128</div>
+        </div>
+        <div class="mk-stat">
+          <div class="mk-stat-label">Accuracy</div>
+          <div class="mk-stat-num">71%</div>
+        </div>
+        <div class="mk-stat">
+          <div class="mk-stat-label">Median solve</div>
+          <div class="mk-stat-num">2:40</div>
+        </div>
+      </div>
+
+      <div class="mk-card mb-10">
+        <div class="fw-700 text-strong mb-8">Track readiness</div>
+        <div class="readiness-row">
+          <div class="mk-dot" style="background:var(--tc-sql)"></div>
+          <span class="fs-12 text-primary" style="width:100px;flex-shrink:0;">SQL</span>
+          <div class="mk-progress readiness-progress"><div class="mk-progress-fill" style="width:82%"></div></div>
+          <span class="mk-chip is-ready">Interview-ready</span>
+        </div>
+        <div class="readiness-row">
+          <div class="mk-dot" style="background:var(--tc-stats)"></div>
+          <span class="fs-12 text-primary" style="width:100px;flex-shrink:0;">Statistics</span>
+          <div class="mk-progress readiness-progress"><div class="mk-progress-fill" style="width:48%"></div></div>
+          <span class="mk-chip is-building">Building</span>
+        </div>
+        <div class="readiness-row">
+          <div class="mk-dot" style="background:var(--tc-exp)"></div>
+          <span class="fs-12 text-primary" style="width:100px;flex-shrink:0;">Experimentation</span>
+          <div class="mk-progress readiness-progress"><div class="mk-progress-fill" style="width:18%"></div></div>
+          <span class="mk-chip is-early">Early stage</span>
+        </div>
+      </div>
+
+      <div class="mk-card">
+        <div class="flex-between mb-8">
+          <span class="fw-700 text-strong fs-12">Focus areas</span>
+          <span class="fs-12 text-muted">Drill these next →</span>
+        </div>
+        <div class="flex gap-8 flex-wrap mb-8">
+          <span class="mk-pill">Window frames</span>
+          <span class="mk-pill">CTE chaining</span>
+          <span class="mk-pill">Anti-joins</span>
+        </div>
+        <div class="flex-between">
+          <span class="fs-12 text-secondary">3 concepts with &lt; 50% accuracy across 8+ attempts</span>
+          <span class="fs-12 text-accent fw-600">Drill →</span>
+        </div>
+      </div>
+    `
+  },
+
+  // 5. Question workspace — sidebar · prompt · editor
+  {
+    id: 'question',
+    title: 'Question workspace — sidebar · prompt · editor',
+    caption: `The punchline — the editor is identical in all three columns; only the chrome around it changes. In Light and Proposed it belongs to one continuous tonal family. In Current Dark it reads as a warm-green island in a cool-grey room. Also note the active sidebar item's <code>accent-soft</code> + <code>accent</code> left border, the schema token chips, and the question-form badge.`,
+    html: `
+      <div class="mk-topbar mb-8">
+        <div class="mk-wordmark">
+          <div class="mk-wordmark-square"></div>
+          <span class="mk-wordmark-data">data</span><span class="mk-wordmark-think">think</span>
+        </div>
+        <div class="flex-center gap-8">
+          <span class="mk-pill">SQL</span>
+          <span class="mk-pill">Python</span>
+          <span class="mk-pill is-active">Pandas</span>
+        </div>
+        <span class="mk-signin">srinivas</span>
+      </div>
+
+      <div class="question-layout">
+        <!-- Sidebar -->
+        <div class="q-pane-sidebar">
+          <div class="fs-11 text-muted mb-4">Search questions</div>
+          <div class="mk-input mb-8">Filter...</div>
+          <div class="q-group-header">Easy · 0/37</div>
+          <div class="q-row is-active">
+            <span class="q-row-title">Completed orders</span>
+            <span class="q-current-tag">Now</span>
+          </div>
+          <div class="q-row">
+            <span class="mono fs-11 text-muted" style="flex-shrink:0;width:18px;">2</span>
+            <span class="q-row-title">US users</span>
+          </div>
+          <div class="q-row">
+            <span class="mono fs-11 text-muted" style="flex-shrink:0;width:18px;">3</span>
+            <span class="q-row-title">High-salary employees</span>
+          </div>
+          <div class="q-row">
+            <span class="mono fs-11 text-muted" style="flex-shrink:0;width:18px;">4</span>
+            <span class="q-row-title">Total order count</span>
+          </div>
+          <div class="q-row">
+            <span class="mono fs-11 text-muted" style="flex-shrink:0;width:18px;">5</span>
+            <span class="q-row-title">Orders by status</span>
+          </div>
+        </div>
+
+        <!-- Middle: question + schema -->
+        <div class="q-pane-middle flex-col gap-8">
+          <div class="mk-card" style="flex:1;">
+            <div class="flex-between mb-6">
+              <span class="fw-700 text-strong" style="font-size:14px;">Completed orders</span>
+              <span class="mk-badge is-easy">Easy</span>
+            </div>
+            <div class="flex gap-8 mb-8 flex-wrap">
+              <span class="mk-pill is-active">Pre-aggregation filtering</span>
+              <span class="mk-pill">Result shaping</span>
+            </div>
+            <p class="fs-12 text-secondary mb-8">
+              Write a query that returns all orders where the status is <span class="mk-token">completed</span>. Include all columns and sort by <span class="mk-token">order_date</span> descending.
+            </p>
+            <div class="flex gap-8">
+              <span class="mk-pill" style="font-size:11px;">☆ Bookmark</span>
+            </div>
+          </div>
+
+          <div class="mk-card">
+            <div class="flex-between mb-6">
+              <span class="fw-600 text-strong fs-12">Table schema</span>
+              <span class="fs-11 text-muted">1 table</span>
+            </div>
+            <div class="fw-600 text-strong fs-12 mb-6">orders</div>
+            <div class="flex gap-6 flex-wrap">
+              <span class="mk-token">order_id</span>
+              <span class="mk-token">user_id</span>
+              <span class="mk-token">order_date</span>
+              <span class="mk-token">status</span>
+              <span class="mk-token">net_amount</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: editor -->
+        <div class="q-pane-right flex-col gap-8">
+          <div class="flex-between">
+            <span class="fw-600 text-strong fs-13">SQL editor</span>
+            <div class="flex-center gap-8">
+              <span class="mk-pill" style="font-size:11px;">0:00</span>
+              <span class="fs-11 text-muted">Draft saved</span>
+            </div>
+          </div>
+          ${EDITOR}
+          <div class="flex gap-8 justify-end" style="justify-content:flex-end;">
+            <div class="mk-btn-secondary" style="font-size:12px;padding:6px 12px;">Run query</div>
+            <div class="mk-btn-primary" style="font-size:12px;padding:6px 12px;">Submit answer</div>
+          </div>
+        </div>
+      </div>
+    `
+  }
+
+];
+
+// ─── Render ────────────────────────────────────────────────────────────────
+const THEMES = [
+  { cls: 'theme-light',   label: 'Current · Light'   },
+  { cls: 'theme-darkcur', label: 'Current · Dark'    },
+  { cls: 'theme-darkpro', label: 'Proposed · Dark'   },
+];
+
+const container = document.getElementById('main-content');
+
+SECTIONS.forEach(section => {
+  const sectionEl = document.createElement('div');
+  sectionEl.className = 'section';
+  sectionEl.id = section.id;
+
+  const metaEl = document.createElement('div');
+  metaEl.className = 'section-meta';
+  metaEl.innerHTML = `
+    <div class="section-title">${section.title}</div>
+    <div class="section-cap">${section.caption}</div>
+  `;
+  sectionEl.appendChild(metaEl);
+
+  const gridEl = document.createElement('div');
+  gridEl.className = 'grid3';
+
+  THEMES.forEach(theme => {
+    const frame = document.createElement('div');
+    frame.className = `mk-frame ${theme.cls}`;
+    frame.innerHTML = section.html;
+    gridEl.appendChild(frame);
+  });
+
+  sectionEl.appendChild(gridEl);
+  container.appendChild(sectionEl);
+});
+</script>
+</body>
+</html>

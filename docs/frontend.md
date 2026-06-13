@@ -16,6 +16,7 @@ Defined in `frontend/src/App.js`:
 /auth/reset-password             → ResetPasswordPage (consume reset token, set new password)
 /auth/verify-email               → VerifyEmailPage (consume email verification token)
 /dashboard                       → ProgressDashboard (cross-track progress)
+/pricing                         → PricingPage (public Free/Pro/Elite feature comparison + Free-tier unlock ladders)
 /mock                            → MockHub (mode/track/difficulty selector + history)  [AuthRequired]
 /mock/:id                        → MockSession (active session + inline summary)        [AuthRequired]
 /learn                           → LearningPathsIndex (all paths, grouped by track, topic pills)
@@ -88,6 +89,10 @@ Consumes an email verification token (`?token=…`). On error (expired/invalid),
 ### Policy pages (`/privacy`, `/terms`, `/refund-policy`, `/contact`)
 
 Policy pages render as standalone screens when visited directly (minimal topbar, centered card, scroll-to-top on mount). When opened from the landing footer, they appear in a modal overlay that preserves the background route; the top-right close and footer "Close" button return to the previous view instead of redirecting to `/`.
+
+### PricingPage (`/pricing`)
+
+Public, full-detail plan comparison (no auth gate) — the "no hiding behind short adjectives" surface. Renders entirely from a single data source, **`frontend/src/data/tierFeatures.js`** (`COMPARISON_TIERS`, `COMPARISON_GROUPS`, `FREE_UNLOCK`), so the matrix has one home and tracks the entitlement SoT (`pricing.md` / `mock.md` / `unlock.py`). Layout: tier summary cards (Pro featured, `UpgradeButton` CTAs) → grouped Free/Pro/Elite feature matrix (✓ / — / value per cell, Pro column tinted) → the **Free-tier unlock ladders** (code vs conceptual tracks, in plain language). Reached from a "Compare every feature in detail →" link below the landing `#landing-pricing` grid (`.lp-pricing-compare-link`). The internal mirror of the same content is `docs/tier-wise-features.html`.
 
 
 
