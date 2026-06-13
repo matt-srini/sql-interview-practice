@@ -10,7 +10,7 @@ import Topbar from '../components/Topbar';
 import TrackProgressBar from '../components/TrackProgressBar';
 import PathProgressCard from '../components/PathProgressCard';
 import UpgradeButton from '../components/UpgradeButton';
-import { getStoredCurrency, setStoredCurrency, PRICES } from '../utils/currency';
+import { detectCurrency, PRICES } from '../utils/currency';
 
 // ── Role → track weighting ──────────────────────────────────────────────────
 const ROLES = [
@@ -963,35 +963,8 @@ function PathsShowcaseSection({ paths, user }) {
   );
 }
 
-// Segmented control: pick billing region → currency → rail (🇮🇳 ₹ INR = Razorpay,
-// 🌍 $ USD = Paddle / global). The choice persists (setStoredCurrency) so every
-// upgrade button across the app follows it, not just this table.
-function CurrencyToggle({ currency, onChange, compact = false }) {
-  if (!onChange) return null;
-  return (
-    <div
-      className={`lp-currency-toggle${compact ? ' lp-currency-toggle--compact' : ''}`}
-      role="group"
-      aria-label="Billing region and currency"
-    >
-      <button
-        type="button"
-        className={`lp-currency-opt${currency === 'INR' ? ' is-active' : ''}`}
-        aria-pressed={currency === 'INR'}
-        onClick={() => onChange('INR')}
-      >🇮🇳 India · ₹ INR</button>
-      <button
-        type="button"
-        className={`lp-currency-opt${currency !== 'INR' ? ' is-active' : ''}`}
-        aria-pressed={currency !== 'INR'}
-        onClick={() => onChange('USD')}
-      >🌍 International · $ USD</button>
-    </div>
-  );
-}
-
 // ── Section 07: Pricing ─────────────────────────────────────────────────────
-function PricingSection({ userPlan, currency, onCurrencyChange }) {
+function PricingSection({ userPlan, currency }) {
   const p = PRICES[currency];
 
   function proColCta() {
@@ -1020,12 +993,6 @@ function PricingSection({ userPlan, currency, onCurrencyChange }) {
           <p className="lp-section-index">07&ensp;/&ensp;PRICING</p>
           <h2 className="lp-section-h2">Practice free. Prepare seriously.</h2>
         </Reveal>
-        <div className="lp-currency-row">
-          <CurrencyToggle currency={currency} onChange={onCurrencyChange} />
-          {currency !== 'INR' && (
-            <p className="lp-currency-note">Billed in USD by Paddle, our global reseller — local taxes handled at checkout.</p>
-          )}
-        </div>
         <div className="landing-tier-grid">
 
           <div className="landing-tier-col">
@@ -1292,7 +1259,7 @@ function WeakSpotsSection({ insights }) {
 }
 
 // ── Logged-in home: Upgrade nudge (slim) ────────────────────────────────────
-function UpgradeNudge({ userPlan, currency, onCurrencyChange }) {
+function UpgradeNudge({ userPlan, currency }) {
   if (userPlan === 'elite' || userPlan === 'lifetime_elite') return null;
 
   const isProUser = userPlan === 'pro' || userPlan === 'lifetime_pro';
@@ -1307,7 +1274,6 @@ function UpgradeNudge({ userPlan, currency, onCurrencyChange }) {
               : 'Unlock the full question bank + mock interviews.'}
           </p>
           <div className="lp-upgrade-nudge-actions">
-            <CurrencyToggle currency={currency} onChange={onCurrencyChange} compact />
             {!isProUser && (
               <UpgradeButton
                 tier="pro"
@@ -1350,10 +1316,7 @@ export default function LandingPage() {
   const location = useLocation();
   const userPlan = user?.plan ?? 'free';
   const normPlan = userPlan.startsWith('lifetime_') ? userPlan.replace('lifetime_', '') : userPlan;
-  // Currency is user-selectable (pricing selector) and persisted; it drives both
-  // the displayed prices and the billing rail (INR → Razorpay, USD → Paddle).
-  const [currency, setCurrency] = useState(getStoredCurrency);
-  const handleCurrencyChange = (next) => { setCurrency(next); setStoredCurrency(next); };
+  const currency = detectCurrency();
 
   const [dashData, setDashData] = useState(null);
   const [paths, setPaths] = useState([]);
@@ -1479,9 +1442,9 @@ export default function LandingPage() {
 
         {/* Pricing: slim nudge for logged-in, full table for logged-out */}
         {user ? (
-          <UpgradeNudge userPlan={userPlan} currency={currency} onCurrencyChange={handleCurrencyChange} />
+          <UpgradeNudge userPlan={userPlan} currency={currency} />
         ) : (
-          showPricing && <PricingSection userPlan={userPlan} currency={currency} onCurrencyChange={handleCurrencyChange} />
+          showPricing && <PricingSection userPlan={userPlan} currency={currency} />
         )}
 
         {/* 08 CLOSER (logged-out only) */}

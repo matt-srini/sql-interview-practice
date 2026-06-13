@@ -148,17 +148,17 @@ The `amount` for subscriptions is `0` — the actual amount is resolved from the
 
 | Plan | INR (paise) | USD (cents) |
 |---|---|---|
-| `lifetime_pro` | 1,199,900 (₹11,999) | 12,900 ($129) |
-| `lifetime_elite` | 1,999,900 (₹19,999) | 22,900 ($229) |
+| `lifetime_pro` | 1,199,900 (₹11,999) | 14,900 ($149) |
+| `lifetime_elite` | 1,999,900 (₹19,999) | 24,900 ($249) |
 
 Monthly amounts are set in the Razorpay dashboard plan and not stored in the application.
 
 ### Currency detection and the billing rail
 
-Currency selection is **explicit and persisted**, with geo-detection as the first-visit default — all in `frontend/src/utils/currency.js`:
-- `detectCurrency()` seeds the default from the timezone — `Asia/Kolkata` / `Asia/Calcutta` → INR, everything else → USD.
-- `getStoredCurrency()` returns the user's saved choice (localStorage) if set, else the detected default; `setStoredCurrency()` persists the pick from the `CurrencyToggle` (🇮🇳 ₹ INR / 🌍 $ USD) shown on the landing pricing table and the logged-in upgrade nudge.
-- `railForCurrency()` maps currency → rail: **INR → Razorpay**, any other currency → **Paddle**. `UpgradeButton` defaults its `currency` prop to `getStoredCurrency()`, so every upgrade surface (sidebar, question page, dashboard, mock) routes to the correct rail without each caller threading the value. For Razorpay the currency is passed to `create-order`; for Paddle the rail is implied (`create-checkout` is USD via the Paddle catalog price).
+Currency is detected **silently** from the browser timezone — all in `frontend/src/utils/currency.js`:
+- `detectCurrency()` reads `Intl.DateTimeFormat().resolvedOptions().timeZone` — `Asia/Kolkata` / `Asia/Calcutta` → **INR**, everything else → **USD**. There is no user-facing currency selector or indicator; the INR option is never surfaced to non-India users.
+- `railForCurrency()` maps currency → rail: **INR → Razorpay**, any other currency → **Paddle**. `UpgradeButton` defaults its `currency` prop to `detectCurrency()`, so every upgrade surface (sidebar, question page, dashboard, mock) routes to the correct rail without each caller threading the value. For Razorpay the currency is passed to `create-order`; for Paddle the rail is implied (`create-checkout` is USD via the Paddle catalog price).
+- India is deliberately held at its own lower price points (₹999/₹1,999 monthly; ₹11,999/₹19,999 lifetime) on home-market price-sensitivity grounds; silent detection removes the arbitrage vector that an explicit INR selector would create once INR prices are materially below USD.
 
 See § Global payments above for the rail split and why Paddle is a Merchant of Record.
 

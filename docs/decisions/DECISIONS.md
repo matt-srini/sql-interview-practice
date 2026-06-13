@@ -35,6 +35,13 @@ Keep entries to 4–6 lines. Friction kills logs; if it's longer than the change
 
 ## Entries
 
+## 2026-06-13 — Pricing: silent currency (detect-only, no toggle) + USD anchor raised to $15/$25/$149/$249; India held
+**Area:** pricing · frontend · **Status:** accepted
+**Decision:** (1) Removed the user-facing currency `CurrencyToggle` and its localStorage layer — currency is now **detected silently** from the browser timezone (`detectCurrency()`: India → INR, else → USD), with no selector and no indicator. (2) Raised the **USD** standing anchor: Pro $12→$15/mo, Elite $22→$25/mo, Lifetime Pro $129→$149, Lifetime Elite $229→$249. (3) **India held** unchanged (₹999/₹1,999/₹11,999/₹19,999), deliberately, on home-market price-sensitivity.
+**Rejected:** (a) **Visible currency selector** (the 2026-06-13 dual-rail entry's "explicit + persisted selector") — surfacing INR signals the India/Razorpay origin and becomes an arbitrage vector once INR < USD, which this bump creates (US Pro $15 vs India ~$12); silent detection removes both. (b) **Bumping India to USD parity** — would dent conversion in the most price-sensitive market. (c) **Keeping the low $12/$22 list price** — under-signals a reasoning-premium product; the anchor is set correctly now (pre-launch, no one to grandfather), with early adoption driven by a separate time-boxed founder's promo, not a permanently low price.
+**Refines:** the currency-selector aspect of the 2026-06-13 "Global payments dual-rail" entry (selector → silent detection); the dual-rail Razorpay+Paddle core stands.
+**Affects:** frontend `utils/currency.js`, `components/UpgradeButton.js`, `pages/LandingPage.js`, `App.css`, `pages/LandingPageTiers.test.js`; backend `config.py` (USD lifetime amounts); docs `features/pricing.md`, `frontend.md`, `deployment.md`. External (not code): Razorpay dashboard monthly plans + Paddle catalog prices + prod env USD lifetime amounts.
+
 ## 2026-06-13 — Dark accent toned one notch off the neon (`#4ADE80` → `#43D27C`); keep the two-tier
 **Area:** frontend · brand · **Status:** accepted
 **Decision:** The bright dark accent `#4ADE80` read as overpowering — fine on a Mac, too hot on mobile/OLED — and made the deep `#1C8A4F` action button look dull beside it. Toned the dark `--accent` to a **bright emerald `#43D27C`** (one notch off the neon; `--accent-strong #5BDD90`, soft tints + hardcoded IDE greens swept to `rgba(67,210,124,…)`). Buttons are **unchanged** — deep `#1C8A4F` + white. Net: vibrant-but-calmer accent that sits closer to the button, so the button no longer looks dull. Light mode untouched.

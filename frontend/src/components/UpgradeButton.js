@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import api from '../api';
 import { useAuth } from '../contexts/AuthContext';
 import { track } from '../analytics';
-import { getStoredCurrency, railForCurrency } from '../utils/currency';
+import { detectCurrency, railForCurrency } from '../utils/currency';
 
 /**
  * Shared upgrade CTA button. Opens the checkout for the given tier on the rail
@@ -144,9 +144,9 @@ export default function UpgradeButton({ tier = 'pro', label, source, compact = f
   const [pending, setPending] = useState(false);
   const [error, setError] = useState(null);
 
-  // Default to the stored/detected currency so the rail is correct on every
-  // surface; an explicit currency prop (the pricing-page selector) still wins.
-  const effectiveCurrency = currency ?? getStoredCurrency();
+  // Default to the detected currency so the rail is correct on every
+  // surface; an explicit currency prop still wins.
+  const effectiveCurrency = currency ?? detectCurrency();
   const rail = railForCurrency(effectiveCurrency);
 
   const buttonLabel = label ?? `Upgrade to ${tierLabel(tier)}`;

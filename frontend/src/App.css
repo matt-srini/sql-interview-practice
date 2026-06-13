@@ -10761,49 +10761,6 @@ select {
   margin-bottom: 24px;
   text-align: center;
 }
-/* ── Pricing currency / billing-rail selector ── */
-.lp-currency-row {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 24px;
-}
-.lp-currency-toggle {
-  display: inline-flex;
-  padding: 3px;
-  gap: 3px;
-  border: 1px solid var(--border-subtle);
-  background: var(--surface-card-alt);
-  border-radius: 999px;
-}
-.lp-currency-opt {
-  appearance: none;
-  border: none;
-  background: transparent;
-  color: var(--text-secondary);
-  font: inherit;
-  font-size: 13px;
-  font-weight: 600;
-  padding: 7px 16px;
-  border-radius: 999px;
-  cursor: pointer;
-  transition: background 0.15s ease, color 0.15s ease;
-}
-.lp-currency-opt:hover { color: var(--text-strong); }
-.lp-currency-opt.is-active {
-  background: var(--surface-card);
-  color: var(--accent);
-  box-shadow: 0 1px 2px rgba(20, 41, 27, 0.08);
-}
-.lp-currency-toggle--compact .lp-currency-opt { font-size: 12px; padding: 5px 12px; }
-.lp-currency-note {
-  font-size: 12px;
-  color: var(--text-secondary);
-  text-align: center;
-  max-width: 440px;
-  margin: 0;
-}
 .landing-tier-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);

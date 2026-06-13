@@ -280,7 +280,7 @@ OG cards: `og-image.png` (1200×630, dark), `og-image-light.png` (1200×630, lig
 | ToastViewport | `components/ToastViewport.js` | Global in-app toast stack (first-solve, unlock, and streak milestone feedback) rendered by `ToastProvider` |
 | LoggedInWelcome | `components/LoggedInWelcome.js` | Welcome-back block on `/` for authenticated users. Three cards: Resume (last-solved question via `/api/dashboard` recent_activity), Dashboard, Mock. Replaces the marketing hero for returning users. |
 | TierBanner | `components/TierBanner.js` | Inline upgrade prompt shown when a user hits a plan gate (e.g. locked hard questions); renders contextual copy and upgrade CTA |
-| UpgradeButton | `components/UpgradeButton.js` | Reusable upgrade CTA. Picks the billing rail from the selected currency (`railForCurrency` in `utils/currency.js`): INR → Razorpay Checkout, any other currency → Paddle.js overlay (Merchant of Record). Defaults to the stored/detected currency so every surface is rail-consistent. The landing pricing table + logged-in nudge expose an explicit `CurrencyToggle` (🇮🇳 ₹ INR / 🌍 $ USD) that persists the choice via `setStoredCurrency` |
+| UpgradeButton | `components/UpgradeButton.js` | Reusable upgrade CTA. Picks the billing rail via `railForCurrency` (`utils/currency.js`) from the **silently detected** currency (`detectCurrency()` — India `Asia/Kolkata`/`Asia/Calcutta` → INR, else → USD): INR → Razorpay Checkout, any other currency → Paddle.js overlay (Merchant of Record). There is **no user-facing currency selector** (removed); every upgrade surface is rail-consistent without the caller threading a currency value. |
 
 ### AppShell
 

@@ -259,8 +259,8 @@ The `FRONTEND_DIST_DIR` env var defaults to `/app/frontend/dist` inside the imag
 | `RAZORPAY_CURRENCY` | — | Currency code for Razorpay charges; defaults to `INR` |
 | `RAZORPAY_PLAN_PRO_USD` | — | Razorpay Plan id for the monthly Pro subscription billed in USD (set after international approval) |
 | `RAZORPAY_PLAN_ELITE_USD` | — | Razorpay Plan id for the monthly Elite subscription billed in USD (set after international approval) |
-| `RAZORPAY_AMOUNT_LIFETIME_PRO_USD` | — | Amount in cents for the USD Lifetime Pro one-time order (default `12900` = $129) |
-| `RAZORPAY_AMOUNT_LIFETIME_ELITE_USD` | — | Amount in cents for the USD Lifetime Elite one-time order (default `22900` = $229) |
+| `RAZORPAY_AMOUNT_LIFETIME_PRO_USD` | — | Amount in cents for the USD Lifetime Pro one-time order (default `14900` = $149) |
+| `RAZORPAY_AMOUNT_LIFETIME_ELITE_USD` | — | Amount in cents for the USD Lifetime Elite one-time order (default `24900` = $249) |
 | `PADDLE_ENVIRONMENT` | — | Paddle.js environment: `sandbox` (default) or `production` |
 | `PADDLE_CLIENT_TOKEN` | — | Paddle client-side token for the checkout overlay. Unset → `/api/paddle/create-checkout` returns 503 (global rail off) |
 | `PADDLE_WEBHOOK_SECRET` | — | Paddle notification-destination signing secret (verifies the `Paddle-Signature` header). Unset → `/api/paddle/webhook` returns 503 |
