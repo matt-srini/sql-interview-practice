@@ -57,6 +57,7 @@ export const COMPARISON_GROUPS = [
         feature: 'Learning paths',
         blurb: 'Curated, ordered walks through one pattern at a time.',
         free: 'Free paths', pro: 'All', elite: 'All',
+        notes: { feature: 'paths' },
       },
     ],
   },
@@ -67,16 +68,19 @@ export const COMPARISON_GROUPS = [
         feature: 'Benchmark — easy',
         blurb: 'A fixed-shape, timed readiness check on a track.',
         free: '1 / week', pro: '3 / day', elite: 'Unlimited',
+        notes: { pro: 'caps' },
       },
       {
         feature: 'Benchmark — medium & hard',
         blurb: 'The serious readiness signal, at full difficulty.',
         free: false, pro: '3 / day', elite: 'Unlimited',
+        notes: { pro: 'caps' },
       },
       {
         feature: 'Custom drill',
         blurb: 'A timed mock you tune yourself — choose the length and depth.',
         free: false, pro: '3 / day', elite: 'Unlimited',
+        notes: { pro: 'caps' },
       },
       {
         feature: 'Mock-only question bank',
@@ -170,3 +174,20 @@ export const FREE_UNLOCK = {
     },
   ],
 };
+
+/**
+ * Footnotes referenced from the comparison (by `notes: { feature | free | pro | elite: <id> }`
+ * on a row). Markers render as superscripts; the text shows in a footnotes block below the table.
+ */
+export const FOOTNOTES = [
+  {
+    id: 'paths',
+    symbol: '†',
+    text: 'Practice and learning paths are the same questions, arranged differently — practice is the full catalog in any order; a path is a short, ordered walk through one pattern. Solve one in either place and it’s marked done in both. Paths don’t add or unlock extra questions; they’re a guided route through what’s already there.',
+  },
+  {
+    id: 'caps',
+    symbol: '‡',
+    text: 'Three sessions a day suits most people — enough to benchmark one track and drill another, every day. If you’re prepping intensively (several tracks, daily mocks) or want Interview Loop, weigh Elite’s unlimited sessions to see if it fits you better.',
+  },
+];

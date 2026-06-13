@@ -5,14 +5,22 @@ import Topbar from '../components/Topbar';
 import UpgradeButton from '../components/UpgradeButton';
 import { useAuth } from '../contexts/AuthContext';
 import { detectCurrency } from '../utils/currency';
-import { COMPARISON_TIERS, COMPARISON_GROUPS, FREE_UNLOCK } from '../data/tierFeatures';
+import { COMPARISON_TIERS, COMPARISON_GROUPS, FREE_UNLOCK, FOOTNOTES } from '../data/tierFeatures';
 
 const PAID_PLANS = ['pro', 'elite', 'lifetime_pro', 'lifetime_elite'];
+const FN_SYMBOL = Object.fromEntries(FOOTNOTES.map(f => [f.id, f.symbol]));
 
 function TierValue({ value }) {
   if (value === true)  return <span className="pricing-cell-check" aria-label="Included">✓</span>;
   if (value === false) return <span className="pricing-cell-dash" aria-label="Not included">—</span>;
   return <span className="pricing-cell-value">{value}</span>;
+}
+
+// Superscript marker tying a feature/cell to a footnote below the table.
+function FnMark({ id }) {
+  const symbol = FN_SYMBOL[id];
+  if (!symbol) return null;
+  return <sup className="pricing-fn-marker" aria-hidden="true">{symbol}</sup>;
 }
 
 function UnlockLadder({ steps }) {
@@ -143,7 +151,10 @@ export default function PricingPage() {
                           className={`pricing-feature-row${ri % 2 === 1 ? ' pricing-feature-row--alt' : ''}`}
                         >
                           <td className="pricing-td-feature">
-                            <span className="pricing-feature-name">{row.feature}</span>
+                            <span className="pricing-feature-name">
+                              {row.feature}
+                              {row.notes?.feature && <FnMark id={row.notes.feature} />}
+                            </span>
                             {row.blurb && (
                               <span className="pricing-feature-blurb">{row.blurb}</span>
                             )}
@@ -154,6 +165,7 @@ export default function PricingPage() {
                               className={`pricing-td-value${COMPARISON_TIERS.find(t => t.id === tid)?.featured ? ' pricing-td-value--featured' : ''}`}
                             >
                               <TierValue value={row[tid]} />
+                              {row.notes?.[tid] && <FnMark id={row.notes[tid]} />}
                             </td>
                           ))}
                         </tr>
@@ -162,6 +174,13 @@ export default function PricingPage() {
                   ))}
                 </tbody>
               </table>
+            </div>
+            <div className="pricing-footnotes">
+              {FOOTNOTES.map(fn => (
+                <p key={fn.id} className="pricing-footnote">
+                  <sup className="pricing-fn-marker">{fn.symbol}</sup> {fn.text}
+                </p>
+              ))}
             </div>
           </div>
         </section>
