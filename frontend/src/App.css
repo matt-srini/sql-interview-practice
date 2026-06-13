@@ -9525,12 +9525,17 @@ select {
   color: var(--text-secondary);
   line-height: 1.2;
 }
+/* Active nav item = WhatsApp-style "selected" chip: subtle accent-tint fill +
+   accent-coloured outline + accent text, as a full pill. The border is the
+   piece that makes it read as deliberately *selected* (not just tinted). The
+   color-mix border tracks --accent, so it adapts per theme automatically. */
 .topbar-auth-link--active {
   color: var(--accent);
   font-weight: 600;
   background: var(--accent-soft);
-  padding: 6px 14px;
-  border-radius: 10px;
+  border: 1px solid color-mix(in srgb, var(--accent) 42%, transparent);
+  padding: 5px 13px;
+  border-radius: 999px;
   min-height: 32px;
   display: inline-flex;
   align-items: center;
@@ -9553,8 +9558,9 @@ select {
 }
 .topbar-practice-trigger.topbar-auth-link--active {
   background: var(--accent-soft);
-  padding: 6px 14px;
-  border-radius: 10px;
+  border: 1px solid color-mix(in srgb, var(--accent) 42%, transparent);
+  padding: 5px 13px;
+  border-radius: 999px;
   min-height: 32px;
 }
 .topbar-practice-trigger--open,
