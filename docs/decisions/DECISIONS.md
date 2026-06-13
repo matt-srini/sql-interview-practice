@@ -35,6 +35,12 @@ Keep entries to 4–6 lines. Friction kills logs; if it's longer than the change
 
 ## Entries
 
+## 2026-06-13 — Dark accent toned one notch off the neon (`#4ADE80` → `#43D27C`); keep the two-tier
+**Area:** frontend · brand · **Status:** accepted
+**Decision:** The bright dark accent `#4ADE80` read as overpowering — fine on a Mac, too hot on mobile/OLED — and made the deep `#1C8A4F` action button look dull beside it. Toned the dark `--accent` to a **bright emerald `#43D27C`** (one notch off the neon; `--accent-strong #5BDD90`, soft tints + hardcoded IDE greens swept to `rgba(67,210,124,…)`). Buttons are **unchanged** — deep `#1C8A4F` + white. Net: vibrant-but-calmer accent that sits closer to the button, so the button no longer looks dull. Light mode untouched.
+**Rejected:** **collapsing dark to a single green** (the "light mode is one gorgeous green, why can't dark be" goal). Prototyped `--accent #2EAE66` used for *both* accent and the CTA fill (dark-ink text). Killed it: (a) the muted green read **too dull**, and (b) on a dark background no single green can serve both roles — white text needs a *deep* green (which is dull as text/icons, ~3.9:1), bright green needs *ink* text. White-text buttons therefore **require** a separate deep button → the two-tier is the physically correct dark structure, not a flaw. Light mode gets one green for free only because its near-white surface lets the deep green do both jobs.
+**Affects:** `frontend/src/App.css` (dark `[data-theme="dark"]` `--accent` family + hardcoded IDE greens); `docs/design/color-palette.md`; `docs/frontend.md` §Design system. **Open:** the topbar logo SVG still hardcodes `#4ADE80` (now a hair brighter than the UI accent) — aligning it is a deliberate next iteration.
+
 ## 2026-06-13 — Global payments: dual-rail Razorpay (India) + Paddle (Merchant of Record, rest of world)
 **Area:** pricing · ops · **Status:** accepted
 **Decision:** Serve each market on the rail built for it. INR → Razorpay (India: UPI/cards, clean per-transaction eFIRC). Every other currency → **Paddle as Merchant of Record**: Paddle is the legal seller and collects + remits global VAT/GST/sales tax, so we never operate worldwide tax compliance. A persisted frontend currency selector drives the rail; `UpgradeButton` branches on `railForCurrency`. Both rails feed one `payment_events` log — Paddle events stored `paddle:`-prefixed with a new `provider` column so ids never collide. Upgrade-path matrix extracted to shared `plan_policy.py`. No PPP at launch.

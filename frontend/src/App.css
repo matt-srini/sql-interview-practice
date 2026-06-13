@@ -6570,10 +6570,10 @@ select {
   --text-secondary: #9BA1A9;
   --text-muted:     #6E747D;
   --text-soft:      #474C54;
-  --accent:             #4ADE80;
-  --accent-strong:      #6EF09A;
-  --accent-soft:        rgba(74, 222, 128, 0.12);
-  --accent-soft-strong: rgba(74, 222, 128, 0.22);
+  --accent:             #43D27C;
+  --accent-strong:      #5BDD90;
+  --accent-soft:        rgba(67, 210, 124, 0.12);
+  --accent-soft-strong: rgba(67, 210, 124, 0.22);
   --success:       #4CAF82;
   --success-soft:  rgba(76, 175, 130, 0.12);
   --success-text:  #8BD2B0;
@@ -6586,7 +6586,7 @@ select {
   --shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.40);
   --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.40);
   --shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.55);
-  --brand-accent: #4ADE80;
+  --brand-accent: #43D27C;
 }
 
 [data-theme="dark"] body { background: var(--bg-page); }
@@ -6676,7 +6676,7 @@ select {
 [data-theme="dark"] .sidebar-error { color: var(--danger); }
 [data-theme="dark"] .track-tile { background: var(--surface-card); border-color: var(--border-subtle); }
 [data-theme="dark"] .mcq-option { background: var(--surface-card-alt); }
-[data-theme="dark"] .mcq-option--selected { border-color: var(--accent); background: rgba(74, 222, 128, 0.12); }
+[data-theme="dark"] .mcq-option--selected { border-color: var(--accent); background: rgba(67, 210, 124, 0.12); }
 [data-theme="dark"] .mcq-option--selected .mcq-option-letter { background: var(--accent); border-color: var(--accent); color: #0D1A10; }
 [data-theme="dark"] .mcq-option--correct { color: #B8E5CE; }
 [data-theme="dark"] .mcq-option--wrong { color: #F0C8C3; }
@@ -8344,7 +8344,7 @@ select {
 /* Benchmark blueprint keeps its green→blue gradient identity, with more presence
    than the light-mode 0.08 tints so it survives on the dark canvas. */
 [data-theme="dark"] .mock-hub-page .mock-benchmark-blueprint {
-  background: linear-gradient(135deg, rgba(74, 222, 128, 0.14), rgba(91, 106, 240, 0.16));
+  background: linear-gradient(135deg, rgba(67, 210, 124, 0.14), rgba(91, 106, 240, 0.16));
   border-color: rgba(91, 106, 240, 0.24);
 }
 
@@ -8378,7 +8378,7 @@ select {
 /* Tier badges echo the tier language: Pro = green, Elite = teal (the premium
    end of the Elite green→teal gradient). Soft, label-weight. */
 [data-theme="dark"] .mock-hub-page .mock-mode-card-badge--pro {
-  background: rgba(74, 222, 128, 0.16);
+  background: rgba(67, 210, 124, 0.16);
   color: #62E195;
 }
 [data-theme="dark"] .mock-hub-page .mock-elite-badge-inline,
@@ -9161,8 +9161,8 @@ select {
   background: var(--surface-card-alt);
 }
 [data-theme="dark"] .mock-hub-empty-card--benchmark {
-  background: linear-gradient(135deg, rgba(74, 222, 128, 0.14), var(--surface-card-alt));
-  border-color: rgba(74, 222, 128, 0.22);
+  background: linear-gradient(135deg, rgba(67, 210, 124, 0.14), var(--surface-card-alt));
+  border-color: rgba(67, 210, 124, 0.22);
 }
 [data-theme="dark"] .mock-hub-empty-card--drill {
   background: linear-gradient(135deg, rgba(91, 106, 240, 0.20), var(--surface-card-alt));
@@ -12448,7 +12448,7 @@ select {
       #0F2218 20%,
       rgba(91,106,240,0.85) 31%,
       rgba(195,215,255,1.0) 37%,
-      rgba(74,222,128,0.75) 44%,
+      rgba(67,210,124,0.75) 44%,
       #0F2218 55%,
       #0F2218 100%
     ) border-box;
@@ -12459,7 +12459,7 @@ select {
   font-size: 0.82rem;
   box-shadow:
     0 0 55px rgba(91,106,240,0.10),
-    0 0 35px rgba(74,222,128,0.08),
+    0 0 35px rgba(67,210,124,0.08),
     0 16px 56px rgba(0,0,0,0.30),
     0 4px 16px rgba(0,0,0,0.14);
   position: relative;
@@ -12474,7 +12474,7 @@ select {
       #080F0A 20%,
       rgba(91,106,240,0.70) 31%,
       rgba(195,215,255,0.85) 37%,
-      rgba(74,222,128,0.60) 44%,
+      rgba(67,210,124,0.60) 44%,
       #080F0A 55%,
       #080F0A 100%
     ) border-box;
@@ -12596,7 +12596,7 @@ select {
   padding: 4px 0;
   border-bottom: 1px solid rgba(255, 255, 255, 0.04);
 }
-.lp-ide-test--pass { color: #4ADE80; }
+.lp-ide-test--pass { color: #43D27C; }
 .lp-ide-test--fail { color: #E06B5A; }
 .lp-ide-test-label {
   flex: 1;
@@ -12640,14 +12640,14 @@ select {
   min-width: 14px;
 }
 .lp-ide-mcq-opt--correct {
-  border-color: rgba(74, 222, 128, 0.28);
-  background: rgba(74, 222, 128, 0.06);
+  border-color: rgba(67, 210, 124, 0.28);
+  background: rgba(67, 210, 124, 0.06);
   color: rgba(255, 255, 255, 0.75);
 }
-.lp-ide-mcq-opt--correct .lp-ide-mcq-letter { color: #4ADE80; }
+.lp-ide-mcq-opt--correct .lp-ide-mcq-letter { color: #43D27C; }
 .lp-ide-mcq-check {
   margin-left: auto;
-  color: #4ADE80;
+  color: #43D27C;
   font-size: 0.72rem;
 }
 

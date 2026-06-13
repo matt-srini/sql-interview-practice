@@ -51,11 +51,14 @@ that pops, not the environment. The earlier green-tinted "Forest" dark surfaces
 (`#0D1A10` page, `#132218` cards) put the brand hue into the background, text, and
 accent all at once, so it read as "too green / neon" for a distraction-free study
 tool. The fix demotes green from the environment to an accent on a calm charcoal
-ground — but keeps the brand green at **full strength** (`#4ADE80`): a brief
-experiment de-neoning the accent to a muted emerald (`#42BE87`) read *too muted*
-on charcoal, so the bright green stays. Light mode is unchanged (still Forest &
-Ink — deep-green `#166534` on warm paper). See
-[`docs/decisions/DECISIONS.md`](../decisions/DECISIONS.md) (2026-06-12 charcoal).
+ground — a **bright emerald `#43D27C`** (2026-06-13): the original neon `#4ADE80`
+was overpowering, especially on mobile/OLED, while a fully de-neoned emerald
+(`#42BE87` / `#2EAE66`) read *too dull* (and forced ink-on-green buttons), so the
+accent sits **one notch off the neon** — vibrant but calmer, and close enough to
+the deep action-green button that the button no longer looks dull beside it. Light
+mode is unchanged (still Forest & Ink — deep-green `#166534` on warm paper). See
+[`docs/decisions/DECISIONS.md`](../decisions/DECISIONS.md) (2026-06-12 charcoal,
+2026-06-13 accent tone-down).
 
 | Token | Value | Role |
 |---|---|---|
@@ -72,10 +75,10 @@ Ink — deep-green `#166534` on warm paper). See
 | `--text-secondary` | `#9BA1A9` | Secondary labels |
 | `--text-muted` | `#6E747D` | Placeholder |
 | `--text-soft` | `#474C54` | Disabled / faint |
-| `--accent` | `#4ADE80` | Brand green accent — active states, links, small fills (NOT the primary button) |
-| `--accent-strong` | `#6EF09A` | Hover/pressed accent |
-| `--accent-soft` | `rgba(74, 222, 128, 0.12)` | Accent tint |
-| `--accent-soft-strong` | `rgba(74, 222, 128, 0.22)` | Stronger accent tint |
+| `--accent` | `#43D27C` | Brand green accent — active states, links, small fills (NOT the primary button) |
+| `--accent-strong` | `#5BDD90` | Hover/pressed accent |
+| `--accent-soft` | `rgba(67, 210, 124, 0.12)` | Accent tint |
+| `--accent-soft-strong` | `rgba(67, 210, 124, 0.22)` | Stronger accent tint |
 | `--success` | `#4CAF82` | Correct answer |
 | `--success-soft` | `rgba(76, 175, 130, 0.12)` | Success tint |
 | `--success-text` | `#8BD2B0` | Success text |
@@ -85,15 +88,15 @@ Ink — deep-green `#166534` on warm paper). See
 | `--danger` | `#E06B5A` | Error / wrong |
 | `--danger-soft` | `rgba(224, 107, 90, 0.12)` | Danger tint |
 | `--danger-text` | `#F0B8B1` | Danger text |
-| `--brand-accent` | `#4ADE80` | Brand green accent for dark surfaces (Razorpay checkout theme) |
+| `--brand-accent` | `#43D27C` | Brand green accent for dark surfaces (Razorpay checkout theme) |
 
 **Primary button (dark) is NOT `--accent`.** On charcoal, white text on the
-bright green `--accent` (`#4ADE80`) fails contrast (~1.7:1, harsh). The primary
+bright green `--accent` (`#43D27C`) fails contrast (~2:1, harsh). The primary
 action button (`.btn-primary` and everything that composes it — `.mock-start-btn`,
 both `UpgradeButton` tiers, plus `.auth-submit-btn` / `.acct-save-btn` /
 `.path-nav-btn--next` / `.lp-paths-cta-primary`) uses a deep **"action green"
 `#1C8A4F` + white** (~4.4:1 on a 600-weight label), hover `#229B5A`. This is the
-two-tier green system: *bright `#4ADE80` for accents, deep `#1C8A4F` for the
+two-tier green system: *bright `#43D27C` for accents, deep `#1C8A4F` for the
 solid action button.* The **Elite** upgrade button keeps the two-tone
 **green→teal gradient** `#1C8A4F → #109488` (hover `#229B5A → #14A498`); **Pro**
 is the solid deep green. These are literals on the button rules, not tokens,
@@ -108,9 +111,10 @@ Two diagonal rounded squares — big block anchored bottom-left, small block flo
 **Light:** big block `#166534`, small block `#4B6858`  
 **Dark:** big block `#4ADE80`, small block `#87B09A`
 
-The dark mark green `#4ADE80` matches the dark *UI accent* (both the brand green
-at full strength — see Dark mode above). The favicons / app icons / Open Graph
-card (rendered on the forest-ink ground `#0D1A10`) are brand assets authored
+The dark mark still uses the original neon `#4ADE80`, so it now sits a touch
+**brighter** than the toned UI accent (`#43D27C`) — aligning the mark is a
+deliberate next-iteration task, not yet done. The favicons / app icons / Open
+Graph card (rendered on the forest-ink ground `#0D1A10`) are brand assets authored
 separately, not re-themed by the 2026-06-12 charcoal change.
 
 Files: `frontend/public/branding/lockup-bar-no-bg.svg` (light) · `lockup-bar-reverse-no-bg.svg` (dark)
