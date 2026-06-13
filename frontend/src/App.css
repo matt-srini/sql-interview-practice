@@ -9525,20 +9525,22 @@ select {
   color: var(--text-secondary);
   line-height: 1.2;
 }
-/* Active nav item = WhatsApp-style "selected" chip: subtle accent-tint fill +
-   accent-coloured outline + accent text, as a full pill. The border is the
-   piece that makes it read as deliberately *selected* (not just tinted). The
-   color-mix border tracks --accent, so it adapts per theme automatically. */
+/* Active nav item: the broader rounded-rectangle chip (NOT a pill — pills don't
+   suit topbar nav). WhatsApp-inspired *colour* only: a more present green fill
+   (--accent-soft-strong) with the accent text lifted lighter in dark mode, so it
+   reads like a selected chip — greenish background + lighter text. */
 .topbar-auth-link--active {
   color: var(--accent);
   font-weight: 600;
-  background: var(--accent-soft);
-  border: 1px solid color-mix(in srgb, var(--accent) 42%, transparent);
-  padding: 5px 13px;
-  border-radius: 999px;
+  background: var(--accent-soft-strong);
+  padding: 6px 14px;
+  border-radius: 10px;
   min-height: 32px;
   display: inline-flex;
   align-items: center;
+}
+[data-theme="dark"] .topbar-auth-link--active {
+  color: var(--accent-strong);
 }
 
 /* ── Shared Topbar Practice dropdown ─────────────────────── */
@@ -9557,10 +9559,9 @@ select {
   padding: 0;
 }
 .topbar-practice-trigger.topbar-auth-link--active {
-  background: var(--accent-soft);
-  border: 1px solid color-mix(in srgb, var(--accent) 42%, transparent);
-  padding: 5px 13px;
-  border-radius: 999px;
+  background: var(--accent-soft-strong);
+  padding: 6px 14px;
+  border-radius: 10px;
   min-height: 32px;
 }
 .topbar-practice-trigger--open,
