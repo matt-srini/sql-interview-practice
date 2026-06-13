@@ -55,8 +55,7 @@ The entire `#landing-pricing` section is hidden only when `userPlan === 'lifetim
 | **Mock — Interview Loop mode** | Blocked | Blocked | ✓ |
 | **Mock — history analytics + trend** | Blocked | Detailed history | + Trend, dimension analysis |
 | **Mock — coaching debrief + readiness score + study plan** | Blocked | Blocked | ✓ |
-| Weakest concept coaching (dashboard) | Blocked | ✓ | ✓ |
-| Top-3 weak areas coaching panel (dashboard) | Blocked | Blocked | ✓ (concept, accuracy %, summary, path + drill links) |
+| Weak-areas coaching panel — full gap list (dashboard + landing) | Blocked | ✓ (concept, accuracy %, summary, path + drill links) | ✓ |
 | Interview readiness score (per-track) | Blocked | Blocked | ✓ |
 | Personalised study plan | Blocked | Blocked | ✓ |
 

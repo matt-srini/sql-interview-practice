@@ -332,4 +332,29 @@ describe('ProgressDashboard', () => {
     const secondary = screen.getByText(/Or take the GroupBy Aggregation path/i);
     expect(secondary.closest('a').getAttribute('href')).toBe('/learn/pandas/groupby');
   });
+
+  it('Pro sees the full weak-areas gap list — no Elite lock (decision B, 2026-06-13)', async () => {
+    mockUseAuth.mockReturnValue({ user: { name: 'P', email: 'p@e.com', plan: 'pro' }, loading: false });
+    wirePaidInsights([
+      { concept: 'WINDOW FUNCTIONS', track: 'sql', accuracy_pct: 0.2, attempts: 12 },
+      { concept: 'HASH JOIN', track: 'python', accuracy_pct: 0.3, attempts: 9 },
+      { concept: 'SHUFFLE PARTITIONS', track: 'pyspark', accuracy_pct: 0.4, attempts: 6 },
+    ]);
+    renderDashboard();
+    // Every gap is drillable for Pro — the full list, not just the top one.
+    const drills = await screen.findAllByText('Drill this concept →');
+    expect(drills).toHaveLength(3);
+    // The old Elite-lock teaser is gone.
+    expect(screen.queryByText(/Elite members see all gaps/i)).toBeNull();
+  });
+
+  it('Free sees the upgrade-to-Pro gate, not the weak concepts', async () => {
+    mockUseAuth.mockReturnValue({ user: { name: 'F', email: 'f@e.com' }, loading: false });
+    wirePaidInsights([
+      { concept: 'WINDOW FUNCTIONS', track: 'sql', accuracy_pct: 0.2, attempts: 12 },
+    ]);
+    renderDashboard();
+    expect(await screen.findByText(/Upgrade to Pro to see your weakest concepts/i)).toBeInTheDocument();
+    expect(screen.queryByText('Drill this concept →')).toBeNull();
+  });
 });

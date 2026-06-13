@@ -35,6 +35,12 @@ Keep entries to 4–6 lines. Friction kills logs; if it's longer than the change
 
 ## Entries
 
+## 2026-06-13 — Weak-areas coaching panel ungated to Pro+ (was Pro=1 / Elite=full); Elite differentiates on the prescription
+**Area:** dashboard · pricing · product · **Status:** accepted
+**Decision:** The dashboard "Where to focus" panel gated Pro to the **single top** weak concept and Elite-locked the rest ("Elite members see all gaps"), while the logged-in landing already showed Pro **all** weak concepts — an inconsistency that also undercut the Elite upsell (Pro saw on the landing exactly what the dashboard charged Elite for). Reconciled by **ungating the dashboard to match the landing**: any paying user (Pro+) sees the full gap list; Free still sees the upgrade teaser. Removed the Elite-lock overlay + its dead `.db-weak-locked*` CSS.
+**Rejected:** the reverse — **gating the landing down to Pro=1** to preserve the Elite lock. Paywalling a user's *own* weak-spot diagnosis between paid tiers ("pay Elite to see your other 2 weaknesses") is the "serving a metric, not the user" anti-pattern, and Elite keeps a strong, honest differentiator without it: the **prescription** (personalised study plan + per-track readiness scores), **Interview Loop**, focus mode, coaching debrief, deep trend/dimension analytics, and unlimited mock volume. The split is now **Pro = diagnosis (your weak spots, drill them); Elite = prescription + deep simulation.**
+**Affects:** `frontend/src/pages/ProgressDashboard.js` (Where-to-focus gating), `frontend/src/App.css` (removed `.db-weak-locked*`), `docs/features/pricing.md`, `docs/features/dashboard.md`, `docs/tier-wise-features.html` (new at-a-glance tier + unlock reference).
+
 ## 2026-06-13 — Pricing: silent currency (detect-only, no toggle) + USD anchor raised to $15/$25/$149/$249; India held
 **Area:** pricing · frontend · **Status:** accepted
 **Decision:** (1) Removed the user-facing currency `CurrencyToggle` and its localStorage layer — currency is now **detected silently** from the browser timezone (`detectCurrency()`: India → INR, else → USD), with no selector and no indicator. (2) Raised the **USD** standing anchor: Pro $12→$15/mo, Elite $22→$25/mo, Lifetime Pro $129→$149, Lifetime Elite $229→$249. (3) **India held** unchanged (₹999/₹1,999/₹11,999/₹19,999), deliberately, on home-market price-sensitivity.

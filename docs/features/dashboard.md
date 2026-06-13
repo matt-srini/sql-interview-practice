@@ -1,6 +1,6 @@
 # Dashboard Feature Reference
 
-The dashboard is the cross-track progress hub at `/dashboard` (`ProgressDashboard.js`). It surfaces track overview statistics, coaching insights, streak state, and mock interview history for any authenticated user. Elite users see additional exclusive sections: a personalised study plan, per-track interview readiness scores, and the Top-3 weak areas coaching panel.
+The dashboard is the cross-track progress hub at `/dashboard` (`ProgressDashboard.js`). It surfaces track overview statistics, coaching insights, streak state, and mock interview history for any authenticated user. The weak-areas coaching panel (the full gap list) is a **Pro+** feature. Elite users see additional exclusive sections: a personalised study plan and per-track interview readiness scores — the *prescription* layer, distinct from the Pro-visible *diagnosis*.
 
 ---
 
@@ -11,7 +11,7 @@ The dashboard is the cross-track progress hub at `/dashboard` (`ProgressDashboar
 | **Track Overview** | One card per active track (all 9 tracks). Each shows solved/total, an animated progress bar, median solve time, accuracy %, easy/medium/hard breakdown, and (Elite) a per-track readiness score badge. Data from `/api/dashboard` + `/api/dashboard/insights`. |
 | **Personalised study plan** | **(Elite)** An ordered list of 3–5 next steps based on weak concepts, practice gaps, and mock frequency. Non-Elite users see a gated upgrade prompt. |
 | **Focus card** | A single hero CTA. For Pro/Elite with weak-concept data: *Drill {top weak concept} → Go* — the [concept drill](../frontend.md#concept-drill), a Pro+ focused practice walk. Otherwise a cross-track pace insight or a continue-practice nudge. |
-| **Where to focus (weak areas)** | **(Pro/Elite)** Concept rows with accuracy %, a coaching summary, a primary *Drill this concept →* CTA (the concept drill), and an **honest secondary** *Or take the … path →* when a matching learning path exists. Pro sees the top gap (further gaps teased as Elite-locked); Elite sees up to 4. |
+| **Where to focus (weak areas)** | **(Pro/Elite)** Concept rows with accuracy %, a coaching summary, a primary *Drill this concept →* CTA (the concept drill), and an **honest secondary** *Or take the … path →* when a matching learning path exists. Pro and Elite both see the **full gap list** (the diagnosis is not paywalled between paid tiers — 2026-06-13, decision B); Elite's extra is the *prescription* (study plan + readiness scores), not more gaps. |
 | **Recent Activity** | Up to 10 most-recently-solved questions across all tracks. Each row shows track, difficulty badge, question title, and relative time. |
 | **Concepts by Track** | Tags of concepts covered by solved questions, grouped by track. Only rendered when at least one concept exists. |
 | **Mock Interviews** | Last 5 mock sessions in a compact table with date, mode, track, difficulty, score, and a Review/Resume link. Hidden when no mock history exists. |
@@ -24,7 +24,7 @@ The dashboard is the cross-track progress hub at `/dashboard` (`ProgressDashboar
 |---|---|---|---|
 | Track Overview (basic stats) | ✅ | ✅ | ✅ |
 | Focus card (hero CTA) | ✅ (pace / continue nudge) | ✅ (drill top weak concept) | ✅ (drill top weak concept) |
-| Where to focus (weak areas + concept drill) | ❌ (upgrade teaser) | ✅ (top gap) | ✅ (up to 4 gaps) |
+| Where to focus (weak areas + concept drill) | ❌ (upgrade teaser) | ✅ (full gap list) | ✅ (full gap list) |
 | Per-track readiness score badges | ❌ (upgrade teaser shown) | ❌ (upgrade teaser shown) | ✅ |
 | Personalised study plan | ❌ (locked section shown) | ❌ (locked section shown) | ✅ |
 

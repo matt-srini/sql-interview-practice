@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<!--
+  docs/tier-wise-features.html
+  ─────────────────────────────────────────────────────────────────────────────
+  INTERNAL DOC — at-a-glance snapshot of the Free / Pro / Elite entitlement split
+  and the Free-tier difficulty-unlock ladders. NOT a user-facing page (not served
+  by the app, not routed). Open it directly in a browser for a quick, scannable
+  picture; the durable sources of truth remain:
+    · docs/features/pricing.md       (entitlement matrix)
+    · docs/features/mock.md          (mock plan-tier matrix — canonical)
+    · backend/unlock.py              (free-tier unlock thresholds — canonical)
+    · docs/features/dashboard.md     (coaching panel gating)
+  Keep this in sync when any of the above change. Snapshot date: 2026-06-13.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>datathink — Tier &amp; Unlock Reference (internal doc)</title>
+<style>
+  :root {
+    --ink: #14291B; --muted: #5A6B60; --faint: #8A9890; --line: #E2E8E4;
+    --paper: #F7F9F7; --card: #FFFFFF;
+    --free: #6B7280; --pro: #166534; --elite: #0D9488;
+    --yes-bg: #E8F5E9; --yes-fg: #166534;
+    --no-bg: #F1F3F2; --no-fg: #A0AAA4;
+    --lim-bg: #FEF6E7; --lim-fg: #9A6B12;
+    --b-bg: #FDECEF; --b-fg: #B0264A;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, "Segoe UI", Inter, system-ui, sans-serif;
+    color: var(--ink); background: var(--paper); margin: 0; padding: 40px 24px 80px;
+    line-height: 1.5; -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1040px; margin: 0 auto; }
+  .doc-flag {
+    font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--faint); font-weight: 600; margin-bottom: 6px;
+  }
+  h1 { font-size: 1.8rem; margin: 0 0 6px; letter-spacing: -0.01em; }
+  .sub { color: var(--muted); font-size: 0.92rem; margin: 0 0 4px; }
+  .sources { color: var(--faint); font-size: 0.8rem; margin: 0 0 28px; }
+  .sources code { background: #ECF0EE; padding: 1px 5px; border-radius: 4px; font-size: 0.78rem; }
+  h2 { font-size: 1.15rem; margin: 36px 0 14px; padding-bottom: 8px; border-bottom: 2px solid var(--line); }
+  .legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: 0.8rem; color: var(--muted); margin: -4px 0 16px; }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .chip { display: inline-block; padding: 2px 9px; border-radius: 999px; font-size: 0.78rem; font-weight: 600; white-space: nowrap; }
+  .yes { background: var(--yes-bg); color: var(--yes-fg); }
+  .no  { background: var(--no-bg);  color: var(--no-fg); }
+  .lim { background: var(--lim-bg); color: var(--lim-fg); }
+
+  table { width: 100%; border-collapse: collapse; background: var(--card); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+  th, td { padding: 10px 14px; text-align: left; font-size: 0.88rem; border-bottom: 1px solid var(--line); vertical-align: top; }
+  thead th { background: #F0F4F1; font-size: 0.78rem; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); }
+  th.tier { text-align: center; width: 17%; }
+  td.cell { text-align: center; }
+  tbody tr:last-child td { border-bottom: none; }
+  .tier-free  { color: var(--free); }
+  .tier-pro   { color: var(--pro); }
+  .tier-elite { color: var(--elite); }
+  .grp td { background: #EEF3EF; font-weight: 700; font-size: 0.74rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); padding: 7px 14px; }
+  .feat { font-weight: 500; }
+  .feat small { display: block; color: var(--faint); font-weight: 400; font-size: 0.78rem; margin-top: 2px; }
+  .elite-only td.feat::after { content: " ◆ Elite-only"; color: var(--elite); font-size: 0.72rem; font-weight: 600; }
+  .changed { background: #FBFCF8; }
+  .changed td.feat::after { content: " ⟳ now Pro+"; color: var(--pro); font-size: 0.72rem; font-weight: 600; }
+
+  .cards { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  @media (max-width: 760px) { .cards { grid-template-columns: 1fr; } }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 18px 20px; }
+  .card h3 { margin: 0 0 4px; font-size: 1.02rem; }
+  .card .tracks { color: var(--muted); font-size: 0.8rem; margin: 0 0 14px; }
+  .ladder { margin: 0 0 14px; }
+  .ladder .lh { font-size: 0.74rem; letter-spacing: 0.05em; text-transform: uppercase; color: var(--faint); font-weight: 700; margin-bottom: 7px; }
+  .step { display: flex; align-items: center; gap: 8px; font-size: 0.86rem; padding: 3px 0; }
+  .step .from { background: #EEF3EF; border-radius: 6px; padding: 2px 8px; font-variant-numeric: tabular-nums; font-weight: 600; min-width: 96px; text-align: center; }
+  .step .arr { color: var(--pro); font-weight: 700; }
+  .step .to { font-weight: 600; }
+  .cap { font-size: 0.8rem; color: var(--lim-fg); background: var(--lim-bg); border-radius: 6px; padding: 4px 10px; display: inline-block; margin-top: 2px; }
+  .notes { font-size: 0.82rem; color: var(--muted); margin-top: 24px; padding: 14px 18px; background: var(--card); border: 1px solid var(--line); border-left: 3px solid var(--pro); border-radius: 8px; }
+  .notes ul { margin: 6px 0 0; padding-left: 18px; }
+  .notes li { margin: 4px 0; }
+  .notes code { background: #ECF0EE; padding: 1px 5px; border-radius: 4px; font-size: 0.78rem; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <p class="doc-flag">Internal doc · not user-facing</p>
+  <h1>datathink — Tier &amp; Unlock Reference</h1>
+  <p class="sub">The Free / Pro / Elite split at a glance, plus how Free users unlock medium and hard questions.</p>
+  <p class="sources">Snapshot <strong>2026-06-13</strong>. Sources of truth: <code>pricing.md</code> · <code>mock.md</code> · <code>unlock.py</code> · <code>dashboard.md</code>. USD anchors: Pro $15/mo · $149 lifetime · Elite $25/mo · $249 lifetime (INR &amp; full currency matrix in <code>pricing.md</code>).</p>
+
+  <h2>1 · Differentiated features by tier</h2>
+  <div class="legend">
+    <span><span class="chip yes">✓</span> included</span>
+    <span><span class="chip no">—</span> not included</span>
+    <span><span class="chip lim">limit</span> capped / quantity</span>
+    <span>◆ Elite-only = the real Elite differentiator</span>
+    <span>⟳ now Pro+ = changed 2026-06-13 (decision B)</span>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Feature</th>
+        <th class="tier tier-free">Free</th>
+        <th class="tier tier-pro">Pro</th>
+        <th class="tier tier-elite">Elite</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr class="grp"><td colspan="4">Content access</td></tr>
+      <tr>
+        <td class="feat">Easy questions</td>
+        <td class="cell"><span class="chip yes">All</span></td>
+        <td class="cell"><span class="chip yes">All</span></td>
+        <td class="cell"><span class="chip yes">All</span></td>
+      </tr>
+      <tr>
+        <td class="feat">Medium questions <small>Free: unlocked by solving easy (see §2)</small></td>
+        <td class="cell"><span class="chip lim">unlock ladder</span></td>
+        <td class="cell"><span class="chip yes">All</span></td>
+        <td class="cell"><span class="chip yes">All</span></td>
+      </tr>
+      <tr>
+        <td class="feat">Hard questions <small>Free: unlocked by solving medium, hard-capped (see §2)</small></td>
+        <td class="cell"><span class="chip lim">capped ladder</span></td>
+        <td class="cell"><span class="chip yes">All</span></td>
+        <td class="cell"><span class="chip yes">All</span></td>
+      </tr>
+      <tr>
+        <td class="feat">Learning paths</td>
+        <td class="cell"><span class="chip lim">free paths</span></td>
+        <td class="cell"><span class="chip yes">All</span></td>
+        <td class="cell"><span class="chip yes">All</span></td>
+      </tr>
+      <tr>
+        <td class="feat">Mock-only question pool <small>793 mock-exclusive questions + follow-up chains</small></td>
+        <td class="cell"><span class="chip no">—</span></td>
+        <td class="cell"><span class="chip yes">✓</span></td>
+        <td class="cell"><span class="chip yes">✓</span></td>
+      </tr>
+
+      <tr class="grp"><td colspan="4">Mock — volume</td></tr>
+      <tr>
+        <td class="feat">Benchmark — easy</td>
+        <td class="cell"><span class="chip lim">1 / 7 days</span></td>
+        <td class="cell"><span class="chip lim">3 / day</span></td>
+        <td class="cell"><span class="chip yes">Unlimited</span></td>
+      </tr>
+      <tr>
+        <td class="feat">Benchmark — medium / hard</td>
+        <td class="cell"><span class="chip no">—</span></td>
+        <td class="cell"><span class="chip lim">3 / day</span></td>
+        <td class="cell"><span class="chip yes">Unlimited</span></td>
+      </tr>
+      <tr>
+        <td class="feat">Custom drill</td>
+        <td class="cell"><span class="chip no">—</span></td>
+        <td class="cell"><span class="chip lim">3 / day</span></td>
+        <td class="cell"><span class="chip yes">Unlimited</span></td>
+      </tr>
+
+      <tr class="grp"><td colspan="4">Mock — depth</td></tr>
+      <tr class="elite-only">
+        <td class="feat">Interview Loop <small>one anchor problem → the interviewer's escalating pivots (follow-up chains)</small></td>
+        <td class="cell"><span class="chip no">—</span></td>
+        <td class="cell"><span class="chip no">—</span></td>
+        <td class="cell"><span class="chip yes">✓</span></td>
+      </tr>
+      <tr class="elite-only">
+        <td class="feat">Focus (<code>focus_concepts</code> filter) <small>target specific weak concepts under the clock</small></td>
+        <td class="cell"><span class="chip no">—</span></td>
+        <td class="cell"><span class="chip no">—</span></td>
+        <td class="cell"><span class="chip yes">✓</span></td>
+      </tr>
+      <tr class="elite-only">
+        <td class="feat">Coaching debrief <small>post-mortem narrative on a completed mock</small></td>
+        <td class="cell"><span class="chip no">—</span></td>
+        <td class="cell"><span class="chip no">—</span></td>
+        <td class="cell"><span class="chip yes">✓</span></td>
+      </tr>
+      <tr class="elite-only">
+        <td class="feat">Mock analytics — trend + per-dimension <small>Pro gets detailed history; Elite adds cross-session trend &amp; dimension breakdown</small></td>
+        <td class="cell"><span class="chip no">—</span></td>
+        <td class="cell"><span class="chip lim">history only</span></td>
+        <td class="cell"><span class="chip yes">+ trend / dim</span></td>
+      </tr>
+
+      <tr class="grp"><td colspan="4">Coaching &amp; readiness (dashboard)</td></tr>
+      <tr class="changed">
+        <td class="feat">Weak-areas panel — full gap list <small>concept · accuracy % · summary · drill + path links — the <em>diagnosis</em></small></td>
+        <td class="cell"><span class="chip no">—</span></td>
+        <td class="cell"><span class="chip yes">✓</span></td>
+        <td class="cell"><span class="chip yes">✓</span></td>
+      </tr>
+      <tr class="elite-only">
+        <td class="feat">Per-track readiness score <small>0–100 interview-readiness index per track</small></td>
+        <td class="cell"><span class="chip no">—</span></td>
+        <td class="cell"><span class="chip no">—</span></td>
+        <td class="cell"><span class="chip yes">✓</span></td>
+      </tr>
+      <tr class="elite-only">
+        <td class="feat">Personalised study plan <small>ordered 3–5 next steps — the <em>prescription</em></small></td>
+        <td class="cell"><span class="chip no">—</span></td>
+        <td class="cell"><span class="chip no">—</span></td>
+        <td class="cell"><span class="chip yes">✓</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p class="notes" style="border-left-color: var(--elite);">
+    <strong>The real Elite differentiator</strong> — Pro and Elite both see your weak-spot <em>diagnosis</em> (the gap list). Elite owns the <em>prescription &amp; depth</em>: the <strong>personalised study plan</strong>, <strong>per-track readiness scores</strong>, <strong>Interview Loop</strong>, focus mode, coaching debrief, deep analytics, and <strong>unlimited mock volume</strong>. Split: <strong>Pro = "here are your weak spots, drill them" · Elite = "here's your readiness, a plan to close the gaps, and the timed simulation that pressure-tests it."</strong>
+  </p>
+
+  <h2>2 · Free-tier unlock ladders</h2>
+  <p class="sub" style="margin-bottom:18px;">Free users start with all easy questions. Medium unlocks in batches as you solve easy; hard unlocks in batches as you solve medium, with a per-track cap. Thresholds differ by track type (the conceptual/MCQ tracks ask for a few more solves, since each MCQ is lower-effort than running &amp; debugging code). Pro &amp; Elite have <strong>no</strong> gating — every difficulty is open.</p>
+
+  <div class="cards">
+    <div class="card">
+      <h3 style="color: var(--pro);">Code tracks</h3>
+      <p class="tracks">SQL · Python · Pandas · Statistics &nbsp;(<code style="font-size:.76rem;">unlock_profile = code</code>)</p>
+
+      <div class="ladder">
+        <div class="lh">Medium — by easy solved</div>
+        <div class="step"><span class="from">8 easy</span><span class="arr">→</span><span class="to">3 medium</span></div>
+        <div class="step"><span class="from">15 easy</span><span class="arr">→</span><span class="to">8 medium</span></div>
+        <div class="step"><span class="from">25 easy</span><span class="arr">→</span><span class="to">all medium</span></div>
+      </div>
+
+      <div class="ladder">
+        <div class="lh">Hard — by medium solved</div>
+        <div class="step"><span class="from">8 medium</span><span class="arr">→</span><span class="to">3 hard</span></div>
+        <div class="step"><span class="from">15 medium</span><span class="arr">→</span><span class="to">8 hard</span></div>
+      </div>
+      <span class="cap">Hard cap: 8 — the ceiling holds even past 15 medium</span>
+    </div>
+
+    <div class="card">
+      <h3 style="color: var(--elite);">Conceptual tracks</h3>
+      <p class="tracks">PySpark · Data Engineering · Data Modeling · ML Fundamentals · Experimentation &nbsp;(<code style="font-size:.76rem;">unlock_profile = mcq</code>)</p>
+
+      <div class="ladder">
+        <div class="lh">Medium — by easy solved</div>
+        <div class="step"><span class="from">10 easy</span><span class="arr">→</span><span class="to">3 medium</span></div>
+        <div class="step"><span class="from">17 easy</span><span class="arr">→</span><span class="to">8 medium</span></div>
+        <div class="step"><span class="from">25 easy</span><span class="arr">→</span><span class="to">all medium</span></div>
+      </div>
+
+      <div class="ladder">
+        <div class="lh">Hard — by medium solved</div>
+        <div class="step"><span class="from">12 medium</span><span class="arr">→</span><span class="to">5 hard</span></div>
+      </div>
+      <span class="cap">Hard cap: 5</span>
+    </div>
+  </div>
+
+  <div class="notes">
+    <strong>Unlock mechanics</strong>
+    <ul>
+      <li><strong>Per track, independent.</strong> The ladder runs separately for each track — solving SQL easy questions doesn't unlock Python medium.</li>
+      <li><strong>Paths can shortcut medium.</strong> Completing a learning path that covers a track also unlocks all medium; the <em>higher</em> of (threshold progress, path completion) wins.</li>
+      <li><strong>Locked behaves by track type.</strong> A locked <em>code</em> question is inaccessible; a locked <em>conceptual/MCQ</em> question returns <code>200</code> with <code>locked: true</code> — the stem shows, but options + explanation are hidden. Submitting any locked question → <code>403</code>.</li>
+      <li><strong>The cap is a hard ceiling.</strong> Free hard is capped at 8 (code) / 5 (MCQ) regardless of how many medium you solve — clearing the cap is a Pro upgrade, not a grind.</li>
+    </ul>
+  </div>
+
+</div>
+</body>
+</html>

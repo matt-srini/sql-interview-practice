@@ -432,8 +432,11 @@ export default function ProgressDashboard() {
                         );
                       }
 
-                      const visibleConcepts = isElite ? weakConcepts.slice(0, 4) : weakConcepts.slice(0, 1);
-                      const lockedConcepts = isElite ? [] : weakConcepts.slice(1, 4);
+                      // Weak-areas list is a Pro+ feature: any paying user sees the full
+                      // gap list (the *diagnosis*). Elite differentiates on the *prescription*
+                      // — study plan + per-track readiness — and Interview Loop, not on hiding
+                      // the user's own weak spots. (2026-06-13, decision B; matches the landing.)
+                      const visibleConcepts = weakConcepts.slice(0, 4);
 
                       return (
                         <section className="db-section">
@@ -461,27 +464,6 @@ export default function ProgressDashboard() {
                                 </div>
                               );
                             })}
-                            {lockedConcepts.length > 0 && (
-                              <div className="db-weak-locked">
-                                <div className="db-weak-locked-blur">
-                                  {lockedConcepts.map((item, i) => (
-                                    <div key={i} className="db-weak-row db-weak-row--ghost">
-                                      <div className="db-weak-header">
-                                        <span className="db-weak-concept">{item.concept}</span>
-                                        <span className="db-weak-track">{TRACK_LABELS[item.track] || item.track}</span>
-                                      </div>
-                                      <div className="db-accuracy-bar-wrap"><div className="db-accuracy-bar-track" /></div>
-                                    </div>
-                                  ))}
-                                </div>
-                                <div className="db-weak-locked-overlay">
-                                  <p className="db-weak-locked-copy">
-                                    {lockedConcepts.length} more weak area{lockedConcepts.length !== 1 ? 's' : ''} — Elite members see all gaps
-                                  </p>
-                                  <UpgradeButton tier="elite" source="dashboard_weak_concepts_lock" successPath="/dashboard" compact />
-                                </div>
-                              </div>
-                            )}
                           </div>
                         </section>
                       );
