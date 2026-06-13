@@ -232,7 +232,7 @@ When `solved_count === question_count`, a completion banner is shown with a "Wha
 
 #### Brand icons & social card
 
-All brand icons derive from the canonical two-diagonal-squares mark on the Forest & Ink ground `#0D1A10` (bright-green mark `#4ADE80`/`#87B09A`).
+All brand icons derive from the canonical two-diagonal-squares mark on the Forest & Ink ground `#0D1A10` (green mark `#43D27C`/`#87B09A` — re-colored from the old neon `#4ADE80` on 2026-06-13 to match the toned UI accent).
 
 **Source SVGs** (do not modify — these are the design source of truth):
 - `frontend/public/favicon.svg` — 64×64 rounded chip; **theme-adaptive** via an internal `@media (prefers-color-scheme)` block: dark scheme = forest-ink chip (`#0D1A10`) + bright mark; light scheme = white chip + hairline border + deep-green mark (`#166534`/`#4B6858`). Source for both dark and light favicon PNGs.

@@ -18,7 +18,7 @@
 
   <!-- Lockup: two-diagonal-squares mark (×2.6) + wordmark -->
   <g transform="translate(96,178) scale(2.6)">
-    <rect x="2" y="22" width="26" height="26" rx="6" fill="#4ADE80"/>
+    <rect x="2" y="22" width="26" height="26" rx="6" fill="#43D27C"/>
     <rect x="22" y="4" width="15" height="15" rx="4" fill="#87B09A"/>
   </g>
   <text x="220" y="268" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="64" letter-spacing="-1.5">

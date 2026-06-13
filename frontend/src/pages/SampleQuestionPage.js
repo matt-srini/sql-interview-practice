@@ -467,10 +467,10 @@ export default function SampleQuestionPage() {
         <meta property="og:title" content={`Free ${difficulty.charAt(0).toUpperCase() + difficulty.slice(1)} ${meta.label} Sample Questions — datathink`} />
         <meta property="og:description" content={`Try free ${difficulty} ${meta.label} interview questions — no account required. Real execution environment with instant feedback.`} />
         <meta property="og:url" content={`https://datathink.co/sample/${topic}/${difficulty}`} />
-        <meta property="og:image" content="https://datathink.co/og-image.png?v=3" />
+        <meta property="og:image" content="https://datathink.co/og-image.png?v=4" />
         <link rel="canonical" href={`https://datathink.co/sample/${topic}/${difficulty}`} />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:image" content="https://datathink.co/og-image.png?v=3" />
+        <meta name="twitter:image" content="https://datathink.co/og-image.png?v=4" />
         <script type="application/ld+json">{JSON.stringify({
           "@context": "https://schema.org",
           "@type": "Quiz",

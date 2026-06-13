@@ -82,10 +82,10 @@ export default function LearningPath() {
         <meta property="og:title" content={path ? `${path.title} — datathink` : 'Learning Path — datathink'} />
         {path && <meta property="og:description" content={path.description} />}
         {path && <meta property="og:url" content={`https://datathink.co/learn/${topic}/${slug}`} />}
-        <meta property="og:image" content="https://datathink.co/og-image.png?v=3" />
+        <meta property="og:image" content="https://datathink.co/og-image.png?v=4" />
         {path && <link rel="canonical" href={`https://datathink.co/learn/${topic}/${slug}`} />}
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:image" content="https://datathink.co/og-image.png?v=3" />
+        <meta name="twitter:image" content="https://datathink.co/og-image.png?v=4" />
         {path && <script type="application/ld+json">{JSON.stringify({
           "@context": "https://schema.org",
           "@type": "Course",

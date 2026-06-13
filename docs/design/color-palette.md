@@ -109,13 +109,14 @@ rather than white.
 Two diagonal rounded squares — big block anchored bottom-left, small block floating top-right — creating a thought-bubble feel.
 
 **Light:** big block `#166534`, small block `#4B6858`  
-**Dark:** big block `#4ADE80`, small block `#87B09A`
+**Dark:** big block `#43D27C`, small block `#87B09A`
 
-The dark mark still uses the original neon `#4ADE80`, so it now sits a touch
-**brighter** than the toned UI accent (`#43D27C`) — aligning the mark is a
-deliberate next-iteration task, not yet done. The favicons / app icons / Open
-Graph card (rendered on the forest-ink ground `#0D1A10`) are brand assets authored
-separately, not re-themed by the 2026-06-12 charcoal change.
+The dark mark green `#43D27C` matches the toned UI accent (re-colored from the old
+neon `#4ADE80` on 2026-06-13, in step with the accent tone-down). The favicons /
+app icons / Open Graph card (rendered on the forest-ink ground `#0D1A10`) are brand
+assets re-rendered from the SVG sources via `frontend/scripts/render-brand-assets.mjs`
+whenever the mark colour changes; the ground stays `#0D1A10` (a brand-asset choice,
+not the in-app charcoal surface).
 
 Files: `frontend/public/branding/lockup-bar-no-bg.svg` (light) · `lockup-bar-reverse-no-bg.svg` (dark)
 
