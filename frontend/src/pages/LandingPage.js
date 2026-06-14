@@ -767,6 +767,10 @@ function ProofStripSection({ pathCount = 0 }) {
 // ── Section 06: Tracks index ────────────────────────────────────────────────
 function TracksIndexSection() {
   const counts = useCatalogCounts();
+  // Per-track depth (rounded to the nearest 10 — ~100/track) is the honest headline:
+  // a curated curriculum, deliberately NOT a competitor's inflated grand total.
+  const practiceTotal = TRACK_SLUGS.reduce((s, slug) => s + (counts[slug]?.total ?? 0), 0);
+  const perTrack = practiceTotal ? Math.round(practiceTotal / TRACK_SLUGS.length / 10) * 10 : 0;
   const FORMAT_LABELS = {
     sql:                'SQL · DuckDB',
     python:             'Python · sandbox',
@@ -785,11 +789,13 @@ function TracksIndexSection() {
           <p className="lp-section-index">06&ensp;/&ensp;ALL TRACKS</p>
           <h2 className="lp-section-h2">A curriculum, not a question bank.</h2>
           <p className="lp-tracks-editorial">
-            Every track is mapped — broken into the patterns that matter, ordered foundational to
-            advanced, and routed to the role you're targeting. Each question is placed to deepen how
-            you reason — because the reasoning that cracks the interview is the same reasoning the job
-            runs on. Pro&nbsp;&amp;&nbsp;Elite add mock-only sets, interview-shaped and seen only under
-            the clock, that pressure-test what you've built.
+            Where the grind sites pile on thousands of problems, each track here is about{' '}
+            <span className="lp-tracks-editorial-n">{perTrack || '~100'}</span> questions — every one crafted
+            and placed on purpose, ordered foundational to advanced, concept by concept, to build
+            reasoning you'll actually use on the job, not to pad a count. Separate from the catalog is
+            the mock-only bank: <span className="lp-tracks-editorial-n">1,000+</span> interview-shaped
+            questions across the tracks — medium and hard only, Pro&nbsp;&amp;&nbsp;Elite — surfaced only
+            under the clock to pressure-test what you've built.
           </p>
         </Reveal>
         <div className="lp-tracks-list" role="list">

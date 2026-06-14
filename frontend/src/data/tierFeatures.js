@@ -84,7 +84,7 @@ export const COMPARISON_GROUPS = [
       },
       {
         feature: 'Mock-only question bank',
-        blurb: 'Over 1,000 interview-shaped questions you meet only under the clock — never in practice mode.',
+        blurb: 'Over 1,000 interview-shaped questions across the tracks — medium and hard only — that you meet only under the clock, never in practice. Separate from the ~100-per-track practice catalog.',
         free: false, pro: true, elite: true,
       },
     ],
