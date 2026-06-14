@@ -1,15 +1,20 @@
 /**
- * tierFeatures.js — SINGLE SOURCE for the user-facing tier comparison (/pricing page).
+ * tierFeatures.js — CANONICAL SINGLE DISPLAY SOURCE for the user-facing tier comparison.
+ *
+ * Every frontend surface that shows tier features renders from THIS file — `/pricing`
+ * (PricingPage.js), and (as they get wired in) the landing pricing cards, the §06
+ * editorial, and TierBanner. Don't re-type tier copy/values in a component; add it here.
  *
  * Plain-language, customer-appropriate copy — NO internal jargon (no `unlock_profile`,
  * `focus_concepts`, file paths). The point of /pricing is honesty: we say exactly what
  * each tier gives you, no hiding behind short adjectives.
  *
- * Entitlement source of truth (keep this in sync when those change):
- *   · docs/features/pricing.md   (tier matrix)
- *   · docs/features/mock.md      (mock plan-tier matrix)
- *   · backend/unlock.py          (free-tier unlock thresholds)
- *   · docs/tier-wise-features.html  (internal mirror of this same data)
+ * The *enforcement* SoTs this copy must agree with (this file is a render of them —
+ * keep in sync in the same commit; see CLAUDE.md § "Linked-docs / single-SoT rule"):
+ *   · backend/unlock.py          (free-tier unlock thresholds + caps — canonical)
+ *   · docs/features/mock.md      (mock plan-tier matrix — canonical SoT)
+ *   · docs/features/pricing.md   (entitlement matrix) · docs/features/dashboard.md (coaching gates)
+ * Internal mirror of this same data: docs/tier-wise-features.html (manual — keep in step).
  *
  * Cell value convention: `true` = included, `false` = not included,
  * a string = the specific limit/detail to show in that tier's column.

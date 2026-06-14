@@ -426,6 +426,8 @@ Files: `db.py`, `progress.py`, `unlock.py`
 | Pro | All easy + all medium + all hard (no cap) |
 | Elite | Full catalog |
 
+*(A **render of [`backend/unlock.py`](../backend/unlock.py)**, the canonical SoT — keep in sync per CLAUDE.md § Linked-docs / single-SoT rule.)*
+
 **Free-tier thresholds — code tracks (SQL, Python, Pandas):**
 - Medium: 8 easy → 3 · 15 easy → 8 · 25 easy → all
 - Hard: 8 medium → 3 · 15 medium → 8 · 22 medium → 15 *(cap = 8)*

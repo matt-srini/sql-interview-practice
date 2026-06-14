@@ -3,14 +3,20 @@
   docs/tier-wise-features.html
   ─────────────────────────────────────────────────────────────────────────────
   INTERNAL DOC — at-a-glance snapshot of the Free / Pro / Elite entitlement split
-  and the Free-tier difficulty-unlock ladders. NOT a user-facing page (not served
-  by the app, not routed). Open it directly in a browser for a quick, scannable
-  picture; the durable sources of truth remain:
-    · docs/features/pricing.md       (entitlement matrix)
-    · docs/features/mock.md          (mock plan-tier matrix — canonical)
-    · backend/unlock.py              (free-tier unlock thresholds — canonical)
-    · docs/features/dashboard.md     (coaching panel gating)
-  Keep this in sync when any of the above change. Snapshot date: 2026-06-13.
+  and the Free-tier difficulty-unlock ladders. NOT user-facing (not served, not
+  routed). Open it directly in a browser for a quick, scannable picture.
+
+  ⚠ THIS IS A MANUAL MIRROR, NOT A SOURCE OF TRUTH. It hand-copies numbers that
+  live elsewhere, so it WILL drift if you forget it (it already showed a stale
+  "793" once). It is a *render* of:
+    · backend/unlock.py                  (free-tier unlock thresholds + caps — CANONICAL)
+    · frontend/src/data/tierFeatures.js  (the tier-comparison display copy — the live
+                                          version of this table is the /pricing page)
+    · docs/features/mock.md              (mock plan-tier matrix — CANONICAL)
+    · docs/features/pricing.md           (entitlement matrix) · dashboard.md (coaching gates)
+  When any of those change, update this file in the same commit — or just check the
+  always-current /pricing page instead. See CLAUDE.md § "Linked-docs / single-SoT rule".
+  Snapshot date: 2026-06-13.
 -->
 <html lang="en">
 <head>

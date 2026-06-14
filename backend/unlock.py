@@ -1,3 +1,17 @@
+"""
+Pure plan + solve-history → unlock policy.
+
+CANONICAL SOURCE OF TRUTH for the free-tier difficulty-unlock thresholds and hard
+caps (the `_FREE_*_THRESHOLDS_*` tables + `FREE_HARD_CAP_*` below). Any doc or UI
+that shows these numbers — 8/15/25 (code medium), 10/17/25 (mcq medium), the hard
+ladders, and the 8 / 5 caps — is a *render* of this file, not a second source:
+  · docs/features/pricing.md, docs/architecture.md, docs/backend.md  (doc renders)
+  · frontend/src/data/tierFeatures.js → /pricing  (the customer-facing render)
+  · frontend/src/components/TierBanner.js  (in-app unlock hints)
+  · docs/tier-wise-features.html  (internal mirror)
+Change the numbers HERE; update the renders in the same commit. See CLAUDE.md
+§ "Linked-docs / single-SoT rule".
+"""
 from __future__ import annotations
 
 from typing import Any

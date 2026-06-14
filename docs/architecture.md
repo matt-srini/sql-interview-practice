@@ -120,6 +120,8 @@ Pure policy function in `backend/unlock.py`. Signature: `compute_unlock_state(pl
 | Pro | All easy + all medium + all hard (no cap) |
 | Elite | Full catalog |
 
+*(Numbers below are a **render of [`backend/unlock.py`](../backend/unlock.py)** — the canonical SoT for these thresholds. Change them there and update this render in the same commit; see CLAUDE.md § Linked-docs / single-SoT rule.)*
+
 **Free-tier thresholds — code tracks (SQL, Python, Pandas):**
 - Medium: 8 easy solved → 3 medium · 15 → 8 medium · 25 → all medium
 - Hard: 8 medium solved → 3 hard · 15 → 8 hard · 22 → 15 hard *(hard cap = 8)*
