@@ -266,3 +266,69 @@ describe('MockHub mixed-track framing', () => {
     });
   });
 });
+
+describe('MockHub Interview Loop difficulty gating', () => {
+  // Interview Loop draws only from mock-only chains, which never exist at easy.
+  // The access endpoint reports easy as blocked (no_chains); the UI must disable
+  // that pill and auto-select the first available difficulty so Start is usable.
+  function mockLoopAccess() {
+    mockApiGet.mockImplementation((path, config) => {
+      if (path === '/mock/history') return Promise.resolve({ data: [] });
+      if (path === '/mock/analytics') {
+        return Promise.resolve({
+          data: {
+            benchmark_summary: { total_sessions: 0 },
+            drill_summary: { total_sessions: 0 },
+            mode_breakdown: { benchmark: 0, drill: 0 },
+            top_concepts: [],
+            weak_concepts: [],
+          },
+        });
+      }
+      if (path === '/mock/access') {
+        const mode = config?.params?.mode;
+        const track = config?.params?.track;
+        if (mode === 'interview_loop') {
+          return Promise.resolve({
+            data: {
+              mode, track,
+              access: {
+                easy: {
+                  can_start: false,
+                  block_reason: 'no_chains',
+                  block_copy: 'Interview Loop has no chains at this difficulty — pick an enabled difficulty.',
+                },
+                medium: { can_start: true },
+                hard: { can_start: true },
+                mixed: { can_start: true },
+              },
+            },
+          });
+        }
+        return Promise.resolve({
+          data: {
+            mode, track,
+            access: { easy: { can_start: true }, medium: { can_start: true }, hard: { can_start: true }, mixed: { can_start: true } },
+          },
+        });
+      }
+      return Promise.resolve({ data: {} });
+    });
+  }
+
+  it('disables Easy and auto-selects the first available difficulty for Interview Loop', async () => {
+    mockLoopAccess();
+    // Preset enters Interview Loop on easy — the exact dead-end combination.
+    renderHub({ mockPreset: { mode: 'interview_loop', track: 'sql', difficulty: 'easy' } });
+
+    // Easy pill is disabled (no chains)…
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'Easy' }).getAttribute('aria-disabled')).toBe('true');
+    });
+    // …and difficulty has auto-moved to the first available (medium), so Start is usable.
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'Medium' }).className).toMatch(/active/);
+    });
+    expect(screen.getByRole('button', { name: 'Easy' }).className).not.toMatch(/active/);
+  });
+});

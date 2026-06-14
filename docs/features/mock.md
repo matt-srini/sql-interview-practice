@@ -168,7 +168,7 @@ After 120 s the quota slot is locked in regardless of submission state.
 **`mode` param is required.** Access rules are mode-dependent:
 - `mode=benchmark`: Free → easy only (`medium`/`hard`/`mixed` → `plan_locked` — `mixed` is gated too, since it draws medium/hard questions); Free weekly limit check; Pro → difficulty unrestricted; daily cap per plan.
 - `mode=custom`: Free → `plan_locked` entirely for all difficulties; Pro/Elite → daily cap check.
-- `mode=interview_loop`: Free/Pro → `plan_locked`; Elite → soft-cap check only.
+- `mode=interview_loop`: Free/Pro → `plan_locked`; Elite → **chain-availability check** layered on top of the soft-cap. A difficulty with no chains for this user returns `can_start: false` with `block_reason` `no_chains` (the content has zero chains there — permanent) or `pool_exhausted` (had chains, this user consumed them all — dynamic, consumption-aware). **Easy is `no_chains` for every track** (no track has easy chains — a chain is deep follow-up reasoning, never "easy"); Python has no hard chains, ML Fundamentals and Experimentation have no medium chains. Availability is derived from the question files (`backend/routers/mock.py` `_chain_parents_for` / `_interview_loop_access`), never hardcoded in the UI. The MockHub difficulty selector disables blocked pills and auto-selects the first available difficulty when Interview Loop is chosen, so the user never lands on a dead-end Start.
 
 ### Surface in the UI
 
@@ -298,6 +298,7 @@ This mode simulates the real interview shape — interviewers don't ask 5 unrela
 - **Plan:** Elite only. Free/Pro see "Unlock with Elite" copy on the Interview Loop mode card; cannot start a session.
 - **Content:** Only parents with `follow_ups[]` length ≥ 1 are eligible.
 - **Track:** Any single track. Mixed is not available (chains are single-track by definition).
+- **Difficulty:** Only difficulties that actually have chains are offered — chains exist at medium/hard only, and not for every track (see [Pre-flight access check](#pre-flight-access-check) for the per-track gaps). **Easy is never a valid Interview Loop difficulty.** The access endpoint reports which difficulties are startable; the UI gates the selector accordingly.
 - **Atomicity:** all chain atomicity rules apply. Each session consumes 1 full chain; once consumed, it's gone from that user's pool.
 
 ### Session shape
@@ -315,13 +316,15 @@ The user does **not** see total question count up front (preserves the dialogue-
 
 ### Chain selection algorithm
 
-1. Load all `mock_only` parents with non-empty `follow_ups[]` for the requested track and difficulty.
+1. Load all `mock_only` parents with non-empty `follow_ups[]` for the requested track and difficulty (`_chain_parents_for`). `difficulty="mixed"` spans every difficulty.
 2. Exclude chains already consumed by this user (present in `mock_chain_consumption` with `reclaimed=false`).
 3. If `focus_concepts` is set, filter parents whose concept tags match at least one focus concept. Focus applies to the **parent only** — the full chain travels regardless of whether follow-ups carry the focus concept.
 4. Select 1 chain fresh-first (prefer chains not yet seen by this user at all). If all eligible chains have been seen in discarded sessions (reclaimed), pick from reclaimed pool.
 5. Mark chain consumed in `mock_chain_consumption` atomically with session creation.
 6. Load parent + all follow-up questions in `follow_ups[]` order. Denormalise `follow_up_dimension` into `mock_session_questions` for each follow-up row.
-7. If no eligible chains exist: return 409 with `pool_exhausted: true`.
+7. If no eligible chains exist, the failure is split by cause:
+   - **No chains at this (track, difficulty) in the content** (permanent — e.g. any easy difficulty): `start_session` catches this *before* `_select_chain` and returns **403** with the `no_chains` copy. The access endpoint also blocks these difficulties up front, so a correct UI never reaches the start call.
+   - **Chains existed but this user consumed them all** (dynamic): `_select_chain` returns **409** with `pool_exhausted: true`. **No soft fallback** — re-showing consumed chains dilutes the readiness signal.
 
 ### Pivot card UX (frontend specification)
 

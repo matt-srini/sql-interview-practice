@@ -565,6 +565,58 @@ async def _select_questions(
     return selected, focus_fallback, False, type_fallback
 
 
+# ── Interview Loop chain availability ────────────────────────────────────────
+# Chains live only in the mock-only pool, and only at medium/hard — no track has
+# easy chains (a chain is deep follow-up reasoning, which is never "easy"). Some
+# tracks also lack one of medium/hard: ML Fundamentals and Experimentation have
+# no medium chains, Python has no hard chains. Offering those (track, difficulty)
+# combinations for Interview Loop is a guaranteed dead-end, so we gate them out of
+# the access map up front instead of failing at session start. Availability is
+# content-derived (single SoT = the question files), never hardcoded in the UI.
+_NO_LOOP_CHAINS_COPY = (
+    "Interview Loop has no chains at this difficulty — pick an enabled difficulty."
+)
+_LOOP_EXHAUSTED_COPY = (
+    "You've completed every Interview Loop chain at this difficulty. "
+    "Try another difficulty or track."
+)
+
+
+def _chain_parents_for(track: str, difficulty: str) -> list[dict]:
+    """All mock-only chain parents (non-empty follow_ups[]) for a track/difficulty.
+
+    difficulty="mixed" spans every difficulty. Content-derived — ignores per-user
+    consumption (callers layer that on top).
+    """
+    catalog = _get_catalog_for_track(track)
+    mock_grouped = catalog.get_mock_questions_by_difficulty()
+    if difficulty == "mixed":
+        pool = [q for qs in mock_grouped.values() for q in qs]
+    else:
+        pool = mock_grouped.get(difficulty, [])
+    return [
+        q for q in pool
+        if q.get("follow_ups") and len(q.get("follow_ups", [])) >= 1
+    ]
+
+
+def _interview_loop_access(
+    track: str, difficulty: str, consumed_parent_ids: set[int]
+) -> dict | None:
+    """Return a block payload if no startable Interview Loop chain exists for this
+    (track, difficulty) + user, else None.
+
+      no_chains      → content has zero chains here (permanent — e.g. any easy)
+      pool_exhausted → had chains, but this user has consumed them all (dynamic)
+    """
+    parents = _chain_parents_for(track, difficulty)
+    if not parents:
+        return {"block_reason": "no_chains", "block_copy": _NO_LOOP_CHAINS_COPY}
+    if all(int(p["id"]) in consumed_parent_ids for p in parents):
+        return {"block_reason": "pool_exhausted", "block_copy": _LOOP_EXHAUSTED_COPY}
+    return None
+
+
 async def _select_chain(
     track: str,
     difficulty: str,
@@ -575,7 +627,9 @@ async def _select_chain(
     Select 1 chain (parent + follow-ups) for an Interview Loop session.
 
     Returns (parent_dict, [follow_up_dicts...]) with _track injected.
-    Raises 409 pool_exhausted when no eligible chain remains.
+    Raises 409 pool_exhausted when no eligible chain remains. (The permanent
+    "no chains at this difficulty" case is caught earlier in start_session with a
+    403; reaching the 409 here means chains existed but the user consumed them.)
     """
     user_id = user["id"]
     catalog = _get_catalog_for_track(track)
@@ -583,18 +637,10 @@ async def _select_chain(
     # Get consumed chains for this user
     consumed_parent_ids = await get_consumed_chain_parent_ids(user_id)
 
-    # Load mock-only questions for this track/difficulty
-    mock_grouped = catalog.get_mock_questions_by_difficulty()
-    if difficulty == "mixed":
-        all_mock = [q for qs in mock_grouped.values() for q in qs]
-    else:
-        all_mock = mock_grouped.get(difficulty, [])
-
-    # Find eligible parents: has follow_ups[] with length >= 1, not consumed
+    # Eligible parents: content chains at this track/difficulty, minus consumed
     parents = [
-        q for q in all_mock
-        if q.get("follow_ups") and len(q.get("follow_ups", [])) >= 1
-        and int(q["id"]) not in consumed_parent_ids
+        q for q in _chain_parents_for(track, difficulty)
+        if int(q["id"]) not in consumed_parent_ids
     ]
 
     # Focus concept filter (applies to parent only; full chain travels regardless)
@@ -609,10 +655,7 @@ async def _select_chain(
             status_code=409,
             detail={
                 "pool_exhausted": True,
-                "block_copy": (
-                    "You've completed all available Interview Loop chains for this track and difficulty. "
-                    "Try a different track, or check back when new content is added."
-                ),
+                "block_copy": _LOOP_EXHAUSTED_COPY,
             },
         )
 
@@ -1098,9 +1141,16 @@ async def get_mock_access(
     daily_custom_used = await get_daily_custom_usage(user_id)
     weekly_benchmark_used = await get_weekly_benchmark_usage(user_id)
 
+    # Interview Loop gates on chain availability (a content concern) layered on
+    # top of the plan/caps decision. Fetch consumed chains once; only relevant
+    # for interview_loop on a single track (Mixed has no chains).
+    loop_consumed: set[int] = set()
+    if mode == "interview_loop" and track != "mixed":
+        loop_consumed = await get_consumed_chain_parent_ids(user_id)
+
     access: dict[str, Any] = {}
     for diff in ("easy", "medium", "hard", "mixed"):
-        access[diff] = compute_mock_access(
+        diff_access = compute_mock_access(
             plan=user_plan,
             track=track,
             difficulty=diff,
@@ -1109,6 +1159,22 @@ async def get_mock_access(
             daily_custom_used=daily_custom_used,
             weekly_benchmark_used=weekly_benchmark_used,
         )
+        # Only override when the plan already allows a start (Elite): a Free/Pro
+        # user must keep the "Elite only" lock, not a chain-availability note.
+        if mode == "interview_loop" and track != "mixed" and diff_access.get("can_start"):
+            block = _interview_loop_access(track, diff, loop_consumed)
+            if block:
+                diff_access = {
+                    "can_start": False,
+                    "block_reason": block["block_reason"],
+                    "block_copy": block["block_copy"],
+                    "needs_upgrade": None,
+                    "daily_limit": None,
+                    "daily_used": None,
+                    "weekly_benchmark_limit": None,
+                    "weekly_benchmark_used": None,
+                }
+        access[diff] = diff_access
 
     return {
         "plan": user_plan,
@@ -1226,6 +1292,13 @@ async def start_session(
     if body.mode == "interview_loop":
         if body.track == "mixed":
             raise HTTPException(status_code=400, detail="Interview Loop does not support mixed track.")
+
+        # No chains exist at this (track, difficulty) — a permanent dead-end (any
+        # easy difficulty; plus Python/hard, ML/medium, Experimentation/medium).
+        # Fail fast with a clear 403 rather than the generic pool-exhausted 409,
+        # which _select_chain reserves for the dynamic "you've consumed them all".
+        if not _chain_parents_for(body.track, body.difficulty):
+            raise HTTPException(status_code=403, detail=_NO_LOOP_CHAINS_COPY)
 
         parent, follow_ups = await _select_chain(
             track=body.track,

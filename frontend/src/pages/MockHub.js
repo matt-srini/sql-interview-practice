@@ -264,6 +264,22 @@ export default function MockHub() {
 
   useEffect(() => { fetchAccess(); }, [fetchAccess]);
 
+  // Interview Loop has no chains at easy (and some tracks lack medium or hard).
+  // Once access for THIS mode loads, move off a chain-less difficulty so the user
+  // never lands on a disabled Start with no obvious next step.
+  useEffect(() => {
+    if (mode !== 'interview_loop') return;
+    if (!accessState || accessState.mode !== 'interview_loop') return;
+    const cur = accessState.access?.[difficulty];
+    if (cur && !cur.can_start) {
+      const firstOpen = DIFFICULTIES.find(d => accessState.access?.[d]?.can_start);
+      if (firstOpen && firstOpen !== difficulty) {
+        setDifficulty(firstOpen);
+        setStartError(null);
+      }
+    }
+  }, [mode, accessState, difficulty]);
+
   async function handleStart() {
     const diffAccess = accessState?.access?.[difficulty];
     if (diffAccess && !diffAccess.can_start) {
@@ -300,7 +316,15 @@ export default function MockHub() {
         setStarting(false);
         return;
       }
-      const msg = err?.response?.data?.error || err?.response?.data?.detail || 'Failed to start session. Please try again.';
+      // Error shapes: 403 → { error }; dict-detail 409 (pool_exhausted) is spread
+      // to the top level by the API error handler, so block_copy sits at data.block_copy.
+      const data = err?.response?.data || {};
+      const detail = data.detail;
+      const msg =
+        data.error ||
+        data.block_copy ||
+        (typeof detail === 'string' ? detail : detail?.block_copy) ||
+        'Failed to start session. Please try again.';
       setStartError(msg);
       setStarting(false);
     }
