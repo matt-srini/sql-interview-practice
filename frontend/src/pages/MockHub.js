@@ -382,6 +382,25 @@ export default function MockHub() {
   // Rail access state
   const railDiffState = getDifficultyButtonState(difficulty);
 
+  // Interview Loop: the selector auto-jumps off chain-less difficulties, so the
+  // disabled pills would otherwise be unexplained. Surface a calm, track-aware
+  // caption naming what has no chains and where chains do live.
+  const loopDifficultyNote = (() => {
+    if (mode !== 'interview_loop' || accessState?.mode !== 'interview_loop') return null;
+    const named = ['easy', 'medium', 'hard'];
+    const labelList = (arr) => arr.map(d => DIFFICULTY_LABELS[d]).join(' and ');
+    const open = named.filter(d => accessState.access?.[d]?.can_start);
+    const noChains = named.filter(d => accessState.access?.[d]?.block_reason === 'no_chains');
+    const exhausted = named.filter(d => accessState.access?.[d]?.block_reason === 'pool_exhausted');
+    if (!noChains.length && !exhausted.length) return null;
+    const parts = [];
+    if (noChains.length) parts.push(`${labelList(noChains)} ${noChains.length > 1 ? 'have' : 'has'} no Interview Loop chains`);
+    if (exhausted.length) parts.push(`you've completed every ${labelList(exhausted)} chain`);
+    const lead = parts.join('; ');
+    const sentence = `${lead.charAt(0).toUpperCase()}${lead.slice(1)}.`;
+    return open.length ? `${sentence} Chains are available at ${labelList(open)}.` : sentence;
+  })();
+
   return (
     <div className="mock-hub-page">
       <Helmet>
@@ -620,6 +639,9 @@ export default function MockHub() {
                     })}
                   </div>
                 </div>
+                {loopDifficultyNote && (
+                  <p className="mock-config-note">{loopDifficultyNote}</p>
+                )}
               </div>
             </section>
 

@@ -330,5 +330,9 @@ describe('MockHub Interview Loop difficulty gating', () => {
       expect(screen.getByRole('button', { name: 'Medium' }).className).toMatch(/active/);
     });
     expect(screen.getByRole('button', { name: 'Easy' }).className).not.toMatch(/active/);
+    // …and a caption explains why Easy is disabled (it auto-jumped away, so the
+    // per-pill rail message would never show otherwise).
+    expect(screen.getByText(/Easy has no Interview Loop chains/i)).toBeInTheDocument();
+    expect(screen.getByText(/available at Medium and Hard/i)).toBeInTheDocument();
   });
 });
