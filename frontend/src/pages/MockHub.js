@@ -264,22 +264,6 @@ export default function MockHub() {
 
   useEffect(() => { fetchAccess(); }, [fetchAccess]);
 
-  // Interview Loop has no chains at easy (and some tracks lack medium or hard).
-  // Once access for THIS mode loads, move off a chain-less difficulty so the user
-  // never lands on a disabled Start with no obvious next step.
-  useEffect(() => {
-    if (mode !== 'interview_loop') return;
-    if (!accessState || accessState.mode !== 'interview_loop') return;
-    const cur = accessState.access?.[difficulty];
-    if (cur && !cur.can_start) {
-      const firstOpen = DIFFICULTIES.find(d => accessState.access?.[d]?.can_start);
-      if (firstOpen && firstOpen !== difficulty) {
-        setDifficulty(firstOpen);
-        setStartError(null);
-      }
-    }
-  }, [mode, accessState, difficulty]);
-
   async function handleStart() {
     const diffAccess = accessState?.access?.[difficulty];
     if (diffAccess && !diffAccess.can_start) {
@@ -382,23 +366,22 @@ export default function MockHub() {
   // Rail access state
   const railDiffState = getDifficultyButtonState(difficulty);
 
-  // Interview Loop: the selector auto-jumps off chain-less difficulties, so the
-  // disabled pills would otherwise be unexplained. Surface a calm, track-aware
-  // caption naming what has no chains and where chains do live.
+  // Interview Loop: blocked difficulties are greyed but still selectable. When the
+  // user lands on one (no chains, or all consumed), explain it in red right under
+  // the selector — only for the SELECTED difficulty, so picking an available one
+  // clears it. No auto-jump (a transient flash would be pointless).
   const loopDifficultyNote = (() => {
     if (mode !== 'interview_loop' || accessState?.mode !== 'interview_loop') return null;
-    const named = ['easy', 'medium', 'hard'];
-    const labelList = (arr) => arr.map(d => DIFFICULTY_LABELS[d]).join(' and ');
-    const open = named.filter(d => accessState.access?.[d]?.can_start);
-    const noChains = named.filter(d => accessState.access?.[d]?.block_reason === 'no_chains');
-    const exhausted = named.filter(d => accessState.access?.[d]?.block_reason === 'pool_exhausted');
-    if (!noChains.length && !exhausted.length) return null;
-    const parts = [];
-    if (noChains.length) parts.push(`${labelList(noChains)} ${noChains.length > 1 ? 'have' : 'has'} no Interview Loop chains`);
-    if (exhausted.length) parts.push(`you've completed every ${labelList(exhausted)} chain`);
-    const lead = parts.join('; ');
-    const sentence = `${lead.charAt(0).toUpperCase()}${lead.slice(1)}.`;
-    return open.length ? `${sentence} Chains are available at ${labelList(open)}.` : sentence;
+    const sel = accessState.access?.[difficulty];
+    if (!sel || sel.can_start) return null;
+    const open = ['easy', 'medium', 'hard'].filter(d => accessState.access?.[d]?.can_start);
+    const selLabel = DIFFICULTY_LABELS[difficulty];
+    const availStr = open.length
+      ? ` Chains are available at ${open.map(d => DIFFICULTY_LABELS[d]).join(' and ')}.`
+      : '';
+    return sel.block_reason === 'pool_exhausted'
+      ? `You've completed every ${selLabel} Interview Loop chain.${availStr}`
+      : `${selLabel} has no Interview Loop chains.${availStr}`;
   })();
 
   return (
@@ -628,7 +611,7 @@ export default function MockHub() {
                         <button
                           key={d}
                           type="button"
-                          className={`mock-config-pill ${isSelected ? 'active' : ''} ${btnState.blocked ? 'mock-config-pill--blocked' : ''}`}
+                          className={`mock-config-pill ${isSelected && !btnState.blocked ? 'active' : ''} ${btnState.blocked ? 'mock-config-pill--blocked' : ''}`}
                           onClick={() => { setDifficulty(d); setStartError(null); }}
                           aria-disabled={btnState.blocked}
                           title={btnState.blocked && typeof btnState.chip === 'string' ? btnState.chip : undefined}
@@ -822,8 +805,9 @@ export default function MockHub() {
                 </div>
               )}
 
-              {/* Access state notice */}
-              {railDiffState.blocked ? (
+              {/* Access state notice — Interview Loop surfaces its difficulty
+                  state in the config caption instead (no duplicate in the rail). */}
+              {mode !== 'interview_loop' && (railDiffState.blocked ? (
                 <div className="mock-rail-access mock-rail-access--blocked">
                   <span>{railDiffState.chip}</span>
                   {railDiffState.chipAction}
@@ -832,7 +816,7 @@ export default function MockHub() {
                 <div className="mock-rail-access mock-rail-access--remaining">
                   {railDiffState.chip}
                 </div>
-              ) : null}
+              ) : null)}
 
               {/* Error */}
               {startError && <p className="mock-rail-error">{startError}</p>}

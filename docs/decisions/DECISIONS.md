@@ -35,6 +35,13 @@ Keep entries to 4–6 lines. Friction kills logs; if it's longer than the change
 
 ## Entries
 
+## 2026-06-14 — Interview Loop difficulty: grey + red caption on the selected blocked pill, no auto-jump
+**Area:** mock · frontend · **Status:** accepted
+**Decision:** Replaced the auto-select-first-available behavior with a static treatment: blocked difficulty pills are greyed but stay selectable, and a **red caption** under the selector explains the *selected* blocked difficulty only ("Easy has no Interview Loop chains. Chains are available at Medium and Hard."). The session-brief rail no longer shows the difficulty block message for Interview Loop (no duplication). Also gave `.mock-drill-plan-mode` a dark-theme override (it was near-invisible `#3d4ed7` on the dark surface) to match `.mock-benchmark-blueprint-time`.
+**Rejected:** Auto-jumping selection off the blocked difficulty (the prior approach) — it flashed the rail's red block message for a split second before correcting, which read as a pointless error blip; a stable greyed pill + on-selection caption is calmer and clearer.
+**Affects:** frontend/src/pages/MockHub.js, frontend/src/App.css, docs/features/mock.md
+**Supersedes:** the auto-jump portion of "2026-06-14 — Interview Loop difficulty is gated to chain availability" (the access-gating itself stands)
+
 ## 2026-06-14 — Interview Loop difficulty is gated to chain availability, not offered blindly
 **Area:** mock · gating · frontend · **Status:** accepted
 **Decision:** Interview Loop draws only from mock-only chains, which exist at medium/hard and not for every track (no track has easy chains; Python has no hard, ML/Experimentation no medium). The access endpoint now reports per-difficulty chain availability for `interview_loop` (consumption-aware: `no_chains` vs `pool_exhausted`), the MockHub selector disables blocked difficulties and auto-selects the first available, and `/mock/start` returns a clear **403** for a chain-less difficulty (the **409** `pool_exhausted` is reserved for the dynamic "user consumed them all" case). Fixes a dead-end where Elite + Easy + Interview Loop showed a generic "Failed to start session" — the 409's dict-detail `block_copy` was spread to the top level of the error body and the frontend only read `data.error` / `data.detail`, so the helpful copy was dropped.

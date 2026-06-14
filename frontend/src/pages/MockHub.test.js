@@ -316,23 +316,37 @@ describe('MockHub Interview Loop difficulty gating', () => {
     });
   }
 
-  it('disables Easy and auto-selects the first available difficulty for Interview Loop', async () => {
+  it('greys Easy and explains it in a caption when Easy is selected (no auto-jump)', async () => {
     mockLoopAccess();
     // Preset enters Interview Loop on easy — the exact dead-end combination.
     renderHub({ mockPreset: { mode: 'interview_loop', track: 'sql', difficulty: 'easy' } });
 
-    // Easy pill is disabled (no chains)…
+    // Easy is greyed (blocked) and stays selected — no auto-jump.
     await waitFor(() => {
       expect(screen.getByRole('button', { name: 'Easy' }).getAttribute('aria-disabled')).toBe('true');
     });
-    // …and difficulty has auto-moved to the first available (medium), so Start is usable.
+    // A blocked pill never shows the green "active" fill, and Medium did NOT auto-select.
+    expect(screen.getByRole('button', { name: 'Easy' }).className).not.toMatch(/active/);
+    expect(screen.getByRole('button', { name: 'Medium' }).className).not.toMatch(/active/);
+    // The caption explains the selected (blocked) difficulty.
+    expect(screen.getByText(/Easy has no Interview Loop chains/i)).toBeInTheDocument();
+    expect(screen.getByText(/available at Medium and Hard/i)).toBeInTheDocument();
+  });
+
+  it('clears the caption and enables Start once an available difficulty is chosen', async () => {
+    mockLoopAccess();
+    renderHub({ mockPreset: { mode: 'interview_loop', track: 'sql', difficulty: 'easy' } });
+
+    await waitFor(() => {
+      expect(screen.getByText(/Easy has no Interview Loop chains/i)).toBeInTheDocument();
+    });
+
+    // Choosing Medium (which has chains) clears the message — it shows only for
+    // the selected blocked difficulty, never for available ones.
+    fireEvent.click(screen.getByRole('button', { name: 'Medium' }));
     await waitFor(() => {
       expect(screen.getByRole('button', { name: 'Medium' }).className).toMatch(/active/);
     });
-    expect(screen.getByRole('button', { name: 'Easy' }).className).not.toMatch(/active/);
-    // …and a caption explains why Easy is disabled (it auto-jumped away, so the
-    // per-pill rail message would never show otherwise).
-    expect(screen.getByText(/Easy has no Interview Loop chains/i)).toBeInTheDocument();
-    expect(screen.getByText(/available at Medium and Hard/i)).toBeInTheDocument();
+    expect(screen.queryByText(/no Interview Loop chains/i)).not.toBeInTheDocument();
   });
 });

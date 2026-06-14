@@ -8344,6 +8344,14 @@ select {
   color: #A6B0F7;
 }
 
+/* The drill / Interview Loop "mode" badge shares the blueprint-time indigo, but
+   had no dark override — #3d4ed7 is near-invisible on the dark surface. Match the
+   blueprint-time pill so it reads in both custom-drill and Interview Loop setup. */
+[data-theme="dark"] .mock-hub-page .mock-drill-plan-mode {
+  background: rgba(91, 106, 240, 0.18);
+  color: #A6B0F7;
+}
+
 /* Tier badges echo the tier language: Pro = green, Elite = teal (the premium
    end of the Elite green→teal gradient). Soft, label-weight. */
 [data-theme="dark"] .mock-hub-page .mock-mode-card-badge--pro {
@@ -8912,7 +8920,8 @@ select {
   padding-left: calc(80px + 1rem); /* align under the pills, past the label */
   font-size: 0.8rem;
   line-height: 1.4;
-  color: var(--text-secondary);
+  color: var(--danger);
+  font-weight: 500;
 }
 .mock-start-btn {
   width: 100%;
