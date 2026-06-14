@@ -71,7 +71,7 @@ The five-perspective pushback in § Standing instructions reads this section as 
   | Concept-family registry (per-track) + follow-up dimension taxonomy | `docs/concept-taxonomy.md` |
   | Socratic interview-hook inventory (used to seed concept coverage) | `docs/concept-hooks.md` |
   | Pricing tiers, plan entitlements, Razorpay flows | `docs/features/pricing.md` |
-  | **Free-tier unlock thresholds + hard caps (canonical = code)** | `backend/unlock.py` — any doc/UI showing 8/15/25 · 10/17/25 · the caps is a *render*; keep in sync (parity-tested) |
+  | **Free-tier unlock thresholds + hard caps (canonical = code)** | `backend/unlock.py` — any doc/UI showing 8/15/25 · 10/17/25 · the caps is a *render*; keep in sync (parity test: `backend/tests/test_entitlement_parity.py`) |
   | **User-facing tier comparison** (Free/Pro/Elite features + Free-unlock ladders) | `frontend/src/data/tierFeatures.js` (single display source) → rendered at `/pricing` (`PricingPage.js`); `docs/tier-wise-features.html` is a manual mirror |
   | Plan prices (display vs charge amount) | `frontend/src/utils/currency.js` (display) + `backend/config.py` (charge) |
   | **Mock plan-tier matrix (canonical SoT)**, chain atomicity, Interview Loop contract | `docs/features/mock.md` |

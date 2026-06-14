@@ -11,7 +11,9 @@
  *
  * The *enforcement* SoTs this copy must agree with (this file is a render of them —
  * keep in sync in the same commit; see CLAUDE.md § "Linked-docs / single-SoT rule"):
- *   · backend/unlock.py          (free-tier unlock thresholds + caps — canonical)
+ *   · backend/unlock.py          (free-tier unlock thresholds + caps — canonical; the
+ *                                  unlock numbers below are parity-tested against it in
+ *                                  backend/tests/test_entitlement_parity.py — drift fails CI)
  *   · docs/features/mock.md      (mock plan-tier matrix — canonical SoT)
  *   · docs/features/pricing.md   (entitlement matrix) · docs/features/dashboard.md (coaching gates)
  * Internal mirror of this same data: docs/tier-wise-features.html (manual — keep in step).

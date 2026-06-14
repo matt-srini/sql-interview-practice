@@ -9,7 +9,9 @@ ladders, and the 8 / 5 caps — is a *render* of this file, not a second source:
   · frontend/src/data/tierFeatures.js → /pricing  (the customer-facing render)
   · frontend/src/components/TierBanner.js  (in-app unlock hints)
   · docs/tier-wise-features.html  (internal mirror)
-Change the numbers HERE; update the renders in the same commit. See CLAUDE.md
+Change the numbers HERE; update the renders in the same commit. The tierFeatures.js
+→ /pricing render is parity-tested against this file in
+backend/tests/test_entitlement_parity.py (drift fails CI). See CLAUDE.md
 § "Linked-docs / single-SoT rule".
 """
 from __future__ import annotations
