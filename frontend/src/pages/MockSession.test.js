@@ -685,3 +685,25 @@ describe('MockSession discard prompt — 429 daily cap', () => {
     expect(screen.getByRole('button', { name: /Discard session/ })).toBeInTheDocument();
   });
 });
+
+// ── End-of-session: show the summary in place, never bounce to the hub ─────────
+describe('MockSession end-of-session navigation', () => {
+  it('renders the summary in place when a session is ended (does not navigate to the hub)', async () => {
+    mockApiPost.mockImplementation((url) => {
+      if (typeof url === 'string' && url.endsWith('/finish')) {
+        return Promise.resolve({ data: makeCompletedSummary({ mode: 'custom', solved_count: 0, total_count: 1 }) });
+      }
+      return Promise.resolve({ data: { correct: true, feedback: [] } });
+    });
+    renderSession(makeSessionData(1));
+
+    // Open the exit flow (the session is past the early-exit window) and end it.
+    fireEvent.click(await screen.findByRole('button', { name: /◀ Exit/ }));
+    fireEvent.click(await screen.findByRole('button', { name: 'End session anyway' }));
+
+    // The summary view renders in place at /mock/:id (its topbar has "Back to Mock") …
+    await waitFor(() => expect(screen.getByText(/Back to Mock/)).toBeInTheDocument());
+    // … and we did NOT bounce to the Mock hub.
+    expect(screen.queryByText('Mock Hub')).not.toBeInTheDocument();
+  });
+});

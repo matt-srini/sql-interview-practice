@@ -375,7 +375,11 @@ export default function MockSession() {
 
   function handleExitConfirm() {
     setShowExitConfirm(false);
-    handleFinish().then(() => navigate('/mock'));
+    // Finish in place — handleFinish flips status to 'completed' and the summary
+    // view renders at /mock/:id. Do NOT navigate to the hub (the summary's own
+    // buttons handle leaving). This matches the timer-expiry finish path, which
+    // already shows the summary rather than bouncing to the hub.
+    handleFinish();
   }
 
   // Early-exit discard helpers
