@@ -244,9 +244,12 @@ describe('MockHub mixed-track framing', () => {
     });
 
     await waitFor(() => {
-      // Hint shown before a role is selected (unique to mixed benchmark role-selector section)
-      expect(screen.getByText('Select a role to see the benchmark blueprint for your track mix.')).toBeInTheDocument();
+      // Mixed needs a role — surfaced as a helper note (the Role selector stays in its fixed position above).
+      expect(screen.getByText(/Mixed track needs a role/i)).toBeInTheDocument();
     });
+    // Role lives in exactly ONE place (the fixed top row, whose "All" option is unique to it) —
+    // no separate relocated role selector for Mixed.
+    expect(screen.getAllByRole('button', { name: 'All' })).toHaveLength(1);
   });
 
   it('keeps the help button outside the subtitle paragraph flow', async () => {

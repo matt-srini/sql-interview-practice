@@ -473,8 +473,9 @@ export default function MockHub() {
               </div>
             </section>
 
-            {/* Benchmark blueprint — single-track only (mixed shows its blueprint in the role selector) */}
-            {mode === 'benchmark' && benchmarkBlueprint && !isMixedTrack && (
+            {/* Benchmark blueprint — single-track AND Mixed. For Mixed it renders the
+                role-based mix once a role is picked (benchmarkBlueprint is null until then). */}
+            {mode === 'benchmark' && benchmarkBlueprint && (
               <section className="mock-hub-section mock-benchmark-blueprint">
                 <div className="mock-benchmark-blueprint-kicker">Benchmark blueprint</div>
                 <div className="mock-benchmark-blueprint-main">
@@ -547,8 +548,9 @@ export default function MockHub() {
             <section className="mock-hub-section">
               <div className="mock-hub-config">
 
-                {/* Role filter — hidden on mixed track (mixed has its own required role selector below) */}
-                {!isMixedTrack && (
+                {/* Role — ALWAYS in this fixed position (never relocated by track/mode).
+                    Single-track uses it as a track filter ("All" = no filter); Mixed
+                    requires a specific role, nudged by a helper note below the config. */}
                 <div className="mock-hub-config-row">
                   <span className="mock-hub-config-label">Role</span>
                   <div className="mock-role-pills">
@@ -571,7 +573,6 @@ export default function MockHub() {
                     ))}
                   </div>
                 </div>
-                )}
 
                 {/* Track */}
                 <div className="mock-hub-config-row">
@@ -615,41 +616,16 @@ export default function MockHub() {
                   </div>
                 </div>
                 )}
+                {/* Mixed track needs a role — surfaced as a helper note here, NOT by
+                    relocating the Role selector (which stays fixed above). The blueprint
+                    for the chosen mix renders in the Benchmark blueprint panel above. */}
+                {isMixedTrack && mode !== 'interview_loop' && !selectedRole && (
+                  <p className="mock-config-hint">
+                    Mixed track needs a role — pick one above to set your track mix{mode === 'benchmark' ? ' and benchmark blueprint' : ''}.
+                  </p>
+                )}
               </div>
             </section>
-
-            {/* Mixed track role selector — required for benchmark/custom, not shown for interview_loop */}
-            {isMixedTrack && mode !== 'interview_loop' && (
-              <section className="mock-hub-section mock-mixed-role-section">
-                <div className="mock-hub-config-row">
-                  <span className="mock-hub-config-label">
-                    Role
-                    {mode === 'benchmark' && <span className="mock-hub-config-label-required"> (required)</span>}
-                  </span>
-                  <div className="mock-role-pills">
-                    {MOCK_ROLES.map(r => (
-                      <button
-                        key={r.id}
-                        type="button"
-                        className={`mock-role-pill ${selectedRole === r.id ? 'active' : ''}`}
-                        onClick={() => handleRoleSelect(r.id)}
-                      >
-                        {r.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                {mode === 'benchmark' && !selectedRole && (
-                  <p className="mock-mixed-role-hint">Select a role to see the benchmark blueprint for your track mix.</p>
-                )}
-                {mode === 'benchmark' && selectedRole && benchmarkBlueprint && (
-                  <div className="mock-benchmark-blueprint-main mock-mixed-role-blueprint">
-                    <span className="mock-benchmark-blueprint-shape">{benchmarkBlueprint.summary}</span>
-                    <span className="mock-benchmark-blueprint-time">{benchmarkBlueprint.timeMinutes} min fixed session</span>
-                  </div>
-                )}
-              </section>
-            )}
 
             {/* Focus mode — shown to all, locked for non-Elite */}
             {!isMixedTrack && (

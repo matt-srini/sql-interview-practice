@@ -8620,16 +8620,10 @@ select {
   background: rgba(224, 69, 106, 0.12);
   color: #c0284d;
 }
-.mock-mixed-role-section {
-  margin-top: 0;
-}
-.mock-mixed-role-hint {
+.mock-config-hint {
   font-size: 0.82rem;
   color: var(--text-secondary);
-  margin: 0 0 0.75rem;
-}
-.mock-mixed-role-blueprint {
-  margin-top: 0.6rem;
+  margin: 0.35rem 0 0;
 }
 .mock-loop-dimension-breakdown {
   display: flex;
