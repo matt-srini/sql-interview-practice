@@ -273,7 +273,9 @@ export default function MockHub() {
       setTrack(nextTrack);
       setFocusMode(false);
       setFocusConcepts([]);
-      setLoopTrackSwitchNote(`Interview Loop runs on one track — switched to ${TRACK_LABELS[nextTrack]}.`);
+      // State the constraint, not the switched-to track — the Track selector already
+      // shows the new single track, and naming it here just adds noise/confusion.
+      setLoopTrackSwitchNote("Interview Loop runs on one track — can't choose Mixed.");
     }
     setMode(key);
   }

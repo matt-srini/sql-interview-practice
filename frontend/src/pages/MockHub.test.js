@@ -371,10 +371,12 @@ describe('MockHub Interview Loop + Mixed track', () => {
 
     fireEvent.click(loopCard);
 
-    // Selecting it moved off Mixed to a single track (SQL, no role) and explains the switch.
+    // Selecting it moved off Mixed to a single track (SQL, no role) and states the constraint.
     await waitFor(() => {
-      expect(screen.getByText(/Interview Loop runs on one track — switched to SQL/i)).toBeInTheDocument();
+      expect(screen.getByText(/Interview Loop runs on one track — can't choose Mixed/i)).toBeInTheDocument();
     });
+    // The track actually switched off Mixed (to SQL).
+    expect(screen.getByRole('button', { name: 'SQL' }).className).toMatch(/active/);
     // …and we're now in Interview Loop mode (no dead-end).
     expect(screen.getByRole('button', { name: /Start Interview Loop/ })).toBeInTheDocument();
   });
