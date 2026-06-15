@@ -8633,9 +8633,20 @@ select {
   color: #c0284d;
 }
 .mock-config-hint {
+  /* "Mixed needs a role" nudge — a gold/amber callout so it's actually noticed
+     (plain secondary text was invisible). Reuses the --warning token (theme-aware,
+     same language as the MEDIUM badge): amber = a soft "heads-up", not an error. */
+  align-self: flex-start;   /* left-aligned, not stretched to full config width */
+  width: max-content;       /* one-line hug (flex children otherwise collapse to min-content) */
+  max-width: 100%;          /* …but wrap instead of overflowing on narrow screens */
   font-size: 0.82rem;
-  color: var(--text-secondary);
-  margin: 0.35rem 0 0;
+  font-weight: 500;
+  color: var(--warning-text);
+  background: var(--warning-soft);
+  border: 1px solid color-mix(in srgb, var(--warning) 32%, transparent);
+  border-radius: var(--radius-sm);
+  padding: 0.45rem 0.7rem;
+  margin: 0.5rem 0 0;
 }
 .mock-loop-dimension-breakdown {
   display: flex;
@@ -9523,11 +9534,9 @@ select {
   color: var(--accent);
   font-weight: 600;
   background: var(--accent-soft-strong);
-  padding: 6px 14px;
   border-radius: 10px;
-  min-height: 32px;
-  display: inline-flex;
-  align-items: center;
+  /* box-shadow extends the pill background without adding to layout width */
+  box-shadow: 0 0 0 6px var(--accent-soft-strong);
 }
 [data-theme="dark"] .topbar-auth-link--active {
   color: var(--accent-strong);
@@ -9550,9 +9559,8 @@ select {
 }
 .topbar-practice-trigger.topbar-auth-link--active {
   background: var(--accent-soft-strong);
-  padding: 6px 14px;
   border-radius: 10px;
-  min-height: 32px;
+  box-shadow: 0 0 0 6px var(--accent-soft-strong);
 }
 .topbar-practice-trigger--open,
 .topbar-practice-trigger:hover {
