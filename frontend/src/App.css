@@ -8915,14 +8915,6 @@ select {
   border-color: var(--border-strong);
   color: var(--text-primary);
 }
-.mock-config-note {
-  margin: 0.5rem 0 0;
-  padding-left: calc(80px + 1rem); /* align under the pills, past the label */
-  font-size: 0.8rem;
-  line-height: 1.4;
-  color: var(--danger);
-  font-weight: 500;
-}
 .mock-start-btn {
   width: 100%;
   padding: 0.875rem 1rem;
@@ -9663,9 +9655,6 @@ select {
   .mock-hub-config-row {
     flex-direction: column;
     align-items: flex-start;
-  }
-  .mock-config-note {
-    padding-left: 0; /* row stacks on mobile — no label gutter to align past */
   }
   .mock-hub-empty-grid {
     grid-template-columns: 1fr;

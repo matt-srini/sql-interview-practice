@@ -168,7 +168,7 @@ After 120 s the quota slot is locked in regardless of submission state.
 **`mode` param is required.** Access rules are mode-dependent:
 - `mode=benchmark`: Free → easy only (`medium`/`hard`/`mixed` → `plan_locked` — `mixed` is gated too, since it draws medium/hard questions); Free weekly limit check; Pro → difficulty unrestricted; daily cap per plan.
 - `mode=custom`: Free → `plan_locked` entirely for all difficulties; Pro/Elite → daily cap check.
-- `mode=interview_loop`: Free/Pro → `plan_locked`; Elite → **chain-availability check** layered on top of the soft-cap. A difficulty with no chains for this user returns `can_start: false` with `block_reason` `no_chains` (the content has zero chains there — permanent) or `pool_exhausted` (had chains, this user consumed them all — dynamic, consumption-aware). **Easy is `no_chains` for every track** (no track has easy chains — a chain is deep follow-up reasoning, never "easy"); Python has no hard chains, ML Fundamentals and Experimentation have no medium chains. Availability is derived from the question files (`backend/routers/mock.py` `_chain_parents_for` / `_interview_loop_access`), never hardcoded in the UI. The MockHub difficulty selector greys (dims) blocked pills — they stay selectable, but the Start button is disabled while a blocked difficulty is selected (there is **no auto-jump**: silently moving selection flashed a pointless transient message). When the *selected* difficulty has no chains (or the user has consumed them all), a **red caption** under the selector explains it (e.g. *"Easy has no Interview Loop chains. Chains are available at Medium and Hard."*) — shown only for the selected blocked difficulty, and deliberately not duplicated in the session-brief rail.
+- `mode=interview_loop`: Free/Pro → `plan_locked`; Elite → **track-level chain-availability check**. Interview Loop has **no user-chosen difficulty** — the chain difficulty is emergent (parent → escalating follow-ups), so the UI shows **no difficulty selector** for this mode. The gate is the access map's **`mixed`** entry, which reports whether the user has any unconsumed chain for the track: `can_start: true`, or `block_reason: pool_exhausted` (consumed them all — dynamic, consumption-aware) / `no_chains` (the track has zero chains — never the case today). The MockHub Start button is gated on `access.mixed`, and the session-brief rail shows a track-level *"You've completed every Interview Loop chain for this track…"* message when exhausted. Availability is derived from the question files (`backend/routers/mock.py` `_chain_parents_for` / `_interview_loop_access`), never hardcoded in the UI. *(The per-difficulty selector + gating this replaced is recorded in [DECISIONS 2026-06-15](../decisions/DECISIONS.md).)*
 
 ### Surface in the UI
 
@@ -298,7 +298,7 @@ This mode simulates the real interview shape — interviewers don't ask 5 unrela
 - **Plan:** Elite only. Free/Pro see "Unlock with Elite" copy on the Interview Loop mode card; cannot start a session.
 - **Content:** Only parents with `follow_ups[]` length ≥ 1 are eligible.
 - **Track:** Any single track. Mixed is not available (chains are single-track by definition).
-- **Difficulty:** Only difficulties that actually have chains are offered — chains exist at medium/hard only, and not for every track (see [Pre-flight access check](#pre-flight-access-check) for the per-track gaps). **Easy is never a valid Interview Loop difficulty.** The access endpoint reports which difficulties are startable; the UI gates the selector accordingly.
+- **Difficulty:** **None — Interview Loop has no difficulty selector.** Its difficulty is *emergent*: the chain is drawn from the track's **full** chain pool and escalates through its follow-ups (e.g. Python chains are a medium parent → hard follow-up). Per-question difficulty is shown in-session; the session itself stores **no** difficulty (`mock_sessions.difficulty` is `NULL` for loops), and history/dashboard show no difficulty badge for loop rows. No analytics surface groups by difficulty, so nothing is lost. *(Replaced an earlier per-difficulty selector — see [DECISIONS 2026-06-15](../decisions/DECISIONS.md).)*
 - **Atomicity:** all chain atomicity rules apply. Each session consumes 1 full chain; once consumed, it's gone from that user's pool.
 
 ### Session shape
@@ -316,15 +316,15 @@ The user does **not** see total question count up front (preserves the dialogue-
 
 ### Chain selection algorithm
 
-1. Load all `mock_only` parents with non-empty `follow_ups[]` for the requested track and difficulty (`_chain_parents_for`). `difficulty="mixed"` spans every difficulty.
+1. Load all `mock_only` parents with non-empty `follow_ups[]` for the track — the **full** chain pool (`_chain_parents_for(track, "mixed")`). Interview Loop applies **no difficulty filter** (difficulty is emergent).
 2. Exclude chains already consumed by this user (present in `mock_chain_consumption` with `reclaimed=false`).
 3. If `focus_concepts` is set, filter parents whose concept tags match at least one focus concept. Focus applies to the **parent only** — the full chain travels regardless of whether follow-ups carry the focus concept.
 4. Select 1 chain fresh-first (prefer chains not yet seen by this user at all). If all eligible chains have been seen in discarded sessions (reclaimed), pick from reclaimed pool.
 5. Mark chain consumed in `mock_chain_consumption` atomically with session creation.
 6. Load parent + all follow-up questions in `follow_ups[]` order. Denormalise `follow_up_dimension` into `mock_session_questions` for each follow-up row.
 7. If no eligible chains exist, the failure is split by cause:
-   - **No chains at this (track, difficulty) in the content** (permanent — e.g. any easy difficulty): `start_session` catches this *before* `_select_chain` and returns **403** with the `no_chains` copy. The access endpoint also blocks these difficulties up front, so a correct UI never reaches the start call.
-   - **Chains existed but this user consumed them all** (dynamic): `_select_chain` returns **409** with `pool_exhausted: true`. **No soft fallback** — re-showing consumed chains dilutes the readiness signal.
+   - **The track has no chains at all in the content** (permanent — not the case for any current track): `start_session` catches this *before* `_select_chain` and returns **403**.
+   - **Chains existed but this user consumed them all** (dynamic): `_select_chain` returns **409** with `pool_exhausted: true`. **No soft fallback** — re-showing consumed chains dilutes the readiness signal. The access map surfaces this as `access.mixed` `pool_exhausted`, so a correct UI disables Start up front and never reaches the start call.
 
 ### Pivot card UX (frontend specification)
 
@@ -484,7 +484,7 @@ Shown after `POST /api/mock/:id/finish`:
 
 1. **Choose session type** — Benchmark for the fixed-shape track readiness signal, Custom drill for targeted practice, or Interview Loop (Elite) for chain-driven interview simulation.
 2. **Pick track** — single track or Mixed. Mixed always requires selecting a role (Data Analyst, Data Engineer, Analytics Engineer, Data Scientist).
-3. **Pick difficulty** — buttons show live access state (remaining daily/weekly sessions or upgrade CTAs). Medium/hard requires Pro or above for all modes.
+3. **Pick difficulty** *(Benchmark / Custom only)* — buttons show live access state (remaining daily/weekly sessions or upgrade CTAs). Medium/hard requires Pro or above. **Interview Loop has no difficulty step** — its difficulty is emergent (the chain escalates through its follow-ups).
 4. **(Benchmark or Custom + Mixed)** Select role.
 5. **(Elite)** Optionally enable **Focus mode** (1–3 concept families).
 6. **Start** — timer starts immediately. Interview Loop sessions draw a chain and lock it to you; discard within 2 minutes if you want to cancel penalty-free.
@@ -498,10 +498,10 @@ Shown after `POST /api/mock/:id/finish`:
 
 | Method | Path | Auth | Purpose |
 |---|---|---|---|
-| GET | `/api/mock/access` | Required | Pre-flight: per-difficulty access state for a given track and mode. Params: `track`, `mode`. Returns `weekly_benchmark_used` + `weekly_benchmark_limit` for Free + benchmark. |
+| GET | `/api/mock/access` | Required | Pre-flight: per-difficulty access state for a given track and mode (for `interview_loop` the gate is the track-level `mixed` entry). Params: `track`, `mode`. Returns `weekly_benchmark_used` + `weekly_benchmark_limit` for Free + benchmark. |
 | GET | `/api/mock/history` | Required | Last 20 sessions |
 | GET | `/api/mock/analytics` | Required (Elite) | Aggregate analytics — benchmark/drill/loop summaries, trends, concept signals, per-dimension Loop performance |
-| POST | `/api/mock/start` | Required | Start a session. Body: `mode`, `track`, `difficulty`, `role` (required when `track="mixed"`), `num_questions` (custom only), `time_minutes` (custom only), `focus_concepts` (Elite). Returns 409 if active session exists (body: `session_id`, `track`, `difficulty`, `mode`). |
+| POST | `/api/mock/start` | Required | Start a session. Body: `mode`, `track`, `difficulty` (required for benchmark/custom; **omitted/ignored for `interview_loop`** — its difficulty is emergent and stored `NULL`), `role` (required when `track="mixed"`), `num_questions` (custom only), `time_minutes` (custom only), `focus_concepts` (Elite). Returns 409 if active session exists (body: `session_id`, `track`, `difficulty`, `mode`). |
 | GET | `/api/mock/:id` | Required | Load/reload session state |
 | POST | `/api/mock/:id/submit` | Required | Submit one answer mid-session. Returns 409 if question already submitted. Returns 422 for blank input. |
 | POST | `/api/mock/:id/finish` | Required | End session — full summary with solutions and (Elite) debrief |

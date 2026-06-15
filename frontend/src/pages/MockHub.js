@@ -265,7 +265,10 @@ export default function MockHub() {
   useEffect(() => { fetchAccess(); }, [fetchAccess]);
 
   async function handleStart() {
-    const diffAccess = accessState?.access?.[difficulty];
+    // Interview Loop gates on full-pool ("mixed") chain availability; other modes
+    // gate on the selected difficulty.
+    const gate = mode === 'interview_loop' ? 'mixed' : difficulty;
+    const diffAccess = accessState?.access?.[gate];
     if (diffAccess && !diffAccess.can_start) {
       setStartError(diffAccess.block_copy || 'Cannot start session with this configuration.');
       return;
@@ -280,13 +283,14 @@ export default function MockHub() {
       const payload = {
         mode,
         track,
-        difficulty,
+        // Interview Loop carries no user-chosen difficulty (emergent from the chain).
+        ...(mode === 'interview_loop' ? {} : { difficulty }),
         ...(track === 'mixed' ? { role: selectedRole } : {}),
         ...(mode === 'custom' ? { num_questions: numQuestions, time_minutes: timeMinutes } : {}),
         ...(isElite && focusMode && focusConcepts.length > 0 ? { focus_concepts: focusConcepts } : {}),
       };
       const r = await api.post('/mock/start', payload);
-      trackEvent('mock_started', { mode, track, difficulty, session_id: r.data.session_id });
+      trackEvent('mock_started', { mode, track, difficulty: mode === 'interview_loop' ? null : difficulty, session_id: r.data.session_id });
       navigate(`/mock/${r.data.session_id}`, { state: { sessionData: r.data } });
     } catch (err) {
       if (err?.response?.status === 409 && err?.response?.data?.error === 'active_session_exists') {
@@ -362,27 +366,13 @@ export default function MockHub() {
   }
 
   const isMixedTrack = track === 'mixed';
+  const isLoop = mode === 'interview_loop';
 
-  // Rail access state
-  const railDiffState = getDifficultyButtonState(difficulty);
-
-  // Interview Loop: blocked difficulties are greyed but still selectable. When the
-  // user lands on one (no chains, or all consumed), explain it in red right under
-  // the selector — only for the SELECTED difficulty, so picking an available one
-  // clears it. No auto-jump (a transient flash would be pointless).
-  const loopDifficultyNote = (() => {
-    if (mode !== 'interview_loop' || accessState?.mode !== 'interview_loop') return null;
-    const sel = accessState.access?.[difficulty];
-    if (!sel || sel.can_start) return null;
-    const open = ['easy', 'medium', 'hard'].filter(d => accessState.access?.[d]?.can_start);
-    const selLabel = DIFFICULTY_LABELS[difficulty];
-    const availStr = open.length
-      ? ` Chains are available at ${open.map(d => DIFFICULTY_LABELS[d]).join(' and ')}.`
-      : '';
-    return sel.block_reason === 'pool_exhausted'
-      ? `You've completed every ${selLabel} Interview Loop chain.${availStr}`
-      : `${selLabel} has no Interview Loop chains.${availStr}`;
-  })();
+  // Interview Loop has no user-chosen difficulty — the chain difficulty is emergent
+  // (parent → escalating follow-ups). Gate it on the full-pool ("mixed") chain
+  // availability for the track; every other mode gates on the selected difficulty.
+  const gateKey = isLoop ? 'mixed' : difficulty;
+  const railDiffState = getDifficultyButtonState(gateKey);
 
   return (
     <div className="mock-hub-page">
@@ -400,7 +390,7 @@ export default function MockHub() {
             <p className="mock-modal-body">
               You already have an active{' '}
               <strong>{TRACK_LABELS[activeSessionConflict.track] || activeSessionConflict.track}</strong>{' '}
-              <strong>{activeSessionConflict.difficulty}</strong>{' '}
+              {activeSessionConflict.difficulty && <><strong>{activeSessionConflict.difficulty}</strong>{' '}</>}
               <strong>{getMockModeDisplayLabel(activeSessionConflict.mode)}</strong> session. Resume it or end it before starting a new one.
             </p>
             <div className="mock-modal-actions">
@@ -600,7 +590,9 @@ export default function MockHub() {
                   </div>
                 </div>
 
-                {/* Difficulty */}
+                {/* Difficulty — not shown for Interview Loop: its difficulty is
+                    emergent (the chain escalates), not a user-chosen knob. */}
+                {!isLoop && (
                 <div className="mock-hub-config-row">
                   <span className="mock-hub-config-label">Difficulty</span>
                   <div className="mock-config-pills">
@@ -622,8 +614,6 @@ export default function MockHub() {
                     })}
                   </div>
                 </div>
-                {loopDifficultyNote && (
-                  <p className="mock-config-note">{loopDifficultyNote}</p>
                 )}
               </div>
             </section>
@@ -771,10 +761,12 @@ export default function MockHub() {
                   <span className="mock-rail-key">Track</span>
                   <span className="mock-rail-val">{TRACK_LABELS[track]}</span>
                 </div>
-                <div className="mock-rail-row">
-                  <span className="mock-rail-key">Difficulty</span>
-                  <span className={`badge badge-${difficulty}`}>{DIFFICULTY_LABELS[difficulty]}</span>
-                </div>
+                {!isLoop && (
+                  <div className="mock-rail-row">
+                    <span className="mock-rail-key">Difficulty</span>
+                    <span className={`badge badge-${difficulty}`}>{DIFFICULTY_LABELS[difficulty]}</span>
+                  </div>
+                )}
                 {effectiveQuestionCount > 0 && (
                   <div className="mock-rail-row">
                     <span className="mock-rail-key">Questions</span>
@@ -805,9 +797,10 @@ export default function MockHub() {
                 </div>
               )}
 
-              {/* Access state notice — Interview Loop surfaces its difficulty
-                  state in the config caption instead (no duplicate in the rail). */}
-              {mode !== 'interview_loop' && (railDiffState.blocked ? (
+              {/* Access state notice — per-difficulty for benchmark/custom; track-level
+                  ("mixed") chain availability for Interview Loop (shows "all chains
+                  completed for this track" when the pool is exhausted). */}
+              {railDiffState.blocked ? (
                 <div className="mock-rail-access mock-rail-access--blocked">
                   <span>{railDiffState.chip}</span>
                   {railDiffState.chipAction}
@@ -816,7 +809,7 @@ export default function MockHub() {
                 <div className="mock-rail-access mock-rail-access--remaining">
                   {railDiffState.chip}
                 </div>
-              ) : null)}
+              ) : null}
 
               {/* Error */}
               {startError && <p className="mock-rail-error">{startError}</p>}
@@ -828,7 +821,7 @@ export default function MockHub() {
                 disabled={
                   starting ||
                   accessLoading ||
-                  (!accessState || !accessState.access?.[difficulty]?.can_start) ||
+                  (!accessState || !accessState.access?.[gateKey]?.can_start) ||
                   (isMixedTrack && mode !== 'interview_loop' && !selectedRole)
                 }
               >
@@ -1159,7 +1152,8 @@ export default function MockHub() {
             <table className="mock-history-table">
               <thead>
                 <tr>
-                  <th>Date</th><th>Track</th><th>Difficulty</th><th>Score</th><th>Time</th><th></th>
+                  {/* No Difficulty column — Interview Loop difficulty is emergent (the chain escalates). */}
+                  <th>Date</th><th>Track</th><th>Score</th><th>Time</th><th></th>
                 </tr>
               </thead>
               <tbody>
@@ -1167,7 +1161,6 @@ export default function MockHub() {
                   <tr key={s.session_id}>
                     <td>{formatDate(s.started_at)}</td>
                     <td>{TRACK_LABELS[s.track] || s.track}</td>
-                    <td>{s.difficulty && <span className={`badge badge-${s.difficulty}`}>{s.difficulty}</span>}</td>
                     <td>{s.solved_count}/{s.total_count}</td>
                     <td className="mock-history-time">{formatDuration(s.time_limit_s, s.time_used_s)}</td>
                     <td>

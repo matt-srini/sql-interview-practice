@@ -316,37 +316,44 @@ describe('MockHub Interview Loop difficulty gating', () => {
     });
   }
 
-  it('greys Easy and explains it in a caption when Easy is selected (no auto-jump)', async () => {
-    mockLoopAccess();
-    // Preset enters Interview Loop on easy — the exact dead-end combination.
-    renderHub({ mockPreset: { mode: 'interview_loop', track: 'sql', difficulty: 'easy' } });
+  it('shows NO difficulty selector for Interview Loop and gates Start on chain availability', async () => {
+    mockLoopAccess(); // sql: access.mixed.can_start = true
+    renderHub({ mockPreset: { mode: 'interview_loop', track: 'sql' } });
 
-    // Easy is greyed (blocked) and stays selected — no auto-jump.
-    await waitFor(() => {
-      expect(screen.getByRole('button', { name: 'Easy' }).getAttribute('aria-disabled')).toBe('true');
-    });
-    // A blocked pill never shows the green "active" fill, and Medium did NOT auto-select.
-    expect(screen.getByRole('button', { name: 'Easy' }).className).not.toMatch(/active/);
-    expect(screen.getByRole('button', { name: 'Medium' }).className).not.toMatch(/active/);
-    // The caption explains the selected (blocked) difficulty.
-    expect(screen.getByText(/Easy has no Interview Loop chains/i)).toBeInTheDocument();
-    expect(screen.getByText(/available at Medium and Hard/i)).toBeInTheDocument();
+    // We're in Interview Loop mode (the Start CTA reflects it)…
+    const start = await screen.findByRole('button', { name: /Start Interview Loop/ });
+    // … and there is NO difficulty selector at all — no Easy/Medium/Hard pills.
+    expect(screen.queryByRole('button', { name: 'Easy' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Hard' })).not.toBeInTheDocument();
+    // sql has chains (access.mixed) → Start is enabled.
+    await waitFor(() => expect(start).not.toBeDisabled());
   });
 
-  it('clears the caption and enables Start once an available difficulty is chosen', async () => {
-    mockLoopAccess();
-    renderHub({ mockPreset: { mode: 'interview_loop', track: 'sql', difficulty: 'easy' } });
-
-    await waitFor(() => {
-      expect(screen.getByText(/Easy has no Interview Loop chains/i)).toBeInTheDocument();
+  it('disables Start for Interview Loop when the track pool is exhausted, with a track-level message', async () => {
+    mockApiGet.mockImplementation((path, config) => {
+      if (path === '/mock/history') return Promise.resolve({ data: [] });
+      if (path === '/mock/analytics') {
+        return Promise.resolve({ data: { benchmark_summary: { total_sessions: 0 }, drill_summary: { total_sessions: 0 }, mode_breakdown: { benchmark: 0, drill: 0 }, top_concepts: [], weak_concepts: [] } });
+      }
+      if (path === '/mock/access') {
+        return Promise.resolve({
+          data: {
+            mode: config?.params?.mode, track: config?.params?.track,
+            access: {
+              easy: { can_start: false, block_reason: 'no_chains' },
+              medium: { can_start: false, block_reason: 'pool_exhausted' },
+              hard: { can_start: false, block_reason: 'pool_exhausted' },
+              mixed: { can_start: false, block_reason: 'pool_exhausted', block_copy: "You've completed every Interview Loop chain for this track. Try another track, or check back as new chains are added." },
+            },
+          },
+        });
+      }
+      return Promise.resolve({ data: {} });
     });
+    renderHub({ mockPreset: { mode: 'interview_loop', track: 'sql' } });
 
-    // Choosing Medium (which has chains) clears the message — it shows only for
-    // the selected blocked difficulty, never for available ones.
-    fireEvent.click(screen.getByRole('button', { name: 'Medium' }));
-    await waitFor(() => {
-      expect(screen.getByRole('button', { name: 'Medium' }).className).toMatch(/active/);
-    });
-    expect(screen.queryByText(/no Interview Loop chains/i)).not.toBeInTheDocument();
+    const start = await screen.findByRole('button', { name: /Start Interview Loop/ });
+    await waitFor(() => expect(start).toBeDisabled());
+    expect(screen.getByText(/completed every Interview Loop chain for this track/i)).toBeInTheDocument();
   });
 });

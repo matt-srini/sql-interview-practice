@@ -117,7 +117,7 @@ TRACK_TO_TOPIC: dict[str, str] = {t.slug: t.db_topic for t in TRACKS}
 class MockStartRequest(BaseModel):
     mode: str           # 'benchmark' | 'custom' | 'interview_loop'
     track: str          # 'sql' | 'python' | 'pandas' | 'pyspark' | 'mixed' | ...
-    difficulty: str     # 'easy' | 'medium' | 'hard' | 'mixed'
+    difficulty: str | None = None   # 'easy'|'medium'|'hard'|'mixed'; omitted/ignored for interview_loop (chain difficulty is emergent)
     role: str | None = None            # required when track='mixed'
     num_questions: int | None = None   # custom mode only, 1–5
     time_minutes: int | None = None    # custom mode only, 10–90
@@ -574,11 +574,11 @@ async def _select_questions(
 # the access map up front instead of failing at session start. Availability is
 # content-derived (single SoT = the question files), never hardcoded in the UI.
 _NO_LOOP_CHAINS_COPY = (
-    "Interview Loop has no chains at this difficulty — pick an enabled difficulty."
+    "Interview Loop has no chains for this track yet."
 )
 _LOOP_EXHAUSTED_COPY = (
-    "You've completed every Interview Loop chain at this difficulty. "
-    "Try another difficulty or track."
+    "You've completed every Interview Loop chain for this track. "
+    "Try another track, or check back as new chains are added."
 )
 
 
@@ -1200,7 +1200,7 @@ async def get_analytics(
 ) -> dict[str, Any]:
     """
     Elite-only: return aggregate analytics over the user's last 50 mock sessions.
-    Includes score trends, concept accuracy breakdown, track/difficulty splits,
+    Includes score trends, concept accuracy breakdown, mode breakdown,
     and per-dimension Interview Loop performance.
     """
     if normalize_plan(current_user.get("plan", "free")) != "elite":
@@ -1222,7 +1222,10 @@ async def start_session(
     # ── Basic validation ──────────────────────────────────────────────────────
     if body.track not in VALID_TRACKS:
         raise HTTPException(status_code=400, detail=f"Invalid track. Must be one of: {', '.join(VALID_TRACKS)}")
-    if body.difficulty not in VALID_DIFFICULTIES:
+    # Interview Loop has no user-chosen difficulty — the chain difficulty is emergent
+    # (parent → escalating follow-ups). Difficulty is required + validated for every
+    # other mode.
+    if body.mode != "interview_loop" and body.difficulty not in VALID_DIFFICULTIES:
         raise HTTPException(status_code=400, detail=f"Invalid difficulty. Must be one of: {', '.join(VALID_DIFFICULTIES)}")
 
     valid_start_modes = {"benchmark", "custom", "interview_loop"} | set(MODE_CONFIGS)
@@ -1293,16 +1296,17 @@ async def start_session(
         if body.track == "mixed":
             raise HTTPException(status_code=400, detail="Interview Loop does not support mixed track.")
 
-        # No chains exist at this (track, difficulty) — a permanent dead-end (any
-        # easy difficulty; plus Python/hard, ML/medium, Experimentation/medium).
-        # Fail fast with a clear 403 rather than the generic pool-exhausted 409,
-        # which _select_chain reserves for the dynamic "you've consumed them all".
-        if not _chain_parents_for(body.track, body.difficulty):
-            raise HTTPException(status_code=403, detail=_NO_LOOP_CHAINS_COPY)
+        # Interview Loop has no user-chosen difficulty: draw from the full chain pool
+        # for the track (parent difficulty is emergent — it escalates through the
+        # follow-ups). This 403 only fires if the track has no chains at all; every
+        # current track has some. Pool exhaustion (all consumed) is the 409 raised
+        # inside _select_chain.
+        if not _chain_parents_for(body.track, "mixed"):
+            raise HTTPException(status_code=403, detail="Interview Loop has no chains for this track yet.")
 
         parent, follow_ups = await _select_chain(
             track=body.track,
-            difficulty=body.difficulty,
+            difficulty="mixed",
             user=current_user,
             focus_concepts=focus_concepts,
         )
@@ -1346,7 +1350,7 @@ async def start_session(
             user_id=user_id,
             mode=body.mode,
             track=body.track,
-            difficulty=body.difficulty,
+            difficulty=None,  # emergent — Interview Loop carries no single difficulty
             time_limit_s=time_limit_s,
             questions=selected,
             focus_fallback=False,

@@ -155,73 +155,64 @@ def test_tc134g_benchmark_and_custom_caps_are_independent():
 
 
 # ---------------------------------------------------------------------------
-# Interview Loop chain-availability gate (2026-06-14 fix)
-# Chains exist at medium/hard only, and not for every track. The access endpoint
-# must report chain-less difficulties as blocked, and /start must 403 them rather
-# than fail with a generic error. See docs/features/mock.md § Pre-flight access check
-# and docs/decisions/DECISIONS.md 2026-06-14.
+# Interview Loop: no user-chosen difficulty (2026-06-15). The chain difficulty is
+# emergent (parent → escalating follow-ups), so /start carries no difficulty, the
+# chain is drawn from the full track pool, and the session stores NULL difficulty.
+# Gating is track-level via access["mixed"]. See docs/features/mock.md § Interview
+# Loop and docs/decisions/DECISIONS.md 2026-06-15.
 # ---------------------------------------------------------------------------
 
 def _loop_access(client, track):
     return client.get("/api/mock/access", params={"track": track, "mode": "interview_loop"})
 
 
-def test_tc134h_loop_access_easy_blocked_no_chains_medium_open():
-    """Elite Interview Loop: easy → blocked (no_chains) — no track has easy chains; SQL medium/hard → open."""
+def test_tc134h_loop_access_mixed_is_track_level_gate():
+    """Elite Interview Loop: access['mixed'] is the track-level chain gate (sql has chains → can_start)."""
     with TestClient(app) as client:
         _make_user(client, plan="elite")
         access = _loop_access(client, "sql").json()["access"]
-    assert access["easy"]["can_start"] is False
-    assert access["easy"]["block_reason"] == "no_chains"
-    assert access["easy"]["block_copy"]  # non-empty, for the disabled-pill tooltip
-    assert access["medium"]["can_start"] is True
-    assert access["hard"]["can_start"] is True
+    assert access["mixed"]["can_start"] is True
 
 
-def test_tc134i_loop_access_respects_per_track_difficulty_gaps():
-    """ML Fundamentals has no medium chains (hard only); Python has no hard chains (medium only)."""
-    with TestClient(app) as client:
-        _make_user(client, plan="elite")
-        ml = _loop_access(client, "ml-fundamentals").json()["access"]
-        py = _loop_access(client, "python").json()["access"]
-    assert ml["medium"]["can_start"] is False and ml["medium"]["block_reason"] == "no_chains"
-    assert ml["hard"]["can_start"] is True
-    assert py["hard"]["can_start"] is False and py["hard"]["block_reason"] == "no_chains"
-    assert py["medium"]["can_start"] is True
-
-
-def test_tc134j_loop_access_non_elite_keeps_plan_lock_not_chain_note():
-    """Free must keep the Elite plan lock on every difficulty, never a chain-availability note."""
+def test_tc134i_loop_access_non_elite_plan_locked():
+    """Free cannot start Interview Loop at all (Elite-only plan gate) — track-level mixed entry."""
     with TestClient(app) as client:
         _make_user(client, plan="free")
         access = _loop_access(client, "sql").json()["access"]
-    for diff in ("easy", "medium", "hard", "mixed"):
-        assert access[diff]["can_start"] is False
-        assert access[diff]["block_reason"] == "plan_locked"
+    assert access["mixed"]["can_start"] is False
+    assert access["mixed"]["block_reason"] == "plan_locked"
 
 
-def test_tc134k_start_interview_loop_easy_returns_403_no_chains():
-    """/mock/start interview_loop + easy → 403 with a clear no-chains message (the reported bug)."""
+def test_tc134j_start_interview_loop_no_difficulty_succeeds_stores_null():
+    """Start with NO difficulty → 200; session difficulty stored NULL (emergent)."""
+    with TestClient(app) as client:
+        _make_user(client, plan="elite")
+        r = client.post("/api/mock/start", json={"mode": "interview_loop", "track": "sql"})
+    assert r.status_code in (200, 201)
+    body = r.json()
+    assert "session_id" in body
+    assert body.get("difficulty") is None
+    assert len(body["questions"]) >= 2  # parent + at least one follow-up
+
+
+def test_tc134k_start_interview_loop_ignores_provided_difficulty():
+    """A provided difficulty (even 'easy', which has no chains) is ignored — full pool used → 200, NULL stored."""
     with TestClient(app) as client:
         _make_user(client, plan="elite")
         r = client.post("/api/mock/start", json={
             "mode": "interview_loop", "track": "sql", "difficulty": "easy",
         })
-    assert r.status_code == 403
-    assert "no chains" in r.json()["error"].lower()
+    assert r.status_code in (200, 201)
+    assert r.json().get("difficulty") is None
 
 
-def test_tc134l_start_interview_loop_medium_succeeds():
-    """Happy path: Elite Interview Loop on a difficulty WITH chains starts a session (parent + follow-ups)."""
+def test_tc134l_start_interview_loop_python_succeeds_no_hard_non_issue():
+    """Python (medium parents → hard follow-ups, zero hard parents) starts fine without a difficulty."""
     with TestClient(app) as client:
         _make_user(client, plan="elite")
-        r = client.post("/api/mock/start", json={
-            "mode": "interview_loop", "track": "sql", "difficulty": "medium",
-        })
+        r = client.post("/api/mock/start", json={"mode": "interview_loop", "track": "python"})
     assert r.status_code in (200, 201)
-    body = r.json()
-    assert "session_id" in body
-    assert len(body["questions"]) >= 2  # parent + at least one follow-up
+    assert len(r.json()["questions"]) >= 2
 
 
 # ---------------------------------------------------------------------------
