@@ -8352,6 +8352,18 @@ select {
   color: #A6B0F7;
 }
 
+/* Mode cards: the selected state's solid accent border + green fill (--accent /
+   --accent-soft) reads as too loud on this green-dense dark hub. Calm it to a
+   neutral surface lift + a soft accent outline — selection stays obvious, the green
+   stops shouting. Hover brightens neutrally rather than flashing full green. */
+[data-theme="dark"] .mock-hub-page .mock-mode-card.selected {
+  border-color: rgba(67, 210, 124, 0.5);
+  background: var(--surface-card-alt);
+}
+[data-theme="dark"] .mock-hub-page .mock-mode-card:hover:not(.selected):not(:disabled) {
+  border-color: var(--border-strong);
+}
+
 /* Tier badges echo the tier language: Pro = green, Elite = teal (the premium
    end of the Elite green→teal gradient). Soft, label-weight. */
 [data-theme="dark"] .mock-hub-page .mock-mode-card-badge--pro {
