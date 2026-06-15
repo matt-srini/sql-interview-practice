@@ -137,6 +137,10 @@ export default function MockHub() {
   const [history, setHistory] = useState([]);
   const [historyLoading, setHistoryLoading] = useState(true);
 
+  // Transient note shown when selecting Interview Loop auto-switches off the Mixed
+  // track (Interview Loop is single-track). Cleared on the next mode/track change.
+  const [loopTrackSwitchNote, setLoopTrackSwitchNote] = useState(null);
+
   // Focus mode — Elite feature, but UI is shown to all (locked for non-Elite)
   const [focusMode, setFocusMode] = useState(false);
   const [focusConcepts, setFocusConcepts] = useState([]);
@@ -255,6 +259,24 @@ export default function MockHub() {
   }, [track, mode]);
 
   useEffect(() => { fetchAccess(); }, [fetchAccess]);
+
+  function handleSelectMode(key) {
+    setStartError(null);
+    setLoopTrackSwitchNote(null);
+    // Interview Loop is single-track. If Mixed is selected, move off it to a sensible
+    // single track (the role's first, else SQL) and explain the switch — no dead-end.
+    if (key === 'interview_loop' && track === 'mixed') {
+      const roleTracks = selectedRole
+        ? (MOCK_ROLES.find(r => r.id === selectedRole)?.tracks ?? []).filter(t => TRACK_SLUGS.includes(t))
+        : [];
+      const nextTrack = roleTracks[0] || 'sql';
+      setTrack(nextTrack);
+      setFocusMode(false);
+      setFocusConcepts([]);
+      setLoopTrackSwitchNote(`Interview Loop runs on one track — switched to ${TRACK_LABELS[nextTrack]}.`);
+    }
+    setMode(key);
+  }
 
   async function handleStart() {
     // Interview Loop gates on full-pool ("mixed") chain availability; other modes
@@ -439,11 +461,7 @@ export default function MockHub() {
                       card.disabled ? 'mock-mode-card-disabled' : '',
                       card.locked ? 'mock-mode-card-locked' : '',
                     ].filter(Boolean).join(' ')}
-                    onClick={() => {
-                      if (card.disabled) return;
-                      setMode(card.key);
-                      setStartError(null);
-                    }}
+                    onClick={() => { if (!card.disabled) handleSelectMode(card.key); }}
                     disabled={card.disabled}
                     title={card.locked ? card.lockedReason : undefined}
                   >
@@ -504,6 +522,9 @@ export default function MockHub() {
                       <span className="mock-drill-plan-chip">15 min / question</span>
                       <span className="mock-drill-plan-chip mock-drill-plan-chip-track">{TRACK_LABELS[track]}</span>
                     </div>
+                  )}
+                  {mode === 'interview_loop' && loopTrackSwitchNote && (
+                    <p className="mock-loop-switch-note">{loopTrackSwitchNote}</p>
                   )}
                   <p className="mock-drill-plan-copy">{setupDescriptor.description}</p>
                   {setupDescriptor.detailLines?.length > 0 && (
@@ -575,7 +596,7 @@ export default function MockHub() {
                         key={t}
                         type="button"
                         className={`mock-config-pill ${track === t ? 'active' : ''}`}
-                        onClick={() => { setTrack(t); setFocusMode(false); setFocusConcepts([]); setStartError(null); }}
+                        onClick={() => { setTrack(t); setFocusMode(false); setFocusConcepts([]); setStartError(null); setLoopTrackSwitchNote(null); }}
                       >
                         {TRACK_LABELS[t]}
                       </button>

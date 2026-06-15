@@ -360,3 +360,22 @@ describe('MockHub Interview Loop difficulty gating', () => {
     expect(screen.getByText(/completed every Interview Loop chain for this track/i)).toBeInTheDocument();
   });
 });
+
+describe('MockHub Interview Loop + Mixed track', () => {
+  it('keeps Interview Loop selectable on Mixed and auto-switches the track with an explanatory note', async () => {
+    renderHub({ mockPreset: { mode: 'custom', track: 'mixed' } });
+
+    // The Interview Loop mode card is NOT disabled on Mixed (it used to be, with no reason shown).
+    const loopCard = await screen.findByRole('button', { name: /Interview Loop/ });
+    expect(loopCard).not.toBeDisabled();
+
+    fireEvent.click(loopCard);
+
+    // Selecting it moved off Mixed to a single track (SQL, no role) and explains the switch.
+    await waitFor(() => {
+      expect(screen.getByText(/Interview Loop runs on one track — switched to SQL/i)).toBeInTheDocument();
+    });
+    // …and we're now in Interview Loop mode (no dead-end).
+    expect(screen.getByRole('button', { name: /Start Interview Loop/ })).toBeInTheDocument();
+  });
+});

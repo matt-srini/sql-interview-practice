@@ -8648,6 +8648,26 @@ select {
   padding: 0.45rem 0.7rem;
   margin: 0.5rem 0 0;
 }
+.mock-loop-switch-note {
+  /* "Switched off Mixed for Interview Loop" FYI — indigo (the loop accent), so it
+     reads as info, distinct from the gold "needs a role" nudge. Theme-aware below. */
+  align-self: flex-start;
+  width: max-content;
+  max-width: 100%;
+  margin: 0.1rem 0 0;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #3d4ed7;
+  background: rgba(91, 106, 240, 0.1);
+  border: 1px solid rgba(91, 106, 240, 0.22);
+  border-radius: var(--radius-sm);
+  padding: 0.4rem 0.65rem;
+}
+[data-theme="dark"] .mock-hub-page .mock-loop-switch-note {
+  color: #A6B0F7;
+  background: rgba(91, 106, 240, 0.16);
+  border-color: rgba(91, 106, 240, 0.28);
+}
 .mock-loop-dimension-breakdown {
   display: flex;
   flex-direction: column;

@@ -197,7 +197,9 @@ export function getMockModeCards(track, plan = 'free') {
     label: 'Interview Loop',
     sublabel: isElite ? 'Chain of follow-ups' : 'Elite only',
     desc: 'One iterative chain — the interviewer digs deeper after each answer.',
-    disabled: track === 'mixed',
+    // Never disabled for Mixed — selecting it auto-switches the track to a single
+    // track (Interview Loop is single-track). Handled in MockHub's mode handler.
+    disabled: false,
     locked: !isElite,
     lockedReason: isElite ? null : 'Interview Loop requires an Elite plan.',
     requiredTier: 'elite',

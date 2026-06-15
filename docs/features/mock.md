@@ -20,7 +20,7 @@ datathink's mock layer is a **benchmark, not a faster version of practice**. Eve
 
 **Legacy sessions** with mode `30min` (Sprint drill) and `60min` are read-only in history — they cannot be started new. Mode labels are normalized in the UI: `30min` → "Sprint drill", `60min` → "Full (legacy)", `custom` → "Custom drill", `benchmark` → "Benchmark", `interview_loop` → "Interview Loop".
 
-Benchmark is fixed-shape per track. Mixed track benchmark and custom drill both require role selection (see [Mixed Benchmark Blueprints](#mixed-benchmark-blueprints-role-based) below). Interview Loop is not available on the Mixed track — chains are single-track by definition.
+Benchmark is fixed-shape per track. Mixed track benchmark and custom drill both require role selection (see [Mixed Benchmark Blueprints](#mixed-benchmark-blueprints-role-based) below). Interview Loop is single-track (chains are single-track by definition); selecting it while Mixed is chosen **auto-switches** to a single track rather than blocking (see [Interview Loop § Eligibility](#eligibility)).
 
 Benchmark blueprints:
 
@@ -297,7 +297,7 @@ This mode simulates the real interview shape — interviewers don't ask 5 unrela
 
 - **Plan:** Elite only. Free/Pro see "Unlock with Elite" copy on the Interview Loop mode card; cannot start a session.
 - **Content:** Only parents with `follow_ups[]` length ≥ 1 are eligible.
-- **Track:** Any single track. Mixed is not available (chains are single-track by definition).
+- **Track:** Any single track. Mixed is not supported (chains are single-track by definition). The Interview Loop mode card is **not disabled** on Mixed — selecting it **auto-switches** the track to a single track (the selected role's first, else SQL) and shows an indigo note explaining the switch (e.g. *"Interview Loop runs on one track — switched to SQL."*), so there's no unexplained dead-end.
 - **Difficulty:** **None — Interview Loop has no difficulty selector.** Its difficulty is *emergent*: the chain is drawn from the track's **full** chain pool and escalates through its follow-ups (e.g. Python chains are a medium parent → hard follow-up). Per-question difficulty is shown in-session; the session itself stores **no** difficulty (`mock_sessions.difficulty` is `NULL` for loops), and history/dashboard show no difficulty badge for loop rows. No analytics surface groups by difficulty, so nothing is lost. *(Replaced an earlier per-difficulty selector — see [DECISIONS 2026-06-15](../decisions/DECISIONS.md).)*
 - **Atomicity:** all chain atomicity rules apply. Each session consumes 1 full chain; once consumed, it's gone from that user's pool.
 

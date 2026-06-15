@@ -35,6 +35,12 @@ Keep entries to 4–6 lines. Friction kills logs; if it's longer than the change
 
 ## Entries
 
+## 2026-06-15 — Interview Loop on Mixed auto-switches the track (not a silent disabled card)
+**Area:** mock · frontend · **Status:** accepted
+**Decision:** Interview Loop is single-track, so it's incompatible with the Mixed track. Previously the Interview Loop mode card just went `disabled` (not-allowed cursor) with **no explanation** — users didn't know why they couldn't pick it. Now the card stays enabled; selecting it while Mixed is active **auto-switches** the track to a single track (the selected role's first, else SQL) and shows an indigo note ("Interview Loop runs on one track — switched to SQL."). Latest explicit click wins, with a visible reason — no dead-end.
+**Rejected:** (a) Keep it disabled but add a "single-track only" tooltip/sub-line — transparent, but still a manual two-step dead-end (user picked by the product owner over this). (b) Gate the "Mixed" track pill when Loop is the mode — a bigger mode-first interaction change. Note the reverse path (clicking the Mixed pill *while on* Loop) still flips mode→Custom via the existing effect, so the conflict never persists either way.
+**Affects:** frontend/src/mockModeConfig.js (loop card `disabled: false`), frontend/src/pages/MockHub.js (`handleSelectMode` + note), frontend/src/App.css (`.mock-loop-switch-note`), docs/features/mock.md
+
 ## 2026-06-15 — Mock "Run Code" gets its own session-scoped endpoint (not the practice run path)
 **Area:** mock · backend · frontend · **Status:** accepted
 **Decision:** Added `POST /api/mock/:id/run` and pointed MockSession's "Run Code" at it. The mock run gate is **session membership** (the question must be in the user's active session), not the practice unlock state. Fixes a bug where running code in a mock session 403'd *"Question is locked for your current plan or progress"* — because mock reused the practice `/{track}/run-code` endpoint, whose unlock check treats mock-only questions (every Interview Loop chain) as locked. The new endpoint reuses the same run functions (`run_query` / `run_python_code` / `run_pandas_code_checked`), so output is identical (public test cases + stdout, no solution, no progress); it mirrors the existing `/{session_id}/submit` structure. Run is callable repeatedly; Submit stays one-shot (documented contract, unchanged).
