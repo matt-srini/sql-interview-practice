@@ -110,14 +110,6 @@ export default function MockHub() {
   const isElite = normalisedPlan === 'elite';
   const isPro = normalisedPlan === 'pro';
   const isPaying = isPro || isElite;
-  const planLabel =
-    rawPlan === 'lifetime_elite' ? 'Lifetime Elite' :
-    rawPlan === 'lifetime_pro'   ? 'Lifetime Pro'   :
-    normalisedPlan === 'elite'   ? 'Elite'           :
-    normalisedPlan === 'pro'     ? 'Pro'             : null;
-  const planPillNode = user && isPaying && planLabel
-    ? <span className={`shell-pill shell-pill-plan shell-pill-plan-${normalisedPlan}`}>{planLabel}</span>
-    : null;
 
   // Role filter — persisted in localStorage. Map legacy IDs to current ones.
   const [selectedRole, setSelectedRole] = useState(() => {
@@ -381,7 +373,7 @@ export default function MockHub() {
         <meta name="description" content="Set your baseline with benchmarks, then use drills to improve weak areas across SQL, Python, Pandas, PySpark, and reasoning tracks." />
         <meta name="robots" content="noindex" />
       </Helmet>
-      <Topbar active="mock" userExtras={planPillNode} />
+      <Topbar active="mock" />
 
       {activeSessionConflict && (
         <div className="mock-modal-overlay" onClick={() => setActiveSessionConflict(null)}>

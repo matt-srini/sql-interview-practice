@@ -128,14 +128,6 @@ export default function ProgressDashboard() {
   const normalisedPlan = rawPlan.startsWith('lifetime_') ? rawPlan.replace('lifetime_', '') : rawPlan;
   const isPaying = normalisedPlan === 'pro' || normalisedPlan === 'elite';
   const isElite = normalisedPlan === 'elite';
-  const planLabel =
-    rawPlan === 'lifetime_elite' ? 'Lifetime Elite' :
-    rawPlan === 'lifetime_pro'   ? 'Lifetime Pro'   :
-    normalisedPlan === 'elite'   ? 'Elite'           :
-    normalisedPlan === 'pro'     ? 'Pro'             : null;
-  const planPillNode = user && isPaying && planLabel
-    ? <span className={`shell-pill shell-pill-plan shell-pill-plan-${normalisedPlan}`}>{planLabel}</span>
-    : null;
 
   const catalogCounts = useCatalogCounts();
   const [data, setData] = useState(null);
@@ -199,7 +191,7 @@ export default function ProgressDashboard() {
         <meta name="description" content="Track your interview practice progress, streaks, and coaching insights." />
         <meta name="robots" content="noindex" />
       </Helmet>
-      <Topbar active="dashboard" userExtras={planPillNode} />
+      <Topbar active="dashboard" />
 
       <main className="container db-page">
 

@@ -127,8 +127,20 @@ export default function Topbar({
     window.scrollTo({ top: 0, behavior: 'auto' });
   };
 
+  // Plan pill — baked in for non-app variant so all landing-style pages stay consistent
+  const rawPlan = user?.plan ?? 'free';
+  const normPlan = rawPlan.startsWith('lifetime_') ? rawPlan.replace('lifetime_', '') : rawPlan;
+  const planLabel =
+    rawPlan === 'lifetime_elite' ? 'Lifetime Elite' :
+    rawPlan === 'lifetime_pro'   ? 'Lifetime Pro'   :
+    normPlan === 'elite'         ? 'Elite'           :
+    normPlan === 'pro'           ? 'Pro'             : null;
+  const builtInPlanPill = !isApp && user && planLabel
+    ? <span className={`shell-pill shell-pill-plan shell-pill-plan-${normPlan}`}>{planLabel}</span>
+    : null;
+
   // Show separator only when we have something on both sides of it
-  const hasRightOfSep = !!userExtras || !!user || (!user && showNav && !isMinimal);
+  const hasRightOfSep = !!builtInPlanPill || !!userExtras || !!user || (!user && showNav && !isMinimal);
   const showSep = (showNav || !!user) && hasRightOfSep;
 
   return (
@@ -246,6 +258,7 @@ export default function Topbar({
 
             {showSep && <div className="topbar-sep" aria-hidden="true" />}
 
+            {builtInPlanPill}
             {userExtras}
 
             {user && user.email ? (

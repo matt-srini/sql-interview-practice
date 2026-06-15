@@ -1323,7 +1323,6 @@ export default function LandingPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const userPlan = user?.plan ?? 'free';
-  const normPlan = userPlan.startsWith('lifetime_') ? userPlan.replace('lifetime_', '') : userPlan;
   const currency = detectCurrency();
 
   const [dashData, setDashData] = useState(null);
@@ -1336,18 +1335,6 @@ export default function LandingPage() {
     typeof window.matchMedia === 'function' &&
     window.matchMedia('(prefers-reduced-motion: reduce)').matches
   );
-
-  const planPillClass = `shell-pill shell-pill-plan shell-pill-plan-${normPlan}`;
-  const isPaying = normPlan === 'pro' || normPlan === 'elite';
-  const rawPlan = user?.plan ?? 'free';
-  const planLabel =
-    rawPlan === 'lifetime_elite' ? 'Lifetime Elite' :
-    rawPlan === 'lifetime_pro'   ? 'Lifetime Pro'   :
-    normPlan === 'elite'         ? 'Elite'           :
-    normPlan === 'pro'           ? 'Pro'             : null;
-  const planPillNode = user && isPaying && planLabel
-    ? <span className={planPillClass}>{planLabel}</span>
-    : null;
 
   useEffect(() => {
     if (!location.search.includes('upgraded=true')) return;
@@ -1409,7 +1396,7 @@ export default function LandingPage() {
         <link rel="canonical" href="https://datathink.co/" />
       </Helmet>
 
-      <Topbar userExtras={planPillNode} />
+      <Topbar />
 
       <main className="lp-page" id="landing-top">
         {upgradeSuccess && (
