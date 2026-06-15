@@ -35,6 +35,12 @@ Keep entries to 4–6 lines. Friction kills logs; if it's longer than the change
 
 ## Entries
 
+## 2026-06-15 — Mock "Run Code" gets its own session-scoped endpoint (not the practice run path)
+**Area:** mock · backend · frontend · **Status:** accepted
+**Decision:** Added `POST /api/mock/:id/run` and pointed MockSession's "Run Code" at it. The mock run gate is **session membership** (the question must be in the user's active session), not the practice unlock state. Fixes a bug where running code in a mock session 403'd *"Question is locked for your current plan or progress"* — because mock reused the practice `/{track}/run-code` endpoint, whose unlock check treats mock-only questions (every Interview Loop chain) as locked. The new endpoint reuses the same run functions (`run_query` / `run_python_code` / `run_pandas_code_checked`), so output is identical (public test cases + stdout, no solution, no progress); it mirrors the existing `/{session_id}/submit` structure. Run is callable repeatedly; Submit stays one-shot (documented contract, unchanged).
+**Rejected:** (a) Skipping the lock for `mock_only` questions in the four practice run endpoints — smaller, but couples "runnable" to a content flag and lets any caller run a mock-only qid; session membership is the correct gate. (b) Removing the unlock check from practice run entirely — changes practice behavior, out of scope.
+**Affects:** backend/routers/mock.py (`run_mock_code`, `_run_submission`), frontend/src/pages/MockSession.js, docs/features/mock.md (§ Active Session + Backend Endpoints), backend/tests/test_11_mock.py
+
 ## 2026-06-15 — Interview Loop drops the difficulty selector entirely (difficulty is emergent)
 **Area:** mock · gating · frontend · product · **Status:** accepted
 **Decision:** Removed difficulty from Interview Loop end-to-end: no difficulty selector in MockHub, no `difficulty` in the start payload, the chain is drawn from the track's **full** pool (`_chain_parents_for(track, "mixed")`), and the session stores `mock_sessions.difficulty = NULL`. Gating is **track-level** via `access.mixed` (Start disabled + "you've completed every chain for this track" when the pool is exhausted). History/dashboard show no difficulty badge for loop rows; per-question difficulty stays visible in-session. Rationale: Interview Loop *is* the escalating-follow-up chain — difficulty is intrinsic to the chain, not a user knob; the selector was the root of every dead-end (easy-everywhere, Python-no-hard, ML/Exp-no-medium) and the grey/caption machinery only treated the symptom.

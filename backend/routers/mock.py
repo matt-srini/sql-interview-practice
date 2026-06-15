@@ -46,11 +46,17 @@ from db import (
     submit_mock_question,
 )
 from deps import get_current_user
-from evaluator import evaluate
+from evaluator import evaluate, run_query
 from exceptions import BadRequestError
 from follow_up_dimensions import canonical_dimension
 from offload import run_blocking_exec, run_blocking_sql
-from python_evaluator import evaluate_python_code, evaluate_pandas_code
+import python_guard
+from python_evaluator import (
+    evaluate_python_code,
+    evaluate_pandas_code,
+    run_python_code,
+    run_pandas_code_checked,
+)
 from routers.insights import _CONCEPTS_LOOKUP, build_session_debrief
 from tracks import TRACKS, VALID_MOCK_ROLES, get_track, mixed_mock_slugs, role_tracks
 from unlock import compute_mock_access, compute_unlock_state, normalize_plan
@@ -130,6 +136,12 @@ class MockSubmitRequest(BaseModel):
     code: str | None = None
     selected_option: int | None = None  # PySpark MCQ
     time_spent_s: int | None = None
+
+
+class MockRunRequest(BaseModel):
+    question_id: int
+    track: str
+    code: str
 
 
 # ── Helpers ────────────────────────────────────────────────────────────────────
@@ -878,6 +890,36 @@ async def _evaluate_submission(
     return False, {"error": f"Unknown track: {track}"}
 
 
+async def _run_submission(track: str, question: dict, code: str) -> dict[str, Any]:
+    """
+    RUN (not grade) user code against the question's PUBLIC test cases — mirrors the
+    practice /{track}/run-code behavior (output + per-case results, never the solution,
+    no progress recorded). Used by the mock run endpoint so a code question can be tried
+    as many times as the user wants mid-session. Off-loops like grading (offload.*).
+    """
+    if not code or not code.strip():
+        return {"error": "No code provided"}
+    if track == "sql":
+        return await run_blocking_sql(run_query, code, question)
+    if track in ("python", "statistics"):
+        guard_errors = python_guard.validate_code(code, topic=track)
+        if guard_errors:
+            raise HTTPException(
+                status_code=400,
+                detail={"error": "Code contains disallowed constructs.", "guard_errors": guard_errors},
+            )
+        return await run_blocking_exec(run_python_code, code, question)
+    if track == "pandas":
+        guard_errors = python_guard.validate_code(code, topic="pandas")
+        if guard_errors:
+            raise HTTPException(
+                status_code=400,
+                detail={"error": "Code contains disallowed constructs.", "guard_errors": guard_errors},
+            )
+        return await run_blocking_exec(run_pandas_code_checked, code, question)
+    raise HTTPException(status_code=400, detail="Run is not supported for this track.")
+
+
 def _validate_non_empty_input(
     track: str,
     code: str | None,
@@ -1460,6 +1502,41 @@ async def get_session(
         })
 
     return {**session, "questions": enriched_questions}
+
+
+@router.post("/{session_id}/run")
+async def run_mock_code(
+    session_id: int,
+    body: MockRunRequest,
+    current_user: dict[str, Any] = Depends(get_current_user),
+) -> dict[str, Any]:
+    """
+    Run (not grade) a code answer mid-session. Unlike the practice `/{track}/run-code`
+    endpoint, the gate is **session membership**, not the practice unlock state — so
+    mock-only questions (every Interview Loop chain) run normally instead of 403'ing
+    as "locked". Reveals only public test cases + stdout, records no progress; run as
+    many times as you like (Submit stays one-shot — see `/{session_id}/submit`).
+    """
+    if body.track not in TRACK_TO_TOPIC:
+        raise HTTPException(status_code=400, detail=f"Invalid track: {body.track}")
+
+    session = await get_mock_session(session_id, current_user["id"])
+    if session is None:
+        raise HTTPException(status_code=404, detail="Session not found")
+    if session["status"] != "active":
+        raise HTTPException(status_code=400, detail="Session is not active")
+
+    # Membership IS the gate (replaces the practice unlock lock): the question must
+    # belong to this user's active session.
+    session_q_ids = {q["question_id"] for q in session.get("questions", [])}
+    if body.question_id not in session_q_ids:
+        raise HTTPException(status_code=400, detail="Question not part of this session")
+
+    question = _get_catalog_for_track(body.track).get_question(body.question_id)
+    if question is None:
+        raise HTTPException(status_code=404, detail="Question not found")
+
+    return await _run_submission(body.track, question, body.code)
 
 
 @router.post("/{session_id}/submit")

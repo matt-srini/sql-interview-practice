@@ -216,6 +216,38 @@ def test_tc134l_start_interview_loop_python_succeeds_no_hard_non_issue():
 
 
 # ---------------------------------------------------------------------------
+# Mock Run Code: gated on session membership, NOT the practice unlock state, so
+# mock-only questions (every Interview Loop chain) run instead of 403'ing "locked".
+# See docs/features/mock.md § Active Session and DECISIONS.md 2026-06-15.
+# ---------------------------------------------------------------------------
+
+def test_tc134m_mock_run_executes_mock_only_question_without_lock():
+    """Run Code on a mock-only Interview Loop question returns 200 (not the practice 403 lock)."""
+    with TestClient(app) as client:
+        _make_user(client, plan="elite")
+        start = client.post("/api/mock/start", json={"mode": "interview_loop", "track": "python"})
+        sess = start.json()
+        sid, qid = sess["session_id"], sess["questions"][0]["id"]
+        r = client.post(f"/api/mock/{sid}/run", json={
+            "question_id": qid, "track": "python", "code": "def solution(*a, **k):\n    return None",
+        })
+    assert r.status_code == 200, r.text  # the bug returned 403 "locked"
+    body = r.json()
+    assert isinstance(body, dict)
+    assert "locked" not in str(body.get("error", "")).lower()  # it actually executed
+
+
+def test_tc134n_mock_run_rejects_question_not_in_session():
+    """Membership is the gate: a question_id not in the session → 400 (no arbitrary execution)."""
+    with TestClient(app) as client:
+        _make_user(client, plan="elite")
+        start = client.post("/api/mock/start", json={"mode": "interview_loop", "track": "python"})
+        sid = start.json()["session_id"]
+        r = client.post(f"/api/mock/{sid}/run", json={"question_id": 999999, "track": "python", "code": "x = 1"})
+    assert r.status_code == 400
+
+
+# ---------------------------------------------------------------------------
 # HTTP session tests (TC-135 to TC-170)
 # ---------------------------------------------------------------------------
 

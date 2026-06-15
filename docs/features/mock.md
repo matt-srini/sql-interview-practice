@@ -437,7 +437,7 @@ Must accept `mode` query param in addition to `track`. Returns `weekly_benchmark
 - **Countdown timer** — colour-coded: normal → amber (<10 min) → red (<3 min). Browser tab title updates with remaining time.
 - **Auto-finish** when timer reaches 0.
 - **Question navigation** — numbered dot tabs, each shows solved/unsolved state.
-- **Run code** — SQL, Python, and Pandas support running code mid-session. PySpark and MCQ tracks do not.
+- **Run code** — SQL, Python, Pandas, and Statistics (numerical) support running code mid-session, **as many times as you like** before the one-shot submit. PySpark and MCQ tracks do not. Run goes to the **mock-scoped** `POST /api/mock/:id/run` (not the practice `/{track}/run-code`): it is gated on **session membership**, not the practice unlock state, so mock-only questions (every Interview Loop chain) run instead of returning a spurious "locked" error. It executes against **public** test cases only — no solution, no progress recorded.
 - **SQL schema viewer** — Description / Schema toggle in left panel.
 - **Hints and concept tags** visible on each question.
 - **Submit per question** — each question allows exactly one real submission. The submit button locks (`✗ Submitted` on wrong; `✓ Solved` on correct). No feedback or solutions mid-session. A second submit returns 409. Blank code or missing MCQ selection returns 422 without consuming the slot.
@@ -503,6 +503,7 @@ Shown after `POST /api/mock/:id/finish`:
 | GET | `/api/mock/analytics` | Required (Elite) | Aggregate analytics — benchmark/drill/loop summaries, trends, concept signals, per-dimension Loop performance |
 | POST | `/api/mock/start` | Required | Start a session. Body: `mode`, `track`, `difficulty` (required for benchmark/custom; **omitted/ignored for `interview_loop`** — its difficulty is emergent and stored `NULL`), `role` (required when `track="mixed"`), `num_questions` (custom only), `time_minutes` (custom only), `focus_concepts` (Elite). Returns 409 if active session exists (body: `session_id`, `track`, `difficulty`, `mode`). |
 | GET | `/api/mock/:id` | Required | Load/reload session state |
+| POST | `/api/mock/:id/run` | Required | Run (not grade) a code answer mid-session against **public** test cases. Body: `question_id`, `track`, `code`. Gated on **session membership** (not the practice unlock state), so mock-only questions run. No progress recorded; callable repeatedly. |
 | POST | `/api/mock/:id/submit` | Required | Submit one answer mid-session. Returns 409 if question already submitted. Returns 422 for blank input. |
 | POST | `/api/mock/:id/finish` | Required | End session — full summary with solutions and (Elite) debrief |
 | DELETE | `/api/mock/:id` | Required | Discard active session within 120 s. Returns 204. Returns 403 if too old or already completed. For Interview Loop: reclaims chain. For all modes: reverts quota counter. |

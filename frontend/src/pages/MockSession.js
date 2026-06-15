@@ -307,13 +307,10 @@ export default function MockSession() {
     setRunning(true);
     setRunResults(prev => ({ ...prev, [q.id]: null }));
     try {
-      const endpoint = track === 'sql'
-        ? '/run-query'
-        : `${meta.apiPrefix}/run-code`;
-      const payload = track === 'sql'
-        ? { query: getCode(q), question_id: q.id }
-        : { code: getCode(q), question_id: q.id };
-      const r = await api.post(endpoint, payload);
+      // Mock-scoped run: gated on session membership, NOT the practice unlock state,
+      // so mock-only questions (every Interview Loop chain) run instead of 403'ing.
+      // Same execution + result shape as the practice run endpoints (public cases + stdout).
+      const r = await api.post(`/mock/${id}/run`, { question_id: q.id, code: getCode(q), track });
       setRunResults(prev => ({ ...prev, [q.id]: normalizeRunResult(r.data) }));
       // Scroll results into view so user doesn't miss them (and can still see buttons above)
       requestAnimationFrame(() => {
