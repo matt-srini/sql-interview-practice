@@ -8952,6 +8952,9 @@ select {
   border-color: var(--border-strong);
   color: var(--text-primary);
 }
+.mock-config-pill:disabled {
+  cursor: not-allowed;
+}
 .mock-start-btn {
   width: 100%;
   padding: 0.875rem 1rem;

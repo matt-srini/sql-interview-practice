@@ -137,10 +137,6 @@ export default function MockHub() {
   const [history, setHistory] = useState([]);
   const [historyLoading, setHistoryLoading] = useState(true);
 
-  // Transient note shown when selecting Interview Loop auto-switches off the Mixed
-  // track (Interview Loop is single-track). Cleared on the next mode/track change.
-  const [loopTrackSwitchNote, setLoopTrackSwitchNote] = useState(null);
-
   // Focus mode — Elite feature, but UI is shown to all (locked for non-Elite)
   const [focusMode, setFocusMode] = useState(false);
   const [focusConcepts, setFocusConcepts] = useState([]);
@@ -176,13 +172,6 @@ export default function MockHub() {
   const showFirstRunFraming = !historyLoading && history.length === 0;
   const showBenchmarkEmptyFraming = !historyLoading && history.length > 0 && benchmarkHistory.length === 0;
   const showDrillEmptyFraming = !historyLoading && history.length > 0 && drillHistory.length === 0;
-
-  useEffect(() => {
-    // interview_loop does not support mixed track — fall back to custom
-    if (track === 'mixed' && mode === 'interview_loop') {
-      setMode('custom');
-    }
-  }, [track, mode]);
 
   useEffect(() => {
     const preset = location.state?.mockPreset;
@@ -262,21 +251,6 @@ export default function MockHub() {
 
   function handleSelectMode(key) {
     setStartError(null);
-    setLoopTrackSwitchNote(null);
-    // Interview Loop is single-track. If Mixed is selected, move off it to a sensible
-    // single track (the role's first, else SQL) and explain the switch — no dead-end.
-    if (key === 'interview_loop' && track === 'mixed') {
-      const roleTracks = selectedRole
-        ? (MOCK_ROLES.find(r => r.id === selectedRole)?.tracks ?? []).filter(t => TRACK_SLUGS.includes(t))
-        : [];
-      const nextTrack = roleTracks[0] || 'sql';
-      setTrack(nextTrack);
-      setFocusMode(false);
-      setFocusConcepts([]);
-      // State the constraint, not the switched-to track — the Track selector already
-      // shows the new single track, and naming it here just adds noise/confusion.
-      setLoopTrackSwitchNote("Interview Loop runs on one track — can't choose Mixed.");
-    }
     setMode(key);
   }
 
@@ -525,9 +499,6 @@ export default function MockHub() {
                       <span className="mock-drill-plan-chip mock-drill-plan-chip-track">{TRACK_LABELS[track]}</span>
                     </div>
                   )}
-                  {mode === 'interview_loop' && loopTrackSwitchNote && (
-                    <p className="mock-loop-switch-note">{loopTrackSwitchNote}</p>
-                  )}
                   <p className="mock-drill-plan-copy">{setupDescriptor.description}</p>
                   {setupDescriptor.detailLines?.length > 0 && (
                     <p className="mock-drill-plan-note">{setupDescriptor.detailLines[0]}</p>
@@ -593,16 +564,20 @@ export default function MockHub() {
                 <div className="mock-hub-config-row">
                   <span className="mock-hub-config-label">Track</span>
                   <div className="mock-config-pills">
-                    {filteredTracks.map(t => (
-                      <button
-                        key={t}
-                        type="button"
-                        className={`mock-config-pill ${track === t ? 'active' : ''}`}
-                        onClick={() => { setTrack(t); setFocusMode(false); setFocusConcepts([]); setStartError(null); setLoopTrackSwitchNote(null); }}
-                      >
-                        {TRACK_LABELS[t]}
-                      </button>
-                    ))}
+                    {filteredTracks.map(t => {
+                      const disabledForLoop = isLoop && t === 'mixed';
+                      return (
+                        <button
+                          key={t}
+                          type="button"
+                          className={`mock-config-pill ${track === t ? 'active' : ''} ${disabledForLoop ? 'mock-config-pill--blocked' : ''}`}
+                          disabled={disabledForLoop}
+                          onClick={() => { setTrack(t); setFocusMode(false); setFocusConcepts([]); setStartError(null); }}
+                        >
+                          {TRACK_LABELS[t]}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
 
