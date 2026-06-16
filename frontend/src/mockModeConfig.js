@@ -145,6 +145,7 @@ export function getMockModeDisplayLabel(mode) {
   if (mode === '60min') return 'Full (legacy)';
   // legacy label kept for history rendering
   if (mode === '30min') return 'Sprint drill';
+  if (mode === 'solo') return 'Benchmark';  // legacy/seed-only mode — render a clean badge for old data
   return mode;
 }
 

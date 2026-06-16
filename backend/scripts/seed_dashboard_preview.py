@@ -267,17 +267,17 @@ async def seed_elite(conn) -> None:
     # Mock sessions (few rows — execute individually)
     mock1_id = await conn.fetchval(
         """INSERT INTO mock_sessions (user_id, mode, track, difficulty, status, started_at, ended_at, time_limit_s)
-           VALUES ($1::uuid, 'solo', 'sql', 'hard', 'completed', $2, $3, 1800) RETURNING id""",
+           VALUES ($1::uuid, 'benchmark', 'sql', 'hard', 'completed', $2, $3, 1800) RETURNING id""",
         uid, _days_ago(8), _days_ago(8) + timedelta(minutes=28),
     )
     mock2_id = await conn.fetchval(
         """INSERT INTO mock_sessions (user_id, mode, track, difficulty, status, started_at, ended_at, time_limit_s)
-           VALUES ($1::uuid, 'solo', 'python', 'medium', 'completed', $2, $3, 1800) RETURNING id""",
+           VALUES ($1::uuid, 'benchmark', 'python', 'medium', 'completed', $2, $3, 1800) RETURNING id""",
         uid, _days_ago(5), _days_ago(5) + timedelta(minutes=22),
     )
     mock3_id = await conn.fetchval(
         """INSERT INTO mock_sessions (user_id, mode, track, difficulty, status, started_at, ended_at, time_limit_s)
-           VALUES ($1::uuid, 'solo', 'sql', 'medium', 'completed', $2, $3, 1800) RETURNING id""",
+           VALUES ($1::uuid, 'benchmark', 'sql', 'medium', 'completed', $2, $3, 1800) RETURNING id""",
         uid, _days_ago(2), _days_ago(2) + timedelta(minutes=18),
     )
 
@@ -630,17 +630,17 @@ async def seed_elite(conn) -> None:
     # Mock sessions — 3 completed
     mock1_id = await conn.fetchval(
         """INSERT INTO mock_sessions (user_id, mode, track, difficulty, status, started_at, ended_at, time_limit_s)
-           VALUES ($1::uuid, 'solo', 'sql', 'hard', 'completed', $2, $3, 1800) RETURNING id""",
+           VALUES ($1::uuid, 'benchmark', 'sql', 'hard', 'completed', $2, $3, 1800) RETURNING id""",
         uid, _days_ago(8), _days_ago(8) + timedelta(minutes=28)
     )
     mock2_id = await conn.fetchval(
         """INSERT INTO mock_sessions (user_id, mode, track, difficulty, status, started_at, ended_at, time_limit_s)
-           VALUES ($1::uuid, 'solo', 'python', 'medium', 'completed', $2, $3, 1800) RETURNING id""",
+           VALUES ($1::uuid, 'benchmark', 'python', 'medium', 'completed', $2, $3, 1800) RETURNING id""",
         uid, _days_ago(5), _days_ago(5) + timedelta(minutes=22)
     )
     mock3_id = await conn.fetchval(
         """INSERT INTO mock_sessions (user_id, mode, track, difficulty, status, started_at, ended_at, time_limit_s)
-           VALUES ($1::uuid, 'solo', 'sql', 'medium', 'completed', $2, $3, 1800) RETURNING id""",
+           VALUES ($1::uuid, 'benchmark', 'sql', 'medium', 'completed', $2, $3, 1800) RETURNING id""",
         uid, _days_ago(2), _days_ago(2) + timedelta(minutes=18)
     )
 
