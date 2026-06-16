@@ -26,6 +26,7 @@
     --border-subtle:rgba(20,41,27,0.08); --border-strong:rgba(20,41,27,0.16);
     --text-strong:#14291B; --text-primary:#1D3526; --text-secondary:#4B6858; --text-muted:#7A9485; --text-soft:#A8BDB4;
     --accent:#166534; --accent-strong:#0F4F26; --accent-soft:rgba(22,101,52,0.08); --accent-soft-strong:rgba(22,101,52,0.18); --on-accent:#FFFFFF;
+    --cta-bg:#166534; --cta-fg:#FFFFFF;
     --success:#15803D; --success-soft:rgba(21,128,61,0.10); --success-text:#14532D;
     --warning:#C47F17; --warning-soft:rgba(196,127,23,0.10); --warning-text:#7A4A0A;
     --danger:#D94F3D; --danger-soft:rgba(217,79,61,0.10); --danger-text:#7A1A12;
@@ -37,7 +38,8 @@
     --surface-card-soft:#1B1C1F; --surface-highlight:#282A2E;
     --border-subtle:rgba(228,231,235,0.08); --border-strong:rgba(228,231,235,0.14);
     --text-strong:#ECEEF0; --text-primary:#CDD1D6; --text-secondary:#9BA1A9; --text-muted:#6E747D; --text-soft:#474C54;
-    --accent:#43D27C; --accent-strong:#5BDD90; --accent-soft:rgba(67,210,124,0.12); --accent-soft-strong:rgba(67,210,124,0.22); --on-accent:#0A1F12;
+    --accent:#4CBD83; --accent-strong:#64C995; --accent-soft:rgba(76,189,131,0.12); --accent-soft-strong:rgba(76,189,131,0.22); --on-accent:#0A1F12;
+    --cta-bg:#1C8A4F; --cta-fg:#FFFFFF;
     --success:#4CAF82; --success-soft:rgba(76,175,130,0.12); --success-text:#8BD2B0;
     --warning:#D4973A; --warning-soft:rgba(212,151,58,0.12); --warning-text:#E2BD79;
     --danger:#E06B5A; --danger-soft:rgba(224,107,90,0.12); --danger-text:#F0B8B1;
@@ -50,9 +52,23 @@
     --border-subtle:rgba(200,224,205,0.09); --border-strong:rgba(200,224,205,0.15);
     --text-strong:#E8EDE6; --text-primary:#C6D0C7; --text-secondary:#8F9C91; --text-muted:#69756B; --text-soft:#465048;
     --accent:#3DBE76; --accent-strong:#54CB85; --accent-soft:rgba(61,190,118,0.12); --accent-soft-strong:rgba(61,190,118,0.22); --on-accent:#08130C;
+    --cta-bg:#1C8A4F; --cta-fg:#FFFFFF;
     --success:#4CB585; --success-soft:rgba(76,181,133,0.13); --success-text:#8BD2B0;
     --warning:#D4973A; --warning-soft:rgba(212,151,58,0.13); --warning-text:#E2BD79;
     --danger:#E06B5A; --danger-soft:rgba(224,107,90,0.13); --danger-text:#F0B8B1;
+    --info-soft:rgba(91,106,240,0.18); --info-text:#9DB0F2;
+  }
+
+  .theme-darkblind{
+    --bg-page:#0D1912; --surface-canvas:#15241B; --surface-card:#15241B; --surface-card-alt:#1D2D23;
+    --surface-card-soft:#111E16; --surface-highlight:#27382D;
+    --border-subtle:rgba(210,226,216,0.10); --border-strong:rgba(210,226,216,0.17);
+    --text-strong:#E8EDEA; --text-primary:#CCD6D0; --text-secondary:#95AC9E; --text-muted:#698674; --text-soft:#4B5D52;
+    --accent:#3BCE71; --accent-strong:#5AD888; --accent-soft:rgba(59,206,113,0.13); --accent-soft-strong:rgba(59,206,113,0.24); --on-accent:#06140B;
+    --cta-bg:#1C8A4F; --cta-fg:#FFFFFF;
+    --success:#51D683; --success-soft:rgba(81,214,131,0.14); --success-text:#9FE3B8;
+    --warning:#DAAA62; --warning-soft:rgba(218,170,98,0.14); --warning-text:#E7C58C;
+    --danger:#DE7F73; --danger-soft:rgba(222,127,115,0.14); --danger-text:#F0B4AC;
     --info-soft:rgba(91,106,240,0.18); --info-text:#9DB0F2;
   }
 
@@ -61,7 +77,7 @@
     background: #C9CBC9;
     color: #1c1c1c;
     font-family: var(--ui-font);
-    min-width: 1760px;
+    min-width: 1180px;
   }
 
   .page-head {
@@ -153,8 +169,10 @@
 
   .grid3 {
     display: grid;
-    grid-template-columns: repeat(3, minmax(520px, 560px));
+    grid-template-columns: repeat(2, minmax(540px, 1fr));
     gap: 22px;
+    max-width: 1500px;
+    margin-inline: auto;
   }
 
   /* ─── Section wrapper ──────────────────────────────────────────── */
@@ -211,8 +229,8 @@
   }
 
   .mk-btn-primary {
-    background: var(--accent);
-    color: var(--on-accent);
+    background: var(--cta-bg);
+    color: var(--cta-fg);
     border: none;
     border-radius: 10px;
     padding: 8px 14px;
@@ -647,6 +665,31 @@
     color: var(--text-secondary);
     margin: 8px 0 4px;
   }
+
+  /* ─── Toggle buttons ───────────────────────────────────────────── */
+  .toggle-btn {
+    padding: 7px 14px;
+    border-radius: 999px;
+    border: 1px solid rgba(0,0,0,0.25);
+    background: #dfe1df;
+    color: #1c1c1c;
+    font-size: 13px;
+    cursor: pointer;
+    font-family: var(--ui-font);
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+  }
+  .toggle-btn.active {
+    background: #1c1c1c;
+    color: #fff;
+    border-color: #1c1c1c;
+  }
+
+  /* swatch-trio: an inline flex container that inherits CSS vars from its theme class */
+  .swatch-trio {
+    display: inline-flex;
+    gap: 4px;
+    align-items: center;
+  }
 </style>
 </head>
 <body>
@@ -654,47 +697,42 @@
 <div class="page-head">
   <h1>datathink — dark mode color audit</h1>
   <p class="page-legend">
-    Three columns per section, left to right:
-    <strong>Current Light</strong> (forest-ink monochrome — warm greens, the praised mode),
-    <strong>Current Dark</strong> (neutral charcoal <code>#121315</code> with a green accent — the current production dark theme), and
-    <strong>Proposed Dark</strong> (re-based on the green axis, same family as the editor).
-    The code editor background <code>#0F2218</code> is <strong>byte-for-byte identical in every column</strong> — same hex, same syntax colors, same markup.
-    In Light and Proposed it sits inside surfaces that share its green DNA, so it reads as part of one continuous family.
-    In Current Dark it floats as a warm-green island inside a cool neutral-grey room.
-    The proposed token values are a starting direction for review, not final production tokens.
+    Two themes at a time — <strong>light is always on the left</strong>. Use the buttons to swap the right column between the
+    <strong>current dark</strong> (neutral charcoal), the <strong>proposed dark</strong> (a conservative re-hue of the current),
+    and the <strong>blind dark</strong> (a clean-room theme derived purely from the light tokens, with the current dark deliberately ignored).
+    The code editor <code>#0F2218</code> is identical in every theme.
   </p>
 </div>
 
 <div class="sticky-cols">
-  <div class="grid3">
-    <div class="col-label theme-light">
-      <div class="col-label-name">Current · Light</div>
-      <div class="col-label-desc">Forest-ink — the praised mode</div>
-      <div class="col-swatches">
-        <div class="col-swatch swatch-bg"></div>
-        <div class="col-swatch swatch-card"></div>
-        <div class="col-swatch swatch-acc"></div>
-        <span style="font-size:11px;color:#555;margin-left:4px;">page · card · accent</span>
-      </div>
+  <div style="max-width:1500px;margin-inline:auto;">
+    <div style="display:flex;justify-content:center;gap:8px;margin-bottom:10px;">
+      <button class="toggle-btn active" onclick="setDark('darkcur')">Light vs Current dark</button>
+      <button class="toggle-btn" onclick="setDark('darkpro')">Light vs Proposed dark</button>
+      <button class="toggle-btn" onclick="setDark('darkblind')">Light vs Blind dark</button>
     </div>
-    <div class="col-label theme-darkcur">
-      <div class="col-label-name">Current · Dark</div>
-      <div class="col-label-desc">Neutral charcoal + green accent</div>
-      <div class="col-swatches">
-        <div class="col-swatch swatch-bg"></div>
-        <div class="col-swatch swatch-card"></div>
-        <div class="col-swatch swatch-acc"></div>
-        <span style="font-size:11px;color:#888;margin-left:4px;">page · card · accent</span>
+    <div class="grid3" style="margin-inline:auto;">
+      <div class="col-label theme-light">
+        <div class="col-label-name">Current · Light</div>
+        <div class="col-label-desc">forest-ink — the praised mode</div>
+        <div class="col-swatches">
+          <div class="col-swatch swatch-bg"></div>
+          <div class="col-swatch swatch-card"></div>
+          <div class="col-swatch swatch-acc"></div>
+          <span style="font-size:11px;color:#555;margin-left:4px;">page · card · accent</span>
+        </div>
       </div>
-    </div>
-    <div class="col-label theme-darkpro">
-      <div class="col-label-name">Proposed · Dark</div>
-      <div class="col-label-desc">Re-based on the editor's green axis</div>
-      <div class="col-swatches">
-        <div class="col-swatch swatch-bg"></div>
-        <div class="col-swatch swatch-card"></div>
-        <div class="col-swatch swatch-acc"></div>
-        <span style="font-size:11px;color:#777;margin-left:4px;">page · card · accent</span>
+      <div class="col-label theme-darkcur" id="right-label">
+        <div class="col-label-name" id="right-label-name">Current · Dark</div>
+        <div class="col-label-desc" id="right-label-desc">neutral charcoal + green accent</div>
+        <div class="col-swatches">
+          <div class="swatch-trio theme-darkcur" id="right-swatch">
+            <div class="col-swatch swatch-bg"></div>
+            <div class="col-swatch swatch-card"></div>
+            <div class="col-swatch swatch-acc"></div>
+          </div>
+          <span style="font-size:11px;color:#888;margin-left:4px;">page · card · accent</span>
+        </div>
       </div>
     </div>
   </div>
@@ -736,7 +774,7 @@ const SECTIONS = [
   {
     id: 'landing',
     title: 'Landing — hero',
-    caption: `The forest IDE (<code>#0F2218</code>) is constant — watch how it relates to the page behind it in each theme. In Light and Proposed, the editor's dark green sits at the end of a continuous tonal ramp. In Current Dark, it reads as a warm island in a cool-grey room.`,
+    caption: `The forest IDE (<code>#0F2218</code>) is constant in every theme — only the page behind it changes. Toggle the right column: against Current dark's cool-grey it reads as a warm island; against Proposed and Blind it sits at the end of one continuous forest ramp.`,
     html: `
       <div class="mk-topbar">
         <div class="mk-wordmark">
@@ -1010,7 +1048,7 @@ const SECTIONS = [
   {
     id: 'question',
     title: 'Question workspace — sidebar · prompt · editor',
-    caption: `The punchline — the editor is identical in all three columns; only the chrome around it changes. In Light and Proposed it belongs to one continuous tonal family. In Current Dark it reads as a warm-green island in a cool-grey room. Also note the active sidebar item's <code>accent-soft</code> + <code>accent</code> left border, the schema token chips, and the question-form badge.`,
+    caption: `The punchline — the editor (<code>#0F2218</code>) is identical in every theme; only the chrome around it changes. Toggle the right column: in Current dark it's a warm-green island in a cool-grey room; in Proposed it blends in; in Blind it all but disappears into the page — one continuous forest family. Also note the active sidebar item's <code>accent-soft</code> + <code>accent</code> left border, the schema token chips, and the question-form badge.`,
     html: `
       <div class="mk-topbar mb-8">
         <div class="mk-wordmark">
@@ -1109,13 +1147,23 @@ const SECTIONS = [
 
 ];
 
-// ─── Render ────────────────────────────────────────────────────────────────
-const THEMES = [
-  { cls: 'theme-light',   label: 'Current · Light'   },
-  { cls: 'theme-darkcur', label: 'Current · Dark'    },
-  { cls: 'theme-darkpro', label: 'Proposed · Dark'   },
-];
+// ─── Dark theme registry ───────────────────────────────────────────────────
+const DARK_THEMES = {
+  darkcur: {
+    name: 'Current · Dark',
+    desc: 'neutral charcoal + calmer green',
+  },
+  darkpro: {
+    name: 'Proposed · Forest dark',
+    desc: 'conservative re-hue of the current dark',
+  },
+  darkblind: {
+    name: 'Blind · derived from light',
+    desc: 'clean-room inversion of the light tokens — current dark ignored',
+  },
+};
 
+// ─── Render ────────────────────────────────────────────────────────────────
 const container = document.getElementById('main-content');
 
 SECTIONS.forEach(section => {
@@ -1134,16 +1182,54 @@ SECTIONS.forEach(section => {
   const gridEl = document.createElement('div');
   gridEl.className = 'grid3';
 
-  THEMES.forEach(theme => {
-    const frame = document.createElement('div');
-    frame.className = `mk-frame ${theme.cls}`;
-    frame.innerHTML = section.html;
-    gridEl.appendChild(frame);
-  });
+  // Left: always light
+  const leftFrame = document.createElement('div');
+  leftFrame.className = 'mk-frame is-left theme-light';
+  leftFrame.innerHTML = section.html;
+  gridEl.appendChild(leftFrame);
+
+  // Right: dark theme (toggled via setDark)
+  const rightFrame = document.createElement('div');
+  rightFrame.className = 'mk-frame is-right theme-darkcur';
+  rightFrame.innerHTML = section.html;
+  gridEl.appendChild(rightFrame);
 
   sectionEl.appendChild(gridEl);
   container.appendChild(sectionEl);
 });
+
+// ─── Toggle logic ──────────────────────────────────────────────────────────
+function setDark(key) {
+  const meta = DARK_THEMES[key];
+  if (!meta) return;
+
+  // Update all right-column frames
+  document.querySelectorAll('.mk-frame.is-right').forEach(el => {
+    el.className = 'mk-frame is-right theme-' + key;
+  });
+
+  // Update sticky right label text
+  document.getElementById('right-label-name').textContent = meta.name;
+  document.getElementById('right-label-desc').textContent = meta.desc;
+
+  // Update sticky right label container class (for its own theming)
+  const labelEl = document.getElementById('right-label');
+  labelEl.className = 'col-label theme-' + key;
+
+  // Update swatch trio theme class
+  document.getElementById('right-swatch').className = 'swatch-trio theme-' + key;
+
+  // Update active button state
+  document.querySelectorAll('.toggle-btn').forEach(btn => {
+    btn.classList.remove('active');
+  });
+  const keys = Object.keys(DARK_THEMES);
+  const idx = keys.indexOf(key);
+  document.querySelectorAll('.toggle-btn')[idx].classList.add('active');
+}
+
+// Default: Light vs Current dark
+setDark('darkcur');
 </script>
 </body>
 </html>
