@@ -636,9 +636,7 @@ export default function MockSession() {
                 <div className="mock-session-summary-copy">{summaryDescriptor.summaryLine}</div>
               )}
             </div>
-            <div className="mock-summary-score" style={{
-              color: solvedCount > totalCount / 2 ? 'var(--success)' : 'var(--text-strong)',
-            }}>
+            <div className="mock-summary-score" style={{ color: 'var(--text-strong)' }}>
               {status === 'finishing'
                 ? 'Finishing…'
                 : comparisonCopy
