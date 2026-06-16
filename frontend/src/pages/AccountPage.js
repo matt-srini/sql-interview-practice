@@ -527,10 +527,6 @@ export default function AccountPage() {
   const normPlan = normalisePlan(authPlan);
   const isPaying = normPlan === 'pro' || normPlan === 'elite';
 
-  const planPillNode = isPaying
-    ? <span className={`shell-pill shell-pill-plan shell-pill-plan-${normPlan}`}>{PLAN_LABELS[authPlan] ?? authPlan}</span>
-    : null;
-
   // ── Profile state ────────────────────────────────────────────────────────
   const [nameEditing, setNameEditing] = useState(false);
   const [nameValue, setNameValue] = useState('');
@@ -638,7 +634,7 @@ export default function AccountPage() {
       <Helmet>
         <title>Account — datathink</title>
       </Helmet>
-      <Topbar userExtras={planPillNode} />
+      <Topbar />
 
       <main className="container" style={{ maxWidth: 680, padding: '3rem 1.5rem 4rem' }}>
         <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-strong)', margin: '0 0 1.5rem' }}>
