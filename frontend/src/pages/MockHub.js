@@ -137,6 +137,8 @@ export default function MockHub() {
   const [history, setHistory] = useState([]);
   const [historyLoading, setHistoryLoading] = useState(true);
 
+  const [trackNote, setTrackNote] = useState(null);
+
   // Focus mode — Elite feature, but UI is shown to all (locked for non-Elite)
   const [focusMode, setFocusMode] = useState(false);
   const [focusConcepts, setFocusConcepts] = useState([]);
@@ -251,6 +253,7 @@ export default function MockHub() {
 
   function handleSelectMode(key) {
     setStartError(null);
+    setTrackNote(null);
     setMode(key);
   }
 
@@ -565,14 +568,25 @@ export default function MockHub() {
                   <span className="mock-hub-config-label">Track</span>
                   <div className="mock-config-pills">
                     {filteredTracks.map(t => {
-                      const disabledForLoop = isLoop && t === 'mixed';
+                      const blockedForLoop = isLoop && t === 'mixed';
+                      const blockedForRole = !isLoop && t === 'mixed' && !selectedRole;
+                      const isBlocked = blockedForLoop || blockedForRole;
                       return (
                         <button
                           key={t}
                           type="button"
-                          className={`mock-config-pill ${track === t ? 'active' : ''} ${disabledForLoop ? 'mock-config-pill--blocked' : ''}`}
-                          disabled={disabledForLoop}
-                          onClick={() => { setTrack(t); setFocusMode(false); setFocusConcepts([]); setStartError(null); }}
+                          className={`mock-config-pill ${track === t && !blockedForLoop ? 'active' : ''} ${isBlocked ? 'mock-config-pill--blocked' : ''}`}
+                          onClick={() => {
+                            if (blockedForLoop) {
+                              setTrackNote("Interview Loop runs on one track — can't choose Mixed.");
+                              return;
+                            }
+                            setTrackNote(null);
+                            setTrack(t);
+                            setFocusMode(false);
+                            setFocusConcepts([]);
+                            setStartError(null);
+                          }}
                         >
                           {TRACK_LABELS[t]}
                         </button>
@@ -580,6 +594,7 @@ export default function MockHub() {
                     })}
                   </div>
                 </div>
+                {trackNote && <p className="mock-loop-switch-note">{trackNote}</p>}
 
                 {/* Difficulty — not shown for Interview Loop: its difficulty is
                     emergent (the chain escalates), not a user-chosen knob. */}
