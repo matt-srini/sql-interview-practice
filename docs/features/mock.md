@@ -178,6 +178,9 @@ Plan-tier rules must be visible to the user, not buried in account settings. Req
 - **Interview Loop mode card** — Elite badge; Free/Pro users see an "Unlock with Elite" overlay.
 - **Chain indicator** — when a follow-up question loads in Interview Loop, a pivot card shows the `follow_up_dimension` label so the user understands the interviewer pivot framing is intentional.
 - **Role selector** — appears on MockHub when Mixed track is selected (both benchmark and custom drill). Required before Start is active.
+- **Focus mode** (Elite) — non-Elite users see a greyed-but-clickable card; clicking reveals "Focus mode is an Elite feature." + an Unlock-with-Elite CTA. The 1–3 concept cap follows the same rule: the extra pills grey but stay clickable, and a click past the cap shows "You can focus on up to 3 concepts at a time."
+
+**Gating convention (one pattern, everywhere).** Every gated control on MockHub is **greyed but stays clickable** and **surfaces its reason on interaction** — never a hard-`disabled`/hidden dead-end. This covers the mode cards (plan locks), the Mixed track pill (role required / single-track for Interview Loop), the difficulty pills (plan locks), and Focus mode (Elite lock + concept cap). Rationale and the rejected alternatives (hard-disable, hide) are in [DECISIONS 2026-06-16](../decisions/DECISIONS.md).
 
 ---
 

@@ -391,3 +391,38 @@ describe('MockHub Interview Loop + Mixed track', () => {
     expect(briefKeys).not.toContain('Questions');
   });
 });
+
+// Every gate on the hub follows ONE convention: grey + clickable + a clear message
+// on interaction (never a hard-disabled control). These cover the two focus-mode gates.
+describe('MockHub gating consistency — focus mode', () => {
+  it('Focus mode Elite gate: greyed but clickable, reveals the message + upgrade on click (no dead checkbox)', async () => {
+    mockUseAuth.mockReturnValue({ user: { id: 'u1', plan: 'pro', email: 'p@p.com', name: 'Pro' } });
+    renderHub({ mockPreset: { mode: 'custom', track: 'sql' } });
+
+    const lockBtn = await screen.findByRole('button', { name: /Focus mode/ });
+    expect(lockBtn).not.toBeDisabled();                       // clickable, not a dead control
+    expect(screen.queryByText(/Focus mode is an Elite feature/i)).not.toBeInTheDocument();
+
+    fireEvent.click(lockBtn);                                 // message appears on interaction
+    expect(await screen.findByText(/Focus mode is an Elite feature/i)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Unlock with Elite/i })).toBeInTheDocument();
+  });
+
+  it('Focus concept cap: a 4th pill stays clickable and surfaces the cap note (no hard-disable)', async () => {
+    renderHub({ mockPreset: { mode: 'custom', track: 'sql' } });        // default plan = elite
+
+    fireEvent.click(await screen.findByRole('checkbox', { name: /Focus mode/i }));
+    const pills = [...document.querySelectorAll('.mock-focus-concept-pill')];
+    expect(pills.length).toBeGreaterThan(3);
+
+    fireEvent.click(pills[0]); fireEvent.click(pills[1]); fireEvent.click(pills[2]);
+    const fourth = pills[3];
+    expect(fourth).not.toBeDisabled();                        // greyed, but still clickable
+    expect(fourth.className).toMatch(/blocked/);
+
+    fireEvent.click(fourth);
+    expect(await screen.findByText(/up to 3 concepts/i)).toBeInTheDocument();
+    // …and clicking past the cap did NOT select a 4th.
+    expect(document.querySelectorAll('.mock-focus-concept-pill.selected').length).toBe(3);
+  });
+});

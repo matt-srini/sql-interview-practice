@@ -138,6 +138,11 @@ export default function MockHub() {
   const [historyLoading, setHistoryLoading] = useState(true);
 
   const [trackNote, setTrackNote] = useState(null);
+  // Gating notes — surfaced on click, never as a hard-disable (the platform's
+  // gating convention: grey + clickable + a clear message). focusLockNote: the
+  // Elite gate on Focus mode; focusLimitNote: the 1–3 concept cap.
+  const [focusLockNote, setFocusLockNote] = useState(false);
+  const [focusLimitNote, setFocusLimitNote] = useState(null);
 
   // Focus mode — Elite feature, but UI is shown to all (locked for non-Elite)
   const [focusMode, setFocusMode] = useState(false);
@@ -585,6 +590,8 @@ export default function MockHub() {
                             setTrack(t);
                             setFocusMode(false);
                             setFocusConcepts([]);
+                            setFocusLockNote(false);
+                            setFocusLimitNote(null);
                             setStartError(null);
                           }}
                         >
@@ -641,7 +648,7 @@ export default function MockHub() {
                       <input
                         type="checkbox"
                         checked={focusMode}
-                        onChange={e => { setFocusMode(e.target.checked); setFocusConcepts([]); }}
+                        onChange={e => { setFocusMode(e.target.checked); setFocusConcepts([]); setFocusLimitNote(null); }}
                       />
                       <span>Focus mode</span>
                       <span className="mock-focus-label-sub">— target specific concepts in this session</span>
@@ -650,36 +657,50 @@ export default function MockHub() {
                       <div className="mock-focus-concepts">
                         {(TRACK_CONCEPT_MAP[track] || []).map(c => {
                           const selected = focusConcepts.includes(c);
-                          const disabled = !selected && focusConcepts.length >= 3;
+                          const atLimit = !selected && focusConcepts.length >= 3;
                           return (
                             <button
                               key={c}
                               type="button"
-                              className={`mock-focus-concept-pill${selected ? ' selected' : ''}`}
+                              className={`mock-focus-concept-pill${selected ? ' selected' : ''}${atLimit ? ' mock-focus-concept-pill--blocked' : ''}`}
                               onClick={() => {
-                                if (selected) setFocusConcepts(prev => prev.filter(x => x !== c));
-                                else if (!disabled) setFocusConcepts(prev => [...prev, c]);
+                                if (selected) { setFocusConcepts(prev => prev.filter(x => x !== c)); setFocusLimitNote(null); }
+                                else if (atLimit) setFocusLimitNote('You can focus on up to 3 concepts at a time.');
+                                else { setFocusConcepts(prev => [...prev, c]); setFocusLimitNote(null); }
                               }}
-                              disabled={disabled}
                             >
                               {c}
                             </button>
                           );
                         })}
                         <p className="mock-focus-hint">Select 1–3 concepts. Session draws from questions tagged with them.</p>
+                        {focusLimitNote && <p className="mock-focus-limit-note">{focusLimitNote}</p>}
                       </div>
                     )}
                   </>
                 ) : (
-                  <div className="mock-focus-locked">
-                    <div className="mock-focus-locked-header">
-                      <input type="checkbox" disabled className="mock-focus-locked-check" />
-                      <span className="mock-focus-locked-label">Focus mode</span>
-                      <span className="mock-elite-badge-inline">Elite</span>
-                    </div>
-                    <p className="mock-focus-locked-desc">
-                      Target specific concepts — your session draws only from questions tagged with them.
-                    </p>
+                  <div className="mock-focus-locked-wrap">
+                    <button
+                      type="button"
+                      className="mock-focus-locked"
+                      onClick={() => setFocusLockNote(v => !v)}
+                      aria-expanded={focusLockNote}
+                    >
+                      <span className="mock-focus-locked-header">
+                        <span className="mock-focus-locked-check" aria-hidden="true" />
+                        <span className="mock-focus-locked-label">Focus mode</span>
+                        <span className="mock-elite-badge-inline">Elite</span>
+                      </span>
+                      <span className="mock-focus-locked-desc">
+                        Target specific concepts — your session draws only from questions tagged with them.
+                      </span>
+                    </button>
+                    {focusLockNote && (
+                      <p className="mock-focus-lock-note">
+                        Focus mode is an Elite feature.{' '}
+                        <UpgradeButton tier="elite" label="Unlock with Elite" compact source="mock_focus_locked" />
+                      </p>
+                    )}
                   </div>
                 )}
               </section>

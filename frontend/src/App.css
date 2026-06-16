@@ -11408,13 +11408,17 @@ select {
   color: #fff;
   border-color: var(--accent);
 }
-.mock-focus-concept-pill:hover:not(:disabled):not(.selected) {
+.mock-focus-concept-pill:hover:not(:disabled):not(.selected):not(.mock-focus-concept-pill--blocked) {
   border-color: var(--accent);
   color: var(--accent);
 }
 .mock-focus-concept-pill:disabled {
   opacity: 0.35;
   cursor: not-allowed;
+}
+/* At the 1–3 cap: greyed but still clickable (clicking surfaces the cap note). */
+.mock-focus-concept-pill--blocked {
+  opacity: 0.35;
 }
 .mock-focus-hint {
   font-size: 0.74rem;
@@ -11744,8 +11748,28 @@ select {
 }
 
 /* ─── Focus mode locked state (non-Elite) ────────────────────────────────────── */
-.mock-focus-locked {
+.mock-focus-locked-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+/* Grey + clickable (NOT a dead disabled control) — clicking reveals the Elite
+   gate note + upgrade CTA, matching the mode-card / track-pill gating convention. */
+button.mock-focus-locked {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.55rem 0.7rem;
+  cursor: pointer;
   opacity: 0.7;
+  transition: opacity 0.12s, border-color 0.12s;
+}
+button.mock-focus-locked:hover {
+  opacity: 0.92;
+  border-color: var(--accent);
 }
 .mock-focus-locked-header {
   display: flex;
@@ -11753,9 +11777,12 @@ select {
   gap: 0.5rem;
 }
 .mock-focus-locked-check {
-  width: 1rem;
-  height: 1rem;
-  cursor: not-allowed;
+  width: 0.85rem;
+  height: 0.85rem;
+  border: 1.5px solid var(--text-secondary);
+  border-radius: 3px;
+  display: inline-block;
+  flex-shrink: 0;
 }
 .mock-focus-locked-label {
   font-size: 0.88rem;
@@ -11775,9 +11802,27 @@ select {
   vertical-align: middle;
 }
 .mock-focus-locked-desc {
+  display: block;
   font-size: 0.8rem;
   color: var(--text-secondary);
-  margin: 0.35rem 0 0 1.5rem;
+  margin: 0.35rem 0 0 1.35rem;
+}
+/* Elite-gate note revealed on click — neutral text; the upgrade CTA carries the accent. */
+.mock-focus-lock-note {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+/* 1–3 concept cap nudge — surfaced on click of a 4th pill (which stays clickable). */
+.mock-focus-limit-note {
+  width: 100%;
+  margin: 0.4rem 0 0;
+  font-size: 0.74rem;
+  color: var(--text-secondary);
 }
 
 /* ─── Elite intelligence panel (teaser for non-Elite) ────────────────────────── */

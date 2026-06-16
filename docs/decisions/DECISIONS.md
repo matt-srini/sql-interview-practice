@@ -35,8 +35,15 @@ Keep entries to 4–6 lines. Friction kills logs; if it's longer than the change
 
 ## Entries
 
+## 2026-06-16 — One gating convention on the mock hub: grey + clickable + message (never hard-disable)
+**Area:** mock · gating · frontend · **Status:** accepted
+**Decision:** Every gate on MockHub now follows one pattern — the control is visually greyed, stays **clickable** (never `disabled`/hidden), and surfaces a clear message on interaction. Sonnet established this on the **Mixed track pill** (greyed + clickable → "Interview Loop runs on one track — can't choose Mixed." / the gold "needs a role" hint), replacing the earlier auto-switch. This pass extended it to the two **Focus-mode gates** that still broke it: the Elite lock was a dead `disabled` checkbox → now a clickable card that reveals "Focus mode is an Elite feature." + an Unlock-with-Elite CTA; the 1–3 concept cap hard-`disabled` the extra pills → they stay clickable and a 4th click shows "You can focus on up to 3 concepts at a time." Mode cards (Pro/Elite locks) and difficulty pills (plan locks) already conformed.
+**Rejected:** (a) hard-`disabled` controls — greys the thing but gives the user no reason and nothing to click (the dead-end this convention exists to kill). (b) hiding a gated option — removes the signal entirely; the user can't learn what they'd unlock. (c) leaving the focus gates "because they sort of communicate" — partial conformance is how drift starts.
+**Supersedes:** 2026-06-15 "Interview Loop on Mixed auto-switches the track" — the Mixed+Loop conflict is now the greyed-clickable Mixed pill (Sonnet 3f1e4e6→99b65f8), not a mode-driven auto-switch.
+**Affects:** frontend/src/pages/MockHub.js (focusLockNote/focusLimitNote + clickable focus gates), frontend/src/App.css (`.mock-focus-locked` button, `.mock-focus-lock-note`, `.mock-focus-limit-note`, `.mock-focus-concept-pill--blocked`), frontend/src/pages/MockHub.test.js, docs/features/mock.md (§Surface in the UI)
+
 ## 2026-06-15 — Interview Loop on Mixed auto-switches the track (not a silent disabled card)
-**Area:** mock · frontend · **Status:** accepted
+**Area:** mock · frontend · **Status:** superseded
 **Decision:** Interview Loop is single-track, so it's incompatible with the Mixed track. Previously the Interview Loop mode card just went `disabled` (not-allowed cursor) with **no explanation** — users didn't know why they couldn't pick it. Now the card stays enabled; selecting it while Mixed is active **auto-switches** the track to a single track (the selected role's first, else SQL) and shows an indigo note ("Interview Loop runs on one track — switched to SQL."). Latest explicit click wins, with a visible reason — no dead-end.
 **Rejected:** (a) Keep it disabled but add a "single-track only" tooltip/sub-line — transparent, but still a manual two-step dead-end (user picked by the product owner over this). (b) Gate the "Mixed" track pill when Loop is the mode — a bigger mode-first interaction change. Note the reverse path (clicking the Mixed pill *while on* Loop) still flips mode→Custom via the existing effect, so the conflict never persists either way.
 **Affects:** frontend/src/mockModeConfig.js (loop card `disabled: false`), frontend/src/pages/MockHub.js (`handleSelectMode` + note), frontend/src/App.css (`.mock-loop-switch-note`), docs/features/mock.md
