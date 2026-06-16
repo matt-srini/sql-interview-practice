@@ -6486,19 +6486,43 @@ select {
   .db-hero-stats {
     grid-template-columns: 1fr 1fr;
   }
-  .db-track-stats-col { display: none; }
-  .db-track-right-col { min-width: auto; flex-shrink: 1; }
-  /* Hide readiness chip/gate on mobile — too wide, keep only the arrow */
-  .db-track-right-col .db-readiness-chip,
-  .db-track-right-col .db-readiness-gate { display: none; }
   /* Allow focus subline to wrap on narrow screens */
   .db-focus-subline { white-space: normal; }
-  /* Track rows: tagline is nowrap and expands name-col beyond 120px,
-     starving the bar-col. Hide it; track name alone is enough on mobile. */
+
+  /* Track rows reflow to a two-line layout on mobile. Desktop packs the dot,
+     name, bar, count, accuracy, and readiness chip onto one line; that line
+     cannot survive ~375px — the old single-line rule hid the chip + accuracy
+     and let the "Mock to level up" nudge starve the bar, clipping the count.
+     Grid keeps every detail visible:
+       row 1:  ● name .............. [readiness chip] →
+       row 2:    ▓▓▓░░ count ............... NN% acc      */
+  .db-track-row {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-areas:
+      "dot  name  right"
+      ".    bar   stats";
+    align-items: center;
+    column-gap: 0.6rem;
+    row-gap: 0.5rem;
+  }
+  .db-track-dot       { grid-area: dot; }
+  .db-track-name-col  { grid-area: name; min-width: 0; flex-shrink: 1; }
+  .db-track-bar-col   { grid-area: bar; }
+  .db-track-stats-col { grid-area: stats; display: flex; min-width: 0; }
+  .db-track-right-col { grid-area: right; min-width: auto; flex-shrink: 0; gap: 0.4rem; }
+  /* Tagline + median solve time are the lowest-value details — drop them so the
+     row holds to two clean lines */
   .db-track-tagline { display: none; }
-  .db-track-name-col { flex-shrink: 1; }
-  /* Clip the count chip so a collapsed bar-col doesn't bleed into the row */
-  .db-track-bar-col { overflow: hidden; }
+  .db-track-time { display: none; }
+  /* Restore the headline readiness chip / upsell gate (desktop-only before) */
+  .db-track-right-col .db-readiness-chip,
+  .db-track-right-col .db-readiness-gate { display: flex; }
+  /* The "Mock to level up" nudge is the secondary signal that broke the old
+     single-line layout; the now-visible capped chip already conveys it */
+  .db-readiness-mocknudge { display: none; }
+  /* Long track names ellipsize instead of wrapping and breaking row alignment */
+  .db-track-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 }
 
 /* ============================================================
