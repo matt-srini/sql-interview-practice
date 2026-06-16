@@ -182,6 +182,8 @@ Plan-tier rules must be visible to the user, not buried in account settings. Req
 
 **Gating convention (one pattern, everywhere).** Every gated control on MockHub is **greyed but stays clickable** and **surfaces its reason on interaction** — never a hard-`disabled`/hidden dead-end. This covers the mode cards (plan locks), the Mixed track pill (role required / single-track for Interview Loop), the difficulty pills (plan locks), and Focus mode (Elite lock + concept cap). Rationale and the rejected alternatives (hard-disable, hide) are in [DECISIONS 2026-06-16](../decisions/DECISIONS.md).
 
+> **Caveat — defaults must not fight the convention.** A default/auto-select effect (e.g. picking a valid difficulty on entry to Interview Loop) must key on *context* — mode, track, access-load — and **never on the selection value itself**. If the value it corrects is one of its own effect dependencies, the effect re-fires on the user's *own click* and bounces them off a gated control before its message can render, silently turning a grey-clickable pill back into a hard block. (This regressed the Interview Loop difficulty selector and was reverted: the auto-select effect is keyed on `[mode, accessState]`, not `difficulty`, so a clicked blocked difficulty stays selected and shows its message.)
+
 ---
 
 ## Follow-up Chain Atomicity (Interview Loop only)
