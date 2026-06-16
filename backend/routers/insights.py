@@ -870,9 +870,11 @@ def build_session_debrief(
     priority_path_title: str | None = None
     priority_question_ids: list[int] = []
 
+    is_loop = session_meta.get("mode") == "interview_loop"
+
     if not weak:
-        if raw_difficulty is None:
-            # Interview Loop — emergent difficulty, no fixed "session difficulty" to escalate.
+        if is_loop:
+            # Interview Loop — no fixed difficulty-tier escalation: the chain depth is the challenge.
             priority_action = (
                 "Strong run through the chain. Try an Interview Loop on another track to broaden your range."
             )

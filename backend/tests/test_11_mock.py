@@ -155,63 +155,90 @@ def test_tc134g_benchmark_and_custom_caps_are_independent():
 
 
 # ---------------------------------------------------------------------------
-# Interview Loop: no user-chosen difficulty (2026-06-15). The chain difficulty is
-# emergent (parent → escalating follow-ups), so /start carries no difficulty, the
-# chain is drawn from the full track pool, and the session stores NULL difficulty.
-# Gating is track-level via access["mixed"]. See docs/features/mock.md § Interview
-# Loop and docs/decisions/DECISIONS.md 2026-06-15.
+# Interview Loop: per-track difficulty (restored 2026-06-16). The user picks
+# medium or hard; the chain is drawn from that difficulty's pool; the session
+# stores the chosen difficulty. Easy always 400s (no chains). Tracks with chains
+# only at one difficulty must 400 on the other (e.g. python has no hard chains,
+# ml-fundamentals has no medium chains). See docs/features/mock.md § Interview Loop.
 # ---------------------------------------------------------------------------
 
 def _loop_access(client, track):
     return client.get("/api/mock/access", params={"track": track, "mode": "interview_loop"})
 
 
-def test_tc134h_loop_access_mixed_is_track_level_gate():
-    """Elite Interview Loop: access['mixed'] is the track-level chain gate (sql has chains → can_start)."""
+def test_tc134h_loop_access_medium_hard_have_chains_for_sql():
+    """Elite Interview Loop: access['medium'] and access['hard'] can_start for sql (has chains at both)."""
     with TestClient(app) as client:
         _make_user(client, plan="elite")
         access = _loop_access(client, "sql").json()["access"]
-    assert access["mixed"]["can_start"] is True
+    assert access["medium"]["can_start"] is True
+    assert access["hard"]["can_start"] is True
+    assert access["easy"]["can_start"] is False  # no chains at easy
 
 
 def test_tc134i_loop_access_non_elite_plan_locked():
-    """Free cannot start Interview Loop at all (Elite-only plan gate) — track-level mixed entry."""
+    """Free cannot start Interview Loop at all (Elite-only plan gate)."""
     with TestClient(app) as client:
         _make_user(client, plan="free")
         access = _loop_access(client, "sql").json()["access"]
-    assert access["mixed"]["can_start"] is False
-    assert access["mixed"]["block_reason"] == "plan_locked"
+    assert access["medium"]["can_start"] is False
+    assert access["medium"]["block_reason"] == "plan_locked"
 
 
-def test_tc134j_start_interview_loop_no_difficulty_succeeds_stores_null():
-    """Start with NO difficulty → 200; session difficulty stored NULL (emergent)."""
+def test_tc134j_start_interview_loop_medium_sql_succeeds_stores_difficulty():
+    """Start interview_loop with difficulty='medium' on sql → 200; session stores 'medium'."""
     with TestClient(app) as client:
         _make_user(client, plan="elite")
-        r = client.post("/api/mock/start", json={"mode": "interview_loop", "track": "sql"})
-    assert r.status_code in (200, 201)
+        r = client.post("/api/mock/start", json={
+            "mode": "interview_loop", "track": "sql", "difficulty": "medium",
+        })
+    assert r.status_code in (200, 201), r.text
     body = r.json()
     assert "session_id" in body
-    assert body.get("difficulty") is None
+    assert body.get("difficulty") == "medium"
     assert len(body["questions"]) >= 2  # parent + at least one follow-up
 
 
-def test_tc134k_start_interview_loop_ignores_provided_difficulty():
-    """A provided difficulty (even 'easy', which has no chains) is ignored — full pool used → 200, NULL stored."""
+def test_tc134k_start_interview_loop_easy_400():
+    """Easy has no chains — interview_loop with difficulty='easy' → 400."""
     with TestClient(app) as client:
         _make_user(client, plan="elite")
         r = client.post("/api/mock/start", json={
             "mode": "interview_loop", "track": "sql", "difficulty": "easy",
         })
-    assert r.status_code in (200, 201)
-    assert r.json().get("difficulty") is None
+    assert r.status_code == 400
 
 
-def test_tc134l_start_interview_loop_python_succeeds_no_hard_non_issue():
-    """Python (medium parents → hard follow-ups, zero hard parents) starts fine without a difficulty."""
+def test_tc134l_start_interview_loop_hard_ml_fundamentals_succeeds():
+    """ml-fundamentals has hard chains only — difficulty='hard' → 200."""
     with TestClient(app) as client:
         _make_user(client, plan="elite")
-        r = client.post("/api/mock/start", json={"mode": "interview_loop", "track": "python"})
-    assert r.status_code in (200, 201)
+        r = client.post("/api/mock/start", json={
+            "mode": "interview_loop", "track": "ml-fundamentals", "difficulty": "hard",
+        })
+    assert r.status_code in (200, 201), r.text
+    assert len(r.json()["questions"]) >= 2
+
+
+def test_tc134l2_start_interview_loop_python_hard_400():
+    """Python has no hard chains — interview_loop with difficulty='hard' on python → 400."""
+    with TestClient(app) as client:
+        _make_user(client, plan="elite")
+        r = client.post("/api/mock/start", json={
+            "mode": "interview_loop", "track": "python", "difficulty": "hard",
+        })
+    assert r.status_code == 400
+
+
+def test_tc134l3_start_interview_loop_python_medium_succeeds():
+    """Python has medium chains → difficulty='medium' on python → 200."""
+    with TestClient(app) as client:
+        _make_user(client, plan="elite")
+        r = client.post("/api/mock/start", json={
+            "mode": "interview_loop", "track": "python", "difficulty": "medium",
+        })
+    assert r.status_code in (200, 201), r.text
+    assert r.json().get("difficulty") == "medium"
     assert len(r.json()["questions"]) >= 2
 
 
@@ -225,7 +252,9 @@ def test_tc134m_mock_run_executes_mock_only_question_without_lock():
     """Run Code on a mock-only Interview Loop question returns 200 (not the practice 403 lock)."""
     with TestClient(app) as client:
         _make_user(client, plan="elite")
-        start = client.post("/api/mock/start", json={"mode": "interview_loop", "track": "python"})
+        start = client.post("/api/mock/start", json={
+            "mode": "interview_loop", "track": "python", "difficulty": "medium",
+        })
         sess = start.json()
         sid, qid = sess["session_id"], sess["questions"][0]["id"]
         r = client.post(f"/api/mock/{sid}/run", json={
@@ -241,7 +270,9 @@ def test_tc134n_mock_run_rejects_question_not_in_session():
     """Membership is the gate: a question_id not in the session → 400 (no arbitrary execution)."""
     with TestClient(app) as client:
         _make_user(client, plan="elite")
-        start = client.post("/api/mock/start", json={"mode": "interview_loop", "track": "python"})
+        start = client.post("/api/mock/start", json={
+            "mode": "interview_loop", "track": "python", "difficulty": "medium",
+        })
         sid = start.json()["session_id"]
         r = client.post(f"/api/mock/{sid}/run", json={"question_id": 999999, "track": "python", "code": "x = 1"})
     assert r.status_code == 400
@@ -1700,8 +1731,8 @@ def test_tc_python_mock_payload_includes_starter_code():
 
 
 def test_tc_interview_loop_debrief_no_hard_session_escalation():
-    """Interview Loop sessions (difficulty=None) must not produce 'Try a hard session'
-    and must suggest 'Interview Loop' in the priority_action."""
+    """Interview Loop sessions (mode='interview_loop') must not produce 'Try a hard session'
+    and must suggest 'Interview Loop' in the priority_action, regardless of stored difficulty."""
     from routers.insights import build_session_debrief
 
     # All questions solved → weak list is empty → triggers the 'if not weak' branch.
@@ -1719,9 +1750,10 @@ def test_tc_interview_loop_debrief_no_hard_session_escalation():
             "concepts": ["REGULARIZATION"], "time_spent_s": 110,
         },
     ]
-    # Interview Loop sessions have no difficulty field.
+    # Interview Loop sessions are now detected via mode, not null difficulty.
     session_meta = {
-        "difficulty": None,
+        "mode": "interview_loop",
+        "difficulty": "hard",
         "track": "ml-fundamentals",
         "time_used_s": 320,
         "time_limit_s": 2700,
@@ -1736,4 +1768,87 @@ def test_tc_interview_loop_debrief_no_hard_session_escalation():
     )
     assert "Interview Loop" in action, (
         f"priority_action should mention 'Interview Loop' for loop sessions: {action!r}"
+    )
+
+
+# ---------------------------------------------------------------------------
+# New tests: per-difficulty Interview Loop (2026-06-16)
+# ---------------------------------------------------------------------------
+
+def test_tc_loop_difficulty_escalates_helper():
+    """_loop_difficulty_escalates returns True only when follow-ups are strictly harder than parents."""
+    from routers.mock import _loop_difficulty_escalates
+
+    # Python medium → hard follow-ups: escalates
+    assert _loop_difficulty_escalates("python", "medium") is True
+    # SQL medium → medium follow-ups only: no escalation
+    assert _loop_difficulty_escalates("sql", "medium") is False
+    # data-modeling medium → hard follow-ups: escalates
+    assert _loop_difficulty_escalates("data-modeling", "medium") is True
+    # Easy is always False (not medium/hard)
+    assert _loop_difficulty_escalates("python", "easy") is False
+    assert _loop_difficulty_escalates("sql", "easy") is False
+
+
+def test_tc_loop_access_carries_escalates_field():
+    """GET /api/mock/access with interview_loop mode returns escalates on startable difficulties."""
+    with TestClient(app) as client:
+        _make_user(client, plan="elite")
+        resp = _loop_access(client, "python")
+    assert resp.status_code == 200, resp.text
+    access = resp.json()["access"]
+    # medium is the only startable difficulty for python (has medium chains, no hard chains)
+    assert access["medium"]["can_start"] is True
+    assert "escalates" in access["medium"], "escalates key missing from medium entry"
+    assert access["medium"]["escalates"] is True  # python medium → hard follow-ups
+
+
+def test_tc_loop_start_with_no_difficulty_now_400():
+    """Interview Loop start without a difficulty now 400s (difficulty is required)."""
+    with TestClient(app) as client:
+        _make_user(client, plan="elite")
+        r = client.post("/api/mock/start", json={"mode": "interview_loop", "track": "sql"})
+    # difficulty=None fails the VALID_DIFFICULTIES check
+    assert r.status_code == 400
+
+
+def test_tc_loop_get_session_carries_escalates():
+    """GET /api/mock/:id returns escalates for interview_loop sessions."""
+    with TestClient(app) as client:
+        _make_user(client, plan="elite")
+        start = client.post("/api/mock/start", json={
+            "mode": "interview_loop", "track": "python", "difficulty": "medium",
+        })
+        assert start.status_code in (200, 201), start.text
+        sid = start.json()["session_id"]
+        r = client.get(f"/api/mock/{sid}")
+    assert r.status_code == 200, r.text
+    body = r.json()
+    assert "escalates" in body, "escalates key missing from GET session response"
+    assert body["escalates"] is True  # python medium → hard
+
+
+def test_tc_loop_debrief_with_stored_difficulty_detects_loop_by_mode():
+    """Debrief with mode='interview_loop' and stored difficulty='medium' still fires loop copy."""
+    from routers.insights import build_session_debrief
+
+    questions = [
+        {"id": 10, "track": "sql", "is_solved": True, "concepts": ["WINDOW FUNCTIONS"], "time_spent_s": 200},
+        {"id": 11, "track": "sql", "is_solved": True, "concepts": ["WINDOW FUNCTIONS"], "time_spent_s": 180},
+    ]
+    session_meta = {
+        "mode": "interview_loop",
+        "difficulty": "medium",      # stored real difficulty (not None)
+        "track": "sql",
+        "time_used_s": 380,
+        "time_limit_s": 1800,
+    }
+    debrief = build_session_debrief(questions, session_meta, [], "elite")
+    assert debrief is not None
+    action = debrief.get("priority_action") or ""
+    assert "Try a hard session" not in action, (
+        f"Debrief wrongly escalated difficulty despite mode=interview_loop: {action!r}"
+    )
+    assert "Interview Loop" in action, (
+        f"Debrief should suggest Interview Loop when all solved: {action!r}"
     )

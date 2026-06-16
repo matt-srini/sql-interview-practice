@@ -123,7 +123,7 @@ TRACK_TO_TOPIC: dict[str, str] = {t.slug: t.db_topic for t in TRACKS}
 class MockStartRequest(BaseModel):
     mode: str           # 'benchmark' | 'custom' | 'interview_loop'
     track: str          # 'sql' | 'python' | 'pandas' | 'pyspark' | 'mixed' | ...
-    difficulty: str | None = None   # 'easy'|'medium'|'hard'|'mixed'; omitted/ignored for interview_loop (chain difficulty is emergent)
+    difficulty: str | None = None   # 'easy'|'medium'|'hard'|'mixed'; for interview_loop must be 'medium'|'hard' (easy never has chains)
     role: str | None = None            # required when track='mixed'
     num_questions: int | None = None   # custom mode only, 1–5
     time_minutes: int | None = None    # custom mode only, 10–90
@@ -610,6 +610,22 @@ def _chain_parents_for(track: str, difficulty: str) -> list[dict]:
         q for q in pool
         if q.get("follow_ups") and len(q.get("follow_ups", [])) >= 1
     ]
+
+
+def _loop_difficulty_escalates(track: str, difficulty: str) -> bool:
+    """True if any Interview Loop chain at (track, difficulty) has a follow-up of
+    strictly higher difficulty (Python & Data-Modeling medium chains escalate to hard)."""
+    if difficulty not in ("medium", "hard"):
+        return False
+    rank = {"easy": 0, "medium": 1, "hard": 2}
+    catalog = _get_catalog_for_track(track)
+    byid = {int(q["id"]): q for qs in catalog.get_mock_questions_by_difficulty().values() for q in qs}
+    for p in _chain_parents_for(track, difficulty):
+        for fid in p.get("follow_ups", []):
+            child = byid.get(int(fid))
+            if child and rank.get(child.get("difficulty"), 1) > rank.get(difficulty, 1):
+                return True
+    return False
 
 
 def _interview_loop_access(
@@ -1218,6 +1234,8 @@ async def get_mock_access(
                     "weekly_benchmark_limit": None,
                     "weekly_benchmark_used": None,
                 }
+            else:
+                diff_access["escalates"] = _loop_difficulty_escalates(track, diff)
         access[diff] = diff_access
 
     return {
@@ -1235,7 +1253,13 @@ async def get_mock_access(
 async def get_history(
     current_user: dict[str, Any] = Depends(get_current_user),
 ) -> list[dict[str, Any]]:
-    return await get_mock_history(current_user["id"], limit=20)
+    rows = await get_mock_history(current_user["id"], limit=20)
+    for row in rows:
+        if row.get("mode") == "interview_loop":
+            track = row.get("track") or "sql"
+            difficulty = row.get("difficulty") or "medium"
+            row["escalates"] = _loop_difficulty_escalates(track, difficulty)
+    return rows
 
 
 @router.get("/analytics")
@@ -1266,10 +1290,7 @@ async def start_session(
     # ── Basic validation ──────────────────────────────────────────────────────
     if body.track not in VALID_TRACKS:
         raise HTTPException(status_code=400, detail=f"Invalid track. Must be one of: {', '.join(VALID_TRACKS)}")
-    # Interview Loop has no user-chosen difficulty — the chain difficulty is emergent
-    # (parent → escalating follow-ups). Difficulty is required + validated for every
-    # other mode.
-    if body.mode != "interview_loop" and body.difficulty not in VALID_DIFFICULTIES:
+    if body.difficulty not in VALID_DIFFICULTIES:
         raise HTTPException(status_code=400, detail=f"Invalid difficulty. Must be one of: {', '.join(VALID_DIFFICULTIES)}")
 
     valid_start_modes = {"benchmark", "custom", "interview_loop"} | set(MODE_CONFIGS)
@@ -1340,17 +1361,18 @@ async def start_session(
         if body.track == "mixed":
             raise HTTPException(status_code=400, detail="Interview Loop does not support mixed track.")
 
-        # Interview Loop has no user-chosen difficulty: draw from the full chain pool
-        # for the track (parent difficulty is emergent — it escalates through the
-        # follow-ups). This 403 only fires if the track has no chains at all; every
-        # current track has some. Pool exhaustion (all consumed) is the 409 raised
-        # inside _select_chain.
-        if not _chain_parents_for(body.track, "mixed"):
-            raise HTTPException(status_code=403, detail="Interview Loop has no chains for this track yet.")
+        # Interview Loop requires a specific difficulty (medium or hard only — easy never has
+        # chains; the user picks the depth they want to practise at). Validate that content
+        # actually exists before spending quota.
+        if body.difficulty not in ("medium", "hard") or not _chain_parents_for(body.track, body.difficulty):
+            raise HTTPException(
+                status_code=400,
+                detail="No Interview Loop chains at this difficulty for this track.",
+            )
 
         parent, follow_ups = await _select_chain(
             track=body.track,
-            difficulty="mixed",
+            difficulty=body.difficulty,
             user=current_user,
             focus_concepts=focus_concepts,
         )
@@ -1394,7 +1416,7 @@ async def start_session(
             user_id=user_id,
             mode=body.mode,
             track=body.track,
-            difficulty=None,  # emergent — Interview Loop carries no single difficulty
+            difficulty=body.difficulty,
             time_limit_s=time_limit_s,
             questions=selected,
             focus_fallback=False,
@@ -1503,7 +1525,12 @@ async def get_session(
             "follow_up_dimension": q_row.get("follow_up_dimension"),
         })
 
-    return {**session, "questions": enriched_questions}
+    result = {**session, "questions": enriched_questions}
+    if session.get("mode") == "interview_loop":
+        track = session.get("track") or "sql"
+        difficulty = session.get("difficulty") or "medium"
+        result["escalates"] = _loop_difficulty_escalates(track, difficulty)
+    return result
 
 
 @router.post("/{session_id}/run")
