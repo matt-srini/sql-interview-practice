@@ -362,22 +362,32 @@ describe('MockHub Interview Loop difficulty gating', () => {
 });
 
 describe('MockHub Interview Loop + Mixed track', () => {
-  it('keeps Interview Loop selectable on Mixed and auto-switches the track with an explanatory note', async () => {
-    renderHub({ mockPreset: { mode: 'custom', track: 'mixed' } });
+  it('greys the Mixed track pill on Interview Loop and shows a note (no switch) when clicked', async () => {
+    renderHub({ mockPreset: { mode: 'interview_loop', track: 'sql' } });
+    await screen.findByRole('button', { name: /Start Interview Loop/ });
 
-    // The Interview Loop mode card is NOT disabled on Mixed (it used to be, with no reason shown).
-    const loopCard = await screen.findByRole('button', { name: /Interview Loop/ });
-    expect(loopCard).not.toBeDisabled();
+    const mixedPill = screen.getByRole('button', { name: 'Mixed' });
+    // Greyed (blocked) but still clickable — not hard-disabled.
+    expect(mixedPill).not.toBeDisabled();
+    expect(mixedPill.className).toMatch(/blocked/);
 
-    fireEvent.click(loopCard);
+    fireEvent.click(mixedPill);
 
-    // Selecting it moved off Mixed to a single track (SQL, no role) and states the constraint.
+    // Clicking shows the constraint note and does NOT switch the track to Mixed.
     await waitFor(() => {
       expect(screen.getByText(/Interview Loop runs on one track — can't choose Mixed/i)).toBeInTheDocument();
     });
-    // The track actually switched off Mixed (to SQL).
     expect(screen.getByRole('button', { name: 'SQL' }).className).toMatch(/active/);
-    // …and we're now in Interview Loop mode (no dead-end).
-    expect(screen.getByRole('button', { name: /Start Interview Loop/ })).toBeInTheDocument();
+    expect(mixedPill.className).not.toMatch(/active/);
+  });
+
+  it('does not show a "Questions" count in the brief for Interview Loop (chain length is drawn at start)', async () => {
+    renderHub({ mockPreset: { mode: 'interview_loop', track: 'ml-fundamentals' } });
+    await screen.findByRole('button', { name: /Start Interview Loop/ });
+    // The brief rail must NOT carry a Questions row (it used to leak the custom-drill
+    // numQuestions default of 2). It shows Track; Questions/Difficulty/Time are hidden.
+    const briefKeys = [...document.querySelectorAll('.mock-rail-key')].map(k => k.textContent.trim());
+    expect(briefKeys).toContain('Track');
+    expect(briefKeys).not.toContain('Questions');
   });
 });
