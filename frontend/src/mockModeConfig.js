@@ -218,7 +218,10 @@ export function getSessionQuestionCount(mode, track, customCount, role) {
   }
   if (mode === '60min') return 3;
   if (mode === 'custom') return customCount;
-  // interview_loop: variable (chain length shown after start)
+  // interview_loop: chain length is drawn at session start — don't show a count up
+  // front (preserves the dialogue-shape simulation; the brief hides the row). Mirrors
+  // getSessionTimeMinutes, which already returns null for interview_loop.
+  if (mode === 'interview_loop') return null;
   return customCount;
 }
 

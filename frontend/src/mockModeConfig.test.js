@@ -80,6 +80,13 @@ describe('mockModeConfig', () => {
     expect(getSessionTimeMinutes('benchmark', 'statistics', 30)).toBe(45);
   });
 
+  it('hides the up-front count + time for Interview Loop (chain length is drawn at start)', () => {
+    // Must NOT leak the custom-drill numQuestions/minutes default — both return null
+    // so the MockHub brief hides the Questions/Time rows for Interview Loop.
+    expect(getSessionQuestionCount('interview_loop', 'ml-fundamentals', 2)).toBeNull();
+    expect(getSessionTimeMinutes('interview_loop', 'ml-fundamentals', 30)).toBeNull();
+  });
+
   it('describes benchmark and drill session chrome copy', () => {
     expect(getMockSessionDescriptor('benchmark', 'sql')).toMatchObject({
       phaseLabel: 'Benchmark session',
