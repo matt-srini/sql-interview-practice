@@ -168,3 +168,14 @@ describe('dimensionBlurb', () => {
     expect(dimensionBlurb(null)).toBe('The interviewer shifts focus to a different dimension of the same problem.');
   });
 });
+import { formatLoopDifficulty } from './mockModeConfig';
+
+describe('formatLoopDifficulty', () => {
+  it('shows "x → hard" for escalating loops, single level otherwise', () => {
+    expect(formatLoopDifficulty('medium', true)).toBe('medium → hard');
+    expect(formatLoopDifficulty('medium', false)).toBe('medium');
+    expect(formatLoopDifficulty('hard', false)).toBe('hard');
+    expect(formatLoopDifficulty('', false)).toBe('');
+    expect(formatLoopDifficulty(null, true)).toBe('');
+  });
+});

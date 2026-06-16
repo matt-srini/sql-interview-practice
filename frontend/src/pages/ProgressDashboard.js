@@ -9,6 +9,7 @@ import { useCatalogCounts } from '../contexts/CatalogCountsContext';
 import Topbar from '../components/Topbar';
 import Skeleton from '../components/Skeleton';
 import UpgradeButton from '../components/UpgradeButton';
+import { formatLoopDifficulty } from '../mockModeConfig';
 
 // Role → tracks filter for Track overview section
 const ROLE_TRACK_FILTERS = [
@@ -565,7 +566,7 @@ export default function ProgressDashboard() {
                                 <div className="db-mock-card-left">
                                   <span className="db-mock-track">{trackLabel}</span>
                                   <div className="db-mock-meta">
-                                    {s.difficulty && <span className={`badge badge-${s.difficulty}`}>{s.difficulty}</span>}
+                                    {s.difficulty && <span className={`badge badge-${s.difficulty}`}>{formatLoopDifficulty(s.difficulty, s.escalates)}</span>}
                                     <span className="db-mock-date">{formatRelativeTime(s.started_at)}</span>
                                   </div>
                                 </div>

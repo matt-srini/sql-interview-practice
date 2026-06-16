@@ -14,7 +14,7 @@ import { TRACK_META } from '../contexts/TopicContext';
 import { TRACK_LABELS } from '../trackRegistry';
 import { track as trackEvent } from '../analytics';
 import { renderDescription } from '../utils/renderDescription';
-import { getMockSessionDescriptor, dimensionLabel, dimensionBlurb } from '../mockModeConfig';
+import { getMockSessionDescriptor, dimensionLabel, dimensionBlurb, formatLoopDifficulty } from '../mockModeConfig';
 import { normalizeRunResult, rowCountLabel } from '../normalizeResult';
 
 function formatTime(s) {
@@ -139,6 +139,7 @@ export default function MockSession() {
       mode: data.mode,
       track: data.track,
       difficulty: data.difficulty,
+      escalates: data.escalates,
       started_at: data.started_at,
       time_limit_s: data.time_limit_s,
       status: data.status,
@@ -911,6 +912,9 @@ export default function MockSession() {
               <span className={`mock-session-context-badge${sessionDescriptor.isBenchmark ? ' mock-session-context-badge--benchmark' : ''}`}>
                 {sessionDescriptor.modeLabel}
               </span>
+              {session?.mode === 'interview_loop' && session?.difficulty && (
+                <span className={`badge badge-${session.difficulty}`}>{formatLoopDifficulty(session.difficulty, session.escalates)}</span>
+              )}
               <span className="mock-session-context-track">{TRACK_LABELS[session?.track] || TRACK_LABELS[currentQuestion?.track] || session?.track}</span>
             </div>
             <div className="mock-session-context-title">{sessionDescriptor.title}</div>

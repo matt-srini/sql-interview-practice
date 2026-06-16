@@ -319,20 +319,28 @@ describe('MockHub Interview Loop difficulty gating', () => {
     });
   }
 
-  it('shows NO difficulty selector for Interview Loop and gates Start on chain availability', async () => {
-    mockLoopAccess(); // sql: access.mixed.can_start = true
+  it('shows difficulty selector for Interview Loop with medium+hard pills (not easy), auto-selects first startable, Start enabled', async () => {
+    mockLoopAccess(); // sql: easy blocked (no_chains), medium+hard can_start:true
     renderHub({ mockPreset: { mode: 'interview_loop', track: 'sql' } });
 
     // We're in Interview Loop mode (the Start CTA reflects it)…
     const start = await screen.findByRole('button', { name: /Start Interview Loop/ });
-    // … and there is NO difficulty selector at all — no Easy/Medium/Hard pills.
+
+    // Easy is NOT shown (no loop chains at easy) — Medium and Hard ARE shown.
     expect(screen.queryByRole('button', { name: 'Easy' })).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Hard' })).not.toBeInTheDocument();
-    // sql has chains (access.mixed) → Start is enabled.
+    expect(screen.getByRole('button', { name: 'Medium' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Hard' })).toBeInTheDocument();
+
+    // The auto-select effect picks 'medium' (first startable for sql).
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'Medium' }).className).toMatch(/active/);
+    });
+
+    // sql has chains at medium → Start is enabled.
     await waitFor(() => expect(start).not.toBeDisabled());
   });
 
-  it('disables Start for Interview Loop when the track pool is exhausted, with a track-level message', async () => {
+  it('disables Start for Interview Loop when both medium and hard are exhausted (no valid difficulty)', async () => {
     mockApiGet.mockImplementation((path, config) => {
       if (path === '/mock/history') return Promise.resolve({ data: [] });
       if (path === '/mock/analytics') {
@@ -344,20 +352,25 @@ describe('MockHub Interview Loop difficulty gating', () => {
             mode: config?.params?.mode, track: config?.params?.track,
             access: {
               easy: { can_start: false, block_reason: 'no_chains' },
-              medium: { can_start: false, block_reason: 'pool_exhausted' },
-              hard: { can_start: false, block_reason: 'pool_exhausted' },
-              mixed: { can_start: false, block_reason: 'pool_exhausted', block_copy: "You've completed every Interview Loop chain for this track. Try another track, or check back as new chains are added." },
+              medium: { can_start: false, block_reason: 'pool_exhausted', block_copy: "You've completed every Interview Loop chain at medium. Try hard." },
+              hard: { can_start: false, block_reason: 'pool_exhausted', block_copy: "You've completed every Interview Loop chain for this track." },
+              mixed: { can_start: false, block_reason: 'pool_exhausted' },
             },
           },
         });
       }
       return Promise.resolve({ data: {} });
     });
-    renderHub({ mockPreset: { mode: 'interview_loop', track: 'sql' } });
+    // The preset sets difficulty:'medium' so the auto-select picks medium first (blocked),
+    // finds no startable difficulty, and the Start button gates on medium (can_start:false).
+    renderHub({ mockPreset: { mode: 'interview_loop', track: 'sql', difficulty: 'medium' } });
 
     const start = await screen.findByRole('button', { name: /Start Interview Loop/ });
     await waitFor(() => expect(start).toBeDisabled());
-    expect(screen.getByText(/completed every Interview Loop chain for this track/i)).toBeInTheDocument();
+    // The difficulty selector shows Medium + Hard pills (no Easy).
+    expect(screen.getByRole('button', { name: 'Medium' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Hard' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Easy' })).not.toBeInTheDocument();
   });
 });
 
@@ -385,9 +398,10 @@ describe('MockHub Interview Loop + Mixed track', () => {
     renderHub({ mockPreset: { mode: 'interview_loop', track: 'ml-fundamentals' } });
     await screen.findByRole('button', { name: /Start Interview Loop/ });
     // The brief rail must NOT carry a Questions row (it used to leak the custom-drill
-    // numQuestions default of 2). It shows Track; Questions/Difficulty/Time are hidden.
+    // numQuestions default of 2). It shows Track and Difficulty; Questions is hidden.
     const briefKeys = [...document.querySelectorAll('.mock-rail-key')].map(k => k.textContent.trim());
     expect(briefKeys).toContain('Track');
+    expect(briefKeys).toContain('Difficulty');
     expect(briefKeys).not.toContain('Questions');
   });
 });

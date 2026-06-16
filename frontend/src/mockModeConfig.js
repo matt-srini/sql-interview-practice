@@ -384,3 +384,12 @@ export function getMockSetupDescriptor(mode, track, customCount, customMinutes, 
     detailLines: [],
   };
 }
+
+// Display label for an Interview Loop's difficulty. Escalating chains (Python /
+// Data-Modeling medium → hard follow-ups) render "medium → hard"; non-escalating
+// chains render the single level. Used by the MockHub brief/history, the session
+// view, and the dashboard mock-history so every surface tells the same truth.
+export function formatLoopDifficulty(difficulty, escalates) {
+  if (!difficulty) return '';
+  return escalates ? `${difficulty} → hard` : difficulty;
+}
