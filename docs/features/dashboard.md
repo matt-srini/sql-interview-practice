@@ -104,7 +104,7 @@ Returns per-track coaching metrics, weakest concepts, the cross-track pace insig
 **Notes:**
 - `median_solve_seconds` is `null` when there are no solved questions on that track.
 - `accuracy_pct` is `0.0` when there are zero attempts on that track.
-- `weakest_concepts` contains at most 3 entries, sorted by recency-weighted accuracy ascending (worst first), with `attempts` as the tiebreaker. Only concepts with ≥ 3 total attempts appear. Attempts from the last 14 days count 1.5× so recent struggles surface ahead of stale history.
+- `weakest_concepts` contains at most 3 entries, sorted by recency-weighted accuracy ascending (worst first), with `attempts` as the tiebreaker. Only concepts with ≥ 3 total attempts appear. Attempts from the last 14 days count 1.5× so recent struggles surface ahead of stale history. **Both practice and mock attempts count** — the concept lookup (`_build_concepts_lookup` in `routers/insights.py`) spans practice + mock-only questions, so a miss on a mock-only question feeds weak-concept detection (a miss under interview pressure is a strong weakness signal). The **drill** a weak concept links to stays practice-only (`/api/practice/drill` reads the practice catalog), so mock-only questions are detected-from but never served back to the user.
 - `cross_track_insight` is `null` when fewer than 2 tracks have data, or when the fastest–slowest gap is < 60 seconds.
 - `streak_days` is 0 when the user has not solved anything today.
 - Data source: `submissions` table (all attempts, not just first-correct).

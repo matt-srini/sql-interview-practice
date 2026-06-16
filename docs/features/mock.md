@@ -384,7 +384,7 @@ Focus is available on all three modes (benchmark, custom, interview_loop).
 - `loop_summary`: per-dimension performance for interview_loop sessions only (see above)
 - `mode_breakdown`: counts for `benchmark`, `custom`, `interview_loop`
 - `top_concepts`: top 5 by attempt count (with accuracy)
-- `weak_concepts`: worst 3 concepts by accuracy (≥3 attempts, <60%)
+- `weak_concepts`: worst 3 concepts by accuracy (≥3 attempts, <60%). Concept resolution uses the shared `_CONCEPTS_LOOKUP` (`routers/insights.py`), which spans practice **and mock-only** questions — so the questions a mock actually serves contribute to its own weak-concept readout (the lookup was practice-only before 2026-06-16, which silently dropped every mock-only question from this analysis).
 
 Returns 403 for non-Elite plans.
 

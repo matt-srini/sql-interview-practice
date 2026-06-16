@@ -67,8 +67,9 @@ def _path_for_concept(track: str, concept: str) -> tuple[str, str, str] | None:
 def _build_concepts_lookup() -> dict[str, dict[int, list[str]]]:
     lookup: dict[str, dict[int, list[str]]] = {}
     for track, module in _TOPIC_MODULES.items():
-        grouped = module.get_questions_by_difficulty()
-        questions = [q for difficulty_questions in grouped.values() for q in difficulty_questions]
+        practice = module.get_questions_by_difficulty()
+        mock = module.get_mock_questions_by_difficulty()
+        questions = [q for qs in practice.values() for q in qs] + [q for qs in mock.values() for q in qs]
         lookup[track] = {
             int(q["id"]): [c.upper() for c in q.get("concepts", [])]
             for q in questions

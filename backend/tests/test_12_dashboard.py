@@ -243,6 +243,35 @@ def test_tc182_concept_with_3_attempts_appears_in_weakest():
     assert concept.upper() in concept_names
 
 
+def test_tc182b_mock_only_question_concepts_count_toward_weakest():
+    """TC-182b: 3 wrong submissions for mock-only question 12035 → its concept appears in weakest_concepts.
+
+    SQL question 12035 is mock_only=True with concepts ['GROUPED AGGREGATION', 'DEDUPLICATION LOGIC'].
+    Before Change 1 the concepts lookup excluded mock-only questions so q12035 resolved to [].
+    After Change 1 mock-only questions are included, so the family appears in weakest_concepts.
+    """
+    from concept_families import resolve_to_family
+    mock_q_id = 12035  # SQL mock-only, concepts: ['GROUPED AGGREGATION', 'DEDUPLICATION LOGIC']
+    # Resolve the first concept to its canonical family (same as insights does internally)
+    expected_family = resolve_to_family("GROUPED AGGREGATION", "sql").upper()
+
+    with TestClient(app) as client:
+        user = _make_user(client, plan="pro")
+    for _ in range(3):
+        _insert_submission(user["id"], mock_q_id, is_correct=False, track="sql")
+
+    with TestClient(app) as client:
+        _make_user(client, plan="pro", existing_user=user)
+        r = client.get("/api/dashboard/insights")
+    assert r.status_code == 200
+    weakest = r.json().get("weakest_concepts", [])
+    concept_names = [w["concept"].upper() for w in weakest]
+    assert expected_family in concept_names, (
+        f"Expected family '{expected_family}' from mock-only question 12035 to appear in "
+        f"weakest_concepts, but got: {concept_names}"
+    )
+
+
 def test_tc183_concept_with_less_than_3_attempts_excluded():
     """TC-183: 2 wrong submissions → concept NOT in weakest_concepts."""
     q = _sql_easy_qs[0]
