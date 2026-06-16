@@ -5,7 +5,7 @@
  *   - Bold text (**...**)
  *   - Paragraph breaks (\n\n)
  *
- * Returns an array of React nodes suitable for rendering inside a <p>.
+ * Returns an array of React nodes for rendering inside a block container (<div>) — output can include <pre> code blocks, which are invalid inside <p>.
  */
 export function renderDescription(text) {
   if (!text) return null;
@@ -30,16 +30,15 @@ export function renderDescription(text) {
       }
       return seg;
     });
-    // Preserve paragraph breaks (\n\n) as visual spacing
+    // Preserve line breaks — every \n becomes a <br>
     const withBreaks = [];
     inline.forEach((seg, j) => {
       if (typeof seg === 'string') {
-        const lines = seg.split(/\n\n+/);
+        const lines = seg.split('\n');
         lines.forEach((line, k) => {
-          withBreaks.push(line);
+          if (line) withBreaks.push(line);
           if (k < lines.length - 1) {
-            withBreaks.push(<br key={`br-${i}-${j}-${k}a`} />);
-            withBreaks.push(<br key={`br-${i}-${j}-${k}b`} />);
+            withBreaks.push(<br key={`br-${i}-${j}-${k}`} />);
           }
         });
       } else {

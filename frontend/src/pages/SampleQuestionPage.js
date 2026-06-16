@@ -547,7 +547,7 @@ export default function SampleQuestionPage() {
                 </div>
               )}
 
-              <p className="description-text">{renderDescription(question.description)}</p>
+              <div className="description-text">{renderDescription(question.description)}</div>
 
               {meta.hasMCQ && question.code_snippet && (
                 <pre className="question-code-snippet">{question.code_snippet}</pre>

@@ -1090,7 +1090,7 @@ export default function QuestionPage() {
               </div>
             )}
 
-            <p className="description-text">{renderDescription(question.description)}</p>
+            <div className="description-text">{renderDescription(question.description)}</div>
 
             {hasPromptEvidence && (
               <section className="question-evidence-stack" aria-label={evidenceTitle}>
