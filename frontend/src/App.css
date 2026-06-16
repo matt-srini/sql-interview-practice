@@ -733,7 +733,7 @@ select {
 .app-topbar-inner {
   max-width: none;
   min-height: 64px;
-  padding: 0 1.1rem;
+  padding: 0 1.5rem;
   justify-content: space-between;
   gap: 0.85rem;
 }
@@ -774,7 +774,7 @@ select {
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 0.875rem;
+  gap: 1.25rem;
   margin-left: auto;
 }
 
