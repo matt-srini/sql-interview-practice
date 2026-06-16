@@ -733,6 +733,8 @@ def _public_question_payload(question: dict, track: str) -> dict:
             {"input": tc.get("input"), "description": tc.get("description", "")}
             for tc in all_cases[:public_count]
         ]
+        payload["starter_code"] = question.get("starter_code", "")
+        payload["function_signature"] = question.get("function_signature")
     # Pandas: include available dataframes info
     if track == "pandas":
         payload["dataframes"] = {

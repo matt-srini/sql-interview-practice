@@ -1670,3 +1670,70 @@ def test_history_time_used_clamped_to_limit():
     assert row["time_used_s"] == time_limit_s, (
         f"Expected time_used_s == time_limit_s ({time_limit_s}), got {row['time_used_s']}"
     )
+
+
+# ---------------------------------------------------------------------------
+# Fix regressions: python starter_code in mock payload + Interview Loop debrief
+# ---------------------------------------------------------------------------
+
+def test_tc_python_mock_payload_includes_starter_code():
+    """Python mock question payload must include a non-empty starter_code starting with 'def '."""
+    import python_questions
+    from routers.mock import _public_question_payload
+
+    # Find any python mock question that carries starter_code.
+    mock_qs = python_questions.get_mock_questions_by_difficulty()
+    q = next(
+        (q for qs in mock_qs.values() for q in qs if q.get("starter_code")),
+        None,
+    )
+    assert q is not None, "No python mock question with starter_code found in content bank"
+
+    payload = _public_question_payload(q, "python")
+
+    assert "starter_code" in payload, "payload missing 'starter_code' key"
+    assert payload["starter_code"], "starter_code is empty"
+    assert payload["starter_code"].startswith("def "), (
+        f"starter_code does not start with 'def ': {payload['starter_code'][:60]!r}"
+    )
+    assert "function_signature" in payload, "payload missing 'function_signature' key"
+
+
+def test_tc_interview_loop_debrief_no_hard_session_escalation():
+    """Interview Loop sessions (difficulty=None) must not produce 'Try a hard session'
+    and must suggest 'Interview Loop' in the priority_action."""
+    from routers.insights import build_session_debrief
+
+    # All questions solved → weak list is empty → triggers the 'if not weak' branch.
+    questions = [
+        {
+            "id": 1, "track": "ml-fundamentals", "is_solved": True,
+            "concepts": ["BIAS FAIRNESS"], "time_spent_s": 120,
+        },
+        {
+            "id": 2, "track": "ml-fundamentals", "is_solved": True,
+            "concepts": ["BIAS FAIRNESS"], "time_spent_s": 90,
+        },
+        {
+            "id": 3, "track": "ml-fundamentals", "is_solved": True,
+            "concepts": ["REGULARIZATION"], "time_spent_s": 110,
+        },
+    ]
+    # Interview Loop sessions have no difficulty field.
+    session_meta = {
+        "difficulty": None,
+        "track": "ml-fundamentals",
+        "time_used_s": 320,
+        "time_limit_s": 2700,
+    }
+
+    debrief = build_session_debrief(questions, session_meta, [], "elite")
+
+    assert debrief is not None
+    action = debrief.get("priority_action") or ""
+    assert "Try a hard session" not in action, (
+        f"priority_action wrongly escalates difficulty for Interview Loop: {action!r}"
+    )
+    assert "Interview Loop" in action, (
+        f"priority_action should mention 'Interview Loop' for loop sessions: {action!r}"
+    )

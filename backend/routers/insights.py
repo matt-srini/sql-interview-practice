@@ -723,7 +723,8 @@ def build_session_debrief(
     solved_count = sum(1 for q in enriched_questions if q.get("is_solved"))
     time_used_s: int | None = session_meta.get("time_used_s")
     time_limit_s: int = session_meta.get("time_limit_s") or 1800
-    session_difficulty: str = session_meta.get("difficulty") or "medium"
+    raw_difficulty = session_meta.get("difficulty")  # None for Interview Loop (emergent difficulty)
+    session_difficulty: str = raw_difficulty or "medium"
     session_track: str = session_meta.get("track") or "sql"
     family: str = _track_family(session_track, enriched_questions)
 
@@ -870,7 +871,12 @@ def build_session_debrief(
     priority_question_ids: list[int] = []
 
     if not weak:
-        if session_difficulty == "medium":
+        if raw_difficulty is None:
+            # Interview Loop — emergent difficulty, no fixed "session difficulty" to escalate.
+            priority_action = (
+                "Strong run through the chain. Try an Interview Loop on another track to broaden your range."
+            )
+        elif session_difficulty == "medium":
             priority_action = (
                 "You're reasoning through this difficulty well. Try a hard session to push your ceiling."
                 if family == "reasoning"
