@@ -1,6 +1,12 @@
 // Props:
 //   results: Array<{ input, expected, actual, passed, stdout, error }>
 //   hiddenSummary: { passed: number, total: number } | null
+
+function formatTestValue(v) {
+  if (typeof v === 'string') return v;
+  try { return JSON.stringify(v); } catch { return String(v); }
+}
+
 export default function TestCasePanel({ results = [], hiddenSummary = null }) {
   if (!results.length && !hiddenSummary) return null;
 
@@ -24,16 +30,16 @@ export default function TestCasePanel({ results = [], hiddenSummary = null }) {
               <div className="test-case-fields">
                 <div className="test-case-field">
                   <span className="test-case-label">Input</span>
-                  <code className="test-case-value">{String(tc.input)}</code>
+                  <code className="test-case-value">{formatTestValue(tc.input)}</code>
                 </div>
                 <div className="test-case-field">
                   <span className="test-case-label">Expected</span>
-                  <code className="test-case-value">{String(tc.expected)}</code>
+                  <code className="test-case-value">{formatTestValue(tc.expected)}</code>
                 </div>
                 {!tc.passed && (
                   <div className="test-case-field">
                     <span className="test-case-label">Got</span>
-                    <code className="test-case-value test-case-value--wrong">{String(tc.actual)}</code>
+                    <code className="test-case-value test-case-value--wrong">{formatTestValue(tc.actual)}</code>
                   </div>
                 )}
               </div>
