@@ -381,7 +381,7 @@ export default function MockSession() {
 
   // Early-exit discard helpers
   const elapsedS = session ? (session.time_limit_s - (remainingS ?? session.time_limit_s)) : 0;
-  const hasNoActivity = Object.keys(results).length === 0 && Object.keys(runResults).length === 0;
+  const hasNoActivity = Object.keys(results).length === 0 && Object.keys(runResults).length === 0 && !Object.values(submitted).some(Boolean);
   const isEarlyExit = status === 'active' && elapsedS < 60 && hasNoActivity;
 
   function handleExitClick() {
@@ -981,7 +981,7 @@ export default function MockSession() {
                   {q.framing === 'scenario' && (
                     <div className="mock-scenario-brief">
                       <span className="mock-scenario-brief-label">Scenario</span>
-                      <p>{renderDescription(q.description)}</p>
+                      <div>{renderDescription(q.description)}</div>
                     </div>
                   )}
 
@@ -1014,7 +1014,7 @@ export default function MockSession() {
                     </div>
                   ) : q.framing !== 'scenario' ? (
                     /* Normal description (hidden for scenario — already shown above) */
-                    <p className="mock-question-description">{renderDescription(q.description)}</p>
+                    <div className="mock-question-description">{renderDescription(q.description)}</div>
                   ) : null}
                 </>
               ) : (
@@ -1279,16 +1279,17 @@ export default function MockSession() {
                 {questions.map((question, i) => {
                   const isSolved = solved[question.id];
                   const isFlagged = flagged[question.id] && !solved[question.id];
+                  const isSubmitted = submitted[question.id] && !isSolved && !isFlagged;
                   return (
                     <li
                       key={question.id}
-                      className={`mock-review-item ${isSolved ? 'mock-review-item--solved' : isFlagged ? 'mock-review-item--flagged' : 'mock-review-item--unsolved'}`}
+                      className={`mock-review-item ${isSolved ? 'mock-review-item--solved' : isFlagged ? 'mock-review-item--flagged' : isSubmitted ? 'mock-review-item--submitted' : 'mock-review-item--unsolved'}`}
                       onClick={() => { setShowExitConfirm(false); setActiveQ(i); }}
                     >
                       <span className="mock-review-qnum">Q{i + 1}</span>
                       <span className="mock-review-qtitle">{question.title}</span>
                       <span className="mock-review-status">
-                        {isSolved ? '✓' : isFlagged ? '⚑' : '○'}
+                        {isSolved ? '✓' : isFlagged ? '⚑' : isSubmitted ? '●' : '○'}
                       </span>
                     </li>
                   );

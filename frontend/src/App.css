@@ -7993,6 +7993,7 @@ select {
 .mock-review-item--solved .mock-review-status { color: var(--success); }
 .mock-review-item--flagged .mock-review-status { color: var(--warning); }
 .mock-review-item--unsolved .mock-review-status { color: var(--text-secondary); }
+.mock-review-item--submitted .mock-review-status { color: var(--text-secondary); }
 .mock-modal-warning {
   font-size: 0.825rem;
   color: var(--warning);
