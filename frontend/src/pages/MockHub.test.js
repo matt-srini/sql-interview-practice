@@ -372,6 +372,65 @@ describe('MockHub Interview Loop difficulty gating', () => {
     expect(screen.getByRole('button', { name: 'Hard' })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Easy' })).not.toBeInTheDocument();
   });
+
+  it('clicking a pool_exhausted hard difficulty stays selected and shows its block message (no bounce back to medium)', async () => {
+    // medium is startable, hard is pool_exhausted. After auto-select lands on Medium,
+    // clicking Hard must NOT bounce back to Medium — it must stay on Hard and surface
+    // hard's block_copy via the difficulty notice.
+    mockApiGet.mockImplementation((path, config) => {
+      if (path === '/mock/history') return Promise.resolve({ data: [] });
+      if (path === '/mock/analytics') {
+        return Promise.resolve({ data: { benchmark_summary: { total_sessions: 0 }, drill_summary: { total_sessions: 0 }, mode_breakdown: { benchmark: 0, drill: 0 }, top_concepts: [], weak_concepts: [] } });
+      }
+      if (path === '/mock/access') {
+        const mode = config?.params?.mode;
+        const track = config?.params?.track;
+        if (mode === 'interview_loop') {
+          return Promise.resolve({
+            data: {
+              mode, track,
+              access: {
+                easy: { can_start: false, block_reason: 'no_chains', block_copy: 'Interview Loop has no chains at this difficulty — pick an enabled difficulty.' },
+                medium: { can_start: true },
+                hard: { can_start: false, block_reason: 'pool_exhausted', block_copy: "You've completed every hard Interview Loop chain for this track. Try another difficulty or track." },
+                mixed: { can_start: true },
+              },
+            },
+          });
+        }
+        return Promise.resolve({
+          data: {
+            mode, track,
+            access: { easy: { can_start: true }, medium: { can_start: true }, hard: { can_start: true }, mixed: { can_start: true } },
+          },
+        });
+      }
+      return Promise.resolve({ data: {} });
+    });
+
+    renderHub({ mockPreset: { mode: 'interview_loop', track: 'sql' } });
+
+    // Wait for Interview Loop UI to load and auto-select to settle on Medium (first startable).
+    await screen.findByRole('button', { name: /Start Interview Loop/ });
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'Medium' }).className).toMatch(/active/);
+    });
+
+    // Click the Hard pill (blocked due to pool_exhausted).
+    fireEvent.click(screen.getByRole('button', { name: 'Hard' }));
+
+    // Hard must NOT have bounced back to Medium. The auto-select effect is NOT keyed on
+    // `difficulty`, so it won't fire again and revert the user's choice.
+    // Medium should no longer carry the `active` class.
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'Medium' }).className).not.toMatch(/active/);
+    });
+
+    // The hard block_copy must appear in the difficulty notice (may also appear as a
+    // tooltip title on the blocked pill — getAllByText handles both occurrences).
+    const notices = screen.getAllByText("You've completed every hard Interview Loop chain for this track. Try another difficulty or track.");
+    expect(notices.length).toBeGreaterThan(0);
+  });
 });
 
 describe('MockHub Interview Loop + Mixed track', () => {

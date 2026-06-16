@@ -257,15 +257,20 @@ export default function MockHub() {
 
   useEffect(() => { fetchAccess(); }, [fetchAccess]);
 
-  // When Interview Loop is selected and the current difficulty has no chains, auto-select
-  // the first of medium/hard that is available (e.g. ML/Exp → hard; Python → medium).
+  // On entering Interview Loop or changing track, default to a STARTABLE difficulty — or,
+  // if every level is exhausted, the first that still EXISTS (block_reason !== 'no_chains')
+  // so its pool-exhausted message is visible. Deliberately NOT keyed on `difficulty`: clicking
+  // a blocked difficulty must STAY selected and surface its message, not bounce back here.
   useEffect(() => {
     if (mode !== 'interview_loop' || !accessState) return;
     const access = accessState.access;
     if (access?.[difficulty]?.can_start) return; // already on a valid difficulty
-    const firstValid = ['medium', 'hard'].find(d => access?.[d]?.can_start);
-    if (firstValid) setDifficulty(firstValid);
-  }, [mode, accessState, difficulty]);
+    const startable = ['medium', 'hard'].find(d => access?.[d]?.can_start);
+    const exists = ['medium', 'hard'].find(d => access?.[d] && access[d].block_reason !== 'no_chains');
+    const target = startable || exists;
+    if (target && target !== difficulty) setDifficulty(target);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mode, accessState]);
 
   function handleSelectMode(key) {
     setStartError(null);
