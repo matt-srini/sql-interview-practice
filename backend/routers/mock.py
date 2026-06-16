@@ -585,13 +585,15 @@ async def _select_questions(
 # combinations for Interview Loop is a guaranteed dead-end, so we gate them out of
 # the access map up front instead of failing at session start. Availability is
 # content-derived (single SoT = the question files), never hardcoded in the UI.
-_NO_LOOP_CHAINS_COPY = (
-    "Interview Loop has no chains for this track yet."
-)
-_LOOP_EXHAUSTED_COPY = (
-    "You've completed every Interview Loop chain for this track. "
-    "Try another track, or check back as new chains are added."
-)
+def _no_loop_chains_copy(difficulty: str) -> str:
+    return f"Interview Loop has no {difficulty} chains for this track yet."
+
+
+def _loop_exhausted_copy(difficulty: str) -> str:
+    return (
+        f"You've completed every {difficulty} Interview Loop chain for this track. "
+        "Try another difficulty or track, or check back as new chains are added."
+    )
 
 
 def _chain_parents_for(track: str, difficulty: str) -> list[dict]:
@@ -639,9 +641,9 @@ def _interview_loop_access(
     """
     parents = _chain_parents_for(track, difficulty)
     if not parents:
-        return {"block_reason": "no_chains", "block_copy": _NO_LOOP_CHAINS_COPY}
+        return {"block_reason": "no_chains", "block_copy": _no_loop_chains_copy(difficulty)}
     if all(int(p["id"]) in consumed_parent_ids for p in parents):
-        return {"block_reason": "pool_exhausted", "block_copy": _LOOP_EXHAUSTED_COPY}
+        return {"block_reason": "pool_exhausted", "block_copy": _loop_exhausted_copy(difficulty)}
     return None
 
 
@@ -683,7 +685,7 @@ async def _select_chain(
             status_code=409,
             detail={
                 "pool_exhausted": True,
-                "block_copy": _LOOP_EXHAUSTED_COPY,
+                "block_copy": _loop_exhausted_copy(difficulty),
             },
         )
 

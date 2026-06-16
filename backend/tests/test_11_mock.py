@@ -1852,3 +1852,25 @@ def test_tc_loop_debrief_with_stored_difficulty_detects_loop_by_mode():
     assert "Interview Loop" in action, (
         f"Debrief should suggest Interview Loop when all solved: {action!r}"
     )
+
+
+def test_tc_loop_exhausted_copy_is_difficulty_specific():
+    """block_copy messages include the difficulty word, not a generic track-level phrase."""
+    from routers.mock import _interview_loop_access, _chain_parents_for
+
+    # pool_exhausted: consume every sql hard chain parent
+    consumed = {int(p["id"]) for p in _chain_parents_for("sql", "hard")}
+    block = _interview_loop_access("sql", "hard", consumed)
+    assert block is not None
+    assert block["block_reason"] == "pool_exhausted"
+    assert "hard" in block["block_copy"], (
+        f"Expected 'hard' in pool_exhausted copy, got: {block['block_copy']!r}"
+    )
+
+    # no_chains: python has no hard chains
+    block = _interview_loop_access("python", "hard", set())
+    assert block is not None
+    assert block["block_reason"] == "no_chains"
+    assert "hard" in block["block_copy"], (
+        f"Expected 'hard' in no_chains copy, got: {block['block_copy']!r}"
+    )
