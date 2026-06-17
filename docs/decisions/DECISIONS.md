@@ -35,6 +35,12 @@ Keep entries to 4–6 lines. Friction kills logs; if it's longer than the change
 
 ## Entries
 
+## 2026-06-17 — Sentry replay masking, frontend Sentry.setUser, sourcemap cleanup
+**Area:** frontend · ops · privacy · **Status:** accepted
+**Decision:** Three coordinated Sentry hardening changes before launch: (1) `maskAllText:true` on Session Replay so visible PII (email in topbar, question content) never reaches Sentry's servers; (2) `Sentry.setUser` added in `AuthContext.js` alongside `identifyUser` calls so frontend errors carry user/plan attribution independent of backend tagging; (3) `filesToDeleteAfterUpload: ['./dist/**/*.map']` in the Vite plugin so `.map` files are uploaded to Sentry then stripped from the served bundle (`hidden` only omits the `sourceMappingURL` comment — files were still publicly accessible at `/assets/*.js.map`). Privacy policy updated to accurately describe these behaviors.
+**Rejected:** Keeping `maskAllText:false` for richer replay signal — the mismatch with the policy's "anonymised" wording and the real PII leak (email rendered in topbar captured verbatim in replays) outweighed the triage convenience. User attribution is retained via explicit `setUser(id, email)`; the only debugging loss is unmasked ambient page text.
+**Affects:** `frontend/src/index.js`, `frontend/src/contexts/AuthContext.js`, `frontend/vite.config.js`, `frontend/src/pages/PrivacyPolicyPage.js`, `docs/frontend.md`
+
 ## 2026-06-17 — Dark accent re-sharpened #5FB98C → #2FBE6B (the mute went too pale/minty)
 **Area:** frontend · design · **Status:** accepted
 **Decision:** Lived-in, the muted `#5FB98C` (HSL 150/39/55) read **pale/washed-out and minty** — at 39% saturation the crisp track colors always drowned it, and hue 150 leans teal rather than green. Re-sharpened the dark `--accent` to **`#2FBE6B`** (HSL 145/60/47): hue pulled off the mint edge toward emerald (150→145), saturation back to ~60%, held slightly darker (L 47%) so it's vivid and legible (~7.2:1 on cards) without the `#43D27C` glow. The one token carries ~263 uses; the 5 hardcoded mock-hub `rgba(95,185,140)` literals, the dark brand mark (`mark-reverse-no-bg.svg` + re-rendered favicon/icon/OG PNGs), and `--brand-accent` all follow. **Hue-only — frequency/role usage unchanged.** Light mode untouched.

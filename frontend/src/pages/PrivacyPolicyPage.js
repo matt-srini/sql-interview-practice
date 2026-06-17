@@ -47,7 +47,7 @@ export default function PrivacyPolicyPage({ isModal = false }) {
         <ul>
           <li><strong>Razorpay</strong> — payment processing (India). Their privacy policy applies to payment data.</li>
           <li><strong>Resend</strong> — transactional email delivery.</li>
-          <li><strong>Sentry</strong> — error tracking. Errors may include anonymised stack traces and browser metadata.</li>
+          <li><strong>Sentry</strong> — error tracking and session replay (triggered on errors only). Error reports include your user identifier (email), browser metadata, and stack traces. Page replay recordings have all text masked.</li>
           <li><strong>PostHog</strong> — product analytics. Session data is anonymised and stored on PostHog's EU infrastructure.</li>
         </ul>
 

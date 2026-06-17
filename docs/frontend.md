@@ -431,8 +431,9 @@ All requests use `withCredentials: true` so the `session_token` cookie is sent d
 
 Initialized in `index.js` when `VITE_SENTRY_DSN` is available. In local dev it comes from Vite env; in the deployed single-service app it is injected at request time into `window.__APP_CONFIG__` by `routers/spa.py`. Uses `@sentry/react` with:
 - Browser tracing (10% sample rate)
-- Session Replay on errors (100% of error sessions, 0% baseline)
+- Session Replay on errors (100% of error sessions, 0% baseline) — `maskAllText:true` so visible text (incl. email in topbar, question content) is never sent to Sentry
 - `ErrorBoundary.js` calls `Sentry.captureException()` on component crashes
+- **User identity:** `setSentryUser()` called in `AuthContext.js` alongside `identifyUser` on session restore / login / register; `Sentry.setUser(null)` on logout. Only set for authenticated users (email present); anonymous sessions leave Sentry user context null. This mirrors the backend tagging in `deps.py` so every error — frontend or backend — carries user/plan attribution.
 
 ### PostHog (product analytics)
 
@@ -456,7 +457,7 @@ Initialized via `analytics.js` when `VITE_POSTHOG_KEY` is available. In local de
 
 **Funnel:** Landing → Track selection → First question → First solve → Registration → Plan upgrade.
 
-**Production sourcemaps:** `vite.config.js` emits hidden sourcemaps for production builds. If `SENTRY_AUTH_TOKEN`, `SENTRY_ORG`, and `SENTRY_PROJECT` are provided during build, `@sentry/vite-plugin` uploads them automatically.
+**Production sourcemaps:** `vite.config.js` emits hidden sourcemaps for production builds. If `SENTRY_AUTH_TOKEN`, `SENTRY_ORG`, and `SENTRY_PROJECT` are provided during build, `@sentry/vite-plugin` uploads them automatically, then deletes them from `dist/` via `filesToDeleteAfterUpload`. This matters because `sourcemap:'hidden'` only omits the `//# sourceMappingURL` comment — the `.map` files are still present in `dist/` and served by the backend's static handler without the delete step.
 
 ---
 

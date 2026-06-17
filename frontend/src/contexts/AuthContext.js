@@ -1,6 +1,12 @@
 import { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import * as Sentry from '@sentry/react';
 import api from '../api';
 import { identifyUser, resetIdentity } from '../analytics';
+
+function setSentryUser(user) {
+  // Only tag authenticated users (anonymous rows have no email).
+  Sentry.setUser(user?.email ? { id: String(user.id), email: user.email } : null);
+}
 
 const AuthContext = createContext(null);
 
@@ -27,6 +33,7 @@ export function AuthProvider({ children }) {
         const u = res.data.user ?? null;
         setUser(u);
         identifyUser(u);
+        setSentryUser(u);
       })
       .catch(() => setUser(null))
       .finally(() => setLoading(false));
@@ -36,6 +43,7 @@ export function AuthProvider({ children }) {
     const res = await api.post('/auth/login', { email, password });
     setUser(res.data.user);
     identifyUser(res.data.user);
+    setSentryUser(res.data.user);
     return res.data; // includes merged_solves for post-login toast
   }, []);
 
@@ -43,6 +51,7 @@ export function AuthProvider({ children }) {
     const res = await api.post('/auth/register', { email, name, password });
     setUser(res.data.user);
     identifyUser(res.data.user);
+    setSentryUser(res.data.user);
     return res.data;
   }, []);
 
@@ -50,6 +59,7 @@ export function AuthProvider({ children }) {
     await api.post('/auth/logout').catch(() => {});
     setUser(null);
     resetIdentity();
+    Sentry.setUser(null);
   }, []);
 
   const requestMagicLink = useCallback(async (email) => {

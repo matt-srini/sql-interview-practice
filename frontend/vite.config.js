@@ -20,6 +20,10 @@ if (sentryAuthToken && sentryOrg && sentryProject) {
       release: sentryRelease ? { name: sentryRelease } : undefined,
       sourcemaps: {
         assets: './dist/**',
+        // Upload maps to Sentry then strip them from dist so the static server
+        // never exposes source at /assets/*.js.map. ('hidden' only omits the
+        // sourceMappingURL comment — the files are still physically present.)
+        filesToDeleteAfterUpload: ['./dist/**/*.map'],
       },
     })
   );
