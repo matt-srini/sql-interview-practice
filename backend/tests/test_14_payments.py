@@ -442,3 +442,53 @@ def test_tc223_webhook_idempotent_duplicate_event():
     assert r1.status_code == 200
     assert r2.status_code == 200
     assert r2.json() == {"status": "already processed"}
+
+
+def test_tc223b_webhook_subscription_charged_resolves_plan_from_plan_id():
+    """Regression for the P0: a mid-cycle Pro→Elite switch updates the
+    subscription's plan_id but NOT its frozen notes.target_plan. On the next
+    subscription.charged the webhook must apply the plan from the (authoritative)
+    plan_id, not the stale notes — otherwise the user is charged Elite but stays
+    Pro forever. plan_id resolution must win."""
+    test_secret = "wh_secret_switch"
+    with TestClient(app) as client:
+        user = _make_user(client, plan="pro")
+    user_id = user["id"]
+
+    event_id = f"evt_{uuid.uuid4().hex}"
+    payload = json.dumps({
+        "id": event_id,
+        "event": "subscription.charged",
+        "payload": {
+            "subscription": {
+                "entity": {
+                    "id": "sub_switched",
+                    "plan_id": "plan_elite_live",        # NEW plan after the switch
+                    "notes": {
+                        "user_id": str(user_id),
+                        "target_plan": "pro",            # STALE — frozen at creation
+                    },
+                }
+            }
+        }
+    }).encode()
+    sig = _make_webhook_hmac(test_secret, payload)
+    with patch("routers.razorpay.RAZORPAY_WEBHOOK_SECRET", test_secret), \
+         patch("routers.razorpay.RAZORPAY_PLAN_PRO", "plan_pro_live"), \
+         patch("routers.razorpay.RAZORPAY_PLAN_ELITE", "plan_elite_live"):
+        with TestClient(app) as client:
+            r = client.post(
+                "/api/razorpay/webhook",
+                content=payload,
+                headers={"X-Razorpay-Signature": sig},
+            )
+    assert r.status_code == 200
+
+    conn = _db_conn()
+    try:
+        with conn.cursor() as cur:
+            cur.execute("SELECT plan FROM users WHERE id = %s::uuid", (user_id,))
+            row = cur.fetchone()
+        assert row[0] == "elite", f"plan_id must win over stale notes; got {row[0]}"
+    finally:
+        conn.close()

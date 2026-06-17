@@ -74,6 +74,24 @@ def _plan_ids_usd() -> dict[str, str | None]:
     }
 
 
+def _plan_tier_for_plan_id(plan_id: str | None) -> str | None:
+    """Reverse-map a Razorpay plan_id → our plan tier ('pro' / 'elite').
+
+    The subscription's plan_id is the AUTHORITATIVE, current plan — it reflects a
+    mid-cycle plan switch (`subscription.update`), whereas the subscription's
+    `notes.target_plan` is frozen at creation time and is NOT updated by a switch.
+    Used by the webhook so a Pro→Elite switch is actually applied on the next
+    charge (the bug otherwise: charged Elite, stays Pro). Returns None for
+    orders/lifetime (no subscription plan_id) → caller falls back to notes."""
+    if not plan_id:
+        return None
+    for mapping in (_plan_ids(), _plan_ids_usd()):
+        for tier, configured_id in mapping.items():
+            if configured_id and configured_id == plan_id:
+                return tier
+    return None
+
+
 def _lifetime_amounts() -> dict[str, int]:
     return {
         "lifetime_pro":   RAZORPAY_AMOUNT_LIFETIME_PRO,
@@ -442,7 +460,14 @@ async def razorpay_webhook(request: Request) -> dict[str, str]:
     if event_type in {"payment.captured", "subscription.activated", "subscription.charged"}:
         resolved_user = await _resolve_event_user(lookup_entity)
         notes = (lookup_entity.get("notes") or {})
-        target_plan = notes.get("target_plan")
+        # Prefer the subscription's ACTUAL plan_id (authoritative + current — it
+        # reflects a mid-cycle switch via subscription.update, which the frozen
+        # notes.target_plan does NOT). Fall back to notes for orders/lifetime
+        # (payment.captured), which carry no subscription plan_id.
+        target_plan = (
+            _plan_tier_for_plan_id(subscription_entity.get("plan_id"))
+            or notes.get("target_plan")
+        )
         if resolved_user and target_plan in ALL_PAID_PLANS:
             await _apply_plan_change(
                 user=resolved_user,
@@ -493,7 +518,10 @@ async def razorpay_webhook(request: Request) -> dict[str, str]:
     payload_summary = {
         "type": event_type,
         "user_id": str(resolved_user["id"]) if resolved_user else None,
-        "target_plan": (lookup_entity.get("notes") or {}).get("target_plan"),
+        "target_plan": (
+            _plan_tier_for_plan_id(subscription_entity.get("plan_id"))
+            or (lookup_entity.get("notes") or {}).get("target_plan")
+        ),
         "payment_id": payment_entity.get("id"),
         "subscription_id": subscription_entity.get("id"),
     }

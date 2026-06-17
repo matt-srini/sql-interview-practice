@@ -17,7 +17,7 @@ from config import (
     RAZORPAY_PLAN_PRO,
     RAZORPAY_PLAN_ELITE,
 )
-from db import clear_user_subscription_id, delete_user_account, update_user_name  # noqa: F401
+from db import clear_user_subscription_id, delete_user_account, record_plan_change, set_user_plan, update_user_name  # noqa: F401
 from deps import clear_session_cookie, require_authenticated_user
 
 try:
@@ -351,8 +351,12 @@ async def switch_plan(
     Downgrade (Elite → Pro): always cycle_end; returns 400 if timing='now'.
     Upgrade   (Pro → Elite): honours timing='now' or 'cycle_end'.
 
-    Does NOT update the DB plan — the webhook (subscription.activated / .charged)
-    confirms the change on the next payment.
+    timing='now': the change takes effect at Razorpay immediately, so we apply the
+    new plan to the DB here too (instant entitlement). timing='cycle_end' (all
+    downgrades + scheduled upgrades): the DB is NOT changed now — the webhook
+    applies it at the next charge, resolving the plan from the subscription's
+    updated plan_id (not the frozen notes.target_plan). See
+    docs/features/pricing.md § Switching plans.
     """
     plan = current_user.get("plan", "free")
 
@@ -410,8 +414,18 @@ async def switch_plan(
         )
 
     if timing == "now":
+        # Applies at Razorpay immediately → reflect the new entitlement in our DB
+        # now (instant access) instead of waiting for the subscription.charged
+        # webhook. target_plan != plan is already validated above, and this is an
+        # upgrade (timing='now' is rejected for downgrades), so it is a real change.
+        await set_user_plan(current_user["id"], body.target_plan)
+        await record_plan_change(
+            current_user["id"], plan, body.target_plan, context="razorpay-switch-now",
+        )
         effective_at = updated_sub.get("charge_at") or updated_sub.get("current_start")
     else:
+        # cycle_end: NOT applied now. The webhook applies it at the next charge
+        # from the subscription's updated plan_id (see razorpay.py webhook).
         effective_at = (
             updated_sub.get("change_scheduled_at") or updated_sub.get("current_end")
         )

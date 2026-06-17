@@ -188,13 +188,15 @@ All webhook events are deduped on `event.id` using the `payment_events` table:
 
 | Event | Action |
 |---|---|
-| `payment.captured` | Apply `target_plan` from notes to user |
-| `subscription.activated` | Apply `target_plan` from notes to user |
-| `subscription.charged` | Apply `target_plan` (no-op if already on that plan) |
+| `payment.captured` | Apply `target_plan` **from notes** (orders/lifetime carry no subscription `plan_id`) |
+| `subscription.activated` | Apply the plan resolved from the subscription's **`plan_id`** (`_plan_tier_for_plan_id`), falling back to `notes.target_plan` |
+| `subscription.charged` | Apply the plan from the subscription's **`plan_id`** (no-op if already on it). Resolving from `plan_id` — not the frozen `notes.target_plan` — is what makes a mid-cycle Pro↔Elite switch actually apply on the next charge |
 | `subscription.cancelled` | Downgrade to `free` (unless user is on a lifetime plan) |
 | `subscription.halted` | Same as `subscription.cancelled` |
 | `payment.failed` | Logged only, no plan change |
 | All others | Ignored |
+
+**Switching plans mid-subscription (`POST /api/account/switch-plan`).** A Pro↔Elite switch calls Razorpay `subscription.update` (new `plan_id` + `schedule_change_at`). **`timing='now'`** (upgrades only) takes effect at Razorpay immediately, so the endpoint applies the new plan to the DB right away (instant entitlement). **`timing='cycle_end'`** (all downgrades + scheduled upgrades) does **not** change the DB then — the next `subscription.charged` applies it, resolving the plan from the subscription's updated `plan_id` (see the table above). The subscription's `notes.target_plan` is frozen at creation and is deliberately **not** the switch's source of truth — that was the root cause of the charge-without-delivery bug fixed 2026-06-18 (see [`docs/decisions/DECISIONS.md`](../decisions/DECISIONS.md)).
 
 ---
 

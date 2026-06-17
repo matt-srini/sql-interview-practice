@@ -333,6 +333,16 @@ def test_tc239_switch_upgrade_cycle_end_schedules_change():
         _SUB_ID,
         {"plan_id": "plan_elite_test", "quantity": 1, "schedule_change_at": "cycle_end"},
     )
+    # cycle_end is deferred — the DB plan must NOT change yet (the webhook applies
+    # it at the next charge from the subscription's updated plan_id).
+    conn = _db_conn()
+    try:
+        with conn.cursor() as cur:
+            cur.execute("SELECT plan FROM users WHERE id = %s::uuid", (user["id"],))
+            row = cur.fetchone()
+        assert row[0] == "pro", f"cycle_end switch must not change the DB plan yet; got {row[0]}"
+    finally:
+        conn.close()
 
 
 def test_tc240_switch_upgrade_now_switches_immediately():
@@ -353,6 +363,17 @@ def test_tc240_switch_upgrade_now_switches_immediately():
         _SUB_ID,
         {"plan_id": "plan_elite_test", "quantity": 1, "schedule_change_at": "now"},
     )
+    # timing='now' applies immediately — the DB plan MUST now be elite. (Regression
+    # guard for the P0 where a Pro→Elite switch was charged at Razorpay but never
+    # applied to the DB, so the user paid Elite and stayed Pro.)
+    conn = _db_conn()
+    try:
+        with conn.cursor() as cur:
+            cur.execute("SELECT plan FROM users WHERE id = %s::uuid", (user["id"],))
+            row = cur.fetchone()
+        assert row[0] == "elite", f"timing='now' upgrade must apply immediately; got {row[0]}"
+    finally:
+        conn.close()
 
 
 # ===========================================================================
