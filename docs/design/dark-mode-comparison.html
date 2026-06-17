@@ -15,7 +15,8 @@
     --tc-sql:#5B6AF0; --tc-python:#2D9E6B; --tc-pandas:#C47F17; --tc-pyspark:#D94F3D;
     --tc-de:#B9762B; --tc-dm:#3F8E8C; --tc-stats:#7A5AF0; --tc-ml:#E0456A; --tc-exp:#0EA5E9;
 
-    /* code editor — constant across all themes (the "forest-dark" Monaco theme) */
+    /* code editor — WAS constant forest-dark; now theme-aware (forest #0F2218 under light,
+       charcoal #16181C under dark) as of 2026-06-17. This audit renders the historical forest. */
     --ed-bg:#0F2218; --ed-line:#152D1E; --ed-gutter:#4A6654; --ed-text:#D4D4D4;
     --ed-comment:#6A9955; --ed-keyword:#569CD6; --ed-string:#CE9178; --ed-number:#B5CEA8; --ed-func:#DCDCAA;
   }
@@ -703,7 +704,10 @@
     Two themes at a time — <strong>light is always on the left</strong>. Use the buttons to swap the right column between the
     <strong>current dark</strong> (neutral charcoal), the <strong>proposed dark</strong> (a conservative re-hue of the current),
     and the <strong>blind dark</strong> (a clean-room theme derived purely from the light tokens, with the current dark deliberately ignored).
-    The code editor <code>#0F2218</code> is identical in every theme.
+    <em>2026-06-17 update: the code editor is no longer constant — it's now <strong>theme-aware</strong>
+    (<code>#0F2218</code> forest under light pages, charcoal <code>#16181C</code> under dark). This audit's
+    "editor identical in every theme" framing below is historical; see <code>color-palette.md</code>
+    § Code editor &amp; sandbox surfaces.</em>
   </p>
 </div>
 

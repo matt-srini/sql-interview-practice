@@ -362,7 +362,7 @@ TOPBAR
 
 Behavior contracts:
 - **Single global stylesheet** — `frontend/src/App.css`. No CSS framework, no CSS modules, no inline styled-components. New styles go in `App.css`.
-- **Active theme: Forest & Ink.** Two-tone editor (always dark) regardless of page theme.
+- **Active theme: Forest & Ink.** Two-tone editor (always dark), theme-aware: forest-dark under light pages, charcoal `#16181C` under dark pages (2026-06-17 — code surfaces match the page; see `docs/design/color-palette.md` § Code editor & sandbox surfaces).
 - **Track colors are fixed** — not overridden by theme changes. Track color is part of the track's identity.
 
 Token values, full palette, typography, and component specs: [`docs/design/color-palette.md`](docs/design/color-palette.md) (canonical) and [`docs/frontend.md`](docs/frontend.md) §Design system.

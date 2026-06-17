@@ -128,6 +128,25 @@ the unused `branding/lockup-bar-reverse-no-bg.{svg,png}` is **not** updated — 
 referenced in-app, and its transparent PNG isn't covered by the (opaque-background)
 render script; re-export it manually if it ever goes into use.
 
+### Code editor & sandbox surfaces (theme-aware)
+
+The code-writing/output surfaces are **always dark**, but match the page theme's
+*flavor*: **forest-green under light pages** (the praised warm two-tone island on paper),
+**neutral charcoal `#16181C` under dark pages** (so code reads as part of the calm
+charcoal UI, not a green island). Changed 2026-06-17 — see
+[`docs/decisions/DECISIONS.md`](../decisions/DECISIONS.md) (editor charcoal-dark; it
+superseded the editor sub-decision of the 2026-06-12 charcoal entry).
+
+| Surface | Light (base) | Dark (`[data-theme="dark"]`) |
+|---|---|---|
+| Monaco editor (`CodeEditor.js`) | `forest-dark` theme — `editor.background #0F2218` | `charcoal-dark` theme — `editor.background #16181C` (switched via `useTheme().isDark`) |
+| `.editor-wrapper` chrome | `#0F2218` | `#16181C` |
+| Code/output panels — `.question-code-snippet`, `.question-evidence-card`, `.scenario-context-pre`, `.solution-card pre`, `.quality-alt-code`, `.test-case-error-content`, `.print-output-content` | `#0F1C13` / `#0B1710` | `#16181C` |
+
+Syntax highlighting (vs-dark base — keyword blue, string orange, etc.) is shared across
+both editor themes; only the chrome (bg / gutter / line-highlight / indent) differs. The
+landing HeroIDE (`.lp-ide`) is a separate marketing surface and stays forest in both.
+
 Files: `frontend/public/branding/lockup-bar-no-bg.svg` (light) · `lockup-bar-reverse-no-bg.svg` (dark)
 
 The same mark drives every favicon, app icon, and the Open Graph social card — rendered on the deep forest-ink ground `#0D1A10` with the bright-green (dark-theme) mark colours so it reads on any browser chrome. Sources + the render pipeline: see [`docs/frontend.md`](../frontend.md) § Brand icons & social card.

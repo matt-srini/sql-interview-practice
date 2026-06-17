@@ -268,7 +268,7 @@ OG cards: `og-image.png` (1200×630, dark), `og-image-light.png` (1200×630, lig
 |---|---|---|
 | AppShell | `components/AppShell.js` | Challenge workspace: fixed topbar with direct track nav, collapsible sidebar |
 | SidebarNav | `components/SidebarNav.js` | Question list grouped by difficulty; topic-aware NavLinks |
-| CodeEditor | `components/CodeEditor.js` | Language-agnostic Monaco editor (`language`, `height`, `fontSize`, `onMount`, `ariaLabel` props; always dark theme) |
+| CodeEditor | `components/CodeEditor.js` | Language-agnostic Monaco editor (`language`, `height`, `fontSize`, `onMount`, `ariaLabel` props). Always dark, but **theme-aware**: `forest-dark` under light pages, `charcoal-dark` (`#16181C`) under dark pages — switched via `useTheme().isDark` (2026-06-17) |
 | SQLEditor | `components/SQLEditor.js` | Thin re-export of CodeEditor with `language="sql"` (backward compat) |
 | ResultsTable | `components/ResultsTable.js` | Tabular results with sticky headers, horizontal overflow cue, null value rendering, and optional `diffMode` for cell-level diff highlighting |
 | SchemaViewer | `components/SchemaViewer.js` | Dataset table schema with client-side search and click-to-copy column tokens |
@@ -464,7 +464,7 @@ Initialized via `analytics.js` when `VITE_POSTHOG_KEY` is available. In local de
 
 Single global stylesheet: `frontend/src/App.css`. No CSS framework, no CSS modules.
 
-**Philosophy:** Professional tool aesthetic — calm, fast, distraction-free. Designed for long sessions (30–90 min). Light mode primary, warm dark mode driven by the `[data-theme="dark"]` attribute. A bootstrap script in `index.html` sets `data-theme` pre-mount from `localStorage.theme` (explicit choice) or `matchMedia('(prefers-color-scheme: dark)')` (system default) — prevents theme-flash on first paint. The SQL editor pane always uses a dark background (`#1e1e1e`) regardless of scheme — intentional two-tone split.
+**Philosophy:** Professional tool aesthetic — calm, fast, distraction-free. Designed for long sessions (30–90 min). Light mode primary, warm dark mode driven by the `[data-theme="dark"]` attribute. A bootstrap script in `index.html` sets `data-theme` pre-mount from `localStorage.theme` (explicit choice) or `matchMedia('(prefers-color-scheme: dark)')` (system default) — prevents theme-flash on first paint. The code editor pane is always dark — an intentional two-tone split — but matches the page theme's flavor: forest-green (`#0F2218`) under light pages, neutral charcoal (`#16181C`) under dark pages (theme-aware as of 2026-06-17; see color-palette.md § Code editor & sandbox surfaces).
 
 ### Color tokens
 

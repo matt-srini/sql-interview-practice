@@ -6679,11 +6679,33 @@ select {
 [data-theme="dark"] .sidebar-error { color: var(--danger); }
 [data-theme="dark"] .track-tile { background: var(--surface-card); border-color: var(--border-subtle); }
 [data-theme="dark"] .mcq-option { background: var(--surface-card-alt); }
-[data-theme="dark"] .mcq-option--selected { border-color: var(--accent); background: rgba(67, 210, 124, 0.12); }
+[data-theme="dark"] .mcq-option--selected { border-color: var(--accent); background: var(--accent-soft); }
 [data-theme="dark"] .mcq-option--selected .mcq-option-letter { background: var(--accent); border-color: var(--accent); color: #0D1A10; }
 [data-theme="dark"] .mcq-option--correct { color: #B8E5CE; }
 [data-theme="dark"] .mcq-option--wrong { color: #F0C8C3; }
 [data-theme="dark"] .mcq-explanation { background: var(--surface-card-alt); }
+/* Code / sandbox surfaces under DARK pages → neutral charcoal #16181C, so the whole
+   family (editor + code outputs + MCQ code-evidence) matches the 'charcoal-dark' Monaco
+   theme and the calm dark UI instead of being forest-green islands. LIGHT mode keeps the
+   forest bases (#0F2218 / #0F1C13 / #0B1710) — the praised warm two-tone. These are
+   dark-scoped overrides; base rules (light) are untouched. (2026-06-17;
+   docs/decisions/DECISIONS.md editor_charcoal_dark.) */
+[data-theme="dark"] .editor-wrapper {
+  background: #16181C;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.45);
+}
+[data-theme="dark"] .question-evidence-card,
+[data-theme="dark"] .question-code-snippet,
+[data-theme="dark"] .scenario-context-pre,
+[data-theme="dark"] .solution-card pre,
+[data-theme="dark"] .quality-alt-code,
+[data-theme="dark"] .test-case-error-content,
+[data-theme="dark"] .print-output-content {
+  background: #16181C;
+}
+[data-theme="dark"] .scenario-context-pre {
+  color: #D8D5CE; /* neutralize the sage code text on charcoal */
+}
 [data-theme="dark"] .dashboard-track-card { background: var(--surface-card); border-color: var(--border-subtle); }
 [data-theme="dark"] .variable-row { background: var(--surface-card-alt); }
 [data-theme="dark"] .variable-column-token { background: rgba(255, 255, 255, 0.03); }
@@ -8348,7 +8370,7 @@ select {
 /* Benchmark blueprint keeps its green→blue gradient identity, with more presence
    than the light-mode 0.08 tints so it survives on the dark canvas. */
 [data-theme="dark"] .mock-hub-page .mock-benchmark-blueprint {
-  background: linear-gradient(135deg, rgba(67, 210, 124, 0.14), rgba(91, 106, 240, 0.16));
+  background: linear-gradient(135deg, rgba(95, 185, 140, 0.14), rgba(91, 106, 240, 0.16));
   border-color: rgba(91, 106, 240, 0.24);
 }
 
@@ -8392,7 +8414,7 @@ select {
    neutral surface lift + a soft accent outline — selection stays obvious, the green
    stops shouting. Hover brightens neutrally rather than flashing full green. */
 [data-theme="dark"] .mock-hub-page .mock-mode-card.selected {
-  border-color: rgba(67, 210, 124, 0.5);
+  border-color: rgba(95, 185, 140, 0.5);
   background: var(--surface-card-alt);
 }
 [data-theme="dark"] .mock-hub-page .mock-mode-card:hover:not(.selected):not(:disabled) {
@@ -8402,7 +8424,7 @@ select {
 /* Tier badges echo the tier language: Pro = green, Elite = teal (the premium
    end of the Elite green→teal gradient). Soft, label-weight. */
 [data-theme="dark"] .mock-hub-page .mock-mode-card-badge--pro {
-  background: rgba(67, 210, 124, 0.16);
+  background: rgba(95, 185, 140, 0.16);
   color: #62E195;
 }
 [data-theme="dark"] .mock-hub-page .mock-elite-badge-inline,
@@ -9220,8 +9242,8 @@ select {
   background: var(--surface-card-alt);
 }
 [data-theme="dark"] .mock-hub-empty-card--benchmark {
-  background: linear-gradient(135deg, rgba(67, 210, 124, 0.14), var(--surface-card-alt));
-  border-color: rgba(67, 210, 124, 0.22);
+  background: linear-gradient(135deg, rgba(95, 185, 140, 0.14), var(--surface-card-alt));
+  border-color: rgba(95, 185, 140, 0.22);
 }
 [data-theme="dark"] .mock-hub-empty-card--drill {
   background: linear-gradient(135deg, rgba(91, 106, 240, 0.20), var(--surface-card-alt));
