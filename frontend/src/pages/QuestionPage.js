@@ -70,7 +70,11 @@ export default function QuestionPage() {
   const drillConcept = searchParams.get('drill');
   const [drillContext, setDrillContext] = useState(null);
   useEffect(() => {
-    if (!drillConcept) { setDrillContext(null); return; }
+    // Concept drills are Pro+. Skip the (403-ing) fetch for Free/anonymous so no drill
+    // nav bar renders — AppShell already gates the param; this keeps the page consistent.
+    const plan = user?.plan?.startsWith('lifetime_') ? user.plan.replace('lifetime_', '') : (user?.plan ?? 'free');
+    const canDrill = plan === 'pro' || plan === 'elite';
+    if (!drillConcept || !canDrill) { setDrillContext(null); return; }
     api.get('/practice/drill', { params: { track: topic, concept: drillConcept } })
       .then(r => {
         const data = r.data;
@@ -78,7 +82,7 @@ export default function QuestionPage() {
         setDrillContext({ concept: data.concept, trackLabel: data.track_label, questions: data.questions });
       })
       .catch(() => setDrillContext(null));
-  }, [drillConcept, topic]);
+  }, [drillConcept, topic, user?.plan]);
 
   // Derive API paths from topic
   const apiPrefix = meta.apiPrefix; // '', '/python', '/pandas', '/pyspark'

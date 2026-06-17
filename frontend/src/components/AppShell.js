@@ -10,7 +10,7 @@ import TrackHubPage from '../pages/TrackHubPage';
 import api from '../api';
 export default function AppShell() {
   const { catalog, loading, error, refresh } = useCatalog();
-  const { user, refreshUser } = useAuth();
+  const { user, loading: authLoading, refreshUser } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [desktopCollapsed, setDesktopCollapsed] = useState(false);
   const [isMobile, setIsMobile] = useState(() =>
@@ -24,6 +24,11 @@ export default function AppShell() {
 
   // Determine if we're at the hub (no question selected)
   const isAtHub = !location.pathname.includes('/questions/');
+
+  // Concept drills are a Pro+ feature. Fail closed while auth is still loading, so we
+  // never flash drill chrome (or fire a Pro-only request) before the plan is known.
+  const drillPlan = user?.plan?.startsWith('lifetime_') ? user.plan.replace('lifetime_', '') : (user?.plan ?? 'free');
+  const canDrill = !authLoading && (drillPlan === 'pro' || drillPlan === 'elite');
 
   // Track mobile breakpoint
   useEffect(() => {
@@ -52,8 +57,8 @@ export default function AppShell() {
     const rawConcepts = params.get('concepts');
     const rawDrill = params.get('drill');
 
-    // Handle ?drill=<raw concept family name>
-    if (rawDrill) {
+    // Handle ?drill=<raw concept family name> — Pro+ only; inert for Free/anonymous.
+    if (rawDrill && canDrill) {
       const requestedDrill = rawDrill.trim().toLowerCase().replace(/_/g, ' ').replace(/-/g, ' ');
       if (requestedDrill) {
         const groups = catalog?.groups ?? [];
@@ -102,7 +107,7 @@ export default function AppShell() {
     if (firstMatch) {
       navigate(`${location.pathname}/questions/${firstMatch.id}`, { replace: true });
     }
-  }, [isAtHub, loading, error, catalog, location.pathname, location.search, navigate]);
+  }, [isAtHub, loading, error, catalog, location.pathname, location.search, navigate, canDrill]);
 
 
   useEffect(() => {
@@ -135,7 +140,10 @@ export default function AppShell() {
 
   const { topic, meta } = useTopic();
   const pathSlug = new URLSearchParams(location.search).get('path');
-  const drillConcept = new URLSearchParams(location.search).get('drill');
+  // Honor ?drill= only for Pro+; for Free/anonymous it's inert — they get the normal
+  // practice question + catalog sidebar (no drill chrome, no Pro-only fetch, no shimmer).
+  const rawDrillParam = new URLSearchParams(location.search).get('drill');
+  const drillConcept = canDrill ? rawDrillParam : null;
   const focusMode = new URLSearchParams(location.search).get('focus') === '1';
 
   // Path data — fetched when ?path= is present
@@ -147,13 +155,16 @@ export default function AppShell() {
       .catch(() => setPathData(null));
   }, [pathSlug]);
 
-  // Drill data — fetched when ?drill= is present; scopes the sidebar to one concept (like a path)
+  // Drill data — fetched when ?drill= is present (Pro+ only); scopes the sidebar to one concept.
   const [drillData, setDrillData] = useState(null);
+  const [drillLoading, setDrillLoading] = useState(false);
   useEffect(() => {
-    if (!drillConcept) { setDrillData(null); return; }
+    if (!drillConcept) { setDrillData(null); setDrillLoading(false); return; }
+    setDrillLoading(true);
     api.get('/practice/drill', { params: { track: topic, concept: drillConcept } })
       .then(r => setDrillData(r.data))
-      .catch(() => setDrillData(null));
+      .catch(() => setDrillData(null))
+      .finally(() => setDrillLoading(false));
   }, [drillConcept, topic]);
 
   const modeLabel = pathData ? pathData.title
@@ -303,6 +314,7 @@ export default function AppShell() {
           ) : drillConcept ? (
             <DrillSidebar
               drillData={drillData}
+              drillLoading={drillLoading}
               drillConcept={drillConcept}
               topic={topic}
               meta={meta}
@@ -570,12 +582,22 @@ function PathSidebar({ pathData, pathSlug, topic, meta, currentId, onNavigate, p
 // Scoped sidebar for a concept drill (?drill=<concept>). Mirrors PathSidebar but
 // sources its questions from GET /api/practice/drill instead of a curated path.
 // Pro+ only, so every question is accessible — no locked-state handling needed.
-function DrillSidebar({ drillData, drillConcept, topic, meta, currentId, onNavigate }) {
-  if (!drillData) {
+export function DrillSidebar({ drillData, drillLoading, drillConcept, topic, meta, currentId, onNavigate }) {
+  if (drillLoading) {
     return (
       <div className="path-sidebar-loading">
         <div className="path-sidebar-shimmer" />
         <div className="path-sidebar-shimmer path-sidebar-shimmer--short" />
+      </div>
+    );
+  }
+  if (!drillData) {
+    // Fetch finished with no data (transient error). Don't shimmer forever — give a way out.
+    return (
+      <div className="path-sidebar-header">
+        <div className="path-sidebar-title">Drill unavailable</div>
+        <p className="path-sidebar-meta">Couldn't load this concept drill right now.</p>
+        <Link to={`/practice/${topic}`} className="path-sidebar-back">← Back to {meta.label}</Link>
       </div>
     );
   }
