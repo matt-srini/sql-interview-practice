@@ -51,19 +51,23 @@ that pops, not the environment. The earlier green-tinted "Forest" dark surfaces
 (`#0D1A10` page, `#132218` cards) put the brand hue into the background, text, and
 accent all at once, so it read as "too green / neon" for a distraction-free study
 tool. The fix demotes green from the environment to an accent on a calm charcoal
-ground — a **muted sage-emerald `#5FB98C`** (2026-06-17). This landed in two steps:
-first a *bright* emerald `#43D27C` (2026-06-13, de-neoned from the original `#4ADE80`);
-then — when even that still read as *glowing* on charcoal across dense screens (~20
-green hits per page) — a **chroma drop** to `#5FB98C` (HSL 150/39/55): saturation
-61%→39% with lightness held, so it stays fully legible (~7.2:1 on cards) but stops
-radiating. It's chroma-matched to `--success` (the calm green nobody ever flagged).
-A broader pass that *demoted* links / kickers / numerals / upgrade-washes to neutral
-was trialed and **reverted** — on a dark ground, color is the click/affordance signal,
-so those all keep the muted green and the CTA keeps its deep `#1C8A4F`; only the
-**SESSION DEBRIEF** results panel stays neutral (a green wash there competed with the
-page CTA). Light mode is unchanged (still Forest & Ink — deep-green `#166534` on warm
-paper). See [`docs/decisions/DECISIONS.md`](../decisions/DECISIONS.md) (2026-06-12
-charcoal, 2026-06-13 accent tone-down, 2026-06-17 `dark_accent_mute`).
+ground — a crisp emerald **`#2FBE6B`** (HSL 145/60/47, 2026-06-17). The hue arrived in
+three steps: (1) a *bright* emerald `#43D27C` (2026-06-13, de-neoned from the original
+`#4ADE80`); (2) when even that still *glowed* on charcoal across dense screens (~20 green
+hits per page), a **chroma drop** to a muted sage `#5FB98C` (HSL 150/39/55, saturation
+61%→39%) — calm, but at 39% it read **pale/washed-out and minty** (hue 150 leans teal)
+and the crisp track colors drowned it; (3) a **re-sharpen** to `#2FBE6B` — hue pulled off
+the mint edge toward emerald (150→145), saturation back up to ~60%, held slightly darker
+(L 47%) so it stays vivid and legible (~7.2:1 on cards) without radiating. A broader pass
+that *demoted* links / kickers / numerals / upgrade-washes to neutral was trialed and
+**reverted** in the mute era — on a dark ground, color was the click/affordance signal,
+so those kept the green and the CTA keeps its deep `#1C8A4F`; only the **SESSION DEBRIEF**
+results panel stays neutral (a green wash there competed with the page CTA). *(A
+deliberate role-differentiation pass — reserving solid green, giving success an outlined
+treatment — is tracked separately under `dark_accent_differentiation`.)* Light mode is
+unchanged (still Forest & Ink — deep-green `#166534` on warm paper). See
+[`docs/decisions/DECISIONS.md`](../decisions/DECISIONS.md) (2026-06-12 charcoal,
+2026-06-13 accent tone-down, 2026-06-17 `dark_accent_mute` + `dark_accent_resharpen`).
 
 | Token | Value | Role |
 |---|---|---|
@@ -80,10 +84,10 @@ charcoal, 2026-06-13 accent tone-down, 2026-06-17 `dark_accent_mute`).
 | `--text-secondary` | `#9BA1A9` | Secondary labels |
 | `--text-muted` | `#6E747D` | Placeholder |
 | `--text-soft` | `#474C54` | Disabled / faint |
-| `--accent` | `#5FB98C` | Brand green accent — active states, links, small fills (NOT the primary button). Muted from `#43D27C` on 2026-06-17 |
-| `--accent-strong` | `#74C79E` | Hover/pressed accent |
-| `--accent-soft` | `rgba(95, 185, 140, 0.12)` | Accent tint |
-| `--accent-soft-strong` | `rgba(95, 185, 140, 0.22)` | Stronger accent tint |
+| `--accent` | `#2FBE6B` | Brand green accent — active states, links, small fills (NOT the primary button). Muted `#43D27C`→`#5FB98C` then re-sharpened `#5FB98C`→`#2FBE6B` on 2026-06-17 |
+| `--accent-strong` | `#56D289` | Hover/pressed accent |
+| `--accent-soft` | `rgba(47, 190, 107, 0.12)` | Accent tint |
+| `--accent-soft-strong` | `rgba(47, 190, 107, 0.22)` | Stronger accent tint |
 | `--success` | `#4CAF82` | Correct answer |
 | `--success-soft` | `rgba(76, 175, 130, 0.12)` | Success tint |
 | `--success-text` | `#8BD2B0` | Success text |
@@ -93,15 +97,15 @@ charcoal, 2026-06-13 accent tone-down, 2026-06-17 `dark_accent_mute`).
 | `--danger` | `#E06B5A` | Error / wrong |
 | `--danger-soft` | `rgba(224, 107, 90, 0.12)` | Danger tint |
 | `--danger-text` | `#F0B8B1` | Danger text |
-| `--brand-accent` | `#5FB98C` | Brand green accent for dark surfaces (Razorpay checkout theme) |
+| `--brand-accent` | `#2FBE6B` | Brand green accent for dark surfaces (Razorpay checkout theme) |
 
 **Primary button (dark) is NOT `--accent`.** On charcoal, white text on the
-muted green `--accent` (`#5FB98C`) fails contrast (~1.6:1, harsh). The primary
+green `--accent` (`#2FBE6B`) fails contrast for white text (~2.4:1, harsh). The primary
 action button (`.btn-primary` and everything that composes it — `.mock-start-btn`,
 both `UpgradeButton` tiers, plus `.auth-submit-btn` / `.acct-save-btn` /
 `.path-nav-btn--next` / `.lp-paths-cta-primary`) uses a deep **"action green"
 `#1C8A4F` + white** (~4.4:1 on a 600-weight label), hover `#229B5A`. This is the
-two-tier green system: *muted `#5FB98C` for accents, deep `#1C8A4F` for the
+two-tier green system: *green `#2FBE6B` for accents, deep `#1C8A4F` for the
 solid action button.* The **Elite** upgrade button keeps the two-tone
 **green→teal gradient** `#1C8A4F → #109488` (hover `#229B5A → #14A498`); **Pro**
 is the solid deep green. These are literals on the button rules, not tokens,
@@ -114,10 +118,10 @@ rather than white.
 Two diagonal rounded squares — big block anchored bottom-left, small block floating top-right — creating a thought-bubble feel.
 
 **Light:** big block `#166534`, small block `#4B6858`  
-**Dark:** big block `#5FB98C`, small block `#87B09A`
+**Dark:** big block `#2FBE6B`, small block `#87B09A`
 
-The dark mark green is **`#5FB98C`** — re-matched to the muted UI `--accent` on
-2026-06-17 (it had tracked the accent since 2026-06-13's `#43D27C`). The mark is a static
+The dark mark green is **`#2FBE6B`** — it tracks the UI `--accent` (re-matched
+`#43D27C` 2026-06-13 → `#5FB98C` 2026-06-17 → re-sharpened to `#2FBE6B` same day). The mark is a static
 SVG (`/branding/mark-reverse-no-bg.svg`, used directly as an `<img>`, so editing it fixes
 the in-app logo with no render step), and the favicons / app icons / Open Graph card are
 PNGs **re-rendered from the SVG sources** (`favicon.svg`, `icon-maskable.svg`,

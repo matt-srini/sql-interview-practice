@@ -6600,13 +6600,16 @@ select {
   --text-secondary: #9BA1A9;
   --text-muted:     #6E747D;
   --text-soft:      #474C54;
-  /* Move 1 (2026-06-17): chroma drop ~61%→~39% saturation, lightness held, so the
-     brand green reads as a calm accent on charcoal instead of glowing. Was #43D27C
-     (HSL 144,61,54). See docs/decisions/DECISIONS.md dark_accent_mute. */
-  --accent:             #5FB98C;
-  --accent-strong:      #74C79E;
-  --accent-soft:        rgba(95, 185, 140, 0.12);
-  --accent-soft-strong: rgba(95, 185, 140, 0.22);
+  /* Dark brand accent (2026-06-17). Journey: #43D27C (HSL 144,61,54) glowed on charcoal
+     → muted to #5FB98C (HSL 150,39,55), but at 39% sat it read pale/washed-out AND minty
+     (hue 150 leans teal) → re-sharpened to #2FBE6B (HSL 145,60,47): hue pulled off the
+     mint edge toward emerald (150→145), saturation back up (~60%), held slightly darker
+     so it's crisp, not glowing. See docs/decisions/DECISIONS.md dark_accent_mute +
+     dark_accent_resharpen. Light mode is untouched. */
+  --accent:             #2FBE6B;
+  --accent-strong:      #56D289;
+  --accent-soft:        rgba(47, 190, 107, 0.12);
+  --accent-soft-strong: rgba(47, 190, 107, 0.22);
   --success:       #4CAF82;
   --success-soft:  rgba(76, 175, 130, 0.12);
   --success-text:  #8BD2B0;
@@ -6619,7 +6622,7 @@ select {
   --shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.40);
   --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.40);
   --shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.55);
-  --brand-accent: #5FB98C;
+  --brand-accent: #2FBE6B;
 }
 
 [data-theme="dark"] body { background: var(--bg-page); }
@@ -8415,7 +8418,7 @@ select {
 /* Benchmark blueprint keeps its green→blue gradient identity, with more presence
    than the light-mode 0.08 tints so it survives on the dark canvas. */
 [data-theme="dark"] .mock-hub-page .mock-benchmark-blueprint {
-  background: linear-gradient(135deg, rgba(95, 185, 140, 0.14), rgba(91, 106, 240, 0.16));
+  background: linear-gradient(135deg, rgba(47, 190, 107, 0.14), rgba(91, 106, 240, 0.16));
   border-color: rgba(91, 106, 240, 0.24);
 }
 
@@ -8459,7 +8462,7 @@ select {
    neutral surface lift + a soft accent outline — selection stays obvious, the green
    stops shouting. Hover brightens neutrally rather than flashing full green. */
 [data-theme="dark"] .mock-hub-page .mock-mode-card.selected {
-  border-color: rgba(95, 185, 140, 0.5);
+  border-color: rgba(47, 190, 107, 0.5);
   background: var(--surface-card-alt);
 }
 [data-theme="dark"] .mock-hub-page .mock-mode-card:hover:not(.selected):not(:disabled) {
@@ -8469,7 +8472,7 @@ select {
 /* Tier badges echo the tier language: Pro = green, Elite = teal (the premium
    end of the Elite green→teal gradient). Soft, label-weight. */
 [data-theme="dark"] .mock-hub-page .mock-mode-card-badge--pro {
-  background: rgba(95, 185, 140, 0.16);
+  background: rgba(47, 190, 107, 0.16);
   color: #62E195;
 }
 [data-theme="dark"] .mock-hub-page .mock-elite-badge-inline,
@@ -9287,8 +9290,8 @@ select {
   background: var(--surface-card-alt);
 }
 [data-theme="dark"] .mock-hub-empty-card--benchmark {
-  background: linear-gradient(135deg, rgba(95, 185, 140, 0.14), var(--surface-card-alt));
-  border-color: rgba(95, 185, 140, 0.22);
+  background: linear-gradient(135deg, rgba(47, 190, 107, 0.14), var(--surface-card-alt));
+  border-color: rgba(47, 190, 107, 0.22);
 }
 [data-theme="dark"] .mock-hub-empty-card--drill {
   background: linear-gradient(135deg, rgba(91, 106, 240, 0.20), var(--surface-card-alt));
@@ -14423,9 +14426,10 @@ button.mock-focus-locked:hover {
 .acct-id-chip-icon { font-size: 0.7rem; opacity: 0.55; }
 
 /* ============================================================
-   Dark-mode accent calm (2026-06-17). Pairs with the muted --accent (#5FB98C)
-   in [data-theme="dark"] above. See docs/design/color-palette.md and
-   docs/decisions/DECISIONS.md (dark_accent_mute).
+   Dark-mode accent calm (2026-06-17). Pairs with the re-sharpened --accent
+   (#2FBE6B, HSL 145/60/47 — was muted #5FB98C, too pale/minty) in
+   [data-theme="dark"] above. See docs/design/color-palette.md and
+   docs/decisions/DECISIONS.md (dark_accent_mute + dark_accent_resharpen).
 
    A broad "de-overload" pass — demoting link-arrows, kickers, numerals, and
    upgrade washes to neutral — was trialed and REVERTED after review: on a dark

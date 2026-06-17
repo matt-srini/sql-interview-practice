@@ -237,7 +237,7 @@ When `solved_count === question_count`, a completion banner is shown with a "Wha
 
 #### Brand icons & social card
 
-All brand icons derive from the canonical two-diagonal-squares mark on the Forest & Ink ground `#0D1A10` (green mark `#5FB98C`/`#87B09A` — kept matched to the UI accent: `#4ADE80`→`#43D27C` 2026-06-13, `#43D27C`→`#5FB98C` 2026-06-17).
+All brand icons derive from the canonical two-diagonal-squares mark on the Forest & Ink ground `#0D1A10` (green mark `#2FBE6B`/`#87B09A` — kept matched to the UI accent: `#4ADE80`→`#43D27C` 2026-06-13, `#43D27C`→`#5FB98C`→`#2FBE6B` 2026-06-17).
 
 **Source SVGs** (do not modify — these are the design source of truth):
 - `frontend/public/favicon.svg` — 64×64 rounded chip; **theme-adaptive** via an internal `@media (prefers-color-scheme)` block: dark scheme = forest-ink chip (`#0D1A10`) + bright mark; light scheme = white chip + hairline border + deep-green mark (`#166534`/`#4B6858`). Source for both dark and light favicon PNGs.
@@ -487,7 +487,7 @@ palette doc.
 | `--text-primary` | `#1D3526` | `#CDD1D6` | Body text |
 | `--text-secondary` | `#4B6858` | `#9BA1A9` | Labels, metadata |
 | `--text-muted` | `#7A9485` | `#6E747D` | Placeholders, disabled |
-| `--accent` | `#166534` | `#5FB98C` | Active states, links, small accents (dark muted from `#43D27C` 2026-06-17) |
+| `--accent` | `#166534` | `#2FBE6B` | Active states, links, small accents (dark `#43D27C`→`#5FB98C`→re-sharpened `#2FBE6B` 2026-06-17) |
 | `--success` | `#15803D` | `#4CAF82` | Correct answer |
 | `--warning` | `#C47F17` | `#D4973A` | Hints, locked |
 | `--danger` | `#D94F3D` | `#E06B5A` | Errors, wrong answer |

@@ -2,7 +2,7 @@
 <!-- datathink favicon — Forest & Ink, theme-adaptive.
      Canonical two-diagonal-squares mark on a chip that flips with the
      browser/OS colour scheme via an internal prefers-color-scheme query:
-       dark  → forest-ink chip #0D1A10 + bright mark #5FB98C/#87B09A
+       dark  → forest-ink chip #0D1A10 + bright mark #2FBE6B/#87B09A
        light → white chip + hairline + deep-green mark #166534/#4B6858
      Chip geometry is full-bleed in both modes (a light-only inset border
      adds edge definition), so the dark raster is identical to before.
@@ -12,7 +12,7 @@
   <style>
     .chip   { fill: #0D1A10; }
     .border { stroke: none; }
-    .big    { fill: #5FB98C; }
+    .big    { fill: #2FBE6B; }
     .small  { fill: #87B09A; }
     @media (prefers-color-scheme: light) {
       .chip   { fill: #FFFFFF; }

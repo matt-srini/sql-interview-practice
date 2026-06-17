@@ -35,6 +35,13 @@ Keep entries to 4–6 lines. Friction kills logs; if it's longer than the change
 
 ## Entries
 
+## 2026-06-17 — Dark accent re-sharpened #5FB98C → #2FBE6B (the mute went too pale/minty)
+**Area:** frontend · design · **Status:** accepted
+**Decision:** Lived-in, the muted `#5FB98C` (HSL 150/39/55) read **pale/washed-out and minty** — at 39% saturation the crisp track colors always drowned it, and hue 150 leans teal rather than green. Re-sharpened the dark `--accent` to **`#2FBE6B`** (HSL 145/60/47): hue pulled off the mint edge toward emerald (150→145), saturation back to ~60%, held slightly darker (L 47%) so it's vivid and legible (~7.2:1 on cards) without the `#43D27C` glow. The one token carries ~263 uses; the 5 hardcoded mock-hub `rgba(95,185,140)` literals, the dark brand mark (`mark-reverse-no-bg.svg` + re-rendered favicon/icon/OG PNGs), and `--brand-accent` all follow. **Hue-only — frequency/role usage unchanged.** Light mode untouched.
+**Rejected:** (a) Nudging saturation up while keeping hue 150 (`#5BC18E`-ish) — still minty; the *hue* was the problem, not just chroma. (b) Returning to the bright `#43D27C` — that's the glow the mute removed. (c) Moving the brand accent off green to a non-green hue (the textbook brand≠success separation) — a partial rebrand of the green datathink identity; named honestly, deferred, not taken.
+**Affects:** frontend/src/App.css (dark `--accent`/`-strong`/`-soft`/`-soft-strong` + `--brand-accent` + 5 rgba literals + 2 comments), frontend/public/{favicon,icon-maskable,og-image,branding/mark-reverse-no-bg}.svg + 7 re-rendered dark PNGs, docs/design/color-palette.md, docs/frontend.md, docs/design/dark-mode-comparison.html.
+**Refines:** 2026-06-17 `dark_accent_mute` (hue value only — its "mute the accent globally, don't make green rare" rule is untouched here; a separate, deliberate role-differentiation pass will revisit that).
+
 ## 2026-06-17 — Mock NEXT STEP breaks weak-concept ties toward a known cross-session weakness
 **Area:** mock · frontend · **Status:** accepted
 **Decision:** When session concepts tie on accuracy + attempts (e.g. several at `0/1`), the debrief's NEXT STEP concept (`weak[0]`) now breaks the tie toward a **known cross-session weakness** (≥3 past attempts, <60% historical accuracy) before falling back to question order. The "known weak" test — already used for the pattern wording — is extracted to one helper `_is_known_weak` and reused in the `weak` sort (single definition, no duplication). The frontend mirrors this by **floating the backend's `priority_concept` to the top row** of the concept breakdown rather than re-deriving the tiebreak in JS, so the table's first row always equals NEXT STEP.
