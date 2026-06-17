@@ -15,7 +15,7 @@ import { useTheme } from '../App';
  *   - 'app' — full-bleed workspace chrome used inside the practice shell.
  *     Has a center slot for the mode pill, extras slot for plan pill, and
  *     a below-topbar slot for upgrade banners.
- *   - 'minimal' — brand + theme toggle + user pill only. Used on the
+ *   - 'minimal' — brand + user pill only. Used on the
  *     auth / verify / reset / 404 pages where the extra nav is distracting.
  *
  * Props:
@@ -41,7 +41,10 @@ export default function Topbar({
   belowTopbar = null,
 }) {
   const { user, logout } = useAuth();
-  const { cycleTheme, themeIcon, themeLabel, isDark } = useTheme();
+  // Dark is deferred (light-only at launch): isDark is permanently false, so the
+  // logo takes its light branch. cycleTheme/themeIcon/themeLabel are unused now
+  // the toggle is removed, but the context still provides them (shape preserved).
+  const { isDark } = useTheme();
   const [practiceOpen, setPracticeOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [bannerDismissed, setBannerDismissed] = useState(false);
@@ -247,15 +250,7 @@ export default function Topbar({
               </>
             )}
 
-            <button
-              className="theme-toggle"
-              onClick={cycleTheme}
-              aria-label={themeLabel}
-              title={themeLabel}
-            >
-              {themeIcon}
-            </button>
-
+            {/* Theme toggle removed — light-only at launch (dark deferred + dormant). */}
             {showSep && <div className="topbar-sep" aria-hidden="true" />}
 
             {builtInPlanPill}
@@ -291,14 +286,7 @@ export default function Topbar({
           {/* Hamburger — mobile only (landing ≤640px, app ≤900px) */}
           {!isMinimal && (
             <div className="topbar-mobile-actions" ref={mobileMenuRef}>
-              <button
-                className="theme-toggle topbar-mobile-theme"
-                onClick={cycleTheme}
-                aria-label={themeLabel}
-                title={themeLabel}
-              >
-                {themeIcon}
-              </button>
+              {/* Theme toggle removed — light-only at launch (dark deferred + dormant). */}
               <button
                 className={`topbar-hamburger${mobileMenuOpen ? ' topbar-hamburger--open' : ''}`}
                 onClick={() => setMobileMenuOpen((v) => !v)}

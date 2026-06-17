@@ -362,7 +362,7 @@ TOPBAR
 
 Behavior contracts:
 - **Single global stylesheet** — `frontend/src/App.css`. No CSS framework, no CSS modules, no inline styled-components. New styles go in `App.css`.
-- **Active theme: Forest & Ink.** Two-tone editor (always dark), theme-aware: forest-dark under light pages, charcoal `#16181C` under dark pages (2026-06-17 — code surfaces match the page; see `docs/design/color-palette.md` § Code editor & sandbox surfaces).
+- **Active theme: Forest & Ink — light-only at launch.** Dark mode is **deferred to a future version** and sits **dormant**: the `[data-theme="dark"]` CSS (App.css), the CodeEditor forest/charcoal switch, and the `isDark` logo-src logic all remain in the codebase but are unreachable — `ThemeProvider` (App.js) and the `index.html` pre-paint bootstrap both lock `theme='light'` / `isDark=false`, ignoring `localStorage` + OS `prefers-color-scheme` (and flushing any stored pref), and the toggle UI is removed from `Topbar`. Re-enabling dark is a near-one-line flip in both places. Two-tone editor (always dark): forest-dark under light pages (the charcoal `#16181C` dark-page variant is dormant). See `docs/decisions/DECISIONS.md` (2026-06-17 defer-dark) + `docs/design/color-palette.md` § Code editor & sandbox surfaces.
 - **Track colors are fixed** — not overridden by theme changes. Track color is part of the track's identity.
 
 Token values, full palette, typography, and component specs: [`docs/design/color-palette.md`](docs/design/color-palette.md) (canonical) and [`docs/frontend.md`](docs/frontend.md) §Design system.

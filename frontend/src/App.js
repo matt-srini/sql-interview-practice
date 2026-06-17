@@ -51,26 +51,34 @@ export function useToast() {
 }
 
 function ThemeProvider({ children }) {
-  // Default new visitors to LIGHT — the brand's dominant face (Forest & Ink) and
-  // the intended landing first impression — rather than following the OS
-  // prefers-color-scheme (which would show charcoal dark to a dark-OS visitor on
-  // their very first load). A returning user's explicit choice is persisted in
-  // localStorage and always wins; anyone can toggle to dark and it sticks.
-  const [theme, setThemeState] = useState(() => localStorage.getItem('theme') || 'light');
+  // LAUNCH: light-only. Dark mode is DEFERRED to a future version and sits
+  // DORMANT — its [data-theme="dark"] CSS (App.css), the CodeEditor
+  // forest/charcoal switch, and the isDark logo-src logic all remain in the
+  // codebase but are unreachable because we lock `theme` to 'light' and `isDark`
+  // to false here, so every consumer takes its light branch. We deliberately
+  // ignore both localStorage and the OS prefers-color-scheme, and we FLUSH any
+  // previously-stored `theme` so a returning dark-mode visitor lands on light.
+  // Re-enabling dark is a near-one-line flip: restore the
+  // localStorage/prefers-color-scheme read here AND in the index.html pre-paint
+  // bootstrap script. See docs/decisions/DECISIONS.md (2026-06-17 defer-dark)
+  // + docs/design/color-palette.md § Active theme launch status.
+  const theme = 'light';
 
   useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme);
-  }, [theme]);
+    document.documentElement.setAttribute('data-theme', 'light');
+    // Flush a stale theme preference left by a pre-launch (possibly dark) visitor,
+    // so re-enabling dark later starts from the documented light default.
+    if (localStorage.getItem('theme')) localStorage.removeItem('theme');
+  }, []);
 
-  function setTheme(value) {
-    setThemeState(value);
-    localStorage.setItem('theme', value);
-  }
-
-  const isDark = theme === 'dark';
-  const cycleTheme = () => setTheme(isDark ? 'light' : 'dark');
-  const themeIcon = isDark ? '☀' : '☾';
-  const themeLabel = isDark ? 'Switch to light mode' : 'Switch to dark mode';
+  // Context shape preserved so consumers (Topbar / SampleQuestionPage logo,
+  // CodeEditor) don't break. isDark is permanently false; setTheme / cycleTheme
+  // are intentional no-ops while dark is deferred.
+  const isDark = false;
+  const setTheme = () => {};
+  const cycleTheme = () => {};
+  const themeIcon = '☾';
+  const themeLabel = 'Switch to dark mode';
 
   return (
     <ThemeContext.Provider value={{ theme, setTheme, isDark, cycleTheme, themeIcon, themeLabel }}>

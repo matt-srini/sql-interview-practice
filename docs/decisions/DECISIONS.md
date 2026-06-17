@@ -35,6 +35,12 @@ Keep entries to 4–6 lines. Friction kills logs; if it's longer than the change
 
 ## Entries
 
+## 2026-06-17 — Ship light-only at launch; dark mode deferred to a future version (dormant, not deleted)
+**Area:** frontend · design · process · **Status:** accepted
+**Decision:** For launch we ship **light mode only**. The dark-mode differentiation pass (role-differentiation, tracked under `dark_accent_differentiation`) is unfinished, so rather than expose a half-done dark theme we lock the app to light: `ThemeProvider` (`App.js`) and the `index.html` pre-paint bootstrap both force `theme='light'` / `data-theme="light"`, ignore `localStorage` + OS `prefers-color-scheme`, and flush any stored `theme`; the toggle is removed from `Topbar` (desktop + mobile). Everything dark stays **dormant** — the `[data-theme="dark"]` CSS, the CodeEditor forest/charcoal switch, the `isDark` logo logic, and the landed `#2FBE6B` hue work all remain; `isDark` is just permanently false, so re-enabling dark later is a near-one-line flip at those two lock points.
+**Rejected:** (a) Exposing the half-finished dark theme via the existing toggle — ships visibly unfinished work and undercuts the polished light surface that is the brand's dominant face. (b) Ripping out the `[data-theme="dark"]` CSS + `isDark` plumbing — discards weeks of landed dark work (charcoal pivot, accent-hue tuning, code-surface theming) we intend to finish and re-ship; deletion would make re-enabling a rebuild, not a flag flip.
+**Affects:** frontend/src/App.js, frontend/src/components/Topbar.js, frontend/index.html, docs/design/color-palette.md, docs/frontend.md, CLAUDE.md § Design system.
+
 ## 2026-06-17 — Sentry replay masking, frontend Sentry.setUser, sourcemap cleanup
 **Area:** frontend · ops · privacy · **Status:** accepted
 **Decision:** Three coordinated Sentry hardening changes before launch: (1) `maskAllText:true` on Session Replay so visible PII (email in topbar, question content) never reaches Sentry's servers; (2) `Sentry.setUser` added in `AuthContext.js` alongside `identifyUser` calls so frontend errors carry user/plan attribution independent of backend tagging; (3) `filesToDeleteAfterUpload: ['./dist/**/*.map']` in the Vite plugin so `.map` files are uploaded to Sentry then stripped from the served bundle (`hidden` only omits the `sourceMappingURL` comment — files were still publicly accessible at `/assets/*.js.map`). Privacy policy updated to accurately describe these behaviors.

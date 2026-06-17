@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <script>(function(){var t=localStorage.getItem('theme');if(t!=='dark'&&t!=='light'){try{t=window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';}catch(e){t='light';}}document.documentElement.setAttribute('data-theme',t);}());</script>
+    <script>(function(){/* LAUNCH: light-only; dark deferred + dormant. Force light pre-paint so a dark-OS or previously-dark visitor never flashes dark. To re-enable dark, restore the localStorage / prefers-color-scheme resolution here AND in App.js ThemeProvider. */document.documentElement.setAttribute('data-theme','light');}());</script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
     <!-- Primary meta -->
@@ -38,8 +38,8 @@
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-light-16.png" media="(prefers-color-scheme: light)" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/site.webmanifest" />
-    <meta name="theme-color" content="#0D1A10" media="(prefers-color-scheme: dark)" />
-    <meta name="theme-color" content="#F5F7F4" media="(prefers-color-scheme: light)" />
+    <!-- LAUNCH: light-only — single light chrome tint. The dark prefers-color-scheme variant (#0D1A10) is dormant; restore the two media-scoped tags to re-enable dark. -->
+    <meta name="theme-color" content="#F5F7F4" />
   </head>
   <body>
     <div id="root"></div>

@@ -8,6 +8,8 @@ This file is the authoritative color reference for datathink. All new UI work mu
 
 Chosen for its calm, authoritative feel — deep forest greens ground the interface without feeling flashy. The warm off-white background reads as premium and focused.
 
+> **Active theme launch status: light-only.** datathink ships **light mode only** at launch. Dark mode (the `[data-theme="dark"]` token table below + the charcoal code surfaces) is **deferred to a future version and sits dormant** — the CSS and the `isDark` plumbing remain, but `ThemeProvider` (`App.js`) and the `index.html` pre-paint bootstrap lock the app to `theme='light'` / `isDark=false` (ignoring `localStorage` + OS `prefers-color-scheme`), and the theme toggle is removed from `Topbar`. The dark tokens below are **reference for when dark is re-enabled** (a near-one-line flip), not a currently-reachable theme. See [`docs/decisions/DECISIONS.md`](../decisions/DECISIONS.md) (2026-06-17 defer-dark-to-a-future-version).
+
 ### Light mode
 
 | Token | Value | Role |
@@ -43,7 +45,7 @@ Chosen for its calm, authoritative feel — deep forest greens ground the interf
 | `--shadow-lg` | `0 8px 40px rgba(20, 41, 27, 0.12)` | Modal shadow |
 | `--brand-accent` | `#166534` | Razorpay checkout theme color |
 
-### Dark mode (`[data-theme="dark"]`)
+### Dark mode (`[data-theme="dark"]`) — DORMANT (deferred to a future version)
 
 **Charcoal, not forest (2026-06-12).** The dark theme uses near-neutral charcoal
 surfaces (WhatsApp / ChatGPT style) so the brand green reads as the one **accent**
