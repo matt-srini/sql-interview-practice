@@ -8290,6 +8290,17 @@ select {
   margin-left: auto;
 }
 
+/* Per-weak-concept drill link in the concept breakdown — every weak concept is
+   independently drillable so the user chooses which to attack (concept-only). */
+.mock-concept-drill-link {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.78rem;
+  white-space: nowrap;
+}
+.mock-concept-drill-link:hover { text-decoration: underline; }
+
 /* ── Mock session debrief (Elite) ───────────────────────── */
 .mock-debrief {
   display: grid;
@@ -8373,7 +8384,8 @@ select {
   line-height: 1.5;
 }
 
-/* Primary next step: the concept drill (mirrors the dashboard .db-weak-drill). */
+/* The mock debrief's only next-step link: the concept drill (no learning-path
+   link — paths live on the dashboard). Mirrors the dashboard .db-weak-drill. */
 .mock-debrief-drill-link {
   margin-top: 0.15rem;
   color: var(--accent);
@@ -8383,19 +8395,6 @@ select {
 }
 
 .mock-debrief-drill-link:hover {
-  text-decoration: underline;
-}
-
-/* Honest secondary: the curated path that also covers this concept (drill is primary). */
-.mock-debrief-path-link-secondary {
-  color: var(--text-secondary);
-  text-decoration: none;
-  font-weight: 500;
-  font-size: 0.8rem;
-}
-
-.mock-debrief-path-link-secondary:hover {
-  color: var(--accent);
   text-decoration: underline;
 }
 

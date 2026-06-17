@@ -35,6 +35,13 @@ Keep entries to 4–6 lines. Friction kills logs; if it's longer than the change
 
 ## Entries
 
+## 2026-06-17 — Mock post-mortem is concept-drill-only; the dashboard is the sole concept+path surface
+**Area:** mock · frontend · **Status:** accepted
+**Decision:** The entire mock post-mortem now links to **concept drills only — no learning paths.** (1) The debrief "Next step" drops the path secondary it briefly had — the concept drill is the only link. (2) The concept breakdown makes **every weak concept independently drillable** — each weak row carries its own `Drill →` (`/practice/{row.track}?drill={row.concept}`) so the user *chooses* which to attack, replacing the single aggregate "Drill weak concepts →" that deep-linked one arbitrarily-chosen concept (and disagreed with the debrief's pick on ties). (3) The custom/Loop footer's concept-drill primary is removed → footer is `Share` + `Back to drill lobby`. (4) The benchmark `Study {path} →` aggregate is dropped. `build_session_debrief` no longer returns `priority_path_slug`/`priority_path_title`. The dashboard alone keeps concept-primary / path-secondary.
+**Rejected:** Keeping the path as an honest secondary in the debrief (the prior call) — the user wants mock kept strictly concept-oriented and the path affordance consolidated on the dashboard, so there is exactly one place paths are recommended. Also rejected: a relabeled "Drill weakest concept →" footer button — redundant once every weak row is drillable.
+**Affects:** backend/routers/insights.py (`build_session_debrief` — path fields removed), frontend/src/pages/MockSession.js (per-row drill links; aggregate + footer drill buttons + dead `topDrillConcept` removed), frontend/src/App.css (`.mock-concept-drill-link`; removed `.mock-debrief-path-link-secondary`), backend/tests/test_11_mock.py, docs/features/mock.md, CLAUDE.md.
+**Supersedes:** 2026-06-17 — Mock debrief "Next step" is the concept drill, not a learning path
+
 ## 2026-06-17 — Preview/milestone upgrade nudges: green wash in dark (drop the clashing indigo)
 **Area:** frontend · design · **Status:** accepted
 **Decision:** Removed the one-off indigo dark overrides (`rgba(91,106,240,0.12)`) on `.preview-locked-callout` (the "PREVIEW MODE" block on locked questions) and `.track-hub-milestone-upgrade`, so both inherit their green `--accent-soft` base in dark — matching their own green left-border + "Unlock with Pro" CTA and the other (already-green) upgrade nudges. The indigo clashed with those green accents and read as a jarring blue block on the charcoal UI. Light is unchanged (it was always green via the base; only the dark overrides were removed).
@@ -48,7 +55,7 @@ Keep entries to 4–6 lines. Friction kills logs; if it's longer than the change
 **Affects:** frontend/src/components/AppShell.js (redirect effect + `DrillUpsellBanner`), frontend/src/App.css (`.app-banner-upsell`), docs/frontend.md.
 
 ## 2026-06-17 — Mock debrief "Next step" is the concept drill, not a learning path
-**Area:** mock · frontend · **Status:** accepted
+**Area:** mock · frontend · **Status:** superseded
 **Decision:** The Elite session debrief's priority action now leads with the **concept drill** (`/practice/{track}?drill={concept}`) and demotes the matching curated path to an honest secondary — matching the dashboard weak-areas panel and the rest of the mock post-mortem. `build_session_debrief` always emits `priority_concept`/`priority_track` + a drill-oriented `priority_action` for a weak concept; the path lookup only populates the secondary `priority_path_slug`/`priority_path_title`. The Interview-Loop summary (e.g. `/mock/:id`) previously deep-linked `/learn/...` as the primary "Next step", contradicting the documented contract. Also dropped the frontend regex that munged the path sentence, and the duplicate local `_TRACK_DISPLAY` (now the module-level `_TRACK_LABELS`).
 **Rejected:** Removing the path from the debrief entirely — the dashboard keeps it as an honest secondary ("or take the … path"), so the fix is *priority*, not removal.
 **Affects:** backend/routers/insights.py (`build_session_debrief`), frontend/src/pages/MockSession.js, frontend/src/App.css, backend/tests/test_11_mock.py (`test_debrief_weak_concept_recommends_drill_not_path`), docs/features/mock.md. Completes the intent of the 2026-06-13 concept-drill rollout ("insights.py … debrief → `?drill=`").

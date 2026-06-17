@@ -542,9 +542,6 @@ export default function MockSession() {
     } else {
       drillTrack = sessionTrack;
     }
-    const topDrillConcept = conceptRows.find(
-      (row) => row.track === drillTrack && row.attempts > 0 && row.accuracy < 1
-    )?.concept ?? null;
     const recommendedDrillDifficulty = (sum?.difficulty || session?.difficulty || 'easy') === 'mixed'
       ? 'medium'
       : (sum?.difficulty || session?.difficulty || 'easy');
@@ -668,22 +665,14 @@ export default function MockSession() {
                     <div className="mock-debrief-action">
                       <span className="mock-debrief-action-label">Next step</span>
                       <span className="mock-debrief-action-copy">{sum.debrief.priority_action}</span>
-                      {/* Primary: the concept drill (matches the dashboard weak-areas
-                          contract). The curated path, when present, is an honest secondary. */}
+                      {/* Concept drill only — the mock post-mortem never links to a
+                          learning path. Path recommendations live on the dashboard. */}
                       {sum.debrief.priority_concept && sum.debrief.priority_track && (
                         <Link
                           to={`/practice/${sum.debrief.priority_track}?drill=${encodeURIComponent(sum.debrief.priority_concept)}`}
                           className="mock-debrief-drill-link"
                         >
                           Drill this concept →
-                        </Link>
-                      )}
-                      {sum.debrief.priority_path_slug && (
-                        <Link
-                          to={`/learn/${sum.debrief.priority_track || sum.track || session?.track || 'sql'}/${sum.debrief.priority_path_slug}`}
-                          className="mock-debrief-path-link-secondary"
-                        >
-                          Or take the {sum.debrief.priority_path_title} path →
                         </Link>
                       )}
                     </div>
@@ -738,6 +727,7 @@ export default function MockSession() {
                     const knownWeak = isElite && insights?.weakest_concepts?.find(
                       w => w.concept === row.concept && w.track === row.track
                     );
+                    const isWeak = row.attempts > 0 && row.accuracy < 1;
                     return (
                       <div key={`${row.track}-${row.concept}`} className={`mock-concept-summary-row${knownWeak ? ' mock-concept-summary-row--known-weak' : ''}`}>
                         <span className="mock-concept-name">{row.concept}</span>
@@ -745,35 +735,20 @@ export default function MockSession() {
                           <span className="mock-concept-known-weak-badge">known weakness</span>
                         )}
                         <span className="mock-concept-score">{row.correct} / {row.attempts}</span>
+                        {/* Every weak concept is independently drillable, so the user picks
+                            which to attack — concept drill only, never a learning path. */}
+                        {isWeak && (
+                          <Link
+                            to={`/practice/${row.track}?drill=${encodeURIComponent(row.concept)}`}
+                            className="mock-concept-drill-link"
+                          >
+                            Drill →
+                          </Link>
+                        )}
                       </div>
                     );
                   })}
                 </div>
-                {summaryDescriptor.isBenchmark && topDrillConcept && (() => {
-                  // Elite: prefer a path recommendation for the top weak session concept (secondary)
-                  const topWeak = conceptRows.find(r => r.track === drillTrack && r.accuracy < 1);
-                  const matchedInsight = isElite && topWeak && insights?.weakest_concepts?.find(
-                    w => w.concept === topWeak.concept && w.track === topWeak.track
-                  );
-                  return (
-                    <>
-                      <Link
-                        to={`/practice/${drillTrack}?drill=${encodeURIComponent(topDrillConcept)}`}
-                        className="btn btn-secondary btn-compact"
-                      >
-                        Drill weak concepts →
-                      </Link>
-                      {matchedInsight?.recommended_path_slug && (
-                        <Link
-                          to={`/learn/${matchedInsight.track}/${matchedInsight.recommended_path_slug}`}
-                          className="btn btn-secondary btn-compact"
-                        >
-                          Study {matchedInsight.recommended_path_title} →
-                        </Link>
-                      )}
-                    </>
-                  );
-                })()}
               </div>
             )}
             <hr className="mock-summary-divider" />
@@ -797,26 +772,11 @@ export default function MockSession() {
                   </button>
                 </>
               ) : (
-                <>
-                  {isProOrElite && topDrillConcept ? (
-                    <Link
-                      to={`/practice/${drillTrack}?drill=${encodeURIComponent(topDrillConcept)}`}
-                      className="btn btn-primary"
-                    >
-                      Drill weak concepts →
-                    </Link>
-                  ) : (
-                    <button
-                      className="btn btn-primary"
-                      onClick={() => navigate('/mock', { state: { mockPreset: drillPreset } })}
-                    >
-                      Continue targeted drill
-                    </button>
-                  )}
-                  <button className="btn btn-secondary" onClick={() => navigate('/mock')}>
-                    Back to drill lobby
-                  </button>
-                </>
+                // Concept drills live per-row in the breakdown above (the user chooses);
+                // the footer is just navigation.
+                <button className="btn btn-secondary" onClick={() => navigate('/mock')}>
+                  Back to drill lobby
+                </button>
               )}
             </div>
           </div>

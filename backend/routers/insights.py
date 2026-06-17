@@ -868,8 +868,6 @@ def build_session_debrief(
     priority_action: str | None = None
     priority_concept: str | None = None
     priority_track: str | None = None
-    priority_path_slug: str | None = None
-    priority_path_title: str | None = None
     priority_question_ids: list[int] = []
 
     is_loop = session_meta.get("mode") == "interview_loop"
@@ -905,11 +903,10 @@ def build_session_debrief(
         priority_concept = concept_name
         priority_track = track
 
-        # The concept drill is ALWAYS the primary next step — it mirrors the
-        # dashboard weak-areas contract and the rest of the mock post-mortem
-        # (see CLAUDE.md §Dashboard insights / docs/features/dashboard.md). A
-        # matching curated path, if one exists, is offered only as an honest
-        # secondary below; it never replaces the drill as the priority action.
+        # The mock post-mortem is concept-drill-only: the next step is always a
+        # focused drill on the weakest concept (/practice/{track}?drill={concept}).
+        # Learning-path recommendations live exclusively on the dashboard, which
+        # keeps the concept-primary / path-secondary pairing (docs/features/dashboard.md).
         track_label = _TRACK_LABELS.get(track, track)
         if family == "executable":
             priority_action = (
@@ -921,12 +918,6 @@ def build_session_debrief(
                 f"Drill {concept_name} in {track_label} — a focused set of just this concept. "
                 "Aim to state the tradeoffs and reasoning clearly without backtracking."
             )
-
-        path_lookup = _path_for_concept(track, concept_name)
-        if path_lookup:
-            slug, title, _tier = path_lookup
-            priority_path_slug = slug
-            priority_path_title = title
 
         # Recommend unseen drill questions
         candidate_qs = _CONCEPT_QUESTION_INDEX.get(top["track"], {}).get(concept_name, [])
@@ -940,7 +931,5 @@ def build_session_debrief(
         "priority_action": priority_action,
         "priority_concept": priority_concept,
         "priority_track": priority_track,
-        "priority_path_slug": priority_path_slug,
-        "priority_path_title": priority_path_title,
         "priority_question_ids": priority_question_ids,
     }

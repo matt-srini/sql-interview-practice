@@ -1077,16 +1077,18 @@ def test_tc175_statistics_with_numerical_uses_executable_language():
 
 
 def test_debrief_weak_concept_recommends_drill_not_path():
-    """Weak-concept debrief leads with the concept DRILL, never a learning path.
+    """Weak-concept debrief is concept-drill-ONLY — it carries the fields to build
+    /practice/{track}?drill={concept} and never a learning-path link.
 
-    Mirrors the dashboard weak-areas contract (docs/features/dashboard.md): the
-    primary next step is /practice/{track}?drill={concept}; a matching curated
-    path is demoted to an honest secondary. Guards the regression the
-    Interview-Loop summary hit, where the debrief deep-linked /learn as primary.
+    The mock post-mortem links to no learning paths anywhere; path recommendations
+    live exclusively on the dashboard (docs/features/dashboard.md). Guards the
+    regression the Interview-Loop summary hit (debrief deep-linked /learn).
     """
-    from routers.insights import build_session_debrief, _path_for_concept
+    from routers.insights import build_session_debrief
 
     # One concept, attempted twice with one miss → it is the session's weak spot.
+    # WINDOW FUNCTIONS resolves to a learning path, so this also proves the debrief
+    # withholds that path rather than merely lacking one.
     questions = [
         {"id": 1, "track": "sql", "is_solved": True,
          "concepts": ["WINDOW FUNCTIONS"], "time_spent_s": 90},
@@ -1100,8 +1102,8 @@ def test_debrief_weak_concept_recommends_drill_not_path():
     debrief = build_session_debrief(questions, session_meta, [], "elite")
     assert debrief is not None
 
-    # Primary recommendation is the concept drill (carries the fields the frontend
-    # needs to build the /practice/{track}?drill={concept} link).
+    # The next step is the concept drill (carries the fields the frontend needs to
+    # build the /practice/{track}?drill={concept} link).
     assert debrief["priority_concept"] == "WINDOW FUNCTIONS"
     assert debrief["priority_track"] == "sql"
     action = debrief["priority_action"] or ""
@@ -1109,12 +1111,12 @@ def test_debrief_weak_concept_recommends_drill_not_path():
     # Never the old path-primary phrasing.
     assert "Work through the" not in action
 
-    # The matching path is demoted to an honest secondary: present iff one
-    # resolves, and never the priority action.
-    path_lookup = _path_for_concept("sql", "WINDOW FUNCTIONS")
-    assert path_lookup, "expected WINDOW FUNCTIONS to resolve a path (covers the secondary branch)"
-    assert debrief["priority_path_slug"] == path_lookup[0]
-    assert debrief["priority_path_title"] == path_lookup[1]
+    # Concept-only: the mock debrief carries no learning-path link at all, even
+    # though WINDOW FUNCTIONS has a matching path.
+    assert "priority_path_slug" not in debrief
+    assert "priority_path_title" not in debrief
+    from routers.insights import _path_for_concept
+    assert _path_for_concept("sql", "WINDOW FUNCTIONS"), "fixture concept should resolve a path"
 
 
 def test_tc176_track_family_helper_resolves_correctly():

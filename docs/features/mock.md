@@ -465,13 +465,12 @@ Shown after `POST /api/mock/:id/finish`:
 - **(Pro+)** Baseline comparison — `X% above/below your historical accuracy`.
 - **Time used** — `MM:SS used of MM:SS limit`.
 - **Per-question breakdown** — solved/unsolved badge, time spent, expandable "See solution" toggle (reference solution + explanation, revealed only after finish).
-- **(Pro+) Concept breakdown table** — every concept in the session with `correct / attempted`, sorted worst-first.
-- **(Pro+) "Drill weak concepts →"** — links to `/practice/:track?concepts=...` pre-filtered to worst 2 concepts.
+- **(Pro+) Concept breakdown** — every concept in the session with `correct / attempted`, sorted worst-first. Each **weak** concept (accuracy < 100%) carries its own `Drill →` link to `/practice/{track}?drill={concept}` (the [concept drill](dashboard.md)), so the user chooses which weak concept to attack. Concept-only — no learning-path link (paths live on the dashboard). Replaces the former single aggregate "Drill weak concepts →" button, which deep-linked just one arbitrarily-chosen concept.
 - **(Elite) Interview Loop: per-dimension breakdown** — for Loop sessions, shows performance by `follow_up_dimension` (e.g. "Strong: scale pivot · Weak: ambiguity pivot").
-- **(Elite) Session debrief** — coaching narrative panel (template-based, no external AI). Headline + up to 3 pattern observations + a **priority action** + historical context if concept matches a known weak area. For a weak concept the priority action's next-step CTA is the **concept drill** (`/practice/{track}?drill={concept}`, via the `priority_concept`/`priority_track` fields) as the primary — mirroring the dashboard weak-areas contract ([dashboard.md](dashboard.md)); a matching curated path is offered only as an **honest secondary** (`priority_path_slug`), never as the primary next step.
+- **(Elite) Session debrief** — coaching narrative panel (template-based, no external AI). Headline + up to 3 pattern observations + a **priority action** + historical context if concept matches a known weak area. For a weak concept the priority action's next-step CTA is the **concept drill** (`/practice/{track}?drill={concept}`, via the `priority_concept`/`priority_track` fields) — concept-only, with **no learning-path link**. Path recommendations are a dashboard-only affordance (the dashboard keeps the concept-primary / path-secondary pairing — see [dashboard.md](dashboard.md)).
 - **(Elite) "Known weakness" badge** — amber highlight when a session concept matches cross-session `weakest_concepts`.
 - **Share result** — `navigator.share` with clipboard fallback. Includes track, mode, difficulty, score, baseline delta (Pro/Elite), top 2 weak concepts.
-- **Mode-aware footer actions** — benchmark: `Share result` + `Back to Mock` + `Plan follow-up drill`; custom/Loop: `Drill weak concepts →` or `Continue targeted drill` + `Back to lobby`.
+- **Mode-aware footer actions** — benchmark: `Share result` + `Back to Mock` + `Plan follow-up drill`; custom/Loop: `Share result` + `Back to drill lobby` (concept drills are per-row in the breakdown above, so the footer is navigation only).
 
 ---
 
