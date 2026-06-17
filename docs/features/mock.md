@@ -468,7 +468,7 @@ Shown after `POST /api/mock/:id/finish`:
 - **(Pro+) Concept breakdown table** — every concept in the session with `correct / attempted`, sorted worst-first.
 - **(Pro+) "Drill weak concepts →"** — links to `/practice/:track?concepts=...` pre-filtered to worst 2 concepts.
 - **(Elite) Interview Loop: per-dimension breakdown** — for Loop sessions, shows performance by `follow_up_dimension` (e.g. "Strong: scale pivot · Weak: ambiguity pivot").
-- **(Elite) Session debrief** — coaching narrative panel (template-based, no external AI). Headline + up to 3 pattern observations + priority action + historical context if concept matches a known weak area.
+- **(Elite) Session debrief** — coaching narrative panel (template-based, no external AI). Headline + up to 3 pattern observations + a **priority action** + historical context if concept matches a known weak area. For a weak concept the priority action's next-step CTA is the **concept drill** (`/practice/{track}?drill={concept}`, via the `priority_concept`/`priority_track` fields) as the primary — mirroring the dashboard weak-areas contract ([dashboard.md](dashboard.md)); a matching curated path is offered only as an **honest secondary** (`priority_path_slug`), never as the primary next step.
 - **(Elite) "Known weakness" badge** — amber highlight when a session concept matches cross-session `weakest_concepts`.
 - **Share result** — `navigator.share` with clipboard fallback. Includes track, mode, difficulty, score, baseline delta (Pro/Elite), top 2 weak concepts.
 - **Mode-aware footer actions** — benchmark: `Share result` + `Back to Mock` + `Plan follow-up drill`; custom/Loop: `Drill weak concepts →` or `Continue targeted drill` + `Back to lobby`.

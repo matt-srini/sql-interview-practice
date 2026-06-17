@@ -866,6 +866,8 @@ def build_session_debrief(
 
     # ── 3. Priority action ───────────────────────────────────────────────────
     priority_action: str | None = None
+    priority_concept: str | None = None
+    priority_track: str | None = None
     priority_path_slug: str | None = None
     priority_path_title: str | None = None
     priority_question_ids: list[int] = []
@@ -900,30 +902,31 @@ def build_session_debrief(
         top = weak[0]
         concept_name = top["concept"]
         track = top["track"]
+        priority_concept = concept_name
+        priority_track = track
+
+        # The concept drill is ALWAYS the primary next step — it mirrors the
+        # dashboard weak-areas contract and the rest of the mock post-mortem
+        # (see CLAUDE.md §Dashboard insights / docs/features/dashboard.md). A
+        # matching curated path, if one exists, is offered only as an honest
+        # secondary below; it never replaces the drill as the priority action.
+        track_label = _TRACK_LABELS.get(track, track)
+        if family == "executable":
+            priority_action = (
+                f"Drill {concept_name} in {track_label} — a focused set of just this concept. "
+                "Aim for 3 consecutive correct."
+            )
+        else:
+            priority_action = (
+                f"Drill {concept_name} in {track_label} — a focused set of just this concept. "
+                "Aim to state the tradeoffs and reasoning clearly without backtracking."
+            )
+
         path_lookup = _path_for_concept(track, concept_name)
         if path_lookup:
             slug, title, _tier = path_lookup
             priority_path_slug = slug
             priority_path_title = title
-            priority_action = f'Work through the "{title}" path to reinforce {concept_name}.'
-        else:
-            _TRACK_DISPLAY = {
-                "sql": "SQL", "python": "Python", "pandas": "Pandas",
-                "pyspark": "PySpark", "data-engineering": "Data Engineering",
-                "data-modeling": "Data Modeling", "ml-fundamentals": "ML Fundamentals",
-                "experimentation": "Experimentation", "statistics": "Statistics",
-            }
-            track_label = _TRACK_DISPLAY.get(track, track)
-            if family == "executable":
-                priority_action = (
-                    f"Drill {concept_name} in {track_label} — a focused set of just this concept. "
-                    "Aim for 3 consecutive correct."
-                )
-            else:
-                priority_action = (
-                    f"Drill {concept_name} in {track_label} — a focused set of just this concept. "
-                    "Aim to state the tradeoffs and reasoning clearly without backtracking."
-                )
 
         # Recommend unseen drill questions
         candidate_qs = _CONCEPT_QUESTION_INDEX.get(top["track"], {}).get(concept_name, [])
@@ -935,6 +938,8 @@ def build_session_debrief(
         "headline": headline,
         "patterns": [p for p in patterns if p],
         "priority_action": priority_action,
+        "priority_concept": priority_concept,
+        "priority_track": priority_track,
         "priority_path_slug": priority_path_slug,
         "priority_path_title": priority_path_title,
         "priority_question_ids": priority_question_ids,

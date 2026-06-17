@@ -667,19 +667,24 @@ export default function MockSession() {
                   {sum.debrief.priority_action && (
                     <div className="mock-debrief-action">
                       <span className="mock-debrief-action-label">Next step</span>
-                      {sum.debrief.priority_path_slug ? (
-                        <span>
-                          {sum.debrief.priority_action.replace(/^Work through the "[^"]+" path to reinforce /, 'Reinforce ')}
-                          {' '}
-                          <Link
-                            to={`/learn/${sum.track || session?.track || 'sql'}/${sum.debrief.priority_path_slug}`}
-                            className="mock-debrief-path-link"
-                          >
-                            {sum.debrief.priority_path_title} →
-                          </Link>
-                        </span>
-                      ) : (
-                        <span>{sum.debrief.priority_action}</span>
+                      <span className="mock-debrief-action-copy">{sum.debrief.priority_action}</span>
+                      {/* Primary: the concept drill (matches the dashboard weak-areas
+                          contract). The curated path, when present, is an honest secondary. */}
+                      {sum.debrief.priority_concept && sum.debrief.priority_track && (
+                        <Link
+                          to={`/practice/${sum.debrief.priority_track}?drill=${encodeURIComponent(sum.debrief.priority_concept)}`}
+                          className="mock-debrief-drill-link"
+                        >
+                          Drill this concept →
+                        </Link>
+                      )}
+                      {sum.debrief.priority_path_slug && (
+                        <Link
+                          to={`/learn/${sum.debrief.priority_track || sum.track || session?.track || 'sql'}/${sum.debrief.priority_path_slug}`}
+                          className="mock-debrief-path-link-secondary"
+                        >
+                          Or take the {sum.debrief.priority_path_title} path →
+                        </Link>
                       )}
                     </div>
                   )}

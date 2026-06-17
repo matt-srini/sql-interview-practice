@@ -1076,6 +1076,47 @@ def test_tc175_statistics_with_numerical_uses_executable_language():
     assert "before writing code" in all_text or "consecutive correct answers" in all_text
 
 
+def test_debrief_weak_concept_recommends_drill_not_path():
+    """Weak-concept debrief leads with the concept DRILL, never a learning path.
+
+    Mirrors the dashboard weak-areas contract (docs/features/dashboard.md): the
+    primary next step is /practice/{track}?drill={concept}; a matching curated
+    path is demoted to an honest secondary. Guards the regression the
+    Interview-Loop summary hit, where the debrief deep-linked /learn as primary.
+    """
+    from routers.insights import build_session_debrief, _path_for_concept
+
+    # One concept, attempted twice with one miss → it is the session's weak spot.
+    questions = [
+        {"id": 1, "track": "sql", "is_solved": True,
+         "concepts": ["WINDOW FUNCTIONS"], "time_spent_s": 90},
+        {"id": 2, "track": "sql", "is_solved": False,
+         "concepts": ["WINDOW FUNCTIONS"], "time_spent_s": 120},
+    ]
+    session_meta = {
+        "mode": "interview_loop", "difficulty": "medium", "track": "sql",
+        "time_used_s": 210, "time_limit_s": 1800,
+    }
+    debrief = build_session_debrief(questions, session_meta, [], "elite")
+    assert debrief is not None
+
+    # Primary recommendation is the concept drill (carries the fields the frontend
+    # needs to build the /practice/{track}?drill={concept} link).
+    assert debrief["priority_concept"] == "WINDOW FUNCTIONS"
+    assert debrief["priority_track"] == "sql"
+    action = debrief["priority_action"] or ""
+    assert action.startswith("Drill WINDOW FUNCTIONS"), action
+    # Never the old path-primary phrasing.
+    assert "Work through the" not in action
+
+    # The matching path is demoted to an honest secondary: present iff one
+    # resolves, and never the priority action.
+    path_lookup = _path_for_concept("sql", "WINDOW FUNCTIONS")
+    assert path_lookup, "expected WINDOW FUNCTIONS to resolve a path (covers the secondary branch)"
+    assert debrief["priority_path_slug"] == path_lookup[0]
+    assert debrief["priority_path_title"] == path_lookup[1]
+
+
 def test_tc176_track_family_helper_resolves_correctly():
     """TC-176: _track_family returns correct family for each track category."""
     from routers.insights import _track_family
