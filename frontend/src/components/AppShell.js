@@ -18,6 +18,7 @@ export default function AppShell() {
   );
   const [collapsedByDiff, setCollapsedByDiff] = useState({ easy: false, medium: true, hard: true });
   const [upgradeSuccess, setUpgradeSuccess] = useState(false);
+  const [drillUpsellDismissed, setDrillUpsellDismissed] = useState(false);
 
   const location = useLocation();
   const navigate = useNavigate();
@@ -29,6 +30,10 @@ export default function AppShell() {
   // never flash drill chrome (or fire a Pro-only request) before the plan is known.
   const drillPlan = user?.plan?.startsWith('lifetime_') ? user.plan.replace('lifetime_', '') : (user?.plan ?? 'free');
   const canDrill = !authLoading && (drillPlan === 'pro' || drillPlan === 'elite');
+  // A non-Pro user who followed a drill link gets redirected to the clean URL with this
+  // flag in router state (see the redirect effect below) → we surface a dismissible Pro
+  // upsell banner instead of silently dropping the drill intent.
+  const drillUpsell = location.state?.drillUpsell ?? null;
 
   // Track mobile breakpoint
   useEffect(() => {
@@ -167,6 +172,21 @@ export default function AppShell() {
       .finally(() => setDrillLoading(false));
   }, [drillConcept, topic]);
 
+  // Non-Pro followed a drill link → strip the inert ?drill= (clean, shareable URL) and
+  // flag the Pro upsell in router state, shown as a dismissible banner below the topbar.
+  // (drillConcept is already null for them, so no drill chrome ever rendered.)
+  useEffect(() => {
+    if (authLoading || !rawDrillParam || canDrill) return;
+    const params = new URLSearchParams(location.search);
+    params.delete('drill');
+    const qs = params.toString();
+    navigate(location.pathname + (qs ? `?${qs}` : ''), { replace: true, state: { drillUpsell: rawDrillParam } });
+  }, [authLoading, rawDrillParam, canDrill, location.pathname, location.search, navigate]);
+
+  // Re-arm the (dismissible) upsell banner on each navigation, so a fresh drill link
+  // shows it again even after a previous dismiss.
+  useEffect(() => { setDrillUpsellDismissed(false); }, [location.key]);
+
   const modeLabel = pathData ? pathData.title
     : pathSlug ? `${meta.label} · Path`
     : drillConcept ? `Drilling: ${drillData?.concept ?? drillConcept}`
@@ -273,7 +293,9 @@ export default function AppShell() {
     </a>
   ) : null;
 
-  const banner = upgradeSuccess ? (
+  const banner = (drillUpsell && !canDrill && !drillUpsellDismissed) ? (
+    <DrillUpsellBanner onDismiss={() => setDrillUpsellDismissed(true)} />
+  ) : upgradeSuccess ? (
     <div className="app-banner app-banner-success">
       Upgrade confirmed. Your access is refreshing now.
     </div>
@@ -575,6 +597,32 @@ function PathSidebar({ pathData, pathSlug, topic, meta, currentId, onNavigate, p
           Exit path → Practice
         </Link>
       </div>
+    </div>
+  );
+}
+
+// Dismissible Pro upsell shown below the topbar after a Free/anonymous user follows a
+// drill link (AppShell redirects them to the clean URL + flags this). Concept drills
+// stay Pro+; the banner explains why and offers the upgrade (UpgradeButton routes
+// anonymous users through sign-in, Free users to checkout).
+function DrillUpsellBanner({ onDismiss }) {
+  return (
+    <div className="app-banner app-banner-upsell" role="status">
+      <span className="app-banner-upsell-copy">
+        <strong>Concept drills are a Pro feature.</strong>{' '}
+        Drill one weak concept at a time — your unsolved questions first.
+      </span>
+      <span className="app-banner-upsell-actions">
+        <UpgradeButton tier="pro" source="drill_gate" compact label="Upgrade to Pro" />
+        <button
+          type="button"
+          className="app-banner-dismiss"
+          aria-label="Dismiss"
+          onClick={onDismiss}
+        >
+          ✕
+        </button>
+      </span>
     </div>
   );
 }

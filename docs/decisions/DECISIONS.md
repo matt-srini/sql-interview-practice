@@ -35,6 +35,12 @@ Keep entries to 4–6 lines. Friction kills logs; if it's longer than the change
 
 ## Entries
 
+## 2026-06-17 — Free users on a drill link: redirect to the clean URL + a dismissible Pro upsell banner
+**Area:** frontend · gating · product · **Status:** accepted
+**Decision:** Refines the "silent fallback" from the drill-gating entry below. When a non-Pro user follows a concept-drill link, `AppShell` now (1) **redirects to strip the inert `?drill=`** — `navigate(cleanPath, { replace: true, state: { drillUpsell } })` — for both shapes (`/practice/:t/questions/:id?drill=` → the question; `/practice/:t?drill=` → the hub), so the URL is clean and shareable; and (2) shows a **dismissible Pro upsell banner** below the topbar ("Concept drills are a Pro feature" + `UpgradeButton`), driven by the router-state flag and re-armed per navigation. Pro/Elite are untouched — `?drill=` preserved, drill renders, no banner. Verified all four paths in-browser (free question / free hub / dismiss / Pro); 193 frontend tests green.
+**Rejected:** A toast (the earlier idea) — wrong affordance for a feature the user *actively clicked* (transient, easy to miss) and it never fired reliably from `AppShell`; a persistent dismissible banner is the premium gated-feature pattern and is deterministic. This supersedes the "dropped the upsell for a clean silent fallback" note in the drill-gating entry below.
+**Affects:** frontend/src/components/AppShell.js (redirect effect + `DrillUpsellBanner`), frontend/src/App.css (`.app-banner-upsell`), docs/frontend.md.
+
 ## 2026-06-17 — Mock debrief "Next step" is the concept drill, not a learning path
 **Area:** mock · frontend · **Status:** accepted
 **Decision:** The Elite session debrief's priority action now leads with the **concept drill** (`/practice/{track}?drill={concept}`) and demotes the matching curated path to an honest secondary — matching the dashboard weak-areas panel and the rest of the mock post-mortem. `build_session_debrief` always emits `priority_concept`/`priority_track` + a drill-oriented `priority_action` for a weak concept; the path lookup only populates the secondary `priority_path_slug`/`priority_path_title`. The Interview-Loop summary (e.g. `/mock/:id`) previously deep-linked `/learn/...` as the primary "Next step", contradicting the documented contract. Also dropped the frontend regex that munged the path sentence, and the duplicate local `_TRACK_DISPLAY` (now the module-level `_TRACK_LABELS`).
