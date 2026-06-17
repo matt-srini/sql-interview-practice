@@ -114,19 +114,19 @@ rather than white.
 Two diagonal rounded squares — big block anchored bottom-left, small block floating top-right — creating a thought-bubble feel.
 
 **Light:** big block `#166534`, small block `#4B6858`  
-**Dark:** big block `#43D27C`, small block `#87B09A`
+**Dark:** big block `#5FB98C`, small block `#87B09A`
 
-The dark mark green `#43D27C` was originally matched to the UI accent (re-colored from
-the old neon `#4ADE80` on 2026-06-13). **Divergence (2026-06-17):** the UI `--accent`
-was muted to `#5FB98C`, but the mark is a static SVG (`/branding/mark-reverse-no-bg.svg`)
-and the favicons / app icons / Open Graph card are pre-rendered PNGs — all still
-`#43D27C`. Re-rendering them to `#5FB98C` to re-match is a **deferred follow-up** (edit
-the SVG sources, then run `frontend/scripts/render-brand-assets.mjs`); the small bright
-mark beside the muted UI accent is an accepted minor mismatch for now. The favicons /
-app icons / Open Graph card (rendered on the forest-ink ground `#0D1A10`) are brand
-assets re-rendered from the SVG sources via `frontend/scripts/render-brand-assets.mjs`
-whenever the mark colour changes; the ground stays `#0D1A10` (a brand-asset choice,
-not the in-app charcoal surface).
+The dark mark green is **`#5FB98C`** — re-matched to the muted UI `--accent` on
+2026-06-17 (it had tracked the accent since 2026-06-13's `#43D27C`). The mark is a static
+SVG (`/branding/mark-reverse-no-bg.svg`, used directly as an `<img>`, so editing it fixes
+the in-app logo with no render step), and the favicons / app icons / Open Graph card are
+PNGs **re-rendered from the SVG sources** (`favicon.svg`, `icon-maskable.svg`,
+`og-image.svg`) via `frontend/scripts/render-brand-assets.mjs` whenever the mark colour
+changes; the ground stays `#0D1A10` (a brand-asset choice, not the in-app charcoal
+surface). The small block `#87B09A` (a muted secondary tone) is unchanged. *Exception:*
+the unused `branding/lockup-bar-reverse-no-bg.{svg,png}` is **not** updated — it isn't
+referenced in-app, and its transparent PNG isn't covered by the (opaque-background)
+render script; re-export it manually if it ever goes into use.
 
 Files: `frontend/public/branding/lockup-bar-no-bg.svg` (light) · `lockup-bar-reverse-no-bg.svg` (dark)
 

@@ -35,6 +35,12 @@ Keep entries to 4–6 lines. Friction kills logs; if it's longer than the change
 
 ## Entries
 
+## 2026-06-17 — Logo mark + brand assets re-matched to #5FB98C (completes the deferred follow-up)
+**Area:** frontend · design · **Status:** accepted
+**Decision:** Re-colored the dark brand mark `#43D27C` → the muted UI accent `#5FB98C` across the live brand sources (`favicon.svg`, `icon-maskable.svg`, `og-image.svg`, `branding/mark-reverse-no-bg.svg`) and regenerated the 7 dark favicon/app-icon/OG PNGs via `frontend/scripts/render-brand-assets.mjs` (light variants re-rendered byte-identical; the secondary `#87B09A` block unchanged). Completes the "Deferred" item in the dark_accent_mute entry below — the mark tracks the UI accent again, per the 2026-06-13 precedent.
+**Rejected:** Re-coloring the unused `branding/lockup-bar-reverse-no-bg.{svg,png}` lockup — it isn't referenced in-app (Topbar/Sample use `mark-*.svg`) and its *transparent* PNG isn't covered by the opaque-background render script, so editing only the SVG would leave an SVG/PNG mismatch on a dead asset. Left matched-but-untouched; re-export manually if it ever goes into use.
+**Affects:** frontend/public/{favicon.svg, icon-maskable.svg, og-image.svg, branding/mark-reverse-no-bg.svg} + 7 regenerated dark PNGs; docs/design/color-palette.md; docs/frontend.md.
+
 ## 2026-06-17 — Dark-mode accent muted to #5FB98C; broad "de-overload" trialed and reverted
 **Area:** frontend · design · **Status:** accepted
 **Decision:** Dark `--accent` dropped from the glowing `#43D27C` (HSL 144/61/54) to a muted sage-emerald **`#5FB98C`** (150/39/55) — chroma 61%→39% with lightness held (~7.2:1 on cards), chroma-matched to `--success` (the calm green nobody flagged). One token recolors ~263 uses, so this *is* the fix. Two component tweaks rode along: the **SESSION DEBRIEF** results panel goes neutral chrome in dark (a green wash there competed with the page CTA — bullets/link/✓ stay green), and **`.tier-banner-paid`** (Pro/Elite) gets the same green wash as `.tier-banner-free` in *both* themes (the one deliberate light-mode touch). The deep CTA `#1C8A4F` is unchanged; light mode otherwise untouched.
