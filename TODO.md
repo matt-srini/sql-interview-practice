@@ -7,33 +7,49 @@ two big items are saved under [`docs/backlog/`](docs/backlog/).
 
 ---
 
-## P1 — Load & concurrency readiness  (bites the moment there are 2 concurrent users)
+## P1 — Load & concurrency readiness  (head-of-line P0 fixed; the full ceiling RUN remains)
 **Prompt:** [`docs/backlog/session-concurrency-load.md`](docs/backlog/session-concurrency-load.md)
 
-The platform has only ever been tested single-user; there are **no load tests and no
-multi-user flow simulation**. Two intertwined deliverables:
-- **Head-of-line blocking (the known P0 inside this):** every code-exec endpoint is `async def`
-  but calls its **blocking** evaluator directly (`return run_python_code(...)`, no
-  `await asyncio.to_thread`), so a 5–12 s execution stalls the whole event loop → all requests
-  freeze. The concurrency semaphore added this cycle (`main._execution_semaphore`,
-  `MAX_CONCURRENT_EXECUTIONS`) is therefore largely cosmetic. Fix = offload to a thread inside
-  the semaphore across all 6 code-exec endpoints (questions / python / pandas / statistics
-  / sample / mock); subprocess paths are safe concurrently, **SQL/DuckDB is in-process →
-  serialize behind a lock**.
-- **The load-test capability we don't have:** simulate N concurrent virtual users running real
-  flows (anon browse → register → solve-with-code → mock session → dashboard); measure the
-  ceiling (throughput, p50/p95/p99 latency, error rate, Postgres pool / subprocess saturation);
-  map a tiered scaling roadmap (config → replicas → externalized execution workers).
-- Sequence: build the harness + baseline FIRST, then fix, then re-measure.
+✅ **DONE (2026-06-08) — head-of-line blocking + the load harness.** All blocking evaluators now
+run **off** the event loop via `backend/offload.py` (`run_blocking_exec` under the
+`MAX_CONCURRENT_EXECUTIONS` semaphore; `run_blocking_sql` offloaded **and** serialized behind a
+process-wide lock), across every code-exec router (questions / python / pandas / statistics /
+sample / mock). Measured before→after: `/health` head-of-line p95 **9.4× → 1.2×**; a 5 s
+execution blocking a concurrent `/health` **4.7 s → ~0**; single-replica knee **~16 → ~32** active
+users (now CPU-bound, not loop-bound); Postgres pool 5+10→10+20. The load-simulation harness was
+built alongside (`backend/loadtest/` — zero-dep asyncio+httpx driver, weighted journeys in
+`scenarios.py`, head-of-line + rate-limit probes; CI smoke test `test_concurrency_smoke.py`).
+Off-loop password hashing (separate `MAX_CONCURRENT_HASHES` cap) + rate-limiter graceful
+degradation landed too. Full why → `docs/decisions/DECISIONS.md` (2026-06-08 offload / hashing /
+rate-limiter entries) + `docs/deployment.md` § Concurrency & scaling model.
+
+**Remaining (still P1):**
+- **Run + record the full realistic-load ceiling.** The harness exists and a head-of-line +
+  auth-burst baseline is recorded, but the comprehensive `loadtest/driver.py` VU ramp (the
+  weighted journeys against a prod-like deploy) has **not** been run end-to-end and recorded.
+  Ramp to the knee and capture, per level: throughput (req/s), p50/p95/p99, error rate, Postgres
+  pool-in-use vs size, live subprocess count, event-loop lag. State the honest concurrent-user
+  ceiling and what saturates first.
+- **Validate + finalize the tiered scaling roadmap.** Tiers 1–3 are already drafted in
+  `docs/deployment.md` § Concurrency & scaling model (config+offload → horizontal replicas →
+  externalized execution fleet). Confirm the Tier-1 "low-thousands read-heavy" figure against the
+  measured ceiling, and set the concrete Tier-2 trigger (the VU level / resource-saturation signal
+  that means "add a replica now").
 
 ## P1 — Launch-readiness audit  (the dimensions not yet swept)
 **Prompt:** [`docs/backlog/session-launch-readiness.md`](docs/backlog/session-launch-readiness.md)
 
-Security (sandbox + entitlements) and content correctness are done and CI-validated. Still
-unaudited: **payments correctness under failure** (webhook idempotency, double-charge,
+Security (sandbox + entitlements) and content correctness are done and CI-validated. Dimensions
+swept this cycle: **payments correctness under failure** (webhook idempotency, double-charge,
 plan-transition edge cases), **observability/alerting** (is anything paging on error-rate /
 failed payments?), **deployment/rollback**, **legal/compliance** (privacy, ToS, GDPR deletion,
 email deliverability). Verify against real code, prioritize P0/P1/P2, stop before fixing.
+
+**Status (2026-06-17):** audit performed (4 parallel read-only sub-agents + synthesis);
+prioritized P0/P1/P2 findings reported to the operator for sign-off. P0/P1 fixes are pending that
+sign-off — when they land, this line is replaced with the closed-out result + a DECISIONS entry.
+Headline P0s found: a Pro→Elite plan-switch that never persists to the DB (stale Razorpay
+`notes.target_plan`), and **no alerting layer** (a 3 a.m. payment-failure / error spike is silent).
 
 ## P2 — SQL reference float-robustness  (the duckdb pin is a band-aid masking this)
 `duckdb==1.5.0` is pinned because q13011's reference compared **raw float aggregates** in
@@ -55,9 +71,9 @@ Optional re-center if ever revisited.
 
 ## P3 — CI runner Node 20 deprecation  (warning only today)
 The CI workflow uses `actions/checkout@v4` + `actions/setup-python@v5`, which run on
-**Node.js 20**. GitHub forces Node 24 as the runner default on **2026-06-16** and removes
-Node 20 from the runner on **2026-09-16** (per the deprecation notice in the CI logs). Today
-it is only a warning — CI passes green. Fix when convenient: bump those actions to versions
+**Node.js 20**. GitHub flipped the runner default to Node 24 on **2026-06-16 (now past)** and
+removes Node 20 from the runner on **2026-09-16** — that removal is the hard deadline. It remains
+warning-only — CI passes green — until then. Fix when convenient: bump those actions to versions
 that ship Node 24 (newer `checkout`/`setup-python` patch tags already do), or temporarily set
 `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24=true` on the job. Recorded so the September removal doesn't
 silently break CI.
