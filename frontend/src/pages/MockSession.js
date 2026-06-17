@@ -517,12 +517,26 @@ export default function MockSession() {
       });
     });
 
+    // The debrief (Elite) computes the single NEXT STEP concept with a known-weakness
+    // tiebreak; float that exact concept to the top of the breakdown so the table's
+    // first row always agrees with NEXT STEP (single source of truth — we render the
+    // backend's pick rather than re-deriving the tiebreak here).
+    const priorityKey = sum?.debrief?.priority_concept && sum?.debrief?.priority_track
+      ? `${sum.debrief.priority_track}::${sum.debrief.priority_concept}`
+      : null;
     const conceptRows = Object.values(conceptStats)
       .map((row) => ({
         ...row,
         accuracy: row.attempts > 0 ? row.correct / row.attempts : 0,
       }))
-      .sort((a, b) => (a.accuracy - b.accuracy) || (b.attempts - a.attempts) || a.concept.localeCompare(b.concept));
+      .sort((a, b) => {
+        if (priorityKey) {
+          const aIsPriority = `${a.track}::${a.concept}` === priorityKey;
+          const bIsPriority = `${b.track}::${b.concept}` === priorityKey;
+          if (aIsPriority !== bIsPriority) return aIsPriority ? -1 : 1;
+        }
+        return (a.accuracy - b.accuracy) || (b.attempts - a.attempts) || a.concept.localeCompare(b.concept);
+      });
 
     // For mixed sessions: pick the track with the most weak concepts, so the
     // drill link targets the most actionable single track rather than whichever

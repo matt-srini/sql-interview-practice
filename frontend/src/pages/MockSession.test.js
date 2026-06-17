@@ -514,17 +514,46 @@ describe('MockSession summary actions', () => {
     });
   });
 
-  it('shows targeted follow-up CTA for drill summaries', async () => {
+  it('drill summary: per-concept drill links in the breakdown, no aggregate footer drill', async () => {
     const completedSession = { ...makeSessionData(1), status: 'completed', mode: 'custom' };
     mockApiPost.mockResolvedValueOnce({ data: makeCompletedSummary({ mode: 'custom' }) });
 
     renderSession(completedSession);
 
     await waitFor(() => {
-      expect(screen.getByRole('link', { name: 'Drill weak concepts →' })).toBeInTheDocument();
+      // Footer is navigation-only — the misleading aggregate "Drill weak concepts →" is gone.
       expect(screen.getByRole('button', { name: 'Back to drill lobby' })).toBeInTheDocument();
+      expect(screen.queryByRole('link', { name: 'Drill weak concepts →' })).not.toBeInTheDocument();
       expect(screen.queryByRole('button', { name: 'Plan follow-up drill' })).not.toBeInTheDocument();
     });
+    // Every weak concept (WINDOW FUNCTIONS, JOINS — both 0/1) is independently drillable.
+    const drillLinks = screen.getAllByRole('link', { name: 'Drill →' });
+    expect(drillLinks).toHaveLength(2);
+    drillLinks.forEach(l => expect(l.getAttribute('href')).toMatch(/^\/practice\/sql\?drill=/));
+  });
+
+  it('floats the debrief NEXT STEP concept to the top row of the breakdown', async () => {
+    const completedSession = { ...makeSessionData(1), status: 'completed', mode: 'custom' };
+    // Both concepts are 0/1 (a tie); question + alphabetical order would put JOINS first.
+    // The debrief's priority_concept (WINDOW FUNCTIONS) must float to row 0 instead.
+    mockApiPost.mockResolvedValueOnce({ data: makeCompletedSummary({
+      mode: 'custom',
+      questions: [{ ...makeQuestion(1), concepts: ['JOINS', 'WINDOW FUNCTIONS'], is_solved: false }],
+      debrief: {
+        headline: 'Tough session — 0 of 1 solved.',
+        patterns: [],
+        priority_action: 'Drill WINDOW FUNCTIONS in SQL — a focused set of just this concept.',
+        priority_concept: 'WINDOW FUNCTIONS',
+        priority_track: 'sql',
+      },
+    }) });
+
+    const { container } = renderSession(completedSession);
+
+    await waitFor(() => screen.getByText('Concept breakdown'));
+    const rowNames = [...container.querySelectorAll('.mock-concept-name')].map(e => e.textContent);
+    expect(rowNames[0]).toBe('WINDOW FUNCTIONS'); // floated above the alphabetically-first JOINS
+    expect(rowNames).toContain('JOINS');
   });
 });
 

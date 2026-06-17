@@ -1119,6 +1119,38 @@ def test_debrief_weak_concept_recommends_drill_not_path():
     assert _path_for_concept("sql", "WINDOW FUNCTIONS"), "fixture concept should resolve a path"
 
 
+def test_debrief_tiebreak_prefers_known_weakness():
+    """When two weak concepts tie on session accuracy AND attempts, NEXT STEP breaks
+    the tie toward a known cross-session weakness (>=3 historical attempts, <60%),
+    not merely the first concept in question order (insights.py weak-sort tiebreak)."""
+    from routers.insights import build_session_debrief, _CONCEPTS_LOOKUP
+
+    # A real SQL concept with >=3 historical question IDs we can mark as repeated misses.
+    known = "WINDOW FUNCTIONS"
+    known_qids = [qid for qid, cs in _CONCEPTS_LOOKUP["sql"].items() if known in cs][:3]
+    assert len(known_qids) >= 3, "fixture needs >=3 historical WINDOW FUNCTIONS questions"
+
+    # A control concept that never appears in history → can never be "known weak".
+    control = "ZZZ CONTROL CONCEPT (NOT REAL)"
+
+    # Two unsolved questions, both 0/1; control is listed FIRST so question order favours it.
+    questions = [
+        {"id": 990001, "track": "sql", "is_solved": False, "concepts": [control], "time_spent_s": 60},
+        {"id": 990002, "track": "sql", "is_solved": False, "concepts": [known], "time_spent_s": 60},
+    ]
+    meta = {"track": "sql", "difficulty": "medium", "time_used_s": 120, "time_limit_s": 1800}
+
+    # No history → pure (accuracy, attempts, question-order) tiebreak → control (first) wins.
+    no_hist = build_session_debrief(questions, meta, [], "elite")
+    assert no_hist["priority_concept"] == control
+
+    # 3 past misses on WINDOW FUNCTIONS (different question IDs) → it becomes known-weak,
+    # so it now wins the otherwise-identical tie despite being listed second.
+    events = [{"track": "sql", "question_id": qid, "is_correct": False} for qid in known_qids]
+    with_hist = build_session_debrief(questions, meta, events, "elite")
+    assert with_hist["priority_concept"] == known, with_hist["priority_concept"]
+
+
 def test_tc176_track_family_helper_resolves_correctly():
     """TC-176: _track_family returns correct family for each track category."""
     from routers.insights import _track_family

@@ -757,10 +757,23 @@ def build_session_debrief(
             if is_solved:
                 sess_concept[key]["correct"] += 1
 
+    def _is_known_weak(track: str, concept: str) -> bool:
+        """A concept the user has repeatedly missed across PAST sessions
+        (>=3 historical attempts, <60% historical accuracy). Used to break
+        session accuracy+attempts ties toward the gap that keeps recurring."""
+        hc, ha = hist_concept.get((track, concept), (0, 0))
+        return ha >= 3 and (hc / ha) < 0.6
+
     strong = [v for v in sess_concept.values() if v["correct"] == v["attempts"] and v["attempts"] > 0]
     weak = sorted(
         [v for v in sess_concept.values() if v["correct"] < v["attempts"] and v["attempts"] > 0],
-        key=lambda x: (x["correct"] / x["attempts"], -x["attempts"]),
+        # 1. lowest session accuracy · 2. most attempts · 3. known cross-session
+        # weakness · 4. (stable) question order — so a recurring gap wins a tie.
+        key=lambda x: (
+            x["correct"] / x["attempts"],
+            -x["attempts"],
+            0 if _is_known_weak(x["track"], x["concept"]) else 1,
+        ),
     )
 
     # ── 1. Headline ──────────────────────────────────────────────────────────
@@ -805,8 +818,7 @@ def build_session_debrief(
     if weak:
         top = weak[0]
         name = top["concept"]
-        hist_correct, hist_attempts = hist_concept.get((top["track"], name), (0, 0))
-        is_known_weak = hist_attempts >= 3 and (hist_correct / hist_attempts) < 0.6
+        is_known_weak = _is_known_weak(top["track"], name)
 
         if top["correct"] == 0:
             if is_known_weak:
