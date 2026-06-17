@@ -5228,9 +5228,8 @@ select {
   border-color: rgba(45, 158, 107, 0.28);
 }
 
-[data-theme="dark"] .track-hub-milestone-upgrade {
-  background: rgba(91, 106, 240, 0.12);
-}
+/* .track-hub-milestone-upgrade: dark inherits the green --accent-soft base (no indigo
+   override) — same de-clash as .preview-locked-callout; all upgrade nudges read green. (2026-06-17) */
 
 /* ============================================================
    Track Hub — premium stat card (thub-stat-card)
@@ -10737,9 +10736,9 @@ select {
   margin: 0 0 8px;
 }
 
-[data-theme="dark"] .preview-locked-callout {
-  background: rgba(91, 106, 240, 0.12);
-}
+/* .preview-locked-callout: dark intentionally inherits the green --accent-soft base
+   (no indigo override). The earlier blue wash clashed with the green left-border + the
+   "Unlock with Pro" CTA and was out of step with the other (green) upgrade nudges. (2026-06-17) */
 
 /* ── Path role chip (LearningPath) ─────────────────── */
 .learn-role-chip {

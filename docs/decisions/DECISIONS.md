@@ -35,6 +35,12 @@ Keep entries to 4–6 lines. Friction kills logs; if it's longer than the change
 
 ## Entries
 
+## 2026-06-17 — Preview/milestone upgrade nudges: green wash in dark (drop the clashing indigo)
+**Area:** frontend · design · **Status:** accepted
+**Decision:** Removed the one-off indigo dark overrides (`rgba(91,106,240,0.12)`) on `.preview-locked-callout` (the "PREVIEW MODE" block on locked questions) and `.track-hub-milestone-upgrade`, so both inherit their green `--accent-soft` base in dark — matching their own green left-border + "Unlock with Pro" CTA and the other (already-green) upgrade nudges. The indigo clashed with those green accents and read as a jarring blue block on the charcoal UI. Light is unchanged (it was always green via the base; only the dark overrides were removed).
+**Supersedes:** the "`preview-locked-callout` / `track-hub-milestone-upgrade` keep their pre-existing blue/info wash" carve-out from the dark_accent_mute entry below — that deferral is resolved; all upgrade nudges now read green in both themes.
+**Affects:** frontend/src/App.css (the two dark overrides removed; base green `--accent-soft` rules unchanged).
+
 ## 2026-06-17 — Free users on a drill link: redirect to the clean URL + a dismissible Pro upsell banner
 **Area:** frontend · gating · product · **Status:** accepted
 **Decision:** Refines the "silent fallback" from the drill-gating entry below. When a non-Pro user follows a concept-drill link, `AppShell` now (1) **redirects to strip the inert `?drill=`** — `navigate(cleanPath, { replace: true, state: { drillUpsell } })` — for both shapes (`/practice/:t/questions/:id?drill=` → the question; `/practice/:t?drill=` → the hub), so the URL is clean and shareable; and (2) shows a **dismissible Pro upsell banner** below the topbar ("Concept drills are a Pro feature" + `UpgradeButton`), driven by the router-state flag and re-armed per navigation. Pro/Elite are untouched — `?drill=` preserved, drill renders, no banner. Verified all four paths in-browser (free question / free hub / dismiss / Pro); 193 frontend tests green.
