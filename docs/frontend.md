@@ -487,7 +487,7 @@ palette doc.
 | `--text-primary` | `#1D3526` | `#CDD1D6` | Body text |
 | `--text-secondary` | `#4B6858` | `#9BA1A9` | Labels, metadata |
 | `--text-muted` | `#7A9485` | `#6E747D` | Placeholders, disabled |
-| `--accent` | `#166534` | `#43D27C` | Active states, links, small accents |
+| `--accent` | `#166534` | `#5FB98C` | Active states, links, small accents (dark muted from `#43D27C` 2026-06-17) |
 | `--success` | `#15803D` | `#4CAF82` | Correct answer |
 | `--warning` | `#C47F17` | `#D4973A` | Hints, locked |
 | `--danger` | `#D94F3D` | `#E06B5A` | Errors, wrong answer |

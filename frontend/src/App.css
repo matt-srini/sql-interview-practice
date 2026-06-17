@@ -6570,10 +6570,13 @@ select {
   --text-secondary: #9BA1A9;
   --text-muted:     #6E747D;
   --text-soft:      #474C54;
-  --accent:             #43D27C;
-  --accent-strong:      #5BDD90;
-  --accent-soft:        rgba(67, 210, 124, 0.12);
-  --accent-soft-strong: rgba(67, 210, 124, 0.22);
+  /* Move 1 (2026-06-17): chroma drop ~61%→~39% saturation, lightness held, so the
+     brand green reads as a calm accent on charcoal instead of glowing. Was #43D27C
+     (HSL 144,61,54). See docs/decisions/DECISIONS.md dark_accent_mute. */
+  --accent:             #5FB98C;
+  --accent-strong:      #74C79E;
+  --accent-soft:        rgba(95, 185, 140, 0.12);
+  --accent-soft-strong: rgba(95, 185, 140, 0.22);
   --success:       #4CAF82;
   --success-soft:  rgba(76, 175, 130, 0.12);
   --success-text:  #8BD2B0;
@@ -6586,7 +6589,7 @@ select {
   --shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.40);
   --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.40);
   --shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.55);
-  --brand-accent: #43D27C;
+  --brand-accent: #5FB98C;
 }
 
 [data-theme="dark"] body { background: var(--bg-page); }
@@ -10593,8 +10596,11 @@ select {
   color: var(--text-secondary);
 }
 .tier-banner-paid {
-  background: var(--surface-card-soft);
-  border: 1px solid var(--border-subtle);
+  /* Green accent wash to match .tier-banner-free (2026-06-17) — Pro/Elite users get
+     the same on-brand banner treatment as Free. Both themes (light = deep-forest
+     accent-soft, dark = muted accent-soft). */
+  background: var(--accent-soft);
+  border: 1px solid var(--accent-soft-strong);
   color: var(--text-secondary);
 }
 .tier-banner-text { flex: 1; }
@@ -14348,3 +14354,39 @@ button.mock-focus-locked:hover {
   background: var(--surface-card);
 }
 .acct-id-chip-icon { font-size: 0.7rem; opacity: 0.55; }
+
+/* ============================================================
+   Dark-mode accent calm (2026-06-17). Pairs with the muted --accent (#5FB98C)
+   in [data-theme="dark"] above. See docs/design/color-palette.md and
+   docs/decisions/DECISIONS.md (dark_accent_mute).
+
+   A broad "de-overload" pass — demoting link-arrows, kickers, numerals, and
+   upgrade washes to neutral — was trialed and REVERTED after review: on a dark
+   ground, color IS the click/affordance signal (neutral links read as dead),
+   and muted-green kickers/numerals look fine. So everything keeps the muted
+   --accent green; the CTA keeps its deep #1C8A4F. The ONE kept neutralization
+   is the SESSION DEBRIEF panel below — a results surface where a green wash
+   competed with the page CTA. Light mode is untouched (dark-scoped rules only).
+
+   Pre-existing exception left AS-IS: the Mock-hub-page kickers stay neutral via
+   `[data-theme="dark"] .mock-hub-page ...` (~line 8360) so the dense hub doesn't
+   over-green — do not re-green them.
+   ============================================================ */
+
+/* SESSION DEBRIEF panel → neutral chrome; the green focal point is the page CTA,
+   not the panel. Its "NEXT STEP" label and "·" bullets stay neutral too. */
+[data-theme="dark"] .mock-debrief {
+  background: var(--surface-card-alt);
+  border-color: var(--border-subtle);
+}
+[data-theme="dark"] .mock-debrief-badge {
+  color: var(--text-secondary);
+  background: var(--surface-highlight);
+  border-color: var(--border-subtle);
+}
+[data-theme="dark"] .mock-debrief-action-label {
+  color: var(--text-secondary);
+}
+[data-theme="dark"] .mock-debrief-pattern::before {
+  color: var(--text-muted);
+}

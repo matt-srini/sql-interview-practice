@@ -51,14 +51,19 @@ that pops, not the environment. The earlier green-tinted "Forest" dark surfaces
 (`#0D1A10` page, `#132218` cards) put the brand hue into the background, text, and
 accent all at once, so it read as "too green / neon" for a distraction-free study
 tool. The fix demotes green from the environment to an accent on a calm charcoal
-ground — a **bright emerald `#43D27C`** (2026-06-13): the original neon `#4ADE80`
-was overpowering, especially on mobile/OLED, while a fully de-neoned emerald
-(`#42BE87` / `#2EAE66`) read *too dull* (and forced ink-on-green buttons), so the
-accent sits **one notch off the neon** — vibrant but calmer, and close enough to
-the deep action-green button that the button no longer looks dull beside it. Light
-mode is unchanged (still Forest & Ink — deep-green `#166534` on warm paper). See
-[`docs/decisions/DECISIONS.md`](../decisions/DECISIONS.md) (2026-06-12 charcoal,
-2026-06-13 accent tone-down).
+ground — a **muted sage-emerald `#5FB98C`** (2026-06-17). This landed in two steps:
+first a *bright* emerald `#43D27C` (2026-06-13, de-neoned from the original `#4ADE80`);
+then — when even that still read as *glowing* on charcoal across dense screens (~20
+green hits per page) — a **chroma drop** to `#5FB98C` (HSL 150/39/55): saturation
+61%→39% with lightness held, so it stays fully legible (~7.2:1 on cards) but stops
+radiating. It's chroma-matched to `--success` (the calm green nobody ever flagged).
+A broader pass that *demoted* links / kickers / numerals / upgrade-washes to neutral
+was trialed and **reverted** — on a dark ground, color is the click/affordance signal,
+so those all keep the muted green and the CTA keeps its deep `#1C8A4F`; only the
+**SESSION DEBRIEF** results panel stays neutral (a green wash there competed with the
+page CTA). Light mode is unchanged (still Forest & Ink — deep-green `#166534` on warm
+paper). See [`docs/decisions/DECISIONS.md`](../decisions/DECISIONS.md) (2026-06-12
+charcoal, 2026-06-13 accent tone-down, 2026-06-17 `dark_accent_mute`).
 
 | Token | Value | Role |
 |---|---|---|
@@ -75,10 +80,10 @@ mode is unchanged (still Forest & Ink — deep-green `#166534` on warm paper). S
 | `--text-secondary` | `#9BA1A9` | Secondary labels |
 | `--text-muted` | `#6E747D` | Placeholder |
 | `--text-soft` | `#474C54` | Disabled / faint |
-| `--accent` | `#43D27C` | Brand green accent — active states, links, small fills (NOT the primary button) |
-| `--accent-strong` | `#5BDD90` | Hover/pressed accent |
-| `--accent-soft` | `rgba(67, 210, 124, 0.12)` | Accent tint |
-| `--accent-soft-strong` | `rgba(67, 210, 124, 0.22)` | Stronger accent tint |
+| `--accent` | `#5FB98C` | Brand green accent — active states, links, small fills (NOT the primary button). Muted from `#43D27C` on 2026-06-17 |
+| `--accent-strong` | `#74C79E` | Hover/pressed accent |
+| `--accent-soft` | `rgba(95, 185, 140, 0.12)` | Accent tint |
+| `--accent-soft-strong` | `rgba(95, 185, 140, 0.22)` | Stronger accent tint |
 | `--success` | `#4CAF82` | Correct answer |
 | `--success-soft` | `rgba(76, 175, 130, 0.12)` | Success tint |
 | `--success-text` | `#8BD2B0` | Success text |
@@ -88,20 +93,20 @@ mode is unchanged (still Forest & Ink — deep-green `#166534` on warm paper). S
 | `--danger` | `#E06B5A` | Error / wrong |
 | `--danger-soft` | `rgba(224, 107, 90, 0.12)` | Danger tint |
 | `--danger-text` | `#F0B8B1` | Danger text |
-| `--brand-accent` | `#43D27C` | Brand green accent for dark surfaces (Razorpay checkout theme) |
+| `--brand-accent` | `#5FB98C` | Brand green accent for dark surfaces (Razorpay checkout theme) |
 
 **Primary button (dark) is NOT `--accent`.** On charcoal, white text on the
-bright green `--accent` (`#43D27C`) fails contrast (~2:1, harsh). The primary
+muted green `--accent` (`#5FB98C`) fails contrast (~1.6:1, harsh). The primary
 action button (`.btn-primary` and everything that composes it — `.mock-start-btn`,
 both `UpgradeButton` tiers, plus `.auth-submit-btn` / `.acct-save-btn` /
 `.path-nav-btn--next` / `.lp-paths-cta-primary`) uses a deep **"action green"
 `#1C8A4F` + white** (~4.4:1 on a 600-weight label), hover `#229B5A`. This is the
-two-tier green system: *bright `#43D27C` for accents, deep `#1C8A4F` for the
+two-tier green system: *muted `#5FB98C` for accents, deep `#1C8A4F` for the
 solid action button.* The **Elite** upgrade button keeps the two-tone
 **green→teal gradient** `#1C8A4F → #109488` (hover `#229B5A → #14A498`); **Pro**
 is the solid deep green. These are literals on the button rules, not tokens,
-because `--accent` stays the bright accent. Small decorative accent chips/badges
-that fill with `--accent` flip their *text* to forest-ink `#0D1A10` (~11:1)
+because `--accent` stays the muted accent. Small decorative accent chips/badges
+that fill with `--accent` flip their *text* to forest-ink `#0D1A10` (~8:1)
 rather than white.
 
 ### Logo mark
@@ -111,8 +116,13 @@ Two diagonal rounded squares — big block anchored bottom-left, small block flo
 **Light:** big block `#166534`, small block `#4B6858`  
 **Dark:** big block `#43D27C`, small block `#87B09A`
 
-The dark mark green `#43D27C` matches the toned UI accent (re-colored from the old
-neon `#4ADE80` on 2026-06-13, in step with the accent tone-down). The favicons /
+The dark mark green `#43D27C` was originally matched to the UI accent (re-colored from
+the old neon `#4ADE80` on 2026-06-13). **Divergence (2026-06-17):** the UI `--accent`
+was muted to `#5FB98C`, but the mark is a static SVG (`/branding/mark-reverse-no-bg.svg`)
+and the favicons / app icons / Open Graph card are pre-rendered PNGs — all still
+`#43D27C`. Re-rendering them to `#5FB98C` to re-match is a **deferred follow-up** (edit
+the SVG sources, then run `frontend/scripts/render-brand-assets.mjs`); the small bright
+mark beside the muted UI accent is an accepted minor mismatch for now. The favicons /
 app icons / Open Graph card (rendered on the forest-ink ground `#0D1A10`) are brand
 assets re-rendered from the SVG sources via `frontend/scripts/render-brand-assets.mjs`
 whenever the mark colour changes; the ground stays `#0D1A10` (a brand-asset choice,
