@@ -340,8 +340,13 @@ export default function ProgressDashboard() {
                       const solved = trackData?.solved ?? 0;
                       const total = trackData?.total ?? catalogCounts[topic]?.total ?? 0;
                       const pct = total > 0 ? solved / total : 0;
-                      const accuracy = insights?.per_track?.[topic]?.accuracy_pct;
-                      const medianSecs = insights?.per_track?.[topic]?.median_solve_seconds;
+                      const perTrack = insights?.per_track?.[topic];
+                      const accuracy = perTrack?.accuracy_pct;
+                      const medianSecs = perTrack?.median_solve_seconds;
+                      const mockAttempts = perTrack?.mock_attempts ?? 0;
+                      // Accuracy is purely mock-derived when the user has zero practice
+                      // attempts in the track — label it so "0 solved · 100% acc" reads true.
+                      const isPurelyMock = (perTrack?.practice_attempts ?? 0) === 0 && mockAttempts > 0;
                       const readiness = isElite ? insights?.readiness_scores?.[topic] : null;
 
                       return (
@@ -363,9 +368,11 @@ export default function ProgressDashboard() {
                                 {Math.round(accuracy * 100)}% acc
                               </span>
                             ) : <span className="db-track-accuracy db-track-accuracy--muted">—</span>}
-                            {typeof medianSecs === 'number' && medianSecs > 0 && (
+                            {isPurelyMock ? (
+                              <span className="db-track-basis">{mockAttempts} in mock</span>
+                            ) : (typeof medianSecs === 'number' && medianSecs > 0 ? (
                               <span className="db-track-time">{Math.round(medianSecs / 60)} min</span>
-                            )}
+                            ) : null)}
                           </div>
                           <div className="db-track-right-col">
                             {readiness ? (

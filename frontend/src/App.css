@@ -6050,6 +6050,14 @@ select {
   font-size: 0.72rem;
   color: var(--text-secondary);
 }
+/* Per-track accuracy basis qualifier (e.g. "7 in mock") — shown when a track's
+   accuracy is purely mock-derived. Stays visible on mobile (unlike .db-track-time)
+   because it is the key disambiguator for a 0-practice-solved / high-acc row. */
+.db-track-basis {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
 .db-track-right-col {
   display: flex;
   align-items: center;

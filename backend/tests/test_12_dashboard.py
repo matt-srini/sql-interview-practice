@@ -139,6 +139,59 @@ def test_tc178_accuracy_pct_is_correct_ratio():
     assert per_track.get("sql", {}).get("accuracy_pct") == 0.5
 
 
+def test_accuracy_pct_null_when_zero_attempts():
+    """Zero attempts in a track → accuracy_pct is None (renders as '—', not a misleading 0%)."""
+    with TestClient(app) as client:
+        user = _make_user(client, plan="pro")
+    # Only SQL is attempted; python has no submissions at all.
+    _insert_submission(user["id"], _sql_easy_qs[0]["id"], is_correct=True, track="sql")
+    with TestClient(app) as client:
+        _make_user(client, plan="pro", existing_user=user)
+        r = client.get("/api/dashboard/insights")
+    per_track = r.json().get("per_track", {})
+    assert per_track.get("python", {}).get("accuracy_pct") is None
+    assert per_track.get("python", {}).get("attempts") == 0
+    assert per_track.get("sql", {}).get("accuracy_pct") == 1.0
+
+
+def test_purely_mock_track_splits_attempts_and_keeps_accuracy():
+    """A track answered ONLY via mock-only questions: practice_attempts=0, mock_attempts>0,
+    accuracy still computed (so the UI can label it 'N in mock')."""
+    from questions import get_mock_questions_by_difficulty as get_sql_mock
+    mock_qs = [q for qs in get_sql_mock().values() for q in qs]
+    assert mock_qs, "expected SQL mock-only questions to exist"
+    mock_id = int(mock_qs[0]["id"])
+    with TestClient(app) as client:
+        user = _make_user(client, plan="pro")
+    _insert_submission(user["id"], mock_id, is_correct=True, track="sql")
+    with TestClient(app) as client:
+        _make_user(client, plan="pro", existing_user=user)
+        r = client.get("/api/dashboard/insights")
+    sql = r.json().get("per_track", {}).get("sql", {})
+    assert sql.get("attempts") == 1
+    assert sql.get("practice_attempts") == 0
+    assert sql.get("mock_attempts") == 1
+    assert sql.get("accuracy_pct") == 1.0
+
+
+def test_mixed_practice_and_mock_attempts_are_counted_separately():
+    """Practice + mock submissions in one track split into the two counters; accuracy spans both."""
+    from questions import get_mock_questions_by_difficulty as get_sql_mock
+    mock_id = int([q for qs in get_sql_mock().values() for q in qs][0]["id"])
+    with TestClient(app) as client:
+        user = _make_user(client, plan="pro")
+    _insert_submission(user["id"], _sql_easy_qs[0]["id"], is_correct=True, track="sql")   # practice, correct
+    _insert_submission(user["id"], mock_id, is_correct=False, track="sql")                # mock, wrong
+    with TestClient(app) as client:
+        _make_user(client, plan="pro", existing_user=user)
+        r = client.get("/api/dashboard/insights")
+    sql = r.json().get("per_track", {}).get("sql", {})
+    assert sql.get("attempts") == 2
+    assert sql.get("practice_attempts") == 1
+    assert sql.get("mock_attempts") == 1
+    assert sql.get("accuracy_pct") == 0.5
+
+
 def test_tc179_cross_track_insight_null_when_gap_less_than_60s():
     """TC-179: Two tracks with similar median times → cross_track_insight: null."""
     with TestClient(app) as client:

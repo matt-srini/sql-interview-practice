@@ -80,6 +80,18 @@ def _build_concepts_lookup() -> dict[str, dict[int, list[str]]]:
 _CONCEPTS_LOOKUP = _build_concepts_lookup()
 
 
+def _build_mock_only_ids() -> dict[str, set[int]]:
+    """{track: {mock-only question ids}} — mirrors _build_concepts_lookup's catalog walk."""
+    lookup: dict[str, set[int]] = {}
+    for track, module in _TOPIC_MODULES.items():
+        mock = module.get_mock_questions_by_difficulty()
+        lookup[track] = {int(q["id"]) for qs in mock.values() for q in qs}
+    return lookup
+
+
+_MOCK_ONLY_IDS = _build_mock_only_ids()
+
+
 def _build_concept_question_index() -> dict[str, dict[str, list[dict[str, Any]]]]:
     """Returns {track: {concept: [question_dict, ...]}} sorted easy-first within each concept."""
     diff_order = {"easy": 0, "medium": 1, "hard": 2}
@@ -210,6 +222,8 @@ async def get_dashboard_insights(
     events = await get_submission_events(user_id)
 
     per_track_attempts: dict[str, int] = defaultdict(int)
+    per_track_practice_attempts: dict[str, int] = defaultdict(int)
+    per_track_mock_attempts: dict[str, int] = defaultdict(int)
     per_track_correct: dict[str, int] = defaultdict(int)
     per_track_solved_question_ids: dict[str, set[int]] = defaultdict(set)
     # First-time-correct: a question whose *first* (oldest) submission was correct.
@@ -240,6 +254,10 @@ async def get_dashboard_insights(
         weight = 1.5 if (submitted_at is not None and submitted_at >= recency_cutoff) else 1.0
 
         per_track_attempts[track] += 1
+        if question_id in _MOCK_ONLY_IDS.get(track, set()):
+            per_track_mock_attempts[track] += 1
+        else:
+            per_track_practice_attempts[track] += 1
         if question_id not in per_track_first_seen[track]:
             per_track_first_seen[track].add(question_id)
             if is_correct:
@@ -270,11 +288,16 @@ async def get_dashboard_insights(
     for track in _TRACK_ORDER:
         attempts = per_track_attempts.get(track, 0)
         correct = per_track_correct.get(track, 0)
-        accuracy = (correct / attempts) if attempts else 0.0
+        # Zero attempts -> null (renders as "—"), never a misleading 0% "you failed
+        # everything". A track's accuracy spans practice + mock submissions.
+        accuracy = round(correct / attempts, 3) if attempts else None
         per_track[track] = {
             "solve_count": len(per_track_solved_question_ids.get(track, set())),
             "median_solve_seconds": medians.get(track),
-            "accuracy_pct": round(accuracy, 3),
+            "accuracy_pct": accuracy,
+            "attempts": attempts,
+            "practice_attempts": per_track_practice_attempts.get(track, 0),
+            "mock_attempts": per_track_mock_attempts.get(track, 0),
         }
 
     weakest_concepts: list[dict[str, Any]] = []
