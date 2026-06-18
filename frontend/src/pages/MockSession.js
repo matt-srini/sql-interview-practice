@@ -738,8 +738,12 @@ export default function MockSession() {
                 <div className="mock-concept-summary-title">Concept breakdown</div>
                 <div className="mock-concept-summary-rows">
                   {conceptRows.map((row) => {
+                    // Case-insensitive concept compare: weakest_concepts carries the
+                    // canonical family name, conceptRows the raw question tag (lowercase
+                    // for Statistics). family.upper() === tag.upper() holds for the whole
+                    // bank, so this matches without a frontend family resolver.
                     const knownWeak = isElite && insights?.weakest_concepts?.find(
-                      w => w.concept === row.concept && w.track === row.track
+                      w => w.track === row.track && (w.concept || '').toUpperCase() === (row.concept || '').toUpperCase()
                     );
                     const isWeak = row.attempts > 0 && row.accuracy < 1;
                     return (

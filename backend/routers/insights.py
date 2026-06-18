@@ -729,7 +729,14 @@ def build_session_debrief(
     family: str = _track_family(session_track, enriched_questions)
 
     # ── Build concept accuracy map from historical events ────────────────────
-    # (track, concept) → (correct_total, attempt_total)
+    # (track, family) → (correct_total, attempt_total).  Keyed by canonical concept
+    # *family* (resolve_to_family), NOT the raw/uppercased tag — so a recurring gap is
+    # recognised regardless of tag case/spelling and the debrief's notion of a concept
+    # matches the dashboard's weakest_concepts and the drill endpoint.  (Statistics tags
+    # are stored lowercase; the prior raw-vs-uppercased key mismatch made every statistics
+    # concept silently never-known-weak.)  Families are deduped per submission — count a
+    # concept once per question, mirroring the dashboard — so a multi-tagged question
+    # can't inflate the attempt count.
     hist_concept: dict[tuple[str, str], tuple[int, int]] = {}
     session_q_ids = {int(q.get("id", 0)) for q in enriched_questions}
     for event in submission_events:
@@ -737,10 +744,16 @@ def build_session_debrief(
         qid = int(event.get("question_id", 0))
         if qid in session_q_ids:
             continue  # exclude this session's questions from historical baseline
+        is_correct = bool(event.get("is_correct"))
+        seen_families: set[str] = set()
         for concept in _CONCEPTS_LOOKUP.get(t, {}).get(qid, []):
-            key = (t, concept)
+            family = resolve_to_family(concept, t)
+            if family in seen_families:
+                continue  # count each family once per submission
+            seen_families.add(family)
+            key = (t, family)
             c, a = hist_concept.get(key, (0, 0))
-            hist_concept[key] = (c + (1 if event.get("is_correct") else 0), a + 1)
+            hist_concept[key] = (c + (1 if is_correct else 0), a + 1)
 
     # ── Session concept accuracy map ─────────────────────────────────────────
     sess_concept: dict[str, dict[str, Any]] = {}
@@ -760,21 +773,39 @@ def build_session_debrief(
     def _is_known_weak(track: str, concept: str) -> bool:
         """A concept the user has repeatedly missed across PAST sessions
         (>=3 historical attempts, <60% historical accuracy). Used to break
-        session accuracy+attempts ties toward the gap that keeps recurring."""
-        hc, ha = hist_concept.get((track, concept), (0, 0))
+        session ties toward the gap that keeps recurring.  The tag is resolved
+        to its canonical family before lookup, so the match is case/spelling
+        insensitive and consistent with the dashboard + drill."""
+        hc, ha = hist_concept.get((track, resolve_to_family(concept, track)), (0, 0))
         return ha >= 3 and (hc / ha) < 0.6
 
     strong = [v for v in sess_concept.values() if v["correct"] == v["attempts"] and v["attempts"] > 0]
+    # NEXT-STEP ranking (most-deserving weak concept first):
+    #   1. most session MISSES (attempts - correct) — evidence of failure, so a 1/5
+    #      (4 misses) outranks a lone careless 0/1 (1 miss); accuracy alone must not
+    #      let a single miss headline over a better-evidenced gap.
+    #   2. lowest session accuracy — breaks equal-miss ties toward the weaker concept.
+    #   3. known cross-session weakness (>=3 past attempts, <60%, family-aware) — a
+    #      recurring gap wins an otherwise-even tie.
+    #   4. concept name (case-insensitive) — explicit deterministic final tiebreak
+    #      (replaces the prior reliance on implicit dict-insertion order).
     weak = sorted(
         [v for v in sess_concept.values() if v["correct"] < v["attempts"] and v["attempts"] > 0],
-        # 1. lowest session accuracy · 2. most attempts · 3. known cross-session
-        # weakness · 4. (stable) question order — so a recurring gap wins a tie.
         key=lambda x: (
+            -(x["attempts"] - x["correct"]),
             x["correct"] / x["attempts"],
-            -x["attempts"],
             0 if _is_known_weak(x["track"], x["concept"]) else 1,
+            x["concept"].upper(),
         ),
     )
+
+    # Copy selection uses the weak concept's OWN track family, not the session family:
+    # in a Mixed session the weakest concept can come from a reasoning track even though
+    # the session family (executable-dominated) is "executable".
+    def _concept_track_family(t: str) -> str:
+        return _track_family(
+            t, [q for q in enriched_questions if (q.get("track") or session_track) == t]
+        )
 
     # ── 1. Headline ──────────────────────────────────────────────────────────
     accuracy = solved_count / total_count
@@ -826,6 +857,11 @@ def build_session_debrief(
                     f"{name} remains your toughest area — the same gap showed up again. "
                     "This is your highest-priority concept right now."
                 )
+            elif top["attempts"] == 1:
+                patterns.append(
+                    f"The one {name} question went unsolved — "
+                    "this is the clearest gap from this session."
+                )
             else:
                 patterns.append(
                     f"Every question involving {name} went unsolved — "
@@ -841,7 +877,7 @@ def build_session_debrief(
             else:
                 approach_copy = (
                     "Try articulating the approach before writing code next time."
-                    if family == "executable"
+                    if _concept_track_family(top["track"]) == "executable"
                     else "Try walking through the tradeoffs out loud before committing to your answer."
                 )
                 patterns.append(f"{name} was inconsistent ({pct}% this session). {approach_copy}")
@@ -850,24 +886,29 @@ def build_session_debrief(
     follow_ups = [q for q in enriched_questions if q.get("is_follow_up")]
     if follow_ups:
         fu_solved = sum(1 for q in follow_ups if q.get("is_solved"))
+        fu_noun = "follow-up questions" if len(follow_ups) > 1 else "follow-up question"
         if fu_solved == len(follow_ups):
             patterns.append(
-                "You handled the follow-up question correctly too — "
+                f"You handled the {fu_noun} correctly too — "
                 "a good sign you can stay sharp when complexity escalates."
             )
         else:
             patterns.append(
-                "The follow-up question caught you out — these harder variants "
+                f"The {fu_noun} caught you out — these harder variants "
                 "expose the edges of a concept you're still internalising."
             )
 
-    # Time-sink pattern (only meaningful with 2+ questions)
-    if total_count >= 2 and time_used_s:
+    # Time-sink pattern (only meaningful with 2+ questions).  Compare each question's
+    # active time against the SUM of per-question active times (not the session
+    # wall-clock) so the ratio is one consistent measure — the prior wall-clock
+    # denominator mixed active time (numerator) with idle-inclusive wall-clock.
+    if total_count >= 2:
         timed_qs = [q for q in enriched_questions if q.get("time_spent_s") is not None]
-        if timed_qs:
+        active_total = sum(int(q["time_spent_s"]) for q in timed_qs)
+        if timed_qs and active_total > 0:
             max_q = max(timed_qs, key=lambda q: q["time_spent_s"])
-            max_t = max_q["time_spent_s"]
-            if max_t > 0 and (max_t / time_used_s) > 0.55:
+            max_t = int(max_q["time_spent_s"])
+            if max_t > 0 and (max_t / active_total) > 0.55:
                 mins, secs = divmod(max_t, 60)
                 t_str = f"{mins}m {secs}s" if mins else f"{secs}s"
                 label = max_q.get("title") or f"Q{max_q.get('position', '?')}"
@@ -880,7 +921,6 @@ def build_session_debrief(
     priority_action: str | None = None
     priority_concept: str | None = None
     priority_track: str | None = None
-    priority_question_ids: list[int] = []
 
     is_loop = session_meta.get("mode") == "interview_loop"
 
@@ -920,7 +960,7 @@ def build_session_debrief(
         # Learning-path recommendations live exclusively on the dashboard, which
         # keeps the concept-primary / path-secondary pairing (docs/features/dashboard.md).
         track_label = _TRACK_LABELS.get(track, track)
-        if family == "executable":
+        if _concept_track_family(track) == "executable":
             priority_action = (
                 f"Drill {concept_name} in {track_label} — a focused set of just this concept. "
                 "Aim for 3 consecutive correct."
@@ -931,17 +971,10 @@ def build_session_debrief(
                 "Aim to state the tradeoffs and reasoning clearly without backtracking."
             )
 
-        # Recommend unseen drill questions
-        candidate_qs = _CONCEPT_QUESTION_INDEX.get(top["track"], {}).get(concept_name, [])
-        priority_question_ids = [
-            int(q["id"]) for q in candidate_qs if int(q["id"]) not in session_q_ids
-        ][:2]
-
     return {
         "headline": headline,
         "patterns": [p for p in patterns if p],
         "priority_action": priority_action,
         "priority_concept": priority_concept,
         "priority_track": priority_track,
-        "priority_question_ids": priority_question_ids,
     }

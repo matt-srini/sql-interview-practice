@@ -1122,7 +1122,7 @@ def test_debrief_weak_concept_recommends_drill_not_path():
 def test_debrief_tiebreak_prefers_known_weakness():
     """When two weak concepts tie on session accuracy AND attempts, NEXT STEP breaks
     the tie toward a known cross-session weakness (>=3 historical attempts, <60%),
-    not merely the first concept in question order (insights.py weak-sort tiebreak)."""
+    not merely the alphabetical fallback (insights.py weak-sort tiebreak)."""
     from routers.insights import build_session_debrief, _CONCEPTS_LOOKUP
 
     # A real SQL concept with >=3 historical question IDs we can mark as repeated misses.
@@ -1131,16 +1131,18 @@ def test_debrief_tiebreak_prefers_known_weakness():
     assert len(known_qids) >= 3, "fixture needs >=3 historical WINDOW FUNCTIONS questions"
 
     # A control concept that never appears in history → can never be "known weak".
-    control = "ZZZ CONTROL CONCEPT (NOT REAL)"
+    # Named to sort first by the deterministic case-insensitive alphabetical tiebreak,
+    # so with no history it wins and the known-weak effect is isolated to the with-history case.
+    control = "AAA CONTROL CONCEPT (NOT REAL)"
 
-    # Two unsolved questions, both 0/1; control is listed FIRST so question order favours it.
+    # Two unsolved questions, both 0/1 (equal misses + accuracy).
     questions = [
         {"id": 990001, "track": "sql", "is_solved": False, "concepts": [control], "time_spent_s": 60},
         {"id": 990002, "track": "sql", "is_solved": False, "concepts": [known], "time_spent_s": 60},
     ]
     meta = {"track": "sql", "difficulty": "medium", "time_used_s": 120, "time_limit_s": 1800}
 
-    # No history → pure (accuracy, attempts, question-order) tiebreak → control (first) wins.
+    # No history → ties fall to the deterministic alphabetical final key → "AAA" control wins.
     no_hist = build_session_debrief(questions, meta, [], "elite")
     assert no_hist["priority_concept"] == control
 
@@ -1149,6 +1151,63 @@ def test_debrief_tiebreak_prefers_known_weakness():
     events = [{"track": "sql", "question_id": qid, "is_correct": False} for qid in known_qids]
     with_hist = build_session_debrief(questions, meta, events, "elite")
     assert with_hist["priority_concept"] == known, with_hist["priority_concept"]
+
+
+def test_debrief_evidence_guard_prefers_more_misses_over_single_miss():
+    """F4: NEXT STEP weighs evidence of failure (number of misses), so a 1/5 concept
+    (4 misses, 20%) outranks a lone careless 0/1 (1 miss, 0%). Accuracy alone must not
+    let a single miss headline over a better-evidenced session gap. No history + fake
+    concepts (never known-weak), so only the miss-count signal decides."""
+    from routers.insights import build_session_debrief
+
+    lone = "AAA LONE MISS (NOT REAL)"           # 0/1 -> 1 miss, 0% accuracy
+    evidenced = "BBB EVIDENCED GAP (NOT REAL)"  # 1/5 -> 4 misses, 20% accuracy
+    questions = (
+        [{"id": 990201, "track": "sql", "is_solved": False, "concepts": [lone], "time_spent_s": 30}]
+        + [{"id": 990210, "track": "sql", "is_solved": True, "concepts": [evidenced], "time_spent_s": 30}]
+        + [
+            {"id": 990211 + i, "track": "sql", "is_solved": False, "concepts": [evidenced], "time_spent_s": 30}
+            for i in range(4)
+        ]
+    )
+    meta = {"track": "sql", "difficulty": "medium", "time_used_s": 300, "time_limit_s": 1800}
+    debrief = build_session_debrief(questions, meta, [], "elite")
+    assert debrief["priority_concept"] == evidenced, debrief["priority_concept"]
+
+
+def test_debrief_known_weakness_family_aware_for_lowercase_statistics_tags():
+    """F1 regression: statistics concept tags are stored lowercase, but the historical
+    concept lookup uppercases them — the prior raw-vs-uppercased key mismatch made every
+    statistics concept silently never-known-weak. The known-weak test now resolves to
+    family, so a recurring lowercase-tagged statistics gap is recognized."""
+    from routers.insights import build_session_debrief, _CONCEPTS_LOOKUP, resolve_to_family
+
+    stat_tag = "hypothesis testing"  # stored lowercase in the statistics bank
+    fam = resolve_to_family(stat_tag, "statistics")
+    qids = [
+        qid for qid, cs in _CONCEPTS_LOOKUP["statistics"].items()
+        if any(resolve_to_family(c, "statistics") == fam for c in cs)
+    ][:3]
+    assert len(qids) >= 3, "fixture needs >=3 historical questions in this statistics family"
+
+    control = "AAA CONTROL (NOT REAL)"
+    questions = [
+        {"id": 990301, "track": "statistics", "subtype": "conceptual", "is_solved": False,
+         "concepts": [control], "time_spent_s": 60},
+        {"id": 990302, "track": "statistics", "subtype": "conceptual", "is_solved": False,
+         "concepts": [stat_tag], "time_spent_s": 60},
+    ]
+    meta = {"track": "statistics", "difficulty": "medium", "time_used_s": 120, "time_limit_s": 2700}
+
+    # No history → alphabetical fallback → control wins.
+    no_hist = build_session_debrief(questions, meta, [], "elite")
+    assert no_hist["priority_concept"] == control
+
+    # 3 past misses on the statistics family → it becomes known-weak (the bug fix: the
+    # lowercase session tag now resolves to the same family as the uppercased history).
+    events = [{"track": "statistics", "question_id": qid, "is_correct": False} for qid in qids]
+    with_hist = build_session_debrief(questions, meta, events, "elite")
+    assert with_hist["priority_concept"] == stat_tag, with_hist["priority_concept"]
 
 
 def test_tc176_track_family_helper_resolves_correctly():
