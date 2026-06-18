@@ -17,7 +17,7 @@ from config import (
     RAZORPAY_PLAN_PRO,
     RAZORPAY_PLAN_ELITE,
 )
-from db import clear_user_subscription_id, delete_user_account, record_plan_change, set_user_plan, update_user_name  # noqa: F401
+from db import clear_user_subscription_id, delete_user_account, get_paddle_payment_events, record_plan_change, set_user_plan, update_user_name  # noqa: F401
 from deps import clear_session_cookie, require_authenticated_user
 
 try:
@@ -34,6 +34,28 @@ SUBSCRIPTION_PLANS = {"pro", "elite"}
 
 # Higher number = higher tier
 PLAN_HIERARCHY: dict[str, int] = {"pro": 1, "elite": 2}
+
+# Paddle subscribers (international / Merchant-of-Record rail) have no Razorpay
+# subscription, so the Razorpay-backed cancel / switch / update endpoints can't
+# act on them. Until in-app Paddle management lands (needs PADDLE_API_KEY), we
+# return an honest 409 pointing to Paddle's receipt/portal instead of the
+# misleading "no subscription on record" 400.
+PADDLE_MANAGED_MSG = (
+    "Your subscription is billed through Paddle, our international payment "
+    "provider and Merchant of Record. To change or cancel it, use the manage "
+    "link in your Paddle receipt email, or contact support@datathink.co and "
+    "we'll take care of it."
+)
+
+
+async def _reject_if_paddle_managed(user: dict[str, Any]) -> None:
+    """Raise 409 if the user is a Paddle subscriber (paid plan, no Razorpay
+    subscription, has Paddle charges on record). Razorpay subscribers short-circuit
+    before the query; users with neither fall through to the normal handling."""
+    if user.get("razorpay_subscription_id"):
+        return
+    if await get_paddle_payment_events(str(user["id"]), limit=1):
+        raise HTTPException(status_code=409, detail=PADDLE_MANAGED_MSG)
 
 
 # ---------------------------------------------------------------------------
@@ -122,11 +144,31 @@ async def get_billing(
         "charge_at": None,
         "plan_amounts": None,
         "plan_currency": "INR",
+        "provider": "razorpay",
+        "managed_externally": False,
         "invoices": [],
     }
 
     if plan == "free":
         return _base
+
+    # Paddle subscribers (international rail) have no Razorpay subscription and no
+    # Razorpay invoices — surface what the Paddle webhook recorded, and mark the
+    # subscription as managed on Paddle's side. Only query Paddle when there's no
+    # Razorpay subscription (Razorpay subs take the live Razorpay path below).
+    if not current_user.get("razorpay_subscription_id"):
+        paddle_invoices = await get_paddle_payment_events(str(current_user["id"]))
+        if paddle_invoices:
+            return {
+                **_base,
+                "provider": "paddle",
+                "plan_currency": paddle_invoices[0].get("currency") or "USD",
+                "is_subscription": plan in SUBSCRIPTION_PLANS,
+                "is_lifetime": plan in LIFETIME_PLANS,
+                "subscription_status": "active" if plan in SUBSCRIPTION_PLANS else None,
+                "managed_externally": True,
+                "invoices": paddle_invoices,
+            }
 
     if plan in LIFETIME_PLANS:
         return {**_base, "is_lifetime": True}
@@ -281,6 +323,7 @@ async def cancel_subscription(
             detail="You do not have an active subscription to cancel.",
         )
 
+    await _reject_if_paddle_managed(current_user)
     subscription_id = current_user.get("razorpay_subscription_id")
     if not subscription_id:
         raise HTTPException(
@@ -368,6 +411,10 @@ async def switch_plan(
         raise HTTPException(status_code=400, detail=f"Invalid target plan: {body.target_plan!r}.")
     if body.target_plan == plan:
         raise HTTPException(status_code=400, detail="You are already on this plan.")
+
+    # Paddle subscribers can't switch via the Razorpay path — return the honest
+    # 409 before any Razorpay-specific config check (_plan_id_for).
+    await _reject_if_paddle_managed(current_user)
 
     new_plan_id = _plan_id_for(body.target_plan)
     if not new_plan_id:
@@ -463,6 +510,7 @@ async def update_payment_method(
             detail="Payment method updates only apply to active monthly subscriptions.",
         )
 
+    await _reject_if_paddle_managed(current_user)
     subscription_id = current_user.get("razorpay_subscription_id")
     if not subscription_id:
         raise HTTPException(
@@ -514,6 +562,7 @@ async def reactivate_subscription(
     if plan not in SUBSCRIPTION_PLANS:
         raise HTTPException(status_code=400, detail="You do not have a subscription to reactivate.")
 
+    await _reject_if_paddle_managed(current_user)
     subscription_id = current_user.get("razorpay_subscription_id")
     if not subscription_id:
         raise HTTPException(

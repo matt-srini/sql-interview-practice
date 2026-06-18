@@ -44,9 +44,10 @@ export default function RefundPolicyPage({ isModal = false }) {
         <p>Email <a href="mailto:support@datathink.co">support@datathink.co</a> with the subject line "Billing dispute" and include:</p>
         <ul>
           <li>Your registered email address</li>
-          <li>Your Razorpay order or payment ID</li>
+          <li>Your Razorpay order or payment ID (India/INR purchases) or your Paddle transaction/order ID (international purchases)</li>
           <li>A brief description of the issue</li>
         </ul>
+        <p>For international purchases, please note that Paddle is the Merchant of Record and handles order inquiries and refunds as the authorised reseller. We will coordinate with Paddle on your behalf, but Paddle's own policies apply to those transactions.</p>
         <p>We will respond within 5 business days.</p>
 
         <h2>Contact</h2>

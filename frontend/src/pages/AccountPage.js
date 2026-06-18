@@ -32,10 +32,11 @@ function formatDate(unixSeconds) {
 function formatAmount(amountInSmallestUnit, currency) {
   if (!amountInSmallestUnit) return null;
   const amount = amountInSmallestUnit / 100;
-  if (currency === 'INR') {
-    return `₹${amount.toLocaleString('en-IN')}`;
+  try {
+    return new Intl.NumberFormat(undefined, { style: 'currency', currency: currency ?? 'INR' }).format(amount);
+  } catch {
+    return `${amount.toFixed(2)} ${currency ?? ''}`.trim();
   }
-  return `$${amount.toFixed(2)}`;
 }
 
 function normalisePlan(plan) {
@@ -608,6 +609,7 @@ export default function AccountPage() {
   const normEffective = normalisePlan(effectivePlan);
   const canSwitch = isSubscription && !cancelledAtCycleEnd && !successState;
   const canCancel = isSubscription && !cancelledAtCycleEnd && !successState;
+  const isPaddleManaged = billing?.provider === 'paddle' || billing?.managed_externally === true;
 
   // ── Helpers for success ───────────────────────────────────────────────
   function handleCancelSuccess({ cancelAt }) {
@@ -824,8 +826,8 @@ export default function AccountPage() {
                 </div>
               )}
 
-              {/* Action buttons */}
-              {isSubscription && !successState && (
+              {/* Action buttons — Razorpay only; Paddle subscribers manage externally */}
+              {isSubscription && !successState && !isPaddleManaged && (
                 <div className="account-page-actions" style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', marginTop: '1.25rem' }}>
                   {canSwitch && (
                     <button
@@ -848,8 +850,16 @@ export default function AccountPage() {
                 </div>
               )}
 
-              {/* Payment method info note — shown for active monthly subscribers */}
-              {isSubscription && !cancelledAtCycleEnd && !successState && (
+              {/* Paddle management note */}
+              {isSubscription && isPaddleManaged && !successState && (
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', margin: '1rem 0 0', lineHeight: 1.5 }}>
+                  Billed through Paddle (international). To change or cancel your subscription, use the manage link in your Paddle receipt email, or contact{' '}
+                  <a href="mailto:support@datathink.co" style={{ color: 'var(--accent)' }}>support@datathink.co</a>.
+                </p>
+              )}
+
+              {/* Payment method info note — shown for active Razorpay monthly subscribers */}
+              {isSubscription && !cancelledAtCycleEnd && !successState && !isPaddleManaged && (
                 <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', margin: '1rem 0 0', lineHeight: 1.5 }}>
                   If a payment fails, Razorpay will email you automatically with a secure link to update your card and retry.
                 </p>

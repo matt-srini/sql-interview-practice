@@ -78,6 +78,20 @@ def _price_ids() -> dict[str, str | None]:
     }
 
 
+def _plan_tier_for_price_id(price_id: str | None) -> str | None:
+    """Reverse-map a Paddle price_id -> our plan tier. The subscription's CURRENT
+    price_id is authoritative on a mid-cycle plan switch (`subscription.updated`),
+    whereas `custom_data.target_plan` is frozen at checkout and would re-apply the
+    original plan. Mirrors the Razorpay `_plan_tier_for_plan_id` fix. Returns None
+    if the price_id isn't one we configured -> caller falls back to custom_data."""
+    if not price_id:
+        return None
+    for tier, configured_id in _price_ids().items():
+        if configured_id and configured_id == price_id:
+            return tier
+    return None
+
+
 def _verify_paddle_signature(raw_body: bytes, signature_header: str) -> bool:
     """Verify Paddle Billing's `Paddle-Signature` header.
 
@@ -210,6 +224,14 @@ async def paddle_webhook(request: Request) -> dict[str, str]:
 
     data: dict[str, Any] = event.get("data") or {}
     resolved_user, target_plan = await _resolve_event_user(data)
+    # Prefer the subscription's CURRENT price_id (authoritative on a mid-cycle
+    # plan switch); custom_data.target_plan is frozen at checkout and would
+    # re-apply the original plan. Mirrors the Razorpay plan_id resolution fix.
+    _items = data.get("items") or []
+    _price_id = (_items[0].get("price") or {}).get("id") if _items and isinstance(_items[0], dict) else None
+    _plan_from_price = _plan_tier_for_price_id(_price_id)
+    if _plan_from_price:
+        target_plan = _plan_from_price
     handled = False
 
     if event_type in _GRANT_EVENTS:
@@ -252,6 +274,10 @@ async def paddle_webhook(request: Request) -> dict[str, str]:
             "type": event_type,
             "user_id": str(resolved_user["id"]) if resolved_user else None,
             "target_plan": target_plan,
+            # Charge total (minor units) + currency — drives the rail-aware billing
+            # history for Paddle subscribers (who have no Razorpay invoices).
+            "amount": ((data.get("details") or {}).get("totals") or {}).get("grand_total"),
+            "currency": data.get("currency_code"),
             "transaction_id": data.get("id") if event_type.startswith("transaction.") else data.get("transaction_id"),
             "subscription_id": data.get("subscription_id") or (data.get("id") if event_type.startswith("subscription.") else None),
         },

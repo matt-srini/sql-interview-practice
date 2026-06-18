@@ -12,6 +12,16 @@ def _getenv(name: str, default: str | None = None) -> str | None:
 	return value
 
 
+def _stripped(v: str | None) -> str | None:
+	"""Strip leading/trailing whitespace from a config string value.
+
+	Pasted secrets often carry a trailing newline; stripping at read-time
+	prevents silent HMAC mismatches that are hard to debug in production.
+	None passes through unchanged.
+	"""
+	return v.strip() if isinstance(v, str) else v
+
+
 def _get_int(name: str, default: str) -> int:
 	value = _getenv(name, default)
 	try:
@@ -74,12 +84,12 @@ DB_POOL_TIMEOUT = _get_int("DB_POOL_TIMEOUT", "10")
 DB_POOL_RECYCLE_SECONDS = _get_int("DB_POOL_RECYCLE_SECONDS", "1800")
 
 # Razorpay (replaces Stripe — India-friendly)
-RAZORPAY_KEY_ID = _getenv("RAZORPAY_KEY_ID")
-RAZORPAY_KEY_SECRET = _getenv("RAZORPAY_KEY_SECRET")
-RAZORPAY_WEBHOOK_SECRET = _getenv("RAZORPAY_WEBHOOK_SECRET")
+RAZORPAY_KEY_ID = _stripped(_getenv("RAZORPAY_KEY_ID"))
+RAZORPAY_KEY_SECRET = _stripped(_getenv("RAZORPAY_KEY_SECRET"))
+RAZORPAY_WEBHOOK_SECRET = _stripped(_getenv("RAZORPAY_WEBHOOK_SECRET"))
 # Subscription plan IDs (recurring) — created in Razorpay dashboard
-RAZORPAY_PLAN_PRO   = _getenv("RAZORPAY_PLAN_PRO")
-RAZORPAY_PLAN_ELITE = _getenv("RAZORPAY_PLAN_ELITE")
+RAZORPAY_PLAN_PRO   = _stripped(_getenv("RAZORPAY_PLAN_PRO"))
+RAZORPAY_PLAN_ELITE = _stripped(_getenv("RAZORPAY_PLAN_ELITE"))
 # Lifetime amounts are one-time Orders — amount in paise (₹1 = 100 paise)
 RAZORPAY_AMOUNT_LIFETIME_PRO   = _get_int("RAZORPAY_AMOUNT_LIFETIME_PRO", "1199900")  # ₹11,999
 RAZORPAY_AMOUNT_LIFETIME_ELITE = _get_int("RAZORPAY_AMOUNT_LIFETIME_ELITE", "1999900") # ₹19,999
@@ -96,14 +106,14 @@ RAZORPAY_AMOUNT_LIFETIME_ELITE_USD = _get_int("RAZORPAY_AMOUNT_LIFETIME_ELITE_US
 # sales tax on our behalf. All values are unset by default, so the Paddle
 # endpoints return 503 until configured — exactly like the Razorpay USD plan IDs.
 PADDLE_ENVIRONMENT      = (_getenv("PADDLE_ENVIRONMENT", "sandbox") or "sandbox").strip().lower()
-PADDLE_CLIENT_TOKEN     = _getenv("PADDLE_CLIENT_TOKEN")     # client-side token for Paddle.js
-PADDLE_API_KEY          = _getenv("PADDLE_API_KEY")          # server-side API key (reserved — cancel/portal later)
-PADDLE_WEBHOOK_SECRET   = _getenv("PADDLE_WEBHOOK_SECRET")   # notification-destination signing secret
+PADDLE_CLIENT_TOKEN     = _stripped(_getenv("PADDLE_CLIENT_TOKEN"))     # client-side token for Paddle.js
+PADDLE_API_KEY          = _stripped(_getenv("PADDLE_API_KEY"))          # server-side API key (reserved — cancel/portal later)
+PADDLE_WEBHOOK_SECRET   = _stripped(_getenv("PADDLE_WEBHOOK_SECRET"))   # notification-destination signing secret
 # Price IDs (USD) from the Paddle catalog — recurring (pro/elite) + one-time (lifetime_*)
-PADDLE_PRICE_PRO            = _getenv("PADDLE_PRICE_PRO")
-PADDLE_PRICE_ELITE          = _getenv("PADDLE_PRICE_ELITE")
-PADDLE_PRICE_LIFETIME_PRO   = _getenv("PADDLE_PRICE_LIFETIME_PRO")
-PADDLE_PRICE_LIFETIME_ELITE = _getenv("PADDLE_PRICE_LIFETIME_ELITE")
+PADDLE_PRICE_PRO            = _stripped(_getenv("PADDLE_PRICE_PRO"))
+PADDLE_PRICE_ELITE          = _stripped(_getenv("PADDLE_PRICE_ELITE"))
+PADDLE_PRICE_LIFETIME_PRO   = _stripped(_getenv("PADDLE_PRICE_LIFETIME_PRO"))
+PADDLE_PRICE_LIFETIME_ELITE = _stripped(_getenv("PADDLE_PRICE_LIFETIME_ELITE"))
 
 RATE_LIMIT_REQUESTS = _get_int("RATE_LIMIT_REQUESTS", "60")
 RATE_LIMIT_WINDOW_SECONDS = _get_int("RATE_LIMIT_WINDOW_SECONDS", "60")
@@ -171,20 +181,71 @@ if (GITHUB_CLIENT_ID or GITHUB_CLIENT_SECRET) and not GITHUB_REDIRECT_URI:
 	logger.warning("GITHUB_REDIRECT_URI is not set; GitHub OAuth may fail with redirect_uri_mismatch")
 
 
-if ENV == "production" and not REDIS_URL:
-	raise RuntimeError("REDIS_URL is required when ENV=production")
+def validate_production_config() -> None:
+	"""Assert that all required env vars are set when running in production.
 
-if ENV == "production" and not DATABASE_URL:
-	raise RuntimeError("DATABASE_URL is required when ENV=production")
+	Called once at module import so a misconfigured deploy fails loudly at
+	startup rather than silently at the first request.  The function reads
+	module-level config vars so it can be unit-tested by monkeypatching them
+	(e.g. ``monkeypatch.setattr('config.PADDLE_CLIENT_TOKEN', 'live_x')``).
 
-if ENV == "production" and not RAZORPAY_KEY_ID:
-	raise RuntimeError("RAZORPAY_KEY_ID is required when ENV=production")
+	Non-production environments are left entirely unchecked — importing
+	``config`` in tests never raises here.
+	"""
+	if ENV != "production":
+		return
 
-if ENV == "production" and not RAZORPAY_KEY_SECRET:
-	raise RuntimeError("RAZORPAY_KEY_SECRET is required when ENV=production")
+	# ── Infrastructure ────────────────────────────────────────────────────────
+	if not REDIS_URL:
+		raise RuntimeError("REDIS_URL is required when ENV=production")
 
-if ENV == "production" and not RAZORPAY_WEBHOOK_SECRET:
-	raise RuntimeError("RAZORPAY_WEBHOOK_SECRET is required when ENV=production")
+	if not DATABASE_URL:
+		raise RuntimeError("DATABASE_URL is required when ENV=production")
+
+	# ── Razorpay (always required in production) ──────────────────────────────
+	if not RAZORPAY_KEY_ID:
+		raise RuntimeError("RAZORPAY_KEY_ID is required when ENV=production")
+
+	if not RAZORPAY_KEY_SECRET:
+		raise RuntimeError("RAZORPAY_KEY_SECRET is required when ENV=production")
+
+	if not RAZORPAY_WEBHOOK_SECRET:
+		raise RuntimeError("RAZORPAY_WEBHOOK_SECRET is required when ENV=production")
+
+	# ── Paddle (only required when the Paddle rail is enabled) ───────────────
+	# Gate on PADDLE_CLIENT_TOKEN: if that is set, Paddle is live and the
+	# rest of its config must be complete.  INR-only deploys leave all Paddle
+	# vars unset and boot without error.
+	if PADDLE_CLIENT_TOKEN:
+		if not PADDLE_WEBHOOK_SECRET:
+			raise RuntimeError(
+				"PADDLE_WEBHOOK_SECRET is required when PADDLE_CLIENT_TOKEN is set"
+			)
+
+		missing_prices = [
+			name
+			for name, val in (
+				("PADDLE_PRICE_PRO", PADDLE_PRICE_PRO),
+				("PADDLE_PRICE_ELITE", PADDLE_PRICE_ELITE),
+				("PADDLE_PRICE_LIFETIME_PRO", PADDLE_PRICE_LIFETIME_PRO),
+				("PADDLE_PRICE_LIFETIME_ELITE", PADDLE_PRICE_LIFETIME_ELITE),
+			)
+			if not val
+		]
+		if missing_prices:
+			raise RuntimeError(
+				f"The following Paddle price IDs are required when PADDLE_CLIENT_TOKEN is set: "
+				f"{', '.join(missing_prices)}"
+			)
+
+		if PADDLE_ENVIRONMENT != "production":
+			raise RuntimeError(
+				f'PADDLE_ENVIRONMENT must be "production" when Paddle is live; '
+				f'got "{PADDLE_ENVIRONMENT}"'
+			)
+
+
+validate_production_config()
 
 
 def get_async_database_url() -> str:

@@ -43,6 +43,7 @@ export default function TermsPage({ isModal = false }) {
         <p>You are responsible for maintaining the confidentiality of your account credentials. You must notify us immediately at <a href="mailto:support@datathink.co">support@datathink.co</a> if you suspect unauthorised access. We reserve the right to terminate accounts that violate these Terms.</p>
 
         <h2>Subscriptions and payments</h2>
+        <p>Payments are processed by Razorpay (for customers in India paying in INR) or by Paddle (for international customers). Paddle acts as the Merchant of Record and authorised reseller for all non-INR purchases, meaning Paddle is the legal seller and handles tax collection and remittance on those transactions.</p>
         <ul>
           <li><strong>Monthly plans (Pro, Elite)</strong> — billed on a recurring monthly basis from the date of purchase. Your subscription renews automatically each month until you cancel.</li>
           <li><strong>Cancellation</strong> — you may cancel at any time from your account settings. Access continues until the end of the current billing period; no partial refunds are issued.</li>

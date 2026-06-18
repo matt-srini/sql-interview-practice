@@ -28,7 +28,7 @@ export default function PrivacyPolicyPage({ isModal = false }) {
       <div className="policy-body">
         <h2>What we collect</h2>
         <p>When you create an account we collect your email address and, optionally, your display name. If you sign in with Google or GitHub we receive the email and name from that provider. We do not store passwords for OAuth sign-ins.</p>
-        <p>When you make a payment, Razorpay collects your card or bank details directly. We receive only a Razorpay customer ID and payment event notifications — we never see or store raw card numbers.</p>
+        <p>When you make a payment, the processor depends on your location. For customers in India paying in INR, Razorpay collects your card or bank details directly and we receive only a Razorpay customer ID and payment event notifications. For international customers, Paddle acts as the Merchant of Record (the legal seller) and handles payment collection, tax remittance, and card processing directly. In both cases we never see or store raw card numbers.</p>
         <p>We collect product usage data (questions solved, session durations, feature interactions) to improve the platform. This data is tied to your account.</p>
 
         <h2>How we use it</h2>
@@ -41,11 +41,12 @@ export default function PrivacyPolicyPage({ isModal = false }) {
         <p>We do not sell your data to third parties, and we do not use your data for advertising.</p>
 
         <h2>Cookies and local storage</h2>
-        <p>We set a <strong>session cookie</strong> (HttpOnly, SameSite=Strict) to authenticate your requests. We use <strong>localStorage</strong> for your theme preference (light/dark) and first-visit walkthrough state. No advertising or cross-site tracking cookies are used.</p>
+        <p>We set a <strong>session cookie</strong> (HttpOnly, SameSite=Lax) to authenticate your requests, and a separate <strong>CSRF-protection cookie</strong> (SameSite=Strict) to guard against cross-site request forgery. We use <strong>localStorage</strong> for your theme preference (light/dark) and first-visit walkthrough state. No advertising or cross-site tracking cookies are used.</p>
 
         <h2>Third-party processors</h2>
         <ul>
-          <li><strong>Razorpay</strong> — payment processing (India). Their privacy policy applies to payment data.</li>
+          <li><strong>Razorpay</strong> — payment processing for India/INR customers. Their privacy policy applies to payment data.</li>
+          <li><strong>Paddle</strong> — payment processing and tax collection for international (non-INR) customers, acting as Merchant of Record; their privacy policy governs payment data.</li>
           <li><strong>Resend</strong> — transactional email delivery.</li>
           <li><strong>Sentry</strong> — error tracking and session replay (triggered on errors only). Error reports include your user identifier (email), browser metadata, and stack traces. Page replay recordings have all text masked.</li>
           <li><strong>PostHog</strong> — product analytics. Session data is anonymised and stored on PostHog's EU infrastructure.</li>

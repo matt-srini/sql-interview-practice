@@ -383,3 +383,66 @@ def test_paddle_and_razorpay_event_ids_do_not_collide():
     assert _payment_event(f"paddle:{shared_id}") is not None   # paddle (prefixed)
     assert _payment_event(shared_id)[1] == "razorpay"
     assert _payment_event(f"paddle:{shared_id}")[1] == "paddle"
+
+
+def test_webhook_subscription_updated_resolves_plan_from_price_id():
+    """Mid-cycle Paddle plan switch: subscription.updated carries the NEW price_id
+    but a STALE custom_data.target_plan. The webhook must apply the plan from the
+    price_id (authoritative), not the frozen custom_data — mirror of the Razorpay fix."""
+    secret = "wh_secret_switch"
+    with TestClient(app) as client:
+        user = _make_user(client, plan="pro")
+    user_id = user["id"]
+    body = json.dumps({
+        "event_id": f"evt_{uuid.uuid4().hex}",
+        "event_type": "subscription.updated",
+        "data": {
+            "id": "sub_switch",
+            "items": [{"price": {"id": _CFG["price_elite"]}}],            # NEW plan
+            "custom_data": {"user_id": str(user_id), "target_plan": "pro"},  # STALE
+        },
+    }).encode()
+    sig = _paddle_sig(secret, body)
+    with patch("routers.paddle.PADDLE_WEBHOOK_SECRET", secret), \
+         patch("routers.paddle.PADDLE_PRICE_PRO", _CFG["price_pro"]), \
+         patch("routers.paddle.PADDLE_PRICE_ELITE", _CFG["price_elite"]):
+        with TestClient(app) as client:
+            r = client.post("/api/paddle/webhook", content=body, headers={"Paddle-Signature": sig})
+    assert r.status_code == 200
+    assert _user_plan(user_id) == "elite", "price_id must win over stale custom_data.target_plan"
+
+
+def test_webhook_transaction_completed_records_amount_and_currency():
+    """The webhook records the charge total + currency in payload_summary so the
+    rail-aware billing history can show amounts for Paddle subscribers."""
+    secret = "wh_secret_amt"
+    with TestClient(app) as client:
+        user = _make_user(client, plan="free")
+    user_id = user["id"]
+    raw_event_id = f"evt_{uuid.uuid4().hex}"
+    body = json.dumps({
+        "event_id": raw_event_id,
+        "event_type": "transaction.completed",
+        "data": {
+            "id": "txn_amt",
+            "currency_code": "USD",
+            "details": {"totals": {"grand_total": "1500"}},
+            "custom_data": {"user_id": str(user_id), "target_plan": "pro"},
+        },
+    }).encode()
+    sig = _paddle_sig(secret, body)
+    with patch("routers.paddle.PADDLE_WEBHOOK_SECRET", secret):
+        with TestClient(app) as client:
+            r = client.post("/api/paddle/webhook", content=body, headers={"Paddle-Signature": sig})
+    assert r.status_code == 200
+    conn = _db_conn()
+    try:
+        with conn.cursor() as cur:
+            cur.execute("SELECT payload_summary FROM payment_events WHERE event_id = %s", (f"paddle:{raw_event_id}",))
+            summary = cur.fetchone()[0]
+    finally:
+        conn.close()
+    if isinstance(summary, str):
+        summary = json.loads(summary)
+    assert summary["amount"] == "1500"
+    assert summary["currency"] == "USD"

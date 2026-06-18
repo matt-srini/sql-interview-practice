@@ -1013,6 +1013,57 @@ async def record_payment_event(
         await session.commit()
 
 
+async def get_paddle_payment_events(user_id: str, limit: int = 12) -> list[dict[str, Any]]:
+    """Recent successful Paddle charges for a user, newest first.
+
+    Drives the rail-aware billing history: Paddle subscribers have no Razorpay
+    invoices (the /account billing panel otherwise reads Razorpay live), so we
+    surface what the Paddle webhook recorded in payment_events instead. Only
+    `transaction.completed` events represent an actual charge. Shape matches the
+    Razorpay invoice dicts (id/amount/currency/status/date/pdf_url) + `plan`.
+    """
+    session_factory = _session_factory_or_raise()
+    async with session_factory() as session:
+        result = await session.execute(
+            text(
+                """
+                SELECT event_type, processed_at, payload_summary
+                FROM payment_events
+                WHERE user_id = CAST(:user_id AS UUID)
+                  AND provider = 'paddle'
+                  AND event_type = 'transaction.completed'
+                ORDER BY processed_at DESC
+                LIMIT :limit
+                """
+            ),
+            {"user_id": user_id, "limit": limit},
+        )
+        rows = result.mappings().all()
+
+    invoices: list[dict[str, Any]] = []
+    for row in rows:
+        summary = row["payload_summary"]
+        if isinstance(summary, str):
+            try:
+                summary = json.loads(summary)
+            except Exception:
+                summary = {}
+        summary = summary or {}
+        processed_at = row["processed_at"]
+        invoices.append(
+            {
+                "id": summary.get("transaction_id"),
+                "amount": summary.get("amount"),          # minor units (str/int) or None
+                "currency": summary.get("currency") or "USD",
+                "status": "paid",
+                "date": int(processed_at.timestamp()) if processed_at else None,
+                "pdf_url": None,
+                "plan": summary.get("target_plan"),
+            }
+        )
+    return invoices
+
+
 async def ping() -> bool:
     if _engine is None:
         return False

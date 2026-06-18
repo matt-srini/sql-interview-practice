@@ -308,7 +308,7 @@ The `FRONTEND_DIST_DIR` env var defaults to `/app/frontend/dist` inside the imag
 | `SENTRY_PROJECT` | Optional | Sentry project slug for frontend sourcemap upload |
 | `SENTRY_RELEASE` | Optional | Release name used by backend Sentry and frontend sourcemap upload; defaults to `RAILWAY_GIT_COMMIT_SHA` when available on the frontend build |
 
-In `production` mode, startup will fail fast if `DATABASE_URL`, `REDIS_URL`, `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, or `RAZORPAY_WEBHOOK_SECRET` are missing.
+In `production` mode, startup (`config.validate_production_config()`, called at import) fails fast if `DATABASE_URL`, `REDIS_URL`, `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, or `RAZORPAY_WEBHOOK_SECRET` are missing. When the Paddle rail is enabled (`PADDLE_CLIENT_TOKEN` set), it **additionally** requires `PADDLE_WEBHOOK_SECRET`, all four `PADDLE_PRICE_*`, and `PADDLE_ENVIRONMENT=production` — so a half-configured Paddle deploy crashes loudly at boot (Railway marks the deploy failed) instead of silently breaking checkout/webhooks. INR-only deploys leave all Paddle vars unset and boot cleanly. Webhook secrets, client tokens, and price IDs are whitespace-stripped at read time, so a pasted trailing newline can't break HMAC verification.
 
 OAuth provider callback URIs should be configured exactly as the redirect vars below:
 - `${GOOGLE_REDIRECT_URI}`
