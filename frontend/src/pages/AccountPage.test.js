@@ -145,6 +145,16 @@ describe('AccountPage — Paddle subscriber', () => {
     // Must NOT contain the rupee symbol
     expect(screen.queryByText(/₹/)).not.toBeInTheDocument();
   });
+
+  it('(d) shows an "Emailed by Paddle" receipt hint instead of a bare dash', async () => {
+    renderAccountPage();
+    await waitFor(() => {
+      expect(screen.getByText(/Billed through Paddle/i)).toBeInTheDocument();
+    });
+    // Paddle (Merchant of Record) has no downloadable invoice URL — the receipt
+    // cell shows a hint rather than the misleading "—".
+    expect(screen.getByText(/Emailed by Paddle/i)).toBeInTheDocument();
+  });
 });
 
 describe('AccountPage — Razorpay subscriber', () => {

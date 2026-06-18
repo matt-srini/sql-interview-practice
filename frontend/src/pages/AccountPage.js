@@ -908,6 +908,10 @@ export default function AccountPage() {
                                 >
                                   Download ↗
                                 </a>
+                              ) : isPaddleManaged ? (
+                                // Paddle (Merchant of Record) emails receipts + keeps them in its
+                                // portal; there's no downloadable invoice URL like Razorpay's short_url.
+                                <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>Emailed by Paddle</span>
                               ) : (
                                 <span style={{ color: 'var(--text-muted)' }}>—</span>
                               )}
