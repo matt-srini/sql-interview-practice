@@ -136,18 +136,17 @@ function makeDashboardPayload(overrides = {}) {
 function makeInsightsPayload(overrides = {}) {
   return {
     per_track: {
-      sql: { solve_count: 47, median_solve_seconds: 540, accuracy_pct: 0.82 },
-      python: { solve_count: 0, median_solve_seconds: null, accuracy_pct: 0 },
-      'pandas': { solve_count: 0, median_solve_seconds: null, accuracy_pct: 0 },
-      pyspark: { solve_count: 0, median_solve_seconds: null, accuracy_pct: 0 },
-      'data-engineering': { solve_count: 0, median_solve_seconds: null, accuracy_pct: 0 },
-      'data-modeling': { solve_count: 0, median_solve_seconds: null, accuracy_pct: 0 },
-      statistics: { solve_count: 0, median_solve_seconds: null, accuracy_pct: 0 },
-      'ml-fundamentals': { solve_count: 0, median_solve_seconds: null, accuracy_pct: 0 },
-      experimentation: { solve_count: 0, median_solve_seconds: null, accuracy_pct: 0 },
+      sql: { solve_count: 47, accuracy_pct: 0.82, attempts: 60, practice_attempts: 54, mock_attempts: 6 },
+      python: { solve_count: 0, accuracy_pct: null, attempts: 0, practice_attempts: 0, mock_attempts: 0 },
+      'pandas': { solve_count: 0, accuracy_pct: null, attempts: 0, practice_attempts: 0, mock_attempts: 0 },
+      pyspark: { solve_count: 0, accuracy_pct: null, attempts: 0, practice_attempts: 0, mock_attempts: 0 },
+      'data-engineering': { solve_count: 0, accuracy_pct: null, attempts: 0, practice_attempts: 0, mock_attempts: 0 },
+      'data-modeling': { solve_count: 0, accuracy_pct: 1.0, attempts: 7, practice_attempts: 0, mock_attempts: 7 },
+      statistics: { solve_count: 0, accuracy_pct: null, attempts: 0, practice_attempts: 0, mock_attempts: 0 },
+      'ml-fundamentals': { solve_count: 0, accuracy_pct: null, attempts: 0, practice_attempts: 0, mock_attempts: 0 },
+      experimentation: { solve_count: 0, accuracy_pct: null, attempts: 0, practice_attempts: 0, mock_attempts: 0 },
     },
     weakest_concepts: [],
-    cross_track_insight: null,
     streak_days: 0,
     ...overrides,
   };
@@ -202,6 +201,16 @@ describe('ProgressDashboard', () => {
       expect(screen.getAllByText('ML Fundamentals').length).toBeGreaterThan(0);
       expect(screen.getAllByText('Experimentation').length).toBeGreaterThan(0);
     });
+  });
+
+  it('shows "N in mock" on any track with mock attempts, and "—" for zero-attempt tracks', async () => {
+    renderDashboard();
+    await waitFor(() => {
+      expect(screen.getByText('6 in mock')).toBeInTheDocument();   // sql — mixed practice + mock
+      expect(screen.getByText('7 in mock')).toBeInTheDocument();   // data-modeling — purely mock
+    });
+    // zero-attempt tracks render an em-dash, never a misleading "0% acc"
+    expect(screen.getAllByText('—').length).toBeGreaterThan(0);
   });
 
   it('does NOT render X/Y when by_difficulty values are plain integers (regression guard)', async () => {

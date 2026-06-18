@@ -109,21 +109,7 @@ def test_tc176_insights_returns_per_track_for_all_4():
         assert key in per_track, f"Missing track: {key}"
         t = per_track[key]
         assert "solve_count" in t
-        assert "median_solve_seconds" in t
         assert "accuracy_pct" in t
-
-
-def test_tc177_median_solve_seconds_null_when_no_correct_submissions():
-    """TC-177: No correct submissions → median_solve_seconds: null."""
-    with TestClient(app) as client:
-        user = _make_user(client, plan="pro")
-    _insert_submission(user["id"], _sql_easy_qs[0]["id"], is_correct=False, track="sql")
-    with TestClient(app) as client:
-        _make_user(client, plan="pro", existing_user=user)
-        r = client.get("/api/dashboard/insights")
-    assert r.status_code == 200
-    per_track = r.json().get("per_track", {})
-    assert per_track.get("sql", {}).get("median_solve_seconds") is None
 
 
 def test_tc178_accuracy_pct_is_correct_ratio():
@@ -190,45 +176,6 @@ def test_mixed_practice_and_mock_attempts_are_counted_separately():
     assert sql.get("practice_attempts") == 1
     assert sql.get("mock_attempts") == 1
     assert sql.get("accuracy_pct") == 0.5
-
-
-def test_tc179_cross_track_insight_null_when_gap_less_than_60s():
-    """TC-179: Two tracks with similar median times → cross_track_insight: null."""
-    with TestClient(app) as client:
-        user = _make_user(client, plan="pro")
-    from python_questions import get_questions_by_difficulty as get_py_qs
-    # Insert correct submissions with small duration_ms (~10s each)
-    _insert_submission(user["id"], _sql_easy_qs[0]["id"], is_correct=True, track="sql", duration_ms=10000)
-    _insert_submission(user["id"], get_py_qs()["easy"][0]["id"], is_correct=True, track="python", duration_ms=12000)
-    with TestClient(app) as client:
-        _make_user(client, plan="pro", existing_user=user)
-        r = client.get("/api/dashboard/insights")
-    assert r.json().get("cross_track_insight") is None
-
-
-def test_tc180_cross_track_insight_non_null_when_gap_over_60s():
-    """TC-180: SQL median=300s, Python median=60s → cross_track_insight is string."""
-    from datetime import datetime, timedelta, timezone
-    with TestClient(app) as client:
-        user = _make_user(client, plan="pro")
-    from python_questions import get_questions_by_difficulty as get_py_qs
-    now = datetime.now(timezone.utc)
-    # Insert SQL: incorrect at now-300s, correct at now
-    _insert_submission(user["id"], _sql_easy_qs[0]["id"], is_correct=False, track="sql",
-                       submitted_at=now - timedelta(seconds=300))
-    _insert_submission(user["id"], _sql_easy_qs[0]["id"], is_correct=True, track="sql",
-                       submitted_at=now)
-    # Insert Python: incorrect at now-60s, correct at now
-    py_id = get_py_qs()["easy"][0]["id"]
-    _insert_submission(user["id"], py_id, is_correct=False, track="python",
-                       submitted_at=now - timedelta(seconds=60))
-    _insert_submission(user["id"], py_id, is_correct=True, track="python",
-                       submitted_at=now)
-    with TestClient(app) as client:
-        _make_user(client, plan="pro", existing_user=user)
-        r = client.get("/api/dashboard/insights")
-    insight = r.json().get("cross_track_insight")
-    assert insight is not None and len(insight) > 0
 
 
 def test_tc181_streak_days_reflects_consecutive_days():

@@ -35,6 +35,13 @@ Keep entries to 4–6 lines. Friction kills logs; if it's longer than the change
 
 ## Entries
 
+## 2026-06-18 — Drop the per-track "solve time" metric; show the mock-attempt count on every track that has one
+**Area:** frontend · **Status:** accepted
+**Decision:** Removed the per-track median solve-time display (the "N min" line) **and** the cross-track "you solve X slower than Y" coaching insight that ran on the same number. The metric was the median wall-clock gap between a question's *first attempt* and *first correct* submission — a calendar gap (days, if you return later), not effort; it ignored the recorded `duration_ms`, was unlabeled, and only appeared on tracks whose median gap was non-zero, so it looked arbitrary. Separately, broadened the `N in mock` accuracy qualifier to show on **any track with `mock_attempts > 0`**, not only purely-mock tracks, so the practice+mock blend is always disclosed.
+**Rejected:** Labeling/keeping the time metric — it measures the wrong thing, so a label would only dignify a wrong number; a correct "solve pace" signal (median of recorded `duration_ms`, labeled, shown for every solved track) is a separate future feature, not a patch. Keeping the mock tag gated to purely-mock — left mixed tracks (e.g. SQL = practice + some mock) silently blending mock into accuracy with no hint.
+**Affects:** backend/routers/insights.py (removed `_to_median_solve_seconds`, `_build_cross_track_insight`, `median_solve_seconds`, `cross_track_insight`), frontend/src/pages/ProgressDashboard.js, frontend/src/App.css, docs/features/dashboard.md §Sections.
+**Note:** refines the gate in the entry below (purely-mock → any mock); that entry's other rules (accuracy = practice + mock, `—` for zero attempts) still stand.
+
 ## 2026-06-18 — Dashboard per-track accuracy: disclose mock basis, don't exclude it; null (not 0%) for zero attempts
 **Area:** frontend · **Status:** accepted
 **Decision:** Per-track accuracy on the Track Overview deliberately spans **practice + mock** submissions (mock answers are recorded to `submissions`; mock-under-pressure is real signal, matching weak-concepts + readiness). To stop a `0 practice solved · 100% acc` row reading as a bug, we **disclose** the basis: `accuracy_pct` is `null` → `—` when a track has zero attempts, and the row shows a muted `N in mock` qualifier when attempts are **purely mock** (`practice_attempts == 0`). Backend now also returns `attempts`/`practice_attempts`/`mock_attempts` per track (mock-only IDs resolved via `_MOCK_ONLY_IDS`, mirroring `_build_concepts_lookup`).

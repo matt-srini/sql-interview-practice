@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from collections import defaultdict
 from datetime import UTC, datetime, timedelta
-from statistics import median
 from typing import Any
 from urllib.parse import quote
 
@@ -156,58 +155,6 @@ def _compute_streak_days(correct_dates: set[datetime.date]) -> int:
     return streak
 
 
-def _to_median_solve_seconds(events: list[dict[str, Any]]) -> dict[str, int | None]:
-    per_track_durations: dict[str, list[int]] = defaultdict(list)
-
-    grouped: dict[tuple[str, int], list[dict[str, Any]]] = defaultdict(list)
-    for event in events:
-        grouped[(event["track"], int(event["question_id"]))].append(event)
-
-    for (track, _question_id), attempt_events in grouped.items():
-        first_attempt_at = attempt_events[0]["submitted_at"]
-        first_correct_at = next(
-            (item["submitted_at"] for item in attempt_events if item["is_correct"]),
-            None,
-        )
-        if first_correct_at is None:
-            continue
-
-        duration_s = int((first_correct_at - first_attempt_at).total_seconds())
-        per_track_durations[track].append(max(0, duration_s))
-
-    medians: dict[str, int | None] = {}
-    for track in _TRACK_ORDER:
-        durations = per_track_durations.get(track, [])
-        medians[track] = int(median(durations)) if durations else None
-    return medians
-
-
-def _build_cross_track_insight(per_track: dict[str, dict[str, Any]]) -> str | None:
-    candidates: list[tuple[str, int]] = []
-    for track, stats in per_track.items():
-        median_seconds = stats.get("median_solve_seconds")
-        if isinstance(median_seconds, int):
-            candidates.append((track, median_seconds))
-
-    if len(candidates) < 2:
-        return None
-
-    slow_track, slow_seconds = max(candidates, key=lambda item: item[1])
-    fast_track, fast_seconds = min(candidates, key=lambda item: item[1])
-    gap = slow_seconds - fast_seconds
-    if gap < 60:
-        return None
-
-    slow_label = _TRACK_LABELS.get(slow_track, slow_track)
-    fast_label = _TRACK_LABELS.get(fast_track, fast_track)
-    gap_minutes = max(1, round(gap / 60))
-
-    return (
-        f"You solve {slow_label} ~{gap_minutes} minute{'s' if gap_minutes != 1 else ''} "
-        f"slower than {fast_label}. Try 3 {slow_label} mediums to close the gap."
-    )
-
-
 @router.get("/insights")
 async def get_dashboard_insights(
     current_user: dict[str, Any] = Depends(get_current_user),
@@ -282,8 +229,6 @@ async def get_dashboard_insights(
                 concept_correct[key] += 1
                 concept_weighted_correct[key] += weight
 
-    medians = _to_median_solve_seconds(events)
-
     per_track: dict[str, dict[str, Any]] = {}
     for track in _TRACK_ORDER:
         attempts = per_track_attempts.get(track, 0)
@@ -293,7 +238,6 @@ async def get_dashboard_insights(
         accuracy = round(correct / attempts, 3) if attempts else None
         per_track[track] = {
             "solve_count": len(per_track_solved_question_ids.get(track, set())),
-            "median_solve_seconds": medians.get(track),
             "accuracy_pct": accuracy,
             "attempts": attempts,
             "practice_attempts": per_track_practice_attempts.get(track, 0),
@@ -381,7 +325,6 @@ async def get_dashboard_insights(
     payload = {
         "per_track": per_track,
         "weakest_concepts": weakest_concepts[:3],
-        "cross_track_insight": _build_cross_track_insight(per_track),
         "streak_days": _compute_streak_days(correct_dates),
         "readiness_scores": readiness_scores,
         "study_plan": study_plan,

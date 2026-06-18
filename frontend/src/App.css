@@ -6046,13 +6046,9 @@ select {
 .db-track-accuracy--muted {
   color: var(--text-secondary);
 }
-.db-track-time {
-  font-size: 0.72rem;
-  color: var(--text-secondary);
-}
-/* Per-track accuracy basis qualifier (e.g. "7 in mock") — shown when a track's
-   accuracy is purely mock-derived. Stays visible on mobile (unlike .db-track-time)
-   because it is the key disambiguator for a 0-practice-solved / high-acc row. */
+/* Per-track accuracy basis qualifier (e.g. "7 in mock") — shown on any track with
+   mock attempts, so the practice+mock accuracy blend is always disclosed. Visible on
+   mobile too (the key disambiguator for a low-practice / high-accuracy row). */
 .db-track-basis {
   font-size: 0.72rem;
   color: var(--text-muted);
@@ -6549,10 +6545,8 @@ select {
   .db-track-bar-col   { grid-area: bar; }
   .db-track-stats-col { grid-area: stats; display: flex; min-width: 0; }
   .db-track-right-col { grid-area: right; min-width: auto; flex-shrink: 0; gap: 0.4rem; }
-  /* Tagline + median solve time are the lowest-value details — drop them so the
-     row holds to two clean lines */
+  /* Tagline is the lowest-value detail — drop it so the row holds to two clean lines */
   .db-track-tagline { display: none; }
-  .db-track-time { display: none; }
   /* Restore the headline readiness chip / upsell gate (desktop-only before) */
   .db-track-right-col .db-readiness-chip,
   .db-track-right-col .db-readiness-gate { display: flex; }
