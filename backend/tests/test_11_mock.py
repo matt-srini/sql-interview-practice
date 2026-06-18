@@ -1210,6 +1210,38 @@ def test_debrief_known_weakness_family_aware_for_lowercase_statistics_tags():
     assert with_hist["priority_concept"] == stat_tag, with_hist["priority_concept"]
 
 
+def test_debrief_mixed_session_uses_weak_concepts_own_track_family():
+    """F7c guard: in a Mixed session the session family is 'executable' (the Mixed
+    short-circuit in _track_family), but the weakest concept can be on a reasoning
+    track. Both the inconsistency pattern AND the NEXT STEP copy must follow the weak
+    concept's OWN track, not the session's — else an MCQ concept gets 'before writing
+    code' / '3 consecutive correct' advice. FAILS on the pre-fix (session-family) code,
+    passes after F7c."""
+    from routers.insights import build_session_debrief
+
+    questions = [
+        # Data Modeling is a reasoning/MCQ track; inconsistent (1/2) -> the session's weak spot.
+        {"id": 991001, "track": "data-modeling", "is_solved": True,
+         "concepts": ["DIMENSIONAL MODELING"], "time_spent_s": 60},
+        {"id": 991002, "track": "data-modeling", "is_solved": False,
+         "concepts": ["DIMENSIONAL MODELING"], "time_spent_s": 90},
+        # A solved SQL question keeps the session genuinely mixed (and not the weak spot).
+        {"id": 991003, "track": "sql", "is_solved": True,
+         "concepts": ["GROUPED AGGREGATION"], "time_spent_s": 50},
+    ]
+    meta = {"track": "mixed", "mode": "benchmark", "difficulty": "medium",
+            "time_used_s": 200, "time_limit_s": 2400}
+    debrief = build_session_debrief(questions, meta, [], "elite")
+
+    assert debrief["priority_concept"] == "DIMENSIONAL MODELING"
+    assert debrief["priority_track"] == "data-modeling"
+    text = " ".join(debrief.get("patterns", [])) + " " + (debrief.get("priority_action") or "")
+    # Reasoning copy for an MCQ concept — never the executable phrasings.
+    assert "before writing code" not in text, text
+    assert "3 consecutive correct" not in text, text
+    assert "tradeoffs" in text, text
+
+
 def test_tc176_track_family_helper_resolves_correctly():
     """TC-176: _track_family returns correct family for each track category."""
     from routers.insights import _track_family

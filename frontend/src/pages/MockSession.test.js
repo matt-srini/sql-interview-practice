@@ -555,6 +555,28 @@ describe('MockSession summary actions', () => {
     expect(rowNames[0]).toBe('WINDOW FUNCTIONS'); // floated above the alphabetically-first JOINS
     expect(rowNames).toContain('JOINS');
   });
+
+  it('Elite "known weakness" badge matches dashboard weakest_concepts case-insensitively (F1)', async () => {
+    // The session concept is stored lowercase (Statistics-style); the dashboard's
+    // weakest_concepts carries the canonical UPPERCASE family name. The badge must still
+    // match — the pre-fix exact === compare missed it (no badge for lowercase-tag tracks).
+    const completedSession = { ...makeSessionData(1), status: 'completed', mode: 'custom', track: 'sql' };
+    mockApiPost.mockResolvedValueOnce({ data: makeCompletedSummary({
+      mode: 'custom',
+      questions: [{ ...makeQuestion(1), track: 'sql', concepts: ['hypothesis testing'], is_solved: false }],
+    }) });
+    mockApiGet.mockImplementation((url) =>
+      url === '/dashboard/insights'
+        ? Promise.resolve({ data: { weakest_concepts: [{ concept: 'HYPOTHESIS TESTING', track: 'sql' }], per_track: {} } })
+        : Promise.resolve({ data: {} })
+    );
+
+    const { container } = renderSession(completedSession);
+    await screen.findByText('Concept breakdown');
+    await waitFor(() => {
+      expect(container.querySelector('.mock-concept-known-weak-badge')).toBeTruthy();
+    });
+  });
 });
 
 // ── A6: summary headline tone on poor sessions ────────────────────────────────
