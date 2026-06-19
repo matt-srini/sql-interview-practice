@@ -90,26 +90,26 @@ Same concept families apply to both subtypes. A `central limit theorem` question
 |---|---|---|---|
 | Easy | 31 | 0 (by design) | 31 |
 | Medium | 43 | 66 | 109 |
-| Hard | 26 | 50 | 76 |
-| **Total** | **100** | **116** | **216** |
+| Hard | 26 | 68* | 94 |
+| **Total** | **100** | **134** | **234** |
 
-Mock-only ratio: 116 / 100 = **1.16×** — landed inside the locked target band of **1.15–1.25×**.
+*Hard mock-only: 47 standalone + 21 chain questions from 7 Interview Loop chains (7 parents + 14 follow-ups). 6 chains added 2026-06-19.
 
-**Target-ratio justification.** The 1.15–1.25× band was locked at Stage A against two anchors: (a) PySpark 1.17× as the closest modality precedent (code-adjacent reasoning with MCQ evaluation, similar per-question authoring constraint); (b) the dual-subtype format imposes a stricter anti-clone ceiling than pure-MCQ tracks — a mock-only numerical question must have meaningfully different numerical scaffolding from its practice equivalent, which bounds the practical authoring ceiling lower than pure-MCQ tracks (SQL 1.40×, Python 1.30×). 1.16× represents the achievable runway under that quality constraint.
+Mock-only ratio: 134 / 100 = **1.34×** — above the original 1.15–1.25× band. This is deliberate: the 18 additional hard questions are all Interview Loop chain questions, which appear exclusively in Elite Interview Loop sessions (never in benchmarks or drills). They extend the Elite-only feature surface rather than competing with practice content; the ratio band was designed for standalone questions and does not constrain chain authoring. See [`docs/decisions/DECISIONS.md`](../decisions/DECISIONS.md) for the decision record.
 
-**Per-subtype ratio.** Of the 116 mock-only questions, 85 are conceptual and 31 are numerical. Of the 100 practice questions, 60 are conceptual and 40 are numerical.
+**Target-ratio justification (original standalone budget).** The 1.15–1.25× band was locked at Stage A against two anchors: (a) PySpark 1.17× as the closest modality precedent (code-adjacent reasoning with MCQ evaluation, similar per-question authoring constraint); (b) the dual-subtype format imposes a stricter anti-clone ceiling than pure-MCQ tracks — a mock-only numerical question must have meaningfully different numerical scaffolding from its practice equivalent, which bounds the practical authoring ceiling lower than pure-MCQ tracks (SQL 1.40×, Python 1.30×). 1.16× represents the achievable runway under that quality constraint.
+
+**Per-subtype ratio.** Of the 134 mock-only questions, 100 are conceptual and 34 are numerical. Of the 100 practice questions, 60 are conceptual and 40 are numerical.
 
 | Subtype | Practice | Mock-only | Ratio |
 |---|---|---|---|
-| Conceptual | 60 | 85 | **1.42×** |
-| Numerical | 40 | 31 | **0.78×** |
-| Total | 100 | 116 | **1.16×** |
+| Conceptual | 60 | 100 | **1.67×** |
+| Numerical | 40 | 34 | **0.85×** |
+| Total | 100 | 134 | **1.34×** |
 
-The numerical mock-only ratio (0.78×) is materially below the 1.0× contract floor. This is an acknowledged outcome, not an oversight, but it is **provisional**: it stands only as long as the numerical-pool runway is empirically sufficient for power-user consumption, and is the first remediation candidate if a future audit shows fresh-first exhaustion on numerical benchmarks. Rationale for the present landing: (a) numerical questions with deterministic starter/expected code and hidden test cases are the hardest format to anti-clone — a mock-only numerical question must have visually and computationally distinct scaffolding from its practice counterpart, and the practice numerical pool (40 questions) already occupies much of the available recombination surface; (b) the conceptual surplus (1.42×) carries the overall 1.16× ratio. Numerical mock distributes as 13 medium + 18 hard (≈1 per family at medium, ≈1.4 per family at hard across the 13-family registry); benchmark composition is `1 numerical + 2 conceptual` per benchmark (per `docs/specs/mock-benchmark-spec.md`), so the 31-question numerical mock pool supports roughly 15 distinct hard benchmarks before fresh-first exhausts — borderline-sufficient under steady benchmark use, fragile under heavy drill mode. **First remediation if exhaustion is observed:** numerical-only top-up authoring to bring the pool to ~40 (≈1.0×), not retroactive ratio inflation.
+The numerical mock-only ratio (0.85×) remains below the 1.0× contract floor for standalone questions. The 3 numerical chain parents (73080, 73083, 73086) added 2026-06-19 improve the ratio from 0.78× to 0.85× but don't close it fully. Rationale for the outstanding gap: (a) numerical questions with deterministic starter/expected code and hidden test cases are the hardest format to anti-clone — a mock-only numerical question must have visually and computationally distinct scaffolding from its practice counterpart, and the practice numerical pool (40 questions) already occupies much of the available recombination surface; (b) the conceptual surplus carries the overall ratio. Numerical mock distributes as 13 medium + 21 hard (after chain additions); benchmark composition is `1 numerical + 2 conceptual` per benchmark (per `docs/specs/mock-benchmark-spec.md`), so the 34-question numerical mock pool supports roughly 17 distinct hard benchmarks before fresh-first exhausts. **First remediation if exhaustion is observed:** numerical-only standalone top-up authoring, not retroactive ratio inflation.
 
-**Mock difficulty split.** Medium/hard mock split: 66 medium / 50 hard = 1:0.76.
-
-The hard-skewed preference (55/45 or 60/40 medium/hard per the platform contract) would target closer to 1:0.87. The observed 1:0.76 skew toward medium is explained by two factors: (1) Statistics easy questions are practice-only by design (0 easy mock), so the full 116 mock-only budget spans only medium and hard; (2) the Statistics hard difficulty covers highly combinable families (Bayesian, ANOVA, survival analysis, multiple testing) but has fewer family-pair recombination surfaces than medium, where the 13 families span wider conceptual distances. The 1:0.76 ratio is within acceptable bounds — it is not a quality failure, and further hard authoring would risk cloning the existing 50-question hard pool.
+**Mock difficulty split.** Medium/hard mock split: 66 medium / 68 hard = 1:1.03 (near-equal after chain additions; chain-driven shift from the pre-chain 1:0.76 skew toward medium).
 
 **Family coverage (mock-only floor ≥4 per applicable tier):**
 

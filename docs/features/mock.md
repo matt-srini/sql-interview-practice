@@ -105,7 +105,7 @@ For **custom drill**, the role defines the pool of tracks to draw from. The user
 | PySpark | ✅ | 150 mock-only questions |
 | ML Fundamentals | ✅ | 143 mock-only questions |
 | Experimentation | ✅ | 104 mock-only questions |
-| Statistics | ✅ | 116 mock-only questions |
+| Statistics | ✅ | 134 mock-only questions (7 hard Interview Loop chains — 7 parents + 14 follow-ups) |
 | Data Modeling | ✅ | 97 mock-only questions |
 | Data Engineering | ✅ | 110 mock-only questions |
 
