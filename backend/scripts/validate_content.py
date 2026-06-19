@@ -1785,14 +1785,41 @@ _MCQ_DEBIAS_TRACKS: frozenset[str] = frozenset({
 })
 
 
+def _is_chain_member(q: dict) -> bool:
+    """True if the question belongs to a mock interview-loop chain.
+
+    Chains are drawn ONLY into Interview Loop sessions; standalone mock-only
+    questions are drawn into Benchmark + Custom/Drill.  Because those are
+    disjoint draw-surfaces, answer-key bias must be measured per surface (a
+    100%-biased chain pool can otherwise hide, diluted by standalone questions,
+    inside the combined `mock` group — the dilution trap).  A question is a
+    chain member if it is a parent (non-empty follow_ups) or a child
+    (parent_id / follow_up_id / is_follow_up).
+    """
+    if q.get("follow_ups"):
+        return True
+    return (
+        q.get("parent_id") is not None
+        or q.get("follow_up_id") is not None
+        or bool(q.get("is_follow_up"))
+    )
+
+
 def _collect_mcq_groups() -> dict[tuple, list[dict]]:
     """Build the group mapping used by both debias validators.
 
     Group key schema
     ----------------
     Practice/mock files  : (track, difficulty, pool)
-                           where pool = "mock" | "practice"
+                           where pool = "practice"        (challenge mode)
+                                      | "mock-standalone" (benchmark + drill draw)
+                                      | "mock-chain"       (interview-loop draw)
     Sample files         : ("sample", track, "all")
+
+    The mock pool is split by DRAW-SURFACE (standalone vs chain) rather than
+    lumped, because a session only ever draws from one and bias is gameable per
+    surface — see _is_chain_member and the dilution-trap note in
+    docs/content-authoring.md.
 
     Only questions that are MCQ (have int correct_option + list options with
     len >= 2) are included.  Statistics numerical subtype questions (no
@@ -1821,7 +1848,10 @@ def _collect_mcq_groups() -> dict[tuple, list[dict]]:
             if not isinstance(opts, list) or len(opts) < 2:
                 continue
             difficulty = q.get("difficulty") or file_path.stem
-            pool = "mock" if q.get("mock_only") else "practice"
+            if q.get("mock_only"):
+                pool = "mock-chain" if _is_chain_member(q) else "mock-standalone"
+            else:
+                pool = "practice"
             key = (track, difficulty, pool)
             groups[key].append(q)
 
@@ -1878,12 +1908,18 @@ def _validate_answer_position_balance() -> None:
 
     groups = _collect_mcq_groups()
     errors: list[str] = []
+    warnings: list[str] = []  # mock-chain surface eased in as WARN (see note below)
 
     for key, qs in sorted(groups.items()):
         is_sample = key[0] == "sample"
         min_n = MIN_N_SAMPLE if is_sample else MIN_N_PRACTICE
         if len(qs) < min_n:
             continue
+
+        # The mock-chain draw-surface is NEW enforcement (interview-loop pool).
+        # It is eased in as a WARN; standalone/practice/sample keep ERROR teeth.
+        # Promote to ERROR after the chain-debiasing pass (docs/content-authoring.md).
+        bucket = warnings if key[-1] == "mock-chain" else errors
 
         n = len(qs)
         from collections import Counter
@@ -1895,7 +1931,7 @@ def _validate_answer_position_balance() -> None:
             if share > MAX_POSITION_SHARE:
                 label = chr(ord("A") + pos) if pos < 26 else str(pos)
                 key_str = "/".join(str(k) for k in key)
-                errors.append(
+                bucket.append(
                     f"POSITION CONCENTRATION [{key_str}]: position {label} holds "
                     f"{cnt}/{n} ({share:.1%}) of answers — exceeds {MAX_POSITION_SHARE:.0%} cap"
                 )
@@ -1911,7 +1947,7 @@ def _validate_answer_position_balance() -> None:
                 if run_len >= MAX_RUN:
                     label = chr(ord("A") + run_pos) if run_pos < 26 else str(run_pos)
                     key_str = "/".join(str(k) for k in key)
-                    errors.append(
+                    bucket.append(
                         f"POSITION RUN [{key_str}]: run of {run_len}+ consecutive "
                         f"position {label} starting near order "
                         f"{sorted_qs[i - run_len + 1].get('order')!r}"
@@ -1922,6 +1958,13 @@ def _validate_answer_position_balance() -> None:
                 run_len = 1
                 run_pos = cur
 
+    if warnings:
+        joined = "\n".join(f"  - {w}" for w in warnings[:50])
+        sys.stderr.write(
+            f"WARNING: {len(warnings)} mock-chain answer-POSITION balance issue(s) "
+            f"(interview-loop draw-surface; WARN until the chain-debiasing pass — "
+            f"then promote to ERROR):\n{joined}\n"
+        )
     if errors:
         joined = "\n".join(f"- {item}" for item in errors[:200])
         remaining = len(errors) - min(len(errors), 200)
@@ -1953,12 +1996,19 @@ def _validate_answer_length_balance() -> None:
 
     groups = _collect_mcq_groups()
     errors: list[str] = []
+    warnings: list[str] = []  # mock-chain surface eased in as WARN (see note below)
 
     for key, qs in sorted(groups.items()):
         is_sample = key[0] == "sample"
         min_n = MIN_N_SAMPLE if is_sample else MIN_N_PRACTICE
         if len(qs) < min_n:
             continue
+
+        # mock-chain (interview-loop draw) is NEW enforcement, eased in as WARN;
+        # standalone/practice/sample keep ERROR teeth. The split exists because a
+        # biased chain pool otherwise hides, diluted by standalone questions, in
+        # the combined mock group (the dilution trap, docs/content-authoring.md).
+        bucket = warnings if key[-1] == "mock-chain" else errors
 
         n = len(qs)
         unique_longest_count = 0
@@ -1975,12 +2025,19 @@ def _validate_answer_length_balance() -> None:
         share = unique_longest_count / n
         if share > MAX_LONGEST_SHARE:
             key_str = "/".join(str(k) for k in key)
-            errors.append(
+            bucket.append(
                 f"LENGTH BIAS [{key_str}]: correct option is the unique longest in "
                 f"{unique_longest_count}/{n} ({share:.1%}) of questions — "
                 f"exceeds {MAX_LONGEST_SHARE:.0%} cap"
             )
 
+    if warnings:
+        joined = "\n".join(f"  - {w}" for w in warnings[:50])
+        sys.stderr.write(
+            f"WARNING: {len(warnings)} mock-chain answer-LENGTH balance issue(s) "
+            f"(interview-loop draw-surface; WARN until the chain-debiasing pass — "
+            f"then promote to ERROR):\n{joined}\n"
+        )
     if errors:
         joined = "\n".join(f"- {item}" for item in errors[:200])
         remaining = len(errors) - min(len(errors), 200)
