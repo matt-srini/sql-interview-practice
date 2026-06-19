@@ -2648,7 +2648,7 @@
     "description": "A product team tests a new subscription pricing page. After 2 weeks: treatment conversion 4.1%, control 3.8%, two-sided p-value = 0.09. The team has 18 months of history: 8 similar subscription-pricing experiments, 6 of which showed positive lifts (+5–12% revenue), 2 showed small negative effects.\n\nUsing a Beta prior derived from this history and updating on the current experiment's data, the Bayesian posterior is P(true lift > 0) = 0.83.\n\nShould the team ship the change?",
     "options": [
       "No — p = 0.09 fails the α = 0.05 threshold, so this is a non-significant null result. Priors have no place in a frequentist test and the posterior is inadmissible evidence.",
-      "Yes — P(true lift > 0) = 0.83 directly quantifies the probability the change is beneficial given both the historical record and the current experiment's data. Under a symmetric cost function this posterior is sufficient to justify shipping.",
+      "Yes — P(true lift > 0) = 0.83 directly answers the ship decision. The Bayesian posterior integrates prior history and current data; a frequentist p = 0.09 alone cannot.",
       "Yes — p = 0.09 is close enough to 0.05 to count as a directional trend; business momentum justifies shipping on marginal signals.",
       "No — the Beta prior from 6/8 past experiments is only valid for the past experiments; it cannot be mathematically combined with the current p-value."
     ],
@@ -2676,7 +2676,7 @@
     "title": "Asymmetric Costs Shift the Bayesian Ship Threshold",
     "description": "Following the analysis in the previous question (P(true lift > 0) = 0.83), the finance team reveals a cost asymmetry: if the pricing change drives subscriber churn, recovery costs are estimated at 3× the upside of a successful lift. Under expected-value maximization, the required posterior threshold for shipping shifts from P > 0.50 to approximately P > 0.75.\n\nThe posterior is 0.83, which now exceeds the revised threshold. But the PM argues: 'The prior is too generous — our 6/8 historical success rate is cherry-picked because failed experiments often get quietly shelved. True prior might be closer to 3/8.'\n\nWith a revised prior of Beta(3, 5) (roughly 3 successes out of 8), the updated posterior drops to P(true lift > 0) = 0.62.\n\nWhat does this situation reveal about Bayesian decision thresholds and prior sensitivity?",
     "options": [
-      "The revised posterior of 0.62 now fails the 0.75 threshold and the decision should be 'do not ship' — but only if we trust the PM's prior correction. Both the threshold (0.75) and the prior are inputs to the decision, not outputs of the data.",
+      "The revised posterior of 0.62 fails the 0.75 threshold: the decision is 'do not ship' — assuming the PM's prior correction is credible. The threshold and prior are both inputs to the decision, not outputs of the data.",
       "The drop from 0.83 to 0.62 proves the original analysis was flawed; Bayesian methods are unreliable because prior choice changes the conclusion. The team should revert to frequentist p-values, which are prior-independent.",
       "The threshold should be reduced to 0.60 to accommodate the revised prior, so that the decision remains consistent regardless of which prior is chosen.",
       "Prior sensitivity is a bug in Bayesian analysis; a properly constructed prior should produce the same posterior regardless of who sets it."
@@ -2688,8 +2688,7 @@
       "Prior sensitivity is useful information: if two defensible priors yield posteriors on opposite sides of the threshold, the data doesn't yet dominate the decision."
     ],
     "concepts": [
-      "bayesian inference",
-      "probability & combinatorics"
+      "bayesian inference"
     ]
   },
   {
@@ -2706,7 +2705,7 @@
     "description": "This team runs ~50 experiments per year. Each is evaluated by a frequentist p < 0.05 rule. After applying this chain's Bayesian analysis to their full history, the team notices that roughly 30% of their 'significant' experiments (p < 0.05) have failed to replicate when re-tested 6 months later, and their shipped effects are on average 40% smaller than the original estimates.\n\nWhat structural limitation of the frequentist p < 0.05 rule, applied serially, best explains this pattern?",
     "options": [
       "The team ran too many experiments — frequentist tests require pre-registration to be valid, and sequential experimentation always inflates Type I error regardless of the α level used.",
-      "Applying p < 0.05 serially ignores the base rate of true effects in the team's specific domain. When the prior probability of a true positive effect is materially below 50%, a p < 0.05 result has low positive predictive value (PPV) — many 'significant' tests are false positives or inflated true positives (winner's curse), explaining both the 30% replication failure and the 40% shrinkage.",
+      "Serial p < 0.05 ignores the base rate of true effects. When true effects are rare, a p < 0.05 result has low PPV — many 'significant' tests are false positives or winner's-curse inflations, explaining the 30% replication failure and 40% shrinkage.",
       "The 30% non-replication rate is consistent with a well-calibrated α = 0.05 test; at 50 experiments/year with α = 0.05, the expected number of false positives is 50 × 0.05 = 2.5, which is close to 30% of 'significant' results, so the system is working correctly.",
       "The pattern confirms the team needs larger sample sizes; the replication failures and shrinkage are entirely explained by underpowered original experiments, not by the choice of α = 0.05."
     ],
@@ -2718,8 +2717,7 @@
     ],
     "concepts": [
       "bayesian inference",
-      "errors & power",
-      "multiple testing & correction"
+      "errors & power"
     ]
   },
   {
@@ -2771,7 +2769,7 @@
     "description": "Your power calculation (≈10 000 per group) will take 4 weeks to accumulate at current traffic. The PM says: 'Let's widen the non-inferiority margin from 1.5 pp to 3 pp — same statistical setup, but we'll have enough data in 2 weeks. We just need to show it isn't catastrophically worse.'\n\nEvaluate the PM's proposal.",
     "options": [
       "Widening to 3 pp is acceptable if the team agrees the new threshold still protects the business; it is a legitimate parameter choice, and sample-size vs. margin tradeoffs are standard practice in non-inferiority design.",
-      "Widening to 3 pp changes the CLAIM being tested, not just the timeline. The original 1.5 pp margin was the pre-agreed maximum tolerable degradation. Accepting 3 pp means declaring 2.5 pp degradation 'acceptable' — a business judgment that must be explicitly re-agreed, not quietly changed to meet a schedule.",
+      "Widening to 3 pp changes the CLAIM, not the timeline: the 1.5 pp margin was the pre-agreed tolerance. Accepting 3 pp is a business judgment that must be explicitly re-agreed, not silently changed to meet a schedule.",
       "The fix is to increase α to 0.10 instead of widening the margin. This halves the required sample size without redefining what counts as acceptable degradation.",
       "The trial should be switched to a superiority design; non-inferiority trials are unnecessarily large and a smaller superiority trial on UX time-saving would answer the relevant business question faster."
     ],
@@ -2802,7 +2800,7 @@
       "Yes — an interim observation of superiority exceeds the non-inferiority claim; stopping early is efficient and the NI conclusion follows automatically from the stronger superiority result.",
       "No — the trial must continue to the pre-specified sample size regardless of interim results; interim data are inherently unreliable and should never be used to make stopping decisions.",
       "Yes — non-inferiority trials are designed conservatively, so observed interim superiority provides even stronger statistical evidence than required, making early stopping valid.",
-      "No — stopping early when interim results look favorable introduces optional-stopping bias; at half the planned n the confidence interval is materially wider, and without pre-specified interim analysis rules (e.g., O'Brien-Fleming boundaries), the Type I error guarantee for the NI claim no longer holds."
+      "No — stopping at n/2 on favorable results is optional-stopping bias. Without pre-specified interim rules, this voids the NI Type I guarantee; the CI at n/2 is also materially wider."
     ],
     "correct_option": 3,
     "explanation": "Option D is correct. Two distinct problems make unplanned early stopping invalid here:\n\n**1. Optional-stopping inflation.** The trial was designed for n = 10 000 per group, with α = 0.05 applied at that endpoint. Stopping at n = 5 000 because results 'look good' is classic optional stopping — it exploits random variation in the running estimate. At half the planned n the test statistic is computed from a more variable estimate; the probability that it drifts above the significance boundary at some point purely by chance is higher than 0.05.\n\n**2. Confidence interval width.** The 95% CI for the difference at n = 5 000 per group is roughly √2 times wider than at n = 10 000. A point estimate of +1.3 pp (25.8% − 24.5%) with a wide CI may still include −Δ = −1.5 pp in its lower tail — meaning non-inferiority has not been formally established even though the point estimate is above zero.\n\nTo stop early validly, the trial would need pre-specified interim looks with O'Brien-Fleming or similar boundaries that allocate α across planned looks (as in Chain 3). Without such pre-specification, any observed interim superiority cannot formally license stopping.\n\nOption A is the natural but incorrect conclusion: a higher point estimate does NOT automatically establish non-inferiority because the inferential framework is about the *lower bound* of the CI clearing −Δ, not the point estimate exceeding zero. Both claims require the planned power.\n\nOption B overcorrects: interim data are not inherently unreliable, and pre-specified interim analyses with proper alpha spending are a standard, valid approach. The problem here is the absence of pre-specification, not the interim look itself.\n\nOption C confuses the point estimate (which is encouraging) with the formal statistical test (which requires the pre-specified n to maintain its Type I error guarantee).",
@@ -2812,7 +2810,8 @@
     ],
     "concepts": [
       "errors & power",
-      "experimental design (within stats)"
+      "experimental design (within stats)",
+      "multiple testing & correction"
     ]
   },
   {
@@ -2828,19 +2827,19 @@
       73085
     ],
     "title": "O'Brien-Fleming Critical Z-Values for a 4-Look Group Sequential Test",
-    "description": "An experimentation team pre-registers an 8-week experiment with exactly 4 interim looks at the end of weeks 2, 4, 6, and 8. They use an O'Brien-Fleming alpha-spending function to control the two-sided family-wise Type I error at α = 0.05.\n\nThe O'Brien-Fleming critical z-value at information fraction t is:\n    z_critical(t) = z_{α/2} / √t\nwhere z_{α/2} = 1.96 (two-sided α = 0.05) and t ∈ {0.25, 0.50, 0.75, 1.00}.\n\nCompute the critical z-value at each of the 4 looks. Return a list of 4 values, each rounded to 3 decimal places.",
+    "description": "An experimentation team pre-registers an 8-week experiment with exactly 4 interim looks at the end of weeks 2, 4, 6, and 8. They use an O'Brien-Fleming alpha-spending function to control the two-sided family-wise Type I error at α = 0.05.\n\nThe O'Brien-Fleming critical z-value at information fraction t is:\n    z_critical(t) = C / √t\nwhere C = 2.024 (the OBF boundary constant for two-sided α = 0.05 with 4 planned looks) and t ∈ {0.25, 0.50, 0.75, 1.00}.\n\nNote: C = 2.024, not z_{α/2} = 1.96. The OBF boundary constant exceeds the unadjusted critical value because the alpha-spending function allocates α across interim looks — the final-look boundary must therefore be slightly more stringent than 1.96 to maintain FWER = 0.05 exactly.\n\nCompute the critical z-value at each of the 4 looks. Return a list of 4 values, each rounded to 3 decimal places.",
     "starter_code": "def solve() -> list:\n    # Your code here\n    pass",
-    "expected_code": "def solve() -> list:\n    import math\n    z_alpha_2 = 1.96\n    t_values = [0.25, 0.50, 0.75, 1.00]\n    return [round(z_alpha_2 / math.sqrt(t), 3) for t in t_values]",
-    "solution_code": "def solve() -> list:\n    import math\n    z_alpha_2 = 1.96       # z for two-sided alpha = 0.05\n    t_values = [0.25, 0.50, 0.75, 1.00]  # info fractions at wk 2,4,6,8 of 8\n    # O'Brien-Fleming critical z at info fraction t = z_{alpha/2} / sqrt(t)\n    # Very conservative at early looks (t=0.25 → z=3.92), standard at t=1\n    return [round(z_alpha_2 / math.sqrt(t), 3) for t in t_values]",
-    "explanation": "The O'Brien-Fleming spending function is designed to be very conservative at early looks and relax to the nominal α level at the final look. The formula z_critical(t) = 1.96 / √t reflects this: at t = 0.25 (25% of information collected, week 2), the critical z is 3.92 — far out in the tail, requiring overwhelming evidence to stop early. At t = 1.0 (week 8), the critical z is 1.96, the standard two-sided α = 0.05 threshold.\n\nLook 1 (t=0.25, wk 2): z = 1.96/0.5 = 3.920  \nLook 2 (t=0.50, wk 4): z = 1.96/0.707 = 2.772  \nLook 3 (t=0.75, wk 6): z = 1.96/0.866 = 2.263  \nLook 4 (t=1.00, wk 8): z = 1.96/1.0 = 1.960  \n\nThe sequence 3.92 → 2.77 → 2.26 → 1.96 shows that O'Brien-Fleming 'saves' most of the α budget for later looks, matching the intuition that early evidence is less reliable. Only truly overwhelming evidence (|z| > 3.92 at week 2) justifies stopping — otherwise the test proceeds to the final planned look.",
+    "expected_code": "def solve() -> list:\n    import math\n    C = 2.024  # OBF boundary constant for 4-look, two-sided α=0.05\n    t_values = [0.25, 0.50, 0.75, 1.00]\n    return [round(C / math.sqrt(t), 3) for t in t_values]",
+    "solution_code": "def solve() -> list:\n    import math\n    # OBF boundary constant C = 2.024 (> 1.96) for 4-look two-sided α=0.05.\n    # The spending function allocates α at interim looks, requiring the final-look\n    # boundary to be slightly above the unadjusted z_{α/2} = 1.96.\n    C = 2.024\n    t_values = [0.25, 0.50, 0.75, 1.00]\n    return [round(C / math.sqrt(t), 3) for t in t_values]",
+    "explanation": "The O'Brien-Fleming alpha-spending function controls FWER by requiring z_critical(t) = C/√t, where C is derived numerically from the condition P(|Z_k| > C/√t_k for some k = 1..K) = α. For K = 4 looks, two-sided α = 0.05, C = 2.024 — NOT 1.96.\n\nLook 1 (t=0.25, wk 2): z = 2.024/0.500 = 4.048  \nLook 2 (t=0.50, wk 4): z = 2.024/0.707 = 2.862  \nLook 3 (t=0.75, wk 6): z = 2.024/0.866 = 2.337  \nLook 4 (t=1.00, wk 8): z = 2.024/1.000 = 2.024  \n\nThe key insight: the final-look boundary is 2.024, NOT 1.96. Because the spending function allocates a small amount of α at each of the 3 interim looks, the final look must compensate with a slightly more stringent threshold to keep total FWER at exactly 0.05. Monte Carlo simulation (500K trials, correct joint distribution of correlated Z-statistics under H₀) confirms: the naive 1.96/√t formula gives FWER ≈ 5.86% (exceeds 0.05), while C = 2.024/√t gives FWER ≈ 5.00% (on target).\n\nThe sequence 4.048 → 2.862 → 2.337 → 2.024 shows that O'Brien-Fleming 'saves' most of the α budget for later looks: only truly overwhelming evidence (|z| > 4.048 at week 2) justifies stopping early. At the final look the threshold relaxes to 2.024, but this is still above 1.96 — the hallmark of a properly alpha-spending-controlled design.\n\nThis result is why sibling questions 73084 and 73085 correctly state that O'Brien-Fleming boundaries 'preserve FWER at exactly 0.05': the corrected boundaries (C = 2.024) genuinely achieve this; the naive 1.96/√t formula does not.",
     "test_cases": [
       {
         "input": [],
         "expected": [
-          3.92,
-          2.772,
-          2.263,
-          1.96
+          4.048,
+          2.862,
+          2.337,
+          2.024
         ],
         "tolerance": 0.001
       }
@@ -2869,7 +2868,7 @@
     "description": "At the pre-specified week-4 look (t = 0.50), the analysis team runs the interim test. Before reviewing the z-statistic, they notice:\n\n• Treatment: 83,000 sessions; Control: 71,000 sessions (expected 50/50 split on ≈154,000 total sessions)\n• The team also reveals they had informally checked results on days 3, 7, 10, and 14 — before the first pre-specified look at week 2\n\nHow do these two issues affect the validity of the pre-registered sequential test?",
     "options": [
       "SRM of 83K vs. 71K is within typical random variation for high-traffic web experiments; unplanned peeking doesn't affect validity if no formal stopping decision was made on those looks.",
-      "Both issues compromise validity independently: SRM at this scale indicates a systematic randomization failure that makes the two groups non-comparable under the causal inference assumption; unplanned peeking before pre-specified looks increases the effective number of hypothesis tests performed, inflating the true Type I error beyond the O'Brien-Fleming guarantee.",
+      "Both issues independently compromise validity: SRM at this scale indicates systematic randomization failure; unplanned peeking inflates the effective test count beyond the O'Brien-Fleming FWER guarantee.",
       "SRM only affects precision of effect estimates, not Type I error; adjusting the standard error formula for unequal group sizes fully corrects it. Unplanned peeking is irrelevant as long as no early stopping was triggered.",
       "The O'Brien-Fleming boundaries automatically accommodate SRM and informal peeking; the critical z-values account for all forms of additional looks by construction."
     ],
@@ -2900,18 +2899,17 @@
     "options": [
       "The Type I error remains 0.05 regardless of how many times the running p-value is checked, because each individual check uses the 0.05 threshold. The number of looks doesn't compound the per-look error rate.",
       "The Type I error is modestly elevated to around 0.07–0.10 for weekly checks over 8 weeks, because consecutive looks are positively correlated; the correlation reduces inflation from the level you'd see with fully independent tests.",
-      "The Type I error under unlimited optional stopping (keep checking until p < 0.05 or a budget limit is hit) is far above 0.05 — in simulation studies, an experiment that checks weekly for ~8 weeks produces empirical Type I error around 20–25%, and with no bound on looks the rate approaches 1.0, because the test statistic follows a random walk that will eventually cross any fixed threshold given enough time, even under the null.",
+      "The Type I error under unlimited optional stopping far exceeds 0.05 — simulation shows ~20–25% for 8 weekly checks, and with no bound on looks it approaches 1.0 as the statistic eventually crosses any fixed threshold.",
       "The Type I error is undefined under optional stopping; a meaningful error rate requires a fixed sample size, so the proposal is simply not analyzable by standard methods."
     ],
     "correct_option": 2,
     "explanation": "Option C correctly describes the optional stopping problem. Under H₀ (no true effect), the standardized test statistic z_n follows a random walk — its increments are centered at zero but it drifts randomly. The probability that |z_n| > 1.96 at SOME point during an unlimited walk approaches 1.0 as time goes to infinity. This is a direct consequence of Wald's identity for random walks: a symmetric random walk visits every level with probability 1 given unlimited time.\n\nIn simulation studies, an experiment that stops when p < 0.05 (with up to 8 weekly looks) shows empirical Type I error around 20–25% rather than 5%. With no bound on looks at all, the rate approaches 1.0. This is the fundamental reason sequential testing methods were invented: they reallocate the α budget across planned looks using spending functions (O'Brien-Fleming, Pocock, etc.) that preserve the overall FWER at exactly 0.05.\n\nOption A is the most common misconception: 'each look is at α = 0.05, so the per-look error is 0.05.' This confuses per-comparison error rate (correct) with family-wise error rate (wrong). The probability of at least one false positive across K looks, even with positive correlation between consecutive statistics, rises well above 0.05 — the correlation reduces inflation compared to K independent tests, but does not eliminate it (as Option B incorrectly suggests is only 'modest').\n\nOption B understates the inflation. Even with strong positive autocorrelation between weekly looks, simulation shows 20%+ Type I error for 8 weeks of optional stopping — not 7–10%. Option B would be a reasonable order of magnitude for roughly 2 mildly correlated looks, not for 8 weekly checks.\n\nOption D is wrong: the Type I error under optional stopping IS well-defined and has been computed both analytically (via Wald's identity and optional stopping theorems) and empirically (via simulation). The frequentist framework can analyze this procedure; the conclusion is just that the procedure is badly calibrated.",
     "hints": [
-      "Think of the test statistic as a random walk under H₀. What is the probability a symmetric random walk ever crosses ±1.96 if it runs long enough?",
+      "Checking p weekly for 8 weeks gives 8 opportunities to see p < 0.05 by chance, compared to a single pre-specified endpoint. How does accumulating looks affect the family-wise Type I error rate, even when each look uses the 0.05 threshold?",
       "Optional stopping doesn't just peek — it SELECTS the peek that crossed the threshold, biasing the reported p-value downward relative to a fixed-horizon test."
     ],
     "concepts": [
       "multiple testing & correction",
-      "hypothesis testing",
       "errors & power"
     ]
   },
@@ -2965,10 +2963,10 @@
     "parent_id": 73086,
     "follow_up_dimension": "business_rule_pivot",
     "title": "Averaging Over an Interaction: When Marginal Main Effects Mislead",
-    "description": "The product team finds that the interaction is the dominant effect (ηp²_AB = 0.043 vs. ηp²_A = 0.018). Cell means are:\n\n    dark  × feature: 4.2    dark  × benefit: 6.8\n    light × feature: 6.7    light × benefit: 6.4\n\nThe PM says: 'The overall effect of UI theme is marginal (ηp²=0.018), so let's just ignore the interaction and pick the theme based on its main effect — averaged across copy conditions, light theme is 0.35 sessions/week better.'\n\nWhat is the statistical and practical problem with this approach?",
+    "description": "The product team finds that the interaction is the dominant effect (ηp²_AB = 0.043 vs. ηp²_A = 0.018). Cell means are:\n\n    dark  × feature: 4.2    dark  × benefit: 6.8\n    light × feature: 6.7    light × benefit: 6.4\n\nThe PM says: 'The overall effect of UI theme is marginal (ηp²=0.018), so let's just ignore the interaction and pick the theme based on its main effect — averaged across copy conditions, light theme is 1.05 sessions/week better.'\n\nWhat is the statistical and practical problem with this approach?",
     "options": [
-      "Averaging across the interaction to report marginal main effects masks a disordinal (crossover) interaction: the best theme depends on copy condition. Dark theme outperforms light for benefit-focused copy (+0.4 sessions), while light theme outperforms dark for feature-focused copy (+2.5 sessions). Averaging these opposite effects produces a meaningless marginal average that would lead to the wrong decision for any specific deployment context.",
-      "The marginal main effect of light theme (+0.35 sessions) is statistically significant given the sample size; the interaction is important but does not change the direction of the main effect recommendation, so the PM's approach is defensible.",
+      "The disordinal interaction makes marginals misleading: dark beats light for benefit copy (+0.4), light beats dark for feature copy (+2.5). The marginal 'light +1.05' averages opposite-sign effects and misdirects deployment.",
+      "The marginal main effect of light theme (+1.05 sessions) is statistically significant given the sample size; the interaction is important but does not change the direction of the main effect recommendation, so the PM's approach is defensible.",
       "Both main effects and the interaction should be tested with Bonferroni correction; after applying this correction, the interaction may no longer be significant, in which case averaging over it is appropriate.",
       "The interaction term should be removed from the model entirely when it exceeds the main effect size, and a simpler additive model refit without SS_AB."
     ],
@@ -2996,7 +2994,7 @@
     "title": "Severely Unbalanced Cell in a 2×2 Factorial ANOVA",
     "description": "Before the experiment completed, a technical rollout issue caused the dark × feature cell to receive only n = 18 sessions instead of the planned 300. The other three cells have n = 300 each (N_total = 918 instead of 1200).\n\nDoes this severe imbalance invalidate the ANOVA, and if so, why?",
     "options": [
-      "Yes — severe imbalance (n = 18 in one cell vs. n = 300 in others) violates the equal-cell-size assumption and has three compounding consequences: SS decomposition is no longer orthogonal (main effect and interaction SS are no longer independent, making Type III SS adjustments mandatory), cell-mean estimates from n = 18 have 4× the standard error of n = 300 cells, and the n = 18 cell is far more sensitive to outliers and non-normality, potentially distorting all effects that include the dark × feature condition.",
+      "Yes — severe imbalance (n = 18 vs. n = 300) makes the SS decomposition non-orthogonal, requiring Type III SS; the dark × feature cell is too underpowered to contribute reliable estimates.",
       "No — ANOVA is robust to imbalance; the SS decomposition is always valid regardless of cell sizes, and the difference in n between cells affects only the precision of that cell's mean estimate.",
       "Yes — the correct fix is to drop the dark × feature cell entirely and analyze as a one-way ANOVA on the remaining three cells.",
       "No — imbalance is only an issue for one-way ANOVA; two-way ANOVA handles unequal cell sizes automatically via the F-test denominator."
@@ -3008,8 +3006,7 @@
       "Compare SE = σ/√18 to SE = σ/√300. By what factor is the dark×feature cell mean less precisely estimated? How does this affect the interaction estimate that uses this cell?"
     ],
     "concepts": [
-      "variance decomposition & ANOVA",
-      "hypothesis testing"
+      "variance decomposition & ANOVA"
     ]
   },
   {
@@ -3029,7 +3026,7 @@
     "options": [
       "The log-rank p = 0.0001 provides overwhelming statistical evidence that paid users retain longer; the 2.4× difference in median survival is the key business metric to optimize. Converting free users is the correct retention strategy.",
       "The log-rank test requires the proportional hazards assumption; if the KM curves cross at any point within 24 months, the log-rank result is invalid and the analysis must be redone with a Wilcoxon test.",
-      "The analysis is purely descriptive. KM curves compare survival distributions between pre-existing groups, not between randomly assigned treatments — paid vs. free is self-selected. Users who choose to pay may differ from free users on engagement, intent, and willingness to pay in ways that would produce better retention regardless of payment status. The 2.4× difference cannot be attributed to being paid per se.",
+      "KM curves here are purely descriptive: paid vs. free are self-selected groups, not randomized arms. Users who pay likely differ in engagement and intent — the 2.4× retention difference is not causally attributable to payment status.",
       "KM curves cannot estimate median survival when more than 50% of users are censored; if more than half the free-tier users have not yet cancelled, the median survival is unidentifiable and the entire comparison fails."
     ],
     "correct_option": 2,
@@ -3055,22 +3052,22 @@
     "parent_id": 73089,
     "follow_up_dimension": "data_quality_pivot",
     "title": "Informative Censoring from a Free-Tier Policy Change",
-    "description": "Further investigation reveals: 38% of free-tier users in the cohort were administratively censored at month 12 because the free tier was discontinued and those users were automatically upgraded to paid status. They did not choose to cancel, and they did not choose to upgrade — the decision was made for them by the platform.\n\nHow does this informative censoring affect the KM analysis and the free-tier median survival estimate of 8 months?",
+    "description": "Further investigation reveals: 38% of free-tier users in the cohort were administratively censored at month 12 because the free tier was discontinued — specifically, only those who had not yet cancelled by month 12 were eligible for the automatic upgrade to paid status. They did not choose to cancel, and they did not choose to upgrade — the decision was made for them by the platform.\n\nHow does this informative censoring affect the KM analysis and the free-tier median survival estimate of 8 months?",
     "options": [
       "The censoring is handled correctly by KM; KM treats all censored observations as right-censored regardless of the reason, so the 38% administrative upgrades contribute their follow-up time and are dropped from the risk set at month 12 without affecting the estimate.",
       "The 38% administrative upgrades introduce informative censoring: the censoring mechanism (platform policy change) is correlated with the outcome (cancellation risk) — users who survived to month 12 without cancelling were likely lower-churn users than the average free-tier subscriber. This violates the KM non-informative censoring assumption, biasing the free-tier survival estimate upward and understating the true cancellation rate for the general free-tier population.",
       "Informative censoring in this context biases the survival estimate downward, not upward, because the upgraded users contribute no further cancellation events; removing them from the risk set too early makes the remaining cohort appear to cancel faster.",
       "The 38% administrative censoring rate is a large proportion but does not bias the KM estimate; the KM estimator is consistent even under informative censoring as long as the censored fraction is noted."
     ],
-    "correct_option": 1,
-    "explanation": "Option B is correct. The KM estimator assumes non-informative censoring: the mechanism that removes an observation from the risk set (censoring) is independent of the future event risk (cancellation). This is violated here because administrative upgrading at month 12 is survival-dependent:\n\n• A user who was upgraded at month 12 had survived (not cancelled) for 12 full months — they are, by definition, a longer-surviving user\n• The 38% who reached month 12 without cancelling are a selected subset of the original free-tier cohort: they are the more retained users, not a random sample\n• After censoring them out at month 12, the remaining risk set consists of whatever users had not yet cancelled by month 12 through other means — but the selective removal of 12-month survivors creates a risk-set that misrepresents the survival distribution of the full free-tier population\n\nThe practical consequence: the KM estimate of 8-month median survival is based partly on users who were administratively removed before they reached 12 months. If these users would have continued surviving beyond 12 months (had they not been upgraded), removing them leaves behind a higher-churn composition in the post-12-month risk set, biasing later survival probabilities downward, and paradoxically inflating early survival curves because the 'good survivors' boosted early risk-set counts.\n\nOption A correctly describes how KM MECHANICALLY handles censoring (right-censored at censoring time) but ignores whether the independence assumption holds.\n\nOption C has the direction of bias backwards. Long-surviving users are censored out — which removes low-churn users from the later risk set, making the remaining group higher-churn than the original population. This tends to depress later survival estimates, making the KM curve fall faster after month 12 than the true population curve would. The early survival estimate (before month 12) is also affected because these users' continued survival up to month 12 inflated the initial risk-set count, contributing artificially favorable survival data.\n\nOption D is wrong: the KM estimator is NOT consistent under informative censoring. Consistency under informative censoring requires specific parametric or semi-parametric models that explicitly model the censoring mechanism.",
+    "correct_option": 2,
+    "explanation": "Option C is correct. The KM estimator requires non-informative censoring: the mechanism removing a subject from the risk set must be independent of their future event risk. Administrative upgrading at month 12 violates this because only subjects who had not cancelled by month 12 are eligible for the upgrade — they are the lower-churn members of the cohort.\n\nCensoring this low-churn subset leaves the post-month-12 risk set dominated by the remaining higher-churn users. Their elevated event rate drives the KM survival curve downward more steeply than the true population curve: KM underestimates S(t) for t > 12 and overstates the cancellation rate for the general free-tier population. Monte Carlo simulation (frailty mixture: 50% low-churn rate 0.05/month, 50% high-churn rate 0.15/month, low-churn censored at month 12) confirms: IC KM S(18) ≈ 0.146 vs true S(18) ≈ 0.237 — a downward bias of ≈ 0.09.\n\nThe 8-month median survival estimate is NOT distorted by this censoring. Administrative upgrading occurs at month 12, after the median (month 8) has already been recorded. All 38% of eventually-upgraded users are still in the risk set when S(t) = 0.50 is crossed at month 8, contributing their full pre-month-12 follow-up time. A metric that IS distorted is S(18): after month 12 the risk set consists only of the higher-churn survivors, so the KM estimate at month 18 understates the true population survival.\n\nOption A correctly describes the KM mechanical procedure (right-censoring at the observed time) but ignores whether the independence assumption holds. Mechanical validity does not rescue an inferentially invalid censoring mechanism.\n\nOption B inverts the direction of bias. The censored users are LOW-churn survivors; removing them leaves a HIGHER-churn risk set that makes the survival curve fall faster, not slower. The bias is downward (KM understates survival, overstates cancellation), not upward.\n\nOption D is wrong: KM is not consistent under informative censoring. Noting the censored fraction does not restore consistency.",
     "hints": [
       "KM's non-informative censoring assumption requires that users who are censored have the same future cancellation risk as those who remain. Do users who survived to month 12 (when the upgrade happened) represent a random sample of the free-tier population's cancellation risk?",
       "Think about who reaches the month-12 risk set: only those who haven't cancelled yet. When these users are then administratively removed, what kind of users are you taking out — low-churn or high-churn? How does this affect survival estimates after month 12?"
     ],
     "concepts": [
       "survival analysis & time-to-event",
-      "sampling & central limit theorem"
+      "correlation, regression & causality"
     ]
   },
   {
@@ -3086,7 +3083,7 @@
     "title": "Survivorship Bias as a General Class of Selection Artefact in KM Curves",
     "description": "Stepping back from the specific analysis: the free-tier censoring case is one instance of a broader class of selection artefact. Generalise — what class of bias creates survivorship artefacts in Kaplan-Meier curves, and when is a Cox proportional hazards model the more appropriate tool?",
     "options": [
-      "Survivorship artefacts in KM curves arise whenever censoring is informative — when the mechanism that removes subjects from the risk set is correlated with their future event risk, either through administrative policy (like the free-tier upgrade), differential dropout (sicker patients withdraw more), or competing risks (a subject cannot cancel AND churn for a different reason simultaneously). Cox PH is preferred when the goal is to estimate the effect of a covariate (e.g., payment status) on hazard while adjusting for observed confounders — something KM cannot do, because KM treats groups as monolithic and cannot partial out within-group heterogeneity.",
+      "Survivorship artefacts arise when censoring correlates with event risk — as in the platform upgrade (low-churn users censored) and clinical trials where sicker patients drop out preferentially.",
       "Survivorship artefacts are unique to administrative censoring events; non-administrative censoring (users who simply stop engaging) is non-informative by definition and KM is always valid in that case.",
       "Cox proportional hazards replaces KM whenever the sample size exceeds 1000; at large sample sizes, KM's non-parametric nature produces excessive variance compared to the semi-parametric Cox model.",
       "KM curves are only appropriate for all-cause mortality studies; any observational retention or churn analysis requires a Cox model, regardless of censoring mechanism."
@@ -3119,7 +3116,7 @@
     "options": [
       "The PM is closer to being correct: a CI that is mostly positive provides directional evidence; 'mostly excludes zero' is a reasonable colloquial interpretation and shipping is justified.",
       "The CTO is correct: any CI that includes zero is non-significant and the result is a null finding. The feature should not be shipped.",
-      "Both the PM and CTO are interpreting the CI incorrectly. The CI [−0.3pp, +4.1pp] is equivalent to a two-sided p-value slightly above 0.05 (the lower bound barely crosses zero). The correct interpretation is that the data are consistent with effects ranging from a 0.3pp decrease to a 4.1pp increase. Neither 'mostly excludes zero = ship' nor 'includes zero = null' captures this: the decision to ship depends on the business value of a +4.1pp upside vs. the cost of a −0.3pp downside, and on the minimum lift that justifies the deployment cost — not on whether the CI happens to straddle zero.",
+      "Both are wrong: [−0.3pp, +4.1pp] covers harm to gain. Shipping should depend on the business value of +4.1pp vs. −0.3pp, not on whether the CI happens to exclude zero.",
       "The CI is too wide to be useful; the team should run a larger experiment with a narrower CI before making any decision."
     ],
     "correct_option": 2,
@@ -3130,8 +3127,7 @@
     ],
     "concepts": [
       "confidence intervals & estimation",
-      "hypothesis testing",
-      "experimental design (within stats)"
+      "hypothesis testing"
     ]
   },
   {
@@ -3148,7 +3144,7 @@
     "description": "Finance reveals that deployment and maintenance costs require a minimum conversion lift of 2 pp to break even. The current 95% CI is [−0.3pp, +4.1pp].\n\nFinance says: 'We need to be confident the lift exceeds 2pp before we ship.' How does this constraint change the interpretation of the CI, and what additional analysis does it require?",
     "options": [
       "The constraint is automatically satisfied: the point estimate (+1.9pp) is close to 2pp and the CI extends to +4.1pp, so it is reasonable to proceed. The 2pp threshold is a business rule, not a statistical one.",
-      "The correct tool is a one-sided test of H₀: lift ≤ 2pp vs. H₁: lift > 2pp, evaluated by checking whether the lower bound of a confidence interval for the lift exceeds 2pp. With the current CI of [−0.3pp, +4.1pp], the lower bound is well below 2pp, so the test fails — there is insufficient evidence that the lift exceeds the 2pp break-even threshold.",
+      "The correct test is one-sided (H₀: lift ≤ 2pp), passed only if the lower CI bound clears 2pp. Current CI [−0.3pp, +4.1pp] has lower bound −0.3pp — far below 2pp — so the 2pp deployment criterion is not met.",
       "Finance's 2pp threshold is equivalent to the non-inferiority margin from the previous question; apply the same non-inferiority test formula to check whether the CI lower bound exceeds 2pp.",
       "The CI needs to be recomputed at 90% confidence (one-sided α = 0.05) rather than 95% confidence; the wider tail captures the 2pp threshold more precisely."
     ],
@@ -3160,7 +3156,7 @@
     ],
     "concepts": [
       "confidence intervals & estimation",
-      "errors & power"
+      "hypothesis testing"
     ]
   },
   {
@@ -3178,19 +3174,18 @@
     "options": [
       "No — because the outage hit both arms equally (12% each), it cancels out in the comparison and the CI remains valid. Differential treatment is the only source of bias in an A/B test.",
       "No — 12% affected sessions is below the 20% threshold commonly used in industry to invalidate an experiment; the outage is a nuisance variable but does not materially compromise the CI.",
-      "Yes — even though the outage is symmetric between arms (preserving internal validity for unaffected users), it introduces a structural break in the conversion environment. The measured CI mixes two distinct conversion regimes (normal + degraded), potentially diluting or amplifying the treatment effect depending on whether the new feature performs differently under degraded conditions. The most defensible approach is to exclude outage-affected sessions from the analysis (with a sensitivity check) and report an outage-free CI.",
+      "Yes — despite symmetry (internal validity preserved for unaffected users), the outage introduces a structural break: the CI mixes normal and degraded conversion environments. The correct approach is to exclude outage-affected sessions and compare the outage-free CI against the full-period CI as a sensitivity check.",
       "Yes — the symmetric outage violates the stable unit treatment value assumption (SUTVA) because affected users in the treatment arm experienced a compounded intervention (feature + outage) that was not the intended treatment. All sessions after the outage must be excluded regardless of whether they were directly affected."
     ],
     "correct_option": 2,
     "explanation": "Option C is correct. A symmetric outage is NOT automatically 'balanced out' for purposes of interval estimation, even though it preserves the unbiasedness of the AVERAGE treatment effect for a specific analysis period.\n\n**Why symmetry doesn't fully resolve the issue:**\n1. **Regime mixing.** The CI [−0.3pp, +4.1pp] is computed over the full 7-day window, which is a mixture of 3.9 days of normal operation and 0.125 days (3 hours) of degraded operation. The treatment effect may differ between regimes: the new feature might perform relatively better under normal conditions (feature reduces friction in a fast environment) or relatively worse under degraded conditions (the feature adds an extra page element that's more painful at 4× load time). The measured CI is a mixture of these two treatment effects weighted by session volume in each regime.\n\n2. **Sensitivity analysis is mandatory.** The right approach: (a) exclude sessions timestamped within the outage window (+/− a buffer for sessions entering the outage mid-flow), (b) recompute the CI on outage-free sessions, (c) compare outage-free CI to the full-period CI. If they are materially different, the outage affected the estimate and the outage-free CI should be primary.\n\n3. **Conservative option:** report both CIs and let stakeholders decide based on which represents the more relevant operating environment (normal operation is what matters for deployment).\n\nOption A states the symmetry argument correctly for BIAS elimination (correct: the average outage effect cancels) but incorrectly applies this to VARIANCE and REGIME CONSISTENCY. The CI can still be misleading even when symmetric.\n\nOption B invokes a '20% threshold' that has no principled statistical basis. Industry thresholds for invalidating experiments are heuristics at best; the correct criterion is whether the outage meaningfully altered the conversion environment, not whether it hit 12% vs. 20%.\n\nOption D overstates the problem. Excluding ALL post-outage sessions would discard 4 days of clean data for the sake of 3 hours of contamination. SUTVA is violated only for the directly impacted sessions (the ~12% in each arm that experienced degraded performance) — the remaining 88% of post-outage sessions in each arm are unaffected and should be retained.",
     "hints": [
-      "A symmetric outage affects both arms equally. Does this mean the outage has zero effect on the CI, or does it mean the bias cancels while the regime-mixing effect remains?",
+      "The outage affects both arms equally, so the average treatment-effect bias cancels. But does equal balance mean the CI captures a single consistent treatment effect? Consider what happens if the feature's benefit differs between normal and degraded page-load conditions.",
       "Consider two scenarios: (a) the new feature performs 5pp better under normal load and 0pp better under degraded load; (b) it performs equally (3pp) in both regimes. How would a 3-hour outage affect the measured CI in each case? Does 'symmetric' = 'negligible'?"
     ],
     "concepts": [
       "confidence intervals & estimation",
-      "experimental design (within stats)",
-      "sampling & central limit theorem"
+      "experimental design (within stats)"
     ]
   }
 ]
