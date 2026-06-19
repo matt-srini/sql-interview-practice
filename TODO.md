@@ -63,6 +63,23 @@ unreachable). Do **not** decide until the authoring expansion lands and we can s
 depth. Trigger: after the Stats-hard + SQL chain expansions are merged. Cross-ref:
 `docs/decisions/DECISIONS.md` 2026-06-19; `docs/features/mock.md` § Follow-up Chain Atomicity rule 6.
 
+## P3 — Position Interview Loop as the earned capstone (benchmark → drill → Loop)
+Frame Interview Loop in the UX as the culminating "real interview" experience — the deliberate
+readiness test you reach for *after* benchmarking (diagnose) and drilling (fix weak spots), not a
+daily drill tool. Surfaces to touch: the Loop mode card / Loop-setup copy on MockHub (a "best after
+a benchmark + a drill or two" line; a soft nudge when the user has no benchmark history), the
+dashboard + mock post-mortem recommendation engine (add "you're ready for an Interview Loop" as the
+capstone next-step after benchmark+drills, extending the existing benchmark→drill→concept-drill
+funnel), and the "How it works" modal (reinforce: Loop = the real-interview readiness check, used
+deliberately). **Guardrails — do NOT cross:** this is *framing + recommendation only*, NEVER a hard
+prerequisite lock — a user who knows what they want must still be able to start a Loop directly
+(hard-gating a paid Elite feature is artificial friction / the "serving a metric, not the user"
+anti-pattern). Keep the scarcity *honest* (it reflects the genuinely deep, finite, expensive-to-author
+chain pools + the readiness-test purpose), never *manufactured* (no cooldown throttle or daily-cap
+retention trick). Bonus: deliberate, occasional Loop use exhausts the thin chain pools far more
+slowly — this framing directly relieves the replay-revisit pressure above. Operator direction
+(2026-06-19); agreed with one refinement (framing-not-gate, honest-not-manufactured scarcity).
+
 ## P2 — SQL reference float-robustness  (the duckdb pin is a band-aid masking this)
 `duckdb==1.5.0` is pinned because q13011's reference compared **raw float aggregates** in
 `HAVING` (`AVG(after) < AVG(before)`) on a knife-edge — DuckDB 1.5.3 evaluated it differently
