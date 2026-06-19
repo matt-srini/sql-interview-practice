@@ -1,5 +1,5 @@
-// The 7 universal follow-up (chain pivot) dimensions — canonical source:
-// docs/concept-taxonomy.md §"The 7 universal follow-up dimensions". `label` is the
+// The 8 universal follow-up (chain pivot) dimensions — canonical source:
+// docs/concept-taxonomy.md §"The 8 universal follow-up dimensions". `label` is the
 // human-readable name shown in the pivot card heading and analytics; `blurb` is the
 // interviewer-voiced framing shown in the pivot card body.
 export const FOLLOW_UP_DIMENSIONS = {
@@ -342,7 +342,7 @@ export function getMockSetupDescriptor(mode, track, customCount, customMinutes, 
       summaryLine: '1 chain · 15 min per question',
       detailLines: [
         'The full chain is drawn at session start — you cannot skip follow-ups.',
-        'Chains are consumed once and do not repeat.',
+        "Each chain is drawn once; once you've completed them all, you can choose to replay.",
       ],
     };
   }

@@ -143,7 +143,7 @@ This section establishes the spec-level invariants the mock subsystem must enfor
 3. **Orphan child selection is forbidden.** Catalog load fails if any follow-up question is reachable by the selector without going through its parent.
 4. **Consumption trigger:** `POST /api/mock/start`. Not first submit. Not finish.
 5. **Reclaim window:** 120 seconds from `started_at`. `DELETE /api/mock/:id` within the window returns 204 AND reverts the quota counter AND reclaims the chain. After 120 s the chain is locked in.
-6. **Pool exhaustion:** when no unconsumed chains remain for the requested track × difficulty for a user, Interview Loop returns **409 with `pool_exhausted: true`**. No soft fallback.
+6. **Pool exhaustion → consent-gated replay:** when no unconsumed chains remain for the requested track × difficulty, Interview Loop returns **409 with `pool_exhausted: true` + `replayable: true`** by default; an explicit `replay: true` on `POST /start` re-draws a completed chain (`is_replay: true`). No *silent* fallback. Canonical detail: [`mock.md` § Follow-up Chain Atomicity rule 6](../features/mock.md).
 
 ### Required schema
 

@@ -8635,6 +8635,19 @@ select {
   color: var(--warning-text);
   font-weight: 500;
 }
+/* Loop pool completed — a positive "you finished the set" state, not a warning. */
+.mock-rail-access--complete {
+  background: var(--success-soft);
+  color: var(--success-text);
+  font-weight: 500;
+}
+.mock-rail-complete-check {
+  font-weight: 700;
+}
+.mock-rail-replay-btn {
+  align-self: flex-start;
+  margin-top: 0.15rem;
+}
 .mock-rail-error {
   color: var(--danger);
   background: var(--danger-soft);

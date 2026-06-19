@@ -101,6 +101,7 @@ export default function MockSession() {
   const [showFollowUpBanner, setShowFollowUpBanner] = useState(false);
   const [pivotCard, setPivotCard] = useState(null); // { dimension, targetIndex } — interview_loop pivot
   const [focusFallback, setFocusFallback] = useState(false);
+  const [isReplay, setIsReplay] = useState(false);
   const [fontSize, setFontSize] = useState(() => {
     try { return parseInt(localStorage.getItem('mock-editor-font-size') || '14', 10); } catch { return 14; }
   });
@@ -146,6 +147,7 @@ export default function MockSession() {
     });
     setQuestions(data.questions || []);
     if (data.focus_fallback) setFocusFallback(true);
+    if (data.is_replay) setIsReplay(true);
 
     // Restore codes, solved, and submitted state from server
     const initialCodes = {};
@@ -885,6 +887,13 @@ export default function MockSession() {
           {focusFallback && (
             <div className="mock-focus-fallback-notice">
               Not enough focus concept questions — session includes similar questions to fill the gap.
+            </div>
+          )}
+
+          {/* Replay notice — the user consented to re-draw chains they've already completed. */}
+          {isReplay && (
+            <div className="mock-focus-fallback-notice">
+              Replay — you're revisiting an Interview Loop chain you've already completed.
             </div>
           )}
 

@@ -128,6 +128,8 @@ class MockStartRequest(BaseModel):
     num_questions: int | None = None   # custom mode only, 1–5
     time_minutes: int | None = None    # custom mode only, 10–90
     focus_concepts: list[str] | None = None  # elite-only; up to 3 concept names
+    replay: bool = False  # interview_loop only: explicit consent to re-draw chains already completed
+                          # (only takes effect once the fresh pool is exhausted — see _select_chain)
 
 
 class MockSubmitRequest(BaseModel):
@@ -590,9 +592,12 @@ def _no_loop_chains_copy(difficulty: str) -> str:
 
 
 def _loop_exhausted_copy(difficulty: str) -> str:
+    # Framed as completion, not depletion — the user reached the end of the set by doing
+    # the work. The UI renders the structured next steps (switch difficulty/track, run a
+    # benchmark) and the consent-gated "replay" action alongside this headline.
     return (
-        f"You've completed every {difficulty} Interview Loop chain for this track. "
-        "Try another difficulty or track, or check back as new chains are added."
+        f"You've completed every {difficulty} Interview Loop chain for this track — nice work. "
+        "Switch track or difficulty, run a benchmark to see where you landed, or replay these chains."
     )
 
 
@@ -641,9 +646,12 @@ def _interview_loop_access(
     """
     parents = _chain_parents_for(track, difficulty)
     if not parents:
-        return {"block_reason": "no_chains", "block_copy": _no_loop_chains_copy(difficulty)}
+        # Never had chains here — nothing to replay. Permanent until content is added.
+        return {"block_reason": "no_chains", "block_copy": _no_loop_chains_copy(difficulty), "replayable": False}
     if all(int(p["id"]) in consumed_parent_ids for p in parents):
-        return {"block_reason": "pool_exhausted", "block_copy": _loop_exhausted_copy(difficulty)}
+        # Completed the whole set — offer consent-gated replay (the UI shows a Replay button
+        # that re-issues /start with replay=true; see _select_chain).
+        return {"block_reason": "pool_exhausted", "block_copy": _loop_exhausted_copy(difficulty), "replayable": True}
     return None
 
 
@@ -652,14 +660,19 @@ async def _select_chain(
     difficulty: str,
     user: dict,
     focus_concepts: list[str] | None = None,
-) -> tuple[dict, list[dict]]:
+    allow_replay: bool = False,
+) -> tuple[dict, list[dict], bool]:
     """
     Select 1 chain (parent + follow-ups) for an Interview Loop session.
 
-    Returns (parent_dict, [follow_up_dicts...]) with _track injected.
-    Raises 409 pool_exhausted when no eligible chain remains. (The permanent
-    "no chains at this difficulty" case is caught earlier in start_session with a
-    403; reaching the 409 here means chains existed but the user consumed them.)
+    Returns (parent_dict, [follow_up_dicts...], is_replay) with _track injected.
+    is_replay is True when the fresh pool was exhausted and we re-drew a chain the
+    user already completed — only possible with allow_replay=True (explicit consent).
+
+    Raises 409 pool_exhausted when no eligible chain remains AND replay was not
+    consented. (The permanent "no chains at this difficulty" case is caught earlier
+    in start_session with a 400; reaching the 409 here means chains existed but the
+    user consumed them all and did not opt into replay.)
     """
     user_id = user["id"]
     catalog = _get_catalog_for_track(track)
@@ -668,10 +681,18 @@ async def _select_chain(
     consumed_parent_ids = await get_consumed_chain_parent_ids(user_id)
 
     # Eligible parents: content chains at this track/difficulty, minus consumed
-    parents = [
-        q for q in _chain_parents_for(track, difficulty)
-        if int(q["id"]) not in consumed_parent_ids
-    ]
+    all_parents = _chain_parents_for(track, difficulty)
+    parents = [q for q in all_parents if int(q["id"]) not in consumed_parent_ids]
+
+    # Replay (consent-gated): once the fresh pool is empty, the user can opt to re-draw
+    # chains they've already completed. Mirrors the fresh-first recycling benchmark/custom
+    # already do — but here it requires an explicit replay=true (a Replay button), never
+    # silent. See docs/features/mock.md § Follow-up Chain Atomicity (replay supersedes the
+    # former "exactly once, ever" lockout) and docs/decisions/DECISIONS.md.
+    is_replay = False
+    if not parents and allow_replay and all_parents:
+        parents = list(all_parents)
+        is_replay = True
 
     # Focus concept filter (applies to parent only; full chain travels regardless)
     if focus_concepts and parents:
@@ -685,6 +706,7 @@ async def _select_chain(
             status_code=409,
             detail={
                 "pool_exhausted": True,
+                "replayable": bool(all_parents),
                 "block_copy": _loop_exhausted_copy(difficulty),
             },
         )
@@ -706,7 +728,7 @@ async def _select_chain(
             )
         follow_ups.append({**fu_q, "_track": track})
 
-    return {**selected_parent, "_track": track}, follow_ups
+    return {**selected_parent, "_track": track}, follow_ups, is_replay
 
 
 def _public_question_payload(question: dict, track: str) -> dict:
@@ -1230,6 +1252,7 @@ async def get_mock_access(
                     "can_start": False,
                     "block_reason": block["block_reason"],
                     "block_copy": block["block_copy"],
+                    "replayable": block.get("replayable", False),
                     "needs_upgrade": None,
                     "daily_limit": None,
                     "daily_used": None,
@@ -1372,11 +1395,12 @@ async def start_session(
                 detail="No Interview Loop chains at this difficulty for this track.",
             )
 
-        parent, follow_ups = await _select_chain(
+        parent, follow_ups, is_replay = await _select_chain(
             track=body.track,
             difficulty=body.difficulty,
             user=current_user,
             focus_concepts=focus_concepts,
+            allow_replay=body.replay,
         )
         chain_length = 1 + len(follow_ups)
         time_limit_s = chain_length * 900  # 15 min per question
@@ -1429,6 +1453,7 @@ async def start_session(
             **session,
             "questions": question_details,
             "focus_fallback": False,
+            "is_replay": is_replay,
         }
 
     # ── Benchmark: derive num_questions + time_limit_s ────────────────────────

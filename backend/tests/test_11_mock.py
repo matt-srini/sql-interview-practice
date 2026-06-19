@@ -1489,6 +1489,49 @@ def test_tc179_interview_loop_pool_exhaustion_returns_409():
     body = r.json()
     # Dict details are unpacked into the response body directly (no "detail" wrapper)
     assert body.get("pool_exhausted") is True or "exhausted" in str(body.get("error", "")).lower()
+    # The exhausted set is replayable (content exists) — the UI shows a Replay button.
+    assert body.get("replayable") is True
+
+
+def _consume_all_ml_hard_chains(user_id: str) -> None:
+    """Mark every ML-hard chain parent consumed for a user (exhausts the loop pool)."""
+    conn = _db_conn()
+    try:
+        with conn.cursor() as cur:
+            for parent_id in _ML_HARD_CHAIN_PARENTS:
+                cur.execute(
+                    """INSERT INTO mock_chain_consumption (user_id, parent_id, session_id)
+                       VALUES (%s::uuid, %s, NULL)
+                       ON CONFLICT (user_id, parent_id) DO NOTHING""",
+                    (user_id, parent_id),
+                )
+        conn.commit()
+    finally:
+        conn.close()
+
+
+def test_tc179b_interview_loop_replay_consent_redraws_completed_chain():
+    """Exhausted pool + replay=true → 200 with a chain and is_replay flag set.
+
+    Replay is the consent-gated escape from the pool_exhausted dead-end: once every
+    chain is completed, an explicit replay=true re-draws a completed chain instead of
+    409ing. Without replay it must still 409 (covered by TC-179)."""
+    with TestClient(app) as client:
+        user = _make_user(client, plan="elite")
+    _consume_all_ml_hard_chains(user["id"])
+
+    with TestClient(app) as client:
+        _make_user(client, plan="elite", existing_user=user)
+        r = client.post("/api/mock/start", json={
+            "mode": "interview_loop",
+            "track": "ml-fundamentals",
+            "difficulty": "hard",
+            "replay": True,
+        })
+    assert r.status_code in (200, 201), r.text
+    body = r.json()
+    assert body.get("is_replay") is True
+    assert len(body.get("questions", [])) >= 2, "Replayed session must still carry a full chain"
 
 
 def test_tc180_discard_interview_loop_reclaims_chain():

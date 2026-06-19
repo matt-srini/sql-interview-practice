@@ -278,11 +278,14 @@ export default function MockHub() {
     setMode(key);
   }
 
-  async function handleStart() {
+  async function handleStart({ replay = false } = {}) {
     // All modes (including Interview Loop) gate on the selected difficulty.
     const gate = difficulty;
     const diffAccess = accessState?.access?.[gate];
-    if (diffAccess && !diffAccess.can_start) {
+    // Replay deliberately bypasses the can_start gate on a pool_exhausted (replayable)
+    // Interview Loop cell — that's exactly what the Replay button is for. Every other
+    // block (plan_locked, no_chains, daily/weekly cap) still hard-stops.
+    if (!replay && diffAccess && !diffAccess.can_start) {
       setStartError(diffAccess.block_copy || 'Cannot start session with this configuration.');
       return;
     }
@@ -297,12 +300,13 @@ export default function MockHub() {
         mode,
         track,
         difficulty,
+        ...(replay ? { replay: true } : {}),
         ...(track === 'mixed' ? { role: selectedRole } : {}),
         ...(mode === 'custom' ? { num_questions: numQuestions, time_minutes: timeMinutes } : {}),
         ...(isElite && focusMode && focusConcepts.length > 0 ? { focus_concepts: focusConcepts } : {}),
       };
       const r = await api.post('/mock/start', payload);
-      trackEvent('mock_started', { mode, track, difficulty, session_id: r.data.session_id });
+      trackEvent('mock_started', { mode, track, difficulty, replay, session_id: r.data.session_id });
       navigate(`/mock/${r.data.session_id}`, { state: { sessionData: r.data } });
     } catch (err) {
       if (err?.response?.status === 409 && err?.response?.data?.error === 'active_session_exists') {
@@ -725,6 +729,11 @@ export default function MockHub() {
             {/* Difficulty notice */}
             {(() => {
               if (difficulty === 'medium' || difficulty === 'hard') {
+                // A replayable-exhausted Interview Loop cell is shown as a positive
+                // completion (+ Replay) in the session-brief rail; don't ALSO render it
+                // here in the amber "blocked" style — that double-shows the same copy in
+                // two conflicting tones.
+                if (isLoop && accessState?.access?.[difficulty]?.replayable) return null;
                 const notice = getDifficultyButtonState(difficulty);
                 if (!notice.chip) return null;
                 return (
@@ -819,7 +828,22 @@ export default function MockHub() {
               {/* Access state notice — per-difficulty for benchmark/custom; track-level
                   ("mixed") chain availability for Interview Loop (shows "all chains
                   completed for this track" when the pool is exhausted). */}
-              {railDiffState.blocked ? (
+              {railDiffState.blocked && isLoop && accessState?.access?.[difficulty]?.replayable ? (
+                // Loop pool completed — frame as an accomplishment, not a dead-end, and
+                // offer consent-gated replay alongside the (in-panel) track/difficulty/mode
+                // selectors as the next steps.
+                <div className="mock-rail-access mock-rail-access--complete">
+                  <span><span className="mock-rail-complete-check" aria-hidden="true">✓</span> {railDiffState.chip}</span>
+                  <button
+                    type="button"
+                    className="btn btn-secondary btn-compact mock-rail-replay-btn"
+                    onClick={() => handleStart({ replay: true })}
+                    disabled={starting || accessLoading}
+                  >
+                    {starting ? 'Starting…' : 'Replay these chains'}
+                  </button>
+                </div>
+              ) : railDiffState.blocked ? (
                 <div className="mock-rail-access mock-rail-access--blocked">
                   <span>{railDiffState.chip}</span>
                   {railDiffState.chipAction}
@@ -836,7 +860,7 @@ export default function MockHub() {
               {/* Start CTA */}
               <button
                 className="btn btn-primary mock-start-btn"
-                onClick={handleStart}
+                onClick={() => handleStart()}
                 disabled={
                   starting ||
                   accessLoading ||

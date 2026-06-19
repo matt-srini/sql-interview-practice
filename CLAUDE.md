@@ -411,7 +411,7 @@ Locked MCQ questions return 200 with `locked: true` and no `options` or `correct
 
 **Elite-only mock features:** `focus_concepts` filter (available on all three modes), Interview Loop (1 chain per session — parent + all follow-ups atomic, time = 15 min × chain length), deep analytics with per-dimension Loop breakdown, readiness scores + study plan, session debrief coaching narrative.
 
-**Mock chain atomicity:** Chains appear **only** in Interview Loop sessions. Benchmark and custom sessions are standalone-questions only (no dynamic follow-up injection). Parent questions with `follow_ups[]` travel as an atomic unit in Interview Loop — entire chain exactly once, ever, never split. Consumed at session start in `mock_chain_consumption` table; reclaimable within 2-minute discard window. Single source of truth: `docs/features/mock.md`.
+**Mock chain atomicity:** Chains appear **only** in Interview Loop sessions. Benchmark and custom sessions are standalone-questions only (no dynamic follow-up injection). Parent questions with `follow_ups[]` travel as an atomic unit in Interview Loop — entire chain whole, never split. Consumed at session start in `mock_chain_consumption` table; reclaimable within 2-minute discard window. Each chain is drawn once **by default**; once a user has completed every chain at a (track, difficulty) the exhausted state offers **consent-gated replay** (`/start` with `replay: true`) rather than a hard dead-end. Single source of truth: `docs/features/mock.md`.
 
 **Plan-tier matrix:** Full matrix lives in `docs/features/mock.md` as the canonical source of truth. Summary:
 - **Free** — 1 `benchmark` per rolling 7 days, easy only, any track/Mixed (with role). No `custom`. No `interview_loop`. Practice-pool questions only.
