@@ -51,6 +51,18 @@ sign-off — when they land, this line is replaced with the closed-out result + 
 Headline P0s found: a Pro→Elite plan-switch that never persists to the DB (stale Razorpay
 `notes.target_plan`), and **no alerting layer** (a 3 a.m. payment-failure / error spike is silent).
 
+## P2 — Revisit Interview Loop replay once the mock chain-pools are expanded
+The consent-gated **replay** (DECISIONS 2026-06-19) was shipped while several loop cells were
+thin (Statistics-hard = 1 chain, Pandas-medium = 2, SQL = 3/3) — replay turned those near-instant
+dead-ends into a "completed → Replay" state. We are now expanding those pools by authoring fresh
+chains (Statistics-hard first, then SQL; Pandas-medium deferred). **Open decision, deliberately
+deferred:** once the pools are deep enough that exhaustion is rare, decide whether to **(a) keep
+replay** as the permanent end-state UX, or **(b) rewrite/scope it down** (e.g. only surface Replay
+after N completed sessions, or revert it entirely if depth makes exhaustion effectively
+unreachable). Do **not** decide until the authoring expansion lands and we can see real per-cell
+depth. Trigger: after the Stats-hard + SQL chain expansions are merged. Cross-ref:
+`docs/decisions/DECISIONS.md` 2026-06-19; `docs/features/mock.md` § Follow-up Chain Atomicity rule 6.
+
 ## P2 — SQL reference float-robustness  (the duckdb pin is a band-aid masking this)
 `duckdb==1.5.0` is pinned because q13011's reference compared **raw float aggregates** in
 `HAVING` (`AVG(after) < AVG(before)`) on a knife-edge — DuckDB 1.5.3 evaluated it differently
