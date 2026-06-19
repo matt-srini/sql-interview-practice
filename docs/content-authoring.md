@@ -445,7 +445,7 @@ Mock-only inventory must support a power user who completes most of practice and
 | PySpark | 127 | 150 | **1.18×** | code-adjacent reasoning (MCQ) |
 | Data Engineering | 91 | 110 | **1.21×** | constructed reasoning (MCQ) |
 | Data Modeling | 81 | 97 | **1.20×** | constructed reasoning (MCQ) |
-| Statistics | 100 | 116 | **1.16×** | hybrid (conceptual MCQ + numerical Python) |
+| Statistics | 100 | 134‡ | **1.34×** | hybrid (conceptual MCQ + numerical Python); ‡18 hard Interview Loop chain questions added 2026-06-19 lift the ratio above the original 1.15–1.25× band — a deliberate **chain-only exception** (chains appear only in Elite Interview Loop, never in benchmarks/drills); standalone budget unchanged at ~1.16×. See [`docs/tracks/statistics.md`](./tracks/statistics.md) § Coverage + [`DECISIONS.md`](./decisions/DECISIONS.md) 2026-06-19 |
 | ML Fundamentals | 100 | 143† | **1.43×** | constructed reasoning (MCQ); †includes 16 chain children from 8 chains; ALGORITHMIC FAIRNESS family added Phase 2.5 (2026-05-26), registry now 30 families |
 | Experimentation | 87 | 104 | **1.20×** | constructed reasoning (MCQ); 10 chains (20 chain children); 24-family registry; path (ii) no realism families |
 
