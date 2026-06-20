@@ -300,7 +300,7 @@ The 4-step verbatim lookup procedure lives in [`.github/agents/question-authorin
 | PySpark | ✅ | clean (278 q, 0 orphans) | Phase 2 closed; added to set post-closure |
 | Data Engineering | ✅ | clean | Phase 2 closed; no realism families by design |
 | Data Modeling | ✅ | clean | Phase 2 closed; no realism families by design |
-| Statistics | ✅ | clean (216 q, 0 orphans) | Phase 2 closed 2026-05-26; 13 families, no realism families by design; 100 practice + 116 mock-only |
+| Statistics | ✅ | clean (234 q, 0 orphans) | Phase 2 closed 2026-05-26; 13 families, no realism families by design; 100 practice + 134 mock-only |
 | ML Fundamentals | ✅ | clean (243 q, 0 orphans) | Phase 2 closed 2026-05-26; BIAS/FAIRNESS Phase 2.5 closed 2026-05-26; 30 families, no realism families by design; 100 practice + 143 mock-only (8 chains) |
 | Experimentation | ✅ | clean | Phase 2 closed 2026-05-26; 24 families, no realism families by design; 87 practice + 104 mock-only (10 chains) |
 
@@ -525,7 +525,7 @@ Practice questions are the full curriculum. Mock-only questions live in the same
 | Experimentation | 30 | 33 | 24 | **87** | Constructed reasoning (MCQ) |
 | **Total** | | | | **875** | |
 
-Mock-only add-on bank: **1,102 questions** (Pro/Elite only). Samples: **81 total** (9 per track × 9 tracks, dedicated content separate from practice and mock pools).
+Mock-only add-on bank: **1,120 questions** (Pro/Elite only). Samples: **81 total** (9 per track × 9 tracks, dedicated content separate from practice and mock pools).
 
 **These counts evolve.** They reflect the bank at the time of the 2026-05 refactor. CLAUDE.md mirrors them; both files update together.
 
