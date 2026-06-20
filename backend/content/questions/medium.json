@@ -4896,5 +4896,292 @@
       "Mixpanel",
       "Meta"
     ]
+  },
+  {
+    "id": 12124,
+    "order": 124,
+    "mock_only": true,
+    "framing": "scenario",
+    "follow_ups": [
+      13135,
+      13136
+    ],
+    "title": "5-stage event funnel by traffic source",
+    "description": "Marketing wants to understand how sessions convert through the purchase funnel for each traffic source. Using the sessions and events tables, compute per traffic_source: sessions_started (count of distinct session_ids in the sessions table), with_product_view (sessions with at least one 'view_product' event), with_add_to_cart (at least one 'add_to_cart' event), with_start_checkout (at least one 'start_checkout' event), and with_purchased (at least one 'purchase' event). Order by sessions_started descending.",
+    "difficulty": "medium",
+    "schema": {
+      "sessions": [
+        "session_id",
+        "user_id",
+        "session_start",
+        "device_type",
+        "traffic_source",
+        "country"
+      ],
+      "events": [
+        "event_id",
+        "session_id",
+        "user_id",
+        "event_time",
+        "event_name",
+        "product_id"
+      ]
+    },
+    "dataset_files": [
+      "sessions.csv",
+      "events.csv"
+    ],
+    "expected_query": "SELECT s.traffic_source,\n       COUNT(DISTINCT s.session_id) AS sessions_started,\n       COUNT(DISTINCT CASE WHEN e.event_name = 'view_product' THEN s.session_id END) AS with_product_view,\n       COUNT(DISTINCT CASE WHEN e.event_name = 'add_to_cart' THEN s.session_id END) AS with_add_to_cart,\n       COUNT(DISTINCT CASE WHEN e.event_name = 'start_checkout' THEN s.session_id END) AS with_start_checkout,\n       COUNT(DISTINCT CASE WHEN e.event_name = 'purchase' THEN s.session_id END) AS with_purchased\nFROM sessions s\nLEFT JOIN events e ON e.session_id = s.session_id\nGROUP BY s.traffic_source\nORDER BY sessions_started DESC",
+    "solution_query": "SELECT s.traffic_source,\n       COUNT(DISTINCT s.session_id) AS sessions_started,\n       COUNT(DISTINCT CASE WHEN e.event_name = 'view_product' THEN s.session_id END) AS with_product_view,\n       COUNT(DISTINCT CASE WHEN e.event_name = 'add_to_cart' THEN s.session_id END) AS with_add_to_cart,\n       COUNT(DISTINCT CASE WHEN e.event_name = 'start_checkout' THEN s.session_id END) AS with_start_checkout,\n       COUNT(DISTINCT CASE WHEN e.event_name = 'purchase' THEN s.session_id END) AS with_purchased\nFROM sessions s\nLEFT JOIN events e ON e.session_id = s.session_id\nGROUP BY s.traffic_source\nORDER BY sessions_started DESC;",
+    "required_concepts": [
+      "left_join",
+      "count_distinct",
+      "case_when",
+      "group_by"
+    ],
+    "enforce_concepts": true,
+    "explanation": "LEFT JOIN sessions to events so every session is preserved — including sessions that have no events at a given stage. COUNT(DISTINCT CASE WHEN event_name = 'X' THEN session_id END) counts distinct session_ids that had at least one event of that type; sessions without that event contribute NULL, which COUNT ignores. The alternative of four separate EXISTS subqueries is cleaner to read but requires four separate scans of the events table; the single LEFT JOIN with conditional DISTINCT counting is one scan. All sessions in this dataset have at least one 'view_product' event, so with_product_view equals sessions_started — a data characteristic worth noting when presenting the result.",
+    "hints": [
+      "Make sure sessions that never reached a funnel stage still appear in the output — your table combination strategy determines whether they're counted or silently dropped.",
+      "COUNT(DISTINCT CASE WHEN event_name = 'view_product' THEN session_id END) counts unique session_ids that reached that stage — sessions that never fired the event contribute NULL, which COUNT skips."
+    ],
+    "concepts": [
+      "FUNNEL ANALYSIS",
+      "MULTI-TABLE ENTITY LINKING"
+    ],
+    "companies": [
+      "Meta",
+      "TikTok",
+      "Google"
+    ]
+  },
+  {
+    "id": 12125,
+    "order": 125,
+    "mock_only": true,
+    "framing": "scenario",
+    "follow_ups": [
+      13137,
+      13138
+    ],
+    "title": "Monthly order vs payment revenue reconciliation",
+    "description": "Finance asks: do completed-order net amounts match paid-payment amounts when bucketed by calendar month? For each month, return month (YYYY-MM format), order_revenue (sum of net_amount from orders where status = 'completed', rounded to 2 dp), payment_revenue (sum of amount from payments where status = 'paid', rounded to 2 dp), and discrepancy (order_revenue minus payment_revenue, rounded to 2 dp). Include all months that appear in either table. Order by month ascending.",
+    "difficulty": "medium",
+    "schema": {
+      "orders": [
+        "order_id",
+        "user_id",
+        "order_date",
+        "status",
+        "net_amount"
+      ],
+      "payments": [
+        "payment_id",
+        "order_id",
+        "payment_date",
+        "amount",
+        "status"
+      ]
+    },
+    "dataset_files": [
+      "orders.csv",
+      "payments.csv"
+    ],
+    "expected_query": "WITH monthly_orders AS (\n    SELECT STRFTIME('%Y-%m', order_date) AS month,\n           ROUND(SUM(net_amount), 2) AS order_revenue\n    FROM orders\n    WHERE status = 'completed'\n    GROUP BY 1\n),\nmonthly_payments AS (\n    SELECT STRFTIME('%Y-%m', payment_date) AS month,\n           ROUND(SUM(amount), 2) AS payment_revenue\n    FROM payments\n    WHERE status = 'paid'\n    GROUP BY 1\n)\nSELECT COALESCE(o.month, p.month) AS month,\n       COALESCE(o.order_revenue, 0) AS order_revenue,\n       COALESCE(p.payment_revenue, 0) AS payment_revenue,\n       ROUND(COALESCE(o.order_revenue, 0) - COALESCE(p.payment_revenue, 0), 2) AS discrepancy\nFROM monthly_orders o\nFULL OUTER JOIN monthly_payments p ON o.month = p.month\nORDER BY 1",
+    "solution_query": "WITH monthly_orders AS (\n    SELECT STRFTIME('%Y-%m', order_date) AS month,\n           ROUND(SUM(net_amount), 2) AS order_revenue\n    FROM orders\n    WHERE status = 'completed'\n    GROUP BY 1\n),\nmonthly_payments AS (\n    SELECT STRFTIME('%Y-%m', payment_date) AS month,\n           ROUND(SUM(amount), 2) AS payment_revenue\n    FROM payments\n    WHERE status = 'paid'\n    GROUP BY 1\n)\nSELECT COALESCE(o.month, p.month) AS month,\n       COALESCE(o.order_revenue, 0) AS order_revenue,\n       COALESCE(p.payment_revenue, 0) AS payment_revenue,\n       ROUND(COALESCE(o.order_revenue, 0) - COALESCE(p.payment_revenue, 0), 2) AS discrepancy\nFROM monthly_orders o\nFULL OUTER JOIN monthly_payments p ON o.month = p.month\nORDER BY 1;",
+    "required_concepts": [
+      "cte",
+      "full_outer_join",
+      "coalesce",
+      "strftime",
+      "group_by"
+    ],
+    "enforce_concepts": true,
+    "explanation": "Pre-aggregating each table to one row per month in separate CTEs avoids any fan-out: orders and payments are on different grains (order_id vs payment_id), so joining them row-by-row before aggregating would inflate both totals. FULL OUTER JOIN is essential because a month might appear in only one table — COALESCE handles the null from the missing side, turning it to 0 so the discrepancy arithmetic still works. Every month in this dataset has both completed orders and paid payments, so no COALESCE-to-0 fires — but the query correctly handles that edge case if the data ever diverges.",
+    "hints": [
+      "Pre-aggregate each revenue source to monthly grain before combining them — combining at the raw transaction level would multiply rows and inflate the totals.",
+      "FULL OUTER JOIN preserves months that only exist in one table. Use COALESCE on both sides so discrepancy arithmetic never involves NULL."
+    ],
+    "concepts": [
+      "METRIC RECONCILIATION",
+      "MULTI-TABLE ENTITY LINKING",
+      "TIME-SERIES BUCKETING & ARITHMETIC"
+    ],
+    "companies": [
+      "Stripe",
+      "Airbnb",
+      "Shopify"
+    ]
+  },
+  {
+    "id": 12126,
+    "order": 126,
+    "mock_only": true,
+    "framing": "scenario",
+    "follow_ups": [
+      13139
+    ],
+    "title": "Support ticket SLA compliance by issue type",
+    "description": "The support quality team tracks per-issue-type SLA thresholds: technical = 72 hours, billing = 48 hours, account = 48 hours, shipping = 96 hours, product = 72 hours. For each issue_type, return sla_hours (the threshold for that type), total_tickets, resolved_tickets (status = 'resolved'), within_sla (resolved tickets where resolution_hours <= sla_hours), and sla_pct (within_sla / resolved_tickets × 100, rounded to 1 decimal place — NULL if resolved_tickets = 0). Order by sla_pct ascending.",
+    "difficulty": "medium",
+    "schema": {
+      "support_tickets": [
+        "ticket_id",
+        "user_id",
+        "created_at",
+        "issue_type",
+        "priority",
+        "status",
+        "resolution_hours"
+      ]
+    },
+    "dataset_files": [
+      "support_tickets.csv"
+    ],
+    "expected_query": "WITH sla_thresholds (issue_type, sla_hours) AS (\n    VALUES ('technical', 72), ('billing', 48), ('account', 48),\n           ('shipping', 96), ('product', 72)\n)\nSELECT st.issue_type,\n       sl.sla_hours,\n       COUNT(*) AS total_tickets,\n       COUNT(CASE WHEN st.status = 'resolved' THEN 1 END) AS resolved_tickets,\n       COUNT(CASE WHEN st.status = 'resolved' AND st.resolution_hours <= sl.sla_hours THEN 1 END) AS within_sla,\n       ROUND(\n           100.0 * COUNT(CASE WHEN st.status = 'resolved' AND st.resolution_hours <= sl.sla_hours THEN 1 END)\n           / NULLIF(COUNT(CASE WHEN st.status = 'resolved' THEN 1 END), 0),\n           1\n       ) AS sla_pct\nFROM support_tickets st\nJOIN sla_thresholds sl ON sl.issue_type = st.issue_type\nGROUP BY st.issue_type, sl.sla_hours\nORDER BY sla_pct ASC",
+    "solution_query": "WITH sla_thresholds (issue_type, sla_hours) AS (\n    VALUES ('technical', 72), ('billing', 48), ('account', 48),\n           ('shipping', 96), ('product', 72)\n)\nSELECT st.issue_type,\n       sl.sla_hours,\n       COUNT(*) AS total_tickets,\n       COUNT(CASE WHEN st.status = 'resolved' THEN 1 END) AS resolved_tickets,\n       COUNT(CASE WHEN st.status = 'resolved' AND st.resolution_hours <= sl.sla_hours THEN 1 END) AS within_sla,\n       ROUND(\n           100.0 * COUNT(CASE WHEN st.status = 'resolved' AND st.resolution_hours <= sl.sla_hours THEN 1 END)\n           / NULLIF(COUNT(CASE WHEN st.status = 'resolved' THEN 1 END), 0),\n           1\n       ) AS sla_pct\nFROM support_tickets st\nJOIN sla_thresholds sl ON sl.issue_type = st.issue_type\nGROUP BY st.issue_type, sl.sla_hours\nORDER BY sla_pct ASC;",
+    "required_concepts": [
+      "values_cte",
+      "case_when",
+      "nullif",
+      "join",
+      "group_by"
+    ],
+    "enforce_concepts": true,
+    "explanation": "A VALUES CTE defines the per-issue-type thresholds as a lookup table, keeping the SLA logic explicit and maintainable. COUNT(CASE WHEN ...) acts as a conditional counter — no FILTER clause needed and no subquery. NULLIF in the denominator prevents division-by-zero for any issue_type with zero resolved tickets. Ordering by sla_pct ascending surfaces the worst-performing categories first: billing (37.5%) and account (38.5%) are flagged before shipping (75.7%), which is operating well despite its 96-hour SLA.",
+    "hints": [
+      "Each ticket's compliance check requires its issue-type-specific threshold to be present in the same row — bring those thresholds into the query as inline data rather than hardcoding them in a CASE expression.",
+      "Use NULLIF(resolved_tickets, 0) in the denominator of sla_pct so issue types with no resolved tickets return NULL rather than a division error."
+    ],
+    "concepts": [
+      "CONDITIONAL LOGIC & CASE",
+      "GROUPED AGGREGATION",
+      "POST-AGGREGATION FILTERING"
+    ],
+    "companies": [
+      "Zendesk",
+      "Intercom",
+      "ServiceNow"
+    ]
+  },
+  {
+    "id": 12127,
+    "order": 127,
+    "mock_only": true,
+    "framing": "scenario",
+    "follow_ups": [
+      13140,
+      13141
+    ],
+    "title": "Per-user session count and order revenue: naive join vs correct approach",
+    "description": "An analyst wrote this query: SELECT s.user_id, COUNT(s.session_id) AS session_count, SUM(o.net_amount) AS order_revenue FROM sessions s LEFT JOIN orders o ON o.user_id = s.user_id AND o.status = 'completed' GROUP BY s.user_id. This query is incorrect. Write the correct query that returns, for every user present in the sessions table: user_id, session_count (number of distinct session_ids), completed_order_count (number of distinct completed order_ids), and completed_order_revenue (SUM of net_amount for completed orders, rounded to 2 dp). Users with no completed orders should return 0 for count and revenue. Order by user_id ascending.",
+    "difficulty": "medium",
+    "schema": {
+      "sessions": [
+        "session_id",
+        "user_id"
+      ],
+      "orders": [
+        "order_id",
+        "user_id",
+        "status",
+        "net_amount"
+      ]
+    },
+    "dataset_files": [
+      "sessions.csv",
+      "orders.csv"
+    ],
+    "expected_query": "WITH session_counts AS (\n    SELECT user_id, COUNT(DISTINCT session_id) AS session_count\n    FROM sessions\n    GROUP BY user_id\n),\norder_totals AS (\n    SELECT user_id,\n           COUNT(DISTINCT order_id) AS completed_order_count,\n           ROUND(SUM(net_amount), 2) AS completed_order_revenue\n    FROM orders\n    WHERE status = 'completed'\n    GROUP BY user_id\n)\nSELECT sc.user_id,\n       sc.session_count,\n       COALESCE(ot.completed_order_count, 0) AS completed_order_count,\n       COALESCE(ot.completed_order_revenue, 0) AS completed_order_revenue\nFROM session_counts sc\nLEFT JOIN order_totals ot ON ot.user_id = sc.user_id\nORDER BY sc.user_id",
+    "solution_query": "WITH session_counts AS (\n    SELECT user_id, COUNT(DISTINCT session_id) AS session_count\n    FROM sessions\n    GROUP BY user_id\n),\norder_totals AS (\n    SELECT user_id,\n           COUNT(DISTINCT order_id) AS completed_order_count,\n           ROUND(SUM(net_amount), 2) AS completed_order_revenue\n    FROM orders\n    WHERE status = 'completed'\n    GROUP BY user_id\n)\nSELECT sc.user_id,\n       sc.session_count,\n       COALESCE(ot.completed_order_count, 0) AS completed_order_count,\n       COALESCE(ot.completed_order_revenue, 0) AS completed_order_revenue\nFROM session_counts sc\nLEFT JOIN order_totals ot ON ot.user_id = sc.user_id\nORDER BY sc.user_id;",
+    "required_concepts": [
+      "cte",
+      "join",
+      "coalesce",
+      "count_distinct",
+      "group_by"
+    ],
+    "enforce_concepts": true,
+    "explanation": "The naive query joins sessions to orders on user_id before aggregating. A user with 15 sessions and 51 completed orders produces 15 × 51 = 765 join rows — so COUNT(session_id) returns 765 (not 15) and SUM(net_amount) returns the true revenue multiplied by 15. The invariant: never aggregate across a join of two fact tables sharing only a foreign key — pre-aggregate each fact table to one row per key first, then join the summaries. The CTE approach materialises session_counts (one row per user_id) and order_totals (one row per user_id) independently, then LEFT JOINs the summaries — summary-to-summary, no fan-out possible.",
+    "hints": [
+      "The naive query joins sessions to orders on user_id before aggregating — a user with N sessions and M orders produces N × M rows, inflating both COUNT and SUM.",
+      "Pre-aggregate each fact table to one row per user_id in a CTE before the final JOIN. Summary-to-summary joins can never fan out."
+    ],
+    "concepts": [
+      "DOUBLE-COUNTING DETECTION",
+      "CTE PIPELINE",
+      "MULTI-TABLE ENTITY LINKING"
+    ],
+    "companies": [
+      "Google",
+      "Meta",
+      "Stripe"
+    ]
+  },
+  {
+    "id": 12128,
+    "order": 128,
+    "mock_only": true,
+    "framing": "scenario",
+    "follow_ups": [
+      13142
+    ],
+    "title": "Product catalog health: three-anomaly data quality audit",
+    "description": "The catalog team wants a single summary of known data quality issues across the products table. Write a query that returns exactly three rows — one per anomaly type — with columns anomaly_type (text label) and affected_count (integer): (1) 'inactive_with_completed_orders': products where is_active = 'false' that appear in any completed order placed on or after 2024-01-01; (2) 'category_with_zero_completed_sales': categories that have never appeared in any completed order through any of their products; (3) 'null_launch_date_with_completed_orders': products with a NULL launch_date that appear in any completed order. No ordering required.",
+    "difficulty": "medium",
+    "schema": {
+      "products": [
+        "product_id",
+        "product_name",
+        "category_id",
+        "is_active",
+        "launch_date"
+      ],
+      "categories": [
+        "category_id",
+        "category_name"
+      ],
+      "order_items": [
+        "order_item_id",
+        "order_id",
+        "product_id"
+      ],
+      "orders": [
+        "order_id",
+        "status",
+        "order_date"
+      ]
+    },
+    "dataset_files": [
+      "products.csv",
+      "categories.csv",
+      "order_items.csv",
+      "orders.csv"
+    ],
+    "expected_query": "WITH inactive_with_orders AS (\n    SELECT 'inactive_with_completed_orders' AS anomaly_type,\n           COUNT(DISTINCT p.product_id) AS affected_count\n    FROM products p\n    JOIN order_items oi ON oi.product_id = p.product_id\n    JOIN orders o ON o.order_id = oi.order_id\n    WHERE p.is_active = 'false'\n      AND o.status = 'completed'\n      AND CAST(o.order_date AS DATE) >= '2024-01-01'\n),\nunsold_categories AS (\n    SELECT 'category_with_zero_completed_sales' AS anomaly_type,\n           COUNT(*) AS affected_count\n    FROM categories c\n    WHERE NOT EXISTS (\n        SELECT 1 FROM products p\n        JOIN order_items oi ON oi.product_id = p.product_id\n        JOIN orders o ON o.order_id = oi.order_id\n        WHERE p.category_id = c.category_id AND o.status = 'completed'\n    )\n),\nnull_launch AS (\n    SELECT 'null_launch_date_with_completed_orders' AS anomaly_type,\n           COUNT(DISTINCT p.product_id) AS affected_count\n    FROM products p\n    JOIN order_items oi ON oi.product_id = p.product_id\n    JOIN orders o ON o.order_id = oi.order_id\n    WHERE p.launch_date IS NULL AND o.status = 'completed'\n)\nSELECT anomaly_type, affected_count FROM inactive_with_orders\nUNION ALL\nSELECT anomaly_type, affected_count FROM unsold_categories\nUNION ALL\nSELECT anomaly_type, affected_count FROM null_launch",
+    "solution_query": "WITH inactive_with_orders AS (\n    SELECT 'inactive_with_completed_orders' AS anomaly_type,\n           COUNT(DISTINCT p.product_id) AS affected_count\n    FROM products p\n    JOIN order_items oi ON oi.product_id = p.product_id\n    JOIN orders o ON o.order_id = oi.order_id\n    WHERE p.is_active = 'false'\n      AND o.status = 'completed'\n      AND CAST(o.order_date AS DATE) >= '2024-01-01'\n),\nunsold_categories AS (\n    SELECT 'category_with_zero_completed_sales' AS anomaly_type,\n           COUNT(*) AS affected_count\n    FROM categories c\n    WHERE NOT EXISTS (\n        SELECT 1 FROM products p\n        JOIN order_items oi ON oi.product_id = p.product_id\n        JOIN orders o ON o.order_id = oi.order_id\n        WHERE p.category_id = c.category_id AND o.status = 'completed'\n    )\n),\nnull_launch AS (\n    SELECT 'null_launch_date_with_completed_orders' AS anomaly_type,\n           COUNT(DISTINCT p.product_id) AS affected_count\n    FROM products p\n    JOIN order_items oi ON oi.product_id = p.product_id\n    JOIN orders o ON o.order_id = oi.order_id\n    WHERE p.launch_date IS NULL AND o.status = 'completed'\n)\nSELECT anomaly_type, affected_count FROM inactive_with_orders\nUNION ALL\nSELECT anomaly_type, affected_count FROM unsold_categories\nUNION ALL\nSELECT anomaly_type, affected_count FROM null_launch;",
+    "required_concepts": [
+      "not_exists",
+      "union_all",
+      "join",
+      "cte",
+      "count_distinct"
+    ],
+    "enforce_concepts": true,
+    "explanation": "Each anomaly is a separate CTE that can be developed and tested in isolation, then combined with UNION ALL. Anomaly (1) uses a JOIN chain through order_items to reach orders, with a date filter and COUNT(DISTINCT product_id) to avoid double-counting products with multiple qualifying orders. Anomaly (2) uses NOT EXISTS with a correlated subquery that traces categories through products → order_items → orders — the anti-join pattern for 'category with no qualifying rows.' Anomaly (3) is a NULL check combined with the same join chain. UNION ALL (not UNION) is correct here: the three anomaly types are mutually distinct by construction, so deduplication is unnecessary and UNION ALL is cheaper.",
+    "hints": [
+      "Compute each anomaly's affected count independently, then stack the three results into a single output — three separate subproblems that share no data and each produce one row.",
+      "The 'zero completed sales' anomaly is an anti-join: NOT EXISTS tracing categories through their products to completed orders is cleaner than a LEFT JOIN / IS NULL."
+    ],
+    "concepts": [
+      "DATA QUALITY SKEPTICISM",
+      "SUBQUERY PATTERNS",
+      "CTE PIPELINE"
+    ],
+    "companies": [
+      "Shopify",
+      "Amazon",
+      "eBay"
+    ]
   }
 ]

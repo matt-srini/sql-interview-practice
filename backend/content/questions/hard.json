@@ -6164,5 +6164,1187 @@
       "PayPal",
       "Adyen"
     ]
+  },
+  {
+    "id": 13135,
+    "order": 135,
+    "mock_only": true,
+    "framing": "scenario",
+    "parent_id": 12124,
+    "follow_up_dimension": "business_rule_pivot",
+    "title": "Funnel with deep-browse definition: ≥2 distinct products viewed",
+    "description": "Same funnel as before. The product team redefines 'viewed' as deep-browse: a session must have view_product events for at least 2 distinct product_ids to qualify. Rebuild the funnel with this updated definition. Output columns: traffic_source, sessions_started, deep_browse_sessions (the new 'viewed' count), with_add_to_cart, with_start_checkout, with_purchased. Order by sessions_started descending.",
+    "difficulty": "hard",
+    "schema": {
+      "sessions": [
+        "session_id",
+        "user_id",
+        "traffic_source"
+      ],
+      "events": [
+        "event_id",
+        "session_id",
+        "event_name",
+        "product_id"
+      ]
+    },
+    "dataset_files": [
+      "sessions.csv",
+      "events.csv"
+    ],
+    "expected_query": "WITH session_events AS (\n    SELECT s.session_id, s.traffic_source,\n           COUNT(DISTINCT CASE WHEN e.event_name = 'view_product' THEN e.product_id END) AS distinct_viewed_products,\n           MAX(CASE WHEN e.event_name = 'add_to_cart' THEN 1 ELSE 0 END) AS had_cart,\n           MAX(CASE WHEN e.event_name = 'start_checkout' THEN 1 ELSE 0 END) AS had_checkout,\n           MAX(CASE WHEN e.event_name = 'purchase' THEN 1 ELSE 0 END) AS had_purchase\n    FROM sessions s\n    LEFT JOIN events e ON e.session_id = s.session_id\n    GROUP BY s.session_id, s.traffic_source\n)\nSELECT traffic_source,\n       COUNT(DISTINCT session_id) AS sessions_started,\n       COUNT(DISTINCT CASE WHEN distinct_viewed_products >= 2 THEN session_id END) AS deep_browse_sessions,\n       COUNT(DISTINCT CASE WHEN had_cart = 1 THEN session_id END) AS with_add_to_cart,\n       COUNT(DISTINCT CASE WHEN had_checkout = 1 THEN session_id END) AS with_start_checkout,\n       COUNT(DISTINCT CASE WHEN had_purchase = 1 THEN session_id END) AS with_purchased\nFROM session_events\nGROUP BY traffic_source\nORDER BY sessions_started DESC",
+    "solution_query": "WITH session_events AS (\n    SELECT s.session_id, s.traffic_source,\n           COUNT(DISTINCT CASE WHEN e.event_name = 'view_product' THEN e.product_id END) AS distinct_viewed_products,\n           MAX(CASE WHEN e.event_name = 'add_to_cart' THEN 1 ELSE 0 END) AS had_cart,\n           MAX(CASE WHEN e.event_name = 'start_checkout' THEN 1 ELSE 0 END) AS had_checkout,\n           MAX(CASE WHEN e.event_name = 'purchase' THEN 1 ELSE 0 END) AS had_purchase\n    FROM sessions s\n    LEFT JOIN events e ON e.session_id = s.session_id\n    GROUP BY s.session_id, s.traffic_source\n)\nSELECT traffic_source,\n       COUNT(DISTINCT session_id) AS sessions_started,\n       COUNT(DISTINCT CASE WHEN distinct_viewed_products >= 2 THEN session_id END) AS deep_browse_sessions,\n       COUNT(DISTINCT CASE WHEN had_cart = 1 THEN session_id END) AS with_add_to_cart,\n       COUNT(DISTINCT CASE WHEN had_checkout = 1 THEN session_id END) AS with_start_checkout,\n       COUNT(DISTINCT CASE WHEN had_purchase = 1 THEN session_id END) AS with_purchased\nFROM session_events\nGROUP BY traffic_source\nORDER BY sessions_started DESC;",
+    "required_concepts": [
+      "cte",
+      "count_distinct",
+      "case_when",
+      "group_by"
+    ],
+    "enforce_concepts": true,
+    "explanation": "The two-level aggregation is necessary: the inner CTE resolves the per-session deep-browse flag (COUNT(DISTINCT product_id) per session), then the outer query counts sessions by traffic_source. Trying to compute COUNT(DISTINCT product_id) and COUNT(DISTINCT session_id) in the same aggregation level would mix granularities. The business rule change — from 'any view' to '≥2 distinct product views' — drops deep_browse_sessions by ~29% in organic traffic (2531 → ~1803), showing that the original funnel overstated product engagement by counting single-product peek sessions.",
+    "hints": [
+      "Deep-browse sessions require a two-level approach: first determine per-session which products were viewed (and how many unique ones), then apply the qualifying filter before measuring funnel progress.",
+      "COUNT(DISTINCT CASE WHEN event_name='view_product' THEN product_id END) per session_id gives the number of distinct products viewed in that session."
+    ],
+    "concepts": [
+      "FUNNEL ANALYSIS",
+      "CTE PIPELINE",
+      "CONDITIONAL LOGIC & CASE"
+    ],
+    "companies": [
+      "Meta",
+      "TikTok",
+      "Google"
+    ]
+  },
+  {
+    "id": 13136,
+    "order": 136,
+    "mock_only": true,
+    "framing": "scenario",
+    "parent_id": 12124,
+    "follow_up_dimension": "data_quality_pivot",
+    "title": "Funnel data quality: duplicate event rows and their inflation effect",
+    "description": "The funnel query uses COUNT(DISTINCT session_id) per event stage, which silently masks duplicate event rows. Before trusting the funnel numbers, quantify the duplication. Write a query that shows, for each of the four funnel event types, the raw row count vs the deduplicated session count and the inflation ratio. Output columns: event_name, raw_row_count (total event rows of that type), distinct_sessions (COUNT(DISTINCT session_id) for that event_name), inflation_ratio (raw_row_count / distinct_sessions, rounded to 2 decimal places). Include only the four funnel event types: 'view_product', 'add_to_cart', 'start_checkout', 'purchase'. Order by event_name ascending.",
+    "difficulty": "hard",
+    "schema": {
+      "events": [
+        "event_id",
+        "session_id",
+        "event_name"
+      ]
+    },
+    "dataset_files": [
+      "events.csv"
+    ],
+    "expected_query": "SELECT event_name,\n       COUNT(*) AS raw_row_count,\n       COUNT(DISTINCT session_id) AS distinct_sessions,\n       ROUND(COUNT(*) * 1.0 / COUNT(DISTINCT session_id), 2) AS inflation_ratio\nFROM events\nWHERE event_name IN ('view_product', 'add_to_cart', 'start_checkout', 'purchase')\nGROUP BY event_name\nORDER BY event_name",
+    "solution_query": "SELECT event_name,\n       COUNT(*) AS raw_row_count,\n       COUNT(DISTINCT session_id) AS distinct_sessions,\n       ROUND(COUNT(*) * 1.0 / COUNT(DISTINCT session_id), 2) AS inflation_ratio\nFROM events\nWHERE event_name IN ('view_product', 'add_to_cart', 'start_checkout', 'purchase')\nGROUP BY event_name\nORDER BY event_name;",
+    "required_concepts": [
+      "count_distinct",
+      "group_by",
+      "where_filter"
+    ],
+    "enforce_concepts": true,
+    "explanation": "COUNT(*) counts all event rows including repeats; COUNT(DISTINCT session_id) counts unique sessions that fired the event at least once. Their ratio reveals the average number of events per session for that type — inflation_ratio > 1.0 means multiple events of the same type per session. Results show view_product fires ~2.66× per session on average (a user scrolls past the same product multiple times), while purchase fires ~1.17× (a user rarely completes two purchases in the same session). The parent funnel query used COUNT(DISTINCT session_id), so it correctly counted sessions that reached each stage — but a naive COUNT(*) funnel would have been inflated ~2.66× at the top of the funnel.",
+    "hints": [
+      "Two metrics on the same data that should be equal will reveal duplication when they diverge: per-session event presence vs. raw event-row count for the same stage.",
+      "Multiply by 1.0 before dividing to avoid integer division in the ratio."
+    ],
+    "concepts": [
+      "DATA QUALITY SKEPTICISM",
+      "FUNNEL ANALYSIS",
+      "DEDUPLICATION LOGIC"
+    ],
+    "companies": [
+      "Meta",
+      "TikTok",
+      "Google"
+    ]
+  },
+  {
+    "id": 13137,
+    "order": 137,
+    "mock_only": true,
+    "framing": "scenario",
+    "parent_id": 12125,
+    "follow_up_dimension": "edge_case_pivot",
+    "title": "Reconciliation data quality audit: classify all months by source completeness",
+    "description": "Extend the parent's FULL OUTER JOIN reconciliation to classify every month by data quality status: 'balanced' (both order_revenue > 0 and payment_revenue > 0), 'orders_only' (order_revenue > 0 but no matching payment month), or 'payments_only' (payment_revenue > 0 but no matching order month). Return all months from both sources with columns: month (YYYY-MM format), order_revenue, payment_revenue, discrepancy (rounded to 2 dp), data_quality_tag. Order by month ascending. Note: in this dataset all months may be 'balanced' — an all-balanced result is a valuable finding, not an empty query.",
+    "difficulty": "hard",
+    "schema": {
+      "orders": [
+        "order_id",
+        "order_date",
+        "status",
+        "net_amount"
+      ],
+      "payments": [
+        "payment_id",
+        "payment_date",
+        "amount",
+        "status"
+      ]
+    },
+    "dataset_files": [
+      "orders.csv",
+      "payments.csv"
+    ],
+    "expected_query": "WITH monthly_orders AS (\n    SELECT STRFTIME('%Y-%m', order_date) AS month,\n           ROUND(SUM(net_amount), 2) AS order_revenue\n    FROM orders\n    WHERE status = 'completed'\n    GROUP BY 1\n),\nmonthly_payments AS (\n    SELECT STRFTIME('%Y-%m', payment_date) AS month,\n           ROUND(SUM(amount), 2) AS payment_revenue\n    FROM payments\n    WHERE status = 'paid'\n    GROUP BY 1\n)\nSELECT COALESCE(o.month, p.month) AS month,\n       COALESCE(o.order_revenue, 0) AS order_revenue,\n       COALESCE(p.payment_revenue, 0) AS payment_revenue,\n       ROUND(COALESCE(o.order_revenue, 0) - COALESCE(p.payment_revenue, 0), 2) AS discrepancy,\n       CASE\n           WHEN o.month IS NULL THEN 'payments_only'\n           WHEN p.month IS NULL THEN 'orders_only'\n           ELSE 'balanced'\n       END AS data_quality_tag\nFROM monthly_orders o\nFULL OUTER JOIN monthly_payments p ON o.month = p.month\nORDER BY 1",
+    "solution_query": "WITH monthly_orders AS (\n    SELECT STRFTIME('%Y-%m', order_date) AS month,\n           ROUND(SUM(net_amount), 2) AS order_revenue\n    FROM orders\n    WHERE status = 'completed'\n    GROUP BY 1\n),\nmonthly_payments AS (\n    SELECT STRFTIME('%Y-%m', payment_date) AS month,\n           ROUND(SUM(amount), 2) AS payment_revenue\n    FROM payments\n    WHERE status = 'paid'\n    GROUP BY 1\n)\nSELECT COALESCE(o.month, p.month) AS month,\n       COALESCE(o.order_revenue, 0) AS order_revenue,\n       COALESCE(p.payment_revenue, 0) AS payment_revenue,\n       ROUND(COALESCE(o.order_revenue, 0) - COALESCE(p.payment_revenue, 0), 2) AS discrepancy,\n       CASE\n           WHEN o.month IS NULL THEN 'payments_only'\n           WHEN p.month IS NULL THEN 'orders_only'\n           ELSE 'balanced'\n       END AS data_quality_tag\nFROM monthly_orders o\nFULL OUTER JOIN monthly_payments p ON o.month = p.month\nORDER BY 1;",
+    "required_concepts": [
+      "cte",
+      "full_outer_join",
+      "coalesce",
+      "case_when",
+      "where_filter"
+    ],
+    "enforce_concepts": true,
+    "explanation": "The FULL OUTER JOIN preserves months present in only one source via NULL propagation. CASE WHEN o.month IS NULL detects payments_only months (the orders CTE produced no row for that month); WHEN p.month IS NULL detects orders_only months. In this dataset all 36 months appear in both sources, so every row gets tag='balanced' — this is the expected finding in a healthy system. If a month appeared only in orders (e.g. due to a payment processing delay), tag='orders_only'; vice versa for 'payments_only'. The data quality tag turns a raw discrepancy report into a triaged action list: balanced months need amount investigation; one-sided months flag a data pipeline gap.",
+    "hints": [
+      "A full outer merge already surfaces months present in only one source as NULL on the absent side — classifying them is a matter of reading which side returned NULL for a given month.",
+      "An empty result is a legitimate finding: it means every month has both sides and the discrepancies are real mismatches."
+    ],
+    "concepts": [
+      "METRIC RECONCILIATION",
+      "NULL HANDLING & COALESCE",
+      "MULTI-TABLE ENTITY LINKING"
+    ],
+    "companies": [
+      "Stripe",
+      "Airbnb",
+      "Shopify"
+    ]
+  },
+  {
+    "id": 13138,
+    "order": 138,
+    "mock_only": true,
+    "framing": "scenario",
+    "parent_id": 12125,
+    "follow_up_dimension": "performance_pivot",
+    "title": "Reconciliation via UNION ALL: eliminate the full outer join",
+    "description": "The FULL OUTER JOIN approach works correctly. An alternative uses UNION ALL with conditional aggregation to avoid the join entirely: tag each raw row with a 'src' column, UNION ALL both tables, then GROUP BY month with CASE WHEN to split the two streams. Rewrite the monthly reconciliation query using this approach. Output the same columns as the parent: month (YYYY-MM format), order_revenue, payment_revenue, discrepancy. Results must match the parent query exactly.",
+    "difficulty": "hard",
+    "schema": {
+      "orders": [
+        "order_id",
+        "order_date",
+        "status",
+        "net_amount"
+      ],
+      "payments": [
+        "payment_id",
+        "payment_date",
+        "amount",
+        "status"
+      ]
+    },
+    "dataset_files": [
+      "orders.csv",
+      "payments.csv"
+    ],
+    "expected_query": "SELECT month,\n       ROUND(SUM(CASE WHEN src = 'order' THEN amt ELSE 0 END), 2) AS order_revenue,\n       ROUND(SUM(CASE WHEN src = 'payment' THEN amt ELSE 0 END), 2) AS payment_revenue,\n       ROUND(\n           SUM(CASE WHEN src = 'order' THEN amt ELSE 0 END) -\n           SUM(CASE WHEN src = 'payment' THEN amt ELSE 0 END),\n           2\n       ) AS discrepancy\nFROM (\n    SELECT STRFTIME('%Y-%m', order_date) AS month, net_amount AS amt, 'order' AS src\n    FROM orders\n    WHERE status = 'completed'\n    UNION ALL\n    SELECT STRFTIME('%Y-%m', payment_date), amount, 'payment'\n    FROM payments\n    WHERE status = 'paid'\n) combined\nGROUP BY month\nORDER BY month",
+    "solution_query": "SELECT month,\n       ROUND(SUM(CASE WHEN src = 'order' THEN amt ELSE 0 END), 2) AS order_revenue,\n       ROUND(SUM(CASE WHEN src = 'payment' THEN amt ELSE 0 END), 2) AS payment_revenue,\n       ROUND(\n           SUM(CASE WHEN src = 'order' THEN amt ELSE 0 END) -\n           SUM(CASE WHEN src = 'payment' THEN amt ELSE 0 END),\n           2\n       ) AS discrepancy\nFROM (\n    SELECT STRFTIME('%Y-%m', order_date) AS month, net_amount AS amt, 'order' AS src\n    FROM orders\n    WHERE status = 'completed'\n    UNION ALL\n    SELECT STRFTIME('%Y-%m', payment_date), amount, 'payment'\n    FROM payments\n    WHERE status = 'paid'\n) combined\nGROUP BY month\nORDER BY month;",
+    "required_concepts": [
+      "union_all",
+      "case_when",
+      "group_by",
+      "strftime"
+    ],
+    "enforce_concepts": true,
+    "explanation": "The UNION ALL approach tags each row with a source flag, stacks both tables into a single relation, then uses one GROUP BY pass to split the streams with CASE WHEN. It avoids the sort-merge join that FULL OUTER JOIN requires, and naturally handles months present in only one table — rows from the missing side simply contribute 0 to the SUM(CASE WHEN ...) for the other side. When to prefer UNION ALL over FULL OUTER JOIN: (1) when the join key is a derived column (STRFTIME result) rather than a stored key — a FULL OUTER JOIN on a derived column prevents predicate pushdown; (2) when both tables are large and the sort-merge join cost is measurable; (3) when the ETL system guarantees no cross-table month gaps (the edge case from the prior follow-up). FULL OUTER JOIN is clearer to read; UNION ALL is often faster in columnar engines.",
+    "hints": [
+      "Stacking both result sets and aggregating by month is semantically equivalent to a full outer merge — when both sides produce the same bucket key, there is no asymmetric lookup needed.",
+      "SUM(CASE WHEN src='order' THEN amt ELSE 0 END) naturally returns 0 for months that exist only in the payments stream — no COALESCE needed."
+    ],
+    "concepts": [
+      "METRIC RECONCILIATION",
+      "SET OPERATIONS & COMPARISON",
+      "PERFORMANCE-AWARE ANALYTICS"
+    ],
+    "companies": [
+      "Stripe",
+      "Airbnb",
+      "Shopify"
+    ]
+  },
+  {
+    "id": 13139,
+    "order": 139,
+    "mock_only": true,
+    "framing": "scenario",
+    "parent_id": 12126,
+    "follow_up_dimension": "stakeholder_pivot",
+    "title": "SLA compliance by country and issue type with Global rollup",
+    "description": "The VP of Support wants the same SLA compliance breakdown segmented by user country (from the users table). Use the same issue_type thresholds: technical=72h, billing=48h, account=48h, shipping=96h, product=72h. Return rows for each (country, issue_type) combination where total_tickets in that group >= 50, PLUS one 'Global' row per issue_type showing overall compliance across all countries. Columns: country, issue_type, sla_hours, total_tickets, resolved_tickets, within_sla, sla_pct (rounded to 1 dp, NULL if resolved_tickets = 0). Order by issue_type ascending, then country ascending with 'Global' last within each issue_type.",
+    "difficulty": "hard",
+    "schema": {
+      "support_tickets": [
+        "ticket_id",
+        "user_id",
+        "issue_type",
+        "status",
+        "resolution_hours"
+      ],
+      "users": [
+        "user_id",
+        "country"
+      ]
+    },
+    "dataset_files": [
+      "support_tickets.csv",
+      "users.csv"
+    ],
+    "expected_query": "WITH sla_thresholds (issue_type, sla_hours) AS (\n    VALUES ('technical', 72), ('billing', 48), ('account', 48),\n           ('shipping', 96), ('product', 72)\n),\ncountry_level AS (\n    SELECT u.country, st.issue_type, sl.sla_hours,\n           COUNT(*) AS total_tickets,\n           COUNT(CASE WHEN st.status = 'resolved' THEN 1 END) AS resolved_tickets,\n           COUNT(CASE WHEN st.status = 'resolved' AND st.resolution_hours <= sl.sla_hours THEN 1 END) AS within_sla\n    FROM support_tickets st\n    JOIN users u ON u.user_id = st.user_id\n    JOIN sla_thresholds sl ON sl.issue_type = st.issue_type\n    GROUP BY u.country, st.issue_type, sl.sla_hours\n    HAVING COUNT(*) >= 50\n),\nglobal_level AS (\n    SELECT 'Global' AS country, st.issue_type, sl.sla_hours,\n           COUNT(*) AS total_tickets,\n           COUNT(CASE WHEN st.status = 'resolved' THEN 1 END) AS resolved_tickets,\n           COUNT(CASE WHEN st.status = 'resolved' AND st.resolution_hours <= sl.sla_hours THEN 1 END) AS within_sla\n    FROM support_tickets st\n    JOIN sla_thresholds sl ON sl.issue_type = st.issue_type\n    GROUP BY st.issue_type, sl.sla_hours\n)\nSELECT country, issue_type, sla_hours, total_tickets, resolved_tickets, within_sla,\n       ROUND(100.0 * within_sla / NULLIF(resolved_tickets, 0), 1) AS sla_pct\nFROM (\n    SELECT * FROM country_level\n    UNION ALL\n    SELECT * FROM global_level\n) combined\nORDER BY issue_type, CASE WHEN country = 'Global' THEN 1 ELSE 0 END, country",
+    "solution_query": "WITH sla_thresholds (issue_type, sla_hours) AS (\n    VALUES ('technical', 72), ('billing', 48), ('account', 48),\n           ('shipping', 96), ('product', 72)\n),\ncountry_level AS (\n    SELECT u.country, st.issue_type, sl.sla_hours,\n           COUNT(*) AS total_tickets,\n           COUNT(CASE WHEN st.status = 'resolved' THEN 1 END) AS resolved_tickets,\n           COUNT(CASE WHEN st.status = 'resolved' AND st.resolution_hours <= sl.sla_hours THEN 1 END) AS within_sla\n    FROM support_tickets st\n    JOIN users u ON u.user_id = st.user_id\n    JOIN sla_thresholds sl ON sl.issue_type = st.issue_type\n    GROUP BY u.country, st.issue_type, sl.sla_hours\n    HAVING COUNT(*) >= 50\n),\nglobal_level AS (\n    SELECT 'Global' AS country, st.issue_type, sl.sla_hours,\n           COUNT(*) AS total_tickets,\n           COUNT(CASE WHEN st.status = 'resolved' THEN 1 END) AS resolved_tickets,\n           COUNT(CASE WHEN st.status = 'resolved' AND st.resolution_hours <= sl.sla_hours THEN 1 END) AS within_sla\n    FROM support_tickets st\n    JOIN sla_thresholds sl ON sl.issue_type = st.issue_type\n    GROUP BY st.issue_type, sl.sla_hours\n)\nSELECT country, issue_type, sla_hours, total_tickets, resolved_tickets, within_sla,\n       ROUND(100.0 * within_sla / NULLIF(resolved_tickets, 0), 1) AS sla_pct\nFROM (\n    SELECT * FROM country_level\n    UNION ALL\n    SELECT * FROM global_level\n) combined\nORDER BY issue_type, CASE WHEN country = 'Global' THEN 1 ELSE 0 END, country;",
+    "required_concepts": [
+      "cte",
+      "union_all",
+      "having",
+      "join",
+      "case_when",
+      "group_by"
+    ],
+    "enforce_concepts": true,
+    "explanation": "Two separate CTEs avoid a GROUPING SETS dependency: country_level applies the ≥50 ticket HAVING filter at the country×issue_type grain; global_level recomputes the full aggregate without any country filter. UNION ALL combines them — HAVING in global_level is deliberately omitted (the VP wants every issue_type globally regardless of volume). The CASE WHEN country = 'Global' THEN 1 ELSE 0 END sort key pushes 'Global' to the bottom of each issue_type group while alphabetical country ordering applies above it. In this dataset only the US meets the ≥50 threshold for each issue_type; all other countries appear only in the Global row.",
+    "hints": [
+      "The country-level rows and the Global rollup use different filtering rules, which makes them hard to compute in a single pass — separate computations for each output type, then combine.",
+      "To sort 'Global' last within each issue_type, use CASE WHEN country = 'Global' THEN 1 ELSE 0 END as the secondary sort key."
+    ],
+    "concepts": [
+      "CONDITIONAL LOGIC & CASE",
+      "GROUPED AGGREGATION",
+      "SET OPERATIONS & COMPARISON"
+    ],
+    "companies": [
+      "Zendesk",
+      "Intercom",
+      "ServiceNow"
+    ]
+  },
+  {
+    "id": 13140,
+    "order": 140,
+    "mock_only": true,
+    "framing": "scenario",
+    "parent_id": 12127,
+    "follow_up_dimension": "abstraction_pivot",
+    "title": "Cross-entity aggregation at monthly grain: session count and order revenue per month",
+    "description": "The same double-counting risk applies at any grouping key. Generalise the per-user CTE approach to the monthly grain: compute, per calendar month, session_count (distinct session_ids from sessions), completed_order_count (distinct completed order_ids), and completed_order_revenue (SUM of net_amount for completed orders, rounded to 2 dp). Include all months that appear in either sessions or orders. Output columns: month (YYYY-MM), session_count, completed_order_count, completed_order_revenue. Order by month ascending.",
+    "difficulty": "hard",
+    "schema": {
+      "sessions": [
+        "session_id",
+        "session_start"
+      ],
+      "orders": [
+        "order_id",
+        "order_date",
+        "status",
+        "net_amount"
+      ]
+    },
+    "dataset_files": [
+      "sessions.csv",
+      "orders.csv"
+    ],
+    "expected_query": "WITH monthly_sessions AS (\n    SELECT STRFTIME('%Y-%m', session_start) AS month,\n           COUNT(DISTINCT session_id) AS session_count\n    FROM sessions\n    GROUP BY 1\n),\nmonthly_orders AS (\n    SELECT STRFTIME('%Y-%m', order_date) AS month,\n           COUNT(DISTINCT order_id) AS completed_order_count,\n           ROUND(SUM(net_amount), 2) AS completed_order_revenue\n    FROM orders\n    WHERE status = 'completed'\n    GROUP BY 1\n)\nSELECT COALESCE(ms.month, mo.month) AS month,\n       COALESCE(ms.session_count, 0) AS session_count,\n       COALESCE(mo.completed_order_count, 0) AS completed_order_count,\n       COALESCE(mo.completed_order_revenue, 0) AS completed_order_revenue\nFROM monthly_sessions ms\nFULL OUTER JOIN monthly_orders mo ON mo.month = ms.month\nORDER BY 1",
+    "solution_query": "WITH monthly_sessions AS (\n    SELECT STRFTIME('%Y-%m', session_start) AS month,\n           COUNT(DISTINCT session_id) AS session_count\n    FROM sessions\n    GROUP BY 1\n),\nmonthly_orders AS (\n    SELECT STRFTIME('%Y-%m', order_date) AS month,\n           COUNT(DISTINCT order_id) AS completed_order_count,\n           ROUND(SUM(net_amount), 2) AS completed_order_revenue\n    FROM orders\n    WHERE status = 'completed'\n    GROUP BY 1\n)\nSELECT COALESCE(ms.month, mo.month) AS month,\n       COALESCE(ms.session_count, 0) AS session_count,\n       COALESCE(mo.completed_order_count, 0) AS completed_order_count,\n       COALESCE(mo.completed_order_revenue, 0) AS completed_order_revenue\nFROM monthly_sessions ms\nFULL OUTER JOIN monthly_orders mo ON mo.month = ms.month\nORDER BY 1;",
+    "required_concepts": [
+      "cte",
+      "full_outer_join",
+      "coalesce",
+      "strftime",
+      "group_by"
+    ],
+    "enforce_concepts": true,
+    "explanation": "The structural pattern is identical to the per-user version: pre-aggregate each fact table to one row per key (month instead of user_id), then JOIN the summaries. The join type changes from LEFT to FULL OUTER: at the monthly grain, some months might have sessions with no completed orders (e.g., a new marketing campaign month) or completed orders with no session data (legacy orders from before session tracking was deployed) — FULL OUTER captures both. This is the invariant: pre-aggregate independently, join summaries, choose the join type based on which universe is the denominator. The monthly grain also reveals a business truth not visible per-user: session volume and order volume trend together month-over-month but diverge in specific periods.",
+    "hints": [
+      "The fan-out problem from the per-user version applies at monthly grain too — aggregate each entity to one row per month before combining the two streams.",
+      "Switch from LEFT JOIN to FULL OUTER JOIN at the monthly grain — some months may have sessions but no orders, or orders but no sessions."
+    ],
+    "concepts": [
+      "DOUBLE-COUNTING DETECTION",
+      "CTE PIPELINE",
+      "TIME-SERIES BUCKETING & ARITHMETIC"
+    ],
+    "companies": [
+      "Google",
+      "Meta",
+      "Stripe"
+    ]
+  },
+  {
+    "id": 13141,
+    "order": 141,
+    "mock_only": true,
+    "framing": "scenario",
+    "parent_id": 12127,
+    "follow_up_dimension": "performance_pivot",
+    "title": "Extend cross-entity user report with a third pre-aggregation: distinct products viewed",
+    "description": "Extend the per-user report from the parent question to include a fourth column: distinct_products_viewed — the number of distinct product_ids the user viewed (event_name = 'view_product') across all their events. Add a product_views CTE that computes this from the events table, then LEFT JOIN it to the existing result. Output columns: user_id, session_count, completed_order_count, completed_order_revenue, distinct_products_viewed (0 for users with no view events). Order by user_id ascending.",
+    "difficulty": "hard",
+    "schema": {
+      "sessions": [
+        "session_id",
+        "user_id"
+      ],
+      "orders": [
+        "order_id",
+        "user_id",
+        "status",
+        "net_amount"
+      ],
+      "events": [
+        "event_id",
+        "user_id",
+        "event_name",
+        "product_id"
+      ]
+    },
+    "dataset_files": [
+      "sessions.csv",
+      "orders.csv",
+      "events.csv"
+    ],
+    "expected_query": "WITH session_counts AS (\n    SELECT user_id, COUNT(DISTINCT session_id) AS session_count\n    FROM sessions\n    GROUP BY user_id\n),\norder_totals AS (\n    SELECT user_id,\n           COUNT(DISTINCT order_id) AS completed_order_count,\n           ROUND(SUM(net_amount), 2) AS completed_order_revenue\n    FROM orders\n    WHERE status = 'completed'\n    GROUP BY user_id\n),\nproduct_views AS (\n    SELECT user_id,\n           COUNT(DISTINCT product_id) AS distinct_products_viewed\n    FROM events\n    WHERE event_name = 'view_product'\n    GROUP BY user_id\n)\nSELECT sc.user_id,\n       sc.session_count,\n       COALESCE(ot.completed_order_count, 0) AS completed_order_count,\n       COALESCE(ot.completed_order_revenue, 0) AS completed_order_revenue,\n       COALESCE(pv.distinct_products_viewed, 0) AS distinct_products_viewed\nFROM session_counts sc\nLEFT JOIN order_totals ot ON ot.user_id = sc.user_id\nLEFT JOIN product_views pv ON pv.user_id = sc.user_id\nORDER BY sc.user_id",
+    "solution_query": "WITH session_counts AS (\n    SELECT user_id, COUNT(DISTINCT session_id) AS session_count\n    FROM sessions\n    GROUP BY user_id\n),\norder_totals AS (\n    SELECT user_id,\n           COUNT(DISTINCT order_id) AS completed_order_count,\n           ROUND(SUM(net_amount), 2) AS completed_order_revenue\n    FROM orders\n    WHERE status = 'completed'\n    GROUP BY user_id\n),\nproduct_views AS (\n    SELECT user_id,\n           COUNT(DISTINCT product_id) AS distinct_products_viewed\n    FROM events\n    WHERE event_name = 'view_product'\n    GROUP BY user_id\n)\nSELECT sc.user_id,\n       sc.session_count,\n       COALESCE(ot.completed_order_count, 0) AS completed_order_count,\n       COALESCE(ot.completed_order_revenue, 0) AS completed_order_revenue,\n       COALESCE(pv.distinct_products_viewed, 0) AS distinct_products_viewed\nFROM session_counts sc\nLEFT JOIN order_totals ot ON ot.user_id = sc.user_id\nLEFT JOIN product_views pv ON pv.user_id = sc.user_id\nORDER BY sc.user_id;",
+    "required_concepts": [
+      "cte",
+      "join",
+      "count_distinct",
+      "coalesce",
+      "group_by"
+    ],
+    "enforce_concepts": true,
+    "explanation": "Adding a third dimension follows the same structural rule: a separate CTE pre-aggregates to one row per user_id, then LEFT JOINs to the driver table. Each additional dimension costs one scan of the source table plus one hash join — O(source rows + user count), not multiplicative. The performance implication: 3 independent CTEs cost 3 sequential table scans with 2 hash joins; joining events raw into the main query instead would immediately re-introduce the fan-out problem (sessions × events × orders). The CTE architecture scales linearly in dimensions; a raw-join architecture scales multiplicatively. Note that events is the largest table here (45K rows) — the product_views CTE filters to view_product events before aggregating, reducing the hash join cardinality.",
+    "hints": [
+      "Add a third CTE that pre-aggregates events to one row per user_id — the same pattern as session_counts and order_totals.",
+      "Each additional CTE adds one sequential scan and one hash join; the cost scales linearly. Joining raw events into the main query would re-introduce the fan-out."
+    ],
+    "concepts": [
+      "DOUBLE-COUNTING DETECTION",
+      "CTE PIPELINE",
+      "PERFORMANCE-AWARE ANALYTICS"
+    ],
+    "companies": [
+      "Google",
+      "Meta",
+      "Stripe"
+    ]
+  },
+  {
+    "id": 13142,
+    "order": 142,
+    "mock_only": true,
+    "framing": "scenario",
+    "parent_id": 12128,
+    "follow_up_dimension": "ambiguity_pivot",
+    "title": "Product inactivity: catalog flag vs finance sales-based definition",
+    "description": "The parent audit flagged 9 inactive products (is_active = 'false') with recent completed orders. But the finance team uses a different inactivity definition: a product is inactive if it had no completed order in calendar year 2025 (between 2025-01-01 and 2025-12-31). Write a query that classifies all 260 products into four groups based on which definition(s) apply: 'catalog_inactive_only' (is_active = 'false' but did sell in 2025), 'finance_inactive_only' (is_active = true but did not sell in 2025), 'both_definitions' (is_active = 'false' AND did not sell in 2025), 'neither' (is_active = true AND did sell in 2025). Output columns: definition, product_count.",
+    "difficulty": "hard",
+    "schema": {
+      "products": [
+        "product_id",
+        "is_active"
+      ],
+      "order_items": [
+        "order_item_id",
+        "order_id",
+        "product_id"
+      ],
+      "orders": [
+        "order_id",
+        "status",
+        "order_date"
+      ]
+    },
+    "dataset_files": [
+      "products.csv",
+      "order_items.csv",
+      "orders.csv"
+    ],
+    "expected_query": "WITH product_2025_sales AS (\n    SELECT DISTINCT p.product_id\n    FROM products p\n    JOIN order_items oi ON oi.product_id = p.product_id\n    JOIN orders o ON o.order_id = oi.order_id\n    WHERE o.status = 'completed'\n      AND CAST(o.order_date AS DATE) BETWEEN '2025-01-01' AND '2025-12-31'\n),\ncategorized AS (\n    SELECT p.product_id,\n           p.is_active = 'false' AS catalog_inactive,\n           ps.product_id IS NULL AS finance_inactive\n    FROM products p\n    LEFT JOIN product_2025_sales ps ON ps.product_id = p.product_id\n)\nSELECT definition, COUNT(*) AS product_count\nFROM (\n    SELECT CASE\n               WHEN catalog_inactive AND NOT finance_inactive THEN 'catalog_inactive_only'\n               WHEN NOT catalog_inactive AND finance_inactive THEN 'finance_inactive_only'\n               WHEN catalog_inactive AND finance_inactive THEN 'both_definitions'\n               ELSE 'neither'\n           END AS definition\n    FROM categorized\n) classified\nGROUP BY definition",
+    "solution_query": "WITH product_2025_sales AS (\n    SELECT DISTINCT p.product_id\n    FROM products p\n    JOIN order_items oi ON oi.product_id = p.product_id\n    JOIN orders o ON o.order_id = oi.order_id\n    WHERE o.status = 'completed'\n      AND CAST(o.order_date AS DATE) BETWEEN '2025-01-01' AND '2025-12-31'\n),\ncategorized AS (\n    SELECT p.product_id,\n           p.is_active = 'false' AS catalog_inactive,\n           ps.product_id IS NULL AS finance_inactive\n    FROM products p\n    LEFT JOIN product_2025_sales ps ON ps.product_id = p.product_id\n)\nSELECT definition, COUNT(*) AS product_count\nFROM (\n    SELECT CASE\n               WHEN catalog_inactive AND NOT finance_inactive THEN 'catalog_inactive_only'\n               WHEN NOT catalog_inactive AND finance_inactive THEN 'finance_inactive_only'\n               WHEN catalog_inactive AND finance_inactive THEN 'both_definitions'\n               ELSE 'neither'\n           END AS definition\n    FROM categorized\n) classified\nGROUP BY definition;",
+    "required_concepts": [
+      "cte",
+      "left_join",
+      "case_when",
+      "group_by",
+      "distinct"
+    ],
+    "enforce_concepts": true,
+    "explanation": "The product_2025_sales CTE identifies products with at least one completed order in 2025 — using DISTINCT to deduplicate before the LEFT JOIN. The categorized CTE flags each product on both definitions independently: catalog_inactive (is_active = 'false') and finance_inactive (no row in product_2025_sales, indicated by ps.product_id IS NULL after the LEFT JOIN). The outer CASE WHEN then produces four mutually exclusive groups. Results: catalog_inactive_only = 9 (flagged by catalog but still selling in 2025), finance_inactive_only = 27 (active in catalog but not selling), both_definitions = 5 (both agree it's inactive), neither = 219. The two definitions agree on only 5 of 46 total 'inactive' products by either measure — a strong signal to align the definitions before acting on either list.",
+    "hints": [
+      "The two inactivity definitions produce different product sets — set-membership operations (is this product in each set?) reveal the four possible combinations of active/inactive across both definitions.",
+      "Flag each product on both dimensions independently in a CTE, then classify into four groups with CASE WHEN in the final SELECT."
+    ],
+    "concepts": [
+      "DATA QUALITY SKEPTICISM",
+      "CONDITIONAL LOGIC & CASE",
+      "SUBQUERY PATTERNS"
+    ],
+    "companies": [
+      "Shopify",
+      "Amazon",
+      "eBay"
+    ]
+  },
+  {
+    "id": 13143,
+    "order": 143,
+    "mock_only": true,
+    "framing": "scenario",
+    "follow_ups": [
+      13144,
+      13145
+    ],
+    "title": "Sessionize events by 30-minute gap and classify session duration",
+    "description": "The product team wants to understand session engagement depth. Sessionize the events table using a 30-minute inactivity gap: a new session begins whenever the gap between consecutive events for the same user exceeds 30 minutes, or at the user's first event. Then classify each session by duration: 'short' (< 5 minutes), 'medium' (5–29 minutes inclusive), 'long' (>= 30 minutes). Output columns: user_id, session_num (sequential session counter per user, starting at 1), session_start (MIN(event_time) for the session), duration_minutes (DATEDIFF in minutes between first and last event), event_count, session_class. Order by user_id, session_num ascending.",
+    "difficulty": "hard",
+    "schema": {
+      "events": [
+        "event_id",
+        "session_id",
+        "user_id",
+        "event_time",
+        "event_name",
+        "product_id"
+      ]
+    },
+    "dataset_files": [
+      "events.csv"
+    ],
+    "expected_query": "WITH event_gaps AS (\n    SELECT user_id, event_time,\n           LAG(event_time) OVER (PARTITION BY user_id ORDER BY event_time) AS prev_event_time\n    FROM events\n),\nsession_starts AS (\n    SELECT user_id, event_time,\n           CASE WHEN prev_event_time IS NULL\n                     OR DATEDIFF('minute', CAST(prev_event_time AS TIMESTAMP), CAST(event_time AS TIMESTAMP)) > 30\n                THEN 1 ELSE 0 END AS is_new_session\n    FROM event_gaps\n),\nsession_numbers AS (\n    SELECT user_id, event_time,\n           SUM(is_new_session) OVER (PARTITION BY user_id ORDER BY event_time) AS session_num\n    FROM session_starts\n),\nsession_summary AS (\n    SELECT user_id,\n           session_num,\n           MIN(event_time) AS session_start,\n           MAX(event_time) AS session_end,\n           COUNT(*) AS event_count,\n           DATEDIFF('minute', CAST(MIN(event_time) AS TIMESTAMP), CAST(MAX(event_time) AS TIMESTAMP)) AS duration_minutes\n    FROM session_numbers\n    GROUP BY user_id, session_num\n)\nSELECT user_id,\n       session_num,\n       session_start,\n       duration_minutes,\n       event_count,\n       CASE\n           WHEN duration_minutes < 5 THEN 'short'\n           WHEN duration_minutes < 30 THEN 'medium'\n           ELSE 'long'\n       END AS session_class\nFROM session_summary\nORDER BY user_id, session_num",
+    "solution_query": "WITH event_gaps AS (\n    SELECT user_id, event_time,\n           LAG(event_time) OVER (PARTITION BY user_id ORDER BY event_time) AS prev_event_time\n    FROM events\n),\nsession_starts AS (\n    SELECT user_id, event_time,\n           CASE WHEN prev_event_time IS NULL\n                     OR DATEDIFF('minute', CAST(prev_event_time AS TIMESTAMP), CAST(event_time AS TIMESTAMP)) > 30\n                THEN 1 ELSE 0 END AS is_new_session\n    FROM event_gaps\n),\nsession_numbers AS (\n    SELECT user_id, event_time,\n           SUM(is_new_session) OVER (PARTITION BY user_id ORDER BY event_time) AS session_num\n    FROM session_starts\n),\nsession_summary AS (\n    SELECT user_id,\n           session_num,\n           MIN(event_time) AS session_start,\n           MAX(event_time) AS session_end,\n           COUNT(*) AS event_count,\n           DATEDIFF('minute', CAST(MIN(event_time) AS TIMESTAMP), CAST(MAX(event_time) AS TIMESTAMP)) AS duration_minutes\n    FROM session_numbers\n    GROUP BY user_id, session_num\n)\nSELECT user_id,\n       session_num,\n       session_start,\n       duration_minutes,\n       event_count,\n       CASE\n           WHEN duration_minutes < 5 THEN 'short'\n           WHEN duration_minutes < 30 THEN 'medium'\n           ELSE 'long'\n       END AS session_class\nFROM session_summary\nORDER BY user_id, session_num;",
+    "required_concepts": [
+      "lag",
+      "window_function",
+      "sum_over",
+      "datediff",
+      "case_when",
+      "cte"
+    ],
+    "enforce_concepts": true,
+    "explanation": "Four-CTE sessionization pipeline: (1) event_gaps uses LAG to compute the gap to the previous event per user; (2) session_starts flags each event as a new session start when the gap exceeds 30 minutes or prev_event_time is NULL; (3) session_numbers uses a running SUM of the flag to assign a monotonically increasing session_num per user — this is the gaps-and-islands key insight: a cumulative sum of a 0/1 boundary flag produces a session ID that increments exactly at each boundary; (4) session_summary aggregates to one row per (user_id, session_num). Session class distribution: 58% medium, 33% long, 9% short — the product's session mix skews toward engaged mid-length sessions.",
+    "hints": [
+      "Sessionization is a gaps-and-islands problem: first classify each event as 'starts a new session' or 'continues an existing session', then let a running accumulation of those boundary flags produce a session identifier.",
+      "Compute session duration as DATEDIFF('minute', MIN(event_time), MAX(event_time)) in the final aggregation CTE — not during the gap-detection phase."
+    ],
+    "concepts": [
+      "SESSIONIZATION",
+      "WINDOW FUNCTIONS",
+      "CONDITIONAL LOGIC & CASE"
+    ],
+    "companies": [
+      "Google",
+      "Meta"
+    ]
+  },
+  {
+    "id": 13144,
+    "order": 144,
+    "mock_only": true,
+    "framing": "scenario",
+    "parent_id": 13143,
+    "follow_up_dimension": "business_rule_pivot",
+    "title": "Sessionization with purchase-event boundary: session ends at purchase",
+    "description": "Same sessionization task. The product analytics team adds a second boundary rule: a session also ends (and a new one begins) immediately after any 'purchase' event, regardless of elapsed time. That is, the event immediately following a 'purchase' always starts a new session. Apply both boundary rules (30-minute inactivity gap OR the event after a 'purchase' event) and return the same session classification output: user_id, session_num, session_start, duration_minutes, event_count, session_class. Order by user_id, session_num ascending.",
+    "difficulty": "hard",
+    "schema": {
+      "events": [
+        "event_id",
+        "session_id",
+        "user_id",
+        "event_time",
+        "event_name"
+      ]
+    },
+    "dataset_files": [
+      "events.csv"
+    ],
+    "expected_query": "WITH events_with_context AS (\n    SELECT user_id, event_time, event_name,\n           LAG(event_time) OVER (PARTITION BY user_id ORDER BY event_time) AS prev_time,\n           LAG(event_name) OVER (PARTITION BY user_id ORDER BY event_time) AS prev_event\n    FROM events\n),\nsession_boundaries AS (\n    SELECT user_id, event_time,\n           CASE\n               WHEN prev_time IS NULL THEN 1\n               WHEN DATEDIFF('minute', CAST(prev_time AS TIMESTAMP), CAST(event_time AS TIMESTAMP)) > 30 THEN 1\n               WHEN prev_event = 'purchase' THEN 1\n               ELSE 0\n           END AS is_new_session\n    FROM events_with_context\n),\nsession_nums AS (\n    SELECT user_id, event_time,\n           SUM(is_new_session) OVER (PARTITION BY user_id ORDER BY event_time) AS session_num\n    FROM session_boundaries\n),\nsession_summary AS (\n    SELECT user_id, session_num,\n           MIN(event_time) AS session_start,\n           COUNT(*) AS event_count,\n           DATEDIFF('minute', CAST(MIN(event_time) AS TIMESTAMP), CAST(MAX(event_time) AS TIMESTAMP)) AS duration_minutes\n    FROM session_nums\n    GROUP BY user_id, session_num\n)\nSELECT user_id, session_num, session_start, duration_minutes, event_count,\n       CASE\n           WHEN duration_minutes < 5 THEN 'short'\n           WHEN duration_minutes < 30 THEN 'medium'\n           ELSE 'long'\n       END AS session_class\nFROM session_summary\nORDER BY user_id, session_num",
+    "solution_query": "WITH events_with_context AS (\n    SELECT user_id, event_time, event_name,\n           LAG(event_time) OVER (PARTITION BY user_id ORDER BY event_time) AS prev_time,\n           LAG(event_name) OVER (PARTITION BY user_id ORDER BY event_time) AS prev_event\n    FROM events\n),\nsession_boundaries AS (\n    SELECT user_id, event_time,\n           CASE\n               WHEN prev_time IS NULL THEN 1\n               WHEN DATEDIFF('minute', CAST(prev_time AS TIMESTAMP), CAST(event_time AS TIMESTAMP)) > 30 THEN 1\n               WHEN prev_event = 'purchase' THEN 1\n               ELSE 0\n           END AS is_new_session\n    FROM events_with_context\n),\nsession_nums AS (\n    SELECT user_id, event_time,\n           SUM(is_new_session) OVER (PARTITION BY user_id ORDER BY event_time) AS session_num\n    FROM session_boundaries\n),\nsession_summary AS (\n    SELECT user_id, session_num,\n           MIN(event_time) AS session_start,\n           COUNT(*) AS event_count,\n           DATEDIFF('minute', CAST(MIN(event_time) AS TIMESTAMP), CAST(MAX(event_time) AS TIMESTAMP)) AS duration_minutes\n    FROM session_nums\n    GROUP BY user_id, session_num\n)\nSELECT user_id, session_num, session_start, duration_minutes, event_count,\n       CASE\n           WHEN duration_minutes < 5 THEN 'short'\n           WHEN duration_minutes < 30 THEN 'medium'\n           ELSE 'long'\n       END AS session_class\nFROM session_summary\nORDER BY user_id, session_num;",
+    "required_concepts": [
+      "lag",
+      "window_function",
+      "sum_over",
+      "case_when",
+      "cte"
+    ],
+    "enforce_concepts": true,
+    "explanation": "The additional boundary condition requires LAG(event_name) to detect when the previous event was a 'purchase'. The CASE WHEN in session_boundaries gains a third branch: WHEN prev_event = 'purchase' THEN 1. This changes the session count significantly — purchase events effectively split post-purchase browsing into new sessions, increasing the session count from ~9,196 to ~11,915. The session class distribution shifts: short sessions increase from 9.7% to 23.1% (the events immediately following a purchase are often a single confirmation page view — a one-event session is always 0 minutes, hence 'short'). The change is a pure CTE modification — the gap-and-islands framework accommodates multi-condition boundaries cleanly.",
+    "hints": [
+      "To detect the event-after-a-purchase boundary, you need to know what the previous event was — not just when it happened.",
+      "The CASE WHEN boundary check gains a third branch: WHEN prev_event = 'purchase' THEN 1 — it fires on the event immediately after the purchase."
+    ],
+    "concepts": [
+      "SESSIONIZATION",
+      "WINDOW FUNCTIONS",
+      "CONDITIONAL LOGIC & CASE"
+    ],
+    "companies": [
+      "Google",
+      "Meta"
+    ]
+  },
+  {
+    "id": 13145,
+    "order": 145,
+    "mock_only": true,
+    "framing": "scenario",
+    "parent_id": 13143,
+    "follow_up_dimension": "performance_pivot",
+    "title": "Sessionization at scale: LAG bottleneck and alternatives for 5-billion-row events",
+    "description": "The events table now holds 5 billion rows. The LAG-based sessionization requires a full sort of all events per user, which becomes prohibitively expensive at this scale. Write a query that demonstrates a pre-filtering optimisation: instead of sessionizing all events, first identify only the session boundary events — events where the gap to the previous event exceeds 30 minutes (or it is the user's first event). Return these boundary events only, with columns: user_id, event_time, gap_to_prev_minutes (NULL for first events). This is the first step of an alternative approach that avoids materialising all intermediate events. Order by user_id, event_time ascending.",
+    "difficulty": "hard",
+    "schema": {
+      "events": [
+        "event_id",
+        "user_id",
+        "event_time"
+      ]
+    },
+    "dataset_files": [
+      "events.csv"
+    ],
+    "expected_query": "WITH event_gaps AS (\n    SELECT user_id, event_time,\n           DATEDIFF('minute',\n               CAST(LAG(event_time) OVER (PARTITION BY user_id ORDER BY event_time) AS TIMESTAMP),\n               CAST(event_time AS TIMESTAMP)\n           ) AS gap_to_prev_minutes\n    FROM events\n)\nSELECT user_id, event_time, gap_to_prev_minutes\nFROM event_gaps\nWHERE gap_to_prev_minutes IS NULL OR gap_to_prev_minutes > 30\nORDER BY user_id, event_time",
+    "solution_query": "WITH event_gaps AS (\n    SELECT user_id, event_time,\n           DATEDIFF('minute',\n               CAST(LAG(event_time) OVER (PARTITION BY user_id ORDER BY event_time) AS TIMESTAMP),\n               CAST(event_time AS TIMESTAMP)\n           ) AS gap_to_prev_minutes\n    FROM events\n)\nSELECT user_id, event_time, gap_to_prev_minutes\nFROM event_gaps\nWHERE gap_to_prev_minutes IS NULL OR gap_to_prev_minutes > 30\nORDER BY user_id, event_time;",
+    "required_concepts": [
+      "lag",
+      "window_function",
+      "datediff",
+      "where_filter"
+    ],
+    "enforce_concepts": true,
+    "explanation": "At 5B rows, a full per-user sort to compute LAG costs O(N log N) globally and requires materialising the entire sorted dataset. The boundary-event approach reduces the output to only the session start events — typically a small fraction of all events (~1 per session per user). The boundary rows can then be joined back to the full events table to assign session_start times per event without re-sorting. Further scale approaches beyond SQL: (1) partition the events table by user_id modulo P — each partition sorts independently on smaller data; (2) use a streaming sessionizer in Spark/Flink that processes each user's events in a single pass with in-memory state; (3) pre-materialise the last-event-per-user timestamp as a compaction table updated by the ETL pipeline. The SQL boundary-extraction query is correct and complete; the architectural discussion is the scale pivot.",
+    "hints": [
+      "At scale, producing only the session boundary events from the full event stream — rather than session-numbering every event row — is a much smaller intermediate result to materialise.",
+      "To isolate just the boundary events, use LAG to bring the previous event's timestamp into the current row, then filter for rows where the gap exceeds the threshold — or where no previous event exists. This predicate scan is far cheaper than numbering every event first."
+    ],
+    "concepts": [
+      "SESSIONIZATION",
+      "PERFORMANCE-AWARE ANALYTICS",
+      "WINDOW FUNCTIONS"
+    ],
+    "companies": [
+      "Google",
+      "Meta"
+    ]
+  },
+  {
+    "id": 13146,
+    "order": 146,
+    "mock_only": true,
+    "framing": "scenario",
+    "follow_ups": [
+      13147,
+      13148
+    ],
+    "title": "24-hour attributed session-to-order funnel with intermediate event stages",
+    "description": "Attribution requires both behavioral signals and a downstream conversion. For each traffic_source, compute a funnel showing how sessions progress through event stages and ultimately convert to completed orders within 24 hours of session start. Output columns: traffic_source, total_sessions, with_product_view (sessions with at least one 'view_product' event), with_add_to_cart, with_start_checkout, with_purchase_event (at least one 'purchase' event), converted_in_24h (sessions where the same user placed a completed order with order_date within 24 hours of session_start). Order by total_sessions descending.",
+    "difficulty": "hard",
+    "schema": {
+      "sessions": [
+        "session_id",
+        "user_id",
+        "session_start",
+        "traffic_source"
+      ],
+      "events": [
+        "event_id",
+        "session_id",
+        "user_id",
+        "event_time",
+        "event_name"
+      ],
+      "orders": [
+        "order_id",
+        "user_id",
+        "order_date",
+        "status"
+      ]
+    },
+    "dataset_files": [
+      "sessions.csv",
+      "events.csv",
+      "orders.csv"
+    ],
+    "expected_query": "WITH session_events AS (\n    SELECT s.session_id, s.user_id, s.session_start, s.traffic_source,\n           MAX(CASE WHEN e.event_name = 'view_product' THEN 1 ELSE 0 END) AS had_view,\n           MAX(CASE WHEN e.event_name = 'add_to_cart' THEN 1 ELSE 0 END) AS had_cart,\n           MAX(CASE WHEN e.event_name = 'start_checkout' THEN 1 ELSE 0 END) AS had_checkout,\n           MAX(CASE WHEN e.event_name = 'purchase' THEN 1 ELSE 0 END) AS had_purchase_event\n    FROM sessions s\n    LEFT JOIN events e ON e.session_id = s.session_id\n    GROUP BY s.session_id, s.user_id, s.session_start, s.traffic_source\n),\nwith_conversion AS (\n    SELECT se.session_id, se.traffic_source,\n           se.had_view, se.had_cart, se.had_checkout, se.had_purchase_event,\n           CASE WHEN EXISTS (\n               SELECT 1 FROM orders o\n               WHERE o.user_id = se.user_id\n                 AND o.status = 'completed'\n                 AND CAST(o.order_date AS TIMESTAMP) >= CAST(se.session_start AS TIMESTAMP)\n                 AND CAST(o.order_date AS TIMESTAMP) < CAST(se.session_start AS TIMESTAMP) + INTERVAL 1 DAY\n           ) THEN 1 ELSE 0 END AS converted_24h\n    FROM session_events se\n)\nSELECT traffic_source,\n       COUNT(*) AS total_sessions,\n       SUM(had_view) AS with_product_view,\n       SUM(had_cart) AS with_add_to_cart,\n       SUM(had_checkout) AS with_start_checkout,\n       SUM(had_purchase_event) AS with_purchase_event,\n       SUM(converted_24h) AS converted_in_24h\nFROM with_conversion\nGROUP BY traffic_source\nORDER BY total_sessions DESC",
+    "solution_query": "WITH session_events AS (\n    SELECT s.session_id, s.user_id, s.session_start, s.traffic_source,\n           MAX(CASE WHEN e.event_name = 'view_product' THEN 1 ELSE 0 END) AS had_view,\n           MAX(CASE WHEN e.event_name = 'add_to_cart' THEN 1 ELSE 0 END) AS had_cart,\n           MAX(CASE WHEN e.event_name = 'start_checkout' THEN 1 ELSE 0 END) AS had_checkout,\n           MAX(CASE WHEN e.event_name = 'purchase' THEN 1 ELSE 0 END) AS had_purchase_event\n    FROM sessions s\n    LEFT JOIN events e ON e.session_id = s.session_id\n    GROUP BY s.session_id, s.user_id, s.session_start, s.traffic_source\n),\nwith_conversion AS (\n    SELECT se.session_id, se.traffic_source,\n           se.had_view, se.had_cart, se.had_checkout, se.had_purchase_event,\n           CASE WHEN EXISTS (\n               SELECT 1 FROM orders o\n               WHERE o.user_id = se.user_id\n                 AND o.status = 'completed'\n                 AND CAST(o.order_date AS TIMESTAMP) >= CAST(se.session_start AS TIMESTAMP)\n                 AND CAST(o.order_date AS TIMESTAMP) < CAST(se.session_start AS TIMESTAMP) + INTERVAL 1 DAY\n           ) THEN 1 ELSE 0 END AS converted_24h\n    FROM session_events se\n)\nSELECT traffic_source,\n       COUNT(*) AS total_sessions,\n       SUM(had_view) AS with_product_view,\n       SUM(had_cart) AS with_add_to_cart,\n       SUM(had_checkout) AS with_start_checkout,\n       SUM(had_purchase_event) AS with_purchase_event,\n       SUM(converted_24h) AS converted_in_24h\nFROM with_conversion\nGROUP BY traffic_source\nORDER BY total_sessions DESC;",
+    "required_concepts": [
+      "cte",
+      "exists_subquery",
+      "left_join",
+      "case_when",
+      "interval"
+    ],
+    "enforce_concepts": true,
+    "explanation": "Two-layer CTE approach: session_events resolves per-session event flags by LEFT JOINing events; with_conversion adds the 24h order attribution via a correlated EXISTS subquery. The EXISTS checks: same user_id, completed status, and order_date within the [session_start, session_start + 1 day) window. converted_in_24h is intentionally low (9–15 per traffic_source) — it means 56 sessions total directly attributed to a same-day completed order. This is realistic: most users browse across multiple sessions before purchasing, and the order_date might fall in a different calendar session from the browse session. The exist-based approach is semantically clearer than a LEFT JOIN with deduplication; at scale, indexing on (user_id, order_date, status) enables efficient correlated lookup.",
+    "hints": [
+      "Two separate analytical questions are being answered: which stages did a session reach (from events), and did the session result in a same-day order (from orders)? Resolve them in sequence to avoid mixing two fan-out paths.",
+      "The 24h window condition is: order_date >= session_start AND order_date < session_start + INTERVAL 1 DAY — cast both sides to TIMESTAMP for a safe comparison."
+    ],
+    "concepts": [
+      "FUNNEL ANALYSIS",
+      "SESSIONIZATION",
+      "SUBQUERY PATTERNS"
+    ],
+    "companies": [
+      "Meta",
+      "Amazon"
+    ]
+  },
+  {
+    "id": 13147,
+    "order": 147,
+    "mock_only": true,
+    "framing": "scenario",
+    "parent_id": 13146,
+    "follow_up_dimension": "edge_case_pivot",
+    "title": "Attribution funnel edge case: sessions with zero events",
+    "description": "The sessions table can theoretically contain sessions with no corresponding rows in the events table (a session was created but the user left before any event fired). Write a query to check how many such zero-event sessions exist, and verify what your funnel query returns for them. Return two result sets as one: first, a single-row check showing sessions_with_no_events (count of session_ids in sessions with no matching event rows); second, to verify correctness, show what the funnel query would return for traffic_source = 'direct', adding a sessions_with_zero_events column (count of sessions with had_view = 0 AND had_cart = 0 AND had_checkout = 0 AND had_purchase_event = 0). Use UNION ALL to combine the two outputs, with a result_type column distinguishing them.",
+    "difficulty": "hard",
+    "schema": {
+      "sessions": [
+        "session_id",
+        "user_id",
+        "session_start",
+        "traffic_source"
+      ],
+      "events": [
+        "event_id",
+        "session_id",
+        "event_name"
+      ]
+    },
+    "dataset_files": [
+      "sessions.csv",
+      "events.csv"
+    ],
+    "expected_query": "WITH session_events AS (\n    SELECT s.session_id, s.traffic_source,\n           MAX(CASE WHEN e.event_name = 'view_product' THEN 1 ELSE 0 END) AS had_view,\n           MAX(CASE WHEN e.event_name = 'add_to_cart' THEN 1 ELSE 0 END) AS had_cart,\n           MAX(CASE WHEN e.event_name = 'start_checkout' THEN 1 ELSE 0 END) AS had_checkout,\n           MAX(CASE WHEN e.event_name = 'purchase' THEN 1 ELSE 0 END) AS had_purchase_event\n    FROM sessions s\n    LEFT JOIN events e ON e.session_id = s.session_id\n    GROUP BY s.session_id, s.traffic_source\n)\nSELECT 'zero_event_check' AS result_type,\n       COUNT(CASE WHEN had_view = 0 AND had_cart = 0 AND had_checkout = 0 AND had_purchase_event = 0 THEN 1 END) AS sessions_with_no_events,\n       NULL::BIGINT AS sessions_with_zero_events_direct\nFROM session_events\nUNION ALL\nSELECT 'direct_traffic_check' AS result_type,\n       NULL::BIGINT AS sessions_with_no_events,\n       COUNT(CASE WHEN had_view = 0 AND had_cart = 0 AND had_checkout = 0 AND had_purchase_event = 0 THEN 1 END) AS sessions_with_zero_events_direct\nFROM session_events\nWHERE traffic_source = 'direct'",
+    "solution_query": "WITH session_events AS (\n    SELECT s.session_id, s.traffic_source,\n           MAX(CASE WHEN e.event_name = 'view_product' THEN 1 ELSE 0 END) AS had_view,\n           MAX(CASE WHEN e.event_name = 'add_to_cart' THEN 1 ELSE 0 END) AS had_cart,\n           MAX(CASE WHEN e.event_name = 'start_checkout' THEN 1 ELSE 0 END) AS had_checkout,\n           MAX(CASE WHEN e.event_name = 'purchase' THEN 1 ELSE 0 END) AS had_purchase_event\n    FROM sessions s\n    LEFT JOIN events e ON e.session_id = s.session_id\n    GROUP BY s.session_id, s.traffic_source\n)\nSELECT 'zero_event_check' AS result_type,\n       COUNT(CASE WHEN had_view = 0 AND had_cart = 0 AND had_checkout = 0 AND had_purchase_event = 0 THEN 1 END) AS sessions_with_no_events,\n       NULL::BIGINT AS sessions_with_zero_events_direct\nFROM session_events\nUNION ALL\nSELECT 'direct_traffic_check' AS result_type,\n       NULL::BIGINT AS sessions_with_no_events,\n       COUNT(CASE WHEN had_view = 0 AND had_cart = 0 AND had_checkout = 0 AND had_purchase_event = 0 THEN 1 END) AS sessions_with_zero_events_direct\nFROM session_events\nWHERE traffic_source = 'direct';",
+    "required_concepts": [
+      "cte",
+      "left_join",
+      "union_all",
+      "case_when",
+      "null_handling"
+    ],
+    "enforce_concepts": true,
+    "explanation": "The LEFT JOIN in session_events preserves sessions with no events — those sessions produce all-NULL event columns, which MAX(CASE WHEN...) maps to 0 (not NULL) because CASE WHEN ... ELSE 0 never produces NULL. So had_view = 0 AND had_cart = 0 for such sessions. In this dataset, every session has at least one event, so both counts return 0. The analytical insight: the parent funnel query already handles zero-event sessions correctly because of the LEFT JOIN and the ELSE 0 in each CASE — a zero-event session would appear in total_sessions but contribute 0 to all stage columns and to converted_in_24h. No additional handling is needed — the correctness is already embedded in the query structure.",
+    "hints": [
+      "Before reaching for special handling, check whether the existing query already handles zero-event sessions correctly — the table combination strategy and aggregation pattern may already absorb them.",
+      "Check for zero-event sessions by counting rows where all had_* flags are 0 after the aggregation — an empty result confirms all sessions have events."
+    ],
+    "concepts": [
+      "FUNNEL ANALYSIS",
+      "NULL HANDLING & COALESCE",
+      "DATA QUALITY SKEPTICISM"
+    ],
+    "companies": [
+      "Meta",
+      "Amazon"
+    ]
+  },
+  {
+    "id": 13148,
+    "order": 148,
+    "mock_only": true,
+    "framing": "scenario",
+    "parent_id": 13146,
+    "follow_up_dimension": "abstraction_pivot",
+    "title": "Generalise the funnel to an ordered N-step sequence with step-order enforcement",
+    "description": "The parent funnel counts sessions that fired each event at least once, in any order. A stricter definition requires the events to occur in the correct order within a session: view_product must occur before add_to_cart, which must occur before start_checkout, which must occur before purchase. Write a query that computes, per traffic_source, the count of sessions where this strict ordering holds at each step: ordered_through_cart (MIN(view_product event_time) < MIN(add_to_cart event_time)), ordered_through_checkout (ordered_through_cart AND MIN(add_to_cart event_time) < MIN(start_checkout event_time)), ordered_through_purchase (ordered_through_checkout AND MIN(start_checkout event_time) < MIN(purchase event_time)). Output columns: traffic_source, total_sessions, ordered_through_cart, ordered_through_checkout, ordered_through_purchase. Order by total_sessions descending.",
+    "difficulty": "hard",
+    "schema": {
+      "sessions": [
+        "session_id",
+        "user_id",
+        "traffic_source"
+      ],
+      "events": [
+        "event_id",
+        "session_id",
+        "event_time",
+        "event_name"
+      ]
+    },
+    "dataset_files": [
+      "sessions.csv",
+      "events.csv"
+    ],
+    "expected_query": "WITH session_min_times AS (\n    SELECT s.session_id, s.traffic_source,\n           MIN(CASE WHEN e.event_name = 'view_product' THEN CAST(e.event_time AS TIMESTAMP) END) AS first_view,\n           MIN(CASE WHEN e.event_name = 'add_to_cart' THEN CAST(e.event_time AS TIMESTAMP) END) AS first_cart,\n           MIN(CASE WHEN e.event_name = 'start_checkout' THEN CAST(e.event_time AS TIMESTAMP) END) AS first_checkout,\n           MIN(CASE WHEN e.event_name = 'purchase' THEN CAST(e.event_time AS TIMESTAMP) END) AS first_purchase\n    FROM sessions s\n    LEFT JOIN events e ON e.session_id = s.session_id\n    GROUP BY s.session_id, s.traffic_source\n)\nSELECT traffic_source,\n       COUNT(*) AS total_sessions,\n       COUNT(CASE WHEN first_view IS NOT NULL AND first_cart IS NOT NULL AND first_view < first_cart THEN 1 END) AS ordered_through_cart,\n       COUNT(CASE WHEN first_view IS NOT NULL AND first_cart IS NOT NULL AND first_checkout IS NOT NULL\n                       AND first_view < first_cart AND first_cart < first_checkout THEN 1 END) AS ordered_through_checkout,\n       COUNT(CASE WHEN first_view IS NOT NULL AND first_cart IS NOT NULL AND first_checkout IS NOT NULL AND first_purchase IS NOT NULL\n                       AND first_view < first_cart AND first_cart < first_checkout AND first_checkout < first_purchase THEN 1 END) AS ordered_through_purchase\nFROM session_min_times\nGROUP BY traffic_source\nORDER BY total_sessions DESC",
+    "solution_query": "WITH session_min_times AS (\n    SELECT s.session_id, s.traffic_source,\n           MIN(CASE WHEN e.event_name = 'view_product' THEN CAST(e.event_time AS TIMESTAMP) END) AS first_view,\n           MIN(CASE WHEN e.event_name = 'add_to_cart' THEN CAST(e.event_time AS TIMESTAMP) END) AS first_cart,\n           MIN(CASE WHEN e.event_name = 'start_checkout' THEN CAST(e.event_time AS TIMESTAMP) END) AS first_checkout,\n           MIN(CASE WHEN e.event_name = 'purchase' THEN CAST(e.event_time AS TIMESTAMP) END) AS first_purchase\n    FROM sessions s\n    LEFT JOIN events e ON e.session_id = s.session_id\n    GROUP BY s.session_id, s.traffic_source\n)\nSELECT traffic_source,\n       COUNT(*) AS total_sessions,\n       COUNT(CASE WHEN first_view IS NOT NULL AND first_cart IS NOT NULL AND first_view < first_cart THEN 1 END) AS ordered_through_cart,\n       COUNT(CASE WHEN first_view IS NOT NULL AND first_cart IS NOT NULL AND first_checkout IS NOT NULL\n                       AND first_view < first_cart AND first_cart < first_checkout THEN 1 END) AS ordered_through_checkout,\n       COUNT(CASE WHEN first_view IS NOT NULL AND first_cart IS NOT NULL AND first_checkout IS NOT NULL AND first_purchase IS NOT NULL\n                       AND first_view < first_cart AND first_cart < first_checkout AND first_checkout < first_purchase THEN 1 END) AS ordered_through_purchase\nFROM session_min_times\nGROUP BY traffic_source\nORDER BY total_sessions DESC;",
+    "required_concepts": [
+      "cte",
+      "min_case_when",
+      "left_join",
+      "timestamp_comparison",
+      "group_by"
+    ],
+    "enforce_concepts": true,
+    "explanation": "The ordered funnel requires the FIRST occurrence of each event type in the correct sequence. session_min_times computes MIN(CASE WHEN event_name='X' THEN event_time END) for each stage — NULL when a stage never occurred. The outer SELECT then chains comparisons: ordered_through_cart requires both first_view and first_cart to be non-NULL and first_view < first_cart. Each subsequent step adds one more NULL check and one more less-than comparison. The generalisation principle: for an N-step ordered funnel, you need N MIN(timestamp) columns and N-1 less-than comparisons — the pattern is O(N) in length, not exponential. Compared to the parent's unordered funnel (does any event of this type exist?), the ordered funnel is significantly stricter: ordered_through_purchase is much lower than with_purchase_event because many purchase events occur in sessions where checkout events never fired (direct purchases, mobile app events, etc.).",
+    "hints": [
+      "Ordered funnel logic requires knowing the first time each event type fired within a session, not just whether it fired at all — that's a per-stage timing question, not a presence question.",
+      "Chain comparisons: first_view < first_cart checks step 1 ordering; first_cart < first_checkout checks step 2. NULL-check each stage before comparing — a missing stage breaks the chain."
+    ],
+    "concepts": [
+      "FUNNEL ANALYSIS",
+      "CTE PIPELINE",
+      "TIME-SERIES BUCKETING & ARITHMETIC"
+    ],
+    "companies": [
+      "Meta",
+      "Amazon"
+    ]
+  },
+  {
+    "id": 13149,
+    "order": 149,
+    "mock_only": true,
+    "framing": "scenario",
+    "follow_ups": [
+      13150,
+      13151
+    ],
+    "title": "Cumulative paid amount by payment method: first month crossing $500K threshold",
+    "description": "Finance tracks cumulative paid payment amounts and wants to know when each payment method first crossed the $500,000 total milestone. For each payment_method, compute the running total of paid amounts month by month (YYYY-MM), and return the first month where that cumulative total reached or exceeded $500,000. Output columns: payment_method, threshold_crossing_month, cumulative_at_crossing (rounded to 2 dp). If a method never crosses $500K, omit it. Order by threshold_crossing_month ascending.",
+    "difficulty": "hard",
+    "schema": {
+      "payments": [
+        "payment_id",
+        "payment_date",
+        "payment_method",
+        "amount",
+        "status"
+      ]
+    },
+    "dataset_files": [
+      "payments.csv"
+    ],
+    "expected_query": "WITH monthly_payments AS (\n    SELECT payment_method,\n           STRFTIME('%Y-%m', payment_date) AS month,\n           SUM(amount) AS monthly_amount\n    FROM payments\n    WHERE status = 'paid'\n    GROUP BY 1, 2\n),\ncumulative AS (\n    SELECT payment_method,\n           month,\n           ROUND(SUM(monthly_amount) OVER (\n               PARTITION BY payment_method\n               ORDER BY month\n               ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW\n           ), 2) AS cumulative_amount\n    FROM monthly_payments\n)\nSELECT payment_method,\n       month AS threshold_crossing_month,\n       cumulative_amount AS cumulative_at_crossing\nFROM (\n    SELECT payment_method, month, cumulative_amount,\n           ROW_NUMBER() OVER (PARTITION BY payment_method ORDER BY month) AS rn\n    FROM cumulative\n    WHERE cumulative_amount >= 500000\n) first_crossing\nWHERE rn = 1\nORDER BY threshold_crossing_month",
+    "solution_query": "WITH monthly_payments AS (\n    SELECT payment_method,\n           STRFTIME('%Y-%m', payment_date) AS month,\n           SUM(amount) AS monthly_amount\n    FROM payments\n    WHERE status = 'paid'\n    GROUP BY 1, 2\n),\ncumulative AS (\n    SELECT payment_method,\n           month,\n           ROUND(SUM(monthly_amount) OVER (\n               PARTITION BY payment_method\n               ORDER BY month\n               ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW\n           ), 2) AS cumulative_amount\n    FROM monthly_payments\n)\nSELECT payment_method,\n       month AS threshold_crossing_month,\n       cumulative_amount AS cumulative_at_crossing\nFROM (\n    SELECT payment_method, month, cumulative_amount,\n           ROW_NUMBER() OVER (PARTITION BY payment_method ORDER BY month) AS rn\n    FROM cumulative\n    WHERE cumulative_amount >= 500000\n) first_crossing\nWHERE rn = 1\nORDER BY threshold_crossing_month;",
+    "required_concepts": [
+      "window_function",
+      "running_total",
+      "row_number",
+      "cte",
+      "strftime"
+    ],
+    "enforce_concepts": true,
+    "explanation": "The cumulative SUM OVER (PARTITION BY payment_method ORDER BY month ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) computes the running total per method. ROWS is used instead of RANGE to avoid floating-point aggregation sensitivity at month boundaries. The first crossing is extracted with a ROW_NUMBER() applied after filtering to rows where cumulative_amount >= 500000 — taking rn = 1 gives the earliest qualifying month per method. Results: card crosses $500K fastest (2023-04), wallet crosses last (2025-06), consistent with their relative volumes. All four methods eventually cross $500K.",
+    "hints": [
+      "The 'first crossing' is a two-step problem: first build a running cumulative total month by month per method, then identify the earliest month that crossed the threshold.",
+      "Use ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW (not RANGE) in the cumulative SUM to avoid float instability at month-end ties."
+    ],
+    "concepts": [
+      "RUNNING TOTAL & MOVING WINDOW",
+      "RANKING & TOP-N PER GROUP",
+      "TIME-SERIES BUCKETING & ARITHMETIC"
+    ],
+    "companies": [
+      "Stripe",
+      "PayPal"
+    ]
+  },
+  {
+    "id": 13150,
+    "order": 150,
+    "mock_only": true,
+    "framing": "scenario",
+    "parent_id": 13149,
+    "follow_up_dimension": "business_rule_pivot",
+    "title": "Cumulative threshold crossing with per-method targets",
+    "description": "Finance now wants per-method milestones rather than a uniform $500K threshold. The targets are: card = $800,000; paypal = $200,000; bank_transfer = $300,000; wallet = $100,000. Using the same cumulative running total approach, return the first month each method crossed its own target. Output columns: payment_method, target_amount, threshold_crossing_month (YYYY-MM format), cumulative_at_crossing (rounded to 2 dp). Order by threshold_crossing_month ascending.",
+    "difficulty": "hard",
+    "schema": {
+      "payments": [
+        "payment_id",
+        "payment_date",
+        "payment_method",
+        "amount",
+        "status"
+      ]
+    },
+    "dataset_files": [
+      "payments.csv"
+    ],
+    "expected_query": "WITH thresholds (payment_method, target_amount) AS (\n    VALUES ('card', 800000), ('paypal', 200000),\n           ('bank_transfer', 300000), ('wallet', 100000)\n),\nmonthly_payments AS (\n    SELECT p.payment_method,\n           STRFTIME('%Y-%m', p.payment_date) AS month,\n           SUM(p.amount) AS monthly_amount,\n           t.target_amount\n    FROM payments p\n    JOIN thresholds t ON t.payment_method = p.payment_method\n    WHERE p.status = 'paid'\n    GROUP BY p.payment_method, STRFTIME('%Y-%m', p.payment_date), t.target_amount\n),\ncumulative AS (\n    SELECT payment_method, month, target_amount,\n           ROUND(SUM(monthly_amount) OVER (\n               PARTITION BY payment_method\n               ORDER BY month\n               ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW\n           ), 2) AS cumulative_amount\n    FROM monthly_payments\n)\nSELECT payment_method, target_amount, month AS threshold_crossing_month, cumulative_amount AS cumulative_at_crossing\nFROM (\n    SELECT payment_method, target_amount, month, cumulative_amount,\n           ROW_NUMBER() OVER (PARTITION BY payment_method ORDER BY month) AS rn\n    FROM cumulative\n    WHERE cumulative_amount >= target_amount\n) first_crossing\nWHERE rn = 1\nORDER BY threshold_crossing_month",
+    "solution_query": "WITH thresholds (payment_method, target_amount) AS (\n    VALUES ('card', 800000), ('paypal', 200000),\n           ('bank_transfer', 300000), ('wallet', 100000)\n),\nmonthly_payments AS (\n    SELECT p.payment_method,\n           STRFTIME('%Y-%m', p.payment_date) AS month,\n           SUM(p.amount) AS monthly_amount,\n           t.target_amount\n    FROM payments p\n    JOIN thresholds t ON t.payment_method = p.payment_method\n    WHERE p.status = 'paid'\n    GROUP BY p.payment_method, STRFTIME('%Y-%m', p.payment_date), t.target_amount\n),\ncumulative AS (\n    SELECT payment_method, month, target_amount,\n           ROUND(SUM(monthly_amount) OVER (\n               PARTITION BY payment_method\n               ORDER BY month\n               ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW\n           ), 2) AS cumulative_amount\n    FROM monthly_payments\n)\nSELECT payment_method, target_amount, month AS threshold_crossing_month, cumulative_amount AS cumulative_at_crossing\nFROM (\n    SELECT payment_method, target_amount, month, cumulative_amount,\n           ROW_NUMBER() OVER (PARTITION BY payment_method ORDER BY month) AS rn\n    FROM cumulative\n    WHERE cumulative_amount >= target_amount\n) first_crossing\nWHERE rn = 1\nORDER BY threshold_crossing_month;",
+    "required_concepts": [
+      "values_cte",
+      "window_function",
+      "running_total",
+      "row_number",
+      "join"
+    ],
+    "enforce_concepts": true,
+    "explanation": "The structural change: replace the hard-coded threshold comparison with a JOIN to a thresholds VALUES CTE. The target_amount propagates through monthly_payments into cumulative so the WHERE cumulative_amount >= target_amount comparison uses the per-method threshold. The rest of the pipeline is identical to the parent. Results: paypal and wallet cross their lower thresholds first (2023-06 and 2023-07), card crosses its higher threshold next (2023-07), and bank_transfer last (2023-12). The VALUES CTE pattern makes the thresholds auditable and easily changed — a clear improvement over a hardcoded constant in the WHERE clause.",
+    "hints": [
+      "Per-entity thresholds need to be present alongside each payment row so the final comparison evaluates each method against its own target, not a shared constant.",
+      "The WHERE clause becomes WHERE cumulative_amount >= target_amount instead of a hard-coded value, comparing each row to its own method's threshold."
+    ],
+    "concepts": [
+      "RUNNING TOTAL & MOVING WINDOW",
+      "RANKING & TOP-N PER GROUP",
+      "CONDITIONAL LOGIC & CASE"
+    ],
+    "companies": [
+      "Stripe",
+      "PayPal"
+    ]
+  },
+  {
+    "id": 13151,
+    "order": 151,
+    "mock_only": true,
+    "framing": "scenario",
+    "parent_id": 13149,
+    "follow_up_dimension": "stakeholder_pivot",
+    "title": "Rolling 12-month cumulative paid amount by payment method",
+    "description": "The head of finance asks: 'Has each payment method's 12-month rolling volume been growing over time?' Compute, for each payment_method and each month, the rolling 12-month sum of paid amounts (the current month plus the preceding 11 months). Output columns: payment_method, month (YYYY-MM format), rolling_12m_amount (rounded to 2 dp). Include all months from 2024-01 onward (the first month where a full 12-month lookback is available from a 2023-01 start). Order by payment_method, month ascending.",
+    "difficulty": "hard",
+    "schema": {
+      "payments": [
+        "payment_id",
+        "payment_date",
+        "payment_method",
+        "amount",
+        "status"
+      ]
+    },
+    "dataset_files": [
+      "payments.csv"
+    ],
+    "expected_query": "WITH monthly_payments AS (\n    SELECT payment_method,\n           STRFTIME('%Y-%m', payment_date) AS month,\n           SUM(amount) AS monthly_amount\n    FROM payments\n    WHERE status = 'paid'\n    GROUP BY 1, 2\n)\nSELECT payment_method,\n       month,\n       ROUND(SUM(monthly_amount) OVER (\n           PARTITION BY payment_method\n           ORDER BY month\n           ROWS BETWEEN 11 PRECEDING AND CURRENT ROW\n       ), 2) AS rolling_12m_amount\nFROM monthly_payments\nWHERE month >= '2024-01'\nORDER BY payment_method, month",
+    "solution_query": "WITH monthly_payments AS (\n    SELECT payment_method,\n           STRFTIME('%Y-%m', payment_date) AS month,\n           SUM(amount) AS monthly_amount\n    FROM payments\n    WHERE status = 'paid'\n    GROUP BY 1, 2\n)\nSELECT payment_method,\n       month,\n       ROUND(SUM(monthly_amount) OVER (\n           PARTITION BY payment_method\n           ORDER BY month\n           ROWS BETWEEN 11 PRECEDING AND CURRENT ROW\n       ), 2) AS rolling_12m_amount\nFROM monthly_payments\nWHERE month >= '2024-01'\nORDER BY payment_method, month;",
+    "required_concepts": [
+      "window_function",
+      "rows_frame",
+      "running_total",
+      "cte",
+      "strftime"
+    ],
+    "enforce_concepts": true,
+    "explanation": "ROWS BETWEEN 11 PRECEDING AND CURRENT ROW with a string-ordered month (YYYY-MM strings sort lexicographically correctly) gives the rolling 12-month window. The WHERE month >= '2024-01' filter is applied after the window function executes — the window sees pre-2024 rows from monthly_payments for the lookback but only outputs rows from 2024 onward. The stakeholder question is about trend: is rolling_12m_amount increasing month-over-month per payment_method? Presenting the output as a time series per method lets the finance team answer this directly. If the lookback must be enforced strictly (no partial windows for edge months), the WHERE can be moved inside monthly_payments with additional pre-2024 rows included explicitly — but for this dataset, 2023 is fully present so the lookback is always 12 months starting from 2024-01.",
+    "hints": [
+      "A rolling window that covers the current month plus the 11 months before it is a fixed-width sliding sum over a 12-period lookback — identify the window size and direction before reaching for the frame syntax.",
+      "Apply the WHERE month >= '2024-01' filter after the window calculation, not inside the CTE — the window needs the 2023 rows for the lookback."
+    ],
+    "concepts": [
+      "RUNNING TOTAL & MOVING WINDOW",
+      "WINDOW FUNCTIONS",
+      "TIME-SERIES BUCKETING & ARITHMETIC"
+    ],
+    "companies": [
+      "Stripe",
+      "PayPal"
+    ]
+  },
+  {
+    "id": 13152,
+    "order": 152,
+    "mock_only": true,
+    "framing": "scenario",
+    "follow_ups": [
+      13153,
+      13154
+    ],
+    "title": "Per-user month-over-month completed order count: flag 50% drops as at-risk",
+    "description": "The customer success team wants to identify users showing signs of churn: a month where their completed order count dropped by 50% or more compared to the previous month. For every user who has completed orders in at least two consecutive months, compute month (YYYY-MM format), order_count (completed orders that month), prev_month_count (prior month's order count), pct_drop (rounded to 1 dp), and at_risk_flag (true when order_count * 2 <= prev_month_count). Return only rows where a previous month exists (skip the user's first ordering month). Order by pct_drop descending, user_id ascending.",
+    "difficulty": "hard",
+    "schema": {
+      "orders": [
+        "order_id",
+        "user_id",
+        "order_date",
+        "status"
+      ]
+    },
+    "dataset_files": [
+      "orders.csv"
+    ],
+    "expected_query": "WITH monthly_user_orders AS (\n    SELECT user_id,\n           STRFTIME('%Y-%m', order_date) AS month,\n           COUNT(*) AS order_count\n    FROM orders\n    WHERE status = 'completed'\n    GROUP BY user_id, STRFTIME('%Y-%m', order_date)\n),\nwith_lag AS (\n    SELECT user_id, month, order_count,\n           LAG(order_count) OVER (PARTITION BY user_id ORDER BY month) AS prev_month_count\n    FROM monthly_user_orders\n)\nSELECT user_id, month, order_count, prev_month_count,\n       ROUND(100.0 * (prev_month_count - order_count) / prev_month_count, 1) AS pct_drop,\n       order_count * 2 <= prev_month_count AS at_risk_flag\nFROM with_lag\nWHERE prev_month_count IS NOT NULL\nORDER BY pct_drop DESC, user_id",
+    "solution_query": "WITH monthly_user_orders AS (\n    SELECT user_id,\n           STRFTIME('%Y-%m', order_date) AS month,\n           COUNT(*) AS order_count\n    FROM orders\n    WHERE status = 'completed'\n    GROUP BY user_id, STRFTIME('%Y-%m', order_date)\n),\nwith_lag AS (\n    SELECT user_id, month, order_count,\n           LAG(order_count) OVER (PARTITION BY user_id ORDER BY month) AS prev_month_count\n    FROM monthly_user_orders\n)\nSELECT user_id, month, order_count, prev_month_count,\n       ROUND(100.0 * (prev_month_count - order_count) / prev_month_count, 1) AS pct_drop,\n       order_count * 2 <= prev_month_count AS at_risk_flag\nFROM with_lag\nWHERE prev_month_count IS NOT NULL\nORDER BY pct_drop DESC, user_id;",
+    "required_concepts": [
+      "lag",
+      "window_function",
+      "cte",
+      "strftime",
+      "group_by"
+    ],
+    "enforce_concepts": true,
+    "explanation": "Two-CTE approach: monthly_user_orders aggregates to one row per (user_id, month); with_lag applies LAG over user_id partition ordered by month to bring the prior month's count forward. The at_risk_flag uses integer arithmetic (order_count * 2 <= prev_month_count) instead of floating-point division to avoid boundary precision issues — a ≥50% drop means current ≤ 50% of previous, i.e., current * 2 ≤ previous. pct_drop orders by the largest drops first: a user dropping from 6 orders to 1 (83.3% drop) is more alarming than from 4 to 2 (50% drop). The query surfaces 314 at-risk (user, month) pairs across 153 distinct users — a meaningful segment for retention outreach.",
+    "hints": [
+      "To compare a user's current-month count to their prior-month count, you need both values in the same row — a window-based lookback retrieves the prior-period value alongside the current one.",
+      "Use integer arithmetic for the 50% threshold: order_count * 2 <= prev_month_count avoids floating-point rounding at the boundary."
+    ],
+    "concepts": [
+      "SELF-COMPARISON & RECURSION",
+      "WINDOW FUNCTIONS",
+      "TIME-SERIES BUCKETING & ARITHMETIC"
+    ],
+    "companies": [
+      "Netflix",
+      "Spotify"
+    ]
+  },
+  {
+    "id": 13153,
+    "order": 153,
+    "mock_only": true,
+    "framing": "scenario",
+    "parent_id": 13152,
+    "follow_up_dimension": "data_quality_pivot",
+    "title": "MoM order count: handling non-consecutive months (gaps in the series)",
+    "description": "The LAG-based query treats consecutive data-months as consecutive calendar months. But a user with orders in January and March (no February orders) would have LAG returning January's count as March's 'previous month' — incorrectly treating a 2-month gap as a 1-month change. Revise the query to detect non-consecutive months and exclude those rows from the pct_drop calculation: return only rows where the current month (YYYY-MM format) directly follows the previous ordering month (a 1-month gap in the monthly series). Add a months_gap column (integer: months between prev_month and current month). Only compute pct_drop and at_risk_flag for rows where months_gap = 1. For rows where months_gap > 1, return NULL for pct_drop and false for at_risk_flag. Order by pct_drop DESC NULLS LAST, user_id ascending.",
+    "difficulty": "hard",
+    "schema": {
+      "orders": [
+        "order_id",
+        "user_id",
+        "order_date",
+        "status"
+      ]
+    },
+    "dataset_files": [
+      "orders.csv"
+    ],
+    "expected_query": "WITH monthly_user_orders AS (\n    SELECT user_id,\n           STRFTIME('%Y-%m', order_date) AS month,\n           COUNT(*) AS order_count\n    FROM orders\n    WHERE status = 'completed'\n    GROUP BY user_id, STRFTIME('%Y-%m', order_date)\n),\nwith_lag AS (\n    SELECT user_id, month, order_count,\n           LAG(order_count) OVER (PARTITION BY user_id ORDER BY month) AS prev_month_count,\n           LAG(month) OVER (PARTITION BY user_id ORDER BY month) AS prev_month\n    FROM monthly_user_orders\n)\nSELECT user_id, month, order_count, prev_month_count, prev_month,\n       DATEDIFF('month',\n           CAST(prev_month || '-01' AS DATE),\n           CAST(month || '-01' AS DATE)\n       ) AS months_gap,\n       CASE WHEN DATEDIFF('month',\n                   CAST(prev_month || '-01' AS DATE),\n                   CAST(month || '-01' AS DATE)\n               ) = 1\n            THEN ROUND(100.0 * (prev_month_count - order_count) / prev_month_count, 1)\n            ELSE NULL\n       END AS pct_drop,\n       CASE WHEN DATEDIFF('month',\n                   CAST(prev_month || '-01' AS DATE),\n                   CAST(month || '-01' AS DATE)\n               ) = 1\n            THEN order_count * 2 <= prev_month_count\n            ELSE false\n       END AS at_risk_flag\nFROM with_lag\nWHERE prev_month_count IS NOT NULL\nORDER BY pct_drop DESC NULLS LAST, user_id",
+    "solution_query": "WITH monthly_user_orders AS (\n    SELECT user_id,\n           STRFTIME('%Y-%m', order_date) AS month,\n           COUNT(*) AS order_count\n    FROM orders\n    WHERE status = 'completed'\n    GROUP BY user_id, STRFTIME('%Y-%m', order_date)\n),\nwith_lag AS (\n    SELECT user_id, month, order_count,\n           LAG(order_count) OVER (PARTITION BY user_id ORDER BY month) AS prev_month_count,\n           LAG(month) OVER (PARTITION BY user_id ORDER BY month) AS prev_month\n    FROM monthly_user_orders\n)\nSELECT user_id, month, order_count, prev_month_count, prev_month,\n       DATEDIFF('month',\n           CAST(prev_month || '-01' AS DATE),\n           CAST(month || '-01' AS DATE)\n       ) AS months_gap,\n       CASE WHEN DATEDIFF('month',\n                   CAST(prev_month || '-01' AS DATE),\n                   CAST(month || '-01' AS DATE)\n               ) = 1\n            THEN ROUND(100.0 * (prev_month_count - order_count) / prev_month_count, 1)\n            ELSE NULL\n       END AS pct_drop,\n       CASE WHEN DATEDIFF('month',\n                   CAST(prev_month || '-01' AS DATE),\n                   CAST(month || '-01' AS DATE)\n               ) = 1\n            THEN order_count * 2 <= prev_month_count\n            ELSE false\n       END AS at_risk_flag\nFROM with_lag\nWHERE prev_month_count IS NOT NULL\nORDER BY pct_drop DESC NULLS LAST, user_id;",
+    "required_concepts": [
+      "lag",
+      "window_function",
+      "datediff",
+      "case_when",
+      "cte"
+    ],
+    "enforce_concepts": true,
+    "explanation": "The fix requires two LAG calls: one for prev_month_count (as before) and a new one for prev_month (the month string). DATEDIFF('month', prev_month_date, current_month_date) computes the gap — appending '-01' and casting to DATE converts the YYYY-MM string to a parseable date. A gap of 1 means truly consecutive months; a gap > 1 means the user had a month with zero orders in between. pct_drop and at_risk_flag are wrapped in CASE WHEN months_gap = 1 so only genuinely consecutive month pairs produce the at-risk signal. ORDER BY pct_drop DESC NULLS LAST pushes the gap rows (NULL pct_drop) to the end. This guards against false churn flags from users who simply order less frequently than monthly.",
+    "hints": [
+      "The month-over-month comparison is only meaningful when the two months are truly adjacent in the calendar — verify the gap between data-months before computing the percentage change.",
+      "Append '-01' to the YYYY-MM string before casting to DATE: CAST(month || '-01' AS DATE) gives the first day of that month for date arithmetic."
+    ],
+    "concepts": [
+      "SELF-COMPARISON & RECURSION",
+      "WINDOW FUNCTIONS",
+      "NULL HANDLING & COALESCE"
+    ],
+    "companies": [
+      "Netflix",
+      "Spotify"
+    ]
+  },
+  {
+    "id": 13154,
+    "order": 154,
+    "mock_only": true,
+    "framing": "scenario",
+    "parent_id": 13152,
+    "follow_up_dimension": "ambiguity_pivot",
+    "title": "Comparing two MoM at-risk definitions: gap-months-included vs consecutive-months-only",
+    "description": "There are two defensible interpretations of 'month-over-month' when a user has a month with zero orders: (A) a missing month is treated as a 0-order month — any month M where the user's next ordering month is more than one calendar month later implies they had zero orders in M+1, which is a 100% drop (gap_months_included); (B) month-over-month only applies to months where the user actively ordered — gaps are excluded (consecutive_months_only). Using a LEAD-based approach for interpretation A (not a calendar spine), compute for each interpretation the total number of user-month rows that are flagged at_risk. For interpretation A, a row is at_risk when: the standard 50% drop condition holds (order_count * 2 <= prev_count AND prev_count IS NOT NULL), OR the user had orders this month (order_count > 0) and the next ordering month is more than 1 calendar month away (implying at least one 0-order month follows). Note: the month grain is stored as a YYYY-MM format string. Return interpretation_label ('gap_months_included' or 'consecutive_months_only') and total_at_risk_flags. Order by interpretation_label.",
+    "difficulty": "hard",
+    "schema": {
+      "orders": [
+        "order_id",
+        "user_id",
+        "order_date",
+        "status"
+      ],
+      "users": [
+        "user_id"
+      ]
+    },
+    "dataset_files": [
+      "orders.csv",
+      "users.csv"
+    ],
+    "expected_query": "WITH monthly_orders AS (\n    SELECT user_id,\n           STRFTIME('%Y-%m', order_date) AS month,\n           COUNT(*) AS order_count\n    FROM orders\n    WHERE status = 'completed'\n    GROUP BY user_id, STRFTIME('%Y-%m', order_date)\n),\nwith_neighbors AS (\n    SELECT user_id, month, order_count,\n           LAG(order_count) OVER (PARTITION BY user_id ORDER BY month) AS prev_count,\n           LEAD(month) OVER (PARTITION BY user_id ORDER BY month) AS next_month\n    FROM monthly_orders\n)\nSELECT 'consecutive_months_only' AS interpretation_label,\n       COUNT(CASE WHEN prev_count IS NOT NULL\n                       AND order_count * 2 <= prev_count THEN 1 END) AS total_at_risk_flags\nFROM with_neighbors\nUNION ALL\nSELECT 'gap_months_included',\n       COUNT(CASE WHEN\n               (prev_count IS NOT NULL AND order_count * 2 <= prev_count)\n               OR (\n                   order_count > 0\n                   AND next_month IS NOT NULL\n                   AND DATEDIFF('month',\n                       CAST(month || '-01' AS DATE),\n                       CAST(next_month || '-01' AS DATE)\n                   ) > 1\n               )\n             THEN 1 END) AS total_at_risk_flags\nFROM with_neighbors\nORDER BY interpretation_label",
+    "solution_query": "WITH monthly_orders AS (\n    SELECT user_id,\n           STRFTIME('%Y-%m', order_date) AS month,\n           COUNT(*) AS order_count\n    FROM orders\n    WHERE status = 'completed'\n    GROUP BY user_id, STRFTIME('%Y-%m', order_date)\n),\nwith_neighbors AS (\n    SELECT user_id, month, order_count,\n           LAG(order_count) OVER (PARTITION BY user_id ORDER BY month) AS prev_count,\n           LEAD(month) OVER (PARTITION BY user_id ORDER BY month) AS next_month\n    FROM monthly_orders\n)\nSELECT 'consecutive_months_only' AS interpretation_label,\n       COUNT(CASE WHEN prev_count IS NOT NULL\n                       AND order_count * 2 <= prev_count THEN 1 END) AS total_at_risk_flags\nFROM with_neighbors\nUNION ALL\nSELECT 'gap_months_included',\n       COUNT(CASE WHEN\n               (prev_count IS NOT NULL AND order_count * 2 <= prev_count)\n               OR (\n                   order_count > 0\n                   AND next_month IS NOT NULL\n                   AND DATEDIFF('month',\n                       CAST(month || '-01' AS DATE),\n                       CAST(next_month || '-01' AS DATE)\n                   ) > 1\n               )\n             THEN 1 END) AS total_at_risk_flags\nFROM with_neighbors\nORDER BY interpretation_label;",
+    "required_concepts": [
+      "cte",
+      "cross_join",
+      "coalesce",
+      "lag",
+      "union_all"
+    ],
+    "enforce_concepts": true,
+    "explanation": "The LEAD-based approach avoids building a full calendar spine (which would need a CROSS JOIN or VALUES enumeration). with_neighbors adds two window lookups per row: LAG for the prior ordering month's count (used by both interpretations) and LEAD for the next ordering month's string (used to detect gaps in interpretation A). For gap_months_included: a user with orders in January and March has a 1-month gap — DATEDIFF('month', Jan, Mar) = 2 > 1 — so January is flagged because the February 0-order month that follows it is a 100% drop. The DATEDIFF check uses the '-01' append trick to convert YYYY-MM strings to parseable dates. The two interpretations produce different at_risk counts: gap_months_included is always >= consecutive_months_only because it adds gap-triggered flags on top of the standard ones. This quantifies how much 'churn signal' comes purely from users who order intermittently vs. users who ordered and then reduced.",
+    "hints": [
+      "For the gap-based interpretation, you do not need a full calendar spine — if a user's next ordering month is more than one calendar month away, that implies a zero-order month follows the current one.",
+      "The LEAD-based month gap check uses the same '-01' append trick: compute months between the current month and the next ordering month using the first day of each as a reference date."
+    ],
+    "concepts": [
+      "SELF-COMPARISON & RECURSION",
+      "TIME-SERIES BUCKETING & ARITHMETIC",
+      "NULL HANDLING & COALESCE"
+    ],
+    "companies": [
+      "Netflix",
+      "Spotify"
+    ]
+  },
+  {
+    "id": 13155,
+    "order": 155,
+    "mock_only": true,
+    "framing": "scenario",
+    "follow_ups": [
+      13156,
+      13157
+    ],
+    "title": "2024 signup cohort retention at 30, 60, and 90-day marks simultaneously",
+    "description": "The growth team wants to understand how 2024 sign-up cohorts retain across three fixed time windows simultaneously. For each monthly cohort (users who signed up in 2024), compute: cohort_month (YYYY-MM format), cohort_size, ret_30d (users with at least one completed order within days 0–29 of signup), ret_60d (days 0–59), ret_90d (days 0–89), and retention rates ret_30d_pct, ret_60d_pct, ret_90d_pct (rounded to 1 dp). Order by cohort_month ascending.",
+    "difficulty": "hard",
+    "schema": {
+      "users": [
+        "user_id",
+        "signup_date"
+      ],
+      "orders": [
+        "order_id",
+        "user_id",
+        "order_date",
+        "status"
+      ]
+    },
+    "dataset_files": [
+      "users.csv",
+      "orders.csv"
+    ],
+    "expected_query": "WITH cohort_users AS (\n    SELECT user_id,\n           STRFTIME('%Y-%m', signup_date) AS cohort_month,\n           CAST(signup_date AS DATE) AS signup_day\n    FROM users\n    WHERE signup_date >= '2024-01-01' AND signup_date < '2025-01-01'\n),\ncohort_retention AS (\n    SELECT cu.cohort_month,\n           COUNT(DISTINCT cu.user_id) AS cohort_size,\n           COUNT(DISTINCT CASE WHEN EXISTS (\n               SELECT 1 FROM orders o\n               WHERE o.user_id = cu.user_id AND o.status = 'completed'\n                 AND CAST(o.order_date AS DATE) BETWEEN cu.signup_day AND cu.signup_day + INTERVAL 29 DAY\n           ) THEN cu.user_id END) AS ret_30d,\n           COUNT(DISTINCT CASE WHEN EXISTS (\n               SELECT 1 FROM orders o\n               WHERE o.user_id = cu.user_id AND o.status = 'completed'\n                 AND CAST(o.order_date AS DATE) BETWEEN cu.signup_day AND cu.signup_day + INTERVAL 59 DAY\n           ) THEN cu.user_id END) AS ret_60d,\n           COUNT(DISTINCT CASE WHEN EXISTS (\n               SELECT 1 FROM orders o\n               WHERE o.user_id = cu.user_id AND o.status = 'completed'\n                 AND CAST(o.order_date AS DATE) BETWEEN cu.signup_day AND cu.signup_day + INTERVAL 89 DAY\n           ) THEN cu.user_id END) AS ret_90d\n    FROM cohort_users cu\n    GROUP BY cu.cohort_month\n)\nSELECT cohort_month,\n       cohort_size,\n       ret_30d,\n       ret_60d,\n       ret_90d,\n       ROUND(100.0 * ret_30d / cohort_size, 1) AS ret_30d_pct,\n       ROUND(100.0 * ret_60d / cohort_size, 1) AS ret_60d_pct,\n       ROUND(100.0 * ret_90d / cohort_size, 1) AS ret_90d_pct\nFROM cohort_retention\nORDER BY cohort_month",
+    "solution_query": "WITH cohort_users AS (\n    SELECT user_id,\n           STRFTIME('%Y-%m', signup_date) AS cohort_month,\n           CAST(signup_date AS DATE) AS signup_day\n    FROM users\n    WHERE signup_date >= '2024-01-01' AND signup_date < '2025-01-01'\n),\ncohort_retention AS (\n    SELECT cu.cohort_month,\n           COUNT(DISTINCT cu.user_id) AS cohort_size,\n           COUNT(DISTINCT CASE WHEN EXISTS (\n               SELECT 1 FROM orders o\n               WHERE o.user_id = cu.user_id AND o.status = 'completed'\n                 AND CAST(o.order_date AS DATE) BETWEEN cu.signup_day AND cu.signup_day + INTERVAL 29 DAY\n           ) THEN cu.user_id END) AS ret_30d,\n           COUNT(DISTINCT CASE WHEN EXISTS (\n               SELECT 1 FROM orders o\n               WHERE o.user_id = cu.user_id AND o.status = 'completed'\n                 AND CAST(o.order_date AS DATE) BETWEEN cu.signup_day AND cu.signup_day + INTERVAL 59 DAY\n           ) THEN cu.user_id END) AS ret_60d,\n           COUNT(DISTINCT CASE WHEN EXISTS (\n               SELECT 1 FROM orders o\n               WHERE o.user_id = cu.user_id AND o.status = 'completed'\n                 AND CAST(o.order_date AS DATE) BETWEEN cu.signup_day AND cu.signup_day + INTERVAL 89 DAY\n           ) THEN cu.user_id END) AS ret_90d\n    FROM cohort_users cu\n    GROUP BY cu.cohort_month\n)\nSELECT cohort_month,\n       cohort_size,\n       ret_30d,\n       ret_60d,\n       ret_90d,\n       ROUND(100.0 * ret_30d / cohort_size, 1) AS ret_30d_pct,\n       ROUND(100.0 * ret_60d / cohort_size, 1) AS ret_60d_pct,\n       ROUND(100.0 * ret_90d / cohort_size, 1) AS ret_90d_pct\nFROM cohort_retention\nORDER BY cohort_month;",
+    "required_concepts": [
+      "cte",
+      "exists_subquery",
+      "interval",
+      "count_distinct",
+      "case_when"
+    ],
+    "enforce_concepts": true,
+    "explanation": "cohort_users extracts the 2024 cohort with each user's signup_day (as DATE) for the window arithmetic. Three correlated EXISTS subqueries inside COUNT(DISTINCT CASE WHEN ... THEN user_id END) compute the three retention windows in one GROUP BY pass — this is more efficient than three separate self-joins or three separate CTEs. The BETWEEN ... INTERVAL N DAY window is inclusive on both ends: days 0–29 captures the signup day itself through 29 days after. ret_60d includes everyone in ret_30d (the window is cumulative, not incremental). Retention varies significantly: the 2024-06 cohort shows the strongest 30d retention (33.3%) while 2024-04 shows 0% at 30d but recovers to 23.1% by 90d — evidence of delayed activation in that cohort.",
+    "hints": [
+      "All three retention windows share the same cohort definition — compute cohort membership once, then evaluate each window independently against the same base.",
+      "signup_day + INTERVAL 29 DAY defines a 30-day window inclusive of the signup date itself (days 0–29). Each window is cumulative, not incremental."
+    ],
+    "concepts": [
+      "COHORT RETENTION",
+      "SUBQUERY PATTERNS",
+      "TIME-SERIES BUCKETING & ARITHMETIC"
+    ],
+    "companies": [
+      "Meta",
+      "LinkedIn"
+    ]
+  },
+  {
+    "id": 13156,
+    "order": 156,
+    "mock_only": true,
+    "framing": "scenario",
+    "parent_id": 13155,
+    "follow_up_dimension": "business_rule_pivot",
+    "title": "Cohort retention with stricter conversion definition: requires a paid payment",
+    "description": "Finance argues that 'retained' should mean a completed order that also has a paid payment — not just a completed order status. Revise the retention query to use this stricter definition: a user is retained in a window if they placed at least one completed order (status = 'completed') that also has at least one payment with status = 'paid' within the same day window. Output the same columns as the parent: cohort_month (YYYY-MM format), cohort_size, ret_30d, ret_60d, ret_90d, ret_30d_pct, ret_60d_pct, ret_90d_pct. Order by cohort_month ascending.",
+    "difficulty": "hard",
+    "schema": {
+      "users": [
+        "user_id",
+        "signup_date"
+      ],
+      "orders": [
+        "order_id",
+        "user_id",
+        "order_date",
+        "status"
+      ],
+      "payments": [
+        "payment_id",
+        "order_id",
+        "status"
+      ]
+    },
+    "dataset_files": [
+      "users.csv",
+      "orders.csv",
+      "payments.csv"
+    ],
+    "expected_query": "WITH cohort_users AS (\n    SELECT user_id,\n           STRFTIME('%Y-%m', signup_date) AS cohort_month,\n           CAST(signup_date AS DATE) AS signup_day\n    FROM users\n    WHERE signup_date >= '2024-01-01' AND signup_date < '2025-01-01'\n),\ncohort_retention AS (\n    SELECT cu.cohort_month,\n           COUNT(DISTINCT cu.user_id) AS cohort_size,\n           COUNT(DISTINCT CASE WHEN EXISTS (\n               SELECT 1 FROM orders o\n               JOIN payments p ON p.order_id = o.order_id AND p.status = 'paid'\n               WHERE o.user_id = cu.user_id AND o.status = 'completed'\n                 AND CAST(o.order_date AS DATE) BETWEEN cu.signup_day AND cu.signup_day + INTERVAL 29 DAY\n           ) THEN cu.user_id END) AS ret_30d,\n           COUNT(DISTINCT CASE WHEN EXISTS (\n               SELECT 1 FROM orders o\n               JOIN payments p ON p.order_id = o.order_id AND p.status = 'paid'\n               WHERE o.user_id = cu.user_id AND o.status = 'completed'\n                 AND CAST(o.order_date AS DATE) BETWEEN cu.signup_day AND cu.signup_day + INTERVAL 59 DAY\n           ) THEN cu.user_id END) AS ret_60d,\n           COUNT(DISTINCT CASE WHEN EXISTS (\n               SELECT 1 FROM orders o\n               JOIN payments p ON p.order_id = o.order_id AND p.status = 'paid'\n               WHERE o.user_id = cu.user_id AND o.status = 'completed'\n                 AND CAST(o.order_date AS DATE) BETWEEN cu.signup_day AND cu.signup_day + INTERVAL 89 DAY\n           ) THEN cu.user_id END) AS ret_90d\n    FROM cohort_users cu\n    GROUP BY cu.cohort_month\n)\nSELECT cohort_month, cohort_size, ret_30d, ret_60d, ret_90d,\n       ROUND(100.0 * ret_30d / cohort_size, 1) AS ret_30d_pct,\n       ROUND(100.0 * ret_60d / cohort_size, 1) AS ret_60d_pct,\n       ROUND(100.0 * ret_90d / cohort_size, 1) AS ret_90d_pct\nFROM cohort_retention\nORDER BY cohort_month",
+    "solution_query": "WITH cohort_users AS (\n    SELECT user_id,\n           STRFTIME('%Y-%m', signup_date) AS cohort_month,\n           CAST(signup_date AS DATE) AS signup_day\n    FROM users\n    WHERE signup_date >= '2024-01-01' AND signup_date < '2025-01-01'\n),\ncohort_retention AS (\n    SELECT cu.cohort_month,\n           COUNT(DISTINCT cu.user_id) AS cohort_size,\n           COUNT(DISTINCT CASE WHEN EXISTS (\n               SELECT 1 FROM orders o\n               JOIN payments p ON p.order_id = o.order_id AND p.status = 'paid'\n               WHERE o.user_id = cu.user_id AND o.status = 'completed'\n                 AND CAST(o.order_date AS DATE) BETWEEN cu.signup_day AND cu.signup_day + INTERVAL 29 DAY\n           ) THEN cu.user_id END) AS ret_30d,\n           COUNT(DISTINCT CASE WHEN EXISTS (\n               SELECT 1 FROM orders o\n               JOIN payments p ON p.order_id = o.order_id AND p.status = 'paid'\n               WHERE o.user_id = cu.user_id AND o.status = 'completed'\n                 AND CAST(o.order_date AS DATE) BETWEEN cu.signup_day AND cu.signup_day + INTERVAL 59 DAY\n           ) THEN cu.user_id END) AS ret_60d,\n           COUNT(DISTINCT CASE WHEN EXISTS (\n               SELECT 1 FROM orders o\n               JOIN payments p ON p.order_id = o.order_id AND p.status = 'paid'\n               WHERE o.user_id = cu.user_id AND o.status = 'completed'\n                 AND CAST(o.order_date AS DATE) BETWEEN cu.signup_day AND cu.signup_day + INTERVAL 89 DAY\n           ) THEN cu.user_id END) AS ret_90d\n    FROM cohort_users cu\n    GROUP BY cu.cohort_month\n)\nSELECT cohort_month, cohort_size, ret_30d, ret_60d, ret_90d,\n       ROUND(100.0 * ret_30d / cohort_size, 1) AS ret_30d_pct,\n       ROUND(100.0 * ret_60d / cohort_size, 1) AS ret_60d_pct,\n       ROUND(100.0 * ret_90d / cohort_size, 1) AS ret_90d_pct\nFROM cohort_retention\nORDER BY cohort_month;",
+    "required_concepts": [
+      "cte",
+      "exists_subquery",
+      "join",
+      "interval",
+      "count_distinct"
+    ],
+    "enforce_concepts": true,
+    "explanation": "The change is minimal: inside each EXISTS subquery, add JOIN payments p ON p.order_id = o.order_id AND p.status = 'paid'. The EXISTS now only finds orders that have a matching paid payment. The structural change is one JOIN per EXISTS clause. Retention numbers may differ from the parent: completed orders without a paid payment (captured in the data quality questions) are now excluded. This is intentional — finance's definition ties retention to actual revenue, not just order placement. The stricter definition is typically lower or equal to the original, never higher, which is worth verifying as a sanity check when presenting the result.",
+    "hints": [
+      "The stricter conversion definition adds one condition: the order must not only be completed, it must also have evidence of actual payment — a two-condition check per qualifying order.",
+      "The EXISTS now returns true only when the order has both a 'completed' status AND a paid payment — a stricter condition that may lower some retention percentages."
+    ],
+    "concepts": [
+      "COHORT RETENTION",
+      "MULTI-TABLE ENTITY LINKING",
+      "SUBQUERY PATTERNS"
+    ],
+    "companies": [
+      "Meta",
+      "LinkedIn"
+    ]
+  },
+  {
+    "id": 13157,
+    "order": 157,
+    "mock_only": true,
+    "framing": "scenario",
+    "parent_id": 13155,
+    "follow_up_dimension": "scale_pivot",
+    "title": "Cohort retention at scale: 200M users, daily-partitioned orders table",
+    "description": "The users table now has 200 million rows and the orders table has daily partitions (orders_YYYYMMDD). The correlated EXISTS subquery approach scans orders once per user per cohort_month group — expensive at this scale. Write a query that pre-joins the cohort users to their qualifying orders using a date-range JOIN (avoiding correlated subqueries), then flags retention windows using conditional aggregation. This approach scans orders once. Output the same columns as the parent: cohort_month (YYYY-MM format), cohort_size, ret_30d, ret_60d, ret_90d, ret_30d_pct, ret_60d_pct, ret_90d_pct. Order by cohort_month ascending.",
+    "difficulty": "hard",
+    "schema": {
+      "users": [
+        "user_id",
+        "signup_date"
+      ],
+      "orders": [
+        "order_id",
+        "user_id",
+        "order_date",
+        "status"
+      ]
+    },
+    "dataset_files": [
+      "users.csv",
+      "orders.csv"
+    ],
+    "expected_query": "WITH cohort_users AS (\n    SELECT user_id,\n           STRFTIME('%Y-%m', signup_date) AS cohort_month,\n           CAST(signup_date AS DATE) AS signup_day\n    FROM users\n    WHERE signup_date >= '2024-01-01' AND signup_date < '2025-01-01'\n),\ncohort_agg AS (\n    SELECT cu.cohort_month,\n           COUNT(DISTINCT cu.user_id) AS cohort_size,\n           COUNT(DISTINCT CASE WHEN CAST(o.order_date AS DATE) BETWEEN cu.signup_day AND cu.signup_day + INTERVAL 29 DAY THEN cu.user_id END) AS ret_30d,\n           COUNT(DISTINCT CASE WHEN CAST(o.order_date AS DATE) BETWEEN cu.signup_day AND cu.signup_day + INTERVAL 59 DAY THEN cu.user_id END) AS ret_60d,\n           COUNT(DISTINCT CASE WHEN CAST(o.order_date AS DATE) BETWEEN cu.signup_day AND cu.signup_day + INTERVAL 89 DAY THEN cu.user_id END) AS ret_90d\n    FROM cohort_users cu\n    LEFT JOIN orders o\n        ON o.user_id = cu.user_id\n        AND o.status = 'completed'\n        AND CAST(o.order_date AS DATE) BETWEEN cu.signup_day AND cu.signup_day + INTERVAL 89 DAY\n    GROUP BY cu.cohort_month\n)\nSELECT cohort_month, cohort_size, ret_30d, ret_60d, ret_90d,\n       ROUND(100.0 * ret_30d / cohort_size, 1) AS ret_30d_pct,\n       ROUND(100.0 * ret_60d / cohort_size, 1) AS ret_60d_pct,\n       ROUND(100.0 * ret_90d / cohort_size, 1) AS ret_90d_pct\nFROM cohort_agg\nORDER BY cohort_month",
+    "solution_query": "WITH cohort_users AS (\n    SELECT user_id,\n           STRFTIME('%Y-%m', signup_date) AS cohort_month,\n           CAST(signup_date AS DATE) AS signup_day\n    FROM users\n    WHERE signup_date >= '2024-01-01' AND signup_date < '2025-01-01'\n),\ncohort_agg AS (\n    SELECT cu.cohort_month,\n           COUNT(DISTINCT cu.user_id) AS cohort_size,\n           COUNT(DISTINCT CASE WHEN CAST(o.order_date AS DATE) BETWEEN cu.signup_day AND cu.signup_day + INTERVAL 29 DAY THEN cu.user_id END) AS ret_30d,\n           COUNT(DISTINCT CASE WHEN CAST(o.order_date AS DATE) BETWEEN cu.signup_day AND cu.signup_day + INTERVAL 59 DAY THEN cu.user_id END) AS ret_60d,\n           COUNT(DISTINCT CASE WHEN CAST(o.order_date AS DATE) BETWEEN cu.signup_day AND cu.signup_day + INTERVAL 89 DAY THEN cu.user_id END) AS ret_90d\n    FROM cohort_users cu\n    LEFT JOIN orders o\n        ON o.user_id = cu.user_id\n        AND o.status = 'completed'\n        AND CAST(o.order_date AS DATE) BETWEEN cu.signup_day AND cu.signup_day + INTERVAL 89 DAY\n    GROUP BY cu.cohort_month\n)\nSELECT cohort_month, cohort_size, ret_30d, ret_60d, ret_90d,\n       ROUND(100.0 * ret_30d / cohort_size, 1) AS ret_30d_pct,\n       ROUND(100.0 * ret_60d / cohort_size, 1) AS ret_60d_pct,\n       ROUND(100.0 * ret_90d / cohort_size, 1) AS ret_90d_pct\nFROM cohort_agg\nORDER BY cohort_month;",
+    "required_concepts": [
+      "cte",
+      "left_join",
+      "count_distinct",
+      "case_when",
+      "interval"
+    ],
+    "enforce_concepts": true,
+    "explanation": "The scale optimisation replaces three correlated EXISTS subqueries with a single LEFT JOIN from cohort_users to orders, bounded by the maximum window (89 days). All three retention windows are computed in one pass using COUNT(DISTINCT CASE WHEN ... THEN user_id END): an order row falling within day 0–29 contributes to all three windows; day 30–59 contributes to ret_60d and ret_90d only; day 60–89 to ret_90d only. The JOIN condition pushes the 89-day filter into the join, pruning most orders. For a daily-partitioned table, the planner can further prune to only the partitions covering signup_day through signup_day + 89 days — orders outside this range are never read. This approach scans orders at most once per relevant partition, vs three EXISTS subqueries each scanning orders independently.",
+    "hints": [
+      "At scale, the bottleneck is scanning the orders table once per retention window — a single-pass approach bounded by the widest window, with per-row window assignment, reads the data once and handles all three windows together.",
+      "The JOIN condition BETWEEN signup_day AND signup_day + INTERVAL 89 DAY acts as a pre-filter — with daily partitions, the planner only reads partitions within that range."
+    ],
+    "concepts": [
+      "COHORT RETENTION",
+      "PERFORMANCE-AWARE ANALYTICS",
+      "MULTI-TABLE ENTITY LINKING"
+    ],
+    "companies": [
+      "Meta",
+      "LinkedIn"
+    ]
   }
 ]
