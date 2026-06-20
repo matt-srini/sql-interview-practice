@@ -515,15 +515,15 @@ Practice questions are the full curriculum. Mock-only questions live in the same
 | Track | Easy | Medium | Hard | Practice total | Modality |
 |---|---|---|---|---|---|
 | SQL | 37 | 50 | 31 | **118** | Executable (DuckDB) |
-| Python | 33 | 29 | 17 | **79** | Executable (sandbox) |
-| Pandas | 28 | 40 | 24 | **92** | Executable (sandbox) |
+| Python | 33 | 30 | 18 | **81** | Executable (sandbox) |
+| Pandas | 28 | 40 | 25 | **93** | Executable (sandbox) |
 | PySpark | 40 | 45 | 42 | **127** | Code-adjacent reasoning (MCQ) |
 | Data Engineering | 30 | 35 | 26 | **91** | Constructed reasoning (MCQ) |
 | Data Modeling | 25 | 31 | 25 | **81** | Constructed reasoning (MCQ) |
 | Statistics | 31 | 43 | 26 | **100** | Hybrid (conceptual MCQ + numerical Python) |
 | ML Fundamentals | 30 | 40 | 30 | **100** | Constructed reasoning (MCQ) |
 | Experimentation | 30 | 33 | 24 | **87** | Constructed reasoning (MCQ) |
-| **Total** | | | | **875** | |
+| **Total** | | | | **878** | |
 
 Mock-only add-on bank: **1,120 questions** (Pro/Elite only). Samples: **81 total** (9 per track × 9 tracks, dedicated content separate from practice and mock pools).
 
