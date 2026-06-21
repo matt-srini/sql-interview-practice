@@ -32,6 +32,13 @@ Defined in `frontend/src/App.js`:
 /practice/questions/:id          → redirect → /practice/sql/questions/:id  (legacy)
 /practice                        → redirect → /practice/sql
 /questions/:id                   → redirect → /practice/sql/questions/:id  (legacy)
+/account                         → AccountPage (plan & billing status)      [AuthRequired]
+/practice/python-data            → redirect → /practice/pandas  ⎫
+/practice/python-data/questions/:id → redirect → /practice/pandas/questions/:id  ⎪
+/learn/python-data               → redirect → /learn/pandas                  ⎬ python-data → pandas back-compat (slug rename)
+/learn/python-data/:slug         → redirect → /learn/pandas/:slug            ⎪
+/sample/python-data/:difficulty  → redirect → /sample/pandas/:difficulty     ⎭
+*                                → NotFoundPage
 ```
 
 `:topic` values: `sql` | `python` | `pandas` | `pyspark` | `data-engineering` | `data-modeling` | `statistics` | `ml-fundamentals` | `experimentation`
@@ -100,7 +107,15 @@ Visited **directly** (a shared `/faq` URL, a crawler), each route renders as a s
 
 Public, full-detail plan comparison (no auth gate) — the "no hiding behind short adjectives" surface. Renders entirely from a single data source, **`frontend/src/data/tierFeatures.js`** (`COMPARISON_TIERS`, `COMPARISON_GROUPS`, `FREE_UNLOCK`), so the matrix has one home and tracks the entitlement SoT (`pricing.md` / `mock.md` / `unlock.py`). Layout: tier summary cards (Pro featured, `UpgradeButton` CTAs) → grouped Free/Pro/Elite feature matrix (✓ / — / value per cell, Pro column tinted) → the **Free-tier unlock ladders** (code vs conceptual tracks, in plain language). Reached from a "Compare every feature in detail →" link below the landing `#landing-pricing` grid (`.lp-pricing-compare-link`). The internal mirror of the same content is `docs/tier-wise-features.html`.
 
+### AccountPage (`/account`)
 
+`AuthRequired` page (registered users only). Shows plan and billing status with a **rail-aware billing summary** that distinguishes Razorpay-managed (INR / India) vs Paddle-managed (USD / global, Paddle as Merchant of Record) subscriptions. Features:
+- Current plan badge + next renewal/expiry date
+- Invoice and payment history
+- Subscription management: cancel, switch plan, update payment method, reactivate
+- Paddle-managed subscriptions are handled externally via the Paddle customer portal; in-app mutation attempts return 409 with a redirect hint to Paddle.
+
+### TrackHubPage (`/practice/:topic`)
 
 Per-track landing rendered by `Outlet` when no question is active:
 - Track name + overall solved/total progress bar
@@ -317,7 +332,7 @@ Accepts a `plan` prop (passed from AppShell) to drive progressive unlock behavio
 - NavLinks point to `/practice/${topic}/questions/${id}` (topic from `useTopic()`)
 - Reasoning-heavy tracks now render a compact question-form badge in each row when the catalog includes additive `type` metadata, so users can tell `Debug` from `Scenario` or `Predict output` without opening the prompt.
 - Sidebar filters now include a `Filter by question form` chip group when a catalog contains more than one distinct form label, letting users narrow reasoning-heavy banks by variants like `Debug`, `Scenario`, `Predict output`, or `Numerical`.
-- **Progressive unlock bar** (`.sidebar-unlock-bar`): shown in difficulty group headers when there are locked questions. Displays a progress bar filling toward the next unlock threshold plus a "{N} more to unlock" label. Thresholds mirror `backend/unlock.py` (e.g. SQL/Python/Pandas medium: 8→3, 15→8, 25→all; PySpark medium: 12→3, 20→8, 30→all).
+- **Progressive unlock bar** (`.sidebar-unlock-bar`): shown in difficulty group headers when there are locked questions. Displays a progress bar filling toward the next unlock threshold plus a "{N} more to unlock" label. Thresholds mirror `backend/unlock.py` (e.g. SQL/Python/Pandas medium: 8→3, 15→8, 25→all; PySpark/MCQ medium: 10→3, 17→8, 25→all; hard: 12→5 cap 5).
 - **Locked question tooltip** (`title` attribute on the locked row `div`): explains exactly how many more solves are needed — e.g. "Solve 7 more easy questions to unlock this". Pro users see "Upgrade to Elite to unlock all hard questions" on hard rows.
 - Concept filter (chip grid, most-frequent first, expand/collapse) and Company filter (SQL only)
 - Fuzzy question search input (Fuse.js) over title/concepts/difficulty with inline clear control
@@ -365,6 +380,10 @@ Fetches catalog for the current topic on mount. URL determined by `useTopic()` u
 - `pandas` → `/pandas/catalog`
 - `pyspark` → `/pyspark/catalog`
 - `data-engineering` → `/data-engineering/catalog`
+- `data-modeling` → `/data-modeling/catalog`
+- `statistics` → `/statistics/catalog`
+- `ml-fundamentals` → `/ml-fundamentals/catalog`
+- `experimentation` → `/experimentation/catalog`
 
 Exposes `{ catalog, loading, error, refresh }`. Resets when topic changes.
 
@@ -554,7 +573,7 @@ All hover: `translateY(-1px)`, `150ms ease-out`. No transforms on disabled.
 
 ### Layout
 
-**Landing page:** Three stacked sections on one scroll — Hero (logged-out only) → Showcase (theme-responsive surface, always-dark IDE) → Track selection (light). Max-width 1040px centered for Track selection; Showcase is full-width.
+**Landing page:** 8-section editorial layout (Hero · Thesis · Wrong/Right · Role Selector · Proof Strip · Tracks Index · Guided Progressions · Pricing) — see the detailed [`LandingPage`](#landingpage-) section above. Max-width 1040px inner wrapper (`lp-inner`) on all sections.
 
 **App shell (challenge workspace):**
 - Sidebar: 328px, sticky, collapsible
@@ -602,7 +621,7 @@ Single `.landing-ide` window (max-width 1120px) inside `.landing-showcase`:
 
 Standalone page using the shared `<Topbar active="mock" />`. Does not use `AppShell`.
 
-**State:** `mode` (`'benchmark'/'30min'/'custom'` plus legacy `'60min'` labels in history), `track`, `difficulty`, `numQuestions`, `timeMinutes`, `history[]`.
+**State:** `mode` (`'benchmark'` / `'custom'` / `'interview_loop'`; legacy `'30min'`/`'60min'` appear only in stored history labels — not startable), `track`, `difficulty`, `numQuestions`, `timeMinutes`, `history[]`.
 
 **Flow:** Select mode/track/difficulty → `POST /api/mock/start` → navigate to `/mock/:id` passing `sessionData` via router state.
 
@@ -615,7 +634,7 @@ Standalone page using the shared `<Topbar active="mock" />`. Does not use `AppSh
 - Drill modes now render a dedicated planner card with the session shape, purpose, and inline custom controls so drills read as a separate setup surface instead of just alternate mode cards.
 - Mixed track supports role-based benchmark and custom drill setup; role selection is required before start, while Interview Loop remains single-track only.
 - Elite analytics now use `benchmark_summary` as the comparable primary view and surface drill performance in a smaller secondary card.
-- History rows format stored mode values into human labels (`Benchmark`, `Sprint drill`, `Custom drill`, `Full (legacy)`) so older sessions stay legible without preserving the old setup framing, and the tables are split into `Recent benchmark sessions` and `Recent custom drills`.
+- History rows format stored mode values into human labels (`Benchmark`, `Sprint drill`, `Custom drill`, `Full (legacy)`) so older sessions stay legible without preserving the old setup framing. History is split into three tables: `Recent benchmark sessions`, `Recent Interview Loop sessions` (rendered only when `loopHistory` is non-empty — Elite-only sessions), and `Recent custom drills`.
 - When no history exists, MockHub now teaches the benchmark-then-drill workflow explicitly instead of collapsing to a single generic empty state.
 - When only one side of history exists, MockHub now renders targeted guidance (`No benchmark sessions yet` or `No drill sessions yet`) so users understand what the missing session type is for.
 

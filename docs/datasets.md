@@ -116,7 +116,7 @@ Models payment events attached to orders.
 | amount | |
 | status | paid / failed / refunded / chargeback |
 
-Row count: 4737 · Range: 4700–7900
+Row count: 4740 · Range: 4700–7900
 
 Includes deliberate amount mismatches for reconciliation-style questions.
 

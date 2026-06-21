@@ -154,8 +154,8 @@ A data interview practice platform covering nine tracks. Users write SQL or Pyth
 
 **Tracks:**
 - **SQL** — 118 practice (37 easy / 50 medium / 31 hard) + 193 mock-only, DuckDB execution, realistic relational datasets
-- **Python** — 79 practice (33 easy / 29 medium / 17 hard) + 103 mock-only, data-professional algorithms (sessionization, hash join, DAG cycle detection, critical path, rate limiting, edit distance, streaming anomaly detection), test-case evaluation
-- **Pandas** — 92 practice (28 easy / 40 medium / 24 hard) + 114 mock-only, pandas-specific data manipulation, DataFrame comparison
+- **Python** — 81 practice (33 easy / 30 medium / 18 hard) + 103 mock-only, data-professional algorithms (sessionization, hash join, DAG cycle detection, critical path, rate limiting, edit distance, streaming anomaly detection), test-case evaluation
+- **Pandas** — 93 practice (28 easy / 40 medium / 25 hard) + 114 mock-only, pandas-specific data manipulation, DataFrame comparison
 - **PySpark** — 127 practice (40 easy / 45 medium / 42 hard) + 150 mock-only, conceptual / predict_output / debug / scenario / optimization (MCQ response), no code execution
 - **Data Engineering** — 91 practice (30 easy / 35 medium / 26 hard) + 110 mock-only (0 easy / 34 medium / 76 hard), conceptual / scenario / debug (MCQ response), no code execution; `eval_kind="mcq"`, `unlock_profile="mcq"`, `in_mixed_mock=false`
 - **Data Modeling** — 81 practice (25 easy / 31 medium / 25 hard) + 97 mock-only, conceptual / scenario / debug (MCQ response), no code execution; `eval_kind="mcq"`, `unlock_profile="mcq"`, `in_mixed_mock=false`
@@ -282,7 +282,7 @@ sql-interview-practice/
 │   │   │   └── Topbar.js           # Shared top nav bar used by all standalone pages (Practice dropdown, Mock, Dashboard, auth)
 │   │   └── pages/
 │   │       ├── LandingPage.js          # Fixed-topbar landing with track/sample tabs and compact progress panels
-│   │       ├── QuestionPage.js         # Topic-aware question page (all 4 tracks, question-form badges, prompt-guidance/evidence chrome, shortcuts, draft autosave, soft timer, bookmarks, unlock/streak milestone toasts)
+│   │       ├── QuestionPage.js         # Topic-aware question page (all 9 tracks, question-form badges, prompt-guidance/evidence chrome, shortcuts, draft autosave, soft timer, bookmarks, unlock/streak milestone toasts)
 │   │       ├── TrackHubPage.js         # Per-track landing (progress, next-up summary, question-form preview, concept preview, paths)
 │   │       ├── LearningPath.js         # Curated path page at /learn/:topic/:slug (breadcrumb, progress, completion banner)
 │   │       ├── LearningPathsIndex.js   # Index of all paths at /learn and /learn/:topic (grouped)
@@ -344,7 +344,7 @@ TOPBAR
   Stat row — N tracks · N+ questions (count-up animation on scroll)
 
 06 · TRACKS INDEX  (all users)
-  Dense list of all 8 tracks (all live) from ALL_TRACK_SLUGS
+  Dense list of all 9 tracks (all live) from ALL_TRACK_SLUGS
   Each row: color dot · track name · description · question count · format tag · "Enter →" or "Soon"
 
 07 · GUIDED PROGRESSIONS  (all users)

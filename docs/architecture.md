@@ -99,7 +99,7 @@ Schema is defined in **two independent places that must be kept in sync manually
 | `user_progress` | Solved questions per topic | `user_id`, `question_id`, `topic`, `solved_at` |
 | `user_sample_seen` | Sample question exposure | `user_id`, `difficulty`, `question_id`, `topic` |
 | `plan_changes` | Audit log of plan upgrades | `user_id`, `old_plan`, `new_plan`, `created_at` |
-| `payment_events` | Idempotent payment provider (Razorpay) event records | `event_id`, `event_type`, `processed_at` |
+| `payment_events` | Idempotent payment-provider event records (dual-rail: Razorpay + Paddle, disambiguated by a `provider` column) | `event_id`, `event_type`, `provider`, `processed_at` |
 | `submissions` | Every submit attempt per user | `user_id`, `track`, `question_id`, `is_correct`, `code`, `submitted_at` |
 | `mock_sessions` | Mock interview session records | `user_id`, `mode`, `track`, `difficulty`, `status`, `started_at`, `ended_at` |
 | `mock_session_questions` | Per-question answers within a mock session | `session_id`, `question_id`, `track`, `is_solved`, `final_code`, `time_spent_s`, `is_follow_up`, `follow_up_dimension` |

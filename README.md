@@ -4,31 +4,31 @@ A data interview practice platform covering nine tracks. Users write SQL or Pyth
 
 ## Current State
 
-- **876 practice questions** across 9 tracks with plan-gated unlock rules and persistent progress
-- **1,102 mock-only questions** (Pro/Elite) across all tracks, never shown in the practice catalog
-- **36 sample questions** across SQL, Python, Pandas, and PySpark — no login required, no progress impact. Data Engineering, Data Modeling, Statistics, ML Fundamentals, and Experimentation samples are auto-sliced from the first 3 practice questions per difficulty.
+- **878 practice questions** across 9 tracks with plan-gated unlock rules and persistent progress
+- **1,148 mock-only questions** (Pro/Elite) across all tracks, never shown in the practice catalog
+- **81 dedicated sample questions** (all 9 tracks × 3 difficulties × 3 questions each) — no login required, no impact on practice progress, and completely separate from the practice and mock banks.
 - Challenge mode with persistent progress, bookmarks, draft autosave, hints, concept tags, and unlock logic
 - Sample mode that is anonymous-friendly (no login required)
 - Mock interviews: `benchmark` (fixed-shape track readiness signal, or role-based Mixed benchmark), `custom` (1–5 questions, 10–90 min), and `interview_loop` (Elite-only chain-driven dialogue) with plan-based limits and post-session analysis. Legacy `30min`/`60min` sessions are read-only history.
-- Learning paths with free and Pro-gated track-specific curricula (46 paths total)
+- Learning paths: 96 curated, track-specific walks through the practice catalog (they guide; they do not gate — unlocks follow the standard practice thresholds)
 - Semantic concept tags, progressive hints, and company tags (SQL) surfaced in the practice UI
 - Dashboard with coaching insights, streak tracking, weakest-concept signals, and (Elite) readiness scores + study plan
-- Three subscription tiers (Free / Pro / Elite) via Razorpay
+- Three subscription tiers (Free / Pro / Elite), billed via Razorpay (INR / India) or Paddle (USD / international, Merchant of Record)
 
 ## Question Bank
 
 | Track | Easy | Medium | Hard | Practice total | Mock-only (Pro/Elite) |
 |---|---|---|---|---|---|
-| SQL | 37 | 50 | 31 | **118** | 165 (0 easy, 62 med, 103 hard) |
-| Python | 33 | 29 | 17 | **79** | 103 (0 easy, 50 med, 53 hard) |
-| Pandas | 28 | 40 | 24 | **92** | 114 (0 easy, 51 med, 63 hard) |
-| PySpark | 41 | 45 | 42 | **128** | 150 (0 easy, 75 med, 75 hard) |
+| SQL | 37 | 50 | 31 | **118** | 193 (0 easy, 67 med, 126 hard) |
+| Python | 33 | 30 | 18 | **81** | 103 (0 easy, 50 med, 53 hard) |
+| Pandas | 28 | 40 | 25 | **93** | 114 (0 easy, 51 med, 63 hard) |
+| PySpark | 40 | 45 | 42 | **127** | 150 (0 easy, 75 med, 75 hard) |
 | Data Engineering | 30 | 35 | 26 | **91** | 110 (0 easy, 34 med, 76 hard) |
 | Data Modeling | 25 | 31 | 25 | **81** | 97 (0 easy, 46 med, 51 hard) |
-| Statistics | 31 | 43 | 26 | **100** | 116 (0 easy, 66 med, 50 hard) |
+| Statistics | 31 | 43 | 26 | **100** | 134 (0 easy, 66 med, 68 hard) |
 | ML Fundamentals | 30 | 40 | 30 | **100** | 143 (0 easy, 59 med, 84 hard) |
 | Experimentation | 30 | 33 | 24 | **87** | 104 (0 easy, 45 med, 59 hard) |
-| **Total** | **285** | **346** | **245** | **876** | **1,102** |
+| **Total** | **284** | **347** | **247** | **878** | **1,148** |
 
 Mock-only questions share the same TXNNN ID scheme, allocated at the top of each difficulty range. They never appear in the practice catalog.
 
@@ -41,7 +41,7 @@ Mock-only questions share the same TXNNN ID scheme, allocated at the top of each
 | App state | PostgreSQL (identity, sessions, progress, plans, billing) |
 | SQL execution | DuckDB (in-memory, loaded from committed CSV datasets) |
 | Python execution | AST-guarded subprocess sandbox (Python / Pandas) |
-| Payments | Razorpay Orders + Subscriptions + verified webhooks |
+| Payments | Dual-rail: Razorpay (Orders + Subscriptions, INR) + Paddle (Merchant of Record, USD) — both with verified webhooks |
 | Rate limiting | Redis (production) / in-memory fallback (development) |
 | Testing | pytest + httpx (backend), Vitest + React Testing Library (unit), Playwright (e2e) |
 | Observability | Sentry (backend + frontend), PostHog (product analytics) |
@@ -63,7 +63,7 @@ sql-interview-practice/
 │   │   ├── experimentation_questions/  # Experimentation MCQ / scenario / predict-output / debug
 │   │   └── paths/                      # Learning path configs
 │   ├── datasets/                       # Committed CSVs + metadata JSON
-│   ├── routers/                        # auth, catalog, questions, sample, mock, paths, dashboard, razorpay, spa, …
+│   ├── routers/                        # auth, catalog, questions, sample, mock, paths, dashboard, razorpay, paddle, spa, …
 │   ├── tests/                          # Backend test suite
 │   ├── alembic/                        # Postgres migrations
 │   ├── database.py                     # DuckDB startup and shared state
@@ -121,7 +121,7 @@ sql-interview-practice/
 - Medium: 10 easy → 3 medium · 17 easy → 8 medium · 25 easy → all medium
 - Hard: 12 medium → 5 hard *(cap: 5)*
 
-**Learning path shortcuts:** Completing a track's Starter path → all medium unlocked. Completing the Intermediate path → full free-tier hard cap unlocked.
+**Learning paths do not unlock anything** — they are curated walks through the catalog; solving a path question advances the same difficulty thresholds as solving from practice directly.
 
 ### Mock modes (post-Phase-3)
 
@@ -169,7 +169,7 @@ Useful endpoints:
 | [docs/datasets.md](./docs/datasets.md) | All CSV tables — columns, row counts, intentional edge cases |
 | [docs/deployment.md](./docs/deployment.md) | Local dev setup, Docker, production build, env vars, Railway |
 | [docs/content-authoring.md](./docs/content-authoring.md) | Curriculum philosophy, question counts, concept coverage maps, per-track schemas, authoring rules |
-| [docs/features/pricing.md](./docs/features/pricing.md) | Plan entitlements, Razorpay flows, CTA states, webhook rules |
+| [docs/features/pricing.md](./docs/features/pricing.md) | Plan entitlements, Razorpay + Paddle flows, CTA states, webhook rules |
 | [docs/features/mock.md](./docs/features/mock.md) | Mock modes, limits, benchmark composition, coaching surfaces |
 | [docs/features/dashboard.md](./docs/features/dashboard.md) | Dashboard metrics, streak logic, weakest-concept insights, readiness scores |
 | [docs/USERGUIDE.md](./docs/USERGUIDE.md) | End-user guide to the platform |

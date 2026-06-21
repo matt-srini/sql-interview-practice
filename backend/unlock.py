@@ -45,9 +45,10 @@ def normalize_plan(plan: str) -> str:
 # Each entry is (solved_threshold, questions_unlocked | None).
 # None means "unlock all". Tables are evaluated top-to-bottom; first match wins.
 #
-# Route A (raw solves) and Route B (path completion) are two doors to the same
-# room: the *higher* limit wins, so a partially-threshold-unlocked user who also
-# completes a learning path immediately gets all medium.
+# Unlocks are driven purely by raw solve counts. Learning paths are curated
+# walks through the same practice catalog and do NOT unlock anything on their
+# own — solving a path question advances these thresholds exactly like solving
+# the same question from the practice catalog directly.
 
 # Code tracks: SQL, Python, Pandas
 _FREE_MEDIUM_THRESHOLDS_CODE: list[tuple[int, int | None]] = [
@@ -140,8 +141,10 @@ def compute_unlock_state(
         plan: 'free' | 'pro' | 'elite'
         solved_ids: set of question IDs the user has solved in this track
         catalog: {'easy': [...], 'medium': [...], 'hard': [...]}
-        track: track slug — 'sql' | 'python' | 'pandas' | 'pyspark'.
-               Affects Free-tier thresholds (PySpark uses higher thresholds).
+        track: track slug — one of the 9 track slugs (e.g. 'sql', 'python',
+               'statistics', 'ml-fundamentals'). Affects Free-tier thresholds
+               (MCQ-profile tracks like PySpark/Data Engineering use higher
+               easy→medium thresholds; see unlock_profile).
     """
     plan = normalize_plan(plan)
     ordered_catalog = _sorted_catalog(catalog)

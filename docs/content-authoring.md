@@ -440,8 +440,8 @@ Mock-only inventory must support a power user who completes most of practice and
 | Track | Practice | Mock-only | Ratio | Notes |
 |---|---|---|---|---|
 | SQL | 118 | 193† | **1.64×** | executable analytics; †28 chain questions (10 new Interview Loop chains) added 2026-06-20 lift the ratio above the 1.0–1.5× band — a deliberate **chain-only exception** (Elite Interview Loop only, never benchmarks/drills); standalone budget unchanged at ~1.30× (153 standalone). See [`DECISIONS.md`](./decisions/DECISIONS.md) 2026-06-20 |
-| Python | 79 | 103 | **1.30×** | executable algorithms |
-| Pandas | 92 | 114 | **1.24×** | executable analytics |
+| Python | 81 | 103 | **1.27×** | executable algorithms |
+| Pandas | 93 | 114 | **1.23×** | executable analytics |
 | PySpark | 127 | 150 | **1.18×** | code-adjacent reasoning (MCQ) |
 | Data Engineering | 91 | 110 | **1.21×** | constructed reasoning (MCQ) |
 | Data Modeling | 81 | 97 | **1.20×** | constructed reasoning (MCQ) |

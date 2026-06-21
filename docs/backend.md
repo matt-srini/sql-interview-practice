@@ -43,7 +43,10 @@ Registered in `backend/main.py`:
 | `routers/ml_fundamentals_questions.py` | `/api/ml-fundamentals` | ML Fundamentals catalog, detail, submit (reasoning-first track; additive `interaction_mode` metadata) |
 | `routers/experimentation_questions.py` | `/api/experimentation` | Experimentation catalog, detail, submit (constructed-reasoning track; additive `interaction_mode` metadata) |
 | `routers/statistics_questions.py` | `/api/statistics` | Statistics catalog, detail, run-code (numerical only), submit (conceptual reasoning or numerical code; additive `interaction_mode` metadata) |
-| `routers/dashboard.py` | `/api` | Cross-track progress dashboard, submission history |
+| `routers/account.py` | `/api/account` | Account & billing — rail-aware billing summary, profile update, cancel / switch-plan / update-payment-method / reactivate-subscription, delete account |
+| `routers/submissions.py` | `/api/submissions` | Submission history |
+| `routers/practice.py` | `/api/practice/drill` | Concept-drill question walks (family-aware, unsolved-first) |
+| `routers/dashboard.py` | `/api` | Cross-track progress dashboard (`GET /api/dashboard`) |
 | `routers/insights.py` | `/api/dashboard` | Coaching insights: per-track speed/accuracy, weakest concepts, streak |
 | `routers/paths.py` | `/api/paths` | Learning path catalog and path detail with per-question state |
 | `routers/mock.py` | `/api/mock` | Mock interview sessions (start, submit, finish, history) |
@@ -416,6 +419,8 @@ Files: `db.py`, `progress.py`, `unlock.py`
 | `plan_changes` | Audit log of plan tier changes |
 | `payment_events` | Idempotent payment-provider event log across both billing rails. `provider` column (`razorpay` \| `paddle`). Ids: Razorpay webhook ids + synthetic `verify:<payment_id>` (client callback); Paddle ids stored `paddle:`-prefixed so the two rails can never collide in the shared `event_id` PK |
 
+*(Representative subset — `backend/db.py` defines 15 tables in total. Omitted here: `submissions`, `oauth_accounts`, `password_reset_tokens`, `email_verification_tokens`, `oauth_states`, `magic_link_tokens`, `mock_sessions`, `mock_session_questions`, `mock_chain_consumption`, `mock_discards`.)*
+
 **`user_progress` and `user_sample_seen` carry a `topic` column** (DEFAULT `'sql'`). All `db.py` progress functions accept `topic: str = "sql"`. Progress is independent per topic — solving SQL questions does not affect Python unlock state.
 
 **Unlock tiers (pure policy in `unlock.py`, applied independently per topic):**
@@ -506,7 +511,7 @@ Prefix: `/api/mock`
 
 > **Access enforcement:** `POST /api/mock/start` validates plan and daily limits server-side via `compute_mock_access()` before persisting any session. A 403 is returned if the user's plan doesn't allow the requested difficulty, or if daily limits are exhausted. The daily-limit check at `GET /api/mock/access` is a UI preflight only — it does not gate actual session creation.
 
-> **Mode enforcement:** `POST /api/mock/start` now accepts a fixed-shape `benchmark` mode in addition to the drill modes. `benchmark` is track-specific and rejects `track="mixed"` with 400. Legacy `60min` sessions remain readable in history, but new frontend setup flows no longer present them as a primary mode.
+> **Mode enforcement:** `POST /api/mock/start` accepts `benchmark`, `custom`, and `interview_loop` modes. `benchmark` supports `track="mixed"` — when track is mixed, a `role` is required (data_analyst / data_engineer / analytics_engineer / data_scientist) and the router selects questions via a role-specific slot blueprint (`MIXED_BENCHMARK_CONFIGS`); the 400 fires only when `role` is missing for a mixed track. It is `interview_loop` (not benchmark) that does not support `track="mixed"` — chains are single-track, so mixed has no chain pool. Legacy `60min` sessions remain readable in history, but new frontend setup flows no longer present them as a primary mode.
 
 > **Analytics separation:** `GET /api/mock/analytics` now returns additive `benchmark_summary`, `drill_summary`, and `mode_breakdown` fields so benchmark performance can be compared like-with-like while flexible drill sessions remain visible without contaminating comparable benchmark stats.
 
@@ -538,6 +543,7 @@ Prefix: `/api/mock`
 | Data Modeling | 5 questions | 2400 |
 | ML Fundamentals | 6 questions | 2400 |
 | Experimentation | 6 questions | 2400 |
+| Mixed | role-dependent slot allocation per `MIXED_BENCHMARK_CONFIGS` — see [`docs/features/mock.md`](./features/mock.md) | role-dependent |
 
 **`POST /{id}/submit`**
 ```json
@@ -549,14 +555,16 @@ Prefix: `/api/mock`
 
 ```sql
 mock_sessions (id BIGSERIAL, user_id UUID, mode, track, difficulty,
-               started_at TIMESTAMPTZ, ended_at TIMESTAMPTZ, time_limit_s INT, status TEXT)
+               started_at TIMESTAMPTZ, ended_at TIMESTAMPTZ, time_limit_s INT, status TEXT,
+               focus_fallback BOOLEAN NOT NULL DEFAULT FALSE, role TEXT)
 
 mock_session_questions (id BIGSERIAL, session_id BIGINT→mock_sessions, question_id INT,
                         track TEXT, position INT, is_solved BOOL, submitted_at TIMESTAMPTZ,
-                        final_code TEXT, time_spent_s INT, is_follow_up BOOL)
+                        final_code TEXT, time_spent_s INT, is_follow_up BOOL,
+                        follow_up_dimension TEXT)
 ```
 
-`is_follow_up = true` marks questions that were injected as targeted follow-ups based on weak-spot analysis of the user's prior submission history (sourced via `_inject_follow_ups()` in `mock.py`). The debrief pattern observation uses this flag to surface follow-up performance as a coaching signal.
+`is_follow_up = true` marks an Interview Loop chain follow-up question. In an Interview Loop session a parent question's `follow_ups[]` travel as one atomic unit — the parent is `is_follow_up = false`, every follow-up in the chain is `is_follow_up = true`. Benchmark and custom sessions draw standalone questions only and never set this flag. The debrief uses the flag to surface chain-follow-up performance as a coaching signal.
 
 ### Question selection
 
