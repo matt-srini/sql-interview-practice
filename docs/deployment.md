@@ -308,7 +308,7 @@ The `FRONTEND_DIST_DIR` env var defaults to `/app/frontend/dist` inside the imag
 | `SENTRY_PROJECT` | Optional | Sentry project slug for frontend sourcemap upload |
 | `SENTRY_RELEASE` | Optional | Release name used by backend Sentry and frontend sourcemap upload; defaults to `RAILWAY_GIT_COMMIT_SHA` when available on the frontend build |
 
-In `production` mode, startup (`config.validate_production_config()`, called at import) fails fast if `DATABASE_URL`, `REDIS_URL`, `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, or `RAZORPAY_WEBHOOK_SECRET` are missing. When the Paddle rail is enabled (`PADDLE_CLIENT_TOKEN` set), it **additionally** requires `PADDLE_WEBHOOK_SECRET`, all four `PADDLE_PRICE_*`, and `PADDLE_ENVIRONMENT=production` — so a half-configured Paddle deploy crashes loudly at boot (Railway marks the deploy failed) instead of silently breaking checkout/webhooks. INR-only deploys leave all Paddle vars unset and boot cleanly. Webhook secrets, client tokens, and price IDs are whitespace-stripped at read time, so a pasted trailing newline can't break HMAC verification.
+In `production` mode, startup (`config.validate_production_config()`, called at import) fails fast if `DATABASE_URL`, `REDIS_URL`, `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, `RAZORPAY_WEBHOOK_SECRET`, the Razorpay subscription plan IDs `RAZORPAY_PLAN_PRO` / `RAZORPAY_PLAN_ELITE` (without them the Pro/Elite subscribe flow 500s at runtime), `RESEND_API_KEY` (transactional email — password reset + verification), or `ADMIN_SECRET` (which must also be **≥32 characters**) are missing. When the Paddle rail is enabled (`PADDLE_CLIENT_TOKEN` set), it **additionally** requires `PADDLE_WEBHOOK_SECRET`, all four `PADDLE_PRICE_*`, and `PADDLE_ENVIRONMENT=production` — so a half-configured Paddle deploy crashes loudly at boot (Railway marks the deploy failed) instead of silently breaking checkout/webhooks. INR-only deploys leave all Paddle vars unset and boot cleanly. Webhook secrets, client tokens, and price IDs are whitespace-stripped at read time, so a pasted trailing newline can't break HMAC verification.
 
 OAuth provider callback URIs should be configured exactly as the redirect vars below:
 - `${GOOGLE_REDIRECT_URI}`
@@ -388,6 +388,89 @@ For Dockerfile-based services on Railway, the application must listen on Railway
 7. `RAZORPAY_WEBHOOK_SECRET`
 
 **Healthcheck behaviour:** `/health` returns HTTP 200 when both Postgres and DuckDB are ready, and HTTP 503 when either is unavailable. Railway marks the deploy as failed on 503, which is intentional — it means a required environment variable is missing or the DB service isn't reachable yet.
+
+---
+
+## Rollback runbook
+
+> **Context:** Production is on Railway with `ENV=production`, which disables Alembic auto-migrate at startup. Redeploying an old image does **not** touch the database schema unless you also run a migration manually. This means code rollback and schema rollback are independent operations — and in most incidents only the code rollback is needed.
+
+### 1. Code rollback (Railway dashboard)
+
+When a bad deploy is live:
+
+1. Open the Railway dashboard → your project → the **datathink** service.
+2. Click the **Deployments** tab. Find the last successful deploy (green tick, before the bad one).
+3. Click the `···` menu on that deploy → **Redeploy** (some Railway UI versions label this **Rollback**).
+4. Railway builds and deploys that image. The health-check at `/health` must return 200 before Railway marks it live.
+
+**Why this is usually safe and fast:** because `ENV=production` disables auto-migrate, redeploying old code does *not* run any migration — the DB schema is unchanged. A code-only rollback takes the same time as a normal deploy and carries zero DB risk.
+
+**Confirm the rollback worked:** the healthcheck passes automatically; then run the smoke checklist in step 4 below.
+
+---
+
+### 2. Database migration decision tree
+
+Only needed when the bad deploy also shipped an Alembic migration. First, confirm the current production revision:
+
+```bash
+cd backend
+# Read DATABASE_URL from backend/.env line 4 — never hardcode it
+DATABASE_URL="<from backend/.env line 4>" ../.venv/bin/alembic current
+```
+
+Then decide based on what the migration did:
+
+#### Additive migration (ADD COLUMN / CREATE TABLE / CREATE INDEX)
+
+**Do nothing to the DB.** Old code simply ignores the new column or table — additive changes are backward-compatible. Do NOT run `alembic downgrade`. The schema is harmless at head; fix the code bug and redeploy forward.
+
+#### Destructive or irreversible migration (DROP/RENAME column, type narrowing, data backfill/transform)
+
+These are **not safely auto-reversible.** Running `alembic downgrade` may permanently delete or corrupt data. Steps before any action:
+
+1. **Inspect the `downgrade()` body first.** Open the migration file in `backend/alembic/versions/` and read exactly what `downgrade()` does. A `DROP COLUMN IF EXISTS` loses every row of data in that column — no undo.
+2. **Prefer a roll-forward fix over a downgrade.** Write a new migration that restores the old shape (re-adds a dropped column, renames it back, etc.) and deploy that. This is almost always safer than running `downgrade` against live data.
+3. **If a downgrade is unavoidable:** take a DB snapshot/backup from the Railway dashboard (Postgres service → Backups → Take snapshot) *before* running the downgrade. Then:
+
+```bash
+cd backend
+# Inspect what downgrade() will do before running it:
+DATABASE_URL="<from backend/.env line 4>" ../.venv/bin/alembic show <revision_id>
+
+# Downgrade exactly one step (review the output first — this is destructive):
+DATABASE_URL="<from backend/.env line 4>" ../.venv/bin/alembic downgrade -1
+
+# Confirm the revision:
+DATABASE_URL="<from backend/.env line 4>" ../.venv/bin/alembic current
+```
+
+Replace `<revision_id>` with the ID printed by `alembic current` before the downgrade. Use the `asyncpg` driver prefix (`postgresql+asyncpg://...`) if the env var uses it — match whatever form is in `backend/.env`.
+
+---
+
+### 3. Post-rollback smoke checklist
+
+Run these checks before standing down to confirm the rollback is actually good:
+
+- [ ] `GET /health` returns `{"status": "ok", "postgres": true, ...}` (HTTP 200)
+- [ ] Sign in with a test account works (session cookie is set, `/api/auth/me` returns the user)
+- [ ] A practice question loads (GET `/api/practice/<track>/<id>`)
+- [ ] A submit succeeds (POST `/api/practice/<track>/<id>/submit` with any answer)
+- [ ] A payment webhook receipt path is live — either Razorpay or Paddle signature verification does not 500 (check recent Railway logs for any `500` on `/api/razorpay/webhook` or `/api/paddle/webhook`)
+
+If any check fails, the rollback is not clean — investigate logs before standing down.
+
+---
+
+### 4. When NOT to roll back
+
+Rolling back is not always the right move:
+
+- **The migration was additive and the bug is in code logic:** roll forward with a one-line fix rather than reverting a destructive migration. Additive schema is safe to leave at head.
+- **The bad commit touched many files and users have new data:** a code rollback drops the fix; a DB downgrade may lose user progress or payment records accrued since the bad deploy. In these cases a targeted roll-forward patch is safer.
+- **The incident is a configuration error (wrong env var, rate limit, CORS):** fix the env var in Railway settings and redeploy at current head — no code or DB rollback needed.
 
 ---
 
