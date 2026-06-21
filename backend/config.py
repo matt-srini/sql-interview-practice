@@ -212,6 +212,27 @@ def validate_production_config() -> None:
 	if not RAZORPAY_WEBHOOK_SECRET:
 		raise RuntimeError("RAZORPAY_WEBHOOK_SECRET is required when ENV=production")
 
+	# ── Razorpay subscription plan IDs (required for Pro/Elite subscribe flow) ─
+	# Without these the subscription-create endpoint 500s at runtime.
+	if not RAZORPAY_PLAN_PRO:
+		raise RuntimeError("RAZORPAY_PLAN_PRO is required when ENV=production")
+
+	if not RAZORPAY_PLAN_ELITE:
+		raise RuntimeError("RAZORPAY_PLAN_ELITE is required when ENV=production")
+
+	# ── Transactional email (password reset + email verification) ─────────────
+	if not RESEND_API_KEY:
+		raise RuntimeError("RESEND_API_KEY is required when ENV=production")
+
+	# ── Admin secret (plan override operations) ───────────────────────────────
+	# Must be set AND at least 32 characters (CLAUDE.md: "strong random value, ≥32 bytes").
+	if not ADMIN_SECRET:
+		raise RuntimeError("ADMIN_SECRET is required when ENV=production")
+	if len(ADMIN_SECRET) < 32:
+		raise RuntimeError(
+			"ADMIN_SECRET must be at least 32 characters when ENV=production"
+		)
+
 	# ── Paddle (only required when the Paddle rail is enabled) ───────────────
 	# Gate on PADDLE_CLIENT_TOKEN: if that is set, Paddle is live and the
 	# rest of its config must be complete.  INR-only deploys leave all Paddle

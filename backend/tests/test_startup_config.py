@@ -34,6 +34,13 @@ _VALID_PROD_BASE = {
     "config.RAZORPAY_KEY_ID": "rzp_live_key",
     "config.RAZORPAY_KEY_SECRET": "rzp_live_secret",
     "config.RAZORPAY_WEBHOOK_SECRET": "rzp_whsec",
+    # Subscription plan IDs
+    "config.RAZORPAY_PLAN_PRO": "plan_pro_live",
+    "config.RAZORPAY_PLAN_ELITE": "plan_elite_live",
+    # Transactional email
+    "config.RESEND_API_KEY": "re_live_key",
+    # Admin secret (must be ≥32 chars)
+    "config.ADMIN_SECRET": "a" * 32,
 }
 
 _VALID_PADDLE = {
@@ -173,6 +180,102 @@ def test_missing_razorpay_webhook_secret_raises(monkeypatch):
 
 
 # ---------------------------------------------------------------------------
+# (a) All required vars set (incl. new ones) → no raise
+# ---------------------------------------------------------------------------
+
+def test_all_required_vars_set_no_raise(monkeypatch):
+    """ENV=production with every required var set must not raise."""
+    _apply(monkeypatch, _VALID_PROD_BASE)
+    config.validate_production_config()  # must not raise
+
+
+# ---------------------------------------------------------------------------
+# Razorpay plan ID guards
+# ---------------------------------------------------------------------------
+
+def test_missing_razorpay_plan_pro_raises(monkeypatch):
+    _apply(monkeypatch, {**_VALID_PROD_BASE, "config.RAZORPAY_PLAN_PRO": None})
+    with pytest.raises(RuntimeError, match="RAZORPAY_PLAN_PRO"):
+        config.validate_production_config()
+
+
+def test_empty_razorpay_plan_pro_raises(monkeypatch):
+    _apply(monkeypatch, {**_VALID_PROD_BASE, "config.RAZORPAY_PLAN_PRO": ""})
+    with pytest.raises(RuntimeError, match="RAZORPAY_PLAN_PRO"):
+        config.validate_production_config()
+
+
+def test_missing_razorpay_plan_elite_raises(monkeypatch):
+    _apply(monkeypatch, {**_VALID_PROD_BASE, "config.RAZORPAY_PLAN_ELITE": None})
+    with pytest.raises(RuntimeError, match="RAZORPAY_PLAN_ELITE"):
+        config.validate_production_config()
+
+
+def test_empty_razorpay_plan_elite_raises(monkeypatch):
+    _apply(monkeypatch, {**_VALID_PROD_BASE, "config.RAZORPAY_PLAN_ELITE": ""})
+    with pytest.raises(RuntimeError, match="RAZORPAY_PLAN_ELITE"):
+        config.validate_production_config()
+
+
+# ---------------------------------------------------------------------------
+# RESEND_API_KEY guard
+# ---------------------------------------------------------------------------
+
+def test_missing_resend_api_key_raises(monkeypatch):
+    _apply(monkeypatch, {**_VALID_PROD_BASE, "config.RESEND_API_KEY": None})
+    with pytest.raises(RuntimeError, match="RESEND_API_KEY"):
+        config.validate_production_config()
+
+
+def test_empty_resend_api_key_raises(monkeypatch):
+    _apply(monkeypatch, {**_VALID_PROD_BASE, "config.RESEND_API_KEY": ""})
+    with pytest.raises(RuntimeError, match="RESEND_API_KEY"):
+        config.validate_production_config()
+
+
+# ---------------------------------------------------------------------------
+# ADMIN_SECRET guards — missing and too short
+# ---------------------------------------------------------------------------
+
+def test_missing_admin_secret_raises(monkeypatch):
+    _apply(monkeypatch, {**_VALID_PROD_BASE, "config.ADMIN_SECRET": None})
+    with pytest.raises(RuntimeError, match="ADMIN_SECRET"):
+        config.validate_production_config()
+
+
+def test_empty_admin_secret_raises(monkeypatch):
+    _apply(monkeypatch, {**_VALID_PROD_BASE, "config.ADMIN_SECRET": ""})
+    with pytest.raises(RuntimeError, match="ADMIN_SECRET"):
+        config.validate_production_config()
+
+
+def test_short_admin_secret_raises(monkeypatch):
+    """ADMIN_SECRET shorter than 32 characters must raise even if non-empty."""
+    _apply(monkeypatch, {**_VALID_PROD_BASE, "config.ADMIN_SECRET": "tooshort"})
+    with pytest.raises(RuntimeError, match="ADMIN_SECRET"):
+        config.validate_production_config()
+
+
+def test_admin_secret_exactly_31_chars_raises(monkeypatch):
+    """31 characters is one below the minimum — must raise."""
+    _apply(monkeypatch, {**_VALID_PROD_BASE, "config.ADMIN_SECRET": "a" * 31})
+    with pytest.raises(RuntimeError, match="ADMIN_SECRET"):
+        config.validate_production_config()
+
+
+def test_admin_secret_exactly_32_chars_no_raise(monkeypatch):
+    """32 characters is the minimum — must not raise."""
+    _apply(monkeypatch, {**_VALID_PROD_BASE, "config.ADMIN_SECRET": "a" * 32})
+    config.validate_production_config()  # must not raise
+
+
+def test_admin_secret_longer_than_32_chars_no_raise(monkeypatch):
+    """A properly long secret must not raise."""
+    _apply(monkeypatch, {**_VALID_PROD_BASE, "config.ADMIN_SECRET": "a" * 64})
+    config.validate_production_config()  # must not raise
+
+
+# ---------------------------------------------------------------------------
 # Non-production env — nothing raises even with everything unset
 # ---------------------------------------------------------------------------
 
@@ -185,3 +288,13 @@ def test_dev_env_no_raise(monkeypatch):
 def test_test_env_no_raise(monkeypatch):
     monkeypatch.setattr("config.ENV", "test")
     config.validate_production_config()
+
+
+def test_non_prod_missing_new_required_vars_no_raise(monkeypatch):
+    """ENV != 'production' must never raise, even when the new required vars are absent."""
+    monkeypatch.setattr("config.ENV", "development")
+    monkeypatch.setattr("config.RAZORPAY_PLAN_PRO", None)
+    monkeypatch.setattr("config.RAZORPAY_PLAN_ELITE", None)
+    monkeypatch.setattr("config.RESEND_API_KEY", None)
+    monkeypatch.setattr("config.ADMIN_SECRET", None)
+    config.validate_production_config()  # must not raise
