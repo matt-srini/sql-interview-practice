@@ -1990,8 +1990,8 @@ def test_tc_loop_difficulty_escalates_helper():
 
     # Python medium → hard follow-ups: escalates
     assert _loop_difficulty_escalates("python", "medium") is True
-    # SQL medium → medium follow-ups only: no escalation
-    assert _loop_difficulty_escalates("sql", "medium") is False
+    # SQL medium → hard follow-ups (escalating-medium chains added 2026-06-20): escalates
+    assert _loop_difficulty_escalates("sql", "medium") is True
     # data-modeling medium → hard follow-ups: escalates
     assert _loop_difficulty_escalates("data-modeling", "medium") is True
     # Easy is always False (not medium/hard)
