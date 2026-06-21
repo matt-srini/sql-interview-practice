@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { BrowserRouter, Navigate, Route, Routes, useLocation, useNavigate, useParams } from 'react-router-dom';
+import { createPortal } from 'react-dom';
 
 // Prevent the browser from restoring a cached scroll position after client-side
 // navigation — we manage scroll ourselves (e.g. hash anchors, page transitions).
@@ -130,8 +131,8 @@ function RouteTransition({ children, transitionKey }) {
     // Skip the reset when a hash anchor is present (the destination page owns its
     // scroll), when a modal is open over a background page (keep the background
     // where it was), or when a modal close asked to preserve scroll — so the
-    // footer → policy → "Back to home" / Contact-modal-close flow returns the
-    // user to the footer rather than the top.
+    // footer → policy-modal → close flow leaves the landing exactly where the
+    // user was instead of jumping to the top.
     if (!location.hash && !location.state?.backgroundLocation && !location.state?.preserveScroll) {
       window.scrollTo({ top: 0, behavior: 'instant' });
     }
@@ -144,12 +145,19 @@ function RouteTransition({ children, transitionKey }) {
 }
 
 function PolicyModal({ title, children, onClose }) {
-  return (
+  // Portal to <body> so the overlay escapes the .route-transition subtree. That
+  // wrapper carries a transform during its enter animation, and a transformed
+  // ancestor becomes the containing block for position:fixed descendants — which
+  // would otherwise pin the modal to the document (off-screen when opened while
+  // scrolled down) instead of the viewport. React context still flows through the
+  // portal, so the <Routes> inside the modal keep their router context.
+  return createPortal(
     <div className="policy-overlay" role="dialog" aria-modal="true" aria-label={title} onClick={onClose}>
       <div className="policy-modal" onClick={(event) => event.stopPropagation()}>
         {children}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 
@@ -244,6 +252,7 @@ function AppRoutes() {
             <Route path="/privacy" element={<PrivacyPolicyPage isModal />} />
             <Route path="/terms" element={<TermsPage isModal />} />
             <Route path="/refund-policy" element={<RefundPolicyPage isModal />} />
+            <Route path="/faq" element={<FAQPage isModal />} />
             <Route path="/contact" element={<ContactPage isModal />} />
           </Routes>
         </PolicyModal>

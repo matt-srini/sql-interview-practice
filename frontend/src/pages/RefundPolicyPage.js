@@ -1,11 +1,17 @@
 import { useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import Topbar from '../components/Topbar';
 
 export default function RefundPolicyPage({ isModal = false }) {
+  const location = useLocation();
   const navigate = useNavigate();
-  const handleClose = () => navigate(-1);
+  // Closing the modal returns to the background page (the landing footer) and
+  // keeps scroll position — it does not jump to the top.
+  const handleClose = () => {
+    const bg = location.state?.backgroundLocation;
+    navigate(bg ? `${bg.pathname}${bg.search}` : '/', { replace: true, state: { preserveScroll: true } });
+  };
 
   useEffect(() => {
     if (!isModal) window.scrollTo(0, 0);
@@ -14,7 +20,7 @@ export default function RefundPolicyPage({ isModal = false }) {
   const footerAction = isModal ? (
     <button type="button" className="btn btn-secondary" onClick={handleClose}>Close</button>
   ) : (
-    <Link to="/" state={{ scrollTo: 'footer' }} className="btn btn-secondary">Back to home</Link>
+    <Link to="/" className="btn btn-secondary">Back to home</Link>
   );
 
   const content = (
