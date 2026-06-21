@@ -123,9 +123,17 @@ Two diagonal rounded squares — big block anchored bottom-left, small block flo
 **Dark:** big block `#2FBE6B`, small block `#87B09A`
 
 The dark mark green is **`#2FBE6B`** — it tracks the UI `--accent` (re-matched
-`#43D27C` 2026-06-13 → `#5FB98C` 2026-06-17 → re-sharpened to `#2FBE6B` same day). The mark is a static
-SVG (`/branding/mark-reverse-no-bg.svg`, used directly as an `<img>`, so editing it fixes
-the in-app logo with no render step), and the favicons / app icons / Open Graph card are
+`#43D27C` 2026-06-13 → `#5FB98C` 2026-06-17 → re-sharpened to `#2FBE6B` same day). **The in-app
+mark is rendered as inline SVG** in `frontend/src/components/BrandMark.js` (the two rects, light
+fills baked in as `fill` attributes; the dark override is dormant `[data-theme="dark"]` CSS in
+App.css). It is **no longer an `<img>` fetching `/branding/mark-*.svg`** — that runtime fetch was
+the recurring "logo missing" prod-blocker (any server blip / moved file / SPA-fallback mis-serve
+→ broken-image icon); inline SVG makes the mark zero-network and unbreakable. See
+[`../decisions/DECISIONS.md`](../decisions/DECISIONS.md) (2026-06-21 inline-brand-mark). The
+`/branding/mark-*.svg` files **remain the artwork source** (for favicon/OG regeneration + design
+reference) but are not loaded by the app — **changing the mark colour means updating BOTH
+`BrandMark.js`/App.css AND those SVGs** so the favicons stay in sync. The favicons / app icons /
+Open Graph card are
 PNGs **re-rendered from the SVG sources** (`favicon.svg`, `icon-maskable.svg`,
 `og-image.svg`) via `frontend/scripts/render-brand-assets.mjs` whenever the mark colour
 changes; the ground stays `#0D1A10` (a brand-asset choice, not the in-app charcoal

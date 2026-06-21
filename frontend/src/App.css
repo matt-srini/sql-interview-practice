@@ -1692,6 +1692,13 @@ select {
   width: 16px;
   flex-shrink: 0;
 }
+/* Brand mark fills: the LIGHT colors are baked into BrandMark.js as `fill`
+   attributes so the mark renders correctly even if this stylesheet fails to load.
+   These dark-theme overrides are DORMANT (theme is locked to light — see
+   § Design system / 2026-06-17 defer-dark); they activate one-line when dark
+   returns, keeping the mark theme-aware without a second asset or a JS branch. */
+[data-theme="dark"] .brand-mark-primary { fill: #2FBE6B; }
+[data-theme="dark"] .brand-mark-secondary { fill: #87B09A; }
 /* Wordmark text alongside the mark */
 .brand-wordmark-text {
   font-size: 1.1rem;

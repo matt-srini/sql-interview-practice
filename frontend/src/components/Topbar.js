@@ -4,7 +4,7 @@ import api from '../api';
 import { useAuth } from '../contexts/AuthContext';
 import { TRACK_META } from '../contexts/TopicContext';
 import { TRACK_SLUGS } from '../trackRegistry';
-import { useTheme } from '../App';
+import BrandMark from './BrandMark';
 
 /**
  * Shared top navigation bar used by every page.
@@ -41,10 +41,6 @@ export default function Topbar({
   belowTopbar = null,
 }) {
   const { user, logout } = useAuth();
-  // Dark is deferred (light-only at launch): isDark is permanently false, so the
-  // logo takes its light branch. cycleTheme/themeIcon/themeLabel are unused now
-  // the toggle is removed, but the context still provides them (shape preserved).
-  const { isDark } = useTheme();
   const [practiceOpen, setPracticeOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [bannerDismissed, setBannerDismissed] = useState(false);
@@ -155,12 +151,7 @@ export default function Topbar({
             {leftSlot}
             <Link className={brandLinkClass} to="/" onClick={handleBrandClick}>
               <div className="brand-lockup">
-                <img
-                  src={isDark ? '/branding/mark-reverse-no-bg.svg' : '/branding/mark-no-bg.svg'}
-                  alt=""
-                  aria-hidden="true"
-                  className="brand-mark-img"
-                />
+                <BrandMark />
                 <span className="brand-wordmark-text" aria-hidden="true">
                   <span className="brand-data">data</span><span className="brand-think">think</span>
                 </span>

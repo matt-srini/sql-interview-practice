@@ -12,7 +12,7 @@ import VariablesPanel from '../components/VariablesPanel';
 import { TRACK_META } from '../contexts/TopicContext';
 import { TRACK_SLUGS } from '../trackRegistry';
 import { useCatalogCounts } from '../contexts/CatalogCountsContext';
-import { useTheme } from '../App';
+import BrandMark from '../components/BrandMark';
 import { renderDescription } from '../utils/renderDescription';
 import { normalizeRunResult, rowCountLabel } from '../normalizeResult';
 import { track } from '../analytics';
@@ -57,7 +57,6 @@ export default function SampleQuestionPage() {
   const meta = TRACK_META[topic];
   const allCounts = useCatalogCounts();
   const trackTotal = allCounts[topic]?.total ?? 0;
-  const { isDark } = useTheme();
   const navigate = useNavigate();
 
   const defaultCode = meta.language === 'python' ? PYTHON_PLACEHOLDER : SQL_PLACEHOLDER;
@@ -344,12 +343,7 @@ export default function SampleQuestionPage() {
             <div className="sample-topbar-left">
               <Link className="sample-home-link brand-wordmark" to="/">
                 <div className="brand-lockup">
-                  <img
-                    src={isDark ? '/branding/mark-reverse-no-bg.svg' : '/branding/mark-no-bg.svg'}
-                    alt=""
-                    aria-hidden="true"
-                    className="brand-mark-img"
-                  />
+                  <BrandMark />
                   <span className="brand-wordmark-text" aria-hidden="true">
                     <span className="brand-data">data</span><span className="brand-think">think</span>
                   </span>
@@ -489,12 +483,7 @@ export default function SampleQuestionPage() {
           <div className="sample-topbar-left">
             <Link className="sample-home-link brand-wordmark" to="/">
               <div className="brand-lockup">
-                <img
-                  src={isDark ? '/branding/mark-reverse-no-bg.svg' : '/branding/mark-no-bg.svg'}
-                  alt=""
-                  aria-hidden="true"
-                  className="brand-mark-img"
-                />
+                <BrandMark />
                 <span className="brand-wordmark-text" aria-hidden="true">
                   <span className="brand-data">data</span><span className="brand-think">think</span>
                 </span>
