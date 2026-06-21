@@ -466,10 +466,26 @@ def _compute_readiness_scores(
         # confidence, not points, so a user who has mocked a lot but scores poorly
         # is honestly "mock-weak", not nudged to merely do more.)
         mock_limited = (coverage_pts + quality_pts) >= 50.0 and n_engaged < 4 and total < 80
+        # Loop-ready: the "earned capstone" signal. True only when readiness has reached
+        # "Getting there" (≥65) AND the user has run ≥1 completed *direct* benchmark on
+        # this track (the diagnostic that precedes the Loop in the benchmark→drill→Loop
+        # arc). Mixed/role benchmarks are deliberately excluded — they are not a single
+        # track's readiness signal. This is framing + recommendation only; it never gates
+        # the Loop (a user who knows what they want can always start one directly). Elite-
+        # only by construction: readiness_scores is computed only for Elite. See
+        # docs/features/mock.md § Interview Loop positioning.
+        benchmarked_track = any(
+            s.get("mode") == "benchmark"
+            and s.get("track") == track
+            and s.get("status") == "completed"
+            for s in mock_sessions
+        )
+        loop_ready = total >= 65 and benchmarked_track
         scores[track] = {
             "score": total,
             "label": _label(total),
             "mock_limited": mock_limited,
+            "loop_ready": loop_ready,
             "components": {
                 "coverage": round(coverage_pts, 1),
                 "quality": round(quality_pts, 1),

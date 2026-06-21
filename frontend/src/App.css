@@ -6177,6 +6177,26 @@ select {
   pointer-events: none;
 }
 
+/* Earned-capstone CTA: shown on a readiness chip the user is loop-ready for.
+   Accent pill (vs. the muted, non-interactive mock-nudge) — the one interactive
+   nudge in the right column, so it reads as an invitation, not a status label. */
+.db-readiness-loopcta {
+  font-size: 0.66rem;
+  font-weight: 600;
+  color: var(--accent-strong);
+  background: var(--accent-soft);
+  border: 1px solid var(--accent-soft-strong);
+  border-radius: 999px;
+  padding: 2px 9px;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background 120ms ease, border-color 120ms ease;
+}
+.db-readiness-loopcta:hover {
+  background: var(--accent-soft-strong);
+  border-color: var(--accent);
+}
+
 /* Track overview — role filter */
 .db-track-overview-head {
   display: flex;
@@ -8697,6 +8717,26 @@ select {
 .mock-rail-replay-btn {
   align-self: flex-start;
   margin-top: 0.15rem;
+}
+/* Loop capstone soft-nudge — a calm suggestion (accent-soft), not a warning. */
+.mock-rail-nudge {
+  padding: 0.55rem 0.7rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.78rem;
+  line-height: 1.45;
+  color: var(--text-secondary);
+  background: var(--accent-soft);
+  border: 1px solid var(--accent-soft-strong);
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+.mock-rail-nudge-kicker {
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--accent-strong);
 }
 .mock-rail-error {
   color: var(--danger);

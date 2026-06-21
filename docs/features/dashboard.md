@@ -152,6 +152,8 @@ The score badge on each track card is colour-coded along a calm ramp (no red —
 
 Each track object also carries `mock_limited` (bool): `true` when `coverage + quality ≥ 50` and `n_engaged < 4` and `total < 80` — meaning the user is practice-strong but does not yet have enough engaged mock sessions for the confidence factor to reach full weight. A user who has mocked frequently but scores poorly is genuinely mock-weak, not `mock_limited`. The UI uses this flag to nudge practice-strong tracks toward a benchmark mock.
 
+Each track object also carries `loop_ready` (bool): `true` when `score >= 65` ("Getting there" or better) **and** the user has ≥1 completed **direct** benchmark on that track (mixed/role benchmarks excluded). This is the "earned capstone" signal for the Interview Loop — the dashboard renders a **"Ready for a Loop →"** CTA on the readiness chip (taking precedence over the `mock_limited` nudge, since a Loop *is* a timed mock) that deep-links `/mock` into an `interview_loop` preset. It is framing only: it never gates the Loop, which a user can always start directly. Canonical positioning spec: [`docs/features/mock.md`](mock.md) § Interview Loop positioning.
+
 **Note on mock metric vs. analytics score:** The readiness mock metric (accuracy over *attempted*, engaged sessions only, confidence-weighted) is intentionally distinct from the post-session analytics headline `avg_score_pct` (`solved_count / total_count`, which counts unanswered questions as misses). Readiness measures demonstrated skill on questions the user engaged with; `avg_score_pct` measures session outcome including gaps. Both are valid; the divergence is by design, not a bug.
 
 ### Personalised study plan (Elite only)

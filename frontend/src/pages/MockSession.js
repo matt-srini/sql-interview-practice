@@ -572,6 +572,34 @@ export default function MockSession() {
         : 'Stay in drill mode and keep pressure on the same weak area with a short focused follow-up.',
     };
 
+    // Post-mortem capstone: surface the Interview Loop as the earned next step when
+    // the user has just demonstrated readiness — Elite-only, framing not gate. Two
+    // honest signals must both hold: (1) a strong single-track benchmark in THIS
+    // session (≥60% — the benchmark is the diagnostic, so a strong result is readiness
+    // evidence), and (2) a holistic readiness floor of ≥65 ("Getting there"), the same
+    // bar the dashboard uses. We read the *score* (not loop_ready) so the benchmark-
+    // count cache lag can't hide the capstone the moment a practice-ready user aces
+    // their first benchmark — that ≥1-benchmark condition is met by this session. See
+    // docs/features/mock.md § Interview Loop positioning.
+    const trackReadinessScore = insights?.readiness_scores?.[sessionTrack]?.score ?? 0;
+    const showLoopCapstone =
+      isElite &&
+      summaryDescriptor.isBenchmark &&
+      sessionTrack !== 'mixed' &&
+      totalCount > 0 &&
+      sessionAccuracy >= 0.6 &&
+      trackReadinessScore >= 65;
+    const loopDifficulty = (() => {
+      const d = sum?.difficulty || session?.difficulty || 'medium';
+      return (d === 'easy' || d === 'mixed') ? 'medium' : d;
+    })();
+    const loopPreset = {
+      mode: 'interview_loop',
+      track: sessionTrack,
+      difficulty: loopDifficulty,
+      note: `You scored well on this ${TRACK_LABELS[sessionTrack]} benchmark — an Interview Loop is the real-interview test to pressure-check it.`,
+    };
+
     let comparisonCopy = null;
     if (solvedCount === 0 && totalCount > 0) {
       // Gentle frame for a wipeout — acknowledge it, no demoralizing percentage. The
@@ -784,12 +812,31 @@ export default function MockSession() {
                   <button className="btn btn-secondary" onClick={() => navigate('/mock')}>
                     Back to Mock
                   </button>
-                  <button
-                    className="btn btn-primary"
-                    onClick={() => navigate('/mock', { state: { mockPreset: drillPreset } })}
-                  >
-                    Plan follow-up drill
-                  </button>
+                  {showLoopCapstone ? (
+                    // Strong benchmark → the Loop is the earned next step (primary);
+                    // a follow-up drill stays available as secondary for any one miss.
+                    <>
+                      <button
+                        className="btn btn-secondary"
+                        onClick={() => navigate('/mock', { state: { mockPreset: drillPreset } })}
+                      >
+                        Plan follow-up drill
+                      </button>
+                      <button
+                        className="btn btn-primary"
+                        onClick={() => navigate('/mock', { state: { mockPreset: loopPreset } })}
+                      >
+                        Try an Interview Loop →
+                      </button>
+                    </>
+                  ) : (
+                    <button
+                      className="btn btn-primary"
+                      onClick={() => navigate('/mock', { state: { mockPreset: drillPreset } })}
+                    >
+                      Plan follow-up drill
+                    </button>
+                  )}
                 </>
               ) : (
                 // Concept drills live per-row in the breakdown above (the user chooses);

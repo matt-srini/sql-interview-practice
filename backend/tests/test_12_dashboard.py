@@ -966,3 +966,57 @@ def test_tc211_recency_uses_newest_5():
         f"Expected mock 30.0 (newest-5 all perfect), got {mock_pts}; "
         "if got 24.0 the code is using [-5:] (oldest 5) instead of [:5] (newest 5)"
     )
+
+
+def test_tc212_loop_ready_signal():
+    """TC-212: loop_ready True only when readiness ≥ 65 AND ≥1 completed *direct*
+    benchmark on the track. The "earned capstone" framing signal for the Interview
+    Loop (Elite-only). Mixed/other-track benchmarks must NOT count as a direct
+    benchmark. See docs/features/mock.md § Interview Loop positioning.
+    """
+    from questions import get_questions_by_difficulty as get_sql
+    sql_qs = get_sql()
+    all_practice_ids = {int(q["id"]) for d in ("easy", "medium", "hard") for q in sql_qs[d]}
+    # Full practice + ftc → coverage 45 + quality 25 = score 70 (≥65) with no mock.
+    full = dict(
+        per_track_solved_question_ids={"sql": all_practice_ids},
+        per_track_ftc_question_ids={"sql": all_practice_ids},
+        effective_plan="elite",
+    )
+    bench_sql = {"status": "completed", "track": "sql", "mode": "benchmark",
+                 "total_count": 3, "attempted_count": 3, "solved_count": 2}
+
+    # A) score ≥ 65 + 1 direct sql benchmark → loop_ready True
+    a = _compute_readiness_scores(mock_sessions=[bench_sql], **full)
+    assert a["sql"]["score"] >= 65 and a["sql"]["loop_ready"] is True
+
+    # B) score ≥ 65 but the engaged session is a custom drill (not a benchmark) → False
+    b = _compute_readiness_scores(
+        mock_sessions=[{"status": "completed", "track": "sql", "mode": "custom",
+                        "total_count": 3, "attempted_count": 3, "solved_count": 2}],
+        **full,
+    )
+    assert b["sql"]["score"] >= 65 and b["sql"]["loop_ready"] is False
+
+    # C) a direct benchmark but score < 65 (no practice/ftc) → False
+    c = _compute_readiness_scores(
+        per_track_solved_question_ids={}, per_track_ftc_question_ids={},
+        mock_sessions=[bench_sql], effective_plan="elite",
+    )
+    assert c["sql"]["score"] < 65 and c["sql"]["loop_ready"] is False
+
+    # D) score ≥ 65 on sql but the only benchmark is on python → sql not loop_ready
+    d = _compute_readiness_scores(
+        mock_sessions=[{"status": "completed", "track": "python", "mode": "benchmark",
+                        "total_count": 3, "attempted_count": 3, "solved_count": 3}],
+        **full,
+    )
+    assert d["sql"]["loop_ready"] is False
+
+    # E) a mixed-track benchmark does NOT count as a direct track benchmark → False
+    e = _compute_readiness_scores(
+        mock_sessions=[{"status": "completed", "track": "mixed", "mode": "benchmark",
+                        "total_count": 3, "attempted_count": 3, "solved_count": 3}],
+        **full,
+    )
+    assert e["sql"]["loop_ready"] is False

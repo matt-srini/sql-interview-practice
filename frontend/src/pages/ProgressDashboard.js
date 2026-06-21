@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import api from '../api';
 import { useAuth } from '../contexts/AuthContext';
@@ -125,6 +125,7 @@ function ReadinessModal({ onClose }) {
 export default function ProgressDashboard() {
   const { user, loading: authLoading } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
   const rawPlan = user?.plan ?? 'free';
   const normalisedPlan = rawPlan.startsWith('lifetime_') ? rawPlan.replace('lifetime_', '') : rawPlan;
   const isPaying = normalisedPlan === 'pro' || normalisedPlan === 'elite';
@@ -381,9 +382,31 @@ export default function ProgressDashboard() {
                                 Readiness <span className="db-elite-badge">Elite</span>
                               </button>
                             ) : null}
-                            {readiness?.mock_limited && (
+                            {readiness?.loop_ready ? (
+                              <button
+                                type="button"
+                                className="db-readiness-loopcta"
+                                title={`You've benchmarked ${meta.label} and reached interview-readiness — an Interview Loop is the real-interview test to pressure-check it.`}
+                                onClick={e => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  navigate('/mock', {
+                                    state: {
+                                      mockPreset: {
+                                        track: topic,
+                                        mode: 'interview_loop',
+                                        difficulty: 'hard',
+                                        note: `You've benchmarked ${meta.label} and reached "${readiness.label}" readiness. An Interview Loop is the real-interview test to pressure-check it.`,
+                                      },
+                                    },
+                                  });
+                                }}
+                              >
+                                Ready for a Loop →
+                              </button>
+                            ) : readiness?.mock_limited ? (
                               <span className="db-readiness-mocknudge">Mock to level up</span>
-                            )}
+                            ) : null}
                             <span className="db-track-arrow">→</span>
                           </div>
                         </Link>

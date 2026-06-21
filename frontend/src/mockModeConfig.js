@@ -197,7 +197,7 @@ export function getMockModeCards(track, plan = 'free') {
     key: 'interview_loop',
     label: 'Interview Loop',
     sublabel: isElite ? 'Chain of follow-ups' : 'Elite only',
-    desc: 'One iterative chain — the interviewer digs deeper after each answer.',
+    desc: 'Your capstone — one deepening chain, best after a benchmark and a drill or two.',
     // Never disabled for Mixed — selecting it auto-switches the track to a single
     // track (Interview Loop is single-track). Handled in MockHub's mode handler.
     disabled: false,
@@ -272,7 +272,7 @@ export function getMockSessionDescriptor(mode, track, role) {
       phaseLabel: 'Interview Loop',
       title: 'Iterative interview chain',
       summaryLine: '1 chain · 15 min per question',
-      description: 'Simulates a real interview: the interviewer follows up on your answer, probing deeper with each round.',
+      description: 'The capstone after benchmarking and drilling — a real interviewer follows up on each answer, probing deeper every round.',
       isBenchmark: false,
     };
   }
@@ -341,6 +341,7 @@ export function getMockSetupDescriptor(mode, track, customCount, customMinutes, 
       sectionLabel: 'Loop setup',
       summaryLine: '1 chain · 15 min per question',
       detailLines: [
+        'Best as a readiness check — after you have benchmarked this track and drilled the gaps it surfaced.',
         'The full chain is drawn at session start — you cannot skip follow-ups.',
         "Each chain is drawn once; once you've completed them all, you can choose to replay.",
       ],

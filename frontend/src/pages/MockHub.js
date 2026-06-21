@@ -180,6 +180,10 @@ export default function MockHub() {
   const showFirstRunFraming = !historyLoading && history.length === 0;
   const showBenchmarkEmptyFraming = !historyLoading && history.length > 0 && benchmarkHistory.length === 0;
   const showDrillEmptyFraming = !historyLoading && history.length > 0 && drillHistory.length === 0;
+  // Loop capstone soft-nudge: has the user run any benchmark on the currently-
+  // selected Loop track? Framing only — it never gates Start (a user who knows
+  // what they want starts the Loop directly). See docs/features/mock.md.
+  const loopTrackBenchmarked = benchmarkHistory.some((s) => s.track === track);
 
   useEffect(() => {
     const preset = location.state?.mockPreset;
@@ -430,11 +434,11 @@ export default function MockHub() {
 
             {/* Hero */}
             <section className="mock-hub-hero">
-              <div className="mock-hub-kicker">Benchmarks, drills, and Interview Loop</div>
+              <div className="mock-hub-kicker">Benchmark → Drill → Interview Loop</div>
               <h1 className="mock-hub-title">Interview Practice</h1>
               <div className="mock-hub-subtitle-row">
                 <p className="mock-hub-subtitle">
-                  Use benchmarks for a consistent interview-style check, then use custom drills or Interview Loop to work on the gaps you find.
+                  Benchmark to diagnose, drill to fix the gaps it surfaces, then take an Interview Loop as the real-interview test once you're ready.
                 </p>
                 <button className="mock-help-btn" onClick={() => setShowHelp(true)} aria-label="How it works">?</button>
               </div>
@@ -853,6 +857,14 @@ export default function MockHub() {
                   {railDiffState.chip}
                 </div>
               ) : null}
+
+              {/* Loop capstone soft-nudge — never blocks Start (framing only) */}
+              {mode === 'interview_loop' && isElite && !historyLoading && !loopTrackBenchmarked && !railDiffState.blocked && (
+                <div className="mock-rail-nudge">
+                  <span className="mock-rail-nudge-kicker">Suggested first</span>
+                  <span>Run a quick {TRACK_LABELS[track]} benchmark to see where you stand — the Loop bites hardest once you know your weak spots. You can start it now either way.</span>
+                </div>
+              )}
 
               {/* Error */}
               {startError && <p className="mock-rail-error">{startError}</p>}
@@ -1284,6 +1296,7 @@ export default function MockHub() {
             </div>
             <ol className="mock-help-steps">
               <li>Choose a session type — Benchmark for the fixed-shape readiness signal, Custom drill for targeted follow-up practice, or Interview Loop for an Elite-only chain where the interviewer keeps pushing deeper.</li>
+              <li>We suggest a path: <strong>benchmark</strong> to find your weak spots, <strong>drill</strong> them with Custom drills, then reach for an <strong>Interview Loop</strong> as the real-interview test once you're scoring well. It's a recommendation, not a gate — start any mode directly whenever you want.</li>
               <li>Filter by role to see the tracks most relevant to your interview target, then pick a track and difficulty. Mixed draws from {MIXED_MOCK_TRACKS.map(s => TRACK_LABELS[s]).join(', ')} and uses role-based setup.</li>
               <li>Benchmark mode is fixed-shape. Mixed benchmarks and custom drills both require role selection, while Interview Loop stays single-track only.</li>
               <li><strong>(Elite)</strong> Enable <strong>Focus mode</strong> to target specific concepts — your session draws from questions tagged with them.</li>

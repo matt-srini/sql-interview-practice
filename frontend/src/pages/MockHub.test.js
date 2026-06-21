@@ -118,7 +118,7 @@ describe('MockHub history framing', () => {
     renderHub();
 
     await waitFor(() => {
-      expect(screen.getByText('Use benchmarks for a consistent interview-style check, then use custom drills or Interview Loop to work on the gaps you find.')).toBeInTheDocument();
+      expect(screen.getByText("Benchmark to diagnose, drill to fix the gaps it surfaces, then take an Interview Loop as the real-interview test once you're ready.")).toBeInTheDocument();
       expect(screen.getByText('Start with a benchmark, then drill the misses')).toBeInTheDocument();
       expect(screen.getByText('Use benchmarks for comparability')).toBeInTheDocument();
       expect(screen.getByText('Use custom drills for targeted reps')).toBeInTheDocument();
@@ -256,11 +256,11 @@ describe('MockHub mixed-track framing', () => {
     renderHub();
 
     await waitFor(() => {
-      expect(screen.getByText('Use benchmarks for a consistent interview-style check, then use custom drills or Interview Loop to work on the gaps you find.')).toBeInTheDocument();
+      expect(screen.getByText("Benchmark to diagnose, drill to fix the gaps it surfaces, then take an Interview Loop as the real-interview test once you're ready.")).toBeInTheDocument();
       expect(screen.getByRole('button', { name: 'How it works' })).toBeInTheDocument();
     });
 
-    const subtitle = screen.getByText('Use benchmarks for a consistent interview-style check, then use custom drills or Interview Loop to work on the gaps you find.');
+    const subtitle = screen.getByText("Benchmark to diagnose, drill to fix the gaps it surfaces, then take an Interview Loop as the real-interview test once you're ready.");
     const helpButton = screen.getByRole('button', { name: 'How it works' });
     expect(subtitle.parentElement).not.toBe(helpButton.parentElement?.closest('p'));
     fireEvent.click(helpButton);

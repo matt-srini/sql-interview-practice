@@ -364,6 +364,35 @@ After completion, Interview Loop sessions contribute a new analytics dimension i
 
 ---
 
+## Interview Loop positioning (the earned capstone)
+
+The Interview Loop is framed across the product as the **culminating "real interview" test** — the deliberate readiness check a user reaches for *after* benchmarking (diagnose) and drilling (fix weak spots), not a daily drill tool. The arc is **Benchmark → Drill → Interview Loop**.
+
+**This is framing + recommendation only — never a hard prerequisite.** A user who knows what they want can always start a Loop directly. Hard-gating a paid Elite feature behind "you must benchmark first" would be artificial friction (the *serving-a-metric-not-the-user* anti-pattern). Every nudge below is suggestive, dismissible, and never disables the Start control. The scarcity stays *honest* (it reflects the genuinely deep, finite, expensive-to-author chain pools and the readiness-test purpose), never *manufactured*. Operator direction 2026-06-19 (TODO P3), refined to framing-not-gate; see [DECISIONS 2026-06-21](../decisions/DECISIONS.md).
+
+### The `loop_ready` signal (canonical)
+
+`GET /api/dashboard/insights` → `readiness_scores[track].loop_ready` (bool). Computed in `_compute_readiness_scores` (`backend/routers/insights.py`). Elite-only by construction (readiness scores are Elite-only). True **iff both** hold:
+
+1. `readiness_scores[track].score >= 65` — the "Getting there" band or better (the holistic coverage + first-time-solve-quality + mock signal), **and**
+2. the user has **≥1 completed *direct* benchmark on that track** in mock history. Mixed/role benchmarks are **deliberately excluded** — a role-mix benchmark is not a single track's readiness signal.
+
+`loop_ready` never feeds any score; it is a pure presentation flag.
+
+### Where it surfaces
+
+| Surface | File | Trigger | Copy intent |
+|---|---|---|---|
+| Dashboard readiness chip → "Ready for a Loop →" CTA | `ProgressDashboard.js` | `readiness_scores[track].loop_ready` (holistic) | Persistent "you're ready" reminder; deep-links `/mock` with an `interview_loop` hard preset + honest note. Takes precedence over the `mock_limited` "Mock to level up" nudge (a Loop *is* a timed mock). |
+| Mock post-mortem footer → "Try an Interview Loop →" primary CTA | `MockSession.js` | Strong single-track **benchmark this session** (≥60%) **and** holistic `readiness_scores[track].score >= 65` | Strike-while-hot: the just-completed benchmark is the most contextual readiness evidence. Reads the *score* (not `loop_ready`) so the benchmark-count cache lag can't hide the capstone the moment a practice-ready user aces their first benchmark. Demotes "Plan follow-up drill" to secondary. |
+| Hero + "How it works" modal | `MockHub.js` | always | Sequences Benchmark → Drill → Interview Loop; the modal states explicitly "a recommendation, not a gate — start any mode directly." |
+| Loop mode card + Loop setup descriptor | `mockModeConfig.js` | always | Shifts from *what it is* to *when to reach for it* ("Your capstone — best after a benchmark and a drill or two"). |
+| Loop setup rail → "Suggested first" soft nudge | `MockHub.js` (`loopTrackBenchmarked`) | Elite + Loop selected + **no benchmark on the selected track** + rail not in a blocked/completion state | "Run a quick {track} benchmark first … You can start it now either way." Never blocks Start. |
+
+**Two honest triggers, by design.** The dashboard uses the holistic `loop_ready` (the durable, aggregate readiness signal — right for a persistent surface). The post-mortem uses *this session's strong benchmark + a ≥65 score floor* (the immediate, contextual signal — right for the moment just after a benchmark). Both are honest-by-construction and Elite-scoped; they are complementary signals at two moments, not a single trigger restated in two places.
+
+---
+
 ## Focus Mode (Elite only)
 
 Elite users can enable **Focus mode** on MockHub. When active, a concept pill multi-select appears (1–3 concepts max). The session pool is filtered to questions tagged with the selected concepts.
