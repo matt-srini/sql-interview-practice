@@ -47,6 +47,7 @@ from plan_policy import (
     SUBSCRIPTION_PLANS,  # re-exported for back-compat; not used directly here
     target_plan_is_allowed as _target_plan_is_allowed,
 )
+from sentry_utils import capture_payment_failure
 
 try:
     import razorpay
@@ -364,6 +365,13 @@ async def verify_payment(
         raise HTTPException(status_code=400, detail="Invalid plan.")
 
     if not _verify_payment_signature(body):
+        capture_payment_failure(
+            "Razorpay verify-payment: invalid payment signature",
+            stage="verify_payment_signature",
+            provider="razorpay",
+            user_id=str(current_user["id"]) if current_user else None,
+            extra={"plan": body.plan},
+        )
         raise HTTPException(status_code=400, detail="Invalid payment signature.")
 
     # Idempotency check runs before the upgrade-path check so a replayed
@@ -427,6 +435,12 @@ async def razorpay_webhook(request: Request) -> dict[str, str]:
     raw_body = await request.body()
     signature = request.headers.get("X-Razorpay-Signature") or ""
     if not _verify_webhook_signature(raw_body, signature):
+        capture_payment_failure(
+            "Razorpay webhook: invalid signature — possible spoofed delivery",
+            stage="webhook_signature",
+            provider="razorpay",
+            extra={"has_signature_header": bool(signature)},
+        )
         raise HTTPException(status_code=400, detail="Invalid Razorpay signature.")
 
     import json
@@ -469,18 +483,48 @@ async def razorpay_webhook(request: Request) -> dict[str, str]:
             or notes.get("target_plan")
         )
         if resolved_user and target_plan in ALL_PAID_PLANS:
-            await _apply_plan_change(
-                user=resolved_user,
-                new_plan=str(target_plan),
-                context=f"razorpay-{event_type}",
-                payment_event_id=event_id,
-            )
+            try:
+                await _apply_plan_change(
+                    user=resolved_user,
+                    new_plan=str(target_plan),
+                    context=f"razorpay-{event_type}",
+                    payment_event_id=event_id,
+                )
+            except Exception as exc:
+                capture_payment_failure(
+                    "Razorpay webhook: plan persistence failed after payment",
+                    stage="plan_persist",
+                    provider="razorpay",
+                    user_id=str(resolved_user["id"]),
+                    extra={
+                        "event_type": event_type,
+                        "event_id": event_id,
+                        "target_plan": target_plan,
+                        "error": type(exc).__name__,
+                    },
+                )
+                raise
             # Store the subscription ID whenever it arrives so the cancel
             # endpoint always has a fresh reference.
             sub_id = subscription_entity.get("id")
             if sub_id:
                 await set_user_subscription_id(str(resolved_user["id"]), str(sub_id))
             handled = True
+        else:
+            # Payment event arrived but we cannot resolve who to upgrade — money
+            # was collected but entitlement was NOT applied.
+            capture_payment_failure(
+                "Razorpay webhook: grant event received but user/plan unresolvable — entitlement NOT applied",
+                stage="plan_resolution",
+                provider="razorpay",
+                user_id=str(resolved_user["id"]) if resolved_user else None,
+                extra={
+                    "event_type": event_type,
+                    "event_id": event_id,
+                    "resolved_user": bool(resolved_user),
+                    "target_plan": target_plan,
+                },
+            )
 
     elif event_type in {"subscription.cancelled", "subscription.halted", "subscription.completed"}:
         resolved_user = await _resolve_event_user(lookup_entity)
@@ -511,6 +555,19 @@ async def razorpay_webhook(request: Request) -> dict[str, str]:
         logger.warning(
             "[razorpay-webhook] payment.failed user_id=%s",
             None if resolved_user is None else resolved_user["id"],
+        )
+        # Capture to Sentry so operators are alerted — a payment.failed is not a
+        # billing inconsistency on its own (Razorpay retries), but a persistent
+        # stream is a revenue signal worth an alert.
+        capture_payment_failure(
+            "Razorpay webhook: payment.failed event received",
+            stage="payment_failed",
+            provider="razorpay",
+            user_id=str(resolved_user["id"]) if resolved_user else None,
+            extra={
+                "event_id": event_id,
+                "payment_id": payment_entity.get("id"),
+            },
         )
     else:
         logger.info("[razorpay-webhook] Ignoring event type=%s", event_type)

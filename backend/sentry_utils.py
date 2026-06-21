@@ -73,6 +73,43 @@ def set_sentry_request_context(request: Request, request_id: str) -> None:
     )
 
 
+def capture_payment_failure(
+    message: str,
+    *,
+    stage: str,
+    provider: str | None = None,
+    user_id: str | None = None,
+    extra: dict[str, Any] | None = None,
+) -> None:
+    """Capture a payment-critical failure as a Sentry error-level message.
+
+    Always no-ops when Sentry is not initialised (SENTRY_DSN unset / sdk missing).
+
+    Tags set on every call:
+      alert=payment_failure   — used as the single alert-rule filter
+      payment_stage=<stage>   — e.g. "webhook_signature", "plan_resolution",
+                                "plan_persist", "cancel", "switch_now"
+      payment_provider=<provider>  — "razorpay" | "paddle" | None
+
+    ``extra`` may contain non-sensitive context (event_id, event_type, resolved
+    plan tier, error class name).  NEVER include secrets, raw signatures, card data,
+    or PII beyond user_id.
+    """
+    if _sentry_sdk is None:
+        return
+
+    with _sentry_sdk.push_scope() as scope:
+        scope.set_tag("alert", "payment_failure")
+        scope.set_tag("payment_stage", stage)
+        if provider is not None:
+            scope.set_tag("payment_provider", provider)
+        if user_id is not None:
+            scope.set_user({"id": str(user_id)})
+        if extra:
+            scope.set_context("payment_failure_detail", extra)
+        _sentry_sdk.capture_message(message, level="error", scope=scope)
+
+
 def set_sentry_user(user: dict[str, Any], *, is_authenticated: bool) -> None:
     if _sentry_sdk is None:
         return

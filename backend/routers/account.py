@@ -19,6 +19,7 @@ from config import (
 )
 from db import clear_user_subscription_id, delete_user_account, get_paddle_payment_events, record_plan_change, set_user_plan, update_user_name  # noqa: F401
 from deps import clear_session_cookie, require_authenticated_user
+from sentry_utils import capture_payment_failure
 
 try:
     import razorpay
@@ -465,10 +466,30 @@ async def switch_plan(
         # now (instant access) instead of waiting for the subscription.charged
         # webhook. target_plan != plan is already validated above, and this is an
         # upgrade (timing='now' is rejected for downgrades), so it is a real change.
-        await set_user_plan(current_user["id"], body.target_plan)
-        await record_plan_change(
-            current_user["id"], plan, body.target_plan, context="razorpay-switch-now",
-        )
+        try:
+            await set_user_plan(current_user["id"], body.target_plan)
+            await record_plan_change(
+                current_user["id"], plan, body.target_plan, context="razorpay-switch-now",
+            )
+        except Exception as exc:
+            # Razorpay already accepted the plan switch; DB persistence failed.
+            # User is paying for the new tier but our DB still shows the old one.
+            capture_payment_failure(
+                "switch-plan: Razorpay accepted plan switch but DB persistence failed — billing inconsistency",
+                stage="switch_now",
+                provider="razorpay",
+                user_id=str(current_user["id"]),
+                extra={
+                    "from_plan": plan,
+                    "to_plan": body.target_plan,
+                    "subscription_id": subscription_id,
+                    "error": type(exc).__name__,
+                },
+            )
+            raise HTTPException(
+                status_code=500,
+                detail="Plan switch was accepted by the payment provider but could not be recorded. Please contact support.",
+            )
         effective_at = updated_sub.get("charge_at") or updated_sub.get("current_start")
     else:
         # cycle_end: NOT applied now. The webhook applies it at the next charge

@@ -47,6 +47,7 @@ from db import (
 from deps import require_authenticated_user
 from models import PaddleCheckoutRequest, PaddleCheckoutResponse
 from plan_policy import ALL_PAID_PLANS, LIFETIME_PLANS, SUBSCRIPTION_PLANS, target_plan_is_allowed
+from sentry_utils import capture_payment_failure
 
 logger = logging.getLogger(__name__)
 
@@ -205,11 +206,23 @@ async def paddle_webhook(request: Request) -> dict[str, str]:
     raw_body = await request.body()
     signature = request.headers.get("Paddle-Signature") or ""
     if not _verify_paddle_signature(raw_body, signature):
+        capture_payment_failure(
+            "Paddle webhook: invalid signature — possible spoofed delivery",
+            stage="webhook_signature",
+            provider="paddle",
+            extra={"has_signature_header": bool(signature)},
+        )
         raise HTTPException(status_code=400, detail="Invalid Paddle signature.")
 
     try:
         event = json.loads(raw_body.decode("utf-8"))
     except Exception as exc:
+        capture_payment_failure(
+            "Paddle webhook: malformed JSON payload",
+            stage="webhook_parse",
+            provider="paddle",
+            extra={"error": type(exc).__name__},
+        )
         raise HTTPException(status_code=400, detail="Invalid webhook payload.") from exc
 
     raw_event_id = str(event.get("event_id") or "")
@@ -236,13 +249,42 @@ async def paddle_webhook(request: Request) -> dict[str, str]:
 
     if event_type in _GRANT_EVENTS:
         if resolved_user and target_plan:
-            await _apply_plan_change(
-                user=resolved_user,
-                new_plan=str(target_plan),
-                context=f"paddle-{event_type}",
-                payment_event_id=event_id,
-            )
+            try:
+                await _apply_plan_change(
+                    user=resolved_user,
+                    new_plan=str(target_plan),
+                    context=f"paddle-{event_type}",
+                    payment_event_id=event_id,
+                )
+            except Exception as exc:
+                capture_payment_failure(
+                    "Paddle webhook: plan persistence failed after payment",
+                    stage="plan_persist",
+                    provider="paddle",
+                    user_id=str(resolved_user["id"]),
+                    extra={
+                        "event_type": event_type,
+                        "event_id": event_id,
+                        "target_plan": target_plan,
+                        "error": type(exc).__name__,
+                    },
+                )
+                raise
             handled = True
+        else:
+            # Payment event arrived but we cannot resolve who to upgrade — this
+            # means money was collected but entitlement was NOT applied.
+            capture_payment_failure(
+                "Paddle webhook: grant event received but user/plan unresolvable — entitlement NOT applied",
+                stage="plan_resolution",
+                provider="paddle",
+                extra={
+                    "event_type": event_type,
+                    "event_id": event_id,
+                    "resolved_user": bool(resolved_user),
+                    "target_plan": target_plan,
+                },
+            )
 
     elif event_type in _REVOKE_EVENTS:
         if resolved_user:
