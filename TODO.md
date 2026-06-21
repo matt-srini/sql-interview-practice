@@ -45,11 +45,14 @@ plan-transition edge cases), **observability/alerting** (is anything paging on e
 failed payments?), **deployment/rollback**, **legal/compliance** (privacy, ToS, GDPR deletion,
 email deliverability). Verify against real code, prioritize P0/P1/P2, stop before fixing.
 
-**Status (2026-06-17):** audit performed (4 parallel read-only sub-agents + synthesis);
-prioritized P0/P1/P2 findings reported to the operator for sign-off. P0/P1 fixes are pending that
-sign-off — when they land, this line is replaced with the closed-out result + a DECISIONS entry.
-Headline P0s found: a Pro→Elite plan-switch that never persists to the DB (stale Razorpay
-`notes.target_plan`), and **no alerting layer** (a 3 a.m. payment-failure / error spike is silent).
+**Status (2026-06-21):** CLOSED for P0/P1. P0s fixed earlier this session (Pro→Elite plan-switch
+now persists from the webhook `plan_id`; Paddle dual-rail billing parity). P1s landed this cycle:
+**prod config guard** (boot-requires Razorpay plan IDs + `RESEND_API_KEY` + `ADMIN_SECRET`≥32),
+**payment alerting** (`capture_payment_failure` → Sentry, one `alert=payment_failure` tag across
+razorpay/paddle/account), **rollback runbook** (`docs/deployment.md`), and an opt-in **cookie
+consent** banner (PostHog gated until Accept). Why → `docs/decisions/DECISIONS.md` 2026-06-21.
+**Operator's one remaining step:** create the Sentry alert rules + uptime monitor per
+[`docs/runbooks/alerting.md`](docs/runbooks/alerting.md).
 
 ## P2 — Revisit Interview Loop replay once the mock chain-pools are expanded
 The consent-gated **replay** (DECISIONS 2026-06-19) was shipped while several loop cells were
