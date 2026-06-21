@@ -528,9 +528,9 @@ export default function MockHub() {
                     </div>
                   )}
                   <p className="mock-drill-plan-copy">{setupDescriptor.description}</p>
-                  {setupDescriptor.detailLines?.length > 0 && (
-                    <p className="mock-drill-plan-note">{setupDescriptor.detailLines[0]}</p>
-                  )}
+                  {setupDescriptor.detailLines?.map((line, i) => (
+                    <p key={i} className="mock-drill-plan-note">{line}</p>
+                  ))}
 
                   {mode === 'custom' && (
                     <div className="mock-custom-controls mock-custom-controls-inline">
