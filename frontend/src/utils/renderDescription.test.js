@@ -32,6 +32,19 @@ describe('renderDescription', () => {
     expect(container.textContent).toContain('After.');
   });
 
+  it('strips the language info-string from a language-tagged code fence', () => {
+    const { container } = render(
+      <div>{renderDescription('```python\nimport pandas as pd\ndf = df.copy()\n```')}</div>
+    );
+    const pre = container.querySelector('pre');
+    expect(pre).not.toBeNull();
+    expect(pre.textContent).toContain('import pandas as pd');
+    expect(pre.textContent).toContain('df = df.copy()');
+    // the language tag must NOT leak in as the first rendered code line
+    expect(pre.textContent).not.toContain('python');
+    expect(pre.textContent.trimStart().startsWith('import')).toBe(true);
+  });
+
   it('renders inline backtick code as <code> elements', () => {
     const { container } = render(
       <div>{renderDescription('Use `GROUP BY` here.')}</div>

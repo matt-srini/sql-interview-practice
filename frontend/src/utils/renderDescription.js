@@ -12,7 +12,11 @@ export function renderDescription(text) {
   const parts = text.split(/(```[\s\S]*?```)/g);
   return parts.map((part, i) => {
     if (part.startsWith('```') && part.endsWith('```')) {
-      const code = part.slice(3, -3).replace(/^\n/, '');
+      const inner = part.slice(3, -3);
+      // Drop the opening fence's info string (language id, e.g. ```python) — it is
+      // the remainder of the first line — and a single trailing newline before the
+      // closing fence, so neither leaks into the rendered <code>.
+      const code = inner.replace(/^[^\n]*\n/, '').replace(/\n$/, '');
       return (
         <pre key={i} className="description-code-block">
           <code>{code}</code>
