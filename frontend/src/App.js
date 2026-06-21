@@ -36,6 +36,7 @@ import FAQPage from './pages/FAQPage';
 import PricingPage from './pages/PricingPage';
 import AccountPage from './pages/AccountPage';
 import ToastViewport from './components/ToastViewport';
+import CookieConsent from './components/CookieConsent';
 import { trackPageView } from './analytics';
 
 // ── Theme ──────────────────────────────────────────────────────
@@ -328,6 +329,7 @@ export default function App() {
         </ToastProvider>
         </CatalogCountsProvider>
       </AuthProvider>
+      <CookieConsent />
     </BrowserRouter>
     </ThemeProvider>
     </HelmetProvider>

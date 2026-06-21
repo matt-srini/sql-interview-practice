@@ -47,7 +47,7 @@ export default function PrivacyPolicyPage({ isModal = false }) {
         <p>We do not sell your data to third parties, and we do not use your data for advertising.</p>
 
         <h2>Cookies and local storage</h2>
-        <p>We set a <strong>session cookie</strong> (HttpOnly, SameSite=Lax) to authenticate your requests, and a separate <strong>CSRF-protection cookie</strong> (SameSite=Strict) to guard against cross-site request forgery. We use <strong>localStorage</strong> for your theme preference (light/dark) and first-visit walkthrough state. No advertising or cross-site tracking cookies are used.</p>
+        <p>We set a <strong>session cookie</strong> (HttpOnly, SameSite=Lax) to authenticate your requests, and a separate <strong>CSRF-protection cookie</strong> (SameSite=Strict) to guard against cross-site request forgery — these are <strong>essential</strong> and always on. We use <strong>localStorage</strong> for your theme preference and first-visit walkthrough state, and to remember your cookie-consent choice. Non-essential <strong>analytics cookies</strong> (PostHog) are set <strong>only after you accept them</strong> in the cookie banner; if you decline, analytics never runs. No advertising or cross-site tracking cookies are used.</p>
 
         <h2>Third-party processors</h2>
         <ul>
