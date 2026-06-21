@@ -119,7 +119,7 @@ export default function FAQPage() {
             </dl>
           </div>
           <div className="policy-footer-nav">
-            <Link to="/" className="btn btn-secondary">Back to home</Link>
+            <Link to="/" state={{ scrollTo: 'footer' }} className="btn btn-secondary">Back to home</Link>
           </div>
         </div>
       </main>

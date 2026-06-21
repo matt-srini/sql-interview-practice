@@ -6,7 +6,12 @@ import Topbar from '../components/Topbar';
 export default function ContactPage({ isModal = false }) {
   const location = useLocation();
   const navigate = useNavigate();
-  const handleClose = () => navigate(-1);
+  const handleClose = () => {
+    // Closing the Contact modal returns to the background page (the landing
+    // footer) and keeps the scroll position — it does not jump to the top.
+    const bg = location.state?.backgroundLocation;
+    navigate(bg ? `${bg.pathname}${bg.search}` : '/', { replace: true, state: { preserveScroll: true } });
+  };
   const modalLinkState = isModal && location.state?.backgroundLocation
     ? { backgroundLocation: location.state.backgroundLocation }
     : undefined;
@@ -18,7 +23,7 @@ export default function ContactPage({ isModal = false }) {
   const footerAction = isModal ? (
     <button type="button" className="btn btn-secondary" onClick={handleClose}>Close</button>
   ) : (
-    <Link to="/" className="btn btn-secondary">Back to home</Link>
+    <Link to="/" state={{ scrollTo: 'footer' }} className="btn btn-secondary">Back to home</Link>
   );
 
   const content = (

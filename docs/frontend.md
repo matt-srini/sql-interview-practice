@@ -86,9 +86,13 @@ Consumes a password reset token (passed as `?token=…` query param) and lets th
 
 Consumes an email verification token (`?token=…`). On error (expired/invalid), shows a message noting the 24h expiry, spam-folder guidance, and a direct "Resend verification email" button (calls `/api/auth/resend-verification`) if the user is currently signed in. Logged-out users in the error state see "Sign in to resend" footer link.
 
-### Policy pages (`/privacy`, `/terms`, `/refund-policy`, `/contact`)
+### Policy pages (`/privacy`, `/terms`, `/refund-policy`, `/faq`, `/contact`)
 
-Policy pages render as standalone screens when visited directly (minimal topbar, centered card, scroll-to-top on mount). When opened from the landing footer, they appear in a modal overlay that preserves the background route; the top-right close and footer "Close" button return to the previous view instead of redirecting to `/`.
+Privacy, Terms, Refund, and FAQ render as **dedicated standalone pages** (minimal topbar, centered card, scroll-to-top on mount) — both when visited directly and when opened from the landing footer. Their footer "Back to home" button returns the user to the landing **footer**, not the top, via `<Link to="/" state={{ scrollTo: 'footer' }}>` (the `LandingPage` scroll-to-section effect honors `state.scrollTo`), so they can keep scanning the other legal links without re-scrolling.
+
+Contact is the one exception: from the landing footer it opens in a **modal overlay** (`<Link to="/contact" state={{ backgroundLocation: location }}>`) that preserves the background route and scroll position; the top-right close and footer "Close" button return to the footer (`navigate(..., { state: { preserveScroll: true } })`) instead of jumping to the top or redirecting to `/`. Visited directly, `/contact` renders standalone with a "Back to home" that also targets the footer.
+
+`RouteTransition` (App.js) owns scroll-to-top on route changes but skips the reset when a hash anchor is present, when a modal is open over a background page (`state.backgroundLocation`), or when a close asked to keep position (`state.preserveScroll`) — this is what lets the footer → policy → back and Contact-modal-close flows land on the footer rather than the top.
 
 ### PricingPage (`/pricing`)
 

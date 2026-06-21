@@ -18,7 +18,7 @@ export default function TermsPage({ isModal = false }) {
   const footerAction = isModal ? (
     <button type="button" className="btn btn-secondary" onClick={handleClose}>Close</button>
   ) : (
-    <Link to="/" className="btn btn-secondary">Back to home</Link>
+    <Link to="/" state={{ scrollTo: 'footer' }} className="btn btn-secondary">Back to home</Link>
   );
 
   const content = (

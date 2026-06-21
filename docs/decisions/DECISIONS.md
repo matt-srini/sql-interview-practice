@@ -35,6 +35,12 @@ Keep entries to 4–6 lines. Friction kills logs; if it's longer than the change
 
 ## Entries
 
+## 2026-06-21 — Footer legal links: dedicated pages (not modals), "Back to home" returns to the footer
+**Area:** frontend · **Status:** accepted
+**Decision:** Privacy / Terms / Refund / FAQ now render as **dedicated standalone routes** from the landing footer (matching FAQ's existing treatment); only **Contact** stays a modal overlay. "Back to home" on every policy page targets the landing **footer** (`state.scrollTo: 'footer'`), and the Contact modal "Close" preserves scroll (`state.preserveScroll`) — both so a user scanning the footer's legal links lands back where they were instead of at the top.
+**Rejected:** (a) Keeping all four as modals — legal pages are SEO/shareable surfaces that benefit from real URLs + uncramped full-page reading; the modal pattern suited Contact (a quick action) but not long policy text. (b) "Back to home" → top of landing — forces a re-scroll past 8 sections to reach the other footer links the user is comparing. (c) Deleting the now-unreachable `/privacy` & `/terms` modal routes in App.js — left in place (harmless; `/refund-policy` & `/contact` modal routes are still reachable, and the parallel modal/dedicated route table is clearer than a partial cleanup).
+**Affects:** frontend/src/App.js (RouteTransition skip on `backgroundLocation`/`preserveScroll`; `closePolicyModal` preserveScroll), frontend/src/pages/{LandingPage,PrivacyPolicyPage,TermsPage,RefundPolicyPage,FAQPage,ContactPage}.js, docs/frontend.md § Policy pages.
+
 ## 2026-06-20 — SQL Interview Loop: 10 new chains (5 escalating-medium + 5 hard); chain-only band exception
 **Area:** content · mock · curriculum · **Status:** accepted
 **Decision:** Added 10 new SQL Interview Loop chains (28 mock-only questions: medium parents 12124–12128 → hard follow-ups; hard chains 13143–13157) — SQL was the only track thin at the track level (6 chains, lowest of any track). The 5 medium chains escalate medium→hard (the Python/DM pattern); the 5 hard chains are pure-hard. SQL mock-only 165→193, total ratio 1.40×→1.64× — above the 1.0–1.5× band, a deliberate **chain-only exception** (chains appear only in Elite Interview Loop, never benchmarks/drills; standalone budget unchanged at ~1.30× / 153 standalone). Dimensions deliberately exercise the previously-starved performance/stakeholder/abstraction pivots.

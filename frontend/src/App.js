@@ -127,7 +127,12 @@ function RouteTransition({ children, transitionKey }) {
     // history.scrollRestoration is 'manual' so we own scroll-to-top on every
     // route change. Skip when a hash is present — the destination page owns
     // scrolling to its anchor.
-    if (!location.hash) {
+    // Skip the reset when a hash anchor is present (the destination page owns its
+    // scroll), when a modal is open over a background page (keep the background
+    // where it was), or when a modal close asked to preserve scroll — so the
+    // footer → policy → "Back to home" / Contact-modal-close flow returns the
+    // user to the footer rather than the top.
+    if (!location.hash && !location.state?.backgroundLocation && !location.state?.preserveScroll) {
       window.scrollTo({ top: 0, behavior: 'instant' });
     }
   }, [location.pathname]);
@@ -170,7 +175,9 @@ function AppRoutes() {
   const routeLocation = backgroundLocation || location;
   const closePolicyModal = () => {
     if (backgroundLocation) {
-      navigate(`${backgroundLocation.pathname}${backgroundLocation.search}`, { replace: true });
+      // Return to the background page (e.g. the landing footer) without jumping to
+      // the top — preserveScroll tells RouteTransition to leave the scroll alone.
+      navigate(`${backgroundLocation.pathname}${backgroundLocation.search}`, { replace: true, state: { preserveScroll: true } });
       return;
     }
     navigate(-1);
