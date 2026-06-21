@@ -70,7 +70,7 @@ This mapping is a product promise. Track quality and modality choices must stren
 
 ### Practice is the curriculum
 
-The practice catalog is not a marketing wrapper around mock. It is the main learning system. Unlock rules, path shortcuts, hints, and question sequencing should preserve a real curriculum arc.
+The practice catalog is not a marketing wrapper around mock. It is the main learning system. Unlock rules, hints, learning-path sequencing, and question ordering should preserve a real curriculum arc. (Learning paths are an ordered grouping of existing practice questions — they do not unlock anything; unlocks are threshold-only.)
 
 ### Mock is a benchmark
 

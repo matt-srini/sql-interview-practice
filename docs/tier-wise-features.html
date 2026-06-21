@@ -273,7 +273,7 @@
     <strong>Unlock mechanics</strong>
     <ul>
       <li><strong>Per track, independent.</strong> The ladder runs separately for each track — solving SQL easy questions doesn't unlock Python medium.</li>
-      <li><strong>Paths can shortcut medium.</strong> Completing a learning path that covers a track also unlocks all medium; the <em>higher</em> of (threshold progress, path completion) wins.</li>
+      <li><strong>Paths don't change unlocks.</strong> A learning path is just an ordered grouping of existing practice questions — solving one advances the same per-track thresholds as solving from the practice catalog. Completing a path unlocks nothing extra.</li>
       <li><strong>Locked behaves by track type.</strong> A locked <em>code</em> question is inaccessible; a locked <em>conceptual/MCQ</em> question returns <code>200</code> with <code>locked: true</code> — the stem shows, but options + explanation are hidden. Submitting any locked question → <code>403</code>.</li>
       <li><strong>The cap is a hard ceiling.</strong> Free hard is capped at 8 (code) / 5 (MCQ) regardless of how many medium you solve — clearing the cap is a Pro upgrade, not a grind.</li>
     </ul>
