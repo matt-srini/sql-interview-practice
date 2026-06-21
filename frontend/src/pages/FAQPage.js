@@ -58,7 +58,7 @@ export default function FAQPage() {
 
   const pricingLink = isPaid
     ? <Link to="/account" className="faq-link">Manage your plan →</Link>
-    : <Link to="/" className="faq-link">Compare pricing on our homepage →</Link>;
+    : <Link to="/pricing" className="faq-link">Compare plans &amp; pricing →</Link>;
 
   return (
     <div className="auth-page">

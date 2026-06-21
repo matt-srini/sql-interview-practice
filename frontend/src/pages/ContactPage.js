@@ -35,7 +35,7 @@ export default function ContactPage({ isModal = false }) {
         <p>We aim to respond within <strong>2 business days</strong>.</p>
 
         <h2>Billing disputes</h2>
-        <p>If you have a question about a charge, please email <a href="mailto:support@datathink.co">support@datathink.co</a> with the subject line "Billing dispute". Include your registered email address and your <strong>Razorpay order or payment ID</strong> so we can look up the transaction quickly.</p>
+        <p>If you have a question about a charge, please email <a href="mailto:support@datathink.co">support@datathink.co</a> with the subject line "Billing dispute". Include your registered email address and your <strong>Razorpay payment ID</strong> (India/INR purchases) or <strong>Paddle transaction/order ID</strong> (international purchases) so we can look up the transaction quickly.</p>
         <p>See also: <Link to="/refund-policy" state={modalLinkState} replace={isModal}>Refund Policy</Link>.</p>
 
         <h2>Privacy requests</h2>
