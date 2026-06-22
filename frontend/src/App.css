@@ -3421,6 +3421,7 @@ select {
   .description-code-block {
     white-space: pre-wrap;
     overflow-wrap: break-word;
+    overflow-x: hidden; /* prevent pre from growing the card; pre-wrap + break-word handles wrapping */
   }
 }
 
@@ -3456,6 +3457,7 @@ select {
   border-radius: 4px;
   padding: 0.1em 0.32em;
   color: var(--text-strong);
+  overflow-wrap: anywhere; /* allow long inline codes to break rather than push the layout wide */
 }
 
 [data-theme="dark"] .description-inline-code {
@@ -3999,6 +4001,7 @@ select {
 
   .left-panel {
     position: static;
+    min-width: 0; /* prevent grid item from growing beyond 1fr track */
   }
 
   .question-page {
