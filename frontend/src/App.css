@@ -3410,6 +3410,17 @@ select {
   background: rgba(255,255,255,0.06);
 }
 
+/* On the single-column (mobile/tablet) layout, wrap long code lines in stem code
+   blocks so they stay fully visible instead of overflowing off-screen behind a
+   horizontal scroll. pre-wrap only wraps lines that actually exceed the width, so
+   short lines are untouched; overflow-wrap breaks a token longer than one line. */
+@media (max-width: 900px) {
+  .description-code-block {
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+  }
+}
+
 /* Markdown tables in stems (small data tables) — mobile-friendly; the wrap
    scrolls horizontally only if a wide table can't fit the viewport. */
 .description-table-wrap {
