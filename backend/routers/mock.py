@@ -593,12 +593,11 @@ def _no_loop_chains_copy(difficulty: str) -> str:
 
 def _loop_exhausted_copy(difficulty: str) -> str:
     # Framed as completion, not depletion — the user reached the end of the set by doing
-    # the work. The UI renders the structured next steps (switch difficulty/track, run a
-    # benchmark) and the consent-gated "replay" action alongside this headline.
-    return (
-        f"You've completed every {difficulty} Interview Loop chain for this track — nice work. "
-        "Switch track or difficulty, run a benchmark to see where you landed, or replay these chains."
-    )
+    # the work. The UI owns the next-step affordances (redirect-first: fresh-cell pills
+    # toward the user's unexhausted Loop cells when any remain, else a replay button), so
+    # this stays a clean accomplishment statement and doesn't pre-empt or duplicate them.
+    # See docs/features/mock.md § Interview Loop exhausted-cell state.
+    return f"You've completed every {difficulty} Interview Loop chain for this track — nice work."
 
 
 def _chain_parents_for(track: str, difficulty: str) -> list[dict]:

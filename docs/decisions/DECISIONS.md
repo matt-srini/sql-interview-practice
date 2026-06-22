@@ -35,6 +35,13 @@ Keep entries to 4–6 lines. Friction kills logs; if it's longer than the change
 
 ## Entries
 
+## 2026-06-22 — Interview Loop exhausted-cell: redirect-first, replay demoted (resolves P2)
+**Area:** mock · UX · **Status:** accepted (refines the 2026-06-19 replay end-state)
+**Decision:** When a user finishes every chain in a (track, difficulty) Loop cell, the exhausted state now LEADS with a "Fresh chains to try" rail of the user's still-unexhausted cells (`/api/mock/access` → top-level `fresh_loop_cells`, requested track first, capped 4) and DEMOTES replay to a quiet "Or replay these chains →" link. Replay is kept (honest, no dead-end) but no longer headlines; if the user has exhausted *every* cell, `fresh_loop_cells` is empty and replay becomes the only CTA (the sole remaining non-dead-end).
+**Why:** The Loop's value is the *unscripted* interviewer pivot — replaying a chain whose pivots you already know is low value, so it shouldn't headline. With 127 chains across the catalog, a user who finishes one cell has fresh reasoning waiting elsewhere; steering there reinforces the deep-catalog + capstone positioning. Resolves TODO P2 ("keep vs scope-down replay") now that all thin cells are expanded (Stats-hard, SQL, Pandas-medium 2→8).
+**Rejected:** keep replay as the headline (signals thin content / low learning value); N-gate or cooldown on replay (manufactured friction — the retention anti-pattern); hard dead-end (punitive on a paid feature). 
+**Affects:** backend/routers/mock.py (`_fresh_loop_cells`, `/access`, `_loop_exhausted_copy`), frontend MockHub.js + App.css, docs/features/mock.md, TODO.md.
+
 ## 2026-06-22 — +6 pandas-medium Interview Loop chains (2→8), triple blind-solve gate
 **Area:** content · mock · process · **Status:** accepted
 **Decision:** Authored 6 new mock-only pandas-medium chains (ids 32092–32109; 6 parents + 12 follow-ups), taking pandas-medium Interview Loop chains 2→8 — the thinnest cell, the one deferred in the P2 replay note. Verified with a 3-model blind-solve (Opus + Sonnet + GPT-5.5 each writing the solution from the candidate view only, graded by the real pandas evaluator): all 18 pass Opus+Sonnet; GPT-5.5 passes 17/18 with 32099's reference confirmed by an identical-output GPT generation (the lone miss was GPT non-determinism, not an ambiguity).

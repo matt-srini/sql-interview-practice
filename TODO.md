@@ -54,16 +54,14 @@ consent** banner (PostHog gated until Accept). Why → `docs/decisions/DECISIONS
 **Operator's one remaining step:** create the Sentry alert rules + uptime monitor per
 [`docs/runbooks/alerting.md`](docs/runbooks/alerting.md).
 
-## P2 — Revisit Interview Loop replay once the mock chain-pools are expanded
-The consent-gated **replay** (DECISIONS 2026-06-19) was shipped while several loop cells were
-thin (Statistics-hard = 1 chain, Pandas-medium = 2, SQL = 3/3) — replay turned those near-instant
-dead-ends into a "completed → Replay" state. All three thin cells have now been expanded:
-Statistics-hard ✅, SQL ✅, Pandas-medium ✅ (2→8 chains, 2026-06-22; DECISIONS 2026-06-22).
-**Open decision, fully actionable:** now that depth is deep enough that exhaustion is rare, decide
-whether to **(a) keep replay** as the permanent end-state UX, or **(b) rewrite/scope it down**
-(e.g. only surface Replay after N completed sessions, or revert it entirely if depth makes
-exhaustion effectively unreachable). Cross-ref: `docs/decisions/DECISIONS.md` 2026-06-19;
-`docs/features/mock.md` § Follow-up Chain Atomicity rule 6.
+## P2 — Revisit Interview Loop replay once the mock chain-pools are expanded ✅ DONE (2026-06-22)
+Closed. All three thin cells were expanded (Statistics-hard ✅, SQL ✅, Pandas-medium ✅ 2→8 on
+2026-06-22), then the keep-vs-scope-down decision was resolved: **redirect-first, replay demoted.**
+The exhausted state now leads with a "Fresh chains to try" rail (`/access` → `fresh_loop_cells`,
+requested track first) and demotes replay to a quiet secondary link; replay remains as the
+no-dead-end fallback when every cell is exhausted. Rejected N-gates/cooldowns (manufactured
+friction) and a hard dead-end (punitive). See `docs/decisions/DECISIONS.md` 2026-06-22 (redirect)
++ 2026-06-19 (original replay); `docs/features/mock.md` § Follow-up Chain Atomicity rule 6.
 
 ## P3 — Position Interview Loop as the earned capstone (benchmark → drill → Loop) ✅ DONE (2026-06-21)
 Closed. The Loop is now framed as the **Benchmark → Drill → Loop** capstone across five surfaces:
