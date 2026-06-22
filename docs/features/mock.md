@@ -101,7 +101,7 @@ For **custom drill**, the role defines the pool of tracks to draw from. The user
 |---|---|---|
 | SQL | ✅ | 193 mock-only questions (16 Interview Loop chains: 8 medium, 8 hard) |
 | Python | ✅ | 103 mock-only questions |
-| Pandas | ✅ | 114 mock-only questions |
+| Pandas | ✅ | 132 mock-only questions |
 | PySpark | ✅ | 150 mock-only questions |
 | ML Fundamentals | ✅ | 143 mock-only questions |
 | Experimentation | ✅ | 104 mock-only questions |

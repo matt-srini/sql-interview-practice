@@ -3527,5 +3527,878 @@
     ],
     "mock_only": true,
     "solution_code": "import pandas as pd\n\ndef solve(df_emp, df_departments):\n    # Merge only the columns needed from departments to avoid pulling in region\n    merged = df_emp.merge(\n        df_departments[['department_id', 'department_name']],\n        on='department_id'\n    )\n\n    # Group by department name and compute three salary statistics in one pass\n    # Note: salary has 12 null rows; 'mean' and 'sum' skip NaN by default\n    stats = (\n        merged.groupby('department_name', as_index=False)\n        .agg(\n            headcount=('employee_id', 'count'),\n            avg_salary=('salary', 'mean'),\n            total_budget=('salary', 'sum')\n        )\n        .assign(avg_salary=lambda x: x['avg_salary'].round(2))\n        .sort_values(['avg_salary', 'department_name'], ascending=[False, True])\n        .reset_index(drop=True)\n    )\n    return stats\n"
+  },
+  {
+    "id": 32092,
+    "order": 92,
+    "topic": "pandas",
+    "difficulty": "medium",
+    "mock_only": true,
+    "framing": "scenario",
+    "follow_ups": [
+      32093,
+      32094
+    ],
+    "title": "Traffic Source Session-to-Order Conversion Analysis",
+    "description": "The growth team wants to know which traffic sources are driving the most valuable visitors. Using `df_sessions` and `df_orders`, compute per `traffic_source`: `total_sessions` (count of all sessions), `unique_users` (distinct users who had any session via that source), `users_with_order` (distinct users who placed at least one order — regardless of order status), and `order_conversion_rate` (users_with_order / unique_users × 100, rounded to 2 dp). Return columns `traffic_source`, `total_sessions`, `unique_users`, `users_with_order`, `order_conversion_rate`, sorted by `traffic_source` ascending.",
+    "dataframes": {
+      "df_sessions": "sessions.csv",
+      "df_orders": "orders.csv"
+    },
+    "schema": {
+      "df_sessions": [
+        "session_id",
+        "user_id",
+        "session_start",
+        "device_type",
+        "traffic_source",
+        "country"
+      ],
+      "df_orders": [
+        "order_id",
+        "user_id",
+        "order_date",
+        "status",
+        "gross_amount",
+        "discount_amount",
+        "net_amount",
+        "payment_status"
+      ]
+    },
+    "starter_code": "import pandas as pd\n\ndef solve(df_sessions, df_orders):\n    pass",
+    "expected_code": "import pandas as pd\n\ndef solve(df_sessions, df_orders):\n    ordered_users = set(df_orders['user_id'])\n    df = df_sessions.assign(placed_order=df_sessions['user_id'].isin(ordered_users))\n    result = (\n        df.groupby('traffic_source', as_index=False)\n        .agg(\n            total_sessions=('session_id', 'count'),\n            unique_users=('user_id', 'nunique'),\n            users_with_order=('user_id', lambda x: x[df.loc[x.index, 'placed_order']].nunique())\n        )\n        .assign(\n            order_conversion_rate=lambda x: (x['users_with_order'] / x['unique_users'] * 100).round(2)\n        )\n        .sort_values('traffic_source')\n        .reset_index(drop=True)\n    )\n    return result",
+    "solution_code": "import pandas as pd\n\ndef solve(df_sessions, df_orders):\n    ordered_users = set(df_orders['user_id'])\n    df = df_sessions.assign(placed_order=df_sessions['user_id'].isin(ordered_users))\n    result = (\n        df.groupby('traffic_source', as_index=False)\n        .agg(\n            total_sessions=('session_id', 'count'),\n            unique_users=('user_id', 'nunique'),\n            users_with_order=('user_id', lambda x: x[df.loc[x.index, 'placed_order']].nunique())\n        )\n        .assign(\n            order_conversion_rate=lambda x: (x['users_with_order'] / x['unique_users'] * 100).round(2)\n        )\n        .sort_values('traffic_source')\n        .reset_index(drop=True)\n    )\n    return result",
+    "explanation": "The key pattern is deriving a per-row boolean (`placed_order`) before groupby so it is available inside the lambda aggregation. Inside the `users_with_order` lambda, `df.loc[x.index, 'placed_order']` retrieves the flag for only the rows in the current group, enabling a filtered `.nunique()` without a second merge or second groupby. `order_conversion_rate` is computed at user level (not session level), which is the correct denominator — a single user counts once regardless of how many sessions they had.",
+    "hints": [
+      "Before grouping by traffic_source, mark each row with whether that user ever placed an order. That flag is what lets you count qualifying users within each group without a second join.",
+      "Inside `.agg()`, `x[df.loc[x.index, 'flag_column']].nunique()` counts distinct values in column `x` where the flag is True for that group — the idiomatic way to do a conditional distinct count per group."
+    ],
+    "concepts": [
+      "GROUPED AGGREGATION",
+      "MULTI-DATAFRAME ENTITY LINKING",
+      "DEDUPLICATION LOGIC"
+    ]
+  },
+  {
+    "id": 32093,
+    "order": 93,
+    "topic": "pandas",
+    "difficulty": "medium",
+    "mock_only": true,
+    "framing": "scenario",
+    "parent_id": 32092,
+    "follow_up_dimension": "scale_pivot",
+    "title": "Average Sessions per Converting User by Traffic Source",
+    "description": "**Follow-up to Q32092.** The data team points out that as session volume grows, the `isin()` approach in the parent may be called millions of times. They want to restructure: pre-aggregate to a user-traffic_source summary first, then join order existence as a column, so the per-row flag is never materialised on the full sessions frame.\n\nUsing `df_sessions` and `df_orders`, produce per `traffic_source`: `unique_users`, `users_with_order`, `order_conversion_rate` (users_with_order / unique_users × 100, **as a percentage**, rounded to 2 dp), and `avg_sessions_per_converting_user` (mean session count among users who placed an order, rounded to 2 dp). Return columns `traffic_source`, `unique_users`, `users_with_order`, `order_conversion_rate`, `avg_sessions_per_converting_user`, sorted by `traffic_source` ascending.",
+    "dataframes": {
+      "df_sessions": "sessions.csv",
+      "df_orders": "orders.csv"
+    },
+    "schema": {
+      "df_sessions": [
+        "session_id",
+        "user_id",
+        "session_start",
+        "device_type",
+        "traffic_source",
+        "country"
+      ],
+      "df_orders": [
+        "order_id",
+        "user_id",
+        "order_date",
+        "status",
+        "gross_amount",
+        "discount_amount",
+        "net_amount",
+        "payment_status"
+      ]
+    },
+    "starter_code": "import pandas as pd\n\ndef solve(df_sessions, df_orders):\n    pass",
+    "expected_code": "import pandas as pd\n\ndef solve(df_sessions, df_orders):\n    # Pre-aggregate sessions to (user_id, traffic_source) level\n    user_src = (\n        df_sessions.groupby(['traffic_source', 'user_id'], as_index=False)\n        .agg(session_count=('session_id', 'count'))\n    )\n    ordered_users = set(df_orders['user_id'])\n    user_src['placed_order'] = user_src['user_id'].isin(ordered_users)\n\n    # Base counts per traffic_source\n    base = (\n        user_src.groupby('traffic_source', as_index=False)\n        .agg(\n            unique_users=('user_id', 'nunique'),\n            users_with_order=('placed_order', 'sum')\n        )\n        .assign(\n            users_with_order=lambda x: x['users_with_order'].astype(int),\n            order_conversion_rate=lambda x: (x['users_with_order'] / x['unique_users'] * 100).round(2)\n        )\n    )\n    # Average sessions among converting users only (filter then group)\n    avg_sess = (\n        user_src[user_src['placed_order']]\n        .groupby('traffic_source', as_index=False)['session_count']\n        .mean()\n        .rename(columns={'session_count': 'avg_sessions_per_converting_user'})\n        .assign(avg_sessions_per_converting_user=lambda x: x['avg_sessions_per_converting_user'].round(2))\n    )\n    summary = (\n        base.merge(avg_sess, on='traffic_source')\n        [['traffic_source', 'unique_users', 'users_with_order', 'order_conversion_rate', 'avg_sessions_per_converting_user']]\n        .sort_values('traffic_source')\n        .reset_index(drop=True)\n    )\n    return summary",
+    "solution_code": "import pandas as pd\n\ndef solve(df_sessions, df_orders):\n    # Pre-aggregate sessions to (user_id, traffic_source) level\n    user_src = (\n        df_sessions.groupby(['traffic_source', 'user_id'], as_index=False)\n        .agg(session_count=('session_id', 'count'))\n    )\n    ordered_users = set(df_orders['user_id'])\n    user_src['placed_order'] = user_src['user_id'].isin(ordered_users)\n\n    # Base counts per traffic_source\n    base = (\n        user_src.groupby('traffic_source', as_index=False)\n        .agg(\n            unique_users=('user_id', 'nunique'),\n            users_with_order=('placed_order', 'sum')\n        )\n        .assign(\n            users_with_order=lambda x: x['users_with_order'].astype(int),\n            order_conversion_rate=lambda x: (x['users_with_order'] / x['unique_users'] * 100).round(2)\n        )\n    )\n    # Average sessions among converting users only (filter then group)\n    avg_sess = (\n        user_src[user_src['placed_order']]\n        .groupby('traffic_source', as_index=False)['session_count']\n        .mean()\n        .rename(columns={'session_count': 'avg_sessions_per_converting_user'})\n        .assign(avg_sessions_per_converting_user=lambda x: x['avg_sessions_per_converting_user'].round(2))\n    )\n    summary = (\n        base.merge(avg_sess, on='traffic_source')\n        [['traffic_source', 'unique_users', 'users_with_order', 'order_conversion_rate', 'avg_sessions_per_converting_user']]\n        .sort_values('traffic_source')\n        .reset_index(drop=True)\n    )\n    return summary",
+    "explanation": "Pre-aggregating to `(traffic_source, user_id)` before attaching the order flag collapses 9 000 session rows to a much smaller user-per-source frame — the `isin()` then runs on that smaller frame, not on every raw session row. The `placed_order` boolean on the collapsed frame also makes `'sum'` a clean count of converting users (True sums as 1). The `avg_sessions_per_converting_user` lambda applies the same indexed-filter technique as the parent: `x[user_src.loc[x.index, 'placed_order']].mean()` computes the mean only over rows where the user converted.",
+    "hints": [
+      "If you reduce the session table to one row per (traffic_source, user_id) pair first, how many rows does the order-flag lookup need to touch versus working on the raw sessions frame?",
+      "After collapsing to a user-per-source frame, a boolean `placed_order` column makes the users_with_order count trivial (`'sum'`) and the conditional session-mean expressible with the same indexed-filter pattern as Q32092."
+    ],
+    "concepts": [
+      "GROUPED AGGREGATION",
+      "MULTI-DATAFRAME ENTITY LINKING",
+      "PERFORMANCE-AWARE ANALYTICS"
+    ]
+  },
+  {
+    "id": 32094,
+    "order": 94,
+    "topic": "pandas",
+    "difficulty": "medium",
+    "mock_only": true,
+    "framing": "scenario",
+    "parent_id": 32092,
+    "follow_up_dimension": "stakeholder_pivot",
+    "title": "Country-Level Session-to-Order Conversion for Regional Managers",
+    "description": "**Follow-up to Q32092.** Regional country managers have asked for the same conversion analysis broken down by `country` (from `df_sessions`) instead of `traffic_source`. Each country manager is accountable for their market's session-to-order conversion rate.\n\nUsing `df_sessions` and `df_orders`, compute per `country`: `total_sessions`, `unique_users`, `users_with_order`, and `order_conversion_rate` (users_with_order / unique_users × 100, rounded to 2 dp). Return those four columns sorted by `country` ascending.",
+    "dataframes": {
+      "df_sessions": "sessions.csv",
+      "df_orders": "orders.csv"
+    },
+    "schema": {
+      "df_sessions": [
+        "session_id",
+        "user_id",
+        "session_start",
+        "device_type",
+        "traffic_source",
+        "country"
+      ],
+      "df_orders": [
+        "order_id",
+        "user_id",
+        "order_date",
+        "status",
+        "gross_amount",
+        "discount_amount",
+        "net_amount",
+        "payment_status"
+      ]
+    },
+    "starter_code": "import pandas as pd\n\ndef solve(df_sessions, df_orders):\n    pass",
+    "expected_code": "import pandas as pd\n\ndef solve(df_sessions, df_orders):\n    ordered_users = set(df_orders['user_id'])\n    df = df_sessions.assign(placed_order=df_sessions['user_id'].isin(ordered_users))\n    result = (\n        df.groupby('country', as_index=False)\n        .agg(\n            total_sessions=('session_id', 'count'),\n            unique_users=('user_id', 'nunique'),\n            users_with_order=('user_id', lambda x: x[df.loc[x.index, 'placed_order']].nunique())\n        )\n        .assign(\n            order_conversion_rate=lambda x: (x['users_with_order'] / x['unique_users'] * 100).round(2)\n        )\n        .sort_values('country')\n        .reset_index(drop=True)\n    )\n    return result",
+    "solution_code": "import pandas as pd\n\ndef solve(df_sessions, df_orders):\n    ordered_users = set(df_orders['user_id'])\n    df = df_sessions.assign(placed_order=df_sessions['user_id'].isin(ordered_users))\n    result = (\n        df.groupby('country', as_index=False)\n        .agg(\n            total_sessions=('session_id', 'count'),\n            unique_users=('user_id', 'nunique'),\n            users_with_order=('user_id', lambda x: x[df.loc[x.index, 'placed_order']].nunique())\n        )\n        .assign(\n            order_conversion_rate=lambda x: (x['users_with_order'] / x['unique_users'] * 100).round(2)\n        )\n        .sort_values('country')\n        .reset_index(drop=True)\n    )\n    return result",
+    "explanation": "The logic is structurally identical to Q32092 — only the groupby key changes from `traffic_source` to `country`. This is a deliberate design: the pre-row `placed_order` flag pattern is reusable across any grouping dimension without restructuring the pipeline. Noticing that abstraction — and recognising when a stakeholder request is just a groupby-key swap — is the real reasoning skill here.",
+    "hints": [
+      "Compare the structure of Q32092 with what the country managers want. What is the only part of the pipeline that needs to change?",
+      "The pre-row flag pattern (`df.assign(placed_order=...)`) works with any groupby key — you don't need a second join or a different approach just because the dimension changed."
+    ],
+    "concepts": [
+      "GROUPED AGGREGATION",
+      "MULTI-DATAFRAME ENTITY LINKING",
+      "DEDUPLICATION LOGIC"
+    ]
+  },
+  {
+    "id": 32095,
+    "order": 95,
+    "topic": "pandas",
+    "difficulty": "medium",
+    "mock_only": true,
+    "framing": "scenario",
+    "follow_ups": [
+      32096,
+      32097
+    ],
+    "title": "Products with No Sales — Unsold Inventory Gap",
+    "description": "The inventory team needs to identify products that have **never appeared in any order line** — stock that was catalogued but never purchased. Using `df_products` and `df_order_items`, find every product that has zero matching rows in `df_order_items`. Return columns `product_name`, `category_id`, and `price`, sorted by `product_name` ascending.",
+    "dataframes": {
+      "df_products": "products.csv",
+      "df_order_items": "order_items.csv"
+    },
+    "schema": {
+      "df_products": [
+        "product_id",
+        "product_name",
+        "category_id",
+        "brand",
+        "price",
+        "launch_date",
+        "is_active"
+      ],
+      "df_order_items": [
+        "order_item_id",
+        "order_id",
+        "product_id",
+        "quantity",
+        "unit_price",
+        "line_amount"
+      ]
+    },
+    "starter_code": "import pandas as pd\n\ndef solve(df_products, df_order_items):\n    pass",
+    "expected_code": "import pandas as pd\n\ndef solve(df_products, df_order_items):\n    merged = df_products.merge(\n        df_order_items[['product_id']].drop_duplicates(),\n        on='product_id',\n        how='left',\n        indicator=True\n    )\n    result = (\n        merged[merged['_merge'] == 'left_only']\n        [['product_name', 'category_id', 'price']]\n        .sort_values('product_name')\n        .reset_index(drop=True)\n    )\n    return result",
+    "solution_code": "import pandas as pd\n\ndef solve(df_products, df_order_items):\n    merged = df_products.merge(\n        df_order_items[['product_id']].drop_duplicates(),\n        on='product_id',\n        how='left',\n        indicator=True\n    )\n    result = (\n        merged[merged['_merge'] == 'left_only']\n        [['product_name', 'category_id', 'price']]\n        .sort_values('product_name')\n        .reset_index(drop=True)\n    )\n    return result",
+    "explanation": "The anti-join pattern — left merge with `indicator=True`, then filter for `_merge == 'left_only'` — identifies products with zero matching order-item rows. Deduplicating `df_order_items` to `['product_id']` before the merge avoids inflating product rows when the same product appears in many order lines (a classic fan-out hazard). This is the pandas equivalent of SQL `LEFT JOIN ... WHERE right_key IS NULL` and is the idiomatic way to surface 'what is in A but not in B' without a subquery.",
+    "hints": [
+      "The key operation here is an 'anti-join' — finding rows in one table that have no match in another. Think about what join type preserves all rows from the left side, including those with no match on the right.",
+      "The `indicator=True` parameter adds a `_merge` column showing `'left_only'`, `'right_only'`, or `'both'` for each row — filter on that to isolate the anti-join result."
+    ],
+    "concepts": [
+      "MULTI-DATAFRAME ENTITY LINKING",
+      "BOOLEAN INDEXING & FILTERING"
+    ]
+  },
+  {
+    "id": 32096,
+    "order": 96,
+    "topic": "pandas",
+    "difficulty": "medium",
+    "mock_only": true,
+    "framing": "scenario",
+    "parent_id": 32095,
+    "follow_up_dimension": "ambiguity_pivot",
+    "title": "Slow-Moving Products — Redefining Unsold as Under-Threshold",
+    "description": "**Follow-up to Q32095.** The inventory manager challenges the definition: 'never sold' misses products that technically appear in a few orders but sell so rarely they still tie up capital. Reframe 'unsold' as 'slow-moving': **among products that appear in at least one order-item row** (products that never sold are out of scope — the parent question covers those), return those whose **total units sold** (sum of `quantity` across all their order-item rows) is **strictly fewer than 110 units**. Using `df_products` and `df_order_items`, return slow-moving products with columns `product_name`, `category_id`, and `total_units` (total quantity sold), sorted by `product_name` ascending.",
+    "dataframes": {
+      "df_products": "products.csv",
+      "df_order_items": "order_items.csv"
+    },
+    "schema": {
+      "df_products": [
+        "product_id",
+        "product_name",
+        "category_id",
+        "brand",
+        "price",
+        "launch_date",
+        "is_active"
+      ],
+      "df_order_items": [
+        "order_item_id",
+        "order_id",
+        "product_id",
+        "quantity",
+        "unit_price",
+        "line_amount"
+      ]
+    },
+    "starter_code": "import pandas as pd\n\ndef solve(df_products, df_order_items):\n    pass",
+    "expected_code": "import pandas as pd\n\ndef solve(df_products, df_order_items):\n    units = (\n        df_order_items.groupby('product_id', as_index=False)\n        .agg(total_units=('quantity', 'sum'))\n    )\n    slow = units[units['total_units'] < 110].merge(\n        df_products[['product_id', 'product_name', 'category_id']],\n        on='product_id'\n    )\n    result = (\n        slow[['product_name', 'category_id', 'total_units']]\n        .sort_values('product_name')\n        .reset_index(drop=True)\n    )\n    return result",
+    "solution_code": "import pandas as pd\n\ndef solve(df_products, df_order_items):\n    units = (\n        df_order_items.groupby('product_id', as_index=False)\n        .agg(total_units=('quantity', 'sum'))\n    )\n    slow = units[units['total_units'] < 110].merge(\n        df_products[['product_id', 'product_name', 'category_id']],\n        on='product_id'\n    )\n    result = (\n        slow[['product_name', 'category_id', 'total_units']]\n        .sort_values('product_name')\n        .reset_index(drop=True)\n    )\n    return result",
+    "explanation": "The metric definition shifts from binary (appeared or not) to continuous (how many units). Aggregating `df_order_items` to a per-product unit total first, then filtering on that aggregate, is the correct approach — the threshold test must run on the aggregated value, not on individual order lines. Merging the product metadata after filtering keeps the join small (only slow-movers). The output population is genuinely different from Q32095: Q32095 returns products with zero order-item rows; Q32096 returns products that do appear in orders but fall below the 110-unit threshold — these are mutually exclusive populations.",
+    "hints": [
+      "You need the total quantity sold per product, not a row-level count. Which aggregation on `df_order_items` gives you that, and at what grain?",
+      "Apply the threshold filter to the aggregated result before merging in the product metadata — joining first and then filtering is correct but wasteful when the threshold eliminates most products."
+    ],
+    "concepts": [
+      "GROUPED AGGREGATION",
+      "BOOLEAN INDEXING & FILTERING",
+      "MULTI-DATAFRAME ENTITY LINKING"
+    ]
+  },
+  {
+    "id": 32097,
+    "order": 97,
+    "topic": "pandas",
+    "difficulty": "medium",
+    "mock_only": true,
+    "framing": "scenario",
+    "parent_id": 32095,
+    "follow_up_dimension": "business_rule_pivot",
+    "title": "Active Unsold Products — Excluding Discontinued Catalog Entries",
+    "description": "**Follow-up to Q32095.** The procurement team refines the ask: discontinued products (`is_active == False`) that never sold are expected — they were retired. What matters is **active products that have never sold** — those are the genuine dead-stock risk. Restrict the analysis to `is_active == True` products, then find those with zero order-item rows. Return columns `product_name`, `category_id`, and `price`, sorted by `product_name` ascending.",
+    "dataframes": {
+      "df_products": "products.csv",
+      "df_order_items": "order_items.csv"
+    },
+    "schema": {
+      "df_products": [
+        "product_id",
+        "product_name",
+        "category_id",
+        "brand",
+        "price",
+        "launch_date",
+        "is_active"
+      ],
+      "df_order_items": [
+        "order_item_id",
+        "order_id",
+        "product_id",
+        "quantity",
+        "unit_price",
+        "line_amount"
+      ]
+    },
+    "starter_code": "import pandas as pd\n\ndef solve(df_products, df_order_items):\n    pass",
+    "expected_code": "import pandas as pd\n\ndef solve(df_products, df_order_items):\n    active = df_products[df_products['is_active'] == True]\n    merged = active.merge(\n        df_order_items[['product_id']].drop_duplicates(),\n        on='product_id',\n        how='left',\n        indicator=True\n    )\n    result = (\n        merged[merged['_merge'] == 'left_only']\n        [['product_name', 'category_id', 'price']]\n        .sort_values('product_name')\n        .reset_index(drop=True)\n    )\n    return result",
+    "solution_code": "import pandas as pd\n\ndef solve(df_products, df_order_items):\n    active = df_products[df_products['is_active'] == True]\n    merged = active.merge(\n        df_order_items[['product_id']].drop_duplicates(),\n        on='product_id',\n        how='left',\n        indicator=True\n    )\n    result = (\n        merged[merged['_merge'] == 'left_only']\n        [['product_name', 'category_id', 'price']]\n        .sort_values('product_name')\n        .reset_index(drop=True)\n    )\n    return result",
+    "explanation": "The business-rule change is a pre-filter: restrict the product universe to `is_active == True` before the anti-join. This changes the output population: Q32095 returns all 32 unsold products (active + inactive); Q32097 returns the 27 that are still active — the 5 discontinued unsold products drop from the result. Applying the `is_active` filter before the merge, not after, is both clearer (the filter is part of the universe definition) and slightly more efficient (fewer rows participate in the merge). The anti-join pattern is structurally identical to Q32095 — only the input frame changes.",
+    "hints": [
+      "The 'universe' of products you care about has changed — it is now only active products. Apply that filter before the anti-join, not after.",
+      "The anti-join logic (left merge with indicator, then filter for 'left_only') is identical to Q32095. The only change is which rows enter the left side of the merge."
+    ],
+    "concepts": [
+      "BOOLEAN INDEXING & FILTERING",
+      "MULTI-DATAFRAME ENTITY LINKING"
+    ]
+  },
+  {
+    "id": 32098,
+    "order": 98,
+    "topic": "pandas",
+    "difficulty": "medium",
+    "mock_only": true,
+    "framing": "scenario",
+    "follow_ups": [
+      32099,
+      32100
+    ],
+    "title": "Product Launch-Cohort Revenue by Quarter",
+    "description": "The product team wants to understand whether products launched in recent quarters are generating more revenue than older ones. Using `df_order_items` and `df_products`, group products by their `launch_date` quarter (YYYYQN format, e.g. `2022Q1`), then compute per `launch_quarter`: `product_count` (distinct products **launched** in that quarter — include every product with a non-null `launch_date` in that quarter, even if it never sold) and `total_revenue` (sum of `line_amount` for all order items belonging to those products, rounded to 2 dp; **a launched product with no sales contributes 0 to revenue**). Products with a missing `launch_date` are excluded. Sort by `launch_quarter` ascending. Return columns `launch_quarter`, `product_count`, `total_revenue`.",
+    "dataframes": {
+      "df_order_items": "order_items.csv",
+      "df_products": "products.csv"
+    },
+    "schema": {
+      "df_order_items": [
+        "order_item_id",
+        "order_id",
+        "product_id",
+        "quantity",
+        "unit_price",
+        "line_amount"
+      ],
+      "df_products": [
+        "product_id",
+        "product_name",
+        "category_id",
+        "brand",
+        "price",
+        "launch_date",
+        "is_active"
+      ]
+    },
+    "starter_code": "import pandas as pd\n\ndef solve(df_order_items, df_products):\n    pass",
+    "expected_code": "import pandas as pd\n\ndef solve(df_order_items, df_products):\n    products = df_products.copy()\n    products['launch_date'] = pd.to_datetime(products['launch_date'])\n    products = products.dropna(subset=['launch_date'])\n    products['launch_quarter'] = products['launch_date'].dt.to_period('Q').astype(str)\n\n    # Per-product revenue from order items\n    per_product_rev = (\n        df_order_items.groupby('product_id', as_index=False)\n        .agg(revenue=('line_amount', 'sum'))\n    )\n    # Left-merge so launched-but-unsold products get revenue=0\n    products_with_rev = (\n        products[['product_id', 'launch_quarter']]\n        .merge(per_product_rev, on='product_id', how='left')\n        .fillna({'revenue': 0})\n    )\n    result = (\n        products_with_rev.groupby('launch_quarter', as_index=False)\n        .agg(\n            product_count=('product_id', 'nunique'),\n            total_revenue=('revenue', 'sum')\n        )\n        .assign(total_revenue=lambda x: x['total_revenue'].round(2))\n        .sort_values('launch_quarter')\n        .reset_index(drop=True)\n    )\n    return result",
+    "solution_code": "import pandas as pd\n\ndef solve(df_order_items, df_products):\n    products = df_products.copy()\n    products['launch_date'] = pd.to_datetime(products['launch_date'])\n    products = products.dropna(subset=['launch_date'])\n    products['launch_quarter'] = products['launch_date'].dt.to_period('Q').astype(str)\n\n    # Per-product revenue from order items\n    per_product_rev = (\n        df_order_items.groupby('product_id', as_index=False)\n        .agg(revenue=('line_amount', 'sum'))\n    )\n    # Left-merge so launched-but-unsold products get revenue=0\n    products_with_rev = (\n        products[['product_id', 'launch_quarter']]\n        .merge(per_product_rev, on='product_id', how='left')\n        .fillna({'revenue': 0})\n    )\n    result = (\n        products_with_rev.groupby('launch_quarter', as_index=False)\n        .agg(\n            product_count=('product_id', 'nunique'),\n            total_revenue=('revenue', 'sum')\n        )\n        .assign(total_revenue=lambda x: x['total_revenue'].round(2))\n        .sort_values('launch_quarter')\n        .reset_index(drop=True)\n    )\n    return result",
+    "explanation": "The cohort is every product with a non-null `launch_date`, grouped by quarter. Dropping rows with `NaT` launch dates first (`.dropna(subset=['launch_date'])`) prevents a spurious NaN group. A left-merge from products onto per-product order-item revenue (rather than an inner merge on order items) ensures that products launched but never sold are included with `revenue=0` — using `.fillna({'revenue': 0})` after the merge. This matches the business intent: the cohort is defined by launch date, not by whether a product sold. `nunique()` counts distinct products in each cohort regardless of whether they have sales.",
+    "hints": [
+      "You need a quarterly grouping key derived from a date column. Think about how to convert a date to a cohort label that groups all dates in the same quarter — pandas has a Period type designed for exactly this kind of fiscal-calendar bucketing.",
+      "After joining the quarter label onto order items, the aggregation needs to count *distinct* products per quarter — a product appearing in 50 order lines should still count as 1 in the cohort."
+    ],
+    "concepts": [
+      "DATETIME OPERATIONS",
+      "GROUPED AGGREGATION",
+      "MULTI-DATAFRAME ENTITY LINKING"
+    ]
+  },
+  {
+    "id": 32099,
+    "order": 99,
+    "topic": "pandas",
+    "difficulty": "medium",
+    "mock_only": true,
+    "framing": "scenario",
+    "parent_id": 32098,
+    "follow_up_dimension": "ambiguity_pivot",
+    "title": "Launch-Cohort Revenue — Active Products Only vs All Products",
+    "description": "**Follow-up to Q32098.** A stakeholder asks for the same quarter-cohort revenue report but raises a question: *should discontinued products (where `is_active == False`) be included in the cohort?* Finance argues yes — they still generated historical revenue. The product team says no — cohorts should reflect the current portfolio only.\n\nWrite the version the **product team** wants: restrict to `is_active == True` products before computing the cohort summary. Return `launch_quarter` (a **string label in YYYYQN format, e.g. the string `'2022Q1'`** — not a Period or Timestamp), `active_product_count` (distinct active products in the cohort), and `total_revenue` (sum of `line_amount` for those active products, rounded to 2 dp). Sort by `launch_quarter` ascending.",
+    "dataframes": {
+      "df_order_items": "order_items.csv",
+      "df_products": "products.csv"
+    },
+    "schema": {
+      "df_order_items": [
+        "order_item_id",
+        "order_id",
+        "product_id",
+        "quantity",
+        "unit_price",
+        "line_amount"
+      ],
+      "df_products": [
+        "product_id",
+        "product_name",
+        "category_id",
+        "brand",
+        "price",
+        "launch_date",
+        "is_active"
+      ]
+    },
+    "starter_code": "import pandas as pd\n\ndef solve(df_order_items, df_products):\n    pass",
+    "expected_code": "import pandas as pd\n\ndef solve(df_order_items, df_products):\n    active = df_products[df_products['is_active'] == True].copy()\n    active['launch_date'] = pd.to_datetime(active['launch_date'])\n    active['launch_quarter'] = active['launch_date'].dt.to_period('Q').astype(str)\n    items = df_order_items.merge(active[['product_id', 'launch_quarter']], on='product_id')\n    result = (\n        items.groupby('launch_quarter', as_index=False)\n        .agg(\n            active_product_count=('product_id', 'nunique'),\n            total_revenue=('line_amount', 'sum')\n        )\n        .assign(total_revenue=lambda x: x['total_revenue'].round(2))\n        .sort_values('launch_quarter')\n        .reset_index(drop=True)\n    )\n    return result",
+    "solution_code": "import pandas as pd\n\ndef solve(df_order_items, df_products):\n    active = df_products[df_products['is_active'] == True].copy()\n    active['launch_date'] = pd.to_datetime(active['launch_date'])\n    active['launch_quarter'] = active['launch_date'].dt.to_period('Q').astype(str)\n    items = df_order_items.merge(active[['product_id', 'launch_quarter']], on='product_id')\n    result = (\n        items.groupby('launch_quarter', as_index=False)\n        .agg(\n            active_product_count=('product_id', 'nunique'),\n            total_revenue=('line_amount', 'sum')\n        )\n        .assign(total_revenue=lambda x: x['total_revenue'].round(2))\n        .sort_values('launch_quarter')\n        .reset_index(drop=True)\n    )\n    return result",
+    "explanation": "Filtering to `is_active == True` before the merge ensures that only active products contribute both to the product count and to the revenue total. Using an inner merge (the default) means order items for discontinued products are simply excluded. The key professional judgment here is recognising that 'include in cohort' and 'count as revenue-contributing' are the same decision when the filter is applied pre-merge — filtering post-merge would be more complex and error-prone. Note that quarters with no active products at all would disappear from the output entirely, which is correct for the product team's request.",
+    "hints": [
+      "The business definition is 'current portfolio only'. Think about where in the pipeline the active/inactive distinction should be resolved — and whether applying it earlier or later changes what rows make it into the final aggregation.",
+      "The `active_product_count` column name signals that only active products contribute to the count — rename the aggregation column to match the stem exactly."
+    ],
+    "concepts": [
+      "BOOLEAN INDEXING & FILTERING",
+      "MULTI-DATAFRAME ENTITY LINKING",
+      "GROUPED AGGREGATION"
+    ]
+  },
+  {
+    "id": 32100,
+    "order": 100,
+    "topic": "pandas",
+    "difficulty": "medium",
+    "mock_only": true,
+    "framing": "scenario",
+    "parent_id": 32098,
+    "follow_up_dimension": "abstraction_pivot",
+    "title": "Cohort Percentile Rank — Generalising Point Revenue to Relative Standing",
+    "description": "**Follow-up to Q32098.** The product team has the quarter-cohort revenue totals. Now they want to move from absolute revenue to *relative standing*: for each product, how does its own total revenue compare to others in the same launch cohort? Use the **same cohort as Q32098**: every product with a non-null `launch_date` (products with a missing launch_date are excluded); products launched but never sold are included with `product_revenue = 0`. Compute each product's `cohort_percentile_rank` (its revenue rank within its `launch_quarter` group, expressed as a fraction 0.0–1.0 using `rank(pct=True)` with ties averaged — the pandas default — rounded to 4 dp). Return `product_name`, `launch_quarter` (a **string label in YYYYQN format, e.g. the string `'2022Q1'`** — not a Period or Timestamp), `product_revenue` (total `line_amount` for the product, rounded to 2 dp), and `cohort_percentile_rank`, sorted by `launch_quarter` ascending, then `product_name` ascending.",
+    "dataframes": {
+      "df_order_items": "order_items.csv",
+      "df_products": "products.csv"
+    },
+    "schema": {
+      "df_order_items": [
+        "order_item_id",
+        "order_id",
+        "product_id",
+        "quantity",
+        "unit_price",
+        "line_amount"
+      ],
+      "df_products": [
+        "product_id",
+        "product_name",
+        "category_id",
+        "brand",
+        "price",
+        "launch_date",
+        "is_active"
+      ]
+    },
+    "starter_code": "import pandas as pd\n\ndef solve(df_order_items, df_products):\n    pass",
+    "expected_code": "import pandas as pd\n\ndef solve(df_order_items, df_products):\n    products = df_products.copy()\n    products['launch_date'] = pd.to_datetime(products['launch_date'])\n    products = products.dropna(subset=['launch_date'])\n    products['launch_quarter'] = products['launch_date'].dt.to_period('Q').astype(str)\n\n    # Per-product revenue from order items\n    per_product_rev = (\n        df_order_items.groupby('product_id', as_index=False)\n        .agg(product_revenue=('line_amount', 'sum'))\n    )\n    # Left-merge so launched-but-unsold products get product_revenue=0\n    prod_rev = (\n        products[['product_id', 'product_name', 'launch_quarter']]\n        .merge(per_product_rev, on='product_id', how='left')\n        .fillna({'product_revenue': 0})\n        .assign(product_revenue=lambda x: x['product_revenue'].round(2))\n    )\n    prod_rev['cohort_percentile_rank'] = (\n        prod_rev.groupby('launch_quarter')['product_revenue']\n        .rank(pct=True)\n        .round(4)\n    )\n    result = (\n        prod_rev[['product_name', 'launch_quarter', 'product_revenue', 'cohort_percentile_rank']]\n        .sort_values(['launch_quarter', 'product_name'])\n        .reset_index(drop=True)\n    )\n    return result",
+    "solution_code": "import pandas as pd\n\ndef solve(df_order_items, df_products):\n    products = df_products.copy()\n    products['launch_date'] = pd.to_datetime(products['launch_date'])\n    products = products.dropna(subset=['launch_date'])\n    products['launch_quarter'] = products['launch_date'].dt.to_period('Q').astype(str)\n\n    # Per-product revenue from order items\n    per_product_rev = (\n        df_order_items.groupby('product_id', as_index=False)\n        .agg(product_revenue=('line_amount', 'sum'))\n    )\n    # Left-merge so launched-but-unsold products get product_revenue=0\n    prod_rev = (\n        products[['product_id', 'product_name', 'launch_quarter']]\n        .merge(per_product_rev, on='product_id', how='left')\n        .fillna({'product_revenue': 0})\n        .assign(product_revenue=lambda x: x['product_revenue'].round(2))\n    )\n    prod_rev['cohort_percentile_rank'] = (\n        prod_rev.groupby('launch_quarter')['product_revenue']\n        .rank(pct=True)\n        .round(4)\n    )\n    result = (\n        prod_rev[['product_name', 'launch_quarter', 'product_revenue', 'cohort_percentile_rank']]\n        .sort_values(['launch_quarter', 'product_name'])\n        .reset_index(drop=True)\n    )\n    return result",
+    "explanation": "This question uses the same launch cohort as Q32098: every product with a non-null `launch_date`, with products launched but never sold included at `product_revenue = 0`. Dropping NaT rows first (`.dropna(subset=['launch_date'])`) removes the four products with missing launch dates, preventing a NaN `launch_quarter` group. A left-merge from products onto per-product revenue (rather than filtering on order items) ensures unsold products appear with `product_revenue = 0` via `.fillna({'product_revenue': 0})`. The abstraction shift from Q32098 is from *cohort totals* (absolute revenue per quarter) to *within-cohort relative standing* (percentile rank per product). `groupby('launch_quarter')['product_revenue'].rank(pct=True)` applies `.rank()` independently per cohort group and returns the fractional rank — the result aligns back to `prod_rev` without a join. This pattern — aggregate first to product level, then apply a within-group rank as a column — generalises to any 'how does each item compare to its peer group?' question.",
+    "hints": [
+      "The question asks for each product's *relative* standing within its cohort — not the cohort total. Think about what two sequential summarisations are needed: first collapsing all order lines to a per-product total, then measuring how each product's total compares to its peers.",
+      "After collapsing to product-level revenue, `groupby('launch_quarter')['product_revenue'].rank(pct=True)` computes each product's fractional percentile rank within its cohort — no separate join back needed since the index aligns."
+    ],
+    "concepts": [
+      "GROUPED AGGREGATION",
+      "RANKING & TOP-N PER GROUP",
+      "MULTI-DATAFRAME ENTITY LINKING"
+    ]
+  },
+  {
+    "id": 32101,
+    "order": 101,
+    "topic": "pandas",
+    "difficulty": "medium",
+    "mock_only": true,
+    "framing": "scenario",
+    "follow_ups": [
+      32102,
+      32103
+    ],
+    "title": "Support Ticket Volume and Resolution Time by Plan Tier",
+    "description": "The customer success team wants to know whether higher-tier users open more tickets and whether their issues are resolved faster. Using `df_support_tickets` and `df_users`, compute per `plan_tier`: `ticket_count` (total tickets), `avg_resolution_hours` (mean resolution_hours across all tickets for that tier, rounded to 2 dp). Return columns `plan_tier`, `ticket_count`, `avg_resolution_hours`, sorted by `plan_tier` ascending.",
+    "dataframes": {
+      "df_support_tickets": "support_tickets.csv",
+      "df_users": "users.csv"
+    },
+    "schema": {
+      "df_support_tickets": [
+        "ticket_id",
+        "user_id",
+        "created_at",
+        "issue_type",
+        "priority",
+        "status",
+        "resolution_hours"
+      ],
+      "df_users": [
+        "user_id",
+        "name",
+        "email",
+        "signup_date",
+        "country",
+        "acquisition_channel",
+        "plan_tier",
+        "is_active"
+      ]
+    },
+    "starter_code": "import pandas as pd\n\ndef solve(df_support_tickets, df_users):\n    pass",
+    "expected_code": "import pandas as pd\n\ndef solve(df_support_tickets, df_users):\n    merged = df_support_tickets.merge(df_users[['user_id', 'plan_tier']], on='user_id', how='left')\n    result = (\n        merged.groupby('plan_tier', as_index=False)\n        .agg(\n            ticket_count=('ticket_id', 'count'),\n            avg_resolution_hours=('resolution_hours', 'mean')\n        )\n        .assign(avg_resolution_hours=lambda x: x['avg_resolution_hours'].round(2))\n        .sort_values('plan_tier')\n        .reset_index(drop=True)\n    )\n    return result",
+    "solution_code": "import pandas as pd\n\ndef solve(df_support_tickets, df_users):\n    merged = df_support_tickets.merge(df_users[['user_id', 'plan_tier']], on='user_id', how='left')\n    result = (\n        merged.groupby('plan_tier', as_index=False)\n        .agg(\n            ticket_count=('ticket_id', 'count'),\n            avg_resolution_hours=('resolution_hours', 'mean')\n        )\n        .assign(avg_resolution_hours=lambda x: x['avg_resolution_hours'].round(2))\n        .sort_values('plan_tier')\n        .reset_index(drop=True)\n    )\n    return result",
+    "explanation": "A left merge from `df_support_tickets` onto `df_users` preserves all tickets (including any whose user_id is missing from users, which would land in a NaN plan_tier group). Selecting only `['user_id', 'plan_tier']` from users before the merge avoids pulling in all user columns. Named aggregation in a single `.agg()` call computes both metrics in one pass over the merged frame. The `.sort_values('plan_tier')` produces alphabetical tier ordering — if a specific business order is needed, `.astype(pd.CategoricalDtype(..., ordered=True))` is the idiomatic extension.",
+    "hints": [
+      "Every ticket must appear in the output, even if the user who filed it happens to be missing from the users table. Think about which of the two tables is your 'ground truth' for the list of tickets, and what join semantics preserve all its rows.",
+      "Select only the columns you need from `df_users` before merging to avoid duplicate column suffixes and keep the frame narrow."
+    ],
+    "concepts": [
+      "GROUPED AGGREGATION",
+      "MULTI-DATAFRAME ENTITY LINKING"
+    ]
+  },
+  {
+    "id": 32102,
+    "order": 102,
+    "topic": "pandas",
+    "difficulty": "medium",
+    "mock_only": true,
+    "framing": "scenario",
+    "parent_id": 32101,
+    "follow_up_dimension": "business_rule_pivot",
+    "title": "Resolved Tickets Only — Plan-Tier Resolution SLA",
+    "description": "**Follow-up to Q32101.** The SLA team says that `avg_resolution_hours` is only meaningful for tickets that reached `status == 'resolved'` — open and in-progress tickets have no resolution time and should not distort the average. Update the function to compute `resolved_ticket_count` (tickets where `status == 'resolved'`) and `avg_resolution_hours` (mean resolution_hours for resolved tickets only, rounded to 2 dp) per `plan_tier`. Return columns `plan_tier`, `resolved_ticket_count`, `avg_resolution_hours`, sorted by `plan_tier` ascending.",
+    "dataframes": {
+      "df_support_tickets": "support_tickets.csv",
+      "df_users": "users.csv"
+    },
+    "schema": {
+      "df_support_tickets": [
+        "ticket_id",
+        "user_id",
+        "created_at",
+        "issue_type",
+        "priority",
+        "status",
+        "resolution_hours"
+      ],
+      "df_users": [
+        "user_id",
+        "name",
+        "email",
+        "signup_date",
+        "country",
+        "acquisition_channel",
+        "plan_tier",
+        "is_active"
+      ]
+    },
+    "starter_code": "import pandas as pd\n\ndef solve(df_support_tickets, df_users):\n    pass",
+    "expected_code": "import pandas as pd\n\ndef solve(df_support_tickets, df_users):\n    resolved = df_support_tickets[df_support_tickets['status'] == 'resolved']\n    merged = resolved.merge(df_users[['user_id', 'plan_tier']], on='user_id', how='left')\n    result = (\n        merged.groupby('plan_tier', as_index=False)\n        .agg(\n            resolved_ticket_count=('ticket_id', 'count'),\n            avg_resolution_hours=('resolution_hours', 'mean')\n        )\n        .assign(avg_resolution_hours=lambda x: x['avg_resolution_hours'].round(2))\n        .sort_values('plan_tier')\n        .reset_index(drop=True)\n    )\n    return result",
+    "solution_code": "import pandas as pd\n\ndef solve(df_support_tickets, df_users):\n    resolved = df_support_tickets[df_support_tickets['status'] == 'resolved']\n    merged = resolved.merge(df_users[['user_id', 'plan_tier']], on='user_id', how='left')\n    result = (\n        merged.groupby('plan_tier', as_index=False)\n        .agg(\n            resolved_ticket_count=('ticket_id', 'count'),\n            avg_resolution_hours=('resolution_hours', 'mean')\n        )\n        .assign(avg_resolution_hours=lambda x: x['avg_resolution_hours'].round(2))\n        .sort_values('plan_tier')\n        .reset_index(drop=True)\n    )\n    return result",
+    "explanation": "Filtering to `status == 'resolved'` before the merge is the correct approach: it reduces the frame first, then joins only plan_tier for the qualifying tickets. Filtering post-merge would produce the same result but wastes the join effort on rows that will be dropped. After this filter, `count()` gives the resolved ticket count and `mean()` on `resolution_hours` is meaningful because all included rows have a genuine resolution time. Note that plan tiers with zero resolved tickets would disappear — this is correct if the business definition is 'SLA over resolved tickets only'.",
+    "hints": [
+      "The business rule is: only resolved tickets count for SLA. Should you filter before or after joining to the users table? Which order is more efficient and avoids ambiguity?",
+      "After filtering to resolved tickets, the `count()` aggregation on `ticket_id` directly gives `resolved_ticket_count` — no conditional lambda needed."
+    ],
+    "concepts": [
+      "BOOLEAN INDEXING & FILTERING",
+      "GROUPED AGGREGATION",
+      "MULTI-DATAFRAME ENTITY LINKING"
+    ]
+  },
+  {
+    "id": 32103,
+    "order": 103,
+    "topic": "pandas",
+    "difficulty": "medium",
+    "mock_only": true,
+    "framing": "scenario",
+    "parent_id": 32101,
+    "follow_up_dimension": "scale_pivot",
+    "title": "Tickets per User by Plan Tier — Normalising by User Base Size",
+    "description": "**Follow-up to Q32101.** The customer success VP points out that enterprise has 15 tickets and basic has 329 — but enterprise has far fewer users. Raw counts aren't comparable. Compute the normalised view: for each `plan_tier`, `user_count` (total users in that tier from `df_users`), `ticket_count` (total tickets from `df_support_tickets`), and `tickets_per_user` (ticket_count / user_count, rounded to 3 dp). All plan tiers in `df_users` must appear even if they have no tickets (use `tickets_per_user = 0.0` in that case). Sort by `plan_tier` ascending.",
+    "dataframes": {
+      "df_support_tickets": "support_tickets.csv",
+      "df_users": "users.csv"
+    },
+    "schema": {
+      "df_support_tickets": [
+        "ticket_id",
+        "user_id",
+        "created_at",
+        "issue_type",
+        "priority",
+        "status",
+        "resolution_hours"
+      ],
+      "df_users": [
+        "user_id",
+        "name",
+        "email",
+        "signup_date",
+        "country",
+        "acquisition_channel",
+        "plan_tier",
+        "is_active"
+      ]
+    },
+    "starter_code": "import pandas as pd\n\ndef solve(df_support_tickets, df_users):\n    pass",
+    "expected_code": "import pandas as pd\n\ndef solve(df_support_tickets, df_users):\n    user_counts = df_users.groupby('plan_tier', as_index=False).agg(user_count=('user_id', 'count'))\n    ticket_counts = df_support_tickets.merge(df_users[['user_id', 'plan_tier']], on='user_id', how='left')\n    ticket_counts = ticket_counts.groupby('plan_tier', as_index=False).agg(ticket_count=('ticket_id', 'count'))\n    result = (\n        user_counts.merge(ticket_counts, on='plan_tier', how='left')\n        .fillna({'ticket_count': 0})\n        .assign(\n            ticket_count=lambda x: x['ticket_count'].astype(int),\n            tickets_per_user=lambda x: (x['ticket_count'] / x['user_count']).round(3)\n        )\n        .sort_values('plan_tier')\n        .reset_index(drop=True)\n    )\n    return result",
+    "solution_code": "import pandas as pd\n\ndef solve(df_support_tickets, df_users):\n    user_counts = df_users.groupby('plan_tier', as_index=False).agg(user_count=('user_id', 'count'))\n    ticket_counts = df_support_tickets.merge(df_users[['user_id', 'plan_tier']], on='user_id', how='left')\n    ticket_counts = ticket_counts.groupby('plan_tier', as_index=False).agg(ticket_count=('ticket_id', 'count'))\n    result = (\n        user_counts.merge(ticket_counts, on='plan_tier', how='left')\n        .fillna({'ticket_count': 0})\n        .assign(\n            ticket_count=lambda x: x['ticket_count'].astype(int),\n            tickets_per_user=lambda x: (x['ticket_count'] / x['user_count']).round(3)\n        )\n        .sort_values('plan_tier')\n        .reset_index(drop=True)\n    )\n    return result",
+    "explanation": "The critical insight is that the denominator (user count) comes from a *different* table than the numerator (ticket count). Computing both separately and then merging from the user side (left merge from `user_counts`) ensures all plan tiers appear even if they have zero tickets — a plan tier with no tickets would otherwise be absent from the ticket aggregation. The `.fillna({'ticket_count': 0})` replaces the NaN from the unmatched merge row before the integer cast and ratio computation. This pattern — two independent aggregations merged on a shared key with a left join — recurs whenever the denominator and numerator live in different fact tables.",
+    "hints": [
+      "The denominator (user count per tier) and numerator (ticket count per tier) come from different tables. How do you combine two separate per-tier aggregations while preserving tiers that appear only in the user table?",
+      "After a left join, tiers with zero tickets will have NaN in the ticket_count column. Handle this before computing the ratio — and before converting to integer."
+    ],
+    "concepts": [
+      "GROUPED AGGREGATION",
+      "MULTI-DATAFRAME ENTITY LINKING",
+      "MISSING VALUE STRATEGY"
+    ]
+  },
+  {
+    "id": 32104,
+    "order": 104,
+    "topic": "pandas",
+    "difficulty": "medium",
+    "mock_only": true,
+    "framing": "scenario",
+    "follow_ups": [
+      32105,
+      32106
+    ],
+    "title": "Repeat-Purchase Distribution — Orders-per-Customer Tiers",
+    "description": "The retention team wants to understand how purchase frequency is distributed across the customer base. Using `df_orders`, count the total number of orders per `user_id` (regardless of order status), then bucket customers into three tiers: `'1'` (exactly 1 order), `'2-3'` (2 or 3 orders), and `'4+'` (4 or more orders). Return `tier` and `customer_count` (number of customers in that tier), sorted by `tier` ascending. Preserve the tier labels exactly as shown.",
+    "dataframes": {
+      "df_orders": "orders.csv"
+    },
+    "schema": {
+      "df_orders": [
+        "order_id",
+        "user_id",
+        "order_date",
+        "status",
+        "gross_amount",
+        "discount_amount",
+        "net_amount",
+        "payment_status"
+      ]
+    },
+    "starter_code": "import pandas as pd\n\ndef solve(df_orders):\n    pass",
+    "expected_code": "import pandas as pd\n\ndef solve(df_orders):\n    orders_per_user = (\n        df_orders.groupby('user_id', as_index=False)\n        .agg(order_count=('order_id', 'count'))\n    )\n    def assign_tier(n):\n        if n == 1:\n            return '1'\n        elif n <= 3:\n            return '2-3'\n        else:\n            return '4+'\n    orders_per_user['tier'] = orders_per_user['order_count'].map(assign_tier)\n    result = (\n        orders_per_user.groupby('tier', as_index=False)\n        .agg(customer_count=('user_id', 'count'))\n        .sort_values('tier')\n        .reset_index(drop=True)\n    )\n    return result",
+    "solution_code": "import pandas as pd\n\ndef solve(df_orders):\n    orders_per_user = (\n        df_orders.groupby('user_id', as_index=False)\n        .agg(order_count=('order_id', 'count'))\n    )\n    def assign_tier(n):\n        if n == 1:\n            return '1'\n        elif n <= 3:\n            return '2-3'\n        else:\n            return '4+'\n    orders_per_user['tier'] = orders_per_user['order_count'].map(assign_tier)\n    result = (\n        orders_per_user.groupby('tier', as_index=False)\n        .agg(customer_count=('user_id', 'count'))\n        .sort_values('tier')\n        .reset_index(drop=True)\n    )\n    return result",
+    "explanation": "The two-step pattern — groupby to per-user order counts, then bucket and re-group — is the standard 'distribution of a per-entity metric' shape. Using `.map()` with a named function for the tier assignment is more readable than a nested `pd.cut` with custom labels and avoids a separate bins list. The second `groupby` on the tier column collapses users into their tier count. This is distinct from Q32073 (cumulative running order count per user, a window-function pattern) — here the output is a three-row distribution summary, not one row per order.",
+    "hints": [
+      "This is a two-stage summarisation: first reduce the data to one row per customer (their order count), then reduce again to one row per tier (the customer count). Identify what each intermediate frame should contain before writing any code.",
+      "A named function passed to `.map()` is a clean way to assign tier labels from a scalar order count — more readable than a nested `pd.cut` when the boundaries are few and irregular."
+    ],
+    "concepts": [
+      "GROUPED AGGREGATION",
+      "CATEGORICAL & BINNING"
+    ]
+  },
+  {
+    "id": 32105,
+    "order": 105,
+    "topic": "pandas",
+    "difficulty": "medium",
+    "mock_only": true,
+    "framing": "scenario",
+    "parent_id": 32104,
+    "follow_up_dimension": "business_rule_pivot",
+    "title": "Repeat-Purchase Distribution — Completed Orders Only",
+    "description": "**Follow-up to Q32104.** The retention analyst points out that cancelled orders should not count toward purchase frequency — a customer with 5 cancelled orders is not a repeat buyer. Update the function to bucket by **completed orders only** (`status == 'completed'`). Use the same three tiers as Q32104 (`'1'`, `'2-3'`, `'4+'`). Return `tier` and `customer_count`, sorted by `tier` ascending. Note: customers whose only orders were cancelled will no longer appear in the result.",
+    "dataframes": {
+      "df_orders": "orders.csv"
+    },
+    "schema": {
+      "df_orders": [
+        "order_id",
+        "user_id",
+        "order_date",
+        "status",
+        "gross_amount",
+        "discount_amount",
+        "net_amount",
+        "payment_status"
+      ]
+    },
+    "starter_code": "import pandas as pd\n\ndef solve(df_orders):\n    pass",
+    "expected_code": "import pandas as pd\n\ndef solve(df_orders):\n    completed = df_orders[df_orders['status'] == 'completed']\n    orders_per_user = (\n        completed.groupby('user_id', as_index=False)\n        .agg(order_count=('order_id', 'count'))\n    )\n    def assign_tier(n):\n        if n == 1:\n            return '1'\n        elif n <= 3:\n            return '2-3'\n        else:\n            return '4+'\n    orders_per_user['tier'] = orders_per_user['order_count'].map(assign_tier)\n    result = (\n        orders_per_user.groupby('tier', as_index=False)\n        .agg(customer_count=('user_id', 'count'))\n        .sort_values('tier')\n        .reset_index(drop=True)\n    )\n    return result",
+    "solution_code": "import pandas as pd\n\ndef solve(df_orders):\n    completed = df_orders[df_orders['status'] == 'completed']\n    orders_per_user = (\n        completed.groupby('user_id', as_index=False)\n        .agg(order_count=('order_id', 'count'))\n    )\n    def assign_tier(n):\n        if n == 1:\n            return '1'\n        elif n <= 3:\n            return '2-3'\n        else:\n            return '4+'\n    orders_per_user['tier'] = orders_per_user['order_count'].map(assign_tier)\n    result = (\n        orders_per_user.groupby('tier', as_index=False)\n        .agg(customer_count=('user_id', 'count'))\n        .sort_values('tier')\n        .reset_index(drop=True)\n    )\n    return result",
+    "explanation": "Pre-filtering to `status == 'completed'` before the per-user count changes both which customers appear and which tier they land in — a customer with 4 total orders including 3 cancelled now has only 1 completed order and falls into the `'1'` tier instead of `'4+'`. Customers with zero completed orders are excluded entirely because they contribute no rows to the filtered frame. The structure is otherwise identical to Q32104, which illustrates that a business-rule change often manifests as a single pre-filter, not a structural pipeline change.",
+    "hints": [
+      "The tier definition hasn't changed, only what counts as an order. Apply the status filter before the per-user count — that changes how many orders each user 'has' and which tier they fall into.",
+      "After filtering, some users from Q32104 will shift tiers and some will disappear entirely. Customers with only cancelled orders contribute zero rows to the filtered frame."
+    ],
+    "concepts": [
+      "GROUPED AGGREGATION",
+      "BOOLEAN INDEXING & FILTERING",
+      "CATEGORICAL & BINNING"
+    ]
+  },
+  {
+    "id": 32106,
+    "order": 106,
+    "topic": "pandas",
+    "difficulty": "medium",
+    "mock_only": true,
+    "framing": "scenario",
+    "parent_id": 32104,
+    "follow_up_dimension": "abstraction_pivot",
+    "title": "Revenue Concentration by Repeat-Purchase Tier",
+    "description": "**Follow-up to Q32104.** The finance team wants to move from counting customers per tier to measuring **revenue concentration**: what share of total revenue does each repeat-purchase tier contribute? Using `df_orders`, compute per `tier` (same three buckets as Q32104 — `'1'`, `'2-3'`, `'4+'`, based on each user's total order count regardless of status): `tier_revenue` (sum of `net_amount` for all users in that tier, rounded to 2 dp) and `revenue_share_pct` (tier_revenue / grand_total_revenue × 100, rounded to 2 dp). Return `tier`, `tier_revenue`, `revenue_share_pct`, sorted by `tier` ascending.",
+    "dataframes": {
+      "df_orders": "orders.csv"
+    },
+    "schema": {
+      "df_orders": [
+        "order_id",
+        "user_id",
+        "order_date",
+        "status",
+        "gross_amount",
+        "discount_amount",
+        "net_amount",
+        "payment_status"
+      ]
+    },
+    "starter_code": "import pandas as pd\n\ndef solve(df_orders):\n    pass",
+    "expected_code": "import pandas as pd\n\ndef solve(df_orders):\n    user_summary = (\n        df_orders.groupby('user_id', as_index=False)\n        .agg(\n            order_count=('order_id', 'count'),\n            total_revenue=('net_amount', 'sum')\n        )\n    )\n    def assign_tier(n):\n        if n == 1:\n            return '1'\n        elif n <= 3:\n            return '2-3'\n        else:\n            return '4+'\n    user_summary['tier'] = user_summary['order_count'].map(assign_tier)\n    grand_total = df_orders['net_amount'].sum()\n    result = (\n        user_summary.groupby('tier', as_index=False)\n        .agg(tier_revenue=('total_revenue', 'sum'))\n        .assign(\n            tier_revenue=lambda x: x['tier_revenue'].round(2),\n            revenue_share_pct=lambda x: (x['tier_revenue'] / grand_total * 100).round(2)\n        )\n        .sort_values('tier')\n        .reset_index(drop=True)\n    )\n    return result",
+    "solution_code": "import pandas as pd\n\ndef solve(df_orders):\n    user_summary = (\n        df_orders.groupby('user_id', as_index=False)\n        .agg(\n            order_count=('order_id', 'count'),\n            total_revenue=('net_amount', 'sum')\n        )\n    )\n    def assign_tier(n):\n        if n == 1:\n            return '1'\n        elif n <= 3:\n            return '2-3'\n        else:\n            return '4+'\n    user_summary['tier'] = user_summary['order_count'].map(assign_tier)\n    grand_total = df_orders['net_amount'].sum()\n    result = (\n        user_summary.groupby('tier', as_index=False)\n        .agg(tier_revenue=('total_revenue', 'sum'))\n        .assign(\n            tier_revenue=lambda x: x['tier_revenue'].round(2),\n            revenue_share_pct=lambda x: (x['tier_revenue'] / grand_total * 100).round(2)\n        )\n        .sort_values('tier')\n        .reset_index(drop=True)\n    )\n    return result",
+    "explanation": "The abstraction shift is from 'how many customers per tier' (Q32104 — a customer-count distribution) to 'how much revenue does each tier generate' (a revenue-concentration question). The first groupby now computes two aggregations simultaneously — `order_count` (for the tier assignment) and `total_revenue` (for the output metric). Computing `grand_total` from the original `df_orders` before any groupby avoids a two-pass calculation. The revenue-share question typically reveals that the `'4+'` tier drives the vast majority of revenue despite not being the largest tier by customer count — the key analytical insight this abstraction makes visible.",
+    "hints": [
+      "The output metric has changed from customer count to revenue. Think about what two quantities you need to know per user — one to determine their tier, one to contribute to tier revenue — and where both can be derived from a single pass over the orders table.",
+      "Compute `grand_total` as a scalar from the full orders DataFrame before the groupby chain — this avoids a second pass over the data and the result is available as a closure value inside `.assign()`."
+    ],
+    "concepts": [
+      "GROUPED AGGREGATION",
+      "CATEGORICAL & BINNING"
+    ]
+  },
+  {
+    "id": 32107,
+    "order": 107,
+    "topic": "pandas",
+    "difficulty": "medium",
+    "mock_only": true,
+    "framing": "scenario",
+    "follow_ups": [
+      32108,
+      32109
+    ],
+    "title": "Category Product Mix — Items Sold, Revenue, and Average Unit Price",
+    "description": "The merchandising team wants a category-level product mix report. Using `df_order_items`, `df_products`, and `df_categories`, compute per `category_name`: `items_sold` (total quantity sold across all orders), `total_revenue` (sum of `line_amount`, rounded to 2 dp), and `avg_unit_price` (mean of `unit_price` across all order lines in the category, rounded to 2 dp). Sort by `category_name` ascending. Return those four columns.",
+    "dataframes": {
+      "df_order_items": "order_items.csv",
+      "df_products": "products.csv",
+      "df_categories": "categories.csv"
+    },
+    "schema": {
+      "df_order_items": [
+        "order_item_id",
+        "order_id",
+        "product_id",
+        "quantity",
+        "unit_price",
+        "line_amount"
+      ],
+      "df_products": [
+        "product_id",
+        "product_name",
+        "category_id",
+        "brand",
+        "price",
+        "launch_date",
+        "is_active"
+      ],
+      "df_categories": [
+        "category_id",
+        "category_name",
+        "parent_category"
+      ]
+    },
+    "starter_code": "import pandas as pd\n\ndef solve(df_order_items, df_products, df_categories):\n    pass",
+    "expected_code": "import pandas as pd\n\ndef solve(df_order_items, df_products, df_categories):\n    items = df_order_items.merge(df_products[['product_id', 'category_id']], on='product_id')\n    items2 = items.merge(df_categories[['category_id', 'category_name']], on='category_id')\n    result = (\n        items2.groupby('category_name', as_index=False)\n        .agg(\n            items_sold=('quantity', 'sum'),\n            total_revenue=('line_amount', 'sum'),\n            avg_unit_price=('unit_price', 'mean')\n        )\n        .assign(\n            total_revenue=lambda x: x['total_revenue'].round(2),\n            avg_unit_price=lambda x: x['avg_unit_price'].round(2)\n        )\n        .sort_values('category_name')\n        .reset_index(drop=True)\n    )\n    return result",
+    "solution_code": "import pandas as pd\n\ndef solve(df_order_items, df_products, df_categories):\n    items = df_order_items.merge(df_products[['product_id', 'category_id']], on='product_id')\n    items2 = items.merge(df_categories[['category_id', 'category_name']], on='category_id')\n    result = (\n        items2.groupby('category_name', as_index=False)\n        .agg(\n            items_sold=('quantity', 'sum'),\n            total_revenue=('line_amount', 'sum'),\n            avg_unit_price=('unit_price', 'mean')\n        )\n        .assign(\n            total_revenue=lambda x: x['total_revenue'].round(2),\n            avg_unit_price=lambda x: x['avg_unit_price'].round(2)\n        )\n        .sort_values('category_name')\n        .reset_index(drop=True)\n    )\n    return result",
+    "explanation": "The three-table join follows the standard dimension-resolution pattern: order_items → products (to get category_id) → categories (to get category_name). Selecting only the needed columns from each dimension table before merging keeps the frame narrow and avoids column-name collisions. Three distinct aggregations in a single `.agg()` call — `sum` for quantity and line_amount, `mean` for unit_price — compute the product mix metrics in one pass. This is distinct from a category revenue-share report (which computes percentages of total) or a top-N ranking: it is a multi-metric absolute summary per category.",
+    "hints": [
+      "You need `category_name` from categories, `category_id` from products, and the order metrics from order_items. Chain two merges, selecting only the bridge column from each dimension table.",
+      "Three different aggregation functions on three different columns can be expressed in a single `.agg()` call using named aggregation — no need for chained `.agg()` calls or a pivot."
+    ],
+    "concepts": [
+      "GROUPED AGGREGATION",
+      "MULTI-DATAFRAME ENTITY LINKING"
+    ]
+  },
+  {
+    "id": 32108,
+    "order": 108,
+    "topic": "pandas",
+    "difficulty": "medium",
+    "mock_only": true,
+    "framing": "scenario",
+    "parent_id": 32107,
+    "follow_up_dimension": "edge_case_pivot",
+    "title": "Category Mix Including Zero-Revenue Categories",
+    "description": "**Follow-up to Q32107.** The merchandising director points out that two categories in `df_categories` have never had any products ordered — they appear in the categories table but have no matching order_item rows. The parent report silently drops them. Fix the report to include **all categories**, including those with zero orders, showing `items_sold = 0` and `total_revenue = 0.00` for the empty ones. Return `category_name`, `items_sold` (integer), and `total_revenue` (rounded to 2 dp), sorted by `category_name` ascending.",
+    "dataframes": {
+      "df_order_items": "order_items.csv",
+      "df_products": "products.csv",
+      "df_categories": "categories.csv"
+    },
+    "schema": {
+      "df_order_items": [
+        "order_item_id",
+        "order_id",
+        "product_id",
+        "quantity",
+        "unit_price",
+        "line_amount"
+      ],
+      "df_products": [
+        "product_id",
+        "product_name",
+        "category_id",
+        "brand",
+        "price",
+        "launch_date",
+        "is_active"
+      ],
+      "df_categories": [
+        "category_id",
+        "category_name",
+        "parent_category"
+      ]
+    },
+    "starter_code": "import pandas as pd\n\ndef solve(df_order_items, df_products, df_categories):\n    pass",
+    "expected_code": "import pandas as pd\n\ndef solve(df_order_items, df_products, df_categories):\n    # Start from categories (left) to preserve all categories\n    cat_products = df_categories[['category_id', 'category_name']].merge(\n        df_products[['product_id', 'category_id']], on='category_id', how='left'\n    )\n    cat_items = cat_products.merge(\n        df_order_items[['product_id', 'quantity', 'line_amount']], on='product_id', how='left'\n    )\n    result = (\n        cat_items.groupby('category_name', as_index=False)\n        .agg(\n            items_sold=('quantity', lambda x: x.fillna(0).sum()),\n            total_revenue=('line_amount', lambda x: x.fillna(0).sum())\n        )\n        .assign(\n            items_sold=lambda x: x['items_sold'].astype(int),\n            total_revenue=lambda x: x['total_revenue'].round(2)\n        )\n        .sort_values('category_name')\n        .reset_index(drop=True)\n    )\n    return result",
+    "solution_code": "import pandas as pd\n\ndef solve(df_order_items, df_products, df_categories):\n    # Start from categories (left) to preserve all categories\n    cat_products = df_categories[['category_id', 'category_name']].merge(\n        df_products[['product_id', 'category_id']], on='category_id', how='left'\n    )\n    cat_items = cat_products.merge(\n        df_order_items[['product_id', 'quantity', 'line_amount']], on='product_id', how='left'\n    )\n    result = (\n        cat_items.groupby('category_name', as_index=False)\n        .agg(\n            items_sold=('quantity', lambda x: x.fillna(0).sum()),\n            total_revenue=('line_amount', lambda x: x.fillna(0).sum())\n        )\n        .assign(\n            items_sold=lambda x: x['items_sold'].astype(int),\n            total_revenue=lambda x: x['total_revenue'].round(2)\n        )\n        .sort_values('category_name')\n        .reset_index(drop=True)\n    )\n    return result",
+    "explanation": "Reversing the join direction — starting from `df_categories` as the left frame and left-joining products and then order_items — preserves all 16 categories even those with no products or no orders. The unmatched rows carry NaN in the quantity and line_amount columns; `x.fillna(0).sum()` inside the lambda aggregation converts those NaNs to zero before summing, producing explicit 0 values rather than NaN. The `astype(int)` on `items_sold` is safe after the fillna step. The key professional judgment: when a report must show 'all members of a reference set', always make that reference set the left side of a chain of left joins.",
+    "hints": [
+      "Which table is the 'universe' you want all rows from — categories, products, or order_items? That table should be the left side of every join in the chain.",
+      "After left-joining, unmatched categories will have NaN in the quantity and revenue columns. `x.fillna(0).sum()` handles this inside the lambda; a plain `'sum'` aggregation would also treat NaN as 0 in older pandas — but the explicit fillna makes your intent clear."
+    ],
+    "concepts": [
+      "MULTI-DATAFRAME ENTITY LINKING",
+      "MISSING VALUE STRATEGY",
+      "GROUPED AGGREGATION"
+    ]
+  },
+  {
+    "id": 32109,
+    "order": 109,
+    "topic": "pandas",
+    "difficulty": "medium",
+    "mock_only": true,
+    "framing": "scenario",
+    "parent_id": 32107,
+    "follow_up_dimension": "abstraction_pivot",
+    "title": "Category Revenue Standing — Deviation from Cross-Category Mean",
+    "description": "**Follow-up to Q32107.** The merchandising VP wants to move from absolute revenue totals to **relative standing**: for each category, how far above or below the cross-category average does its revenue sit? Using `df_order_items`, `df_products`, and `df_categories`, compute per `category_name`: `total_revenue` (sum of `line_amount`, rounded to 2 dp) and `revenue_vs_mean` (total_revenue minus the mean total_revenue across all categories, rounded to 2 dp). A positive value means the category outperforms the average; negative means it underperforms. Sort by `revenue_vs_mean` descending, then `category_name` ascending. Only include categories that appear in `df_order_items`.",
+    "dataframes": {
+      "df_order_items": "order_items.csv",
+      "df_products": "products.csv",
+      "df_categories": "categories.csv"
+    },
+    "schema": {
+      "df_order_items": [
+        "order_item_id",
+        "order_id",
+        "product_id",
+        "quantity",
+        "unit_price",
+        "line_amount"
+      ],
+      "df_products": [
+        "product_id",
+        "product_name",
+        "category_id",
+        "brand",
+        "price",
+        "launch_date",
+        "is_active"
+      ],
+      "df_categories": [
+        "category_id",
+        "category_name",
+        "parent_category"
+      ]
+    },
+    "starter_code": "import pandas as pd\n\ndef solve(df_order_items, df_products, df_categories):\n    pass",
+    "expected_code": "import pandas as pd\n\ndef solve(df_order_items, df_products, df_categories):\n    items = df_order_items.merge(df_products[['product_id', 'category_id']], on='product_id')\n    items2 = items.merge(df_categories[['category_id', 'category_name']], on='category_id')\n    by_cat = (\n        items2.groupby('category_name', as_index=False)\n        .agg(total_revenue=('line_amount', 'sum'))\n        .assign(total_revenue=lambda x: x['total_revenue'].round(2))\n    )\n    mean_rev = by_cat['total_revenue'].mean()\n    by_cat['revenue_vs_mean'] = (by_cat['total_revenue'] - mean_rev).round(2)\n    result = (\n        by_cat[['category_name', 'total_revenue', 'revenue_vs_mean']]\n        .sort_values(['revenue_vs_mean', 'category_name'], ascending=[False, True])\n        .reset_index(drop=True)\n    )\n    return result",
+    "solution_code": "import pandas as pd\n\ndef solve(df_order_items, df_products, df_categories):\n    items = df_order_items.merge(df_products[['product_id', 'category_id']], on='product_id')\n    items2 = items.merge(df_categories[['category_id', 'category_name']], on='category_id')\n    by_cat = (\n        items2.groupby('category_name', as_index=False)\n        .agg(total_revenue=('line_amount', 'sum'))\n        .assign(total_revenue=lambda x: x['total_revenue'].round(2))\n    )\n    mean_rev = by_cat['total_revenue'].mean()\n    by_cat['revenue_vs_mean'] = (by_cat['total_revenue'] - mean_rev).round(2)\n    result = (\n        by_cat[['category_name', 'total_revenue', 'revenue_vs_mean']]\n        .sort_values(['revenue_vs_mean', 'category_name'], ascending=[False, True])\n        .reset_index(drop=True)\n    )\n    return result",
+    "explanation": "The abstraction shift is from 'how much does each category make?' (Q32107 absolute totals) to 'how does each category compare to the typical category?' (relative standing via mean deviation). Computing `mean_rev` as a scalar from the already-aggregated `by_cat` frame avoids a second pass over the join result. Subtracting the mean produces a signed deviation: positive means above-average, negative means below. This is distinct from share-% (Q32109 original, replaced here) — deviation reveals absolute gap from the baseline, not proportion of total; a small category with high deviation stands out more clearly than in a Pareto view. The double sort `['revenue_vs_mean', 'category_name'], ascending=[False, True]` handles ties deterministically.",
+    "hints": [
+      "You already have per-category revenue totals from Q32107. The new step is computing a single scalar — the mean of those totals — and then subtracting it from each row. Which pandas method gives you the mean of a column as a scalar?",
+      "Compute the mean from the per-category aggregated frame (not from the raw join result again) — it's a single `.mean()` call on one column and avoids re-scanning the large merged frame."
+    ],
+    "concepts": [
+      "GROUPED AGGREGATION",
+      "MULTI-DATAFRAME ENTITY LINKING",
+      "COLUMN SELECTION & PROJECTION"
+    ]
   }
 ]

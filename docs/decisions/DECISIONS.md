@@ -35,6 +35,12 @@ Keep entries to 4–6 lines. Friction kills logs; if it's longer than the change
 
 ## Entries
 
+## 2026-06-22 — +6 pandas-medium Interview Loop chains (2→8), triple blind-solve gate
+**Area:** content · mock · process · **Status:** accepted
+**Decision:** Authored 6 new mock-only pandas-medium chains (ids 32092–32109; 6 parents + 12 follow-ups), taking pandas-medium Interview Loop chains 2→8 — the thinnest cell, the one deferred in the P2 replay note. Verified with a 3-model blind-solve (Opus + Sonnet + GPT-5.5 each writing the solution from the candidate view only, graded by the real pandas evaluator): all 18 pass Opus+Sonnet; GPT-5.5 passes 17/18 with 32099's reference confirmed by an identical-output GPT generation (the lone miss was GPT non-determinism, not an ambiguity).
+**Rejected / caught before landing:** Two authoring passes were corrected — (1) a parent duplicating existing 32034 (payment failure-rate-by-method) plus a near-clone traffic-source funnel pair; (2) five output-population/format ambiguities the blind-solve surfaced — never-sold inclusion, all-launched-vs-sold cohort, conversion-rate %-vs-proportion, NULL-launch-date handling, and Period-vs-string launch_quarter (the same class as the SQL month-format trap). All fixed by stating the included population + output format explicitly in each stem. No near-clone padding; every parent verified distinct from the existing pandas pool.
+**Affects:** backend/content/pandas_questions/medium.json, CLAUDE.md, docs/features/mock.md, docs/content-authoring.md, docs/tracks/pandas.md, TODO.md (P2)
+
 ## 2026-06-21 — Brand mark → inline SVG component (kill the recurring "logo missing" prod-blocker)
 **Area:** frontend · ops · **Status:** accepted
 **Decision:** Render the datathink monogram as **inline SVG** (`frontend/src/components/BrandMark.js`, used in Topbar + both sample topbars) instead of `<img src="/branding/mark-no-bg.svg">`. The two-rect mark is tiny; inlining makes the logo **zero-network**, so it cannot fail to load on any server blip / cold start / moved file / SPA-fallback mis-serve. Light fills are baked in as `fill` attributes (renders even if CSS fails); the dark variant is the dormant `[data-theme="dark"] .brand-mark-primary/secondary` CSS, so the two-file + `isDark`-JS-branch is gone. Regression guard: `BrandMark.test.js` (asserts inline-svg, not `<img>`).

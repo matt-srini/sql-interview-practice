@@ -149,13 +149,13 @@ A data interview practice platform covering nine tracks. Users write SQL or Pyth
 
 **Modes per track:**
 - **Challenge mode** — plan-aware unlock rules, persistent progress, 878 practice questions across 9 tracks
-- **Mock mode** — 1,148 additional mock-only questions (Pro/Elite), never shown in practice catalog
+- **Mock mode** — 1,166 additional mock-only questions (Pro/Elite), never shown in practice catalog
 - **Sample mode** — 81 sandbox questions across all 9 tracks (3 per track × 3 difficulties), no progress recorded toward the challenge unlock state, no login required. Every track has **dedicated sample questions** completely separate from the practice and mock pools — samples never duplicate practice or mock content. Sample IDs use the compact TXS format (e.g., 211–233 for Python, 711–733 for Statistics); sample files live in `backend/content/sample_questions/`. The Sample Hub at `/sample` is the discovery surface for the entire set; SampleQuestionPage at `/sample/:topic/:difficulty` carries an in-page track + difficulty switcher so users can pivot without returning to the Hub. Logged-in users see per-`(track, difficulty)` attempted/total markers on the Hub, powered by `GET /api/sample/summary` (anonymous visitors see ghost counts — no surveilling pre-signup). **Resume model:** GET is read-only and idempotent — refreshing, navigating away, or closing a tab never advances the user past a question they didn't engage with. A question is only marked attempted when the user **submits** an answer (correct or incorrect both count) or explicitly **skips** via the "Another sample →" button (`POST /api/sample/{topic}/{difficulty}/skip`). The "Reset sample progress" affordance is demoted to a small secondary link on the exhausted state — it remains because the only way to redo a finished set as if fresh is to wipe the attempted markers.
 
 **Tracks:**
 - **SQL** — 118 practice (37 easy / 50 medium / 31 hard) + 193 mock-only, DuckDB execution, realistic relational datasets
 - **Python** — 81 practice (33 easy / 30 medium / 18 hard) + 103 mock-only, data-professional algorithms (sessionization, hash join, DAG cycle detection, critical path, rate limiting, edit distance, streaming anomaly detection), test-case evaluation
-- **Pandas** — 93 practice (28 easy / 40 medium / 25 hard) + 114 mock-only, pandas-specific data manipulation, DataFrame comparison
+- **Pandas** — 93 practice (28 easy / 40 medium / 25 hard) + 132 mock-only, pandas-specific data manipulation, DataFrame comparison
 - **PySpark** — 127 practice (40 easy / 45 medium / 42 hard) + 150 mock-only, conceptual / predict_output / debug / scenario / optimization (MCQ response), no code execution
 - **Data Engineering** — 91 practice (30 easy / 35 medium / 26 hard) + 110 mock-only (0 easy / 34 medium / 76 hard), conceptual / scenario / debug (MCQ response), no code execution; `eval_kind="mcq"`, `unlock_profile="mcq"`, `in_mixed_mock=false`
 - **Data Modeling** — 81 practice (25 easy / 31 medium / 25 hard) + 97 mock-only, conceptual / scenario / debug (MCQ response), no code execution; `eval_kind="mcq"`, `unlock_profile="mcq"`, `in_mixed_mock=false`
@@ -188,7 +188,7 @@ Mock-only questions (`mock_only: true`) live in the same JSON files as practice 
 |---|---|---|---|---|---|
 | SQL | 37 + 0 | 50 + 67 | 31 + 126 | SQL query via DuckDB | `backend/content/questions/` |
 | Python | 33 + 0 | 30 + 50 | 18 + 53 | Algorithm function, test cases | `backend/content/python_questions/` |
-| Pandas | 28 + 0 | 40 + 51 | 25 + 63 | DataFrame function, output comparison | `backend/content/pandas_questions/` |
+| Pandas | 28 + 0 | 40 + 69 | 25 + 63 | DataFrame function, output comparison | `backend/content/pandas_questions/` |
 | PySpark | 40 + 0 | 45 + 75 | 42 + 75 | conceptual / predict_output / debug / scenario / optimization (MCQ) | `backend/content/pyspark_questions/` |
 | Data Engineering | 30 + 0 | 35 + 34 | 26 + 76 | conceptual / scenario / debug (MCQ) | `backend/content/data_engineering_questions/` |
 | Data Modeling | 25 + 0 | 31 + 46 | 25 + 51 | conceptual / scenario / debug (MCQ) | `backend/content/data_modeling_questions/` |
@@ -200,7 +200,7 @@ Mock-only questions (`mock_only: true`) live in the same JSON files as practice 
 ‡Statistics hard mock-only: 47 standalone + 21 chain questions from 7 Interview Loop chains (7 parents + 14 follow-ups). Ratio = 1.34× (above the 1.15–1.25× band; deliberate — chains exclusively power the Elite Interview Loop and do not compete with practice content or benchmarks).
 
 **Practice totals:** SQL 118 · Python 81 · Pandas 93 · PySpark 127 · Data Engineering 91 · Data Modeling 81 · Statistics 100 · ML Fundamentals 100 · Experimentation 87 = **878 practice questions**  
-**Mock-only totals:** SQL 193 · Python 103 · Pandas 114 · PySpark 150 · Statistics 134 · ML Fundamentals 143 · Experimentation 104 · Data Modeling 97 · Data Engineering 110 = **1,148 mock-only questions** (Pro/Elite only)
+**Mock-only totals:** SQL 193 · Python 103 · Pandas 132 · PySpark 150 · Statistics 134 · ML Fundamentals 143 · Experimentation 104 · Data Modeling 97 · Data Engineering 110 = **1,166 mock-only questions** (Pro/Elite only)
 
 See [docs/content-authoring.md](docs/content-authoring.md) for the full mock-only authoring spec.
 
