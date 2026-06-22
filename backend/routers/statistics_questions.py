@@ -151,12 +151,8 @@ async def run_statistics_code(
     if unlock_state.get(int(q["id"]), "locked") == "locked":
         raise HTTPException(status_code=403, detail="Question is locked for your current plan or progress.")
 
-    guard_errors = python_guard.validate_code(body.code, topic="statistics")
-    if guard_errors:
-        raise HTTPException(
-            status_code=400,
-            detail={"error": "Code contains disallowed constructs.", "guard_errors": guard_errors},
-        )
+    if detail := python_guard.guard_detail(body.code, "statistics"):
+        raise HTTPException(status_code=400, detail=detail)
 
     return await run_blocking_exec(python_evaluator.run_python_code, body.code, q)
 
@@ -206,12 +202,8 @@ async def submit_statistics_answer(
     # numerical
     if not body.code:
         raise HTTPException(status_code=422, detail="code is required for numerical questions.")
-    guard_errors = python_guard.validate_code(body.code, topic="statistics")
-    if guard_errors:
-        raise HTTPException(
-            status_code=400,
-            detail={"error": "Code contains disallowed constructs.", "guard_errors": guard_errors},
-        )
+    if detail := python_guard.guard_detail(body.code, "statistics"):
+        raise HTTPException(status_code=400, detail=detail)
     result = await run_blocking_exec(python_evaluator.evaluate_python_code, body.code, q)
     correct = bool(result.get("correct"))
     if correct:

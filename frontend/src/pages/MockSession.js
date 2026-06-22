@@ -320,7 +320,10 @@ export default function MockSession() {
         resultsCardRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       });
     } catch (err) {
-      const errMsg = err?.response?.data?.error || err?.response?.data?.detail || 'Run failed';
+      const data = err?.response?.data;
+      const errMsg = (data?.user_messages?.length
+        ? data.user_messages.join('\n')
+        : data?.error || data?.detail) || 'Run failed';
       setRunResults(prev => ({ ...prev, [q.id]: { error: errMsg } }));
     } finally {
       setRunning(false);
@@ -363,6 +366,13 @@ export default function MockSession() {
       if (status === 409) {
         // Already submitted on the server — sync the UI to match
         setSubmitted(prev => ({ ...prev, [q.id]: true }));
+      } else if (status === 400) {
+        // Guard or solve-pattern error — show it, don't lock so user can fix and retry
+        const data = err?.response?.data;
+        const msg = (data?.user_messages?.length
+          ? data.user_messages.join('\n')
+          : data?.error) || 'Code rejected — check for disallowed constructs.';
+        setSubmitNetworkError(msg);
       } else if (!status || status >= 500) {
         // Genuine network/server failure — don't lock; let the user retry
         setSubmitNetworkError('Submission failed — check your connection and try again.');

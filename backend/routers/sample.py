@@ -341,12 +341,8 @@ async def run_topic_sample_code(topic: str, body: SampleRunCodeRequest) -> dict[
     if eval_kind == "mixed" and question.get("subtype") == "conceptual":
         raise HTTPException(status_code=400, detail="Run code is not supported for conceptual (MCQ) questions.")
 
-    guard_errors = python_guard.validate_code(body.code, topic=normalized_topic)
-    if guard_errors:
-        raise HTTPException(
-            status_code=400,
-            detail={"error": "Code contains disallowed constructs.", "guard_errors": guard_errors},
-        )
+    if detail := python_guard.guard_detail(body.code, normalized_topic):
+        raise HTTPException(status_code=400, detail=detail)
 
     if eval_kind in ("python", "mixed"):
         return await run_blocking_exec(python_evaluator.run_python_code, body.code, question)
@@ -444,12 +440,8 @@ async def submit_topic_sample_answer(
         question = get_sample_question_for_topic(parsed.question_id, normalized_topic)
         if question is None:
             raise HTTPException(status_code=404, detail="Question not found")
-        guard_errors = python_guard.validate_code(parsed.code, topic=normalized_topic)
-        if guard_errors:
-            raise HTTPException(
-                status_code=400,
-                detail={"error": "Code contains disallowed constructs.", "guard_errors": guard_errors},
-            )
+        if detail := python_guard.guard_detail(parsed.code, normalized_topic):
+            raise HTTPException(status_code=400, detail=detail)
         if eval_kind == "python":
             result = await run_blocking_exec(python_evaluator.evaluate_python_code, parsed.code, question)
         else:
@@ -472,12 +464,8 @@ async def submit_topic_sample_answer(
             question = get_sample_question_for_topic(parsed.question_id, normalized_topic)
             if question is None:
                 raise HTTPException(status_code=404, detail="Question not found")
-            guard_errors = python_guard.validate_code(parsed.code, topic=normalized_topic)
-            if guard_errors:
-                raise HTTPException(
-                    status_code=400,
-                    detail={"error": "Code contains disallowed constructs.", "guard_errors": guard_errors},
-                )
+            if detail := python_guard.guard_detail(parsed.code, normalized_topic):
+                raise HTTPException(status_code=400, detail=detail)
             result = await run_blocking_exec(python_evaluator.evaluate_python_code, parsed.code, question)
             result["solution_code"] = question.get("expected_code", "")
             result["explanation"] = question.get("explanation", "")

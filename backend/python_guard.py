@@ -5,6 +5,7 @@ For Python (algorithms): blocks ALL imports and dangerous builtins.
 For Pandas: allows a specific allowlist of safe imports.
 """
 import ast
+import re
 
 # Imports allowed for the algorithm (Python) track
 _ALGORITHM_ALLOWLIST = {
@@ -251,6 +252,134 @@ class _GuardVisitor(ast.NodeVisitor):
     # f"{().__class__.__bases__[0].__subclasses__()}" — the sub-expressions are
     # still AST nodes and are visited by generic_visit, so __class__ / __bases__
     # are caught by visit_Attribute above. No extra handler needed.
+
+
+# ── User-facing message helpers ───────────────────────────────────────────────
+
+_PANDAS_FS_READ = {
+    "read_csv", "read_table", "read_fwf", "read_json", "read_html", "read_xml",
+    "read_excel", "read_parquet", "read_feather", "read_orc", "read_sas",
+    "read_spss", "read_stata", "read_hdf", "read_sql", "read_sql_table",
+    "read_sql_query", "read_clipboard", "read_pickle",
+}
+_PANDAS_FS_WRITE = {
+    "to_csv", "to_json", "to_excel", "to_parquet", "to_feather", "to_orc",
+    "to_stata", "to_hdf", "to_sql", "to_pickle", "to_clipboard",
+}
+_NUMPY_IO_ATTRS = {"load", "loadtxt", "genfromtxt", "fromfile", "save", "savez", "savez_compressed", "savetxt"}
+_NET_IMPORTS = {"requests", "urllib", "httpx", "aiohttp", "socket", "http"}
+_OS_IMPORTS = {"os", "sys", "subprocess", "shutil", "pathlib", "tempfile", "glob", "signal"}
+
+_ALLOWLIST_DISPLAY = {
+    "python": "math, collections, heapq, bisect, itertools, functools, typing, re, copy, operator, sortedcontainers",
+    "pandas": "pandas, numpy, math, statistics, collections, datetime, re, json",
+    "statistics": "math, statistics, numpy, random, collections, itertools, functools",
+}
+
+
+def _one_friendly(error: str, topic: str) -> str:
+    """Convert one raw guard-error string into a user-readable sentence."""
+    m = re.match(r"access to attribute '(.+)' is not allowed", error)
+    if m:
+        attr = m.group(1)
+        if attr in _PANDAS_FS_READ:
+            return (
+                f"pd.{attr}() is not available — DataFrames are already pre-loaded. "
+                "Remove the read call and use the variable received by def solve()."
+            )
+        if attr in _PANDAS_FS_WRITE:
+            return f"File output (.{attr}()) is not available in the sandbox."
+        if attr in _NUMPY_IO_ATTRS:
+            return f"NumPy file I/O (.{attr}()) is not available in the sandbox."
+        if attr.startswith("__"):
+            return f"Access to internal attribute '{attr}' is not allowed."
+        return f"Attribute '.{attr}' is not available in the sandbox."
+
+    m = re.match(r"import '([^']+)' is not allowed", error) or \
+        re.match(r"from '([^']+)' import is not allowed", error)
+    if m:
+        pkg = m.group(1).split(".")[0]
+        allowed = _ALLOWLIST_DISPLAY.get(topic, "the allowed set")
+        if pkg in _NET_IMPORTS:
+            return f"'{pkg}' is not available — network access is not allowed in the sandbox."
+        return f"'{pkg}' is not available. Allowed imports: {allowed}."
+
+    m = re.match(r"use of '(.+)' is not allowed", error)
+    if m:
+        name = m.group(1)
+        if name in ("eval", "exec", "compile"):
+            return f"{name}() is not allowed for security reasons."
+        if name in ("open", "input"):
+            return f"{name}() is not available — file and terminal I/O is blocked."
+        if name in ("globals", "locals", "vars", "getattr", "setattr", "delattr"):
+            return f"{name}() is not allowed."
+        return f"'{name}' is not allowed."
+
+    return error  # fallback: pass through unchanged
+
+
+def user_messages(errors: list[str], topic: str) -> list[str]:
+    """Map a list of raw guard errors to deduplicated user-facing explanations."""
+    seen: set[str] = set()
+    out: list[str] = []
+    for e in errors:
+        msg = _one_friendly(e, topic)
+        if msg not in seen:
+            seen.add(msg)
+            out.append(msg)
+    return out
+
+
+def check_solve_pattern(code: str, topic: str) -> list[str] | None:
+    """Return a one-item list with a clear explanation if def solve() is missing,
+    or None if the check passes or doesn't apply to this topic.
+
+    Only fires when there is substantial code — a blank editor or a single
+    placeholder comment shouldn't prompt the user about the pattern yet.
+    """
+    if topic not in ("python", "pandas", "statistics"):
+        return None
+    stripped = code.strip()
+    if not stripped:
+        return None
+    if "def solve(" in code:
+        return None
+    if topic == "pandas":
+        return [
+            "Your code needs a solve() function — DataFrames are passed as keyword arguments, "
+            "not global variables. Remove any pd.read_csv() calls and wrap your logic like this:\n\n"
+            "def solve(df_name):  # df_name matches the variable shown in 'Available DataFrames'\n"
+            "    ...\n"
+            "    return result"
+        ]
+    return [
+        "Your code needs a solve() function that returns the answer:\n\n"
+        "def solve():\n"
+        "    ...\n"
+        "    return result"
+    ]
+
+
+def guard_detail(code: str, topic: str) -> dict | None:
+    """Return the detail dict for a 400 HTTPException if the code fails validation,
+    else None. Checks the solve() pattern first, then the AST guard.
+
+    Usage in endpoints:
+        if detail := python_guard.guard_detail(code, topic):
+            raise HTTPException(status_code=400, detail=detail)
+    """
+    solve_errs = check_solve_pattern(code, topic)
+    if solve_errs:
+        return {"error": solve_errs[0], "user_messages": solve_errs}
+
+    raw_errors = validate_code(code, topic)
+    if raw_errors:
+        return {
+            "error": "Code contains disallowed constructs.",
+            "guard_errors": raw_errors,
+            "user_messages": user_messages(raw_errors, topic),
+        }
+    return None
 
 
 def validate_code(code: str, topic: str = "python") -> list[str]:

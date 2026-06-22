@@ -943,20 +943,12 @@ async def _run_submission(track: str, question: dict, code: str) -> dict[str, An
     if track == "sql":
         return await run_blocking_sql(run_query, code, question)
     if track in ("python", "statistics"):
-        guard_errors = python_guard.validate_code(code, topic=track)
-        if guard_errors:
-            raise HTTPException(
-                status_code=400,
-                detail={"error": "Code contains disallowed constructs.", "guard_errors": guard_errors},
-            )
+        if detail := python_guard.guard_detail(code, track):
+            raise HTTPException(status_code=400, detail=detail)
         return await run_blocking_exec(run_python_code, code, question)
     if track == "pandas":
-        guard_errors = python_guard.validate_code(code, topic="pandas")
-        if guard_errors:
-            raise HTTPException(
-                status_code=400,
-                detail={"error": "Code contains disallowed constructs.", "guard_errors": guard_errors},
-            )
+        if detail := python_guard.guard_detail(code, "pandas"):
+            raise HTTPException(status_code=400, detail=detail)
         return await run_blocking_exec(run_pandas_code_checked, code, question)
     raise HTTPException(status_code=400, detail="Run is not supported for this track.")
 
@@ -1631,6 +1623,12 @@ async def submit_answer(
 
     # Reject blank/empty input before consuming the submit slot
     _validate_non_empty_input(body.track, body.code, body.selected_option, question)
+
+    # Guard check for code tracks — raise 400 so the submit slot is NOT consumed
+    # and the frontend can display the error and let the user retry.
+    if body.code and body.track in ("python", "pandas", "statistics"):
+        if detail := python_guard.guard_detail(body.code, body.track):
+            raise HTTPException(status_code=400, detail=detail)
 
     # Evaluate
     accepted, result = await _evaluate_submission(body.track, question, body.code, body.selected_option)

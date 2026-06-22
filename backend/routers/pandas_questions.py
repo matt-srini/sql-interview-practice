@@ -118,12 +118,8 @@ async def run_pandas_code_endpoint(
     if unlock_state.get(int(q["id"]), "locked") == "locked":
         raise HTTPException(status_code=403, detail="Question is locked for your current plan or progress.")
 
-    guard_errors = python_guard.validate_code(body.code, topic="pandas")
-    if guard_errors:
-        raise HTTPException(
-            status_code=400,
-            detail={"error": "Code contains disallowed constructs.", "guard_errors": guard_errors},
-        )
+    if detail := python_guard.guard_detail(body.code, "pandas"):
+        raise HTTPException(status_code=400, detail=detail)
 
     # Compares against expected on the FULL result; returns a ~200-row display preview.
     return await run_blocking_exec(python_evaluator.run_pandas_code_checked, body.code, q)
@@ -149,12 +145,8 @@ async def submit_pandas_code(
     if unlock_state.get(int(q["id"]), "locked") == "locked":
         raise HTTPException(status_code=403, detail="Question is locked for your current plan or progress.")
 
-    guard_errors = python_guard.validate_code(body.code, topic="pandas")
-    if guard_errors:
-        raise HTTPException(
-            status_code=400,
-            detail={"error": "Code contains disallowed constructs.", "guard_errors": guard_errors},
-        )
+    if detail := python_guard.guard_detail(body.code, "pandas"):
+        raise HTTPException(status_code=400, detail=detail)
 
     result = await run_blocking_exec(python_evaluator.evaluate_pandas_code, body.code, q)
 

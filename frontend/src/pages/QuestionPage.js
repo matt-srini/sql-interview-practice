@@ -554,7 +554,15 @@ export default function QuestionPage() {
   }
 
   function formatExecutionError(err, fallback) {
-    const raw = err.response?.data?.error ?? err.response?.data?.detail ?? fallback;
+    const data = err.response?.data;
+    // Guard errors and solve-pattern errors come with user_messages — join them as
+    // a numbered list when there are multiple, or a plain string for a single item.
+    if (data?.user_messages?.length) {
+      return data.user_messages.length === 1
+        ? data.user_messages[0]
+        : data.user_messages.map((m, i) => `${i + 1}. ${m}`).join('\n');
+    }
+    const raw = data?.error ?? data?.detail ?? fallback;
     if (meta.language === 'sql') {
       return parseSqlError(raw) ?? fallback;
     }
