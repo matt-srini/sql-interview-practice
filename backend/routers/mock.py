@@ -775,12 +775,11 @@ def _public_question_payload(question: dict, track: str) -> dict:
         ]
         payload["starter_code"] = question.get("starter_code", "")
         payload["function_signature"] = question.get("function_signature")
-    # Pandas: include available dataframes info
+    # Pandas: include available dataframes info.
+    # The question JSON stores dataframes as {name: "csvFile.csv"} strings — pass
+    # them through as-is so VariablesPanel can render them directly.
     if track == "pandas":
-        payload["dataframes"] = {
-            name: {"description": info.get("description", "") if isinstance(info, dict) else str(info)}
-            for name, info in question.get("dataframes", {}).items()
-        }
+        payload["dataframes"] = question.get("dataframes", {})
     # MCQ tracks (PySpark, Data Engineering, …): include options and display fields
     if get_track(track).eval_kind == "mcq":
         payload["options"] = question.get("options", [])
