@@ -8770,6 +8770,66 @@ select {
   align-self: flex-start;
   margin-top: 0.15rem;
 }
+/* Fresh-cell redirect rail — shown when the current Loop cell is exhausted but other cells have chains */
+.mock-rail-fresh-label {
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--success-text);
+  opacity: 0.75;
+  margin-top: 0.25rem;
+}
+.mock-rail-fresh-cells {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.1rem;
+}
+.mock-rail-fresh-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.3rem 0.6rem;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  background: var(--surface-card);
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+.mock-rail-fresh-cell:hover {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--text-primary);
+}
+.mock-rail-fresh-cell-diff {
+  font-size: 0.72rem;
+  font-weight: 400;
+  color: var(--text-muted);
+}
+/* Demoted replay — quiet text button, not a primary CTA */
+.mock-rail-replay-link {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+  text-align: left;
+  margin-top: 0.15rem;
+}
+.mock-rail-replay-link:hover {
+  color: var(--accent);
+  text-decoration: underline;
+}
+.mock-rail-replay-link:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  text-decoration: none;
+}
 /* Loop capstone soft-nudge — a calm suggestion (accent-soft), not a warning. */
 .mock-rail-nudge {
   padding: 0.55rem 0.7rem;

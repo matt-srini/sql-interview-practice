@@ -276,6 +276,15 @@ export default function MockHub() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mode, accessState]);
 
+  // Redirect to a fresh Interview Loop cell (track + difficulty) when the current cell is
+  // exhausted. The three setters are dependencies of fetchAccess → the useEffect at line 262
+  // fires automatically and re-fetches /access for the newly-selected cell.
+  const goToLoopCell = useCallback((cell) => {
+    setMode('interview_loop');
+    setTrack(cell.track);
+    setDifficulty(cell.difficulty);
+  }, []);
+
   function handleSelectMode(key) {
     setStartError(null);
     setTrackNote(null);
@@ -833,19 +842,46 @@ export default function MockHub() {
                   ("mixed") chain availability for Interview Loop (shows "all chains
                   completed for this track" when the pool is exhausted). */}
               {railDiffState.blocked && isLoop && accessState?.access?.[difficulty]?.replayable ? (
-                // Loop pool completed — frame as an accomplishment, not a dead-end, and
-                // offer consent-gated replay alongside the (in-panel) track/difficulty/mode
-                // selectors as the next steps.
+                // Loop pool completed — lead the user to fresh chains elsewhere first.
+                // Replay is demoted to a quiet text link; only falls back to primary CTA
+                // when there are no fresh cells left (every cell exhausted).
                 <div className="mock-rail-access mock-rail-access--complete">
                   <span><span className="mock-rail-complete-check" aria-hidden="true">✓</span> {railDiffState.chip}</span>
-                  <button
-                    type="button"
-                    className="btn btn-secondary btn-compact mock-rail-replay-btn"
-                    onClick={() => handleStart({ replay: true })}
-                    disabled={starting || accessLoading}
-                  >
-                    {starting ? 'Starting…' : 'Replay these chains'}
-                  </button>
+                  {accessState?.fresh_loop_cells?.length > 0 ? (
+                    <>
+                      <div className="mock-rail-fresh-label">Fresh chains to try</div>
+                      <div className="mock-rail-fresh-cells">
+                        {accessState.fresh_loop_cells.map((c) => (
+                          <button
+                            key={`${c.track}-${c.difficulty}`}
+                            type="button"
+                            className="mock-rail-fresh-cell"
+                            onClick={() => goToLoopCell(c)}
+                          >
+                            {TRACK_LABELS[c.track] || c.track}
+                            <span className="mock-rail-fresh-cell-diff">{DIFFICULTY_LABELS[c.difficulty]}</span>
+                          </button>
+                        ))}
+                      </div>
+                      <button
+                        type="button"
+                        className="mock-rail-replay-link"
+                        onClick={() => handleStart({ replay: true })}
+                        disabled={starting || accessLoading}
+                      >
+                        {starting ? 'Starting…' : 'Or replay these chains →'}
+                      </button>
+                    </>
+                  ) : (
+                    <button
+                      type="button"
+                      className="btn btn-secondary btn-compact mock-rail-replay-btn"
+                      onClick={() => handleStart({ replay: true })}
+                      disabled={starting || accessLoading}
+                    >
+                      {starting ? 'Starting…' : 'Replay these chains'}
+                    </button>
+                  )}
                 </div>
               ) : railDiffState.blocked ? (
                 <div className="mock-rail-access mock-rail-access--blocked">

@@ -655,6 +655,38 @@ def _interview_loop_access(
     return None
 
 
+def _fresh_loop_cells(
+    requested_track: str, consumed_parent_ids: set[int], limit: int = 4
+) -> list[dict]:
+    """The user's startable Interview Loop cells — (track, difficulty) pairs that still
+    hold >=1 unconsumed chain — ordered with the requested track first (its other
+    difficulty is the most natural next step), then the remaining tracks in registry
+    order, capped at `limit`.
+
+    Powers the exhausted-cell redirect (DECISIONS 2026-06-22 replay-redirect): the
+    Loop's value is the *unscripted* interviewer pivot, so replaying a chain whose
+    pivots you already know is low value. When a user finishes one cell we lead them to
+    FRESH reasoning elsewhere instead, keeping replay as a quiet secondary. A naturally
+    empty result (the user has exhausted every cell) lets the UI fall back to replay as
+    the only remaining non-dead-end.
+    """
+    from tracks import TRACKS
+
+    order = [requested_track] + [t.slug for t in TRACKS if t.slug != requested_track]
+    cells: list[dict] = []
+    for slug in order:
+        for diff in ("medium", "hard"):
+            parents = _chain_parents_for(slug, diff)
+            if not parents:
+                continue
+            fresh = sum(1 for p in parents if int(p["id"]) not in consumed_parent_ids)
+            if fresh:
+                cells.append({"track": slug, "difficulty": diff, "fresh": fresh})
+                if len(cells) >= limit:
+                    return cells
+    return cells
+
+
 async def _select_chain(
     track: str,
     difficulty: str,
@@ -1256,6 +1288,17 @@ async def get_mock_access(
                 diff_access["escalates"] = _loop_difficulty_escalates(track, diff)
         access[diff] = diff_access
 
+    # When the user has exhausted a Loop cell, steer them to FRESH chains elsewhere
+    # (the redirect-first exhausted state) rather than leading with a low-value replay.
+    # Only computed on an actual exhaustion — that's the one state that renders it — so
+    # the all-tracks scan never runs on the common (startable) path.
+    fresh_loop_cells: list[dict] = []
+    if mode == "interview_loop" and track != "mixed" and any(
+        isinstance(a, dict) and a.get("block_reason") == "pool_exhausted"
+        for a in access.values()
+    ):
+        fresh_loop_cells = _fresh_loop_cells(track, loop_consumed)
+
     return {
         "plan": user_plan,
         "track": track,
@@ -1264,6 +1307,7 @@ async def get_mock_access(
         "daily_custom_used": daily_custom_used,
         "weekly_benchmark_used": weekly_benchmark_used,
         "access": access,
+        "fresh_loop_cells": fresh_loop_cells,
     }
 
 

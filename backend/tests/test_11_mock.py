@@ -243,6 +243,73 @@ def test_tc134l3_start_interview_loop_python_medium_succeeds():
 
 
 # ---------------------------------------------------------------------------
+# Interview Loop exhausted-cell redirect (DECISIONS 2026-06-22 replay-redirect):
+# when a user finishes every chain in a (track, difficulty) cell, /access returns
+# `fresh_loop_cells` — the user's still-startable cells, requested track first — so
+# the UI leads with fresh reasoning and demotes replay. See docs/features/mock.md.
+# ---------------------------------------------------------------------------
+
+def test_fresh_loop_cells_requested_track_first_and_capped():
+    """_fresh_loop_cells leads with the requested track and caps the list."""
+    from routers.mock import _fresh_loop_cells
+    cells = _fresh_loop_cells("pandas", set())
+    assert cells, "pandas has chains, should yield fresh cells"
+    assert cells[0]["track"] == "pandas"  # requested track surfaces first
+    assert len(cells) <= 4  # default cap
+    for c in cells:
+        assert c["fresh"] >= 1 and {"track", "difficulty", "fresh"} <= c.keys()
+
+
+def test_fresh_loop_cells_excludes_the_exhausted_cell():
+    """A fully-consumed cell drops out; its sibling difficulty (still fresh) remains."""
+    from routers.mock import _fresh_loop_cells, _chain_parents_for
+    consumed = {int(p["id"]) for p in _chain_parents_for("pandas", "medium")}
+    cells = _fresh_loop_cells("pandas", consumed)
+    keys = {(c["track"], c["difficulty"]) for c in cells}
+    assert ("pandas", "medium") not in keys  # exhausted → not suggested
+    assert ("pandas", "hard") in keys  # still has fresh chains → suggested
+
+
+def test_fresh_loop_cells_empty_when_everything_consumed():
+    """User who has exhausted every cell → empty list (UI falls back to replay)."""
+    from routers.mock import _fresh_loop_cells, _chain_parents_for
+    from tracks import TRACKS
+    all_parents = {
+        int(p["id"])
+        for t in TRACKS
+        for d in ("medium", "hard")
+        for p in _chain_parents_for(t.slug, d)
+    }
+    assert _fresh_loop_cells("pandas", all_parents) == []
+
+
+def test_access_returns_fresh_loop_cells_on_exhaustion():
+    """Elite + an exhausted sql-medium cell → /access carries non-empty fresh_loop_cells
+    (excluding the exhausted cell), and the cell is flagged replayable."""
+    from unittest.mock import AsyncMock, patch
+    from routers.mock import _chain_parents_for
+    consumed = {int(p["id"]) for p in _chain_parents_for("sql", "medium")}
+    with TestClient(app) as client:
+        _make_user(client, plan="elite")
+        with patch("routers.mock.get_consumed_chain_parent_ids", new=AsyncMock(return_value=consumed)):
+            body = _loop_access(client, "sql").json()
+    assert body["access"]["medium"]["block_reason"] == "pool_exhausted"
+    assert body["access"]["medium"]["replayable"] is True
+    fresh = body["fresh_loop_cells"]
+    assert fresh, "an exhausted cell must surface fresh alternatives"
+    assert ("sql", "medium") not in {(c["track"], c["difficulty"]) for c in fresh}
+
+
+def test_access_omits_fresh_loop_cells_when_startable():
+    """No exhaustion → fresh_loop_cells stays empty (the all-tracks scan never runs)."""
+    with TestClient(app) as client:
+        _make_user(client, plan="elite")
+        body = _loop_access(client, "sql").json()
+    assert body["access"]["medium"]["can_start"] is True
+    assert body["fresh_loop_cells"] == []
+
+
+# ---------------------------------------------------------------------------
 # Mock Run Code: gated on session membership, NOT the practice unlock state, so
 # mock-only questions (every Interview Loop chain) run instead of 403'ing "locked".
 # See docs/features/mock.md § Active Session and DECISIONS.md 2026-06-15.
