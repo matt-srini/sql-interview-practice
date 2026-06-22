@@ -71,4 +71,35 @@ describe('renderDescription', () => {
     // two newlines → two <br> elements
     expect(brs.length).toBe(2);
   });
+
+  it('renders a markdown table as a <table> with header and body cells', () => {
+    const md = '| Group | Conversion |\n|---|---|\n| Overall | 8.0% |\n| Power | 20.0% |';
+    const { container } = render(<div>{renderDescription(md)}</div>);
+    const table = container.querySelector('table.description-table');
+    expect(table).not.toBeNull();
+    expect([...table.querySelectorAll('thead th')].map((t) => t.textContent)).toEqual(['Group', 'Conversion']);
+    const firstRow = table.querySelectorAll('tbody tr')[0].querySelectorAll('td');
+    expect([...firstRow].map((t) => t.textContent)).toEqual(['Overall', '8.0%']);
+    expect(table.querySelectorAll('tbody tr').length).toBe(2);
+  });
+
+  it('renders prose around a table and never leaks the separator row as text', () => {
+    const md = 'Here is the data:\n| A | B |\n|---|---|\n| 1 | 2 |\nNow answer.';
+    const { container } = render(<div>{renderDescription(md)}</div>);
+    expect(container.querySelector('table')).not.toBeNull();
+    expect(container.textContent).toContain('Here is the data:');
+    expect(container.textContent).toContain('Now answer.');
+    expect(container.textContent).not.toContain('---');
+  });
+
+  it('does not treat a lone pipe in prose as a table', () => {
+    const { container } = render(<div>{renderDescription('Use the a | b operator here.')}</div>);
+    expect(container.querySelector('table')).toBeNull();
+    expect(container.textContent).toContain('a | b');
+  });
+
+  it('does not treat pipe rows without a separator row as a table', () => {
+    const { container } = render(<div>{renderDescription('| just | text |\n| no | separator |')}</div>);
+    expect(container.querySelector('table')).toBeNull();
+  });
 });

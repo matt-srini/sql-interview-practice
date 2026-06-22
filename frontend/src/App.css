@@ -3391,6 +3391,7 @@ select {
   font-size: 0.94rem;
   color: var(--text-secondary);
   line-height: 1.72;
+  overflow-wrap: break-word;
 }
 
 .description-code-block {
@@ -3407,6 +3408,31 @@ select {
 
 [data-theme="dark"] .description-code-block {
   background: rgba(255,255,255,0.06);
+}
+
+/* Markdown tables in stems (small data tables) — mobile-friendly; the wrap
+   scrolls horizontally only if a wide table can't fit the viewport. */
+.description-table-wrap {
+  overflow-x: auto;
+  margin: 0.7rem 0 0.3rem;
+  -webkit-overflow-scrolling: touch;
+}
+.description-table {
+  border-collapse: collapse;
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+.description-table th,
+.description-table td {
+  border: 1px solid var(--border-strong);
+  padding: 0.35rem 0.6rem;
+  text-align: left;
+  white-space: nowrap;
+}
+.description-table th {
+  background: var(--surface-card-soft);
+  font-weight: 600;
+  color: var(--text-strong);
 }
 
 .description-inline-code {
@@ -7925,6 +7951,7 @@ select {
   color: var(--text-primary);
   line-height: 1.6;
   white-space: pre-wrap;
+  overflow-wrap: break-word;
   margin: 0;
 }
 .mock-view-toggle {
