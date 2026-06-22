@@ -1290,7 +1290,10 @@ select {
   }
 
   .content {
-    padding: 0 1rem 2rem;
+    /* Match the app-topbar's 0.9rem mobile gutter so the workspace cards
+       (breadcrumb / question / variables) align with the topbar's left edge
+       instead of sitting ~2px to its right. */
+    padding: 0 0.9rem 2rem;
   }
 
   /* .content already provides 1rem gutters; remove the redundant
