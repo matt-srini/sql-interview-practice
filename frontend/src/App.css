@@ -3999,9 +3999,10 @@ select {
     grid-template-columns: 1fr !important;
   }
 
-  .left-panel {
+  .left-panel,
+  .right-panel {
     position: static;
-    min-width: 0; /* prevent grid item from growing beyond 1fr track */
+    min-width: 0; /* prevent grid items from growing beyond 1fr track */
   }
 
   .question-page {
