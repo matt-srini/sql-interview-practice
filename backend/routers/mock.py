@@ -754,10 +754,12 @@ def _public_question_payload(question: dict, track: str) -> dict:
     if track in ("sql", "pandas"):
         payload["result_preview"] = question.get("result_preview") if question.get("type") == "reverse" else None
         payload["debug_error"] = question.get("debug_error") if question.get("type") == "debug" else None
-        # starter_query for SQL, starter_code for Pandas
-        payload["starter_code"] = (
-            question.get("starter_query") or question.get("starter_code")
-        ) if question.get("type") == "debug" else None
+        # SQL debug: seed editor with the broken query; Pandas: always send starter_code
+        # so the editor is pre-populated with `def solve(...)` for every question type.
+        if track == "sql":
+            payload["starter_code"] = question.get("starter_query") if question.get("type") == "debug" else None
+        else:  # pandas
+            payload["starter_code"] = question.get("starter_code") or None
     # SQL: include schema
     if track == "sql":
         payload["schema"] = question.get("schema", {})

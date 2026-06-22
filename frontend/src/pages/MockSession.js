@@ -32,8 +32,9 @@ function timerClass(s) {
 
 const DEFAULT_CODE = {
   sql: '-- Write your SQL query here\n',
-  python: '# Write your Python solution here\n\ndef solution():\n    pass\n',
-  'pandas': '# Write your pandas/numpy code here\n# result should be assigned to a variable named `result`\n',
+  python: '# Write your Python solution here\n\ndef solve():\n    pass\n',
+  pandas: '# DataFrames are pre-loaded. Check "Available DataFrames" for variable names.\n\ndef solve():\n    ...\n    return result\n',
+  statistics: '# Write your statistics solution here\n\ndef solve():\n    pass\n',
   pyspark: '',
 };
 
