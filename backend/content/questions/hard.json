@@ -4251,7 +4251,7 @@
     "mock_only": true,
     "framing": "scenario",
     "title": "Month-over-month revenue change by brand",
-    "description": "A brand performance team wants to track revenue momentum. Using completed orders, compute monthly revenue per brand, then add a prev_month_revenue column and a mom_change_pct column (month-over-month percentage change, rounded to 1 decimal). Return all brand-month rows. Order by brand, month.",
+    "description": "A brand performance team wants to track revenue momentum. Using completed orders, compute monthly revenue per brand, then add a prev_month_revenue column and a mom_change_pct column (month-over-month percentage change, rounded to 1 decimal). Return all brand-month rows. Output columns: brand, month (YYYY-MM string), revenue, prev_month_revenue, mom_change_pct. Order by brand, month.",
     "difficulty": "hard",
     "schema": {
       "order_items": [
@@ -4815,7 +4815,7 @@
     "mock_only": true,
     "framing": "scenario",
     "title": "30-day signup-to-purchase conversion rate by month",
-    "description": "A growth team wants to track how quickly new user cohorts convert to buyers. For each signup month, return total_signups, fast_converters (users whose first completed order was within 30 days of signup), and conversion_rate_pct (rounded to 1 decimal). Order by signup_month.",
+    "description": "A growth team wants to track how quickly new user cohorts convert to buyers. For each signup month, return total_signups, fast_converters (users whose first completed order was within 30 days of signup), and conversion_rate_pct (rounded to 1 decimal). Output columns: signup_month (YYYY-MM string), total_signups, fast_converters, conversion_rate_pct. Order by signup_month.",
     "difficulty": "hard",
     "schema": {
       "users": [
@@ -5079,7 +5079,7 @@
     "mock_only": true,
     "framing": "scenario",
     "title": "User acquisition funnel by signup cohort",
-    "description": "A product analyst wants to track how each signup cohort progresses through the funnel: signup → any event → first completed order. For each signup_month, return signed_up, had_first_event, made_first_purchase, event_rate_pct, and purchase_rate_pct (both rounded to 1 decimal). Order by signup_month.",
+    "description": "A product analyst wants to track how each signup cohort progresses through the funnel: signup → any event → first completed order. For each signup_month, return signed_up, had_first_event, made_first_purchase, event_rate_pct, and purchase_rate_pct (both rounded to 1 decimal). Output columns: signup_month (YYYY-MM string), signed_up, had_first_event, made_first_purchase, event_rate_pct, purchase_rate_pct. Order by signup_month.",
     "difficulty": "hard",
     "schema": {
       "users": [
@@ -7098,7 +7098,7 @@
     "parent_id": 13152,
     "follow_up_dimension": "data_quality_pivot",
     "title": "MoM order count: handling non-consecutive months (gaps in the series)",
-    "description": "The LAG-based query treats consecutive data-months as consecutive calendar months. But a user with orders in January and March (no February orders) would have LAG returning January's count as March's 'previous month' — incorrectly treating a 2-month gap as a 1-month change. Revise the query to detect non-consecutive months and exclude those rows from the pct_drop calculation: return only rows where the current month (YYYY-MM format) directly follows the previous ordering month (a 1-month gap in the monthly series). Add a months_gap column (integer: months between prev_month and current month). Only compute pct_drop and at_risk_flag for rows where months_gap = 1. For rows where months_gap > 1, return NULL for pct_drop and false for at_risk_flag. Order by pct_drop DESC NULLS LAST, user_id ascending.",
+    "description": "The LAG-based query treats consecutive data-months as consecutive calendar months. But a user with orders in January and March (no February orders) would have LAG returning January's count as March's 'previous month' — incorrectly treating a 2-month gap as a 1-month change. Revise the query to detect non-consecutive months and exclude those rows from the pct_drop calculation: return only rows where the current month (YYYY-MM format) directly follows the previous ordering month (a 1-month gap in the monthly series). Add a months_gap column (integer: months between prev_month and current month). Only compute pct_drop and at_risk_flag for rows where months_gap = 1. For rows where months_gap > 1, return NULL for pct_drop and false for at_risk_flag. Output columns: user_id, month (YYYY-MM string), order_count, prev_month_count, prev_month (YYYY-MM string), months_gap, pct_drop, at_risk_flag. Order by pct_drop DESC NULLS LAST, user_id ascending.",
     "difficulty": "hard",
     "schema": {
       "orders": [

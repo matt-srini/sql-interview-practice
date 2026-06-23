@@ -3918,7 +3918,7 @@
     "mock_only": true,
     "framing": "scenario",
     "title": "Multi-category buyers by plan tier",
-    "description": "A product analyst wants to understand cross-category buying behaviour. For each plan tier, count the number of distinct users who have completed orders containing products from more than one distinct category.",
+    "description": "A product analyst wants to understand cross-category buying behaviour. For each plan tier, count the number of distinct users who have completed orders containing products from more than one distinct category. Output columns: plan_tier, multi_category_buyers.",
     "difficulty": "medium",
     "schema": {
       "users": [
@@ -4011,7 +4011,7 @@
     "mock_only": true,
     "framing": "scenario",
     "title": "Inactive product percentage by category",
-    "description": "A catalog manager needs to audit product health. For each category, return the total product count, the number of inactive products (is_active = false), and the inactive percentage rounded to 1 decimal. Order by inactive percentage descending.",
+    "description": "A catalog manager needs to audit product health. For each category, return the total product count, the number of inactive products (is_active = false), and the inactive percentage rounded to 1 decimal. Output columns: category_name, total_products, inactive_count, inactive_pct. Order by inactive_pct descending.",
     "difficulty": "medium",
     "schema": {
       "products": [
@@ -4053,7 +4053,7 @@
     "mock_only": true,
     "framing": "scenario",
     "title": "Email domain distribution by plan tier",
-    "description": "A growth analyst wants to understand which email providers are common among each plan tier. Extract the domain (part after '@') from each user's email, and for each plan_tier + domain combination with at least 5 users, return the count. Order by plan_tier, then user_count descending.",
+    "description": "A growth analyst wants to understand which email providers are common among each plan tier. Extract the domain (part after '@') from each user's email, and for each plan_tier + domain combination with at least 5 users, return the count. Output columns: plan_tier, email_domain, user_count. Order by plan_tier, then user_count descending.",
     "difficulty": "medium",
     "schema": {
       "users": [
@@ -4090,7 +4090,7 @@
     "mock_only": true,
     "framing": "scenario",
     "title": "Months with above-average unique active users",
-    "description": "A growth team wants to flag months that outperformed the average. Compute the number of unique users who fired any event per calendar month, then return only the months where that count exceeds the average across all months. Order by month.",
+    "description": "A growth team wants to flag months that outperformed the average. Compute the number of unique users who fired any event per calendar month, then return only the months where that count exceeds the average across all months. Output columns: month (YYYY-MM string), unique_users. Order by month.",
     "difficulty": "medium",
     "schema": {
       "events": [
@@ -4291,7 +4291,7 @@
     "mock_only": true,
     "framing": "scenario",
     "title": "Users who never completed a purchase",
-    "description": "A re-engagement team wants to identify registered users who have never converted to a buyer. Return the count of users who have no completed orders in the system.",
+    "description": "A re-engagement team wants to identify registered users who have never converted to a buyer. Return the count of users who have no completed orders in the system. Output column: never_purchased_users.",
     "difficulty": "medium",
     "schema": {
       "users": [
