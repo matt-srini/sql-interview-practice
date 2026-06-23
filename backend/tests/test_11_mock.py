@@ -325,7 +325,7 @@ def test_tc134m_mock_run_executes_mock_only_question_without_lock():
         sess = start.json()
         sid, qid = sess["session_id"], sess["questions"][0]["id"]
         r = client.post(f"/api/mock/{sid}/run", json={
-            "question_id": qid, "track": "python", "code": "def solution(*a, **k):\n    return None",
+            "question_id": qid, "track": "python", "code": "def solve(*a, **k):\n    return None",
         })
     assert r.status_code == 200, r.text  # the bug returned 403 "locked"
     body = r.json()
