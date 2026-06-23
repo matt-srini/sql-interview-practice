@@ -424,7 +424,7 @@ All requests use `withCredentials: true` so the `session_token` cookie is sent d
 
 ### Pandas
 1. `/practice/pandas/questions/:id` → fetch `/api/pandas/questions/:id`
-2. VariablesPanel shows available DataFrames from `question.dataframes`
+2. VariablesPanel shows available DataFrames from `question.dataframes`, each with its **column list from `question.schema`** (`{ varName: [cols] }`). This is the only place a candidate sees the available columns — pandas has no SchemaViewer (`showSchema` is SQL-only) — so the payload must carry `schema` on **every** pandas surface: practice (`routers/pandas_questions.py`), sample (`get_public_question`), **and mock** (`mock._public_question_payload`). The prop key is `schema` everywhere; `VariablesPanel({ dataframes, schema })` is shared by practice/sample/mock.
 3. Run → `POST /api/pandas/run-code` → ResultsTable + PrintOutputPanel
 4. Submit → `POST /api/pandas/submit` → correct/incorrect + DataFrame comparison
 

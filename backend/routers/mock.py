@@ -813,6 +813,11 @@ def _public_question_payload(question: dict, track: str) -> dict:
     # them through as-is so VariablesPanel can render them directly.
     if track == "pandas":
         payload["dataframes"] = question.get("dataframes", {})
+        # Column names per dataframe, so VariablesPanel can render them — without
+        # this the candidate sees dataframe/CSV names but no columns and cannot
+        # reliably write df['<col>'] (most stems don't list every column). Mirrors
+        # the practice payload (routers/pandas_questions.py) and SQL above.
+        payload["schema"] = question.get("schema", {})
     # MCQ tracks (PySpark, Data Engineering, …): include options and display fields
     if get_track(track).eval_kind == "mcq":
         payload["options"] = question.get("options", [])

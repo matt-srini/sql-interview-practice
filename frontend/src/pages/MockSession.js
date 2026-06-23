@@ -1079,7 +1079,7 @@ export default function MockSession() {
                   The post-mortem's concept breakdown surfaces them afterward for learning. */}
 
               {q.track === 'pandas' && Object.keys(q.dataframes ?? {}).length > 0 && (
-                <VariablesPanel dataframes={q.dataframes} schema={{}} />
+                <VariablesPanel dataframes={q.dataframes} schema={q.schema ?? {}} />
               )}
             </>
           )}

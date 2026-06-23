@@ -35,6 +35,13 @@ Keep entries to 4–6 lines. Friction kills logs; if it's longer than the change
 
 ## Entries
 
+## 2026-06-23 — Pandas column names must ship on every surface (fix mock + practice column blindness)
+**Area:** frontend · content · **Status:** accepted
+**Decision:** The pandas DataFrame **column list is load-bearing** and the prop/key is `schema` everywhere. Fixed three surfaces that were hiding it: mock omitted `schema` from `_public_question_payload` *and* `MockSession` passed `schema={{}}` (132 mock questions); practice `QuestionPage` read a phantom `question.dataframe_schema` the backend never sends (it sends `schema`) so columns were blank too (93 practice questions). Sample was already correct. All three now flow `question.schema` → `VariablesPanel`.
+**Why:** Pandas has no SchemaViewer (`showSchema` is SQL-only) — VariablesPanel's column list is the *only* place a candidate sees available columns, and only 6/132 mock stems list every column in prose. Without it the candidate can't reliably write `df['<col>']`; the questions are effectively unsolvable. Surfaced by the mock blind-QA effort (same delivery-bug family as the earlier `def solve()`/dataframes-missing mock pandas bug). Caught at payload-inspection *before* blind-solving — had the solvers run on the column-less payload, their failures would have been mis-read as content defects.
+**Rejected:** keep columns hidden as "added difficulty" (would require listing every column in 123 stems — high cost, and inconsistent with practice/sample); inventing a separate `dataframe_schema` key (a second name for the same fact — the exact drift the single-SoT rule forbids).
+**Affects:** backend/routers/mock.py, frontend/src/pages/MockSession.js, frontend/src/pages/QuestionPage.js, docs/frontend.md
+
 ## 2026-06-22 — Interview Loop exhausted-cell: redirect-first, replay demoted (resolves P2)
 **Area:** mock · UX · **Status:** accepted (refines the 2026-06-19 replay end-state)
 **Decision:** When a user finishes every chain in a (track, difficulty) Loop cell, the exhausted state now LEADS with a "Fresh chains to try" rail of the user's still-unexhausted cells (`/api/mock/access` → top-level `fresh_loop_cells`, requested track first, capped 4) and DEMOTES replay to a quiet "Or replay these chains →" link. Replay is kept (honest, no dead-end) but no longer headlines; if the user has exhausted *every* cell, `fresh_loop_cells` is empty and replay becomes the only CTA (the sole remaining non-dead-end).

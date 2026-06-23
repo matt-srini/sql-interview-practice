@@ -1267,7 +1267,7 @@ export default function QuestionPage() {
           {showVariables && (
             <VariablesPanel
               dataframes={question.dataframes ?? {}}
-              schema={question.dataframe_schema ?? {}}
+              schema={question.schema ?? {}}
             />
           )}
         </aside>
