@@ -1497,7 +1497,7 @@
     "mock_only": true,
     "type": "reverse",
     "title": "Write the query — monthly completed-order volume (2024)",
-    "description": "Write a SQL query that produces the result table shown below. The result shows each calendar month in 2024 with the count of 'completed' orders and total completed revenue.",
+    "description": "Write a SQL query that produces the result table shown below. The result shows the first 8 months of 2024 (January through August) with the count of 'completed' orders and total completed revenue, ordered chronologically.",
     "difficulty": "hard",
     "schema": {
       "orders": [
@@ -1552,8 +1552,8 @@
         "revenue": 228038.21
       }
     ],
-    "expected_query": "SELECT strftime(order_date, '%Y-%m') AS month, COUNT(*) AS order_count, ROUND(SUM(net_amount),2) AS revenue\nFROM orders\nWHERE status = 'completed' AND order_date >= '2024-01-01' AND order_date < '2025-01-01'\nGROUP BY month\nORDER BY month",
-    "solution_query": "SELECT strftime(order_date, '%Y-%m') AS month,\n       COUNT(*) AS order_count,\n       ROUND(SUM(net_amount), 2) AS revenue\nFROM orders\nWHERE status = 'completed'\n  AND order_date >= '2024-01-01'\n  AND order_date < '2025-01-01'\nGROUP BY month\nORDER BY month;",
+    "expected_query": "SELECT strftime(order_date, '%Y-%m') AS month, COUNT(*) AS order_count, ROUND(SUM(net_amount),2) AS revenue\nFROM orders\nWHERE status = 'completed' AND order_date >= '2024-01-01' AND order_date < '2025-01-01'\nGROUP BY month\nORDER BY month\nLIMIT 8",
+    "solution_query": "SELECT strftime(order_date, '%Y-%m') AS month,\n       COUNT(*) AS order_count,\n       ROUND(SUM(net_amount), 2) AS revenue\nFROM orders\nWHERE status = 'completed'\n  AND order_date >= '2024-01-01'\n  AND order_date < '2025-01-01'\nGROUP BY month\nORDER BY month\nLIMIT 8;",
     "required_concepts": [
       "group_by",
       "date_functions",
@@ -1563,7 +1563,7 @@
     "explanation": "strftime(order_date, '%Y-%m') extracts the year-month string. WHERE constrains to completed orders in 2024 only. GROUP BY month aggregates per calendar month. ORDER BY month produces the chronological trend. The result shows 8 of 12 months — the full query returns all 12.",
     "hints": [
       "Use strftime to extract year-month from order_date.",
-      "Bound the time filter to the full reporting range stated in the prompt — don't infer the bound from the rows shown in the preview."
+      "The result shows 8 rows — LIMIT 8 after ORDER BY month returns the first 8 months of the year."
     ],
     "concepts": [
       "TIME-SERIES BUCKETING & ARITHMETIC"
@@ -1596,39 +1596,45 @@
     "result_preview": [
       {
         "acquisition_channel": "organic",
-        "signups": 177,
-        "converted": 119,
-        "conversion_rate": 67.2
+        "signups": 172,
+        "converted": 117,
+        "conversion_rate": 68.0
       },
       {
         "acquisition_channel": "paid_search",
-        "signups": 141,
-        "converted": 87,
-        "conversion_rate": 61.7
+        "signups": 137,
+        "converted": 83,
+        "conversion_rate": 60.6
       },
       {
         "acquisition_channel": "direct",
-        "signups": 96,
+        "signups": 95,
         "converted": 61,
-        "conversion_rate": 63.5
+        "conversion_rate": 64.2
       },
       {
         "acquisition_channel": "paid_social",
-        "signups": 88,
-        "converted": 59,
-        "conversion_rate": 67.0
+        "signups": 85,
+        "converted": 56,
+        "conversion_rate": 65.9
       },
       {
         "acquisition_channel": "referral",
-        "signups": 54,
-        "converted": 32,
-        "conversion_rate": 59.3
+        "signups": 52,
+        "converted": 31,
+        "conversion_rate": 59.6
       },
       {
         "acquisition_channel": "partner",
         "signups": 44,
         "converted": 30,
         "conversion_rate": 68.2
+      },
+      {
+        "acquisition_channel": null,
+        "signups": 15,
+        "converted": 10,
+        "conversion_rate": 66.7
       }
     ],
     "expected_query": "SELECT u.acquisition_channel, COUNT(DISTINCT u.user_id) AS signups,\n       COUNT(DISTINCT CASE WHEN o.status = 'completed' THEN u.user_id END) AS converted,\n       ROUND(COUNT(DISTINCT CASE WHEN o.status = 'completed' THEN u.user_id END) * 100.0 / COUNT(DISTINCT u.user_id), 1) AS conversion_rate\nFROM users u\nLEFT JOIN orders o ON u.user_id = o.user_id\nGROUP BY u.acquisition_channel\nORDER BY signups DESC",
@@ -1755,7 +1761,7 @@
     "mock_only": true,
     "type": "reverse",
     "title": "Write the query — department salary bands",
-    "description": "Write a SQL query that produces the result table shown below. The result shows departments with at least 10 employees: their headcount, min/max/average salary, ordered by average salary descending.",
+    "description": "Write a SQL query that produces the result table shown below. The result shows the top 5 departments (by average salary, descending) that have at least 10 employees, including their headcount and min/max/average salary.",
     "difficulty": "hard",
     "schema": {
       "employees": [
@@ -1781,32 +1787,32 @@
         "avg_salary": 128011.66
       },
       {
-        "department_name": "Department 1",
-        "headcount": 24,
-        "min_salary": 54685.24,
-        "max_salary": 187450.38,
-        "avg_salary": 126472.65
-      },
-      {
         "department_name": "Department 6",
         "headcount": 23,
         "min_salary": 50405.12,
         "max_salary": 184178.09,
-        "avg_salary": 124420.34
+        "avg_salary": 125895.58
       },
       {
         "department_name": "Department 9",
         "headcount": 18,
         "min_salary": 56186.72,
         "max_salary": 185883.58,
-        "avg_salary": 119059.36
+        "avg_salary": 122409.47
+      },
+      {
+        "department_name": "Department 1",
+        "headcount": 24,
+        "min_salary": 54685.24,
+        "max_salary": 187450.38,
+        "avg_salary": 120714.96
       },
       {
         "department_name": "Department 2",
         "headcount": 18,
-        "min_salary": 50815.04,
+        "min_salary": 53522.77,
         "max_salary": 158267.94,
-        "avg_salary": 112364.19
+        "avg_salary": 117052.33
       }
     ],
     "expected_query": "SELECT d.department_name, COUNT(*) AS headcount,\n       ROUND(MIN(e.salary),2) AS min_salary, ROUND(MAX(e.salary),2) AS max_salary,\n       ROUND(AVG(e.salary),2) AS avg_salary\nFROM departments d\nJOIN employees e ON d.department_id = e.department_id\nGROUP BY d.department_name\nHAVING COUNT(*) >= 10\nORDER BY avg_salary DESC\nLIMIT 5",

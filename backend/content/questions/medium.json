@@ -1914,27 +1914,27 @@
       {
         "department_name": "Department 8",
         "headcount": 30,
-        "avg_salary": 111068.93
+        "avg_salary": 108410.83
       },
       {
         "department_name": "Department 7",
         "headcount": 29,
-        "avg_salary": 110016.88
+        "avg_salary": 108727.84
       },
       {
         "department_name": "Department 1",
         "headcount": 24,
-        "avg_salary": 126472.65
+        "avg_salary": 120714.96
       },
       {
         "department_name": "Department 6",
         "headcount": 23,
-        "avg_salary": 124420.34
+        "avg_salary": 125895.58
       },
       {
         "department_name": "Department 10",
         "headcount": 19,
-        "avg_salary": 107284.64
+        "avg_salary": 105498.75
       }
     ],
     "expected_query": "SELECT d.department_name, COUNT(e.employee_id) AS headcount, ROUND(AVG(e.salary),2) AS avg_salary\nFROM departments d\nJOIN employees e ON d.department_id = e.department_id\nGROUP BY d.department_name\nORDER BY headcount DESC, d.department_name ASC\nLIMIT 5",
