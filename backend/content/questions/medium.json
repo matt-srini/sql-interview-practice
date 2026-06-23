@@ -3918,7 +3918,7 @@
     "mock_only": true,
     "framing": "scenario",
     "title": "Multi-category buyers by plan tier",
-    "description": "A product analyst wants to understand cross-category buying behaviour. For each plan tier, count the number of distinct users who have completed orders containing products from more than one distinct category. Output columns: plan_tier, multi_category_buyers.",
+    "description": "A product analyst wants to understand cross-category buying behaviour. For each plan tier, count the number of distinct users who have completed orders containing products from more than one distinct category. Output columns: plan_tier, multi_category_buyers. Order by plan_tier ascending.",
     "difficulty": "medium",
     "schema": {
       "users": [

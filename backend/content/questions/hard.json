@@ -4776,7 +4776,7 @@
     "mock_only": true,
     "framing": "scenario",
     "title": "Signup-to-first-order latency percentile distribution",
-    "description": "A growth team wants to understand how quickly new users convert to buyers. Consider only users whose first-ever completed order was on or after their signup_date. For those users, compute the number of days from signup_date to that first completed order date, then return the 25th, 50th, 75th, and 90th percentiles of that day count, the average, and the user count. Output columns: p25_days, p50_days, p75_days, p90_days, avg_days (rounded to 1 decimal), total_users.",
+    "description": "A growth team wants to understand how quickly new users convert to buyers. Consider only users whose first-ever completed order was on or after their signup_date. For those users, compute the number of days from signup_date to that first completed order date, then return the 25th, 50th, 75th, and 90th percentiles of that day count as continuous/interpolated percentiles (PERCENTILE_CONT), left unrounded; the average (rounded to 1 decimal); and the user count. Output columns: p25_days, p50_days, p75_days, p90_days, avg_days, total_users.",
     "difficulty": "hard",
     "schema": {
       "users": [
