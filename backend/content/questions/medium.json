@@ -2114,14 +2114,14 @@
     ],
     "debug_error": "Binder Error: column \"plan_tier\" must appear in the GROUP BY clause or must be part of an aggregate function.\nEither add it to the GROUP BY list, or use \"ANY_VALUE(plan_tier)\" if the exact value of \"plan_tier\" is not important.\n\nLINE 1: SELECT u.country, u.plan_tier, SUM(o.net_amount) AS total_revenue\n                          ^",
     "starter_query": "SELECT u.country, u.plan_tier, SUM(o.net_amount) AS total_revenue\nFROM users u\nJOIN orders o ON u.user_id = o.user_id\nWHERE o.status = 'completed'\nGROUP BY u.country\nORDER BY total_revenue DESC",
-    "expected_query": "SELECT u.country, u.plan_tier, ROUND(SUM(o.net_amount),2) AS total_revenue\nFROM users u\nJOIN orders o ON u.user_id = o.user_id\nWHERE o.status = 'completed'\nGROUP BY u.country, u.plan_tier\nORDER BY total_revenue DESC",
-    "solution_query": "SELECT u.country, u.plan_tier,\n       ROUND(SUM(o.net_amount), 2) AS total_revenue\nFROM users u\nJOIN orders o ON u.user_id = o.user_id\nWHERE o.status = 'completed'\nGROUP BY u.country, u.plan_tier\nORDER BY total_revenue DESC;",
+    "expected_query": "SELECT u.country, u.plan_tier, SUM(o.net_amount) AS total_revenue\nFROM users u JOIN orders o ON u.user_id = o.user_id\nWHERE o.status = 'completed'\nGROUP BY u.country, u.plan_tier\nORDER BY total_revenue DESC",
+    "solution_query": "SELECT u.country, u.plan_tier, SUM(o.net_amount) AS total_revenue\nFROM users u JOIN orders o ON u.user_id = o.user_id\nWHERE o.status = 'completed'\nGROUP BY u.country, u.plan_tier\nORDER BY total_revenue DESC;",
     "required_concepts": [
       "group_by",
       "join"
     ],
     "enforce_concepts": true,
-    "explanation": "Every non-aggregated column in SELECT must appear in GROUP BY. Here `plan_tier` is selected but missing from GROUP BY — fix by adding `u.plan_tier` to the GROUP BY clause. This is one of the most commonly tested SQL concepts.",
+    "explanation": "Every non-aggregated column in SELECT must appear in GROUP BY. Here plan_tier is selected but missing from the GROUP BY clause — that is the sole bug, and adding u.plan_tier to GROUP BY is the minimal fix. No rounding is involved: the starter query does not ROUND, so the fix does not introduce ROUND either.",
     "hints": [
       "Every non-aggregated column in the SELECT list must also appear in the aggregation clause.",
       "The error message tells you exactly which column is missing."
@@ -4724,18 +4724,18 @@
       "orders.csv",
       "order_items.csv"
     ],
-    "expected_query": "WITH order_totals AS (\n    SELECT o.order_id, o.user_id,\n           ROUND(SUM(oi.line_amount), 2) AS order_revenue\n    FROM orders o\n    JOIN order_items oi ON o.order_id = oi.order_id\n    WHERE o.status = 'completed'\n    GROUP BY o.order_id, o.user_id\n)\nSELECT u.acquisition_channel,\n       COUNT(ot.order_id)         AS order_count,\n       SUM(ot.order_revenue)      AS total_revenue\nFROM users u\nJOIN order_totals ot ON u.user_id = ot.user_id\nGROUP BY u.acquisition_channel\nORDER BY total_revenue DESC",
-    "solution_query": "WITH order_totals AS (\n    SELECT o.order_id, o.user_id,\n           ROUND(SUM(oi.line_amount), 2) AS order_revenue\n    FROM orders o\n    JOIN order_items oi ON o.order_id = oi.order_id\n    WHERE o.status = 'completed'\n    GROUP BY o.order_id, o.user_id\n)\nSELECT u.acquisition_channel,\n       COUNT(ot.order_id)         AS order_count,\n       SUM(ot.order_revenue)      AS total_revenue\nFROM users u\nJOIN order_totals ot ON u.user_id = ot.user_id\nGROUP BY u.acquisition_channel\nORDER BY total_revenue DESC;",
+    "expected_query": "WITH order_totals AS (SELECT o.order_id, o.user_id, SUM(oi.line_amount) AS order_revenue FROM orders o JOIN order_items oi ON o.order_id = oi.order_id WHERE o.status = 'completed' GROUP BY o.order_id, o.user_id) SELECT u.acquisition_channel, COUNT(ot.order_id) AS order_count, ROUND(SUM(ot.order_revenue), 2) AS total_revenue FROM users u JOIN order_totals ot ON u.user_id = ot.user_id GROUP BY u.acquisition_channel ORDER BY total_revenue DESC",
+    "solution_query": "WITH order_totals AS (SELECT o.order_id, o.user_id, SUM(oi.line_amount) AS order_revenue FROM orders o JOIN order_items oi ON o.order_id = oi.order_id WHERE o.status = 'completed' GROUP BY o.order_id, o.user_id) SELECT u.acquisition_channel, COUNT(ot.order_id) AS order_count, ROUND(SUM(ot.order_revenue), 2) AS total_revenue FROM users u JOIN order_totals ot ON u.user_id = ot.user_id GROUP BY u.acquisition_channel ORDER BY total_revenue DESC;",
     "required_concepts": [
       "cte",
       "join",
       "aggregate"
     ],
     "enforce_concepts": true,
-    "explanation": "The original passes every order-item row through the join to users, then deduplicates with COUNT(DISTINCT). Pre-aggregating order_items to one row per order in the CTE reduces the join input from item-level cardinality to order-level cardinality — matching what the final aggregation actually needs. The downstream combination with users then handles one row per order rather than one row per line item.",
+    "explanation": "Pre-aggregating order_items to one row per order (order_revenue = raw SUM of line_amount with no per-row rounding) reduces the join input to order-level cardinality. Rounding is applied once at the final SELECT on SUM(ot.order_revenue), matching the stated requirement of 'total_revenue rounded to 2 dp'. Rounding inside the CTE per order introduces accumulated rounding error — the correct position is on the final aggregate.",
     "hints": [
-      "The original passes every item row through the combination with users before deduplicating — acquisition channel is a user-level attribute, not an item-level one. Computing order totals first reduces what the downstream combination must handle.",
-      "After aggregating item rows to one row per order, each order has a single revenue figure that can be matched to a user and summed by channel without deduplication overhead."
+      "Reducing the size of the intermediate result before combining it with user-level data is the key insight — compute order-level totals early rather than at the end.",
+      "Apply ROUND once on the outer SUM across all pre-aggregated order totals, not inside the CTE on each order individually."
     ],
     "concepts": [
       "PERFORMANCE-AWARE ANALYTICS",

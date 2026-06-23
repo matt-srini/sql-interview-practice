@@ -1900,14 +1900,14 @@
     ],
     "debug_error": "Binder Error: Referenced column \"avg_salary\" not found in FROM clause!\nCandidate bindings: \"avg_sal\"\n\nLINE 9:            RANK() OVER (ORDER BY avg_salary DESC) AS pay_rank\n                                         ^",
     "starter_query": "WITH dept_stats AS (\n    SELECT d.department_name, COUNT(*) AS emp_count, AVG(e.salary) AS avg_sal\n    FROM employees e\n    JOIN departments d ON e.department_id = d.department_id\n    GROUP BY d.department_name\n),\nranked AS (\n    SELECT department_name, emp_count, avg_sal,\n           RANK() OVER (ORDER BY avg_salary DESC) AS pay_rank\n    FROM dept_stats\n)\nSELECT * FROM ranked ORDER BY pay_rank",
-    "expected_query": "WITH dept_stats AS (\n    SELECT d.department_name, COUNT(*) AS emp_count, ROUND(AVG(e.salary),2) AS avg_sal\n    FROM employees e\n    JOIN departments d ON e.department_id = d.department_id\n    GROUP BY d.department_name\n),\nranked AS (\n    SELECT department_name, emp_count, avg_sal,\n           RANK() OVER (ORDER BY avg_sal DESC) AS pay_rank\n    FROM dept_stats\n)\nSELECT * FROM ranked ORDER BY pay_rank",
-    "solution_query": "WITH dept_stats AS (\n    SELECT d.department_name,\n           COUNT(*) AS emp_count,\n           ROUND(AVG(e.salary), 2) AS avg_sal\n    FROM employees e\n    JOIN departments d ON e.department_id = d.department_id\n    GROUP BY d.department_name\n),\nranked AS (\n    SELECT department_name, emp_count, avg_sal,\n           RANK() OVER (ORDER BY avg_sal DESC) AS pay_rank\n    FROM dept_stats\n)\nSELECT * FROM ranked ORDER BY pay_rank;",
+    "expected_query": "WITH dept_stats AS (SELECT d.department_name, COUNT(*) AS emp_count, AVG(e.salary) AS avg_sal FROM employees e JOIN departments d ON e.department_id = d.department_id GROUP BY d.department_name), ranked AS (SELECT department_name, emp_count, avg_sal, RANK() OVER (ORDER BY avg_sal DESC) AS pay_rank FROM dept_stats) SELECT * FROM ranked ORDER BY pay_rank",
+    "solution_query": "WITH dept_stats AS (SELECT d.department_name, COUNT(*) AS emp_count, AVG(e.salary) AS avg_sal FROM employees e JOIN departments d ON e.department_id = d.department_id GROUP BY d.department_name), ranked AS (SELECT department_name, emp_count, avg_sal, RANK() OVER (ORDER BY avg_sal DESC) AS pay_rank FROM dept_stats) SELECT * FROM ranked ORDER BY pay_rank;",
     "required_concepts": [
       "cte",
       "window_functions"
     ],
     "enforce_concepts": true,
-    "explanation": "The CTE aliases the average salary column as `avg_sal`. The `ranked` CTE references it as `avg_salary` inside the window function — a name that was never defined. Fix: change `avg_salary` to `avg_sal` in the RANK() OVER clause. CTEs expose exactly the column names defined inside them; you cannot use a different alias in a downstream reference.",
+    "explanation": "The CTE aliases the average salary column as `avg_sal`. The `ranked` CTE references it as `avg_salary` inside the window function — a name that was never defined. The sole fix is changing `avg_salary` to `avg_sal` in the RANK() OVER clause. No rounding is involved: the starter query does not ROUND, so the minimal fix does not introduce ROUND either. CTEs expose exactly the column names defined inside them; you cannot use a different alias in a downstream reference.",
     "hints": [
       "Check the column names defined inside dept_stats — whatever alias is used there must be referenced exactly downstream.",
       "The error shows 'Candidate bindings: avg_sal' — that's the correct name to use in the RANK() OVER clause."
@@ -1948,7 +1948,7 @@
       "categories.csv"
     ],
     "debug_error": "Catalog Error: Table with name product does not exist!\nDid you mean \"products\"?\n\nLINE 4: JOIN product p ON oi.product_id = p.product_id\n             ^",
-    "starter_query": "SELECT c.category_name, p.product_name, p.brand,\n       SUM(oi.quantity) AS total_qty, ROUND(SUM(oi.line_amount), 2) AS total_revenue\nFROM order_items oi\nJOIN product p ON oi.product_id = p.product_id\nJOIN categories c ON p.category_id = c.category_id\nGROUP BY c.category_name, p.product_name, p.brand\nORDER BY total_revenue DESC\nLIMIT 10",
+    "starter_query": "SELECT c.category_name, p.product_name, p.brand,\n       ROUND(SUM(oi.line_amount), 2) AS total_revenue\nFROM order_items oi\nJOIN product p ON oi.product_id = p.product_id\nJOIN categories c ON p.category_id = c.category_id\nGROUP BY c.category_name, p.product_name, p.brand\nORDER BY total_revenue DESC\nLIMIT 10",
     "expected_query": "SELECT c.category_name, p.product_name, p.brand,\n       ROUND(SUM(oi.line_amount), 2) AS total_revenue\nFROM order_items oi\nJOIN products p ON oi.product_id = p.product_id\nJOIN categories c ON p.category_id = c.category_id\nGROUP BY c.category_name, p.product_name, p.brand\nORDER BY total_revenue DESC\nLIMIT 10",
     "solution_query": "SELECT c.category_name, p.product_name, p.brand,\n       ROUND(SUM(oi.line_amount), 2) AS total_revenue\nFROM order_items oi\nJOIN products p ON oi.product_id = p.product_id\nJOIN categories c ON p.category_id = c.category_id\nGROUP BY c.category_name, p.product_name, p.brand\nORDER BY total_revenue DESC\nLIMIT 10;",
     "required_concepts": [
@@ -1957,7 +1957,7 @@
       "limit"
     ],
     "enforce_concepts": true,
-    "explanation": "The table is named `products` (plural) but the query references `product` (singular). DuckDB cannot resolve the table name and raises a Catalog Error. Fix: change `product` to `products` in the JOIN clause. The error message 'Did you mean products?' gives the answer directly.",
+    "explanation": "The table is named `products` (plural) but the starter query references `product` (singular). That is the single bug: DuckDB cannot resolve the table name and raises a Catalog Error. Fix: change `product` to `products` in the JOIN clause. The error message 'Did you mean \"products\"?' gives the answer directly. The expected output has four columns — category_name, product_name, brand, total_revenue — matching the corrected query.",
     "hints": [
       "The error 'Table with name product does not exist' means the table name is wrong.",
       "Check your FROM/JOIN clauses — the database table is named products, not product."
@@ -2487,7 +2487,7 @@
     "mock_only": true,
     "framing": "scenario",
     "title": "Monthly user activity segments: new, retained, returned",
-    "description": "The growth team tracks three user types each month: 'new' (first month of any order activity), 'retained' (active last month and this month, with no gap > 60 days between their most recent prior active month and this one), and 'returned' (gap of more than 60 days since last active month). Write a query that returns `active_month` (YYYY-MM), `user_type` ('new' / 'retained' / 'returned'), and `user_count`. Determine active months from the `orders` table (any order placed in that month, any status). Order by `active_month` ascending, then `user_type` ascending.",
+    "description": "The growth team tracks three user types each month, based on active months derived from the orders table (any order placed in that month, any status). For each user: 'new' is their first-ever active month; 'retained' means their previous active month was 60 days or fewer before this one (gap ≤ 60 days); 'returned' means their previous active month was more than 60 days ago. Output columns: active_month (YYYY-MM string), user_type ('new' / 'retained' / 'returned'), user_count. Order by active_month ascending, then user_type ascending.",
     "difficulty": "hard",
     "schema": {
       "orders": [
@@ -3105,7 +3105,7 @@
       13069
     ],
     "title": "Top completed-order product per country by line revenue",
-    "description": "The regional team wants to know which product generates the most revenue in each country based on completed orders. Write a query that returns `country`, `product_name`, `order_count` (distinct completed orders containing this product for that country), and `total_revenue` (sum of line_amount, rounded to 2 dp). Use COUNT(DISTINCT order_id) — not COUNT(*) — to avoid inflating counts when an order contains the same product multiple times. Order by `country` ascending, then `total_revenue` descending. Limit to 30 rows.",
+    "description": "The regional team wants the single product that generates the most revenue in each country, based on completed orders. Return country, product_name, order_count (distinct completed orders containing that product in that country), and total_revenue (sum of line_amount, rounded to 2 dp). Return exactly one row per country — the top product by total_revenue, breaking ties by product_name ascending. Output columns: country, product_name, order_count, total_revenue. Order by country ascending.",
     "difficulty": "hard",
     "schema": {
       "users": [
@@ -3134,8 +3134,8 @@
       "products.csv",
       "users.csv"
     ],
-    "expected_query": "SELECT u.country, p.product_name,\n       COUNT(DISTINCT o.order_id) AS order_count,\n       ROUND(SUM(oi.line_amount), 2) AS total_revenue\nFROM orders o\nJOIN users u ON o.user_id = u.user_id\nJOIN order_items oi ON o.order_id = oi.order_id\nJOIN products p ON oi.product_id = p.product_id\nWHERE o.status = 'completed'\nGROUP BY u.country, p.product_name\nORDER BY u.country, total_revenue DESC\nLIMIT 30",
-    "solution_query": "SELECT u.country, p.product_name,\n       COUNT(DISTINCT o.order_id) AS order_count,\n       ROUND(SUM(oi.line_amount), 2) AS total_revenue\nFROM orders o\nJOIN users u ON o.user_id = u.user_id\nJOIN order_items oi ON o.order_id = oi.order_id\nJOIN products p ON oi.product_id = p.product_id\nWHERE o.status = 'completed'\nGROUP BY u.country, p.product_name\nORDER BY u.country, total_revenue DESC\nLIMIT 30;",
+    "expected_query": "WITH cpr AS (SELECT u.country, p.product_name, COUNT(DISTINCT o.order_id) AS order_count, ROUND(SUM(oi.line_amount), 2) AS total_revenue FROM orders o JOIN users u ON o.user_id = u.user_id JOIN order_items oi ON o.order_id = oi.order_id JOIN products p ON oi.product_id = p.product_id WHERE o.status = 'completed' GROUP BY u.country, p.product_name), ranked AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY country ORDER BY total_revenue DESC, product_name ASC) AS rn FROM cpr) SELECT country, product_name, order_count, total_revenue FROM ranked WHERE rn = 1 ORDER BY country",
+    "solution_query": "WITH cpr AS (SELECT u.country, p.product_name, COUNT(DISTINCT o.order_id) AS order_count, ROUND(SUM(oi.line_amount), 2) AS total_revenue FROM orders o JOIN users u ON o.user_id = u.user_id JOIN order_items oi ON o.order_id = oi.order_id JOIN products p ON oi.product_id = p.product_id WHERE o.status = 'completed' GROUP BY u.country, p.product_name), ranked AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY country ORDER BY total_revenue DESC, product_name ASC) AS rn FROM cpr) SELECT country, product_name, order_count, total_revenue FROM ranked WHERE rn = 1 ORDER BY country;",
     "required_concepts": [
       "join",
       "group_by",
@@ -3143,10 +3143,10 @@
       "aggregate"
     ],
     "enforce_concepts": true,
-    "explanation": "Four-table join: orders → users (country), orders → order_items (revenue), order_items → products (name). COUNT(DISTINCT order_id) counts unique orders — if an order has two line items for the same product, COUNT(*) would over-count orders. SUM(line_amount) correctly sums all line item revenue including duplicates within an order. ORDER BY country then revenue DESC shows the top products first within each country.",
+    "explanation": "The query builds country-product revenue aggregates in the cpr CTE, then uses ROW_NUMBER() OVER (PARTITION BY country ORDER BY total_revenue DESC, product_name ASC) to assign rank 1 to the top product in each country. Filtering WHERE rn = 1 returns exactly one row per country. Ties in total_revenue are broken by product_name ASC for deterministic output. COUNT(DISTINCT order_id) avoids inflation when an order contains the same product on multiple line items.",
     "hints": [
-      "When two tables are combined and rows multiply, a naive count inflates beyond the true number of original entities — think about how to count the source objects rather than the expanded row set.",
-      "SUM(line_amount) is correct for revenue — it sums all line amounts across all qualifying rows."
+      "To return a single top product per country, you need to enforce top-N-per-group selection — compute country-product aggregates first, then apply a per-partition selection.",
+      "A window function that assigns a sequence number within each country partition, ordered by revenue descending, lets you filter to exactly one row per country."
     ],
     "concepts": [
       "DOUBLE-COUNTING DETECTION",
@@ -4776,7 +4776,7 @@
     "mock_only": true,
     "framing": "scenario",
     "title": "Signup-to-first-order latency percentile distribution",
-    "description": "A growth team wants to understand how quickly new users convert to buyers. For users who have completed at least one order after their signup date, compute the number of days between signup_date and their first completed order date, then return percentiles (p25, p50, p75, p90), avg_days (rounded to 1 decimal), and total_users.",
+    "description": "A growth team wants to understand how quickly new users convert to buyers. Consider only users whose first-ever completed order was on or after their signup_date. For those users, compute the number of days from signup_date to that first completed order date, then return the 25th, 50th, 75th, and 90th percentiles of that day count, the average, and the user count. Output columns: p25_days, p50_days, p75_days, p90_days, avg_days (rounded to 1 decimal), total_users.",
     "difficulty": "hard",
     "schema": {
       "users": [
@@ -5649,7 +5649,7 @@
     "mock_only": true,
     "framing": "scenario",
     "title": "7-day rolling average of daily completed revenue",
-    "description": "The finance team wants to smooth out daily revenue volatility. Write a query that, for each day with at least one completed order, computes `order_day` (YYYY-MM-DD), `daily_revenue` (sum of `net_amount` for completed orders on that day, rounded to 2 dp), and `rolling_7d_avg_revenue` (average daily revenue over the current day and the 6 preceding days, rounded to 2 dp). Order by `order_day` ascending.",
+    "description": "The finance team wants to smooth out daily revenue volatility. For each day with at least one completed order, compute `order_day` (YYYY-MM-DD), `daily_revenue` (sum of `net_amount` for completed orders on that day, rounded to 2 dp), and `rolling_7d_avg_revenue` — the average of `daily_revenue` over a 7-calendar-day window: the current day plus the 6 calendar days immediately before it (a calendar-date window, NOT the 6 previous order-rows; days with no completed orders simply contribute no value to the average), rounded to 2 dp. Output columns: order_day, daily_revenue, rolling_7d_avg_revenue. Order by `order_day` ascending.",
     "difficulty": "hard",
     "schema": {
       "orders": [
@@ -5662,8 +5662,8 @@
     "dataset_files": [
       "orders.csv"
     ],
-    "expected_query": "WITH daily AS (\n    SELECT CAST(order_date AS DATE) AS order_day,\n           ROUND(SUM(net_amount), 2) AS daily_revenue\n    FROM orders\n    WHERE status = 'completed'\n    GROUP BY order_day\n)\nSELECT order_day,\n       daily_revenue,\n       ROUND(AVG(daily_revenue) OVER (\n           ORDER BY order_day\n           ROWS BETWEEN 6 PRECEDING AND CURRENT ROW\n       ), 2) AS rolling_7d_avg_revenue\nFROM daily\nORDER BY order_day",
-    "solution_query": "WITH daily AS (\n    SELECT CAST(order_date AS DATE) AS order_day,\n           ROUND(SUM(net_amount), 2) AS daily_revenue\n    FROM orders\n    WHERE status = 'completed'\n    GROUP BY order_day\n)\nSELECT order_day,\n       daily_revenue,\n       ROUND(AVG(daily_revenue) OVER (\n           ORDER BY order_day\n           ROWS BETWEEN 6 PRECEDING AND CURRENT ROW\n       ), 2) AS rolling_7d_avg_revenue\nFROM daily\nORDER BY order_day;",
+    "expected_query": "WITH daily AS (SELECT CAST(order_date AS DATE) AS order_day, ROUND(SUM(net_amount), 2) AS daily_revenue FROM orders WHERE status = 'completed' GROUP BY order_day) SELECT order_day, daily_revenue, ROUND(AVG(daily_revenue) OVER (ORDER BY order_day RANGE BETWEEN INTERVAL 6 DAY PRECEDING AND CURRENT ROW), 2) AS rolling_7d_avg_revenue FROM daily ORDER BY order_day",
+    "solution_query": "WITH daily AS (SELECT CAST(order_date AS DATE) AS order_day, ROUND(SUM(net_amount), 2) AS daily_revenue FROM orders WHERE status = 'completed' GROUP BY order_day) SELECT order_day, daily_revenue, ROUND(AVG(daily_revenue) OVER (ORDER BY order_day RANGE BETWEEN INTERVAL 6 DAY PRECEDING AND CURRENT ROW), 2) AS rolling_7d_avg_revenue FROM daily ORDER BY order_day;",
     "required_concepts": [
       "window_function",
       "cte",
@@ -5671,10 +5671,10 @@
       "date_functions"
     ],
     "enforce_concepts": true,
-    "explanation": "The CTE aggregates daily revenue. ROWS BETWEEN 6 PRECEDING AND CURRENT ROW creates a physical 7-row window regardless of whether rows are exactly 1 day apart — if some days have no orders (and so no row in the daily CTE), those days are absent and the window spans fewer calendar days than expected. RANGE BETWEEN 6 PRECEDING AND CURRENT ROW would be needed if calendar-day gaps matter, but the question asks for 6 preceding rows.",
+    "explanation": "A 7-calendar-day trailing window requires RANGE BETWEEN INTERVAL 6 DAY PRECEDING AND CURRENT ROW. RANGE with an INTERVAL operand compares actual date values, so the window always covers the 7-day calendar span ending on order_day — even when some days have no completed orders (and therefore no row in the daily CTE). ROWS BETWEEN 6 PRECEDING AND CURRENT ROW counts 6 prior rows, not 6 prior calendar days, and silently spans more than 7 calendar days whenever order-less days create gaps in the row sequence.",
     "hints": [
       "Build a CTE with daily totals first, then apply the window function on the CTE's result.",
-      "ROWS BETWEEN 6 PRECEDING AND CURRENT ROW gives a 7-row window — ROWS counts physical rows, not calendar days."
+      "ROWS BETWEEN 6 PRECEDING counts 6 prior rows — if some calendar days have no completed orders they are absent from the CTE, and those rows span more than 7 calendar days. Use RANGE with an INTERVAL to compare actual dates instead."
     ],
     "concepts": [
       "RUNNING TOTAL & MOVING WINDOW",
@@ -5783,7 +5783,7 @@
     "mock_only": true,
     "framing": "scenario",
     "title": "Most expensive completed order per user",
-    "description": "A finance analyst wants to identify each user's highest-value completed order for a VIP scoring model. For each user who has at least one completed order, return their user_id, the order_id of their most expensive order, its net_amount, and the order_date. Order by net_amount descending.",
+    "description": "A finance analyst wants to identify each user’s highest-value completed order for a VIP scoring model. For each user with at least one completed order, return their user_id, the order_id of their most expensive completed order, its net_amount, and the order_date. If a user has multiple completed orders tied at their maximum net_amount, pick the smallest order_id. Output columns: user_id, order_id, net_amount, order_date. Order by net_amount descending, then order_id ascending.",
     "difficulty": "hard",
     "schema": {
       "orders": [
@@ -5797,19 +5797,19 @@
     "dataset_files": [
       "orders.csv"
     ],
-    "expected_query": "WITH ranked AS (\n  SELECT\n    o.user_id,\n    o.order_id,\n    o.net_amount,\n    o.order_date,\n    ROW_NUMBER() OVER (PARTITION BY o.user_id ORDER BY o.net_amount DESC) AS rn\n  FROM orders o\n  WHERE o.status = 'completed'\n)\nSELECT user_id, order_id, ROUND(net_amount, 2) AS net_amount, order_date\nFROM ranked\nWHERE rn = 1\nORDER BY net_amount DESC",
-    "solution_query": "WITH ranked AS (\n  SELECT\n    o.user_id,\n    o.order_id,\n    o.net_amount,\n    o.order_date,\n    ROW_NUMBER() OVER (PARTITION BY o.user_id ORDER BY o.net_amount DESC) AS rn\n  FROM orders o\n  WHERE o.status = 'completed'\n)\nSELECT user_id, order_id, ROUND(net_amount, 2) AS net_amount, order_date\nFROM ranked\nWHERE rn = 1\nORDER BY net_amount DESC",
+    "expected_query": "WITH ranked AS (SELECT o.user_id, o.order_id, o.net_amount, o.order_date, ROW_NUMBER() OVER (PARTITION BY o.user_id ORDER BY o.net_amount DESC, o.order_id ASC) AS rn FROM orders o WHERE o.status = 'completed') SELECT user_id, order_id, ROUND(net_amount, 2) AS net_amount, order_date FROM ranked WHERE rn = 1 ORDER BY net_amount DESC, order_id ASC",
+    "solution_query": "WITH ranked AS (SELECT o.user_id, o.order_id, o.net_amount, o.order_date, ROW_NUMBER() OVER (PARTITION BY o.user_id ORDER BY o.net_amount DESC, o.order_id ASC) AS rn FROM orders o WHERE o.status = 'completed') SELECT user_id, order_id, ROUND(net_amount, 2) AS net_amount, order_date FROM ranked WHERE rn = 1 ORDER BY net_amount DESC, order_id ASC;",
     "required_concepts": [
       "window_function",
       "cte",
       "row_number"
     ],
     "enforce_concepts": true,
-    "explanation": "ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY net_amount DESC) assigns rank 1 to the most expensive order per user. Filtering rn = 1 in the outer query returns exactly one row per user — a classic top-N-per-group pattern using window functions.",
+    "explanation": "ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY net_amount DESC, order_id ASC) assigns rank 1 to the most expensive completed order per user, with ties broken by the smallest order_id — making the pick deterministic when two orders share the same net_amount. Filtering WHERE rn = 1 returns exactly one row per user. The outer ORDER BY net_amount DESC, order_id ASC surfaces the highest-value users first with a stable secondary key.",
     "hints": [
-      "If two orders for the same user share a tied `net_amount`, the window function needs a secondary sort key (e.g., `order_date` or `order_id`) to make the row-pick deterministic.",
-      "Each user should appear exactly once with their highest-value order — the challenge is selecting one row per user based on order amount, keeping only the maximum per user.",
-      "Wrap in a CTE, then filter WHERE rn = 1 in the outer query."
+      "Each user should appear exactly once — the challenge is picking one row per user based on a ranking criterion, keeping only the maximum per user.",
+      "When two orders tie on net_amount, the window ORDER BY needs a secondary key — smallest order_id wins — to guarantee exactly one row is ranked 1 per user.",
+      "Wrap in a CTE, then filter WHERE rn = 1 in the outer query; match the outer ORDER BY to the question's stated output order."
     ],
     "concepts": [
       "WINDOW FUNCTIONS",
