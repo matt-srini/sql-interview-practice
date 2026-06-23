@@ -5177,7 +5177,7 @@
     "mock_only": true,
     "framing": "scenario",
     "title": "User recency segmentation: Active, Lapsing, Churned",
-    "description": "A CRM team wants to classify users by how recently they were active. Anchor to the most recent event date in the dataset (treating event_time as a date). Classify each user based on days since their last activity date: 'Active' (30 or fewer days ago), 'Lapsing' (more than 30 and fewer than 90 days ago — i.e. 31 to 89 days), or 'Churned' (90 or more days ago). Return segment, user_count, and avg_days_since_activity (rounded to 1 decimal). Order: Active first, then Lapsing, then Churned.",
+    "description": "A CRM team wants to classify users by how recently they were active. Anchor to the most recent event date in the dataset (treating event_time as a date). Classify each user by days since their last activity date: 'Active' (30 or fewer days ago), 'Lapsing' (31 to 90 days ago, inclusive of day 90), or 'Churned' (more than 90 days ago, i.e. 91 or more). Return segment, user_count, and avg_days_since_activity (rounded to 1 decimal). Order: Active first, then Lapsing, then Churned.",
     "difficulty": "hard",
     "schema": {
       "events": [
