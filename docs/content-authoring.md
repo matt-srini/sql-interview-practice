@@ -349,7 +349,15 @@ A question is correct only if a strong candidate, reading the stem alone, can la
 4. **Reverse questions:** `result_preview` must equal the live `expected_*` output. **Machine-enforced** by `_validate_reverse_preview_matches_key` (ERROR) — the recurrence guard for 4 SQL reverse questions whose preview had drifted from the dataset.
 5. **Debug questions:** the minimal fix of the *stated* bug must equal `expected_*` — no silent extra edits (adding `ROUND`, dropping a column) the stem never mentions.
 
-Durable lesson: **pair blind-solve QA with an adversarial stem↔key audit.** Blind-solve alone cannot see a key that is wrong but coincides numerically, an unstated literal, or an unspecified output shape.
+**Pandas-specific (2026-06-23 mock-pandas blind-QA — 16 fixes, incl. 4 wrong keys).** The pandas grader normalizes before an exact compare — it **sorts rows and columns and rounds floats to 5 dp** — so row/column *order* is NOT a contract item (don't over-specify it, unlike SQL). The three load-bearing classes (the actual defects found) are:
+6. **Numeric precision.** If the key rounds/truncates (e.g. `avg_salary` to 2 dp; an `ltv_proxy` built from already-rounded intermediates), the stem MUST say so — the 5 dp normalize does not absorb a 2-dp-vs-full gap. (32055, 33049.)
+7. **Metric definition.** State the sign of a difference (`discrepancy = a − b`, not `abs`), the **population** of any count/sum (which rows are in — inner- vs left-merge decides whether zero-activity rows count; null handling in a headcount or rate denominator), and inclusive/exclusive bounds. (32061, 32099, 32034, 33029, 33051.)
+8. **Method.** Pin any method whose result depends on the choice — percentile interpolation, tercile **binning** (`pd.cut` equal-width vs `pd.qcut` equal-frequency, plus the `rank(method=…)` tie rule), calendar-month vs day-count offsets, "most recent" tie-breaks. (33043/33045 RFM, 33040, 33082.)
+9. **Wrong key vs vague stem (pandas).** The most serious finds were **wrong keys**: a conversion window `days_to_order <= 30` with no lower bound counted pre-signup orders (33026/33030); an inner-merge dropped the zero-revenue rows the stem's cohort includes (32099). These pass their own grader and surface only under blind-solve — fix the *key*, not the stem.
+
+**Delivery contract (pandas).** A pandas question is solvable only if the candidate can see the DataFrame **columns** — pandas has no SchemaViewer, so `VariablesPanel`'s per-DataFrame column list is the only column surface. Every pandas surface (practice, sample, mock) must ship `schema` to it (mock historically omitted it — see [`docs/decisions/DECISIONS.md`](decisions/DECISIONS.md) 2026-06-23). A stem may list only *some* columns **only because** the panel shows the rest; never rely on the stem alone for column names.
+
+Durable lesson: **pair blind-solve QA with an adversarial stem↔key audit.** Blind-solve alone cannot see a key that is wrong but coincides numerically, an unstated literal, or an unspecified output shape — and the audit alone misses precision gaps a blind solver catches by failing (e.g. 32055). Run BOTH lenses, then a consolidated re-solve on the landed state.
 
 ---
 

@@ -35,6 +35,12 @@ Keep entries to 4–6 lines. Friction kills logs; if it's longer than the change
 
 ## Entries
 
+## 2026-06-23 — Pandas mock blind-QA: 16 content fixes (4 wrong keys, 12 stem/method)
+**Area:** content · **Status:** accepted
+**Decision:** Two-lens QA (blind-solve 122/132 + adversarial stem↔key audit + empirical verification) on the 132 mock-only pandas questions landed 16 fixes. **4 key/logic corrections** (the serious ones): 33026 & 33030 conversion window `days_to_order <= 30` → `.between(0, 30)` (it counted pre-signup orders); 32099 inner-merge → left-merge (dropped zero-revenue active products the parent 32098's cohort includes); 33029 headcount `count(salary)` → `count(employee_id)` (excluded null-salary employees). **12 stem clarifications** pinning precision (32055, 32072, 33049), metric definition (32061, 32034, 33051, 33074, 33079, 33082), and method (33040, 33043, 33045). Each fix verify-before-write blind-solved against the final key; validate_content clean.
+**Rejected:** "fix the stem to match the key" for 33026/33030/32099/33029 — the keys were genuinely wrong vs the stem's intent, so the keys were corrected (per the "fix whichever is wrong" call). Also rejected 2 audit false-positives after empirical check (33059 rounding didn't change the row set; 32082 had no non-numeric columns) and dropped row/column-order findings entirely (the pandas grader sorts both).
+**Affects:** backend/content/pandas_questions/{medium,hard}.json, docs/content-authoring.md (§ Output contract — pandas clauses 6–9 + delivery contract), docs/tracks/pandas.md
+
 ## 2026-06-23 — Pandas column names must ship on every surface (fix mock + practice column blindness)
 **Area:** frontend · content · **Status:** accepted
 **Decision:** The pandas DataFrame **column list is load-bearing** and the prop/key is `schema` everywhere. Fixed three surfaces that were hiding it: mock omitted `schema` from `_public_question_payload` *and* `MockSession` passed `schema={{}}` (132 mock questions); practice `QuestionPage` read a phantom `question.dataframe_schema` the backend never sends (it sends `schema`) so columns were blank too (93 practice questions). Sample was already correct. All three now flow `question.schema` → `VariablesPanel`.
