@@ -218,6 +218,8 @@ Operators can give specific users time-limited Pro or Elite access for beta test
 
 `ADMIN_SECRET` must be set in the Railway environment (generate with `python3 -c "import secrets; print(secrets.token_urlsafe(32))"`). If unset, all admin endpoints return 503.
 
+**Operator helper script:** `backend/scripts/grant_plan.sh <email> <pro|elite>` reads `ADMIN_SECRET` from `backend/.env` and calls the live grant endpoint. It defaults to a **60-day** grant against `https://datathink.co`. Override with `GRANT_DAYS=<n>` or point at another environment with `BASE_URL=https://...`.
+
 **What it is not:** This is not a user-facing coupon or redemption flow. It produces no invoice, no webhook, and no `plan_changes` audit row. It does not affect the Razorpay subscription lifecycle.
 
 ---
