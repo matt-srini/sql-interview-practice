@@ -1188,7 +1188,7 @@
     "framing": "scenario",
     "follow_up_id": 13034,
     "title": "Payment failure trend by method and month",
-    "description": "The payments team asks: 'How much revenue are we losing to 'failed' payments, and does the failure rate vary by method over time?' Write a query that, for each `payment_method` and calendar month (`YYYY-MM`), returns `payment_method`, `month`, `paid_count` (status = 'paid'), `failed_count` (status = 'failed'), `total_paid_amount` (rounded to 2 dp), and `failure_rate_pct` (failed / total × 100, rounded to 1 dp). Include only rows where the total attempt count for that method+month is at least 10. Order by `month` ascending, then `failure_rate_pct` descending.",
+    "description": "The payments team asks: 'How much revenue are we losing to 'failed' payments, and does the failure rate vary by method over time?' Write a query that, for each `payment_method` and calendar month (`YYYY-MM`), returns `payment_method`, `month`, `paid_count` (status = 'paid'), `failed_count` (status = 'failed'), `total_paid_amount` (sum of amount where status = 'paid', rounded to 2 dp), and `failure_rate_pct` (failed_count divided by the total count of all payment rows for that method and month — regardless of status — multiplied by 100, rounded to 1 dp). Include only rows where the total attempt count (all statuses) for that method+month is at least 10. Order by `month` ascending, then `failure_rate_pct` descending.",
     "difficulty": "hard",
     "schema": {
       "payments": [
@@ -1663,7 +1663,7 @@
     "mock_only": true,
     "type": "reverse",
     "title": "Write the query — top products per category with rank",
-    "description": "Write a SQL query that produces the result table shown below. The result shows the top-revenue product in each category, along with the second-place product where revenue is close. The `revenue_rank` column is the product's rank within its category (1 = highest).",
+    "description": "Write a SQL query that produces the result table shown below. The result shows the top-revenue product in each category along with the second-place product in each category (revenue_rank <= 2). The `revenue_rank` column is the product's rank within its category by total revenue (1 = highest), computed with RANK(). Results are ordered by total_revenue descending and limited to 8 rows.",
     "difficulty": "hard",
     "schema": {
       "order_items": [
@@ -2753,7 +2753,7 @@
     "mock_only": true,
     "framing": "scenario",
     "title": "Top spending category shift from Q1 to Q2 2024",
-    "description": "The product team wants to identify users who changed their top spending category between Q1 2024 (Jan–Mar) and Q2 2024 (Apr–Jun) — a sign of evolving preferences or seasonal effects. Write a query that returns `user_id`, `q1_category` (top spending category in Q1), and `q2_category` (top spending category in Q2) for users who: had a clear top category in both quarters AND whose top category changed between the two quarters. Order by `user_id` ascending. If two categories tie for the top in a quarter, pick the one that comes first alphabetically.",
+    "description": "The product team wants to identify users who changed their top spending category between Q1 2024 (Jan–Mar) and Q2 2024 (Apr–Jun) — a sign of evolving preferences or seasonal effects. Count only completed orders when computing category spend. Write a query that returns `user_id`, `q1_category` (top spending category in Q1 among completed orders), and `q2_category` (top spending category in Q2 among completed orders) for users who: had a clear top category in both quarters AND whose top category changed between the two quarters. Order by `user_id` ascending. If two categories tie for the top in a quarter, pick the one that comes first alphabetically.",
     "difficulty": "hard",
     "schema": {
       "orders": [
@@ -3572,7 +3572,7 @@
     "mock_only": true,
     "framing": "scenario",
     "title": "Product view-to-cart conversion rate",
-    "description": "The product team wants to identify which products have the best view-to-cart conversion in user sessions. Write a query that returns `product_name`, `brand`, `category_name`, `view_sessions` (distinct sessions with a 'view_product' event for this product), `cart_sessions` (distinct sessions with an 'add_to_cart' event for this product), and `view_to_cart_pct` (cart_sessions / view_sessions × 100, rounded to 1 dp). Include only products with at least one view session. Order by `view_to_cart_pct` descending. Limit to 20 rows.",
+    "description": "The product team wants to identify which products have the best view-to-cart conversion in user sessions. Write a query that returns `product_name`, `brand`, `category_name`, `view_sessions` (distinct sessions with a 'view_product' event for this product), `cart_sessions` (distinct sessions with an 'add_to_cart' event for this product), and `view_to_cart_pct` (cart_sessions / view_sessions × 100, rounded to 1 dp). Include only products with at least one view session. Order by `view_to_cart_pct` descending, then `product_name` ascending. Limit to 20 rows.",
     "difficulty": "hard",
     "schema": {
       "events": [
@@ -3597,8 +3597,8 @@
       "events.csv",
       "products.csv"
     ],
-    "expected_query": "WITH view_cart AS (\n    SELECT product_id,\n           COUNT(DISTINCT CASE WHEN event_name = 'view_product' THEN session_id END) AS view_sessions,\n           COUNT(DISTINCT CASE WHEN event_name = 'add_to_cart' THEN session_id END) AS cart_sessions\n    FROM events\n    GROUP BY product_id\n)\nSELECT p.product_name, p.brand, c.category_name,\n       vc.view_sessions,\n       vc.cart_sessions,\n       ROUND(vc.cart_sessions * 100.0 / NULLIF(vc.view_sessions, 0), 1) AS view_to_cart_pct\nFROM view_cart vc\nJOIN products p ON vc.product_id = p.product_id\nJOIN categories c ON p.category_id = c.category_id\nWHERE vc.view_sessions > 0\nORDER BY view_to_cart_pct DESC\nLIMIT 20",
-    "solution_query": "WITH view_cart AS (\n    SELECT product_id,\n           COUNT(DISTINCT CASE WHEN event_name = 'view_product' THEN session_id END) AS view_sessions,\n           COUNT(DISTINCT CASE WHEN event_name = 'add_to_cart' THEN session_id END) AS cart_sessions\n    FROM events\n    GROUP BY product_id\n)\nSELECT p.product_name, p.brand, c.category_name,\n       vc.view_sessions,\n       vc.cart_sessions,\n       ROUND(vc.cart_sessions * 100.0 / NULLIF(vc.view_sessions, 0), 1) AS view_to_cart_pct\nFROM view_cart vc\nJOIN products p ON vc.product_id = p.product_id\nJOIN categories c ON p.category_id = c.category_id\nWHERE vc.view_sessions > 0\nORDER BY view_to_cart_pct DESC\nLIMIT 20;",
+    "expected_query": "WITH view_cart AS (\n    SELECT product_id,\n           COUNT(DISTINCT CASE WHEN event_name = 'view_product' THEN session_id END) AS view_sessions,\n           COUNT(DISTINCT CASE WHEN event_name = 'add_to_cart' THEN session_id END) AS cart_sessions\n    FROM events\n    GROUP BY product_id\n)\nSELECT p.product_name, p.brand, c.category_name,\n       vc.view_sessions,\n       vc.cart_sessions,\n       ROUND(vc.cart_sessions * 100.0 / NULLIF(vc.view_sessions, 0), 1) AS view_to_cart_pct\nFROM view_cart vc\nJOIN products p ON vc.product_id = p.product_id\nJOIN categories c ON p.category_id = c.category_id\nWHERE vc.view_sessions > 0\nORDER BY view_to_cart_pct DESC, product_name ASC\nLIMIT 20",
+    "solution_query": "WITH view_cart AS (\n    SELECT product_id,\n           COUNT(DISTINCT CASE WHEN event_name = 'view_product' THEN session_id END) AS view_sessions,\n           COUNT(DISTINCT CASE WHEN event_name = 'add_to_cart' THEN session_id END) AS cart_sessions\n    FROM events\n    GROUP BY product_id\n)\nSELECT p.product_name, p.brand, c.category_name,\n       vc.view_sessions,\n       vc.cart_sessions,\n       ROUND(vc.cart_sessions * 100.0 / NULLIF(vc.view_sessions, 0), 1) AS view_to_cart_pct\nFROM view_cart vc\nJOIN products p ON vc.product_id = p.product_id\nJOIN categories c ON p.category_id = c.category_id\nWHERE vc.view_sessions > 0\nORDER BY view_to_cart_pct DESC, product_name ASC\nLIMIT 20;",
     "required_concepts": [
       "cte",
       "case_when",
@@ -3710,7 +3710,7 @@
     "mock_only": true,
     "framing": "scenario",
     "title": "Events users triggered before their first completed purchase",
-    "description": "The product team wants to understand what actions users take before they first buy. Write a query that returns `event_name`, `users_with_event` (distinct users who triggered this event at least once before their first completed order), `total_events` (total occurrences of this event across all users before their first purchase), and `avg_events_per_user` (total_events / users_with_event, rounded to 1 dp). Include only users who eventually made a completed purchase. Order by `users_with_event` descending.",
+    "description": "The product team wants to understand what actions users take before they first buy. Write a query that returns `event_name`, `users_with_event` (distinct users who triggered this event at least once before the calendar date of their first completed order — treat both event_time and order_date as dates, excluding same-calendar-day events), `total_events` (total occurrences of this event across all users before their first purchase), and `avg_events_per_user` (total_events / users_with_event, rounded to 1 dp). Include only users who eventually made a completed purchase. Order by `users_with_event` descending.",
     "difficulty": "hard",
     "schema": {
       "events": [
@@ -3940,7 +3940,7 @@
     "mock_only": true,
     "framing": "scenario",
     "title": "Product co-purchase pairs (frequently bought together)",
-    "description": "The recommendation team wants to find product pairs frequently purchased in the same completed order. Write a query that returns `product_a_name`, `product_b_name`, and `co_purchase_count` (number of distinct completed orders containing both products). Only include each pair once (where product_a's product_id is strictly less than product_b's). Order by `co_purchase_count` descending. Limit to 10 rows.",
+    "description": "The recommendation team wants to find product pairs frequently purchased in the same completed order. Write a query that returns `product_a_name`, `product_b_name`, and `co_purchase_count` (number of distinct completed orders containing both products). Only include each pair once (where product_a's product_id is strictly less than product_b's). Order by `co_purchase_count` descending, then `product_a_name` ascending, then `product_b_name` ascending. Limit to 10 rows.",
     "difficulty": "hard",
     "schema": {
       "order_items": [
@@ -4175,7 +4175,7 @@
     "mock_only": true,
     "framing": "scenario",
     "title": "30-day repeat purchase retention by cohort month",
-    "description": "A growth analyst wants to measure early repeat-purchase behaviour. For each cohort month (based on a user's first completed order date), compute: cohort_size (total users), retained (users who made another completed order within 30 days of their first), and retention_rate_pct (rounded to 1 decimal). Order by cohort_month.",
+    "description": "A growth analyst wants to measure early repeat-purchase behaviour. For each cohort month (based on a user's first completed order date), compute: cohort_size (total users), retained (users who made another completed order strictly after their first order date and within 30 calendar days of it — i.e. the second order's date is > first_order_date and <= first_order_date + 30 days), and retention_rate_pct (rounded to 1 decimal). Output columns: cohort_month (YYYY-MM string), cohort_size, retained, retention_rate_pct. Order by cohort_month.",
     "difficulty": "hard",
     "schema": {
       "orders": [
@@ -4308,7 +4308,7 @@
     "mock_only": true,
     "framing": "scenario",
     "title": "Early support ticket rate by plan tier",
-    "description": "A customer success team suspects that certain plan tiers generate disproportionate early complaints. For each plan tier, compute: total_ordering_users (users with at least one completed order), users_with_early_ticket (users who opened a support ticket within 7 days of their first completed order), and pct (rounded to 1 decimal). Order by plan_tier.",
+    "description": "A customer success team suspects that certain plan tiers generate disproportionate early complaints. For each plan tier, compute: total_ordering_users (users with at least one completed order), users_with_early_ticket (users who opened a support ticket on the same day as their first completed order or up to 7 calendar days after it — inclusive window: day 0 through day 7), and pct (rounded to 1 decimal). Order by plan_tier.",
     "difficulty": "hard",
     "schema": {
       "orders": [
@@ -4450,7 +4450,7 @@
     "mock_only": true,
     "framing": "scenario",
     "title": "Completed orders with no matching paid payment",
-    "description": "A data quality audit finds that some orders marked 'completed' have no corresponding payment with status='paid'. For each such product (via order_items), return product_id, product_name, and orders_without_payment (count of distinct order_ids with no paid payment). Order by orders_without_payment descending.",
+    "description": "A data quality audit finds that some orders marked 'completed' have no corresponding payment with status='paid'. For each such product (via order_items), return product_id, product_name, and orders_without_payment (count of distinct order_ids with no paid payment). Order by orders_without_payment descending, then product_id ascending.",
     "difficulty": "hard",
     "schema": {
       "orders": [
@@ -4476,8 +4476,8 @@
       "products.csv",
       "payments.csv"
     ],
-    "expected_query": "WITH completed_orders AS (\n  SELECT DISTINCT o.order_id, p.product_id, p.product_name\n  FROM orders o\n  JOIN order_items oi ON o.order_id = oi.order_id\n  JOIN products p ON oi.product_id = p.product_id\n  WHERE o.status = 'completed'\n),\npaid_orders AS (\n  SELECT DISTINCT order_id FROM payments WHERE status = 'paid'\n)\nSELECT\n  co.product_id,\n  co.product_name,\n  COUNT(DISTINCT co.order_id) AS orders_without_payment\nFROM completed_orders co\nLEFT JOIN paid_orders po ON co.order_id = po.order_id\nWHERE po.order_id IS NULL\nGROUP BY co.product_id, co.product_name\nORDER BY orders_without_payment DESC",
-    "solution_query": "WITH completed_orders AS (\n  SELECT DISTINCT o.order_id, p.product_id, p.product_name\n  FROM orders o\n  JOIN order_items oi ON o.order_id = oi.order_id\n  JOIN products p ON oi.product_id = p.product_id\n  WHERE o.status = 'completed'\n),\npaid_orders AS (\n  SELECT DISTINCT order_id FROM payments WHERE status = 'paid'\n)\nSELECT\n  co.product_id,\n  co.product_name,\n  COUNT(DISTINCT co.order_id) AS orders_without_payment\nFROM completed_orders co\nLEFT JOIN paid_orders po ON co.order_id = po.order_id\nWHERE po.order_id IS NULL\nGROUP BY co.product_id, co.product_name\nORDER BY orders_without_payment DESC",
+    "expected_query": "WITH completed_orders AS (\n  SELECT DISTINCT o.order_id, p.product_id, p.product_name\n  FROM orders o\n  JOIN order_items oi ON o.order_id = oi.order_id\n  JOIN products p ON oi.product_id = p.product_id\n  WHERE o.status = 'completed'\n),\npaid_orders AS (\n  SELECT DISTINCT order_id FROM payments WHERE status = 'paid'\n)\nSELECT\n  co.product_id,\n  co.product_name,\n  COUNT(DISTINCT co.order_id) AS orders_without_payment\nFROM completed_orders co\nLEFT JOIN paid_orders po ON co.order_id = po.order_id\nWHERE po.order_id IS NULL\nGROUP BY co.product_id, co.product_name\nORDER BY orders_without_payment DESC, product_id ASC",
+    "solution_query": "WITH completed_orders AS (\n  SELECT DISTINCT o.order_id, p.product_id, p.product_name\n  FROM orders o\n  JOIN order_items oi ON o.order_id = oi.order_id\n  JOIN products p ON oi.product_id = p.product_id\n  WHERE o.status = 'completed'\n),\npaid_orders AS (\n  SELECT DISTINCT order_id FROM payments WHERE status = 'paid'\n)\nSELECT\n  co.product_id,\n  co.product_name,\n  COUNT(DISTINCT co.order_id) AS orders_without_payment\nFROM completed_orders co\nLEFT JOIN paid_orders po ON co.order_id = po.order_id\nWHERE po.order_id IS NULL\nGROUP BY co.product_id, co.product_name\nORDER BY orders_without_payment DESC, product_id ASC",
     "required_concepts": [
       "cte",
       "left_join",
@@ -4552,7 +4552,7 @@
     "follow_up_dimension": "data_quality_pivot",
     "framing": "scenario",
     "title": "Departments where median salary exceeds mean salary",
-    "description": "Following the percentile analysis, a finance partner notices that some departments appear to have outliers pulling the average down. Identify departments where the median salary is higher than the mean salary (indicating negative skew). Return department_name, mean_salary, median_salary, and median_minus_mean, ordered by that gap descending.",
+    "description": "Following the percentile analysis, a finance partner notices that some departments appear to have outliers pulling the average down. Identify departments where the median salary is higher than the mean salary (indicating negative skew). Return department_name, mean_salary (rounded to 2 decimal places), median_salary (rounded to 2 decimal places), and median_minus_mean (rounded to 2 decimal places), ordered by that gap descending. Use PERCENTILE_CONT(0.5) for the median.",
     "difficulty": "hard",
     "schema": {
       "employees": [
@@ -4641,7 +4641,7 @@
     "mock_only": true,
     "framing": "scenario",
     "title": "Week-over-week unique active user change",
-    "description": "A product team wants to monitor engagement momentum. Cover the last 56 days of activity, bucketed by week; partial weeks at the edges are expected. Compute unique_users, the previous week's unique_users (prev_week_users), and the absolute week-over-week change (wow_change). Order by week_start ascending.",
+    "description": "A product team wants to monitor engagement momentum. Cover the last 56 days of activity (anchored to the maximum event_time in the dataset), bucketed by ISO week using date_trunc('week', event_time); partial weeks at the edges are expected. Compute unique_users, the previous week's unique_users (prev_week_users), and the absolute week-over-week change (wow_change). Output columns: week_start (TIMESTAMP — the Monday start of each ISO week, as returned by date_trunc), unique_users, prev_week_users, wow_change. Order by week_start ascending.",
     "difficulty": "hard",
     "schema": {
       "events": [
@@ -4957,7 +4957,7 @@
     "mock_only": true,
     "framing": "scenario",
     "title": "Customer lifetime value by acquisition channel",
-    "description": "A growth analyst wants to assess which acquisition channels produce the highest-value customers. For each acquisition_channel, return the number of buyers (users with at least one completed order), avg_ltv (average total net_amount per user, rounded to 2 decimal places), and total_revenue (rounded to 2 decimal places). Order by avg_ltv descending.",
+    "description": "A growth analyst wants to assess which acquisition channels produce the highest-value customers. For each acquisition_channel (including NULL as a distinct channel value representing users with no recorded channel), return the number of buyers (users with at least one completed order), avg_ltv (average total net_amount per buyer, rounded to 2 decimal places), and total_revenue (sum of all completed-order net_amounts for that channel's buyers, rounded to 2 decimal places). Order by avg_ltv descending.",
     "difficulty": "hard",
     "schema": {
       "users": [
@@ -5177,7 +5177,7 @@
     "mock_only": true,
     "framing": "scenario",
     "title": "User recency segmentation: Active, Lapsing, Churned",
-    "description": "A CRM team wants to classify users by how recently they were active. Anchor to the most recent event date in the dataset. Classify each user as: 'Active' (last event <= 30 days ago), 'Lapsing' (31-90 days), or 'Churned' (90+ days). Return segment, user_count, and avg_days_since_activity (rounded to 1 decimal). Order: Active first, then Lapsing, then Churned.",
+    "description": "A CRM team wants to classify users by how recently they were active. Anchor to the most recent event date in the dataset (treating event_time as a date). Classify each user based on days since their last activity date: 'Active' (30 or fewer days ago), 'Lapsing' (more than 30 and fewer than 90 days ago — i.e. 31 to 89 days), or 'Churned' (90 or more days ago). Return segment, user_count, and avg_days_since_activity (rounded to 1 decimal). Order: Active first, then Lapsing, then Churned.",
     "difficulty": "hard",
     "schema": {
       "events": [
@@ -5307,7 +5307,7 @@
     "order": 116,
     "mock_only": true,
     "title": "Salary distribution shape before reporting department averages",
-    "description": "Your report will state the average salary by department. Before publishing it, your manager asks you to verify that the average is a reliable summary and not distorted by outliers. Write a query that, for each department, returns the minimum, 25th-percentile, median, 75th-percentile, and maximum salary. Return `department_name`, `min_salary`, `p25_salary`, `median_salary`, `p75_salary`, and `max_salary`, ordered by department_name.",
+    "description": "Your report will state the average salary by department. Before publishing it, your manager asks you to verify that the average is a reliable summary and not distorted by outliers. Write a query that, for each department, returns the minimum, 25th-percentile, median, 75th-percentile, and maximum salary using PERCENTILE_CONT (the interpolating variant, not PERCENTILE_DISC). Return `department_name`, `min_salary`, `p25_salary`, `median_salary`, `p75_salary`, and `max_salary`, ordered by department_name.",
     "difficulty": "hard",
     "schema": {
       "employees": [
@@ -5514,7 +5514,7 @@
     "order": 121,
     "mock_only": true,
     "title": "Category revenue ranking with parent and gap",
-    "description": "For each product category compute `total_revenue` (rounded to 2 dp), `revenue_rank` (1 = highest, using `RANK()`), `parent_category`, and `revenue_vs_top` — how far each category's revenue is below the top category (positive number, rounded to 2 dp). Order by `revenue_rank` ascending.",
+    "description": "For each product category compute `total_revenue` (rounded to 2 dp), `revenue_rank` (1 = highest, using `RANK()`), `parent_category`, and `revenue_vs_top` — how far each category's revenue is below the top category (positive number, rounded to 2 dp). Return `category_name`, `total_revenue`, `revenue_rank`, `parent_category`, and `revenue_vs_top`. Order by `revenue_rank` ascending, then `category_name` ascending to break ties within the same rank.",
     "difficulty": "hard",
     "schema": {
       "order_items": [
@@ -5536,8 +5536,8 @@
       "products.csv",
       "categories.csv"
     ],
-    "expected_query": "WITH cat_revenue AS (\n    SELECT c.category_name, c.category_id, ROUND(SUM(oi.line_amount),2) AS total_revenue\n    FROM order_items oi\n    JOIN products p ON oi.product_id = p.product_id\n    JOIN categories c ON p.category_id = c.category_id\n    GROUP BY c.category_name, c.category_id\n)\nSELECT cr.category_name, cr.total_revenue,\n       RANK() OVER (ORDER BY cr.total_revenue DESC) AS revenue_rank,\n       c.parent_category,\n       ROUND(MAX(cr.total_revenue) OVER () - cr.total_revenue, 2) AS revenue_vs_top\nFROM cat_revenue cr\nJOIN categories c ON cr.category_id = c.category_id\nORDER BY revenue_rank",
-    "solution_query": "WITH cat_revenue AS (\n    SELECT c.category_name, c.category_id,\n           ROUND(SUM(oi.line_amount), 2) AS total_revenue\n    FROM order_items oi\n    JOIN products p ON oi.product_id = p.product_id\n    JOIN categories c ON p.category_id = c.category_id\n    GROUP BY c.category_name, c.category_id\n)\nSELECT cr.category_name, cr.total_revenue,\n       RANK() OVER (ORDER BY cr.total_revenue DESC) AS revenue_rank,\n       c.parent_category,\n       ROUND(MAX(cr.total_revenue) OVER () - cr.total_revenue, 2) AS revenue_vs_top\nFROM cat_revenue cr\nJOIN categories c ON cr.category_id = c.category_id\nORDER BY revenue_rank;",
+    "expected_query": "WITH cat_revenue AS (\n    SELECT c.category_name, c.category_id, ROUND(SUM(oi.line_amount),2) AS total_revenue\n    FROM order_items oi\n    JOIN products p ON oi.product_id = p.product_id\n    JOIN categories c ON p.category_id = c.category_id\n    GROUP BY c.category_name, c.category_id\n)\nSELECT cr.category_name, cr.total_revenue,\n       RANK() OVER (ORDER BY cr.total_revenue DESC) AS revenue_rank,\n       c.parent_category,\n       ROUND(MAX(cr.total_revenue) OVER () - cr.total_revenue, 2) AS revenue_vs_top\nFROM cat_revenue cr\nJOIN categories c ON cr.category_id = c.category_id\nORDER BY revenue_rank, category_name ASC",
+    "solution_query": "WITH cat_revenue AS (\n    SELECT c.category_name, c.category_id,\n           ROUND(SUM(oi.line_amount), 2) AS total_revenue\n    FROM order_items oi\n    JOIN products p ON oi.product_id = p.product_id\n    JOIN categories c ON p.category_id = c.category_id\n    GROUP BY c.category_name, c.category_id\n)\nSELECT cr.category_name, cr.total_revenue,\n       RANK() OVER (ORDER BY cr.total_revenue DESC) AS revenue_rank,\n       c.parent_category,\n       ROUND(MAX(cr.total_revenue) OVER () - cr.total_revenue, 2) AS revenue_vs_top\nFROM cat_revenue cr\nJOIN categories c ON cr.category_id = c.category_id\nORDER BY revenue_rank, category_name ASC;",
     "required_concepts": [
       "cte",
       "window_functions",
@@ -5823,7 +5823,7 @@
     "mock_only": true,
     "framing": "scenario",
     "title": "Highest-average-quantity product per category",
-    "description": "A merchandising analyst wants to find the product with the highest average ordered quantity in each category. Return category_name, product_name, and avg_qty (rounded to 2 decimal places), one row per category, ordered by category_name.",
+    "description": "A merchandising analyst wants to find the product with the highest average ordered quantity in each category. Return category_name, product_name, and avg_qty (rounded to 2 decimal places), one row per category, ordered by category_name. If two products in the same category have the same average quantity, return the one with the lower product_id.",
     "difficulty": "hard",
     "schema": {
       "order_items": [
@@ -5846,8 +5846,8 @@
       "products.csv",
       "categories.csv"
     ],
-    "expected_query": "WITH product_avg_qty AS (\n  SELECT\n    p.product_id,\n    p.product_name,\n    c.category_name,\n    AVG(oi.quantity) AS avg_qty\n  FROM order_items oi\n  JOIN products p ON oi.product_id = p.product_id\n  JOIN categories c ON p.category_id = c.category_id\n  GROUP BY p.product_id, p.product_name, c.category_name\n),\nranked AS (\n  SELECT *,\n    ROW_NUMBER() OVER (PARTITION BY category_name ORDER BY avg_qty DESC) AS rn\n  FROM product_avg_qty\n)\nSELECT category_name, product_name, ROUND(avg_qty, 2) AS avg_qty\nFROM ranked\nWHERE rn = 1\nORDER BY category_name",
-    "solution_query": "WITH product_avg_qty AS (\n  SELECT\n    p.product_id,\n    p.product_name,\n    c.category_name,\n    AVG(oi.quantity) AS avg_qty\n  FROM order_items oi\n  JOIN products p ON oi.product_id = p.product_id\n  JOIN categories c ON p.category_id = c.category_id\n  GROUP BY p.product_id, p.product_name, c.category_name\n),\nranked AS (\n  SELECT *,\n    ROW_NUMBER() OVER (PARTITION BY category_name ORDER BY avg_qty DESC) AS rn\n  FROM product_avg_qty\n)\nSELECT category_name, product_name, ROUND(avg_qty, 2) AS avg_qty\nFROM ranked\nWHERE rn = 1\nORDER BY category_name",
+    "expected_query": "WITH product_avg_qty AS (\n  SELECT\n    p.product_id,\n    p.product_name,\n    c.category_name,\n    AVG(oi.quantity) AS avg_qty\n  FROM order_items oi\n  JOIN products p ON oi.product_id = p.product_id\n  JOIN categories c ON p.category_id = c.category_id\n  GROUP BY p.product_id, p.product_name, c.category_name\n),\nranked AS (\n  SELECT *,\n    ROW_NUMBER() OVER (PARTITION BY category_name ORDER BY avg_qty DESC, product_id ASC) AS rn\n  FROM product_avg_qty\n)\nSELECT category_name, product_name, ROUND(avg_qty, 2) AS avg_qty\nFROM ranked\nWHERE rn = 1\nORDER BY category_name",
+    "solution_query": "WITH product_avg_qty AS (\n  SELECT\n    p.product_id,\n    p.product_name,\n    c.category_name,\n    AVG(oi.quantity) AS avg_qty\n  FROM order_items oi\n  JOIN products p ON oi.product_id = p.product_id\n  JOIN categories c ON p.category_id = c.category_id\n  GROUP BY p.product_id, p.product_name, c.category_name\n),\nranked AS (\n  SELECT *,\n    ROW_NUMBER() OVER (PARTITION BY category_name ORDER BY avg_qty DESC, product_id ASC) AS rn\n  FROM product_avg_qty\n)\nSELECT category_name, product_name, ROUND(avg_qty, 2) AS avg_qty\nFROM ranked\nWHERE rn = 1\nORDER BY category_name",
     "required_concepts": [
       "cte",
       "window_function",
@@ -5874,7 +5874,7 @@
     "mock_only": true,
     "framing": "scenario",
     "title": "Top 3 products by revenue per brand",
-    "description": "A brand performance analyst wants the top 3 revenue-generating products within each brand. Using completed orders only, return brand, product_name, revenue (rounded to 2 decimal places), and rank (1–3). Order by brand, then rank.",
+    "description": "A brand performance analyst wants the top 3 revenue-generating products within each brand. Using completed orders only (status = 'completed'), return brand, product_name, revenue (rounded to 2 decimal places), and rank (1–3), assigned with ROW_NUMBER() so exactly 3 rows appear per brand regardless of ties. If two products have the same revenue, the one with the lower product_id ranks higher. Order by brand, then rank.",
     "difficulty": "hard",
     "schema": {
       "order_items": [
@@ -5898,8 +5898,8 @@
       "products.csv",
       "orders.csv"
     ],
-    "expected_query": "WITH product_revenue AS (\n  SELECT\n    p.product_id,\n    p.product_name,\n    p.brand,\n    SUM(oi.quantity * oi.unit_price) AS revenue\n  FROM order_items oi\n  JOIN products p ON oi.product_id = p.product_id\n  JOIN orders o ON oi.order_id = o.order_id\n  WHERE o.status = 'completed'\n  GROUP BY p.product_id, p.product_name, p.brand\n),\nranked AS (\n  SELECT *,\n    ROW_NUMBER() OVER (PARTITION BY brand ORDER BY revenue DESC) AS rank\n  FROM product_revenue\n)\nSELECT brand, product_name, ROUND(revenue, 2) AS revenue, rank\nFROM ranked\nWHERE rank <= 3\nORDER BY brand, rank",
-    "solution_query": "WITH product_revenue AS (\n  SELECT\n    p.product_id,\n    p.product_name,\n    p.brand,\n    SUM(oi.quantity * oi.unit_price) AS revenue\n  FROM order_items oi\n  JOIN products p ON oi.product_id = p.product_id\n  JOIN orders o ON oi.order_id = o.order_id\n  WHERE o.status = 'completed'\n  GROUP BY p.product_id, p.product_name, p.brand\n),\nranked AS (\n  SELECT *,\n    ROW_NUMBER() OVER (PARTITION BY brand ORDER BY revenue DESC) AS rank\n  FROM product_revenue\n)\nSELECT brand, product_name, ROUND(revenue, 2) AS revenue, rank\nFROM ranked\nWHERE rank <= 3\nORDER BY brand, rank",
+    "expected_query": "WITH product_revenue AS (\n  SELECT\n    p.product_id,\n    p.product_name,\n    p.brand,\n    SUM(oi.quantity * oi.unit_price) AS revenue\n  FROM order_items oi\n  JOIN products p ON oi.product_id = p.product_id\n  JOIN orders o ON oi.order_id = o.order_id\n  WHERE o.status = 'completed'\n  GROUP BY p.product_id, p.product_name, p.brand\n),\nranked AS (\n  SELECT *,\n    ROW_NUMBER() OVER (PARTITION BY brand ORDER BY revenue DESC, product_id ASC) AS rank\n  FROM product_revenue\n)\nSELECT brand, product_name, ROUND(revenue, 2) AS revenue, rank\nFROM ranked\nWHERE rank <= 3\nORDER BY brand, rank",
+    "solution_query": "WITH product_revenue AS (\n  SELECT\n    p.product_id,\n    p.product_name,\n    p.brand,\n    SUM(oi.quantity * oi.unit_price) AS revenue\n  FROM order_items oi\n  JOIN products p ON oi.product_id = p.product_id\n  JOIN orders o ON oi.order_id = o.order_id\n  WHERE o.status = 'completed'\n  GROUP BY p.product_id, p.product_name, p.brand\n),\nranked AS (\n  SELECT *,\n    ROW_NUMBER() OVER (PARTITION BY brand ORDER BY revenue DESC, product_id ASC) AS rank\n  FROM product_revenue\n)\nSELECT brand, product_name, ROUND(revenue, 2) AS revenue, rank\nFROM ranked\nWHERE rank <= 3\nORDER BY brand, rank",
     "required_concepts": [
       "cte",
       "window_function",
@@ -5964,7 +5964,7 @@
     "mock_only": true,
     "framing": "scenario",
     "title": "Top revenue product per acquisition channel",
-    "description": "A marketing analyst wants to know which product generated the most revenue from users acquired through each channel. Using completed orders, return acquisition_channel, product_name, and revenue (rounded to 2 decimal places) — one row per channel showing only the top product. Order by acquisition_channel.",
+    "description": "A marketing analyst wants to know which product generated the most revenue from users acquired through each channel. Using completed orders (status = 'completed'), return acquisition_channel, product_name, and revenue (rounded to 2 decimal places) — one row per channel showing only the top-revenue product. If two products tie on revenue within a channel, return the one with the lower product_id. Order by acquisition_channel.",
     "difficulty": "hard",
     "schema": {
       "users": [
@@ -5992,8 +5992,8 @@
       "order_items.csv",
       "products.csv"
     ],
-    "expected_query": "WITH channel_revenue AS (\n  SELECT\n    u.acquisition_channel,\n    p.product_id,\n    p.product_name,\n    SUM(oi.line_amount) AS revenue\n  FROM users u\n  JOIN orders o ON u.user_id = o.user_id\n  JOIN order_items oi ON o.order_id = oi.order_id\n  JOIN products p ON oi.product_id = p.product_id\n  WHERE o.status = 'completed'\n  GROUP BY u.acquisition_channel, p.product_id, p.product_name\n),\nranked AS (\n  SELECT *,\n    ROW_NUMBER() OVER (PARTITION BY acquisition_channel ORDER BY revenue DESC) AS rn\n  FROM channel_revenue\n)\nSELECT acquisition_channel, product_name, ROUND(revenue, 2) AS revenue\nFROM ranked\nWHERE rn = 1\nORDER BY acquisition_channel",
-    "solution_query": "WITH channel_revenue AS (\n  SELECT\n    u.acquisition_channel,\n    p.product_id,\n    p.product_name,\n    SUM(oi.line_amount) AS revenue\n  FROM users u\n  JOIN orders o ON u.user_id = o.user_id\n  JOIN order_items oi ON o.order_id = oi.order_id\n  JOIN products p ON oi.product_id = p.product_id\n  WHERE o.status = 'completed'\n  GROUP BY u.acquisition_channel, p.product_id, p.product_name\n),\nranked AS (\n  SELECT *,\n    ROW_NUMBER() OVER (PARTITION BY acquisition_channel ORDER BY revenue DESC) AS rn\n  FROM channel_revenue\n)\nSELECT acquisition_channel, product_name, ROUND(revenue, 2) AS revenue\nFROM ranked\nWHERE rn = 1\nORDER BY acquisition_channel",
+    "expected_query": "WITH channel_revenue AS (\n  SELECT\n    u.acquisition_channel,\n    p.product_id,\n    p.product_name,\n    SUM(oi.line_amount) AS revenue\n  FROM users u\n  JOIN orders o ON u.user_id = o.user_id\n  JOIN order_items oi ON o.order_id = oi.order_id\n  JOIN products p ON oi.product_id = p.product_id\n  WHERE o.status = 'completed'\n  GROUP BY u.acquisition_channel, p.product_id, p.product_name\n),\nranked AS (\n  SELECT *,\n    ROW_NUMBER() OVER (PARTITION BY acquisition_channel ORDER BY revenue DESC, product_id ASC) AS rn\n  FROM channel_revenue\n)\nSELECT acquisition_channel, product_name, ROUND(revenue, 2) AS revenue\nFROM ranked\nWHERE rn = 1\nORDER BY acquisition_channel",
+    "solution_query": "WITH channel_revenue AS (\n  SELECT\n    u.acquisition_channel,\n    p.product_id,\n    p.product_name,\n    SUM(oi.line_amount) AS revenue\n  FROM users u\n  JOIN orders o ON u.user_id = o.user_id\n  JOIN order_items oi ON o.order_id = oi.order_id\n  JOIN products p ON oi.product_id = p.product_id\n  WHERE o.status = 'completed'\n  GROUP BY u.acquisition_channel, p.product_id, p.product_name\n),\nranked AS (\n  SELECT *,\n    ROW_NUMBER() OVER (PARTITION BY acquisition_channel ORDER BY revenue DESC, product_id ASC) AS rn\n  FROM channel_revenue\n)\nSELECT acquisition_channel, product_name, ROUND(revenue, 2) AS revenue\nFROM ranked\nWHERE rn = 1\nORDER BY acquisition_channel",
     "required_concepts": [
       "cte",
       "window_function",
@@ -6067,7 +6067,7 @@
     "mock_only": true,
     "framing": "scenario",
     "title": "Product view-to-purchase conversion rate",
-    "description": "The merchandising team wants to know which products convert the most viewers into buyers. For each product that was viewed at least once, compute `unique_viewers` (distinct users who triggered a `view_product` event for that product), `unique_buyers` (distinct users who completed an order containing that product — default 0 if none), and `conversion_pct` (unique_buyers / unique_viewers × 100, rounded to 1 dp). Return `product_name`, `unique_viewers`, `unique_buyers`, and `conversion_pct`. Order by `unique_viewers` descending.",
+    "description": "The merchandising team wants to know which products convert the most viewers into buyers. For each product that was viewed at least once, compute `unique_viewers` (distinct users who triggered a `view_product` event for that product), `unique_buyers` (distinct users who completed an order containing that product — default 0 if none), and `conversion_pct` (unique_buyers / unique_viewers × 100, rounded to 1 dp). Return `product_name`, `unique_viewers`, `unique_buyers`, and `conversion_pct`. Order by `unique_viewers` descending, then `product_name` ascending to break ties.",
     "difficulty": "hard",
     "schema": {
       "events": [
@@ -6095,8 +6095,8 @@
       "orders.csv",
       "products.csv"
     ],
-    "expected_query": "WITH viewers AS (\n    SELECT e.product_id,\n           COUNT(DISTINCT e.user_id) AS unique_viewers\n    FROM events e\n    WHERE e.event_name = 'view_product'\n      AND e.product_id IS NOT NULL\n    GROUP BY e.product_id\n),\nbuyers AS (\n    SELECT oi.product_id,\n           COUNT(DISTINCT o.user_id) AS unique_buyers\n    FROM order_items oi\n    JOIN orders o ON oi.order_id = o.order_id\n    WHERE o.status = 'completed'\n    GROUP BY oi.product_id\n)\nSELECT p.product_name,\n       v.unique_viewers,\n       COALESCE(b.unique_buyers, 0) AS unique_buyers,\n       ROUND(100.0 * COALESCE(b.unique_buyers, 0) / v.unique_viewers, 1) AS conversion_pct\nFROM viewers v\nJOIN products p ON v.product_id = p.product_id\nLEFT JOIN buyers b ON v.product_id = b.product_id\nORDER BY unique_viewers DESC",
-    "solution_query": "WITH viewers AS (\n    SELECT e.product_id,\n           COUNT(DISTINCT e.user_id) AS unique_viewers\n    FROM events e\n    WHERE e.event_name = 'view_product'\n      AND e.product_id IS NOT NULL\n    GROUP BY e.product_id\n),\nbuyers AS (\n    SELECT oi.product_id,\n           COUNT(DISTINCT o.user_id) AS unique_buyers\n    FROM order_items oi\n    JOIN orders o ON oi.order_id = o.order_id\n    WHERE o.status = 'completed'\n    GROUP BY oi.product_id\n)\nSELECT p.product_name,\n       v.unique_viewers,\n       COALESCE(b.unique_buyers, 0) AS unique_buyers,\n       ROUND(100.0 * COALESCE(b.unique_buyers, 0) / v.unique_viewers, 1) AS conversion_pct\nFROM viewers v\nJOIN products p ON v.product_id = p.product_id\nLEFT JOIN buyers b ON v.product_id = b.product_id\nORDER BY unique_viewers DESC;",
+    "expected_query": "WITH viewers AS (\n    SELECT e.product_id,\n           COUNT(DISTINCT e.user_id) AS unique_viewers\n    FROM events e\n    WHERE e.event_name = 'view_product'\n      AND e.product_id IS NOT NULL\n    GROUP BY e.product_id\n),\nbuyers AS (\n    SELECT oi.product_id,\n           COUNT(DISTINCT o.user_id) AS unique_buyers\n    FROM order_items oi\n    JOIN orders o ON oi.order_id = o.order_id\n    WHERE o.status = 'completed'\n    GROUP BY oi.product_id\n)\nSELECT p.product_name,\n       v.unique_viewers,\n       COALESCE(b.unique_buyers, 0) AS unique_buyers,\n       ROUND(100.0 * COALESCE(b.unique_buyers, 0) / v.unique_viewers, 1) AS conversion_pct\nFROM viewers v\nJOIN products p ON v.product_id = p.product_id\nLEFT JOIN buyers b ON v.product_id = b.product_id\nORDER BY unique_viewers DESC, product_name ASC",
+    "solution_query": "WITH viewers AS (\n    SELECT e.product_id,\n           COUNT(DISTINCT e.user_id) AS unique_viewers\n    FROM events e\n    WHERE e.event_name = 'view_product'\n      AND e.product_id IS NOT NULL\n    GROUP BY e.product_id\n),\nbuyers AS (\n    SELECT oi.product_id,\n           COUNT(DISTINCT o.user_id) AS unique_buyers\n    FROM order_items oi\n    JOIN orders o ON oi.order_id = o.order_id\n    WHERE o.status = 'completed'\n    GROUP BY oi.product_id\n)\nSELECT p.product_name,\n       v.unique_viewers,\n       COALESCE(b.unique_buyers, 0) AS unique_buyers,\n       ROUND(100.0 * COALESCE(b.unique_buyers, 0) / v.unique_viewers, 1) AS conversion_pct\nFROM viewers v\nJOIN products p ON v.product_id = p.product_id\nLEFT JOIN buyers b ON v.product_id = b.product_id\nORDER BY unique_viewers DESC, product_name ASC;",
     "required_concepts": [
       "cte",
       "distinct_count",
@@ -7253,7 +7253,7 @@
     "parent_id": 13155,
     "follow_up_dimension": "business_rule_pivot",
     "title": "Cohort retention with stricter conversion definition: requires a paid payment",
-    "description": "Finance argues that 'retained' should mean a completed order that also has a paid payment — not just a completed order status. Revise the retention query to use this stricter definition: a user is retained in a window if they placed at least one completed order (status = 'completed') that also has at least one payment with status = 'paid' within the same day window. Output the same columns as the parent: cohort_month (YYYY-MM format), cohort_size, ret_30d, ret_60d, ret_90d, ret_30d_pct, ret_60d_pct, ret_90d_pct. Order by cohort_month ascending.",
+    "description": "Finance argues that 'retained' should mean a completed order that also has a paid payment — not just a completed order status. Revise the retention query to use this stricter definition: a user is retained in a window if they placed at least one completed order (status = 'completed') whose order_date falls within the retention window AND that order has at least one payment with status = 'paid' (the payment date is not required to fall within the window — only the order date is bounded). Output the same columns as the parent: cohort_month (YYYY-MM format), cohort_size, ret_30d, ret_60d, ret_90d, ret_30d_pct, ret_60d_pct, ret_90d_pct. Order by cohort_month ascending.",
     "difficulty": "hard",
     "schema": {
       "users": [

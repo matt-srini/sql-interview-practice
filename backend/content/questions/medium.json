@@ -1591,7 +1591,7 @@
     "order": 37,
     "mock_only": true,
     "title": "Top 10 products by order frequency",
-    "description": "For each product, compute the number of distinct orders that included it (`order_frequency`) and its total line revenue. Return `product_name`, `order_frequency`, and `total_revenue` (rounded to 2 decimal places) for the 10 most frequently ordered products, sorted by `order_frequency` descending.",
+    "description": "For each product, compute the number of distinct orders that included it (`order_frequency`) and its total line revenue. Return `product_name`, `order_frequency`, and `total_revenue` (rounded to 2 decimal places) for the 10 most frequently ordered products, sorted by `order_frequency` descending, then by `product_name` ascending to break ties.",
     "difficulty": "medium",
     "schema": {
       "order_items": [
@@ -1608,8 +1608,8 @@
       "order_items.csv",
       "products.csv"
     ],
-    "expected_query": "SELECT p.product_name, COUNT(DISTINCT oi.order_id) AS order_frequency, ROUND(SUM(oi.line_amount),2) AS total_revenue\nFROM order_items oi\nJOIN products p ON oi.product_id = p.product_id\nGROUP BY p.product_name\nORDER BY order_frequency DESC\nLIMIT 10",
-    "solution_query": "SELECT p.product_name,\n       COUNT(DISTINCT oi.order_id) AS order_frequency,\n       ROUND(SUM(oi.line_amount), 2) AS total_revenue\nFROM order_items oi\nJOIN products p ON oi.product_id = p.product_id\nGROUP BY p.product_name\nORDER BY order_frequency DESC\nLIMIT 10;",
+    "expected_query": "SELECT p.product_name, COUNT(DISTINCT oi.order_id) AS order_frequency, ROUND(SUM(oi.line_amount),2) AS total_revenue\nFROM order_items oi\nJOIN products p ON oi.product_id = p.product_id\nGROUP BY p.product_name\nORDER BY order_frequency DESC, product_name ASC\nLIMIT 10",
+    "solution_query": "SELECT p.product_name,\n       COUNT(DISTINCT oi.order_id) AS order_frequency,\n       ROUND(SUM(oi.line_amount), 2) AS total_revenue\nFROM order_items oi\nJOIN products p ON oi.product_id = p.product_id\nGROUP BY p.product_name\nORDER BY order_frequency DESC, product_name ASC\nLIMIT 10;",
     "required_concepts": [
       "join",
       "group_by",
@@ -2987,7 +2987,7 @@
     "mock_only": true,
     "framing": "scenario",
     "title": "Support ticket SLA compliance by priority",
-    "description": "The support operations team tracks SLA compliance: urgent tickets must be resolved within 4 hours, high within 24 hours, medium within 72 hours, and low within 168 hours. Write a query on `support_tickets` that returns `priority`, `total_tickets`, `resolved_count` (status = 'resolved'), `avg_resolution_hours` (average of `resolution_hours` for all tickets in the group, NULL treated as 0, rounded to 1 dp), and `within_sla_count` (resolved tickets whose `resolution_hours` is at or below the SLA threshold for their priority). Order by `priority` ascending.",
+    "description": "The support operations team tracks SLA compliance: urgent tickets must be resolved within 4 hours, high within 24 hours, medium within 72 hours, and low within 168 hours. Write a query on `support_tickets` that returns `priority`, `total_tickets`, `resolved_count` (status = 'resolved'), `avg_resolution_hours` (COALESCE(AVG(resolution_hours), 0) rounded to 1 dp — if a priority group has no data at all the average shows 0, but individual NULL resolution_hours values are not substituted; they are excluded from the average as normal), and `within_sla_count` (resolved tickets whose `resolution_hours` is at or below the SLA threshold for their priority). Order by `priority` ascending.",
     "difficulty": "medium",
     "schema": {
       "support_tickets": [
@@ -3375,7 +3375,7 @@
     "mock_only": true,
     "framing": "scenario",
     "title": "User registration breakdown by email domain",
-    "description": "The growth team wants to understand where users sign up from. Write a query that extracts the email domain (the part after '@') from each user's email and returns `email_domain`, `user_count`, `first_signup` (earliest signup_date for that domain), and `last_signup` (most recent signup_date). Order by `user_count` descending. Include rows with NULL `email` as a NULL `email_domain` group.",
+    "description": "The growth team wants to understand where users sign up from. Write a query that extracts the email domain (the part after '@') from each user's email and returns `email_domain`, `user_count`, `first_signup` (earliest signup_date for that domain, returned as a TIMESTAMP), and `last_signup` (most recent signup_date for that domain, returned as a TIMESTAMP). Order by `user_count` descending. Include rows with NULL `email` as a NULL `email_domain` group.",
     "difficulty": "medium",
     "schema": {
       "users": [
@@ -3600,7 +3600,7 @@
     "mock_only": true,
     "framing": "scenario",
     "title": "Support ticket resolution and open rate by country",
-    "description": "The support operations manager wants a country-level summary. Write a query that returns `country`, `total_tickets`, `resolved` (count where status = 'resolved'), `open` (count where status != 'resolved'), `avg_resolution_hours` (average of `resolution_hours` for resolved tickets only, treating NULL values as 0, rounded to 1 dp), and `open_rate_pct` (open / total × 100, rounded to 1 dp). Order by `open_rate_pct` descending.",
+    "description": "The support operations manager wants a country-level summary. Write a query that returns `country`, `total_tickets`, `resolved` (count where status = 'resolved'), `open` (count where status != 'resolved'), `avg_resolution_hours` (average of `resolution_hours` for resolved tickets only, rounded to 1 dp; individual NULL resolution_hours values are excluded from the average as normal, but if a country has no resolved tickets the result should be 0 rather than NULL), and `open_rate_pct` (open / total × 100, rounded to 1 dp). Order by `open_rate_pct` descending.",
     "difficulty": "medium",
     "schema": {
       "users": [
@@ -3972,7 +3972,7 @@
     "mock_only": true,
     "framing": "scenario",
     "title": "Weekly event count over the last 12 weeks",
-    "description": "An engagement analyst wants to see the event volume trend. Cover the most recent 12 weeks of activity; partial weeks at the boundary are expected. Return week_start (truncated to week) and event_count, ordered chronologically.",
+    "description": "An engagement analyst wants to see the event volume trend. Cover the most recent 12 weeks of activity (using the latest event_time in the table as the reference point, looking back 84 days); partial weeks at the boundary are expected. Return `week_start` (the Monday of each week, truncated to week and cast to DATE in YYYY-MM-DD format) and `event_count`, ordered chronologically.",
     "difficulty": "medium",
     "schema": {
       "events": [
@@ -3985,8 +3985,8 @@
     "dataset_files": [
       "events.csv"
     ],
-    "expected_query": "SELECT\n  date_trunc('week', e.event_time) AS week_start,\n  COUNT(*) AS event_count\nFROM events e\nWHERE e.event_time >= (SELECT MAX(event_time) FROM events) - INTERVAL '84 days'\nGROUP BY 1\nORDER BY 1",
-    "solution_query": "SELECT\n  date_trunc('week', e.event_time) AS week_start,\n  COUNT(*) AS event_count\nFROM events e\nWHERE e.event_time >= (SELECT MAX(event_time) FROM events) - INTERVAL '84 days'\nGROUP BY 1\nORDER BY 1",
+    "expected_query": "SELECT\n  CAST(date_trunc('week', e.event_time) AS DATE) AS week_start,\n  COUNT(*) AS event_count\nFROM events e\nWHERE e.event_time >= (SELECT MAX(event_time) FROM events) - INTERVAL '84 days'\nGROUP BY 1\nORDER BY 1",
+    "solution_query": "SELECT\n  CAST(date_trunc('week', e.event_time) AS DATE) AS week_start,\n  COUNT(*) AS event_count\nFROM events e\nWHERE e.event_time >= (SELECT MAX(event_time) FROM events) - INTERVAL '84 days'\nGROUP BY 1\nORDER BY 1",
     "required_concepts": [
       "date_trunc",
       "grouped_agg",
@@ -4053,7 +4053,7 @@
     "mock_only": true,
     "framing": "scenario",
     "title": "Email domain distribution by plan tier",
-    "description": "A growth analyst wants to understand which email providers are common among each plan tier. Extract the domain (part after '@') from each user's email, and for each plan_tier + domain combination with at least 5 users, return the count. Output columns: plan_tier, email_domain, user_count. Order by plan_tier, then user_count descending.",
+    "description": "A growth analyst wants to understand which email providers are common among each plan tier. Extract the domain (part after '@') from each user's email using `split_part(email, '@', 2)`; emails that contain no '@' will yield an empty string, treat those as a NULL domain group. For each plan_tier + email_domain combination (including the NULL/empty domain group) with at least 5 users, return the count. Output columns: `plan_tier`, `email_domain`, `user_count`. Order by `plan_tier`, then `user_count` descending.",
     "difficulty": "medium",
     "schema": {
       "users": [
@@ -4065,8 +4065,8 @@
     "dataset_files": [
       "users.csv"
     ],
-    "expected_query": "SELECT\n  plan_tier,\n  split_part(email, '@', 2) AS email_domain,\n  COUNT(*) AS user_count\nFROM users\nGROUP BY plan_tier, email_domain\nHAVING COUNT(*) >= 5\nORDER BY plan_tier, user_count DESC",
-    "solution_query": "SELECT\n  plan_tier,\n  split_part(email, '@', 2) AS email_domain,\n  COUNT(*) AS user_count\nFROM users\nGROUP BY plan_tier, email_domain\nHAVING COUNT(*) >= 5\nORDER BY plan_tier, user_count DESC",
+    "expected_query": "SELECT\n  plan_tier,\n  NULLIF(split_part(email, '@', 2), '') AS email_domain,\n  COUNT(*) AS user_count\nFROM users\nGROUP BY plan_tier, email_domain\nHAVING COUNT(*) >= 5\nORDER BY plan_tier, user_count DESC",
+    "solution_query": "SELECT\n  plan_tier,\n  NULLIF(split_part(email, '@', 2), '') AS email_domain,\n  COUNT(*) AS user_count\nFROM users\nGROUP BY plan_tier, email_domain\nHAVING COUNT(*) >= 5\nORDER BY plan_tier, user_count DESC",
     "required_concepts": [
       "string_function",
       "grouped_agg",
@@ -4245,7 +4245,7 @@
     "mock_only": true,
     "framing": "scenario",
     "title": "Unique products viewed per device type",
-    "description": "A UX team wants to understand product discovery across device types. For each device_type, count the number of distinct products viewed (event_name = 'view_product') and the number of distinct users who viewed at least one product. Order by unique_products_viewed descending.",
+    "description": "A UX team wants to understand product discovery across device types. For each `device_type`, count the number of distinct products viewed (event_name = 'view_product') and the number of distinct users who viewed at least one product. Return `device_type`, `unique_products_viewed` (count of distinct non-NULL product_ids), and `unique_users` (count of distinct user_ids). Order by `unique_products_viewed` descending.",
     "difficulty": "medium",
     "schema": {
       "events": [
@@ -4332,7 +4332,7 @@
     "mock_only": true,
     "framing": "scenario",
     "title": "Revenue by active vs inactive product status",
-    "description": "A product manager wants to understand how much revenue comes from currently active products vs inactive ones. Using completed orders, return product_status ('Active' or 'Inactive'), the count of distinct products, and total_revenue (rounded to 2 decimal places). Order by product_status.",
+    "description": "A product manager wants to understand how much revenue comes from currently active products vs inactive ones. Using completed orders (status = 'completed'), return `product_status` ('Active' or 'Inactive' derived from the `is_active` flag), `product_count` (count of distinct product_ids), and `total_revenue` (rounded to 2 decimal places). Order by `product_status`.",
     "difficulty": "medium",
     "schema": {
       "products": [
@@ -4422,7 +4422,7 @@
     "mock_only": true,
     "framing": "scenario",
     "title": "Average support ticket resolution time by priority",
-    "description": "A support team lead wants to understand if high-priority tickets are resolved faster. For resolved tickets, compute avg_resolution_hours, min_hours, and max_hours (all rounded to 1 decimal) by priority. Order by avg_resolution_hours ascending.",
+    "description": "A support team lead wants to understand if high-priority tickets are resolved faster. For resolved tickets, compute `avg_resolution_hours`, `min_hours`, and `max_hours` (all rounded to 1 decimal place), and `resolved_tickets` (the count of resolved tickets), grouped by `priority`. Order by `avg_resolution_hours` ascending.",
     "difficulty": "medium",
     "schema": {
       "support_tickets": [
@@ -4460,7 +4460,7 @@
     "mock_only": true,
     "framing": "scenario",
     "title": "Months with refund rate above 10%",
-    "description": "A finance team wants to flag months with unusually high refund activity. For each calendar month, compute paid_count, refunded_count, and refund_rate_pct (refunded / paid, rounded to 1 decimal). Return only months where refunded payments exceed 10% of paid payments. Order by month.",
+    "description": "A finance team wants to flag months with unusually high refund activity. For each calendar month, compute `paid_count` (using SUM(CASE WHEN status = 'paid' THEN 1 ELSE 0 END)), `refunded_count` (using SUM(CASE WHEN status = 'refunded' THEN 1 ELSE 0 END)), and `refund_rate_pct` (refunded_count / paid_count × 100, rounded to 1 decimal place). The `month` column should be a YYYY-MM string (e.g. '2023-01'). Return only months where `refunded_count` exceeds 10% of `paid_count`. Order by `month`.",
     "difficulty": "medium",
     "schema": {
       "payments": [
@@ -4499,7 +4499,7 @@
     "mock_only": true,
     "framing": "scenario",
     "title": "Category revenue share per month",
-    "description": "A merchandising analyst wants to track how each category's share of monthly revenue shifts over time. For each month and category, return month, category_name, revenue, and revenue_share_pct (percentage of that month's total revenue, rounded to 1 decimal). Order by month ASC, revenue_share_pct DESC, category_name ASC.",
+    "description": "A merchandising analyst wants to track how each category's share of monthly revenue shifts over time. Using only completed orders, for each month and category return month (YYYY-MM string), category_name, revenue (rounded to 2 dp), and revenue_share_pct (percentage of that month's total revenue from completed orders, rounded to 1 decimal). Order by month ASC, revenue_share_pct DESC, category_name ASC.",
     "difficulty": "medium",
     "schema": {
       "order_items": [
@@ -4552,7 +4552,7 @@
     "order": 115,
     "mock_only": true,
     "title": "Email NULL share — dimension completeness check",
-    "description": "Before running an email campaign, a marketing analyst wants to quantify how many user records are missing an `email` address. Write a query that returns two rows — one for records with a known email and one for records where email is NULL — showing the user count and percentage of the total for each (rounded to 1 decimal). Order by user count descending.",
+    "description": "Before running an email campaign, a marketing analyst wants to quantify how many user records are missing an `email` address. Write a query that returns two rows with columns: `email_status` (label 'known' for records with a non-NULL email, 'unknown' for records where email IS NULL), `user_count` (number of users in that group), and `pct_of_total` (that group's percentage of all users, rounded to 1 decimal place). Order by user_count descending.",
     "difficulty": "medium",
     "schema": {
       "users": [
@@ -4588,7 +4588,7 @@
     "order": 116,
     "mock_only": true,
     "title": "Monthly completed revenue — date-spine completeness check",
-    "description": "Before presenting a monthly revenue report for 2023, verify that no month is silently missing from the results. Write a query that produces the complete 12-month date spine for 2023 (one row per month from January through December) and attaches each month's total net revenue from completed orders. Months with no completed orders should appear with NULL rather than being absent. Return `month` and `total_revenue` (rounded to 2 decimal places), ordered by month.",
+    "description": "Before presenting a monthly revenue report for 2023, verify that no month is silently missing from the results. Write a query that produces the complete 12-month date spine for 2023 (one row per month from January through December) and attaches each month's total net revenue from completed orders. Months with no completed orders should appear with NULL rather than being absent. Return `month` as a DATE value (the first day of each month, e.g. 2023-01-01) and `total_revenue` (rounded to 2 decimal places), ordered by month.",
     "difficulty": "medium",
     "schema": {
       "orders": [
@@ -4965,7 +4965,7 @@
       13138
     ],
     "title": "Monthly order vs payment revenue reconciliation",
-    "description": "Finance asks: do completed-order net amounts match paid-payment amounts when bucketed by calendar month? For each month, return month (YYYY-MM format), order_revenue (sum of net_amount from orders where status = 'completed', rounded to 2 dp), payment_revenue (sum of amount from payments where status = 'paid', rounded to 2 dp), and discrepancy (order_revenue minus payment_revenue, rounded to 2 dp). Include all months that appear in either table. Order by month ascending.",
+    "description": "Finance asks: do completed-order net amounts match paid-payment amounts when bucketed by calendar month? For each month, return month (YYYY-MM format), order_revenue (sum of net_amount from orders where status = 'completed', rounded to 2 dp), payment_revenue (sum of amount from payments where status = 'paid', rounded to 2 dp), and discrepancy (order_revenue minus payment_revenue, rounded to 2 dp). Include all months that appear in either table. Treat months absent from one side as 0 (not NULL) for revenue and discrepancy calculations. Order by month ascending.",
     "difficulty": "medium",
     "schema": {
       "orders": [
