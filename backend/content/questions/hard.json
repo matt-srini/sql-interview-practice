@@ -1228,7 +1228,7 @@
     "mock_only": true,
     "framing": "scenario",
     "title": "High-volume support users",
-    "description": "The support team lead asks: 'Which users are filing too many tickets, and how slow are we resolving them?' Write a query that returns `user_id`, `name`, `ticket_count`, `avg_resolution_hours` (rounded to 1 dp), and `max_resolution_hours` (rounded to 0 dp). Include only users with more than 3 tickets regardless of status. Order by `avg_resolution_hours` descending.",
+    "description": "The support team lead asks: 'Which users are filing too many tickets, and how slow are we resolving them?' Write a query that returns `user_id`, `name`, `ticket_count`, `avg_resolution_hours` (rounded to 1 dp), and `max_resolution_hours` (rounded to 0 dp). Include only users with more than 3 tickets regardless of status. Order by `avg_resolution_hours` descending, then `name` ascending.",
     "difficulty": "hard",
     "schema": {
       "users": [
@@ -1245,8 +1245,8 @@
       "users.csv",
       "support_tickets.csv"
     ],
-    "expected_query": "SELECT u.user_id, u.name, COUNT(t.ticket_id) AS ticket_count,\n       ROUND(AVG(t.resolution_hours),1) AS avg_resolution_hours,\n       ROUND(MAX(t.resolution_hours),0) AS max_resolution_hours\nFROM users u\nJOIN support_tickets t ON u.user_id = t.user_id\nGROUP BY u.user_id, u.name\nHAVING COUNT(t.ticket_id) > 3\nORDER BY avg_resolution_hours DESC",
-    "solution_query": "SELECT u.user_id, u.name,\n       COUNT(t.ticket_id) AS ticket_count,\n       ROUND(AVG(t.resolution_hours), 1) AS avg_resolution_hours,\n       ROUND(MAX(t.resolution_hours), 0) AS max_resolution_hours\nFROM users u\nJOIN support_tickets t ON u.user_id = t.user_id\nGROUP BY u.user_id, u.name\nHAVING COUNT(t.ticket_id) > 3\nORDER BY avg_resolution_hours DESC;",
+    "expected_query": "SELECT u.user_id, u.name, COUNT(t.ticket_id) AS ticket_count,\n       ROUND(AVG(t.resolution_hours),1) AS avg_resolution_hours,\n       ROUND(MAX(t.resolution_hours),0) AS max_resolution_hours\nFROM users u\nJOIN support_tickets t ON u.user_id = t.user_id\nGROUP BY u.user_id, u.name\nHAVING COUNT(t.ticket_id) > 3\nORDER BY avg_resolution_hours DESC, u.name ASC",
+    "solution_query": "SELECT u.user_id, u.name,\n       COUNT(t.ticket_id) AS ticket_count,\n       ROUND(AVG(t.resolution_hours), 1) AS avg_resolution_hours,\n       ROUND(MAX(t.resolution_hours), 0) AS max_resolution_hours\nFROM users u\nJOIN support_tickets t ON u.user_id = t.user_id\nGROUP BY u.user_id, u.name\nHAVING COUNT(t.ticket_id) > 3\nORDER BY avg_resolution_hours DESC, u.name ASC;",
     "required_concepts": [
       "join",
       "group_by",
@@ -1273,7 +1273,7 @@
     "framing": "scenario",
     "follow_up_id": 13036,
     "title": "Top 3 products per category with top flag",
-    "description": "Your data team lead asks: 'For each category, show the top 3 products by revenue and flag the #1 product.' Using window functions, return `category_name`, `product_name`, `total_revenue` (rounded to 2 dp), `revenue_rank` (1 = highest within the category), and `is_top` (1 if rank = 1, else 0). Include only ranks 1–3. Order by `category_name` ascending, then `revenue_rank` ascending.",
+    "description": "Your data team lead asks: 'For each category, show the top 3 products by revenue and flag the #1 product.' Using window functions, return `category_name`, `product_name`, `total_revenue` (rounded to 2 dp), `revenue_rank` (1 = highest within the category), and `is_top` (1 if rank = 1, else 0). Rank products within each category by total_revenue using RANK() (products with equal revenue share a rank); include every row with revenue_rank <= 3 (ties may yield more than three rows per category). Order by `category_name` ascending, then `revenue_rank` ascending, then `product_name` ascending.",
     "difficulty": "hard",
     "schema": {
       "order_items": [
@@ -1295,8 +1295,8 @@
       "products.csv",
       "categories.csv"
     ],
-    "expected_query": "WITH ranked AS (\n    SELECT c.category_name, p.product_name,\n           ROUND(SUM(oi.line_amount),2) AS total_revenue,\n           RANK() OVER (PARTITION BY c.category_id ORDER BY SUM(oi.line_amount) DESC) AS revenue_rank\n    FROM order_items oi\n    JOIN products p ON oi.product_id = p.product_id\n    JOIN categories c ON p.category_id = c.category_id\n    GROUP BY c.category_name, c.category_id, p.product_name\n)\nSELECT category_name, product_name, total_revenue, revenue_rank,\n       CASE WHEN revenue_rank = 1 THEN 1 ELSE 0 END AS is_top\nFROM ranked\nWHERE revenue_rank <= 3\nORDER BY category_name, revenue_rank",
-    "solution_query": "WITH ranked AS (\n    SELECT c.category_name, p.product_name,\n           ROUND(SUM(oi.line_amount), 2) AS total_revenue,\n           RANK() OVER (PARTITION BY c.category_id ORDER BY SUM(oi.line_amount) DESC) AS revenue_rank\n    FROM order_items oi\n    JOIN products p ON oi.product_id = p.product_id\n    JOIN categories c ON p.category_id = c.category_id\n    GROUP BY c.category_name, c.category_id, p.product_name\n)\nSELECT category_name, product_name, total_revenue, revenue_rank,\n       CASE WHEN revenue_rank = 1 THEN 1 ELSE 0 END AS is_top\nFROM ranked\nWHERE revenue_rank <= 3\nORDER BY category_name, revenue_rank;",
+    "expected_query": "WITH ranked AS (\n    SELECT c.category_name, p.product_name,\n           ROUND(SUM(oi.line_amount),2) AS total_revenue,\n           RANK() OVER (PARTITION BY c.category_id ORDER BY SUM(oi.line_amount) DESC) AS revenue_rank\n    FROM order_items oi\n    JOIN products p ON oi.product_id = p.product_id\n    JOIN categories c ON p.category_id = c.category_id\n    GROUP BY c.category_name, c.category_id, p.product_name\n)\nSELECT category_name, product_name, total_revenue, revenue_rank,\n       CASE WHEN revenue_rank = 1 THEN 1 ELSE 0 END AS is_top\nFROM ranked\nWHERE revenue_rank <= 3\nORDER BY category_name, revenue_rank, product_name ASC",
+    "solution_query": "WITH ranked AS (\n    SELECT c.category_name, p.product_name,\n           ROUND(SUM(oi.line_amount), 2) AS total_revenue,\n           RANK() OVER (PARTITION BY c.category_id ORDER BY SUM(oi.line_amount) DESC) AS revenue_rank\n    FROM order_items oi\n    JOIN products p ON oi.product_id = p.product_id\n    JOIN categories c ON p.category_id = c.category_id\n    GROUP BY c.category_name, c.category_id, p.product_name\n)\nSELECT category_name, product_name, total_revenue, revenue_rank,\n       CASE WHEN revenue_rank = 1 THEN 1 ELSE 0 END AS is_top\nFROM ranked\nWHERE revenue_rank <= 3\nORDER BY category_name, revenue_rank, product_name ASC;",
     "required_concepts": [
       "cte",
       "window_functions",
@@ -1403,7 +1403,7 @@
     "mock_only": true,
     "framing": "scenario",
     "title": "30-day conversion rate by channel and country",
-    "description": "The growth team asks: 'Among users who signed up in 2024, what percentage converted (placed at least one 'completed' order) within 30 days of signup? Break it down by acquisition channel and country.' Return `acquisition_channel`, `country`, `total_signups`, `converted_count`, and `conversion_rate_pct` (rounded to 1 dp). Exclude channel+country combinations with fewer than 5 signups. Order by `conversion_rate_pct` descending.",
+    "description": "The growth team asks: 'Among users who signed up in 2024, what percentage converted (placed at least one 'completed' order within 30 days AFTER signup)? Break it down by acquisition channel and country.' Return `acquisition_channel`, `country`, `total_signups`, `converted_count`, and `conversion_rate_pct` (rounded to 1 dp). Exclude channel+country combinations with fewer than 5 signups. Order by `conversion_rate_pct` descending.",
     "difficulty": "hard",
     "schema": {
       "users": [
@@ -1423,8 +1423,8 @@
       "users.csv",
       "orders.csv"
     ],
-    "expected_query": "WITH signups AS (\n    SELECT user_id, acquisition_channel, country, signup_date\n    FROM users\n    WHERE signup_date >= '2024-01-01' AND signup_date < '2025-01-01'\n),\nconverted AS (\n    SELECT DISTINCT s.user_id\n    FROM signups s\n    JOIN orders o ON s.user_id = o.user_id\n    WHERE o.status = 'completed'\n      AND o.order_date <= s.signup_date + INTERVAL 30 DAY\n)\nSELECT s.acquisition_channel, s.country,\n       COUNT(DISTINCT s.user_id) AS total_signups,\n       COUNT(DISTINCT c.user_id) AS converted_count,\n       ROUND(COUNT(DISTINCT c.user_id) * 100.0 / COUNT(DISTINCT s.user_id), 1) AS conversion_rate_pct\nFROM signups s\nLEFT JOIN converted c ON s.user_id = c.user_id\nGROUP BY s.acquisition_channel, s.country\nHAVING COUNT(DISTINCT s.user_id) >= 5\nORDER BY conversion_rate_pct DESC",
-    "solution_query": "WITH signups AS (\n    SELECT user_id, acquisition_channel, country, signup_date\n    FROM users\n    WHERE signup_date >= '2024-01-01' AND signup_date < '2025-01-01'\n),\nconverted AS (\n    SELECT DISTINCT s.user_id\n    FROM signups s\n    JOIN orders o ON s.user_id = o.user_id\n    WHERE o.status = 'completed'\n      AND o.order_date <= s.signup_date + INTERVAL 30 DAY\n)\nSELECT s.acquisition_channel, s.country,\n       COUNT(DISTINCT s.user_id) AS total_signups,\n       COUNT(DISTINCT c.user_id) AS converted_count,\n       ROUND(COUNT(DISTINCT c.user_id) * 100.0 / COUNT(DISTINCT s.user_id), 1) AS conversion_rate_pct\nFROM signups s\nLEFT JOIN converted c ON s.user_id = c.user_id\nGROUP BY s.acquisition_channel, s.country\nHAVING COUNT(DISTINCT s.user_id) >= 5\nORDER BY conversion_rate_pct DESC;",
+    "expected_query": "WITH signups AS (\n    SELECT user_id, acquisition_channel, country, signup_date\n    FROM users\n    WHERE signup_date >= '2024-01-01' AND signup_date < '2025-01-01'\n),\nconverted AS (\n    SELECT DISTINCT s.user_id\n    FROM signups s\n    JOIN orders o ON s.user_id = o.user_id\n    WHERE o.status = 'completed'\n      AND o.order_date >= s.signup_date\n      AND o.order_date <= s.signup_date + INTERVAL 30 DAY\n)\nSELECT s.acquisition_channel, s.country,\n       COUNT(DISTINCT s.user_id) AS total_signups,\n       COUNT(DISTINCT c.user_id) AS converted_count,\n       ROUND(COUNT(DISTINCT c.user_id) * 100.0 / COUNT(DISTINCT s.user_id), 1) AS conversion_rate_pct\nFROM signups s\nLEFT JOIN converted c ON s.user_id = c.user_id\nGROUP BY s.acquisition_channel, s.country\nHAVING COUNT(DISTINCT s.user_id) >= 5\nORDER BY conversion_rate_pct DESC",
+    "solution_query": "WITH signups AS (\n    SELECT user_id, acquisition_channel, country, signup_date\n    FROM users\n    WHERE signup_date >= '2024-01-01' AND signup_date < '2025-01-01'\n),\nconverted AS (\n    SELECT DISTINCT s.user_id\n    FROM signups s\n    JOIN orders o ON s.user_id = o.user_id\n    WHERE o.status = 'completed'\n      AND o.order_date >= s.signup_date\n      AND o.order_date <= s.signup_date + INTERVAL 30 DAY\n)\nSELECT s.acquisition_channel, s.country,\n       COUNT(DISTINCT s.user_id) AS total_signups,\n       COUNT(DISTINCT c.user_id) AS converted_count,\n       ROUND(COUNT(DISTINCT c.user_id) * 100.0 / COUNT(DISTINCT s.user_id), 1) AS conversion_rate_pct\nFROM signups s\nLEFT JOIN converted c ON s.user_id = c.user_id\nGROUP BY s.acquisition_channel, s.country\nHAVING COUNT(DISTINCT s.user_id) >= 5\nORDER BY conversion_rate_pct DESC;",
     "required_concepts": [
       "cte",
       "left_join",
@@ -1432,7 +1432,7 @@
       "date_functions"
     ],
     "enforce_concepts": true,
-    "explanation": "Two CTEs separate concerns: `signups` filters the 2024 cohort; `converted` finds users who placed a completed order within 30 days of signup using a date-range condition in the JOIN. The final LEFT JOIN preserves all signups — non-converters have NULL on the right side, contributing 0 to converted_count. HAVING filters small channel+country combos.",
+    "explanation": "Two CTEs separate concerns: `signups` filters the 2024 cohort; `converted` finds users who placed a completed order within 30 days AFTER signup using a two-sided date-range condition in the JOIN (o.order_date >= s.signup_date ensures orders placed before signup don't wrongly count). The final LEFT JOIN preserves all signups — non-converters have NULL on the right side, contributing 0 to converted_count. HAVING filters small channel+country combos.",
     "hints": [
       "Separate the problem: first isolate the 2024 signup cohort, then find which of those users placed a qualifying order within the time window.",
       "LEFT JOIN the converted CTE so non-converting users still appear in the denominator."
@@ -2393,7 +2393,7 @@
     "mock_only": true,
     "framing": "scenario",
     "title": "Users with 3 consecutive months of declining average order value",
-    "description": "The customer success team wants to flag users whose purchase behaviour is deteriorating. Write a query that finds users who have at least one trio of consecutive calendar months where their average completed order value strictly decreased each month (month N < month N-1 < month N-2). Return `user_id` and `name` for each qualifying user (no duplicates). Order by `user_id` ascending.",
+    "description": "The customer success team wants to flag users whose purchase behaviour is deteriorating. Write a query that finds users who have at least one run of three of their consecutive ORDERING months (three successive months in which they placed completed orders) where the average completed order value strictly decreased each step (month N < month N-1 < month N-2). These three months need not be calendar-adjacent — gaps between ordering months are ignored; only the succession of months with orders matters. Return `user_id` and `name` for each qualifying user (no duplicates). Order by `user_id` ascending.",
     "difficulty": "hard",
     "schema": {
       "users": [
@@ -4401,7 +4401,7 @@
     "mock_only": true,
     "framing": "scenario",
     "title": "Products generating the first 80% of revenue",
-    "description": "A finance team wants to identify which products drive the bulk of the business (Pareto analysis). Using completed orders, find all products whose cumulative revenue contribution (sorted from highest to lowest revenue) falls within the first 80% of total revenue. Return product_id, product_name, revenue, and cumulative percentage. Order by revenue descending.",
+    "description": "A finance team wants to identify which products drive the bulk of the business (Pareto analysis). Using completed orders, find all products whose cumulative revenue contribution (sorted from highest to lowest revenue) falls within the first 80% of total revenue — include the tipping product (the product at which the running cumulative revenue first reaches or exceeds 80% of total). Return product_id, product_name, revenue (rounded to 2 dp), and cum_pct (cumulative percentage of total revenue, rounded to 1 dp). For determinism when products share the same revenue, break ties by product_id ascending in both the cumulative-sum window ORDER BY and the final ORDER BY. Order by revenue descending, product_id ascending.",
     "difficulty": "hard",
     "schema": {
       "order_items": [
@@ -4423,8 +4423,8 @@
       "orders.csv",
       "products.csv"
     ],
-    "expected_query": "WITH product_rev AS (\n  SELECT\n    p.product_id,\n    p.product_name,\n    SUM(oi.line_amount) AS revenue\n  FROM order_items oi\n  JOIN products p ON oi.product_id = p.product_id\n  JOIN orders o ON oi.order_id = o.order_id\n  WHERE o.status = 'completed'\n  GROUP BY p.product_id, p.product_name\n),\nwith_running AS (\n  SELECT *,\n    SUM(revenue) OVER (ORDER BY revenue DESC ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS cumulative_rev,\n    SUM(revenue) OVER () AS total_rev\n  FROM product_rev\n)\nSELECT product_id, product_name, ROUND(revenue, 2) AS revenue,\n       ROUND(100.0 * cumulative_rev / total_rev, 1) AS cum_pct\nFROM with_running\nWHERE (cumulative_rev - revenue) < 0.80 * total_rev\nORDER BY revenue DESC",
-    "solution_query": "WITH product_rev AS (\n  SELECT\n    p.product_id,\n    p.product_name,\n    SUM(oi.line_amount) AS revenue\n  FROM order_items oi\n  JOIN products p ON oi.product_id = p.product_id\n  JOIN orders o ON oi.order_id = o.order_id\n  WHERE o.status = 'completed'\n  GROUP BY p.product_id, p.product_name\n),\nwith_running AS (\n  SELECT *,\n    SUM(revenue) OVER (ORDER BY revenue DESC ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS cumulative_rev,\n    SUM(revenue) OVER () AS total_rev\n  FROM product_rev\n)\nSELECT product_id, product_name, ROUND(revenue, 2) AS revenue,\n       ROUND(100.0 * cumulative_rev / total_rev, 1) AS cum_pct\nFROM with_running\nWHERE (cumulative_rev - revenue) < 0.80 * total_rev\nORDER BY revenue DESC",
+    "expected_query": "WITH product_rev AS (\n  SELECT\n    p.product_id,\n    p.product_name,\n    SUM(oi.line_amount) AS revenue\n  FROM order_items oi\n  JOIN products p ON oi.product_id = p.product_id\n  JOIN orders o ON oi.order_id = o.order_id\n  WHERE o.status = 'completed'\n  GROUP BY p.product_id, p.product_name\n),\nwith_running AS (\n  SELECT *,\n    SUM(revenue) OVER (ORDER BY revenue DESC, product_id ASC ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS cumulative_rev,\n    SUM(revenue) OVER () AS total_rev\n  FROM product_rev\n)\nSELECT product_id, product_name, ROUND(revenue, 2) AS revenue,\n       ROUND(100.0 * cumulative_rev / total_rev, 1) AS cum_pct\nFROM with_running\nWHERE (cumulative_rev - revenue) < 0.80 * total_rev\nORDER BY revenue DESC",
+    "solution_query": "WITH product_rev AS (\n  SELECT\n    p.product_id,\n    p.product_name,\n    SUM(oi.line_amount) AS revenue\n  FROM order_items oi\n  JOIN products p ON oi.product_id = p.product_id\n  JOIN orders o ON oi.order_id = o.order_id\n  WHERE o.status = 'completed'\n  GROUP BY p.product_id, p.product_name\n),\nwith_running AS (\n  SELECT *,\n    SUM(revenue) OVER (ORDER BY revenue DESC, product_id ASC ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS cumulative_rev,\n    SUM(revenue) OVER () AS total_rev\n  FROM product_rev\n)\nSELECT product_id, product_name, ROUND(revenue, 2) AS revenue,\n       ROUND(100.0 * cumulative_rev / total_rev, 1) AS cum_pct\nFROM with_running\nWHERE (cumulative_rev - revenue) < 0.80 * total_rev\nORDER BY revenue DESC",
     "required_concepts": [
       "cte",
       "running_total",
@@ -5085,7 +5085,7 @@
     "mock_only": true,
     "framing": "scenario",
     "title": "User acquisition funnel by signup cohort",
-    "description": "A product analyst wants to track how each signup cohort progresses through the funnel: signup → any event → first completed order. For each signup_month, return signed_up, had_first_event, made_first_purchase, event_rate_pct, and purchase_rate_pct (both rounded to 1 decimal). Output columns: signup_month (YYYY-MM string), signed_up, had_first_event, made_first_purchase, event_rate_pct, purchase_rate_pct. Order by signup_month.",
+    "description": "A product analyst wants to track how each signup cohort progresses through the funnel: signup → any event → first completed order. For each signup_month, return signed_up, had_first_event, made_first_purchase, event_rate_pct, and purchase_rate_pct (both rounded to 1 decimal). had_first_event = the user has any event on record (lifetime, across all of `events`); made_first_purchase = the user has at least one completed order on record (lifetime, across all of `orders` with status = 'completed'). Neither is required to occur after signup or in the same cohort period — these are lifetime funnel presence flags. Output columns: signup_month (YYYY-MM string), signed_up, had_first_event, made_first_purchase, event_rate_pct, purchase_rate_pct. Order by signup_month.",
     "difficulty": "hard",
     "schema": {
       "users": [
@@ -7058,7 +7058,7 @@
       13154
     ],
     "title": "Per-user month-over-month completed order count: flag 50% drops as at-risk",
-    "description": "The customer success team wants to identify users showing signs of churn: a month where their completed order count dropped by 50% or more compared to the previous month. For every user who has completed orders in at least two consecutive months, compute month (YYYY-MM format), order_count (completed orders that month), prev_month_count (prior month's order count), pct_drop (rounded to 1 dp), and at_risk_flag (true when order_count * 2 <= prev_month_count). Return only rows where a previous month exists (skip the user's first ordering month). Order by pct_drop descending, user_id ascending.",
+    "description": "The customer success team wants to identify users showing signs of churn: a month where their completed order count dropped by 50% or more compared to the previous month. For every user who has completed orders in at least two different months, compare each ordering month's completed-order count to that of their immediately preceding ORDERING month (their previous active month, which need not be the calendar-previous month). Compute month (YYYY-MM format), order_count (completed orders that month), prev_month_count (that user's immediately preceding ordering month's count), pct_drop (rounded to 1 dp), and at_risk_flag (true when order_count * 2 <= prev_month_count). Return only rows where a previous ordering month exists (skip the user's first ordering month). Order by pct_drop descending, user_id ascending.",
     "difficulty": "hard",
     "schema": {
       "orders": [
