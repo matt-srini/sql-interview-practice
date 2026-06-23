@@ -255,6 +255,8 @@ python scripts/validate_content.py
 cd backend && ../.venv/bin/python -m pytest tests/test_evaluator.py -q
 ```
 
-For `reverse` questions: also confirm `result_preview` exactly matches the live `expected_query` output (run it, copy values).
+For `reverse` questions: also confirm `result_preview` exactly matches the live `expected_query` output (run it, copy values). Machine-enforced by `_validate_reverse_preview_matches_key` (ERROR) — but run the manual check first; the validator is the recurrence guard, not the first line of defence.
 
 For `debug` questions: confirm `debug_error` matches the actual DuckDB error string when running `starter_query`.
+
+For all executable questions: verify stem↔key logical consistency, output-contract completeness (column names, value formats, ordering, tie-breaks stated in the stem), and determinism. See `docs/content-authoring.md` § Output contract, determinism & stem↔key consistency for the full defect taxonomy from the 2026-06 blind-QA pass.

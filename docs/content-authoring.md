@@ -337,6 +337,22 @@ Every track's Phase 2 closure must execute this checklist as the final step of e
 
 **P2 — scope-creep.** Any durable-contract doc change OUTSIDE this H-series (e.g. modifications to `docs/content-authoring.md` outside IS-count/precedent rows; modifications to `docs/specs/*`; modifications to `.github/agents/question-authoring.agent.md`; modifications to `docs/concept-taxonomy.md` outside the current track's section) must be surfaced to the user via the executor's hand-back summary BEFORE self-applying. The executor flags; the user triggers a separate doc-hygiene pass.
 
+---
+
+## Output contract, determinism & stem↔key consistency (blind-solvability)
+
+A question is correct only if a strong candidate, reading the stem alone, can land on the keyed answer. The 2026-06 blind-QA pass found these defect classes across the SQL mock bank; they apply to every executable track (SQL, Python, Pandas, Statistics-numerical):
+
+1. **Stem↔key logical consistency.** `expected_*` must implement what the stem literally says — not merely produce a value that coincides with a reasonable answer on the current dataset. (SQL 13147: the key counted "sessions with no funnel events" while the stem asked "sessions with no event rows at all"; they matched only because every event in the dataset was a funnel event.) Verify by **blind-solving from the stem**, not just by self-grading the key — a key passing its own grader proves it is *gradeable*, never that it is *right vs the stem*.
+2. **Output-contract completeness.** The stem must state exact output column names, value formats (e.g. month as a `YYYY-MM` string vs a `DATE`), row ordering, and any filter or ambiguous-term interpretation, so exactly one defensible answer exists. Grading is column-name- and format-sensitive; an unstated alias or format marks a correct query wrong.
+3. **Determinism / tie-breaks.** Any ranking, top-N, or `LIMIT` whose ordering key can tie must specify the tie-break in BOTH the stem and `expected_*` (e.g. `ORDER BY revenue DESC, product_id ASC`). Non-deterministic output is unsolvable.
+4. **Reverse questions:** `result_preview` must equal the live `expected_*` output. **Machine-enforced** by `_validate_reverse_preview_matches_key` (ERROR) — the recurrence guard for 4 SQL reverse questions whose preview had drifted from the dataset.
+5. **Debug questions:** the minimal fix of the *stated* bug must equal `expected_*` — no silent extra edits (adding `ROUND`, dropping a column) the stem never mentions.
+
+Durable lesson: **pair blind-solve QA with an adversarial stem↔key audit.** Blind-solve alone cannot see a key that is wrong but coincides numerically, an unstated literal, or an unspecified output shape.
+
+---
+
 ### Per-family coverage discipline
 
 Concept families must be distributed across questions with neither starvation nor concentration. The rules are calibrated to empirical evidence across six closed tracks — not absolute targets. Soft, with documented overrides; warnings on breach (not errors), because the override paths are real.

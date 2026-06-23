@@ -236,9 +236,13 @@ print('Schema order: OK')
 # 4. explanation is consistent with expected_code — read both and confirm no contradiction
 # (e.g. explanation must not reference .apply() if expected_code uses np.select)
 
-# 5. Full content validation
+# 5. Full content validation (includes _validate_reverse_preview_matches_key for reverse questions)
 python scripts/validate_content.py
 
 # 6. Pandas evaluator tests
 cd backend && ../.venv/bin/python -m pytest tests/test_python_evaluator.py -q -k pandas
 ```
+
+For `reverse` questions (if introduced): `result_preview` must equal the live `expected_code` output; machine-enforced by `_validate_reverse_preview_matches_key` (ERROR).
+
+For all executable questions: verify stem↔key logical consistency, output-contract completeness (exact column names, value formats, ordering, tie-breaks stated in the stem), and determinism. See `docs/content-authoring.md` § Output contract, determinism & stem↔key consistency for the full defect taxonomy from the 2026-06 blind-QA pass.

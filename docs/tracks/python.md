@@ -235,6 +235,8 @@ print(f'Reference: {t:.3f}s (must be <1s)')
 "
 ```
 
+Python has no `reverse` question type, so `_validate_reverse_preview_matches_key` does not apply. For all executable questions, verify stem↔key logical consistency, output-contract completeness (exact return shape, value formats, tie-breaks where multiple valid orderings exist, stated assumptions), and determinism. See `docs/content-authoring.md` § Output contract, determinism & stem↔key consistency for the full defect taxonomy and the blind-solvability requirements.
+
 ## Generator-spec schema for hidden test cases
 
 Hidden test cases use generator specs instead of literal large arrays.

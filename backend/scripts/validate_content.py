@@ -2051,6 +2051,86 @@ def _validate_answer_length_balance() -> None:
 # ---------------------------------------------------------------------------
 
 
+def _validate_reverse_preview_matches_key() -> None:
+    """A type='reverse' question shows `result_preview` as the exact target table the
+    candidate must reproduce; grading then compares the candidate's query against the
+    LIVE expected output. If the stored preview != the live key output, every correct
+    submission is graded wrong — the question is unsolvable. `_validate_mock_fields`
+    only checks the preview EXISTS and is <=8 rows; this checks it MATCHES the key.
+
+    Recurrence guard for the 2026-06 blind-QA finding: 4 SQL reverse questions (12044,
+    13037, 13038, 13040) shipped a `result_preview` that had drifted from the
+    regenerated dataset, silently breaking them. Deterministic: run the reference,
+    normalize, compare to the stored preview. Covers SQL (expected_query via DuckDB)
+    and Pandas (expected_code via the sandbox harness). ERROR-level.
+    """
+    import pandas as pd
+
+    def _reverse_questions(track: str) -> list[dict]:
+        directory = QUESTION_DIRS.get(track)
+        if not directory:
+            return []
+        out: list[dict] = []
+        for file_path in sorted(directory.glob("*.json")):
+            if file_path.stem == "schemas":
+                continue
+            with file_path.open("r", encoding="utf-8") as handle:
+                for q in json.load(handle):
+                    if isinstance(q, dict) and q.get("type") == "reverse":
+                        out.append(q)
+        return out
+
+    errors: list[str] = []
+    sql_rev = _reverse_questions("sql")
+    pandas_rev = _reverse_questions("pandas")
+
+    if sql_rev:
+        from database import init_query_engine
+        from evaluator import normalize_dataframe, run_query
+
+        init_query_engine()
+        for q in sql_rev:
+            preview = q.get("result_preview")
+            if not isinstance(preview, list) or not preview:
+                continue  # missing preview is already flagged by _validate_mock_fields
+            label = f"sql {q.get('id')} {q.get('title', '')}"
+            try:
+                result = run_query(q["expected_query"], q, preview=False)
+                key_df = pd.DataFrame(result["rows"], columns=result["columns"])
+                preview_df = pd.DataFrame(preview)
+                if not normalize_dataframe(key_df).equals(normalize_dataframe(preview_df)):
+                    errors.append(f"{label}: result_preview does not match the live expected_query output "
+                                  f"(reverse question is unsolvable — regenerate the preview from the key)")
+            except Exception as exc:  # noqa: BLE001
+                errors.append(f"{label}: expected_query failed to execute: {exc}")
+
+    if pandas_rev:
+        from evaluator import normalize_dataframe
+        from python_evaluator import run_pandas_code
+
+        for q in pandas_rev:
+            preview = q.get("result_preview")
+            if not isinstance(preview, list) or not preview:
+                continue
+            label = f"pandas {q.get('id')} {q.get('title', '')}"
+            try:
+                raw = run_pandas_code(q["expected_code"], q)
+                if raw.get("error") or not raw.get("result"):
+                    errors.append(f"{label}: expected_code failed: {raw.get('error')}")
+                    continue
+                key_df = pd.DataFrame(raw["result"]["rows"])
+                preview_df = pd.DataFrame(preview)
+                if not normalize_dataframe(key_df).equals(normalize_dataframe(preview_df)):
+                    errors.append(f"{label}: result_preview does not match the live expected_code output "
+                                  f"(reverse question is unsolvable — regenerate the preview from the key)")
+            except Exception as exc:  # noqa: BLE001
+                errors.append(f"{label}: expected_code failed to execute: {exc}")
+
+    if errors:
+        joined = "\n  - ".join(errors)
+        raise ValueError(f"Reverse preview-matches-key validation failed:\n  - {joined}")
+
+
 def _load_json_file(path: Path) -> None:
     with path.open("r", encoding="utf-8") as handle:
         json.load(handle)
@@ -2082,6 +2162,7 @@ def main() -> None:
     _validate_code_reference_reproduces_tests()
     _validate_mcq_scenario_questions()
     _validate_mock_fields()
+    _validate_reverse_preview_matches_key()
     _validate_solution_code_presence()
     _validate_public_test_cases_type()
     _validate_sample_cross_bank_titles()
