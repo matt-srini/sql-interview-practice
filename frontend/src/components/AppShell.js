@@ -233,7 +233,12 @@ export default function AppShell() {
       aria-expanded={mobileOpen}
       aria-controls="sidebar"
     >
-      <span className="sidebar-toggle-icon" aria-hidden="true">☰</span>
+      <svg className="sidebar-toggle-icon" aria-hidden="true" width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <rect x="1" y="2" width="4" height="12" rx="1" fill="currentColor" opacity="0.85"/>
+        <rect x="7" y="4" width="8" height="1.5" rx="0.75" fill="currentColor"/>
+        <rect x="7" y="7.25" width="6" height="1.5" rx="0.75" fill="currentColor"/>
+        <rect x="7" y="10.5" width="7" height="1.5" rx="0.75" fill="currentColor"/>
+      </svg>
       <span className="sidebar-toggle-label">Questions</span>
     </button>
   ) : null;

@@ -1074,8 +1074,10 @@ select {
 }
 
 .sidebar-toggle-icon {
-  font-size: 0.95rem;
-  line-height: 1;
+  display: block;
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
 }
 
 .sidebar-toggle-label {
