@@ -3196,7 +3196,8 @@
     "mock_only": true,
     "framing": "scenario",
     "follow_ups": [
-      12078
+      12078,
+      13158
     ],
     "title": "Session volume and user reach by traffic source",
     "description": "The marketing team wants to understand which acquisition sources drive the most session volume and how efficiently each source generates distinct users. Write a query that returns `traffic_source`, `total_sessions`, `unique_users`, and `sessions_per_user` (total_sessions / unique_users, rounded to 2 dp). Order by `total_sessions` descending.",
@@ -3278,7 +3279,8 @@
     "mock_only": true,
     "framing": "scenario",
     "follow_ups": [
-      12080
+      12080,
+      13159
     ],
     "title": "Monthly completed revenue by plan tier",
     "description": "The finance team tracks revenue by plan segment month by month. Write a query that returns `plan_tier`, `order_month` (formatted YYYY-MM), `completed_orders` (distinct completed order count), and `monthly_revenue` (sum of `net_amount` for completed orders, rounded to 2 dp). Include only completed orders. Order by `order_month` ascending, then `plan_tier` ascending.",
@@ -3823,7 +3825,8 @@
     "mock_only": true,
     "framing": "scenario",
     "follow_ups": [
-      12094
+      12094,
+      13160
     ],
     "title": "Completed order volume and revenue by country and plan tier",
     "description": "The commercial team wants a segment heatmap of order volume and revenue. Write a query that returns `country`, `plan_tier`, `total_orders` (distinct completed orders), `active_users` (distinct users who placed at least one completed order), and `revenue` (sum of `net_amount` for completed orders, rounded to 2 dp). Include only country-plan combinations with at least 5 completed orders. Order by `revenue` descending.",

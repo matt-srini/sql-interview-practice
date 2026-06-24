@@ -1044,6 +1044,73 @@ def _validate_chain_integrity() -> None:
         raise ValueError(f"Chain integrity validation failed:\n{joined}")
 
 
+def _validate_loop_escalation_uniformity() -> None:
+    """Interview Loop escalation must be UNIFORM within a (track, difficulty) cell:
+    every chain in the cell escalates to a higher difficulty, or none does.
+
+    The mock lobby shows a single cell-level "medium → hard" badge derived from
+    `_loop_difficulty_escalates` (an ANY-of-the-cell flag) and rendered identically on
+    the pre-start badge, the active-session badge, and the history row. A PARTIAL cell —
+    some chains escalate, some stay flat — makes that badge over-promise for the flat
+    chains (the SQL-medium 5/8 split, 2026-06; before the 3 flat chains were escalated).
+    Forbidding partial escalation keeps the simple flag honest everywhere without
+    per-session escalation tracking. Revisit + relax this rule DELIBERATELY if a track
+    ever genuinely needs mixed escalation. See docs/decisions/DECISIONS.md.
+    """
+    DIFFS = ("easy", "medium", "hard")
+    rank = {"easy": 0, "medium": 1, "hard": 2}
+
+    # cross-difficulty difficulty lookup: {track: {id: difficulty}}
+    diff_by_id: dict[str, dict[int, str]] = {}
+    for track, file_path in _iter_question_files():
+        if file_path.stem not in DIFFS:
+            continue
+        with file_path.open("r", encoding="utf-8") as handle:
+            questions = json.load(handle)
+        lookup = diff_by_id.setdefault(track, {})
+        for q in questions:
+            qid = int(q.get("id", 0))
+            if qid:
+                lookup[qid] = file_path.stem
+
+    # {(track, cell_difficulty): {"escalate": [pid...], "flat": [pid...]}}
+    cells: dict[tuple[str, str], dict[str, list[int]]] = {}
+    for track, file_path in _iter_question_files():
+        cell_diff = file_path.stem
+        if cell_diff not in DIFFS:
+            continue
+        p_rank = rank[cell_diff]
+        with file_path.open("r", encoding="utf-8") as handle:
+            questions = json.load(handle)
+        for q in questions:
+            follow_ups = q.get("follow_ups") or []
+            if not follow_ups:
+                continue
+            pid = int(q.get("id", 0))
+            escalates = any(
+                rank.get(diff_by_id.get(track, {}).get(int(fid), cell_diff), p_rank) > p_rank
+                for fid in follow_ups
+            )
+            bucket = cells.setdefault((track, cell_diff), {"escalate": [], "flat": []})
+            bucket["escalate" if escalates else "flat"].append(pid)
+
+    errors: list[str] = []
+    for (track, cell_diff), bucket in sorted(cells.items()):
+        if bucket["escalate"] and bucket["flat"]:
+            errors.append(
+                f"{track} {cell_diff}: MIXED Interview Loop escalation — "
+                f"{len(bucket['escalate'])} chain(s) escalate to a higher difficulty "
+                f"(e.g. {sorted(bucket['escalate'])[:3]}) but {len(bucket['flat'])} stay flat "
+                f"(e.g. {sorted(bucket['flat'])[:3]}). A (track, difficulty) Loop cell must be "
+                f"all-escalating or none — the cell-level 'medium → hard' badge cannot be honest "
+                f"otherwise. Append a higher-difficulty follow-up to the flat chains, or relax this "
+                f"rule deliberately (see docs/decisions/DECISIONS.md)."
+            )
+    if errors:
+        joined = "\n".join(f"- {item}" for item in errors)
+        raise ValueError(f"Interview Loop escalation uniformity validation failed:\n{joined}")
+
+
 def _validate_paths(paths: list[dict], catalogs_by_topic: dict[str, dict[str, list[dict]]]) -> None:
     """Content-integrity rules for learning paths.
 
@@ -2157,6 +2224,7 @@ def main() -> None:
     _validate_mock_only_realism()
     _validate_per_family_coverage()
     _validate_chain_integrity()
+    _validate_loop_escalation_uniformity()
     _validate_hints()
     _validate_statistics_subtypes()
     _validate_code_reference_reproduces_tests()

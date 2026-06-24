@@ -7352,5 +7352,147 @@
       "Meta",
       "LinkedIn"
     ]
+  },
+  {
+    "id": 13158,
+    "order": 158,
+    "mock_only": true,
+    "parent_id": 12077,
+    "follow_up_dimension": "abstraction_pivot",
+    "title": "First-touch vs converting session source attribution mismatch by channel",
+    "difficulty": "hard",
+    "type": "scenario",
+    "description": "After seeing the desktop-only session breakdown, the attribution team asks a deeper question: for users who ultimately converted (placed at least one completed order), how often does their first-touch traffic source differ from the source of their converting session (the last session whose calendar date — ignoring time of day — is on or before the calendar date of their first completed order)? A session that falls on the same calendar day as the order qualifies as on or before. Group by first_touch_source and return first_touch_source, converting_users (users with at least one session whose calendar date is on or before the calendar date of their first completed order), attribution_mismatch_users (users whose last qualifying pre-order session source differs from their first-touch source), and mismatch_rate_pct (attribution_mismatch_users / converting_users x 100, rounded to 1 dp). Include only users who appear in both sessions and orders. Order by converting_users descending.",
+    "dataset_files": [
+      "sessions.csv",
+      "orders.csv"
+    ],
+    "schema": {
+      "sessions": [
+        "session_id",
+        "user_id",
+        "session_start",
+        "traffic_source"
+      ],
+      "orders": [
+        "order_id",
+        "user_id",
+        "order_date",
+        "status"
+      ]
+    },
+    "expected_query": "WITH first_touch AS (\n    SELECT user_id, traffic_source AS first_touch_source,\n           ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY session_start ASC) AS rn\n    FROM sessions\n),\nfirst_touch_src AS (\n    SELECT user_id, first_touch_source FROM first_touch WHERE rn = 1\n),\nfirst_orders AS (\n    SELECT user_id, MIN(order_date) AS first_order_date\n    FROM orders WHERE status = 'completed'\n    GROUP BY user_id\n),\nlast_pre_order_session AS (\n    SELECT s.user_id, s.traffic_source AS converting_source,\n           ROW_NUMBER() OVER (PARTITION BY s.user_id ORDER BY s.session_start DESC) AS rn\n    FROM sessions s\n    JOIN first_orders fo ON s.user_id = fo.user_id\n    WHERE CAST(s.session_start AS DATE) <= fo.first_order_date\n),\nconverting AS (\n    SELECT user_id, converting_source FROM last_pre_order_session WHERE rn = 1\n),\ntagged AS (\n    SELECT ft.first_touch_source,\n           CASE WHEN c.converting_source != ft.first_touch_source THEN 1 ELSE 0 END AS is_mismatch\n    FROM first_touch_src ft\n    JOIN converting c ON ft.user_id = c.user_id\n)\nSELECT first_touch_source,\n       COUNT(*) AS converting_users,\n       SUM(is_mismatch) AS attribution_mismatch_users,\n       ROUND(SUM(is_mismatch) * 100.0 / COUNT(*), 1) AS mismatch_rate_pct\nFROM tagged\nGROUP BY first_touch_source\nORDER BY converting_users DESC",
+    "solution_query": "WITH first_touch AS (\n    -- Per-user earliest session determines first-touch source\n    SELECT user_id, traffic_source AS first_touch_source,\n           ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY session_start ASC) AS rn\n    FROM sessions\n),\nfirst_touch_src AS (\n    SELECT user_id, first_touch_source FROM first_touch WHERE rn = 1\n),\nfirst_orders AS (\n    -- Each user's first completed order date\n    SELECT user_id, MIN(order_date) AS first_order_date\n    FROM orders WHERE status = 'completed'\n    GROUP BY user_id\n),\nlast_pre_order_session AS (\n    -- Last session on or before the first completed order date is the converting session\n    SELECT s.user_id, s.traffic_source AS converting_source,\n           ROW_NUMBER() OVER (PARTITION BY s.user_id ORDER BY s.session_start DESC) AS rn\n    FROM sessions s\n    JOIN first_orders fo ON s.user_id = fo.user_id\n    WHERE CAST(s.session_start AS DATE) <= fo.first_order_date\n),\nconverting AS (\n    SELECT user_id, converting_source FROM last_pre_order_session WHERE rn = 1\n),\ntagged AS (\n    -- Flag each converting user: did their converting source differ from first-touch?\n    SELECT ft.first_touch_source,\n           CASE WHEN c.converting_source != ft.first_touch_source THEN 1 ELSE 0 END AS is_mismatch\n    FROM first_touch_src ft\n    JOIN converting c ON ft.user_id = c.user_id\n)\nSELECT first_touch_source,\n       COUNT(*) AS converting_users,\n       SUM(is_mismatch) AS attribution_mismatch_users,\n       ROUND(SUM(is_mismatch) * 100.0 / COUNT(*), 1) AS mismatch_rate_pct\nFROM tagged\nGROUP BY first_touch_source\nORDER BY converting_users DESC",
+    "explanation": "The previous follow-up filtered sessions to desktop only — a business-rule change. This follow-up asks a structurally different question: do the first-touch and converting session sources agree? That is an attribution-model question, not a filter change, requiring a multi-CTE pipeline that crosses two per-user derivations.\n\nStep 1 (first_touch / first_touch_src): assign each user their earliest session source using ROW_NUMBER ordered by session_start ASC, keep rn = 1.\n\nStep 2 (first_orders): each user earliest completed order date via MIN(order_date).\n\nStep 3 (last_pre_order_session / converting): among sessions on or before the first order date, pick the most-recent one (ROW_NUMBER DESC by session_start) — this is the converting session.\n\nStep 4 (tagged): join first-touch and converting, flag rows where sources differ with CASE WHEN converting_source != first_touch_source THEN 1 ELSE 0 END.\n\nStep 5: group by first_touch_source, compute converting_users = COUNT(*), attribution_mismatch_users = SUM(is_mismatch), mismatch_rate_pct = ROUND(SUM(is_mismatch) * 100.0 / COUNT(*), 1).\n\nKey design choices: CAST(session_start AS DATE) <= first_order_date aligns timestamp to date granularity. Users with no session before their first order are excluded by the inner join to converting — this is intentional and stated in the stem. The DESC tie-break on session_start is stable because session_start values are distinct per user in the dataset.\n\nDistinguished from existing mock questions: 13059 and 13107 compute session-to-purchase conversion and abandonment rates grouped by source within a single session window. 13146 traces event-stage funnels within a single session. None of these compare two different sessions per user (first-ever session vs last pre-order session) to measure attribution-model drift across a user journey.",
+    "hints": [
+      "Split the problem into two independent per-user derivations: (1) which traffic source did this user arrive from first — their earliest-ever session, and (2) which source did they come from just before placing their first completed order — their most-recent session on or before that order date.",
+      "To isolate converting sessions, restrict to sessions that occurred on or before the user's first order date (compare at date granularity, not timestamp), then pick the most-recent one within that qualifying set.",
+      "Once each converting user carries both a first-touch source and a converting source, flag the mismatch as a per-row indicator before grouping — then aggregate over first_touch_source to get the count of converting users and the sum of mismatches."
+    ],
+    "concepts": [
+      "WINDOW FUNCTIONS",
+      "MULTI-TABLE ENTITY LINKING",
+      "CTE PIPELINE"
+    ],
+    "companies": [
+      "Meta",
+      "Google",
+      "Airbnb"
+    ]
+  },
+  {
+    "id": 13159,
+    "order": 159,
+    "mock_only": true,
+    "parent_id": 12079,
+    "follow_up_dimension": "abstraction_pivot",
+    "title": "Peak revenue month and worst post-peak month per plan tier",
+    "difficulty": "hard",
+    "type": "scenario",
+    "description": "After examining monthly cancellation rates by tier, the CFO asks a trend question: for each plan tier, identify its best revenue month ever, then find the single worst month (lowest revenue) that occurred strictly after that peak. Return plan_tier, peak_month (YYYY-MM), peak_revenue (rounded to 2 dp), worst_month (YYYY-MM), worst_post_peak_revenue (rounded to 2 dp), and drawdown_amount (peak_revenue minus worst_post_peak_revenue, rounded to 2 dp). Only include completed orders. Tie-break the peak month by earliest YYYY-MM; tie-break the worst post-peak month by earliest YYYY-MM. Order by plan_tier ascending. Exclude plan tiers that have no months after their peak month.",
+    "dataset_files": [
+      "orders.csv",
+      "users.csv"
+    ],
+    "schema": {
+      "orders": [
+        "order_id",
+        "user_id",
+        "order_date",
+        "status",
+        "net_amount"
+      ],
+      "users": [
+        "user_id",
+        "plan_tier"
+      ]
+    },
+    "expected_query": "WITH monthly AS (\n    SELECT u.plan_tier,\n           STRFTIME('%Y-%m', o.order_date) AS order_month,\n           ROUND(SUM(o.net_amount), 2) AS monthly_revenue\n    FROM users u\n    JOIN orders o ON u.user_id = o.user_id\n    WHERE o.status = 'completed'\n    GROUP BY u.plan_tier, order_month\n),\npeak AS (\n    SELECT plan_tier,\n           FIRST_VALUE(order_month) OVER (\n               PARTITION BY plan_tier\n               ORDER BY monthly_revenue DESC, order_month ASC\n           ) AS peak_month,\n           MAX(monthly_revenue) OVER (PARTITION BY plan_tier) AS peak_revenue,\n           ROW_NUMBER() OVER (\n               PARTITION BY plan_tier\n               ORDER BY monthly_revenue DESC, order_month ASC\n           ) AS rn\n    FROM monthly\n),\npeak_per_tier AS (\n    SELECT plan_tier, peak_month, peak_revenue FROM peak WHERE rn = 1\n),\npost_peak AS (\n    SELECT m.plan_tier, m.order_month, m.monthly_revenue,\n           p.peak_month, p.peak_revenue\n    FROM monthly m\n    JOIN peak_per_tier p ON m.plan_tier = p.plan_tier\n    WHERE m.order_month > p.peak_month\n),\nworst AS (\n    SELECT plan_tier, peak_month, peak_revenue,\n           FIRST_VALUE(order_month) OVER (\n               PARTITION BY plan_tier\n               ORDER BY monthly_revenue ASC, order_month ASC\n           ) AS worst_month,\n           MIN(monthly_revenue) OVER (PARTITION BY plan_tier) AS worst_post_peak_revenue,\n           ROW_NUMBER() OVER (\n               PARTITION BY plan_tier\n               ORDER BY monthly_revenue ASC, order_month ASC\n           ) AS rn\n    FROM post_peak\n)\nSELECT plan_tier, peak_month, peak_revenue,\n       worst_month, worst_post_peak_revenue,\n       ROUND(peak_revenue - worst_post_peak_revenue, 2) AS drawdown_amount\nFROM worst WHERE rn = 1\nORDER BY plan_tier",
+    "solution_query": "WITH monthly AS (\n    -- Step 1: monthly completed revenue per tier\n    SELECT u.plan_tier,\n           STRFTIME('%Y-%m', o.order_date) AS order_month,\n           ROUND(SUM(o.net_amount), 2) AS monthly_revenue\n    FROM users u\n    JOIN orders o ON u.user_id = o.user_id\n    WHERE o.status = 'completed'\n    GROUP BY u.plan_tier, order_month\n),\npeak AS (\n    -- Step 2: peak month per tier (FIRST_VALUE ordered by revenue DESC, tie-break ASC)\n    SELECT plan_tier,\n           FIRST_VALUE(order_month) OVER (\n               PARTITION BY plan_tier\n               ORDER BY monthly_revenue DESC, order_month ASC\n           ) AS peak_month,\n           MAX(monthly_revenue) OVER (PARTITION BY plan_tier) AS peak_revenue,\n           ROW_NUMBER() OVER (\n               PARTITION BY plan_tier\n               ORDER BY monthly_revenue DESC, order_month ASC\n           ) AS rn\n    FROM monthly\n),\npeak_per_tier AS (\n    SELECT plan_tier, peak_month, peak_revenue FROM peak WHERE rn = 1\n),\npost_peak AS (\n    -- Step 3: restrict to months strictly after the peak\n    SELECT m.plan_tier, m.order_month, m.monthly_revenue,\n           p.peak_month, p.peak_revenue\n    FROM monthly m\n    JOIN peak_per_tier p ON m.plan_tier = p.plan_tier\n    WHERE m.order_month > p.peak_month\n),\nworst AS (\n    -- Step 4: within post-peak rows, find worst month per tier\n    SELECT plan_tier, peak_month, peak_revenue,\n           FIRST_VALUE(order_month) OVER (\n               PARTITION BY plan_tier\n               ORDER BY monthly_revenue ASC, order_month ASC\n           ) AS worst_month,\n           MIN(monthly_revenue) OVER (PARTITION BY plan_tier) AS worst_post_peak_revenue,\n           ROW_NUMBER() OVER (\n               PARTITION BY plan_tier\n               ORDER BY monthly_revenue ASC, order_month ASC\n           ) AS rn\n    FROM post_peak\n)\nSELECT plan_tier, peak_month, peak_revenue,\n       worst_month, worst_post_peak_revenue,\n       ROUND(peak_revenue - worst_post_peak_revenue, 2) AS drawdown_amount\nFROM worst WHERE rn = 1\nORDER BY plan_tier",
+    "explanation": "The previous follow-up added cancellation_rate_pct to the monthly view — an edge-case expansion at the same analytical level. This question steps up a level: instead of reading each month in isolation, it reasons about the entire revenue trajectory as a series, identifying the historical peak and then measuring the worst subsequent drop.\n\nStep 1 (monthly): reuse the parent monthly revenue by tier with STRFTIME('%Y-%m', order_date), ROUND(SUM(net_amount), 2).\n\nStep 2 (peak / peak_per_tier): for each tier, FIRST_VALUE(order_month) OVER (PARTITION BY plan_tier ORDER BY monthly_revenue DESC, order_month ASC) gives the peak month label; MAX(monthly_revenue) OVER (...) gives peak_revenue. ROW_NUMBER deduplicates — keep rn = 1.\n\nStep 3 (post_peak): join monthly to peak_per_tier on plan_tier and filter WHERE m.order_month > p.peak_month. YYYY-MM lexicographic comparison is correct for monotone date strings. Tiers whose peak is the last month return zero rows and are naturally excluded.\n\nStep 4 (worst): within post_peak rows per tier, FIRST_VALUE ordered by monthly_revenue ASC, order_month ASC gives the worst month label; MIN gives worst_post_peak_revenue. Keep rn = 1.\n\nStep 5: drawdown_amount = ROUND(peak_revenue - worst_post_peak_revenue, 2).\n\nDistinguished from existing mock questions: 13053 detects 3 consecutive months of declining order value per user (a sequential-decline state machine). 13072 computes MoM payment success rate change via LAG. 13093 computes MoM revenue change per brand. None compute a per-tier historical peak month and the worst subsequent month as a drawdown pair.",
+    "hints": [
+      "Break the problem into two independent derivations per tier: (1) find the peak month and its revenue; (2) among months strictly after that peak, find the month with the lowest revenue — the drawdown is their difference.",
+      "A windowed FIRST_VALUE (or equivalent) partitioned by tier and ordered by monthly revenue descending — earliest month breaking ties — surfaces the peak month label alongside the peak value in the same pass; deduplicate to one row per tier with ROW_NUMBER and keep rn = 1.",
+      "After joining back to peak_per_tier, apply WHERE m.order_month > p.peak_month before the second window — YYYY-MM string comparison is lexicographically correct so this filter is safe without converting to DATE."
+    ],
+    "concepts": [
+      "SELF-COMPARISON & RECURSION",
+      "WINDOW FUNCTIONS",
+      "CTE PIPELINE",
+      "TIME-SERIES BUCKETING & ARITHMETIC"
+    ],
+    "companies": [
+      "Stripe",
+      "Shopify",
+      "Recurly"
+    ]
+  },
+  {
+    "id": 13160,
+    "order": 160,
+    "mock_only": true,
+    "parent_id": 12093,
+    "follow_up_dimension": "stakeholder_pivot",
+    "title": "Dominant plan tier per country with revenue share",
+    "difficulty": "hard",
+    "type": "scenario",
+    "description": "After reviewing the above-average segments, the commercial director asks for a market-ownership view: for each country, identify the single dominant plan tier — the one with the highest completed revenue among country-plan combinations with at least 5 completed orders. Return country, dominant_tier (the plan_tier with the highest qualifying completed revenue in that country, tie-break by plan_tier ascending), dominant_revenue (rounded to 2 dp), and dominant_share_pct (dominant_revenue as a percentage of the country total qualifying revenue, rounded to 1 dp). The country total is computed only from qualifying combinations (at least 5 completed orders). Order by country ascending.",
+    "dataset_files": [
+      "orders.csv",
+      "users.csv"
+    ],
+    "schema": {
+      "orders": [
+        "order_id",
+        "user_id",
+        "order_date",
+        "status",
+        "net_amount"
+      ],
+      "users": [
+        "user_id",
+        "country",
+        "plan_tier"
+      ]
+    },
+    "expected_query": "WITH country_tier AS (\n    SELECT u.country, u.plan_tier,\n           ROUND(SUM(o.net_amount), 2) AS tier_revenue,\n           COUNT(DISTINCT o.order_id) AS total_orders\n    FROM users u\n    JOIN orders o ON u.user_id = o.user_id\n    WHERE o.status = 'completed'\n    GROUP BY u.country, u.plan_tier\n    HAVING COUNT(DISTINCT o.order_id) >= 5\n),\ncountry_total AS (\n    SELECT country, SUM(tier_revenue) AS country_revenue\n    FROM country_tier\n    GROUP BY country\n),\nranked AS (\n    SELECT ct.country, ct.plan_tier, ct.tier_revenue,\n           ROUND(ct.tier_revenue * 100.0 / t.country_revenue, 1) AS revenue_share_pct,\n           ROW_NUMBER() OVER (\n               PARTITION BY ct.country\n               ORDER BY ct.tier_revenue DESC, ct.plan_tier ASC\n           ) AS rn\n    FROM country_tier ct\n    JOIN country_total t ON ct.country = t.country\n)\nSELECT country, plan_tier AS dominant_tier,\n       tier_revenue AS dominant_revenue,\n       revenue_share_pct AS dominant_share_pct\nFROM ranked WHERE rn = 1\nORDER BY country",
+    "solution_query": "WITH country_tier AS (\n    -- Step 1: completed revenue and order count per country-plan combination\n    SELECT u.country, u.plan_tier,\n           ROUND(SUM(o.net_amount), 2) AS tier_revenue,\n           COUNT(DISTINCT o.order_id) AS total_orders\n    FROM users u\n    JOIN orders o ON u.user_id = o.user_id\n    WHERE o.status = 'completed'\n    GROUP BY u.country, u.plan_tier\n    HAVING COUNT(DISTINCT o.order_id) >= 5\n),\ncountry_total AS (\n    -- Step 2: sum only qualifying tier revenues so the denominator is consistent\n    SELECT country, SUM(tier_revenue) AS country_revenue\n    FROM country_tier\n    GROUP BY country\n),\nranked AS (\n    -- Step 3: rank tiers within each country, compute revenue share\n    SELECT ct.country, ct.plan_tier, ct.tier_revenue,\n           ROUND(ct.tier_revenue * 100.0 / t.country_revenue, 1) AS revenue_share_pct,\n           ROW_NUMBER() OVER (\n               PARTITION BY ct.country\n               ORDER BY ct.tier_revenue DESC, ct.plan_tier ASC\n           ) AS rn\n    FROM country_tier ct\n    JOIN country_total t ON ct.country = t.country\n)\n-- Step 4: keep top-ranked tier per country\nSELECT country, plan_tier AS dominant_tier,\n       tier_revenue AS dominant_revenue,\n       revenue_share_pct AS dominant_share_pct\nFROM ranked WHERE rn = 1\nORDER BY country",
+    "explanation": "The previous follow-up added a benchmark comparison (average segment revenue), asking which segments exceed average — an ambiguity-pivot that required committing to a threshold. This question changes the delivery framing: the commercial director wants a single-row-per-country ownership view — which plan tier wins each market and by how much.\n\nThe core challenge is a hard argmax-per-group problem: selecting the top-ranked tier within each country while retaining the plan_tier label and computing a share.\n\nStep 1 (country_tier): aggregate completed revenue and order count per (country, plan_tier), applying HAVING COUNT(DISTINCT order_id) >= 5. Rounds revenue to 2 dp at this stage.\n\nStep 2 (country_total): sum tier_revenue from country_tier — not from orders again. This is the key correctness choice: re-joining orders would include country-plan combinations with fewer than 5 orders in the country total, inflating the denominator and misrepresenting the share. The denominator must be consistent with the numerator.\n\nStep 3 (ranked): ROW_NUMBER() OVER (PARTITION BY country ORDER BY tier_revenue DESC, plan_tier ASC) ranks tiers within each country. revenue_share_pct = ROUND(tier_revenue * 100.0 / country_revenue, 1) is computed here.\n\nStep 4: WHERE rn = 1 keeps only the dominant tier per country.\n\nDistinguished from existing mock questions: 13077 computes plan tier revenue share within each month (time-series share, not per-country top-one). 13063 reports support metrics by country and plan tier with no ranking. 13068 finds the top product per country by line revenue (same argmax structure but entity is product, not plan tier). 13160 is the first question to combine argmax-per-group with a share-of-total across the country-plan heatmap.",
+    "hints": [
+      "Build the country total only from country-plan combinations that already cleared the 5-order threshold — re-aggregating orders from scratch would include thin combinations in the denominator and inflate the share.",
+      "Rank the qualifying tiers within each country by revenue descending, with plan_tier ascending as the tie-breaker, then keep only the single top-ranked row per country — this argmax-per-group approach retains the plan_tier label alongside the revenue figure.",
+      "Compute revenue_share_pct = tier_revenue / country_revenue inside the ranked CTE, before filtering to rn = 1, so both numerator and denominator come from the same pre-qualified pool."
+    ],
+    "concepts": [
+      "RANKING & TOP-N PER GROUP",
+      "WINDOW FUNCTIONS",
+      "CTE PIPELINE",
+      "GROUPED AGGREGATION"
+    ],
+    "companies": [
+      "Shopify",
+      "Amazon",
+      "Stripe"
+    ]
   }
 ]

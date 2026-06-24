@@ -620,7 +620,7 @@ def _chain_parents_for(track: str, difficulty: str) -> list[dict]:
 
 def _loop_difficulty_escalates(track: str, difficulty: str) -> bool:
     """True if any Interview Loop chain at (track, difficulty) has a follow-up of
-    strictly higher difficulty (Python, SQL & Data-Modeling medium chains escalate to hard)."""
+    strictly higher difficulty (Python, SQL & Data-Modeling medium chains escalate to hard). Escalation is uniform per (track, difficulty) cell — enforced by scripts/validate_content.py::_validate_loop_escalation_uniformity."""
     if difficulty not in ("medium", "hard"):
         return False
     rank = {"easy": 0, "medium": 1, "hard": 2}

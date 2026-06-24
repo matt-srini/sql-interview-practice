@@ -309,6 +309,39 @@ def test_access_omits_fresh_loop_cells_when_startable():
     assert body["fresh_loop_cells"] == []
 
 
+def test_loop_escalation_uniform_per_cell():
+    """Every (track, difficulty) Interview Loop cell escalates uniformly — all chains in
+    the cell reach a higher difficulty, or none do. A partial cell makes the single
+    cell-level "medium → hard" badge over-promise for the flat chains. Enforced in CI by
+    validate_content.py::_validate_loop_escalation_uniformity; this is the focused guard.
+    Revisit deliberately (relax both) if a track ever genuinely needs mixed escalation.
+    See docs/decisions/DECISIONS.md.
+    """
+    from routers.mock import _chain_parents_for
+    from tracks import TRACKS
+    rank = {"easy": 0, "medium": 1, "hard": 2}
+    mixed = []
+    for t in TRACKS:
+        try:
+            mock = t.catalog_module.get_mock_questions_by_difficulty()
+        except Exception:
+            continue
+        byid = {int(q["id"]): q for qs in mock.values() for q in qs}
+        for diff in ("medium", "hard"):
+            parents = _chain_parents_for(t.slug, diff)
+            if not parents:
+                continue
+            esc = {
+                int(p["id"]) for p in parents
+                if any(rank.get(byid.get(int(f), {}).get("difficulty"), rank[diff]) > rank[diff]
+                       for f in p["follow_ups"])
+            }
+            flat = {int(p["id"]) for p in parents} - esc
+            if esc and flat:
+                mixed.append((t.slug, diff, f"{len(esc)} escalate / {len(flat)} flat"))
+    assert not mixed, f"mixed-escalation Loop cells must be all-or-none, found: {mixed}"
+
+
 # ---------------------------------------------------------------------------
 # Mock Run Code: gated on session membership, NOT the practice unlock state, so
 # mock-only questions (every Interview Loop chain) run instead of 403'ing "locked".

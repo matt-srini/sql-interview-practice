@@ -464,7 +464,7 @@ Mock-only inventory must support a power user who completes most of practice and
 
 | Track | Practice | Mock-only | Ratio | Notes |
 |---|---|---|---|---|
-| SQL | 118 | 193† | **1.64×** | executable analytics; †28 chain questions (10 new Interview Loop chains) added 2026-06-20 lift the ratio above the 1.0–1.5× band — a deliberate **chain-only exception** (Elite Interview Loop only, never benchmarks/drills); standalone budget unchanged at ~1.30× (153 standalone). See [`DECISIONS.md`](./decisions/DECISIONS.md) 2026-06-20 |
+| SQL | 118 | 196† | **1.66×** | executable analytics; †28 chain questions (10 new Interview Loop chains) added 2026-06-20 lift the ratio above the 1.0–1.5× band — a deliberate **chain-only exception** (Elite Interview Loop only, never benchmarks/drills); standalone budget unchanged at ~1.30× (153 standalone). See [`DECISIONS.md`](./decisions/DECISIONS.md) 2026-06-20, + 3 SQL-medium escalation follow-ups (2026-06-22) |
 | Python | 81 | 103 | **1.27×** | executable algorithms |
 | Pandas | 93 | 132 | **1.42×** | executable analytics |
 | PySpark | 127 | 150 | **1.18×** | code-adjacent reasoning (MCQ) |
@@ -552,7 +552,7 @@ Practice questions are the full curriculum. Mock-only questions live in the same
 | Experimentation | 30 | 33 | 24 | **87** | Constructed reasoning (MCQ) |
 | **Total** | | | | **878** | |
 
-Mock-only add-on bank: **1,166 questions** (Pro/Elite only). Samples: **81 total** (9 per track × 9 tracks, dedicated content separate from practice and mock pools).
+Mock-only add-on bank: **1,169 questions** (Pro/Elite only). Samples: **81 total** (9 per track × 9 tracks, dedicated content separate from practice and mock pools).
 
 **These counts evolve.** They reflect the bank at the time of the 2026-05 refactor. CLAUDE.md mirrors them; both files update together.
 
