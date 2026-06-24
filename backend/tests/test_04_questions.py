@@ -119,3 +119,34 @@ def test_tc074_pyspark_question_has_4_options_no_correct():
     assert "options" in body
     assert len(body["options"]) == 4
     assert "correct_option" not in body or body.get("correct_option") is None
+
+
+def test_tc075_mock_only_question_detail_returns_403():
+    """TC-075: GET-detail on a mock_only question is 403 on every executable track.
+
+    Mock-only prompts must not be reachable through the practice catalog endpoint
+    (parity across SQL/Python/Pandas/Statistics — closes the prompt-enumeration gap
+    where 3 code tracks previously served the mock-only stem). Even an Elite user
+    (who has the content via mock sessions) must not reach it via /practice.
+    """
+    from questions import get_mock_questions_by_difficulty as _sql_mock
+    from python_questions import get_mock_questions_by_difficulty as _py_mock
+    from pandas_questions import get_mock_questions_by_difficulty as _pd_mock
+    from statistics_questions import get_mock_questions_by_difficulty as _st_mock
+
+    def _first_mock_id(getter):
+        by_diff = getter()
+        return next((q["id"] for diff in ("hard", "medium", "easy") for q in by_diff.get(diff, [])), None)
+
+    cases = [
+        ("/api/questions", _first_mock_id(_sql_mock)),
+        ("/api/python/questions", _first_mock_id(_py_mock)),
+        ("/api/pandas/questions", _first_mock_id(_pd_mock)),
+        ("/api/statistics/questions", _first_mock_id(_st_mock)),
+    ]
+    with TestClient(app) as client:
+        _make_user(client, plan="elite")  # strongest plan — still must be denied via practice
+        for base, qid in cases:
+            assert qid is not None, f"no mock_only question found for {base}"
+            r = client.get(f"{base}/{qid}")
+            assert r.status_code == 403, f"{base}/{qid} returned {r.status_code}, expected 403 (mock-only leak)"

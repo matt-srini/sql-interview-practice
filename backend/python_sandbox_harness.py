@@ -13,6 +13,24 @@ import sys
 import traceback
 import io
 import types
+import builtins as _builtins
+
+
+# Defense-in-depth: run user code with a restricted __builtins__ so the AST guard
+# (python_guard) is not the SOLE gate against dangerous builtins. We remove only the
+# names the guard already blocks AND that Python syntax never needs implicitly — we
+# KEEP __import__ (allowlisted `import math`/`numpy` use it at runtime) and
+# __build_class__ (`class` statements need it). Library code (pandas/numpy) is
+# unaffected: it uses its own module builtins, not this user namespace.
+_HARNESS_BUILTINS_DENY = frozenset({
+    "eval", "exec", "compile", "open", "input", "breakpoint", "memoryview",
+    "getattr", "setattr", "delattr", "globals", "locals", "vars",
+})
+
+
+def _safe_builtins() -> dict:
+    """A copy of the builtins namespace with the dangerous names removed."""
+    return {k: v for k, v in _builtins.__dict__.items() if k not in _HARNESS_BUILTINS_DENY}
 
 
 def _apply_sandbox_rlimits() -> None:
@@ -79,7 +97,7 @@ class _BoundedStringIO(io.StringIO):
 
 
 def _run_algorithm(user_code: str, test_cases: list) -> dict:
-    namespace: dict = {}
+    namespace: dict = {"__builtins__": _safe_builtins()}
     try:
         exec(compile(user_code, "<user_code>", "exec"), namespace)  # noqa: S102
     except Exception as e:
@@ -245,7 +263,7 @@ def _run_data(user_code: str, dataframes_spec: dict, csv_dir: str) -> dict:
         except (AttributeError, TypeError):
             pass
 
-    namespace: dict = {"pd": safe_pd, "np": safe_np}
+    namespace: dict = {"pd": safe_pd, "np": safe_np, "__builtins__": _safe_builtins()}
     try:
         exec(compile(user_code, "<user_code>", "exec"), namespace)  # noqa: S102
     except Exception as e:

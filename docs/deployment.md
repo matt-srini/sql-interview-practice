@@ -570,9 +570,14 @@ No `PYTHONPATH` either, so the sandbox cannot `import` backend app modules.
 `python_guard.validate_code` rejects known escape gadgets before execution: dangerous
 bare names (`globals`, `locals`, `getattr`, `eval`, `exec`, `__builtins__`, etc.),
 dunder chains (`__class__`, `__globals__`, `__subclasses__`, frame/traceback walks),
+`str.format`/`.format_map` templates that hide a dunder accessor inside the string
+literal (`"{0.__globals__}".format(solve)`, caught by `visit_Constant`),
 blocked imports, and pandas/numpy filesystem I/O methods. The guard is tested by
-34 red-team attempts in `tests/test_guard_redteam.py` (all must be BLOCKED) and 13
-legitimate interview snippets (all must PASS — no false positives).
+40 red-team attempts in `tests/test_guard_redteam.py` (all must be BLOCKED) and 13
+legitimate interview snippets (all must PASS — no false positives). As defense-in-depth
+the harness also execs user code with a **restricted `__builtins__`**
+(`_safe_builtins`, keeping `__import__`/`__build_class__`), so the AST guard is not the
+sole gate on builtins.
 
 `python_evaluator._sandbox_preexec` (the subprocess `preexec_fn`) additionally:
 - Calls `os.setsid()` — puts the sandbox in its own process group so a timeout

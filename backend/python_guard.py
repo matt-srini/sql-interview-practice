@@ -7,6 +7,10 @@ For Pandas: allows a specific allowlist of safe imports.
 import ast
 import re
 
+# A {...} replacement field in a str.format / .format_map template. Used by the
+# guard to catch dunder access hidden inside a format string (see visit_Constant).
+_FORMAT_FIELD = re.compile(r"\{([^{}]*)\}")
+
 # Imports allowed for the algorithm (Python) track
 _ALGORITHM_ALLOWLIST = {
     "math",
@@ -248,10 +252,27 @@ class _GuardVisitor(ast.NodeVisitor):
     # be used to access the exception object's __traceback__ attribute.
     # (The attribute visit above already covers tb_frame / f_globals.)
 
-    # ── format-string / f-string late binding ────────────────────────────────
-    # f"{().__class__.__bases__[0].__subclasses__()}" — the sub-expressions are
-    # still AST nodes and are visited by generic_visit, so __class__ / __bases__
-    # are caught by visit_Attribute above. No extra handler needed.
+    # ── format-string late binding (str.format / .format_map) ─────────────────
+    # f-strings are safe: f"{x.__class__}" holds REAL ast.Attribute nodes that
+    # visit_Attribute catches. But str.format() hides the accessor INSIDE a string
+    # literal — `"{0.__globals__}".format(solve)` performs the attribute walk at
+    # runtime, so the AST never sees __globals__. We therefore scan every string
+    # constant for a replacement field whose NAME part (before any :spec / !conv)
+    # contains a dunder, and block it. Legitimate fields ({0}, {name}, {0:.2f},
+    # {x!r}, even {:_>10} fill) never contain "__" in the name part.
+
+    def visit_Constant(self, node: ast.Constant) -> None:
+        if isinstance(node.value, str):
+            # Drop escaped braces so a {{literal}} isn't mistaken for a field.
+            s = node.value.replace("{{", "").replace("}}", "")
+            for field in _FORMAT_FIELD.findall(s):
+                name = field.split(":", 1)[0].split("!", 1)[0]
+                if "__" in name:
+                    self.errors.append(
+                        "format-string field accessing a dunder attribute is not allowed"
+                    )
+                    break
+        self.generic_visit(node)
 
 
 # ── User-facing message helpers ───────────────────────────────────────────────
@@ -279,6 +300,9 @@ _ALLOWLIST_DISPLAY = {
 
 def _one_friendly(error: str, topic: str) -> str:
     """Convert one raw guard-error string into a user-readable sentence."""
+    if error == "format-string field accessing a dunder attribute is not allowed":
+        return ("Template strings that reach internal (dunder) attributes are not "
+                "allowed — use a plain format field like {0} or an f-string of a value.")
     m = re.match(r"access to attribute '(.+)' is not allowed", error)
     if m:
         attr = m.group(1)

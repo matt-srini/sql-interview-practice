@@ -17,6 +17,13 @@ _ESCAPE_ATTEMPTS = [
     ("dunder_mro",            "python", "int.__mro__[0].__subclasses__()"),
     ("dunder_globals",        "python", "def solve(): return solve.__globals__"),
     ("dunder_builtins",       "python", "def solve(): return solve.__globals__['__builtins__']"),
+    # --- str.format late binding (dunder hidden inside a string literal) ---
+    ("format_globals",        "python", "def solve(): return '{0.__globals__}'.format(solve)"),
+    ("format_builtins_index", "python", "def solve(): return '{0.__globals__[__builtins__]}'.format(solve)"),
+    ("format_class_walk",     "python", "def solve(): return '{0.__class__.__bases__}'.format(solve)"),
+    ("format_map_globals",    "python", "def solve(): return '{x.__globals__}'.format_map({'x': solve})"),
+    ("format_split_literal",  "python", "def solve():\n    t = '{0.__globals__}'\n    return t.format(solve)"),
+    ("format_globals_pandas", "pandas", "def solve(df):\n    return '{0.__globals__}'.format(solve)"),
     ("dunder_code",           "python", "def solve(): return solve.__code__.co_consts"),
     ("dunder_bases",          "python", "list.__bases__[0].__subclasses__()"),
     ("dunder_closure",        "python", "def solve(): return solve.__closure__"),

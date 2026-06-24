@@ -94,6 +94,10 @@ async def get_statistics_question_detail(
     if q is None:
         raise HTTPException(status_code=404, detail="Question not found")
 
+    # Mock-only questions are not accessible via the practice catalog endpoint
+    if q.get("mock_only"):
+        raise HTTPException(status_code=403, detail="Question not available in practice mode")
+
     unlock_state, next_questions = await _get_stats_unlock_state(current_user)
     state = unlock_state.get(int(q["id"]), "locked")
     unlocked = state != "locked"
