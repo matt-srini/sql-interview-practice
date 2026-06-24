@@ -279,9 +279,12 @@ Populated at session creation for Interview Loop sessions (denormalised from the
 
 ```sql
 ALTER TABLE mock_sessions ADD COLUMN role TEXT;
+ALTER TABLE mock_sessions ADD COLUMN loop_escalated BOOLEAN;
 ```
 
-Nullable. Set only for `track="mixed"` sessions. Values: `"data_analyst"`, `"data_engineer"`, `"analytics_engineer"`, `"data_scientist"`.
+`role` — nullable. Set only for `track="mixed"` sessions. Values: `"data_analyst"`, `"data_engineer"`, `"analytics_engineer"`, `"data_scientist"`.
+
+`loop_escalated` — nullable. Set only for `mode="interview_loop"` sessions at session creation from the drawn chain's actual follow-up difficulties. `true` if the chain escalates to a harder difficulty (e.g. medium→hard); `false` if all questions stay at the same difficulty; `NULL` for legacy sessions predating migration `20260624_000001` (those fall back to the cell-level flag). Read by history and the active-session badge to show what the session actually did; the pre-start badge uses the cell-level `_loop_difficulty_escalates` flag instead (no chain drawn yet).
 
 ---
 
@@ -303,7 +306,7 @@ This mode simulates the real interview shape — interviewers don't ask 5 unrela
 - **Plan:** Elite only. Free/Pro see "Unlock with Elite" copy on the Interview Loop mode card; cannot start a session.
 - **Content:** Only parents with `follow_ups[]` length ≥ 1 are eligible.
 - **Track:** Any single track. Mixed is not supported (chains are single-track by definition). The Interview Loop mode card is **not disabled** on Mixed — selecting it **auto-switches** the track to a single track (the selected role's first, else SQL) and shows an indigo note stating the constraint — *"Interview Loop runs on one track — can't choose Mixed."* (it names the constraint rather than the switched-to track, which the Track selector already shows), so there's no unexplained dead-end.
-- **Difficulty:** **Per-track, medium or hard.** The user picks medium or hard in the MockHub difficulty step (easy is never offered). Track-scoped availability: **Python → medium only** (escalates to hard follow-ups; displayed as "medium → hard"); **ML Fundamentals and Experimentation → hard only**; **SQL, Pandas, PySpark, Data Engineering, Data Modeling, Statistics → medium and hard** (SQL-medium and Data-Modeling-medium also escalate to hard follow-ups, displayed as "medium → hard"). Difficulties with no chains in the bank are greyed with a reason message per the standard gating convention. The session stores the chosen difficulty (`mock_sessions.difficulty`); history and dashboard show a difficulty badge for loop rows (escalating difficulties shown as "medium → hard" via `formatLoopDifficulty(difficulty, escalates)` in `frontend/src/mockModeConfig.js`). *(Supersedes the 2026-06-15 "no difficulty" decision — see [DECISIONS 2026-06-16](../decisions/DECISIONS.md).)*
+- **Difficulty:** **Per-track, medium or hard.** The user picks medium or hard in the MockHub difficulty step (easy is never offered). Track-scoped availability: **Python → medium only** (escalates to hard follow-ups; displayed as "medium → hard"); **ML Fundamentals and Experimentation → hard only**; **SQL, Pandas, PySpark, Data Engineering, Data Modeling, Statistics → medium and hard** (SQL-medium and Data-Modeling-medium also escalate to hard follow-ups, displayed as "medium → hard"). Difficulties with no chains in the bank are greyed with a reason message per the standard gating convention. The session stores the chosen difficulty (`mock_sessions.difficulty`); for **history and the active session**, the difficulty badge reads `escalates` from the **stored per-session `mock_sessions.loop_escalated`** column (set at session creation from the chain's actual follow-up difficulties; cell-flag fallback if NULL), so a past session reflects what it actually did — escalating difficulties are shown as "medium → hard" via `formatLoopDifficulty(difficulty, escalates)` in `frontend/src/mockModeConfig.js`. The **pre-start** badge remains the cell-level `_loop_difficulty_escalates` flag (no chain drawn yet). *(Supersedes the 2026-06-15 "no difficulty" decision — see [DECISIONS 2026-06-16](../decisions/DECISIONS.md).)*
 - **Atomicity:** all chain atomicity rules apply. Each session consumes 1 full chain; once consumed, it's gone from that user's pool.
 
 ### Session shape

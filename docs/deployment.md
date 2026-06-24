@@ -27,7 +27,7 @@ After confirming, move the entries below from "Currently pending" to "Already ap
 
 ### Currently pending
 
-_Nothing. Production is at head (`20260612_000001`)._
+_Nothing. Production is at head (`20260624_000001`)._
 
 ---
 
@@ -43,6 +43,7 @@ _Nothing. Production is at head (`20260612_000001`)._
 | `20260610_000001` | Add `plan_override TEXT` and `plan_override_until TIMESTAMPTZ` to `users` (time-limited beta-access grants via `/api/admin/grant-plan`) | 2026-06-10 |
 | `20260610_000002` | Create `mock_discards` table + index — per-day penalty-free discard cap (audit C4) | 2026-06-10 |
 | `20260612_000001` | Add `provider TEXT NOT NULL DEFAULT 'razorpay'` to `payment_events` (dual-rail Razorpay + Paddle) | 2026-06-13 |
+| `20260624_000001` | add mock_sessions.loop_escalated (per-session Interview Loop escalation; history/active read it, pre-start stays cell-level) | 2026-06-25 |
 
 ---
 

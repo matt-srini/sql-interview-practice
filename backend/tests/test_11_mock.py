@@ -2183,3 +2183,49 @@ def test_tc_loop_exhausted_copy_is_difficulty_specific():
     assert "hard" in block["block_copy"], (
         f"Expected 'hard' in no_chains copy, got: {block['block_copy']!r}"
     )
+
+
+# ---------------------------------------------------------------------------
+# loop_escalated storage — TC-175: starting an Interview Loop session on a
+# cell where chains escalate (sql medium → all 8/8 chains escalate to hard)
+# should persist loop_escalated=True on the session row and history should
+# surface escalates=True from the stored value (not recomputed).
+# ---------------------------------------------------------------------------
+
+def test_tc175_loop_escalated_stored_and_reflected_in_history():
+    """SQL medium Interview Loop: session stores loop_escalated=True; history row has escalates=True."""
+    with TestClient(app) as client:
+        _make_user(client, plan="elite")
+
+        # Start an interview_loop session on sql/medium — all 8 chains escalate
+        r = client.post("/api/mock/start", json={
+            "mode": "interview_loop",
+            "track": "sql",
+            "difficulty": "medium",
+        })
+        assert r.status_code in (200, 201), r.text
+        body = r.json()
+        session_id = body["session_id"]
+
+        # The start response should reflect the stored escalation
+        assert body.get("loop_escalated") is True, (
+            f"Expected loop_escalated=True in start response, got: {body.get('loop_escalated')!r}"
+        )
+
+        # GET /{session_id} should surface escalates=True (from stored value)
+        r2 = client.get(f"/api/mock/{session_id}")
+        assert r2.status_code == 200, r2.text
+        session_detail = r2.json()
+        assert session_detail.get("escalates") is True, (
+            f"Expected escalates=True in session detail, got: {session_detail.get('escalates')!r}"
+        )
+
+        # History should also surface escalates=True (from stored loop_escalated)
+        r3 = client.get("/api/mock/history")
+        assert r3.status_code == 200, r3.text
+        history = r3.json()
+        matching = [row for row in history if row.get("session_id") == session_id]
+        assert matching, "Session not found in history"
+        assert matching[0].get("escalates") is True, (
+            f"Expected escalates=True in history row, got: {matching[0].get('escalates')!r}"
+        )

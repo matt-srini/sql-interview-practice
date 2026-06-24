@@ -117,6 +117,9 @@ VALID_DIFFICULTIES = {"easy", "medium", "hard", "mixed"}
 # Maps URL-style track slug → topic string used in mark_solved / get_solved_ids
 TRACK_TO_TOPIC: dict[str, str] = {t.slug: t.db_topic for t in TRACKS}
 
+# Difficulty rank used for escalation detection (stored per session for Interview Loop)
+_DIFF_RANK: dict[str, int] = {"easy": 0, "medium": 1, "hard": 2}
+
 
 # ── Request models ─────────────────────────────────────────────────────────────
 
@@ -1324,7 +1327,8 @@ async def get_history(
         if row.get("mode") == "interview_loop":
             track = row.get("track") or "sql"
             difficulty = row.get("difficulty") or "medium"
-            row["escalates"] = _loop_difficulty_escalates(track, difficulty)
+            _stored = row.get("loop_escalated")
+            row["escalates"] = _stored if _stored is not None else _loop_difficulty_escalates(track, difficulty)
     return rows
 
 
@@ -1479,6 +1483,11 @@ async def start_session(
                 "is_follow_up": pos_idx > 1,
             })
 
+        _sess_rank = _DIFF_RANK.get(body.difficulty, 1)
+        loop_escalated = any(
+            _DIFF_RANK.get(q.get("difficulty"), _sess_rank) > _sess_rank
+            for q in all_q_dicts
+        )
         session = await create_mock_session(
             user_id=user_id,
             mode=body.mode,
@@ -1489,6 +1498,7 @@ async def start_session(
             focus_fallback=False,
             role=body.role,
             chain_parent_id=int(parent["id"]),
+            loop_escalated=loop_escalated,
         )
         return {
             **session,
@@ -1597,7 +1607,8 @@ async def get_session(
     if session.get("mode") == "interview_loop":
         track = session.get("track") or "sql"
         difficulty = session.get("difficulty") or "medium"
-        result["escalates"] = _loop_difficulty_escalates(track, difficulty)
+        _stored = session.get("loop_escalated")
+        result["escalates"] = _stored if _stored is not None else _loop_difficulty_escalates(track, difficulty)
     return result
 
 

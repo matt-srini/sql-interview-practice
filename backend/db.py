@@ -234,6 +234,7 @@ ALTER TABLE mock_session_questions ADD COLUMN IF NOT EXISTS is_follow_up BOOLEAN
 ALTER TABLE mock_session_questions ADD COLUMN IF NOT EXISTS follow_up_dimension TEXT;
 ALTER TABLE mock_sessions ADD COLUMN IF NOT EXISTS focus_fallback BOOLEAN NOT NULL DEFAULT false;
 ALTER TABLE mock_sessions ADD COLUMN IF NOT EXISTS role TEXT;
+ALTER TABLE mock_sessions ADD COLUMN IF NOT EXISTS loop_escalated BOOLEAN;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS razorpay_subscription_id TEXT;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS plan_override TEXT;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS plan_override_until TIMESTAMPTZ;
@@ -1313,6 +1314,7 @@ async def create_mock_session(
     focus_fallback: bool = False,
     role: str | None = None,
     chain_parent_id: int | None = None,
+    loop_escalated: bool | None = None,
 ) -> dict[str, Any]:
     """
     Persist a new mock session.
@@ -1325,9 +1327,9 @@ async def create_mock_session(
         result = await session.execute(
             text(
                 """
-                INSERT INTO mock_sessions (user_id, mode, track, difficulty, time_limit_s, focus_fallback, role)
-                VALUES (CAST(:user_id AS UUID), :mode, :track, :difficulty, :time_limit_s, :focus_fallback, :role)
-                RETURNING id, user_id, mode, track, difficulty, started_at, time_limit_s, status, focus_fallback, role
+                INSERT INTO mock_sessions (user_id, mode, track, difficulty, time_limit_s, focus_fallback, role, loop_escalated)
+                VALUES (CAST(:user_id AS UUID), :mode, :track, :difficulty, :time_limit_s, :focus_fallback, :role, :loop_escalated)
+                RETURNING id, user_id, mode, track, difficulty, started_at, time_limit_s, status, focus_fallback, role, loop_escalated
                 """
             ),
             {
@@ -1338,6 +1340,7 @@ async def create_mock_session(
                 "time_limit_s": time_limit_s,
                 "focus_fallback": focus_fallback,
                 "role": role,
+                "loop_escalated": loop_escalated,
             },
         )
         session_row = result.mappings().first()
@@ -1385,6 +1388,7 @@ async def create_mock_session(
             "status": session_row["status"],
             "focus_fallback": bool(session_row["focus_fallback"]),
             "role": session_row["role"],
+            "loop_escalated": session_row["loop_escalated"],
         }
 
 
@@ -1399,7 +1403,7 @@ async def get_mock_session(session_id: int, user_id: str) -> dict[str, Any] | No
                     ms.id AS session_id,
                     ms.mode, ms.track, ms.difficulty, ms.role,
                     ms.started_at, ms.ended_at, ms.time_limit_s, ms.status,
-                    ms.focus_fallback,
+                    ms.focus_fallback, ms.loop_escalated,
                     msq.id AS msq_id,
                     msq.question_id, msq.track AS q_track, msq.position,
                     msq.is_solved, msq.submitted_at, msq.final_code, msq.time_spent_s,
@@ -1427,6 +1431,7 @@ async def get_mock_session(session_id: int, user_id: str) -> dict[str, Any] | No
             "time_limit_s": first["time_limit_s"],
             "status": first["status"],
             "focus_fallback": bool(first["focus_fallback"]) if first["focus_fallback"] is not None else False,
+            "loop_escalated": first["loop_escalated"],
         }
         question_rows = []
         for row in rows:
@@ -1729,7 +1734,7 @@ async def get_active_mock_session(user_id: str) -> dict[str, Any] | None:
         result = await session.execute(
             text(
                 """
-                SELECT id AS session_id, mode, track, difficulty, started_at, time_limit_s
+                SELECT id AS session_id, mode, track, difficulty, started_at, time_limit_s, loop_escalated
                 FROM mock_sessions
                 WHERE user_id = CAST(:user_id AS UUID) AND status = 'active'
                 ORDER BY started_at DESC
@@ -1748,6 +1753,7 @@ async def get_active_mock_session(user_id: str) -> dict[str, Any] | None:
             "difficulty": row["difficulty"],
             "started_at": row["started_at"].isoformat() if row["started_at"] else None,
             "time_limit_s": row["time_limit_s"],
+            "loop_escalated": row["loop_escalated"],
         }
 
 
@@ -1761,6 +1767,7 @@ async def get_mock_history(user_id: str, limit: int = 20) -> list[dict[str, Any]
                     ms.id AS session_id,
                     ms.mode, ms.track, ms.difficulty, ms.role,
                     ms.started_at, ms.ended_at, ms.time_limit_s,
+                    ms.loop_escalated,
                     CASE WHEN ms.ended_at IS NOT NULL
                          THEN GREATEST(0, LEAST(EXTRACT(EPOCH FROM (ms.ended_at - ms.started_at))::int, ms.time_limit_s))
                          END AS time_used_s,
@@ -1794,6 +1801,7 @@ async def get_mock_history(user_id: str, limit: int = 20) -> list[dict[str, Any]
                 "total_count": row["total_count"],
                 "solved_count": row["solved_count"],
                 "attempted_count": row["attempted_count"],
+                "loop_escalated": row["loop_escalated"],
             }
             for row in rows
         ]
