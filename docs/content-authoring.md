@@ -344,7 +344,7 @@ Every track's Phase 2 closure must execute this checklist as the final step of e
 A question is correct only if a strong candidate, reading the stem alone, can land on the keyed answer. The 2026-06 blind-QA pass found these defect classes across the SQL mock bank; they apply to every executable track (SQL, Python, Pandas, Statistics-numerical):
 
 1. **Stem↔key logical consistency.** `expected_*` must implement what the stem literally says — not merely produce a value that coincides with a reasonable answer on the current dataset. (SQL 13147: the key counted "sessions with no funnel events" while the stem asked "sessions with no event rows at all"; they matched only because every event in the dataset was a funnel event.) Verify by **blind-solving from the stem**, not just by self-grading the key — a key passing its own grader proves it is *gradeable*, never that it is *right vs the stem*.
-2. **Output-contract completeness.** The stem must state exact output column names, value formats (e.g. month as a `YYYY-MM` string vs a `DATE`), row ordering, and any filter or ambiguous-term interpretation, so exactly one defensible answer exists. Grading is column-name- and format-sensitive; an unstated alias or format marks a correct query wrong.
+2. **Output-contract completeness.** The stem must state exact output column names, value formats (e.g. month as a `YYYY-MM` string vs a `DATE`), row ordering, and any filter or ambiguous-term interpretation, so exactly one defensible answer exists. Grading is column-name- and format-sensitive; an unstated alias or format marks a correct query wrong. (Two SQL final-sweep examples: 12095 — the key ended `ORDER BY plan_tier` but the stem stated no ordering, and SQL grading is order-sensitive once the key has a trailing `ORDER BY`, so a correct un-ordered query failed; 13104 — the key returned continuous/interpolated percentiles left unrounded, which the stem never said, so a solver casting to int diverged. Both passed self-grading and surfaced only on a consolidated blind re-solve of the *landed* state.)
 3. **Determinism / tie-breaks.** Any ranking, top-N, or `LIMIT` whose ordering key can tie must specify the tie-break in BOTH the stem and `expected_*` (e.g. `ORDER BY revenue DESC, product_id ASC`). Non-deterministic output is unsolvable.
 4. **Reverse questions:** `result_preview` must equal the live `expected_*` output. **Machine-enforced** by `_validate_reverse_preview_matches_key` (ERROR) — the recurrence guard for 4 SQL reverse questions whose preview had drifted from the dataset.
 5. **Debug questions:** the minimal fix of the *stated* bug must equal `expected_*` — no silent extra edits (adding `ROUND`, dropping a column) the stem never mentions.
@@ -354,6 +354,7 @@ A question is correct only if a strong candidate, reading the stem alone, can la
 7. **Metric definition.** State the sign of a difference (`discrepancy = a − b`, not `abs`), the **population** of any count/sum (which rows are in — inner- vs left-merge decides whether zero-activity rows count; null handling in a headcount or rate denominator), and inclusive/exclusive bounds. (32061, 32099, 32034, 33029, 33051.)
 8. **Method.** Pin any method whose result depends on the choice — percentile interpolation, tercile **binning** (`pd.cut` equal-width vs `pd.qcut` equal-frequency, plus the `rank(method=…)` tie rule), calendar-month vs day-count offsets, "most recent" tie-breaks. (33043/33045 RFM, 33040, 33082.)
 9. **Wrong key vs vague stem (pandas).** The most serious finds were **wrong keys**: a conversion window `days_to_order <= 30` with no lower bound counted pre-signup orders (33026/33030); an inner-merge dropped the zero-revenue rows the stem's cohort includes (32099). These pass their own grader and surface only under blind-solve — fix the *key*, not the stem.
+10. **Two solution fields, kept in lockstep.** Every executable question carries a grader reference (`expected_query`/`expected_code`) AND a separately-stored *displayed* solution (`solution_query`/`solution_code`). Editing a key's logic means editing **both** — `tests/test_code_references.py` runs the displayed solution through the real grader and goes red if it no longer reproduces the reference. (2026-06-23: the 32099/33026/33029/33030 key fixes updated `expected_code` but left `solution_code` on the old logic, turning CI red; `validate_content.py` passed because it does not check this cross-field agreement. When fixing a key, fix the pair, then run that test.)
 
 **Delivery contract (pandas).** A pandas question is solvable only if the candidate can see the DataFrame **columns** — pandas has no SchemaViewer, so `VariablesPanel`'s per-DataFrame column list is the only column surface. Every pandas surface (practice, sample, mock) must ship `schema` to it (mock historically omitted it — see [`docs/decisions/DECISIONS.md`](decisions/DECISIONS.md) 2026-06-23). A stem may list only *some* columns **only because** the panel shows the rest; never rely on the stem alone for column names.
 
@@ -524,9 +525,11 @@ print('All valid')
 # 3. Catalog loader + content validator (schemas validated at startup)
 python scripts/validate_content.py
 
-# 4. Backend tests
-cd backend && ../.venv/bin/python -m pytest tests/test_evaluator.py tests/test_api.py -q
+# 4. Backend tests — incl. the reference⇄solution guard for executable tracks
+cd backend && ../.venv/bin/python -m pytest tests/test_evaluator.py tests/test_api.py tests/test_code_references.py -q
 ```
+
+`tests/test_code_references.py` re-executes every SQL/Pandas/Python `expected_*` reference **and** grades each *displayed* `solution_query`/`solution_code` through the real grader, asserting they agree. **Run it after ANY key edit** — it is the only guard that a changed `expected_*` and its paired `solution_*` stay in lockstep; `validate_content.py` does not check that cross-field agreement (the 2026-06-23 CI-red cause — pandas key fixes that updated `expected_code` but not `solution_code`).
 
 Track-specific runtime checks (DuckDB query execution, Python test-case execution, etc.) are in each track doc's "Verification before commit" section. Run them.
 

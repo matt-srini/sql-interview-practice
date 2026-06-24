@@ -256,7 +256,10 @@ print('All valid')
 
 # 3. Catalog loader + content validator
 python scripts/validate_content.py
-cd backend && ../.venv/bin/python -m pytest tests/test_evaluator.py tests/test_api.py -q
+# Reference⇄solution agreement — REQUIRED whenever you touched an executable-track
+# expected_query/expected_code (it re-runs each reference AND grades the paired
+# solution_query/solution_code against it; validate_content.py does not).
+cd backend && ../.venv/bin/python -m pytest tests/test_evaluator.py tests/test_api.py tests/test_code_references.py -q
 ```
 
 Track-specific runtime checks live in each track doc's "Verification before commit" section. Run them.

@@ -35,6 +35,12 @@ Keep entries to 4–6 lines. Friction kills logs; if it's longer than the change
 
 ## Entries
 
+## 2026-06-24 — Editing an executable key requires syncing its displayed solution (CI guard)
+**Area:** content · process · **Status:** accepted
+**Decision:** Every executable question has two solution fields — the grader reference (`expected_query`/`expected_code`) and the user-facing displayed solution (`solution_query`/`solution_code`) — and they must stay in lockstep. The 2026-06-23 pandas key fixes (32099/33026/33029/33030) updated `expected_code` but not `solution_code`, so `tests/test_code_references.py::test_pandas_reference_executes_and_solution_agrees` went red on `main` (`validate_content.py` passed — it doesn't check this agreement). Fixed by syncing `solution_code := expected_code` for the four; documented the rule in `docs/content-authoring.md` § Output contract item 10 + § Verification, the authoring-agent verification block, and the CLAUDE.md post-fix checklist (run `test_code_references.py` after any key edit).
+**Rejected:** leaving the displayed solution divergent (it is shown to users after solving — a stale solution is a content bug, not just a test failure); relying on `validate_content.py` alone for key edits (it validates structure/balance/reverse-preview but not reference⇄solution agreement — that is exactly what `test_code_references.py` exists for).
+**Affects:** backend/content/pandas_questions/{medium,hard}.json, docs/content-authoring.md, .github/agents/question-authoring.agent.md, CLAUDE.md
+
 ## 2026-06-23 — Pandas mock blind-QA: 16 content fixes (4 wrong keys, 12 stem/method)
 **Area:** content · **Status:** accepted
 **Decision:** Two-lens QA (blind-solve 122/132 + adversarial stem↔key audit + empirical verification) on the 132 mock-only pandas questions landed 16 fixes. **4 key/logic corrections** (the serious ones): 33026 & 33030 conversion window `days_to_order <= 30` → `.between(0, 30)` (it counted pre-signup orders); 32099 inner-merge → left-merge (dropped zero-revenue active products the parent 32098's cohort includes); 33029 headcount `count(salary)` → `count(employee_id)` (excluded null-salary employees). **12 stem clarifications** pinning precision (32055, 32072, 33049), metric definition (32061, 32034, 33051, 33074, 33079, 33082), and method (33040, 33043, 33045). Each fix verify-before-write blind-solved against the final key; validate_content clean.
