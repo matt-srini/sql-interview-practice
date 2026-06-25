@@ -31,6 +31,10 @@ def test_homepage_title_and_jsonld(client):
     assert "<title>Data Engineer, Analyst &amp; Scientist Interview Prep | datathink</title>" in body
     assert "application/ld+json" in body
     assert '"Organization"' in body
+    # Organization sameAs lists the verified first-party profiles (entity disambiguation)
+    assert '"sameAs"' in body
+    assert "https://www.linkedin.com/company/datathink-co" in body
+    assert "https://x.com/datathinkHQ" in body
 
 
 def test_robots_txt(client):

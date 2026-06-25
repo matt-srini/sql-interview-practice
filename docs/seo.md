@@ -44,7 +44,7 @@ Homepage description (premium positioning lives here, not in the title): *"Premi
 
 ## Structured data (JSON-LD)
 
-- **Homepage (`/`)** — `Organization` + `WebSite` graph, injected server-side by `_inject_seo` (crawler-visible). This is the **entity anchor** that helps Google distinguish datathink.co from the other "DataThink" entities. `sameAs` is **intentionally omitted** pending verified first-party social URLs — do not point it at the imposter "DataThink" LinkedIn/GitHub profiles.
+- **Homepage (`/`)** — `Organization` + `WebSite` graph, injected server-side by `_inject_seo` (crawler-visible). This is the **entity anchor** that helps Google distinguish datathink.co from the other "DataThink" entities. `sameAs` lists the verified first-party profiles (LinkedIn `company/datathink-co` and X `@datathinkHQ`); GitHub is omitted (private). Never point `sameAs` at the imposter "DataThink" profiles.
 - **Inner pages** — FAQ, learning paths, track hubs, and sample pages carry their own JSON-LD via Helmet (client-rendered).
 
 ## noindex

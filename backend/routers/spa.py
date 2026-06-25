@@ -246,6 +246,10 @@ def _inject_seo(html: str, url_path: str) -> str:
                     "url": f"{BASE_URL}/",
                     "logo": f"{BASE_URL}/icon-512.png",
                     "description": "Premium data interview practice platform for data engineers, analysts, analytics engineers and data scientists.",
+                    "sameAs": [
+                        "https://www.linkedin.com/company/datathink-co",
+                        "https://x.com/datathinkHQ",
+                    ],
                 },
                 {
                     "@type": "WebSite",
