@@ -34,6 +34,35 @@ you *how the alert reaches you*) and the [rollback runbook](../deployment.md#rol
 
 ---
 
+## How the loop is triggered — you start it, it is not automatic
+
+**Claude does not auto-pick up alerts.** There is no Sentry → Claude push; the MCP
+lets Claude *pull* an issue only when a session is running and you ask. The loop is
+**you-initiated**:
+
+- **Detection is automatic** — a Sentry rule ([`alerting.md`](alerting.md) §2)
+  emails/Slacks you within minutes. You don't watch a dashboard.
+- **You initiate the fix** — open *any* Claude Code session **in this repo** (the
+  Sentry MCP is committed in [`.mcp.json`](../../.mcp.json) and the OAuth persists
+  across sessions, so it's ready; re-auth only if the token expires) and say:
+
+  > Pull Sentry issue `<URL or SHORT-ID>` and run the fix pipeline.
+
+  or, to sweep proactively: **"any new production Sentry issues?"** → Claude queries
+  the MCP (`search_issues is:unresolved environment:production`) and reports.
+- **Claude does the work; you approve twice** — Gate 1 (review the diff) and Gate 2
+  (say "land"). Nothing reaches prod without both.
+
+**Why not fully automatic:** push to `main` = deploy to prod, and this is a payment
+product — a webhook → headless-Claude → auto-merge loop would strip the human gates.
+Deliberately not built.
+
+**Hands-off middle ground (optional):** a scheduled Claude run that pulls new
+unresolved production issues on a cron, triages them, and posts a digest with
+proposed fixes for you to greenlight — proactive, still gated (the `schedule` skill).
+
+---
+
 ## Stage 1 — DETECT
 
 An alert fires from a Sentry rule (see [`alerting.md`](alerting.md) §2). Payment
