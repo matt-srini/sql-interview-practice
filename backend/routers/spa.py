@@ -129,6 +129,31 @@ def _build_seo_meta() -> dict:
         "description": "Common questions about datathink: free access, no-account practice, SQL and Python topics, company coverage, question unlocks, mock interviews, and plan differences.",
     }
 
+    meta["/interview-prep"] = {
+        "title": "Data Interview Prep by Role: Analyst, Engineer & Scientist | datathink",
+        "description": "Role-specific data interview prep. Pick your path: Data Analyst, Data Engineer, Analytics Engineer, or Data Scientist, each with the tracks, mock interviews, and reasoning that role demands.",
+    }
+
+    meta["/interview-prep/data-engineer"] = {
+        "title": "Data Engineer Interview Prep: SQL, Python, Spark & Pipelines | datathink",
+        "description": "Data engineer interview prep on real execution engines: SQL, Python, PySpark and data pipeline design, plus mock interviews and reasoning-first questions.",
+    }
+
+    meta["/interview-prep/data-analyst"] = {
+        "title": "Data Analyst Interview Prep: SQL, Statistics & Python | datathink",
+        "description": "Data analyst interview prep on real engines: SQL depth, statistical reasoning, Pandas and Python for data, plus mock interviews and reasoning-first questions.",
+    }
+
+    meta["/interview-prep/analytics-engineer"] = {
+        "title": "Analytics Engineer Interview Prep: SQL, dbt & Data Modeling | datathink",
+        "description": "Analytics engineer interview prep on real engines: SQL precision, dimensional data modeling, dbt patterns, Pandas and Python, plus mock interviews and reasoning-first questions.",
+    }
+
+    meta["/interview-prep/data-scientist"] = {
+        "title": "Data Scientist Interview Prep: ML, Statistics & Experimentation | datathink",
+        "description": "Data scientist interview prep on real engines: ML fundamentals, statistical inference, experimentation, plus Python and SQL, with mock interviews and reasoning-first questions.",
+    }
+
     # Pages crawlers should not index
     for path in ["/auth", "/dashboard", "/mock"]:
         meta[path] = {"noindex": True}
@@ -226,10 +251,20 @@ def _inject_seo(html: str, url_path: str) -> str:
         html,
         count=1,
     )
+    # Rewrite the canonical href IN PLACE. index.html ships a static homepage
+    # canonical; appending a second one (the old behaviour) left two conflicting
+    # rel=canonical on every non-home page, risking Google canonicalizing them
+    # all to "/". Rewrite (not append) so each page has exactly one.
+    html = re.sub(
+        r'(<link\s+rel="canonical"\s+href=")[^"]*(")',
+        rf"\g<1>{canonical}\2",
+        html,
+        count=1,
+    )
 
-    # Inject new tags not yet present in index.html
+    # og:image / twitter:image are not per-route; index.html already ships them
+    # with this same value, so injecting is value-identical (harmless).
     inject = (
-        f'<link rel="canonical" href="{canonical}" />'
         f'<meta property="og:image" content="{og_image}" />'
         f'<meta name="twitter:image" content="{og_image}" />'
     )

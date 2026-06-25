@@ -96,7 +96,7 @@ The dashboard should connect track-level performance, weak concepts, pacing, and
 - `docs/concept-hooks.md` is the Socratic interview-hook inventory by track (used to seed conceptual coverage when authoring).
 - `docs/tracks/<track>.md` is the per-track knowledge base, philosophy, and authoring allocation matrix.
 - `.github/agents/question-authoring.agent.md` is the mandatory authoring entry point — no question is created or modified without it.
-- `frontend/src/pages/LandingPage.js` is the live role-to-track product mapping.
+- `frontend/src/roleRegistry.js` is the live role-to-track product mapping (the SoT — consumed by the landing role selector, the `/interview-prep/<role>` SEO landing pages, the `/interview-prep` index, and the Sample Hub role filter). The role pages render this promise as indexable, role-specific prep pages.
 
 ## Success bar
 

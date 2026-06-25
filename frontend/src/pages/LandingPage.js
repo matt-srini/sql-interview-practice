@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Reveal, useInView } from '../components/Reveal';
 import { Helmet } from 'react-helmet-async';
 import api from '../api';
 import { useAuth } from '../contexts/AuthContext';
 import { TRACK_META } from '../contexts/TopicContext';
 import { ALL_TRACK_SLUGS, TRACK_SLUGS } from '../trackRegistry';
+import { ROLES } from '../roleRegistry';
 import { useCatalogCounts } from '../contexts/CatalogCountsContext';
 import Topbar from '../components/Topbar';
 import TrackProgressBar from '../components/TrackProgressBar';
@@ -12,33 +14,7 @@ import PathProgressCard from '../components/PathProgressCard';
 import UpgradeButton from '../components/UpgradeButton';
 import { detectCurrency, PRICES } from '../utils/currency';
 
-// ── Role → track weighting ──────────────────────────────────────────────────
-const ROLES = [
-  {
-    id: 'engineer',
-    label: 'Data Engineer',
-    tagline: 'Python pipelines · distributed systems · DE concepts',
-    tracks: ['python', 'sql', 'pyspark', 'data-engineering', 'data-modeling'],
-  },
-  {
-    id: 'analyst',
-    label: 'Data Analyst',
-    tagline: 'SQL depth · statistical reasoning · Python for data',
-    tracks: ['sql', 'statistics', 'pandas', 'python'],
-  },
-  {
-    id: 'analytics_engineer',
-    label: 'Analytics Engineer',
-    tagline: 'SQL precision · data modeling · dbt patterns',
-    tracks: ['sql', 'data-modeling', 'pandas', 'python'],
-  },
-  {
-    id: 'scientist',
-    label: 'Data Scientist',
-    tagline: 'ML · statistical inference · Python for modelling',
-    tracks: ['ml-fundamentals', 'statistics', 'experimentation', 'python', 'sql'],
-  },
-];
+// ROLES is imported from roleRegistry.js (slug + hasPage added there)
 
 // ── Hero IDE content ────────────────────────────────────────────────────────
 const IDE_TRACKS = [
@@ -162,21 +138,7 @@ const IDE_TRACKS = [
   },
 ];
 
-// ── Shared hooks ────────────────────────────────────────────────────────────
-function useInView(ref, margin = '-8%') {
-  const [inView, setInView] = useState(false);
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const obs = new IntersectionObserver(
-      ([e]) => { if (e.isIntersecting) setInView(true); },
-      { rootMargin: margin, threshold: 0.05 }
-    );
-    obs.observe(el);
-    return () => obs.disconnect();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
-  return inView;
-}
+// ── Shared hooks and Reveal — imported from shared component ────────────────
 
 function useCountUp(target, duration, trigger) {
   const [val, setVal] = useState(0);
@@ -393,21 +355,6 @@ function HeroIDE({ reduced }) {
           />
         ))}
       </div>
-    </div>
-  );
-}
-
-// ── Section entrance animation wrapper ─────────────────────────────────────
-function Reveal({ children, delay = 0, className = '' }) {
-  const ref = useRef(null);
-  const inView = useInView(ref);
-  return (
-    <div
-      ref={ref}
-      className={`lp-reveal${inView ? ' is-visible' : ''} ${className}`}
-      style={delay ? { transitionDelay: `${delay}ms` } : undefined}
-    >
-      {children}
     </div>
   );
 }
@@ -685,6 +632,13 @@ function RoleSelectorSection({ dashData }) {
               );
             })}
           </div>
+          {role.hasPage && (
+            <div className="lp-role-prep-cta">
+              <Link to={`/interview-prep/${role.slug}`} className="lp-role-prep-link">
+                {role.label} interview prep →
+              </Link>
+            </div>
+          )}
         </div>
       </div>
     </section>

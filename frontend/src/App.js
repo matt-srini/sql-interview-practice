@@ -34,6 +34,8 @@ import RefundPolicyPage from './pages/RefundPolicyPage';
 import ContactPage from './pages/ContactPage';
 import FAQPage from './pages/FAQPage';
 import PricingPage from './pages/PricingPage';
+import RoleInterviewPrepPage from './pages/RoleInterviewPrepPage';
+import InterviewPrepIndexPage from './pages/InterviewPrepIndexPage';
 import AccountPage from './pages/AccountPage';
 import ToastViewport from './components/ToastViewport';
 import CookieConsent from './components/CookieConsent';
@@ -232,6 +234,8 @@ function AppRoutes() {
         <Route path="/contact" element={<ContactPage />} />
         <Route path="/faq" element={<FAQPage />} />
         <Route path="/pricing" element={<PricingPage />} />
+        <Route path="/interview-prep" element={<InterviewPrepIndexPage />} />
+        <Route path="/interview-prep/:role" element={<RoleInterviewPrepPage />} />
 
         {/* Learning paths */}
         <Route path="/learn" element={<LearningPathsIndex />} />

@@ -22,7 +22,9 @@ Defined in `frontend/src/App.js`:
 /learn                           → LearningPathsIndex (all paths, grouped by track, topic pills)
 /learn/:topic                    → LearningPathsIndex (filtered to one track)
 /learn/:topic/:slug              → LearningPath (curated path — breadcrumb, progress bar, question list)
-/sample                          → SampleHubPage (discovery surface — 9-track × 3-difficulty grid)
+/interview-prep                  → InterviewPrepIndexPage (roles index — 4 role cards, auth-agnostic)
+/interview-prep/:role            → RoleInterviewPrepPage (role SEO landing — data-engineer | data-analyst | analytics-engineer | data-scientist; others 404)
+/sample                          → SampleHubPage (discovery surface — 9-track × 3-difficulty grid; `?role=<slug>` filters to a role's tracks)
 /sample/:topic/:difficulty       → SampleQuestionPage (topic-aware sample mode)
 /sample/:difficulty              → redirect → /sample/sql/:difficulty (legacy)
                                    /sample/:track → /sample/:track/easy (URL-guess convenience)
@@ -197,7 +199,8 @@ Discovery surface for the 81 sample questions — the entry point users hit from
 **Layout:**
 - Topbar (shared `Topbar` component, `variant='landing'`) so the user can still pivot to Mock, Dashboard, Practice ▾, or sign in
 - Hero block (`.sample-hub-header`) — eyebrow ("Free samples · no account required"), h1, sub-copy
-- 9-track grid (`.sample-hub-grid`) — 3 cols at ≥ 901 px, 2 cols 641–900 px, 1 col ≤ 640 px
+- **Role toggle bar** (`.sample-hub-rolebar`, always visible) — `All` + one pill per role in `ROLES`. `All` → `/sample`; each role → `/sample?role=<slug>`. The `?role=` param (read via `useSearchParams`, resolved against `roleRegistry`) filters the grid to that role's tracks (`visibleSlugs`); active pill from the param. This is what the role-page "Try a free sample" CTAs deep-link into.
+- track grid (`.sample-hub-grid`) — all 9 tracks, or the filtered subset when a role is active — 3 cols at ≥ 901 px, 2 cols 641–900 px, 1 col ≤ 640 px
 - Each card (`.sample-hub-card`) shows: track color dot + label, 3-line description, and a 3-column row of difficulty buttons. Card hover border-color uses the track color.
 - Each difficulty button (`.sample-hub-diff-btn`) links to `/sample/:topic/:difficulty`. Logged-in users see `tried/total` markers (`✓ all tried` when complete); logged-out users see a ghost `3 questions` label
 - Footer block — copy + "Create a free account →" CTA
@@ -220,6 +223,16 @@ Has the same **keyboard shortcuts** and **editor height toggle** as `QuestionPag
 Sample editor drafts are auto-saved per sample question key (`sample-draft:{topic}:{difficulty}:{questionId}`), restored on load, and can be cleared from the editor topbar.
 
 Loading state now renders a skeleton card instead of plain text while fetching a sample question.
+
+### RoleInterviewPrepPage (`/interview-prep/:role`)
+
+SEO role landing page (auth-agnostic — same content logged in or out). Config-driven: reads `:role` from the URL, looks it up in `roleRegistry.js` (`ROLES`), and renders from a per-role `ROLE_CONTENT` map (hero, "what interviews test", per-role track cards, a shared reasoning section, FAQ). Unpublished roles (or unknown slugs) render `NotFoundPage`. Includes a 3-level breadcrumb (`datathink / Interview prep / <Role>`), Helmet title/description, and `BreadcrumbList` + `FAQPage` JSON-LD. Hero CTAs: "Try a free sample →" → `/sample?role=<slug>` (filtered hub), and "See the N tracks ↓" smooth-scrolls to the on-page track grid. Below-hero sections animate in via the shared `Reveal`. Track cards have no left accent strip (color lives in the dot + Practice link + hover-border); see `.ip-track-card` in `App.css`.
+
+### InterviewPrepIndexPage (`/interview-prep`)
+
+Roles index — the auth-agnostic "all roles" destination (fixes the old "See all roles" link that pointed at the logged-out-only homepage role selector). Four role cards (from `ROLES`), each linking to its `/interview-prep/<slug>` page with the role's track chips. Helmet + `BreadcrumbList` + `ItemList` JSON-LD.
+
+**Shared pieces:** `frontend/src/roleRegistry.js` is the **single source of truth** for the role→track mapping + `slug` + `hasPage` (consumed by the landing role selector, the role pages, the index, and the Sample Hub `?role=` filter — mirror of [`specs/platform-north-star.md`](specs/platform-north-star.md) §Role-to-track). `frontend/src/components/Reveal.js` is the shared scroll-reveal wrapper (`Reveal` + `useInView`, the `.lp-reveal` IntersectionObserver pattern extracted from the landing).
 
 ### ProgressDashboard (`/dashboard`)
 

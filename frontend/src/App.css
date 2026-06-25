@@ -13678,6 +13678,33 @@ button.mock-focus-locked:hover {
   color: var(--text-secondary);
   margin: 0;
 }
+.sample-hub-rolebar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+.sample-hub-rolebtn {
+  padding: 0.4rem 0.85rem;
+  border: 1px solid var(--border-subtle);
+  border-radius: 999px;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+  white-space: nowrap;
+}
+.sample-hub-rolebtn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.sample-hub-rolebtn.is-active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+  font-weight: 500;
+}
 
 .sample-hub-grid {
   display: grid;
@@ -14679,4 +14706,416 @@ button.mock-focus-locked:hover {
 }
 [data-theme="dark"] .mock-debrief-pattern::before {
   color: var(--text-muted);
+}
+
+/* ============================================================
+   Role Interview Prep pages  (ip-* prefix)
+   /interview-prep/:role  —  RoleInterviewPrepPage.js
+   ============================================================ */
+
+.ip-page {
+  min-height: 100vh;
+  background: var(--bg-page);
+  color: var(--text-strong);
+}
+
+.ip-main {
+  /* sits below the fixed Topbar — same offset used on other standalone pages */
+  padding-top: 64px;
+}
+
+/* ── Hero ─────────────────────────────────────────────────── */
+.ip-breadcrumb-wrap {
+  padding-top: 1.5rem;
+}
+
+.ip-breadcrumb {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.ip-breadcrumb a {
+  color: var(--text-secondary);
+  text-decoration: none;
+}
+
+.ip-breadcrumb a:hover {
+  color: var(--text-strong);
+  text-decoration: underline;
+}
+
+.ip-breadcrumb-sep {
+  opacity: 0.45;
+}
+
+/* Hero fills the remaining first-screen height and vertically centers its
+   content (breadcrumb bar + topbar already sit above). */
+.ip-hero {
+  min-height: 62vh;
+  display: flex;
+  align-items: center;
+}
+
+.ip-hero-inner {
+  max-width: 680px;
+}
+
+.ip-h1 {
+  font-size: clamp(2rem, 4.5vw, 3.2rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  color: var(--text-strong);
+  margin: 0 0 1.25rem;
+}
+
+.ip-hero-sub {
+  font-size: 1.05rem;
+  line-height: 1.65;
+  color: var(--text-secondary);
+  max-width: 600px;
+  margin: 0 0 2rem;
+}
+
+.ip-hero-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+/* ── Shared body text ──────────────────────────────────────── */
+.ip-body {
+  font-size: 1rem;
+  line-height: 1.7;
+  color: var(--text-secondary);
+  max-width: 660px;
+  margin: 0.75rem 0 0;
+}
+
+/* ── Track grid ────────────────────────────────────────────── */
+.ip-tracks-intro {
+  margin-bottom: 2rem;
+}
+
+.ip-track-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1rem;
+}
+.ip-track-grid > .lp-reveal { display: flex; }
+.ip-track-grid > .lp-reveal > .ip-track-card { width: 100%; }
+
+.ip-track-card {
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 1.25rem 1.25rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  height: 100%;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+.ip-track-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--ip-track-color, var(--accent));
+  box-shadow: 0 6px 20px rgba(20, 41, 27, 0.07);
+}
+
+.ip-track-card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.ip-track-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.ip-track-label {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--text-strong);
+}
+
+.ip-track-desc {
+  font-size: 0.875rem;
+  line-height: 1.55;
+  color: var(--text-secondary);
+  margin: 0;
+  flex: 1;
+}
+
+.ip-track-links {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.25rem;
+}
+
+.ip-track-link {
+  font-size: 0.825rem;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.ip-track-link--primary {
+  /* color set inline via track meta.color */
+}
+
+.ip-track-link--secondary {
+  color: var(--text-muted);
+}
+
+.ip-track-link:hover {
+  text-decoration: underline;
+}
+
+/* ── Reasoning points ──────────────────────────────────────── */
+.ip-reasoning-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.ip-reasoning-point {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.ip-reasoning-heading {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-strong);
+  margin: 0;
+}
+
+.ip-reasoning-body {
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+/* ── FAQ accordion ─────────────────────────────────────────── */
+.ip-faq-list {
+  margin-top: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.ip-faq-item {
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.ip-faq-item:last-child {
+  border-bottom: none;
+}
+
+.ip-faq-q {
+  all: unset;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 1rem 1.25rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-strong);
+  cursor: pointer;
+  background: var(--surface-card);
+  box-sizing: border-box;
+  gap: 1rem;
+}
+
+.ip-faq-q:hover {
+  background: var(--surface-card-soft);
+}
+
+.ip-faq-arrow {
+  font-size: 1.2rem;
+  font-weight: 400;
+  color: var(--text-muted);
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.ip-faq-a {
+  padding: 0 1.25rem 1rem;
+  font-size: 0.9rem;
+  line-height: 1.65;
+  color: var(--text-secondary);
+  background: var(--surface-card);
+}
+
+/* ── Closing strip ─────────────────────────────────────────── */
+.ip-closing {
+  padding: 48px 0;
+}
+
+.ip-closing-inner {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.ip-closing-text {
+  font-size: 1rem;
+  color: var(--text-secondary);
+}
+
+.ip-closing-link {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.ip-closing-link:hover {
+  text-decoration: underline;
+}
+
+/* ── Landing: role-prep CTA link ───────────────────────────── */
+.lp-role-prep-cta {
+  margin-top: 1.25rem;
+}
+
+.lp-role-prep-link {
+  display: inline-block;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--accent);
+  text-decoration: none;
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--accent-soft-strong);
+  border-radius: var(--radius-sm);
+  background: var(--accent-soft);
+  transition: background 160ms, border-color 160ms;
+}
+
+.lp-role-prep-link:hover {
+  background: color-mix(in srgb, var(--accent-soft) 60%, var(--surface-card));
+  border-color: var(--accent);
+  text-decoration: none;
+}
+
+/* ── Mobile ────────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .ip-track-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .ip-reasoning-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .ip-hero-actions {
+    flex-direction: column;
+  }
+
+  .ip-closing-inner {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+/* ── Interview Prep index page — role cards ────────────────── */
+.ip-role-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.ip-role-grid > .lp-reveal { display: flex; }
+.ip-role-grid > .lp-reveal > .ip-role-card { width: 100%; }
+
+.ip-role-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 1.4rem 1.25rem 1.1rem;
+  text-decoration: none;
+  color: var(--text-strong);
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.ip-role-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--accent);
+  box-shadow: 0 6px 20px rgba(20, 41, 27, 0.07);
+  text-decoration: none;
+}
+
+.ip-role-card-heading {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-strong);
+  margin: 0;
+  line-height: 1.25;
+}
+
+.ip-role-card-tracks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  flex: 1;
+}
+
+.ip-role-track-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: var(--surface-page);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 0.2rem 0.55rem;
+}
+
+.ip-role-track-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.ip-role-track-name {
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.ip-role-card-cta {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--accent);
+  margin-top: 0.25rem;
+}
+
+.ip-index-roles {
+  padding-bottom: 4rem;
+}
+
+@media (max-width: 640px) {
+  .ip-role-grid {
+    grid-template-columns: 1fr;
+  }
 }

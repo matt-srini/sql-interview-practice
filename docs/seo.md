@@ -10,7 +10,7 @@ SoT siblings: [`backend.md`](backend.md) §System / §SPA-static (the endpoints)
 
 This is a React SPA. Crawlers and social unfurlers (LinkedIn, Slack, X, Facebook) often do **not** execute JS, so per-route `<meta>` must be present in the **server-rendered HTML**, not only set client-side. We have three layers, in precedence order:
 
-1. **`backend/routers/spa.py` — `_inject_seo()` — the crawler-visible per-route SoT.** For every known route the FastAPI SPA handler server-rewrites `<title>`, `meta description`, `og:title/description/url`, and injects `canonical` + `og:image` + `twitter:image` (+ JSON-LD on the homepage) **before sending the HTML**. This is what Google and unfurlers see with zero JS. The route→meta map is `_build_seo_meta()`. **When the SERP title/description matters, this is the file that controls it.**
+1. **`backend/routers/spa.py` — `_inject_seo()` — the crawler-visible per-route SoT.** For every known route the FastAPI SPA handler server-rewrites `<title>`, `meta description`, `og:title/description/url`, and the `canonical` href (rewritten **in place** so every page has exactly one self-referencing canonical — `index.html` ships a static homepage canonical that would otherwise conflict; regression-guarded in `test_seo_phase1.py`), and injects `og:image` + `twitter:image` (+ JSON-LD on the homepage) **before sending the HTML**. This is what Google and unfurlers see with zero JS. The route→meta map is `_build_seo_meta()`. **When the SERP title/description matters, this is the file that controls it.**
 2. **`frontend/index.html` — the static default.** Ships in the build as the fallback `<title>`/meta for any route `_inject_seo` does *not* map (it returns the HTML unchanged for unmapped routes — those are **not** auto-`noindex`'d). Keep its homepage values in sync with the spa.py `/` entry.
 3. **React Helmet (per page, `frontend/src/pages/*`) — client-nav meta.** Updates the tab title/meta on in-app SPA navigations (after JS loads). For shared routes (especially `/`) it must **mirror** layer 1, or the title flashes/drifts on client load.
 
@@ -45,7 +45,7 @@ Homepage description (premium positioning lives here, not in the title): *"Premi
 ## Structured data (JSON-LD)
 
 - **Homepage (`/`)** — `Organization` + `WebSite` graph, injected server-side by `_inject_seo` (crawler-visible). This is the **entity anchor** that helps Google distinguish datathink.co from the other "DataThink" entities. `sameAs` lists the verified first-party profiles (LinkedIn `company/datathink-co` and X `@datathinkHQ`); GitHub is omitted (private). Never point `sameAs` at the imposter "DataThink" profiles.
-- **Inner pages** — FAQ, learning paths, track hubs, and sample pages carry their own JSON-LD via Helmet (client-rendered).
+- **Inner pages** — role interview-prep pages (`BreadcrumbList` 3-level + `FAQPage`), the `/interview-prep` index (`BreadcrumbList` + `ItemList`), FAQ, learning paths, track hubs, and sample pages carry their own JSON-LD via Helmet (client-rendered).
 
 ## noindex
 
@@ -54,7 +54,7 @@ Homepage description (premium positioning lives here, not in the title): *"Premi
 ## Roadmap
 
 - **Phase 1 (done — this doc).** Homepage + per-route titles/descriptions, robots + derived sitemap, homepage Organization/WebSite JSON-LD, `CANONICAL_BASE_URL` consolidation.
-- **Phase 2 — role landing pages.** Indexable `/interview-prep/<role>` pages (`data-engineer` first, then analyst, scientist, analytics-engineer) targeting role-specific intent, built from the existing role→track mapping (`LandingPage.js` `ROLES`; framing per [`specs/platform-north-star.md`](specs/platform-north-star.md)). Each wired into the spa.py meta map + Helmet + sitemap, internally linked from the landing role selector, with `BreadcrumbList`/`Course` JSON-LD.
+- **Phase 2 — role landing pages (done).** Four indexable role pages at `/interview-prep/<role>` (data-engineer, data-analyst, analytics-engineer, data-scientist) + a `/interview-prep` roles index, targeting role-specific intent. Built from the shared role→track mapping in `frontend/src/roleRegistry.js` (the SoT, framing per [`specs/platform-north-star.md`](specs/platform-north-star.md) §Role-to-track). Each page has spa.py meta + a Helmet mirror, sits in the sitemap, carries a 3-level `BreadcrumbList` + `FAQPage` JSON-LD, is internally linked from the landing role selector (a per-role prep link) and the index, and points its primary CTA at a **role-filtered Sample Hub** (`/sample?role=<slug>`, a toggle bar of `All` + the four roles). Component `RoleInterviewPrepPage` is config-driven (`ROLE_CONTENT`); the index is `InterviewPrepIndexPage`. Scroll-reveal animations come from the shared `components/Reveal.js`.
 - **Phase 3 — authority & disambiguation.** `SoftwareApplication`/`FAQPage` schema, per-role OG images, internal-linking pass for sitelinks, and the operational levers: **Google Search Console verification + sitemap submission**, Organization `sameAs`, and a first-party Google Business Profile.
 
 ## Brand disambiguation (the real SERP lever)

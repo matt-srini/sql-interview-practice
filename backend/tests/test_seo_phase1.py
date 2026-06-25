@@ -1,5 +1,6 @@
-"""SEO Phase 1 assertions — title rewrite, JSON-LD, robots.txt, sitemap.xml."""
+"""SEO assertions — title rewrite, JSON-LD, robots.txt, sitemap.xml, canonical, role pages."""
 import os
+import re
 import sys
 
 import pytest
@@ -61,3 +62,21 @@ def test_sitemap_xml_includes_and_excludes(client):
     # Must NOT include noindex paths
     assert "/dashboard" not in body
     assert "/auth" not in body
+
+
+def test_single_self_canonical_per_page(client):
+    # Regression: spa.py must REWRITE the static index.html canonical in place,
+    # not append a second one. Two conflicting rel=canonical (homepage + self)
+    # would risk Google canonicalizing every non-home page to "/".
+    for path in ["/", "/practice/sql", "/interview-prep/data-engineer"]:
+        body = client.get(path).text
+        canonicals = re.findall(r'<link rel="canonical" href="([^"]*)"', body)
+        assert canonicals == [f"https://datathink.co{path}"], (path, canonicals)
+
+
+def test_role_interview_prep_page(client):
+    resp = client.get("/interview-prep/data-engineer")
+    assert resp.status_code == 200
+    body = resp.text
+    assert "<title>Data Engineer Interview Prep: SQL, Python, Spark &amp; Pipelines | datathink</title>" in body
+    assert "interview-prep/data-engineer" in client.get("/sitemap.xml").text
