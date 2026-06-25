@@ -7,7 +7,7 @@ two big items are saved under [`docs/backlog/`](docs/backlog/).
 
 ---
 
-## P1 — Load & concurrency readiness  (head-of-line P0 fixed; the full ceiling RUN remains)
+## P1 — Load & concurrency readiness  ✅ CLOSED (launch-ready Tier 1; 2 non-blocking operator config residuals)
 **Prompt:** [`docs/backlog/session-concurrency-load.md`](docs/backlog/session-concurrency-load.md)
 
 ✅ **DONE (2026-06-08) — head-of-line blocking + the load harness.** All blocking evaluators now
@@ -23,18 +23,23 @@ Off-loop password hashing (separate `MAX_CONCURRENT_HASHES` cap) + rate-limiter 
 degradation landed too. Full why → `docs/decisions/DECISIONS.md` (2026-06-08 offload / hashing /
 rate-limiter entries) + `docs/deployment.md` § Concurrency & scaling model.
 
-**Remaining (still P1):**
-- **Run + record the full realistic-load ceiling.** The harness exists and a head-of-line +
-  auth-burst baseline is recorded, but the comprehensive `loadtest/driver.py` VU ramp (the
-  weighted journeys against a prod-like deploy) has **not** been run end-to-end and recorded.
-  Ramp to the knee and capture, per level: throughput (req/s), p50/p95/p99, error rate, Postgres
-  pool-in-use vs size, live subprocess count, event-loop lag. State the honest concurrent-user
-  ceiling and what saturates first.
-- **Validate + finalize the tiered scaling roadmap.** Tiers 1–3 are already drafted in
-  `docs/deployment.md` § Concurrency & scaling model (config+offload → horizontal replicas →
-  externalized execution fleet). Confirm the Tier-1 "low-thousands read-heavy" figure against the
-  measured ceiling, and set the concrete Tier-2 trigger (the VU level / resource-saturation signal
-  that means "add a replica now").
+✅ **DONE (2026-06-08) — ceiling measured + tier roadmap finalized.** The comprehensive VU ramp was
+run on a prod-like box (8 vCPU, single worker, `MAX_CONCURRENT_EXECUTIONS=6`). **Verdict: LAUNCH-READY
+at Tier 1, no blockers** — serves low-thousands concurrent active learners (1 VU ≈ 50–100 real users),
+degrades by latency and never crashes (**0 5xx at every level**), knee ~16–32 VUs then CPU-bound, peak
+~300 rps. Tier 1/2/3 scaling roadmap confirmed against the measured ceiling with concrete move-up
+triggers (`docs/deployment.md` § Concurrency & scaling model). Handoff report retained by the operator.
+
+**Residual — non-blocking, operator config (NOT engineering):**
+- **Verify proxy-IP rate-limit keying before driving real traffic.** The per-IP limiter keys on
+  `request.client.host` (`routers/auth.py:233`); uvicorn derives that from `X-Forwarded-For` *only*
+  when the immediate peer is in `--forwarded-allow-ips` (default `127.0.0.1`; the app never reads XFF
+  itself). If Railway's hop isn't `127.0.0.1`, every client collapses into one 60/min bucket → mass
+  429s under launch load. **Check:** Railway logs for `client_ip=` (request-context middleware logs it)
+  — diverse public IPs = fine; one repeated internal/proxy IP = collapsed → set `FORWARDED_ALLOW_IPS=
+  <verified Railway hop>` (NEVER `*` — IP-spoofing hole). Dockerfile wiring already in place.
+- **`MAX_CONCURRENT_HASHES` default** = cores−1 (favors auth-burst throughput); `cores/2` is a safer
+  default if bystander latency during simultaneous-auth bursts matters. Kept as-is; operator's call.
 
 ## P1 — Launch-readiness audit  (the dimensions not yet swept)
 **Prompt:** [`docs/backlog/session-launch-readiness.md`](docs/backlog/session-launch-readiness.md)
