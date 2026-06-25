@@ -308,7 +308,7 @@ The `FRONTEND_DIST_DIR` env var defaults to `/app/frontend/dist` inside the imag
 | `SENTRY_AUTH_TOKEN` | Optional | Required only if you want the frontend build to upload sourcemaps to Sentry |
 | `SENTRY_ORG` | Optional | Sentry organization slug for frontend sourcemap upload |
 | `SENTRY_PROJECT` | Optional | Sentry project slug for frontend sourcemap upload |
-| `SENTRY_RELEASE` | Optional | Release name used by backend Sentry and frontend sourcemap upload; defaults to `RAILWAY_GIT_COMMIT_SHA` when available on the frontend build |
+| `SENTRY_RELEASE` | **Recommended** | Release name used by backend Sentry and frontend sourcemap upload. **Set this to the deploy's git SHA** — e.g. `SENTRY_RELEASE=${{RAILWAY_GIT_COMMIT_SHA}}` in Railway. The frontend build already falls back to `RAILWAY_GIT_COMMIT_SHA`, but the **backend has no fallback** (`config.py`) — if unset, backend events carry `release=None` and diverge from the frontend, which breaks Sentry's "resolved in next release" / regression auto-reopen (see [`runbooks/sentry-fix-pipeline.md`](runbooks/sentry-fix-pipeline.md) Stage 6). Setting it to the SHA makes both halves share one release id per deploy. |
 
 In `production` mode, startup (`config.validate_production_config()`, called at import) fails fast if `DATABASE_URL`, `REDIS_URL`, `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, `RAZORPAY_WEBHOOK_SECRET`, the Razorpay subscription plan IDs `RAZORPAY_PLAN_PRO` / `RAZORPAY_PLAN_ELITE` (without them the Pro/Elite subscribe flow 500s at runtime), `RESEND_API_KEY` (transactional email — password reset + verification), or `ADMIN_SECRET` (which must also be **≥32 characters**) are missing. When the Paddle rail is enabled (`PADDLE_CLIENT_TOKEN` set), it **additionally** requires `PADDLE_WEBHOOK_SECRET`, all four `PADDLE_PRICE_*`, and `PADDLE_ENVIRONMENT=production` — so a half-configured Paddle deploy crashes loudly at boot (Railway marks the deploy failed) instead of silently breaking checkout/webhooks. INR-only deploys leave all Paddle vars unset and boot cleanly. Webhook secrets, client tokens, and price IDs are whitespace-stripped at read time, so a pasted trailing newline can't break HMAC verification.
 
@@ -352,6 +352,8 @@ VITE_POSTHOG_HOST=https://us.i.posthog.com
 The frontend observability values are injected into the SPA at request time by the backend router, so Railway does not need to pass them as Docker build args.
 
 For backend Sentry, the API automatically tags events with `request_id`, request metadata, and the current user/session context when available.
+
+**Release consistency (important for closing the loop):** set `SENTRY_RELEASE` to the deploy's git SHA so backend and frontend report the *same* release. Without it the backend release is `None`, and Sentry's "Resolved in next release" → auto-reopen-on-regression (the bad-fix tripwire in the [fix pipeline](runbooks/sentry-fix-pipeline.md)) cannot match events to deploys.
 
 ### Frontend sourcemaps
 

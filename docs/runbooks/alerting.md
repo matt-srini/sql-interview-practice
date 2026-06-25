@@ -3,6 +3,9 @@
 Operator setup guide. All steps are performed once in the relevant dashboards
 (Sentry, UptimeRobot / Better Stack). Nothing here requires a code deploy.
 
+> This covers **how an alert reaches you**. For what happens *after* — turning a
+> Sentry issue into a deployed fix — see [`sentry-fix-pipeline.md`](sentry-fix-pipeline.md).
+
 ---
 
 ## 1. What is captured and how to find it
@@ -85,6 +88,43 @@ count threshold is not yet reached:
 
 These stages mean money was collected but the user's entitlement was not persisted —
 they should be treated as P1.
+
+### Baseline application errors (non-payment)
+
+Rules A–C only cover billing. A non-payment 500 — a sandbox/DuckDB crash, an auth
+regression, any unhandled exception — would otherwise sit in Sentry unannounced.
+These two rules are the safety net for everything else. (4xx app errors are already
+dropped by `before_send` in `sentry_utils.py`, so these fire only on real errors.)
+
+### Rule D — Any new production issue
+
+> Settings → Alerts → Create Alert → Issues
+
+| Field | Value |
+|---|---|
+| **Name** | `new-issue — production baseline` |
+| **Environment** | `production` |
+| **Condition** | "A new issue is created" (fires once per *novel* issue, not per event) |
+| **Filter** | none — every new error type, payment or not |
+| **Action** | Send notification → Slack `#alerts` AND email `ops@datathink.co` |
+
+This is the single most important non-payment rule: it guarantees you hear about a
+class of error the first time it ever happens, instead of when a user emails you.
+
+### Rule E — Overall error-rate spike
+
+> Settings → Alerts → Create Alert → Metric Alert → Number of Errors
+
+| Field | Value |
+|---|---|
+| **Name** | `error-rate — spike` |
+| **Environment** | `production` |
+| **Query** | none (all errors) |
+| **Threshold** | CRITICAL when count > 50 in 5 minutes — **tune to your baseline traffic** |
+| **Action** | Slack `#alerts` with `@oncall` |
+
+Catches an outage or a regression hitting many users at once, even when each error
+is an already-known (non-new) issue that Rule D won't re-fire for.
 
 ---
 
