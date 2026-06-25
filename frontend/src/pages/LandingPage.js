@@ -993,7 +993,7 @@ function PricingSection({ userPlan, currency }) {
               <li>3 benchmark mocks per day · 3 custom drills per day</li>
               <li>Exclusive mock-only question bank: questions reserved for mock sessions, never shown in practice</li>
               <li>Detailed mock history, per-question solutions, and concept breakdowns</li>
-              <li>Weakest concept analysis + drill recommendations</li>
+              <li>Your weakest concepts, ranked, each with a one-tap drill</li>
               <li>All learning paths</li>
             </ul>
             <div className="landing-tier-cta">
