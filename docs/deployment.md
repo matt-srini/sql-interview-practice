@@ -488,6 +488,23 @@ Rolling back is not always the right move:
 
 ## Concurrency & scaling model
 
+**Readiness snapshot (Tier 1 — verified 2026-06-08).** Launch-ready for load & concurrency on a single replica; no blockers. The fixes: all code execution + password hashing run off the event loop (P0/P2), DuckDB access is serialized + table-set snapshotted (no segfault, no head-of-line block), Postgres pool tuned (P1), rate limiter degrades gracefully (P2.2). Two non-blocking operator follow-ups remain: verify the prod proxy peer (§ Rate-limiter operational notes & findings) and the `MAX_CONCURRENT_HASHES` default (below). Decisions: `docs/decisions/DECISIONS.md` (2026-06-08 entries — off-loop execution, off-loop hashing P2.1, rate-limiter P2.2, FORWARDED_ALLOW_IPS).
+
+*Reading the capacity numbers (this is where people misjudge):*
+- **Concurrent vs total users.** Only ~1–10% of users are active in the same second, so "low thousands *concurrent*" backs **tens of thousands of *registered*** users. "Hundreds of thousands of users" almost always means total, of which thousands–tens-of-thousands are concurrent at peak.
+- **VUs vs real users.** Load-test "VUs" (`backend/loadtest/`) hammer non-stop; a real learner fires a request every several seconds (reads/types between clicks), so **1 VU ≈ 50–100 real users**. The measured ~16–32-VU knee therefore ≈ **a few thousand real concurrent learners**.
+
+*Measured before → after the fixes (single worker, 8 vCPU, mixed read-heavy workload):*
+
+| Signal | Before | After |
+|---|---|---|
+| `/health` p95, 6 code-execs in flight | 127 ms (9.4×) | ~23 ms (1.2×) |
+| `/health` behind one 5 s execution | 4723 ms | ~0 (loop free) |
+| 3 concurrent 5 s executions | 15.0 s | 5.0 s |
+| Knee (mixed workload) | ~16 VUs | ~16–32 VUs, then CPU-bound |
+| Peak throughput | ~250 rps | ~300 rps |
+| 5xx errors | 0 | 0 |
+
 The app serves all traffic on a **single event loop per replica** (`uvicorn main:app`, one worker). Code execution is blocking (DuckDB SQL grading; a 5–12 s subprocess sandbox), so it runs **off the loop** via `backend/offload.py` (subprocess sandboxes concurrent up to `MAX_CONCURRENT_EXECUTIONS`; DuckDB serialized behind a process-wide lock — see `docs/backend.md` § Off-loop code execution). **Password hashing** (PBKDF2, ~22 ms/call) is the other blocking-CPU call on the request path and is offloaded the same way under its own `MAX_CONCURRENT_HASHES` cap (see `docs/backend.md` § Off-loop password hashing). Reproduce/measure with `backend/loadtest/` (driver + head-of-line probe; README documents usage).
 
 **Per-replica connection budget.** Each replica opens up to `DB_POOL_SIZE + DB_MAX_OVERFLOW` (default 30) Postgres connections. Keep `replicas × 30` comfortably below the managed-Postgres `max_connections` (Railway's default is ~100–400 depending on plan). Beyond that, put PgBouncer (transaction pooling) in front of Postgres.
@@ -501,6 +518,11 @@ The app serves all traffic on a **single event loop per replica** (`uvicorn main
 | **1 — current** | Off-loop execution + real semaphore + DuckDB serialize/table-cache + pool tuning | low **thousands** of concurrent users on one replica; ~`MAX_CONCURRENT_EXECUTIONS` truly-concurrent executions. CPU is the next limiter (single replica saturated ~32 active VUs at 8 vCPU in measurement). | done; low |
 | **2 — horizontal replicas** | Multiple stateless app replicas behind Railway; Redis-backed shared rate-limit/session state (already Redis-ready); PgBouncer + a Postgres read replica; CDN for the SPA. DuckDB is loaded per-replica (fine — read-only catalog data). | **tens of thousands** | medium; shared-state correctness |
 | **3 — externalize execution** | Move code execution to a dedicated, horizontally-scaled worker fleet / queue so the web tier never blocks on a sandbox; DuckDB per-worker or a query service. | lifts the **execute-heavy** ceiling (the real constraint — execution is CPU/subprocess-bound, not loop-bound) | high; new infra |
+
+**Advance on a *measured* trigger, not ambition** — the harness is how you see it coming:
+- **Tier 1 → 2:** one replica's CPU is regularly high (≳70%) at peak. The app is already stateless (state in Postgres + Redis), so Tier 2 is mostly infra (replicas, PgBouncer, read replica, CDN), not code.
+- **Tier 2 → 3:** code execution *specifically* is what saturates replicas (web work is cheap but sandboxes peg CPU). Externalizing execution lets read and execute load scale independently.
+- **Beyond 3** (hundreds of thousands *concurrent*): cache read-mostly content (Redis/edge), shard Postgres by user, multi-region + autoscale. Mostly a cost question once content is cached and per-user writes shard cleanly.
 
 ---
 
