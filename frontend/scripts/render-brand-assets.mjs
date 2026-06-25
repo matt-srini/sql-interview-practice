@@ -31,12 +31,16 @@ const TARGETS = [
   { output: 'icon-512.png',         source: 'icon-maskable.svg',  width: 512,  height: 512, colorScheme: 'dark'  },
   { output: 'og-image.png',         source: 'og-image.svg',       width: 1200, height: 630, colorScheme: 'dark'  },
   { output: 'og-image-light.png',   source: 'og-image-light.svg', width: 1200, height: 630, colorScheme: 'light' },
+  { output: 'branding/x-banner.png', source: 'branding/x-banner.svg', width: 1500, height: 500, colorScheme: 'dark', fonts: true },
 ];
+
+const only = process.argv[2];
+const targets = only ? TARGETS.filter(t => t.output.includes(only)) : TARGETS;
 
 const browser = await chromium.launch();
 
-for (const { output, source, width, height, colorScheme = 'dark' } of TARGETS) {
-  const isOG = source.startsWith('og-image');
+for (const { output, source, width, height, colorScheme = 'dark', fonts } of targets) {
+  const needsFonts = fonts || source.startsWith('og-image');
   const svgText = readFileSync(resolve(publicDir, source), 'utf8');
 
   // Strip the XML declaration so the inline SVG is valid HTML
@@ -49,7 +53,7 @@ for (const { output, source, width, height, colorScheme = 'dark' } of TARGETS) {
   );
 
   let head = '';
-  if (isOG) {
+  if (needsFonts) {
     head = `
       <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
       <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700&display=swap" rel="stylesheet" />
@@ -73,7 +77,7 @@ for (const { output, source, width, height, colorScheme = 'dark' } of TARGETS) {
   await page.setViewportSize({ width, height, deviceScaleFactor: 1 });
   await page.setContent(html, { waitUntil: 'networkidle' });
 
-  if (isOG) {
+  if (needsFonts) {
     try {
       await page.evaluate(() => document.fonts.ready);
       await page.waitForTimeout(400);
