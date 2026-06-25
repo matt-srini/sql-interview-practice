@@ -6,7 +6,25 @@ COPY frontend/package*.json ./
 RUN npm ci
 
 COPY frontend/ ./
-RUN npm run build
+
+# Sentry sourcemap upload + release injection run at BUILD time via
+# @sentry/vite-plugin, which reads these from the build env. Railway passes
+# service variables into a Dockerfile build ONLY for vars declared as ARG here;
+# without these lines `npm run build` sees none of them and the plugin silently
+# skips (no sourcemaps, no release). We pass them INLINE to the build process
+# (not via ENV) so the auth token is never persisted in an image layer. All are
+# optional — the build still succeeds and just skips upload when absent.
+ARG SENTRY_AUTH_TOKEN
+ARG SENTRY_ORG
+ARG SENTRY_PROJECT
+ARG SENTRY_RELEASE
+ARG RAILWAY_GIT_COMMIT_SHA
+RUN SENTRY_AUTH_TOKEN="$SENTRY_AUTH_TOKEN" \
+    SENTRY_ORG="$SENTRY_ORG" \
+    SENTRY_PROJECT="$SENTRY_PROJECT" \
+    SENTRY_RELEASE="$SENTRY_RELEASE" \
+    RAILWAY_GIT_COMMIT_SHA="$RAILWAY_GIT_COMMIT_SHA" \
+    npm run build
 
 FROM python:3.11-slim AS runtime
 

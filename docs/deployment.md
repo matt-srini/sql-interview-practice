@@ -361,7 +361,11 @@ For backend Sentry, the API automatically tags events with `request_id`, request
 
 ### Frontend sourcemaps
 
-Frontend builds now emit hidden sourcemaps. If `SENTRY_AUTH_TOKEN`, `SENTRY_ORG`, and `SENTRY_PROJECT` are present during the build, Vite will upload those sourcemaps to Sentry automatically via `@sentry/vite-plugin`. If they are absent, the build still succeeds and simply skips upload.
+Frontend builds emit hidden sourcemaps. If `SENTRY_AUTH_TOKEN`, `SENTRY_ORG`, and `SENTRY_PROJECT` are present **during the build**, `@sentry/vite-plugin` uploads them to Sentry and injects the release; if absent, the build still succeeds and skips upload.
+
+**Critical for the Dockerfile deploy:** "present during the build" means present *inside the Docker build*, which is **not** automatic. Railway only forwards a service variable into a Dockerfile build when the `Dockerfile` declares it as `ARG`. The `frontend-build` stage therefore declares `ARG SENTRY_AUTH_TOKEN / SENTRY_ORG / SENTRY_PROJECT / SENTRY_RELEASE / RAILWAY_GIT_COMMIT_SHA` and passes them inline to `npm run build` (inline, not `ENV`, so the auth token is never baked into an image layer). Without those `ARG` lines the plugin silently no-ops — minified stack traces and `release=unset` on the frontend even when the Railway vars are set. This was the launch finding: the vars were set in Railway but never reached the build. `RAILWAY_GIT_COMMIT_SHA` is declared too so the frontend release matches the backend's (which reads it at runtime).
+
+Build args needed in Railway (service variables, used at build): `SENTRY_AUTH_TOKEN` (an **Organization Auth Token** from Sentry → Settings → Auth/Organization Tokens), `SENTRY_ORG` (e.g. `self-c16`), `SENTRY_PROJECT` (the frontend project, e.g. `javascript-react`).
 
 ### Razorpay dashboard setup
 
