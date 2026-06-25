@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import api from '../api';
 import Topbar from '../components/Topbar';
 import { useAuth } from '../contexts/AuthContext';
 import { TRACK_SLUGS, TRACK_META } from '../trackRegistry';
+import { ROLES } from '../roleRegistry';
 
 const DIFFICULTIES = ['easy', 'medium', 'hard'];
 
@@ -23,6 +24,10 @@ const DIFFICULTIES = ['easy', 'medium', 'hard'];
 export default function SampleHubPage() {
   const { user } = useAuth();
   const [summary, setSummary] = useState(null);
+  const [searchParams] = useSearchParams();
+  const roleParam = searchParams.get('role');
+  const roleEntry = ROLES.find((r) => r.slug === roleParam) ?? null;
+  const visibleSlugs = roleEntry ? roleEntry.tracks : TRACK_SLUGS;
 
   // Fetch tried-counts when logged in. Anonymous users skip — we don't show
   // the tried markers for them (matches the "no friction" promise — we don't
@@ -57,10 +62,29 @@ export default function SampleHubPage() {
           <p className="sample-hub-sub">
             Nine tracks · three difficulties · three questions per cell — 81 free samples in total. Real execution where it applies. Reasoning questions where it matters.
           </p>
+          <div className="sample-hub-rolebar" role="group" aria-label="Filter by role">
+            <Link
+              to="/sample"
+              className={`sample-hub-rolebtn${!roleEntry ? ' is-active' : ''}`}
+              aria-current={!roleEntry ? 'page' : undefined}
+            >
+              All
+            </Link>
+            {ROLES.map((role) => (
+              <Link
+                key={role.slug}
+                to={`/sample?role=${role.slug}`}
+                className={`sample-hub-rolebtn${roleParam === role.slug ? ' is-active' : ''}`}
+                aria-current={roleParam === role.slug ? 'page' : undefined}
+              >
+                {role.label}
+              </Link>
+            ))}
+          </div>
         </header>
 
         <div className="sample-hub-grid" role="list">
-          {TRACK_SLUGS.map((slug) => {
+          {visibleSlugs.map((slug) => {
             const meta = TRACK_META[slug];
             const trackCounts = summary?.[slug] ?? null;
             return (
