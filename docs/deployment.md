@@ -355,6 +355,10 @@ For backend Sentry, the API automatically tags events with `request_id`, request
 
 **Release consistency (important for closing the loop):** set `SENTRY_RELEASE` to the deploy's git SHA so backend and frontend report the *same* release. Without it the backend release is `None`, and Sentry's "Resolved in next release" → auto-reopen-on-regression (the bad-fix tripwire in the [fix pipeline](runbooks/sentry-fix-pipeline.md)) cannot match events to deploys.
 
+**Boot-check (confirm the backend is actually reporting):** `init_sentry()` logs its status at startup, so you can verify from the Railway deploy logs without waiting for an error:
+- `Sentry initialized (environment=production, release=<sha>, traces_sample_rate=…)` — wired correctly. If `release=unset`, `SENTRY_RELEASE` is missing (see above).
+- `Sentry DISABLED in production — SENTRY_DSN is not set` (WARNING) — the backend is dark; set `SENTRY_DSN` in Railway. This is the recurrence guard for the launch finding where the DSN was in local `.env` but never added to Railway, so production captured nothing. Guarded by `tests/test_sentry_bootcheck.py`.
+
 ### Frontend sourcemaps
 
 Frontend builds now emit hidden sourcemaps. If `SENTRY_AUTH_TOKEN`, `SENTRY_ORG`, and `SENTRY_PROJECT` are present during the build, Vite will upload those sourcemaps to Sentry automatically via `@sentry/vite-plugin`. If they are absent, the build still succeeds and simply skips upload.

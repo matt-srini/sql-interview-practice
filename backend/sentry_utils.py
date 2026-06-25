@@ -29,6 +29,18 @@ def init_sentry() -> bool:
     global _sentry_sdk
 
     if not SENTRY_DSN:
+        # Boot-check: a production deploy with no DSN means the backend is
+        # silently NOT capturing errors — the exact failure mode where you only
+        # find out when an error you needed never showed up in Sentry. Make it
+        # loud in the logs. (Not boot-FATAL: Sentry being down must not take the
+        # app down — a warning is the right severity.)
+        if ENV == "production":
+            logger.warning(
+                "Sentry DISABLED in production — SENTRY_DSN is not set; "
+                "backend errors are NOT being captured"
+            )
+        else:
+            logger.info("Sentry disabled (no SENTRY_DSN; ENV=%s)", ENV)
         return False
 
     try:
@@ -48,6 +60,15 @@ def init_sentry() -> bool:
         send_default_pii=False,
     )
     _sentry_sdk = sentry_sdk
+    # Confirms the backend is reporting, and surfaces the release (so a missing
+    # SENTRY_RELEASE shows as "unset" rather than silently breaking regression
+    # auto-reopen) and the traces rate — all visible in the Railway boot log.
+    logger.info(
+        "Sentry initialized (environment=%s, release=%s, traces_sample_rate=%s)",
+        ENV,
+        SENTRY_RELEASE or "unset",
+        SENTRY_TRACES_SAMPLE_RATE,
+    )
     return True
 
 
