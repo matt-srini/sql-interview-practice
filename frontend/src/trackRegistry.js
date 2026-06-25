@@ -14,7 +14,7 @@
 export const TRACK_META = {
   sql: {
     label: 'SQL',
-    description: 'SQL problems against real datasets — joins, aggregations, window functions, and the analytical patterns working data teams reach for on the job.',
+    description: 'SQL problems against real datasets: joins, aggregations, window functions, and the analytical patterns working data teams reach for on the job.',
     color: '#5B6AF0',
     apiPrefix: '',
     language: 'sql',
@@ -25,7 +25,7 @@ export const TRACK_META = {
   },
   python: {
     label: 'Python',
-    description: 'Python algorithm problems grounded in real data engineering contexts — sessionization, stream aggregation, DAG ordering, and the algorithmic reasoning data professionals reach for beyond the basics.',
+    description: 'Python algorithm problems grounded in real data engineering contexts: sessionization, stream aggregation, DAG ordering, and the algorithmic reasoning data professionals reach for beyond the basics.',
     color: '#2D9E6B',
     apiPrefix: '/python',
     language: 'python',
@@ -47,7 +47,7 @@ export const TRACK_META = {
   },
   pyspark: {
     label: 'PySpark',
-    description: 'Spark architecture, shuffle optimization, streaming, and Delta Lake — the system-level reasoning behind production Spark decisions.',
+    description: 'Spark architecture, shuffle optimization, streaming, and Delta Lake: the system-level reasoning behind production Spark decisions.',
     color: '#D94F3D',
     apiPrefix: '/pyspark',
     language: 'text',
@@ -58,7 +58,7 @@ export const TRACK_META = {
   },
   'data-engineering': {
     label: 'Data Engineering',
-    description: 'ETL vs ELT, idempotency, orchestration, streaming vs batch, CDC, and schema evolution — the system design reasoning behind reliable data pipelines.',
+    description: 'ETL vs ELT, idempotency, orchestration, streaming vs batch, CDC, and schema evolution: the system design reasoning behind reliable data pipelines.',
     color: '#B9762B',
     apiPrefix: '/data-engineering',
     language: 'text',
@@ -69,7 +69,7 @@ export const TRACK_META = {
   },
   'data-modeling': {
     label: 'Data Modeling',
-    description: 'Dimensional modeling, normalization, star vs snowflake, SCDs, and dbt patterns — the design decisions that determine whether downstream analytics scale or break.',
+    description: 'Dimensional modeling, normalization, star vs snowflake, SCDs, and dbt patterns: the design decisions that determine whether downstream analytics scale or break.',
     color: '#3F8E8C',
     apiPrefix: '/data-modeling',
     language: 'text',
@@ -80,7 +80,7 @@ export const TRACK_META = {
   },
   statistics: {
     label: 'Statistics',
-    description: 'Probability, inference, hypothesis testing, A/B test design, and Bayesian reasoning — the quantitative thinking that lets data scientists make defensible claims from data.',
+    description: 'Probability, inference, hypothesis testing, A/B test design, and Bayesian reasoning: the quantitative thinking that lets data scientists make defensible claims from data.',
     color: '#7A5AF0',
     apiPrefix: '/statistics',
     language: 'python',
@@ -91,7 +91,7 @@ export const TRACK_META = {
   },
   'ml-fundamentals': {
     label: 'ML Fundamentals',
-    description: 'Model selection, bias-variance, evaluation metrics, regularization, and production ML trade-offs — the judgment that separates practitioners who understand their models from those who just run them.',
+    description: 'Model selection, bias-variance, evaluation metrics, regularization, and production ML trade-offs: the judgment that separates practitioners who understand their models from those who just run them.',
     color: '#E0456A',
     apiPrefix: '/ml-fundamentals',
     language: 'text',
@@ -102,7 +102,7 @@ export const TRACK_META = {
   },
   experimentation: {
     label: 'Experimentation',
-    description: 'A/B testing design, statistical power, metric selection, CUPED, novelty effects, multiple testing, and causal inference — the experimentation reasoning that makes product decisions causally defensible.',
+    description: 'A/B testing design, statistical power, metric selection, CUPED, novelty effects, multiple testing, and causal inference: the experimentation reasoning that makes product decisions causally defensible.',
     color: '#0EA5E9',
     apiPrefix: '/experimentation',
     language: 'text',

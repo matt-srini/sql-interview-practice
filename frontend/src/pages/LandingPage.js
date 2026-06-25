@@ -478,7 +478,7 @@ function HeroSection({ user, dashData, paths = [], reduced }) {
     <section className="lp-section lp-hero">
       <div className="lp-inner lp-hero-inner">
         <div className="lp-hero-left">
-          <p className="lp-eyebrow">For data professionals — and those becoming one.</p>
+          <p className="lp-eyebrow">For data professionals - and those becoming one.</p>
           <h1 className="lp-hero-h1">
             Develop the reasoning that makes you effective with data.
           </h1>
@@ -514,12 +514,12 @@ function ThesisSection() {
     {
       index: '01',
       title: 'Recognition ≠ reasoning',
-      copy: 'Knowing that window functions exist is not the same as knowing when to use them. This platform trains the second skill — the one that shows up under pressure.',
+      copy: 'Knowing that window functions exist is not the same as knowing when to use them. This platform trains the second skill, the one that shows up under pressure.',
     },
     {
       index: '02',
       title: 'Execution, not explanation',
-      copy: 'SQL runs against a real DuckDB engine. Python executes in an isolated sandbox. For reasoning tracks — ML, statistics, data engineering — real scenarios test your judgment, not pattern recall.',
+      copy: 'SQL runs against a real DuckDB engine. Python executes in an isolated sandbox. For reasoning tracks like ML, statistics, and data engineering, real scenarios test your judgment, not pattern recall.',
     },
     {
       index: '03',
@@ -757,7 +757,7 @@ function ProofStripSection({ pathCount = 0 }) {
           ))}
         </div>
         <p className="lp-proof-sub">
-          Reasoning patterns from real practitioner work — and, in the SQL track, real interview shapes at Meta, Stripe, Airbnb, Google, and Amazon, with a free company filter on every plan.
+          Reasoning patterns from real practitioner work. In the SQL track, real interview shapes at Meta, Stripe, Airbnb, Google, and Amazon, with a free company filter on every plan.
         </p>
       </div>
     </section>
@@ -790,11 +790,11 @@ function TracksIndexSection() {
           <h2 className="lp-section-h2">A curriculum, not a question bank.</h2>
           <p className="lp-tracks-editorial">
             Where the grind sites pile on thousands of problems, each track here is about{' '}
-            <span className="lp-tracks-editorial-n">{perTrack || '~100'}</span> questions — every one crafted
+            <span className="lp-tracks-editorial-n">{perTrack || '~100'}</span> questions, every one crafted
             and placed on purpose, ordered foundational to advanced, concept by concept, to build
             reasoning you'll actually use on the job, not to pad a count. Separate from the catalog is
             the mock-only bank: <span className="lp-tracks-editorial-n">1,000+</span> interview-shaped
-            questions across the tracks — medium and hard only, Pro&nbsp;&amp;&nbsp;Elite — surfaced only
+            questions across the tracks (medium and hard only, Pro&nbsp;&amp;&nbsp;Elite), surfaced only
             under the clock to pressure-test what you've built.
           </p>
         </Reveal>
@@ -894,7 +894,7 @@ function PathsShowcaseSection({ paths, user }) {
           <p className="lp-section-index">+&ensp;LEARNING PATHS</p>
           <h2 className="lp-section-h2">Systematic patterns, not scattered reps.</h2>
           <p className="lp-section-sub">
-            {totalPaths} guided paths across {trackCount} tracks — each takes one pattern from foundational
+            {totalPaths} guided paths across {trackCount} tracks. Each takes one pattern from foundational
             to advanced, so practice compounds into fluency instead of random problem-solving. It's the same
             question bank as Practice, just put in order: solve a question in either place and it counts in both.
           </p>
@@ -1011,7 +1011,7 @@ function PricingSection({ userPlan, currency }) {
             <ul className="landing-tier-list">
               <li>All easy questions{FREE_EASY ? ` (${FREE_EASY})` : ''}</li>
               <li>Medium + hard unlock as you solve (hard cap: 8 per code track, 5 per reasoning track)</li>
-              <li>2-step progressive hints — mental model first, technique second</li>
+              <li>2-step progressive hints: mental model first, technique second</li>
               <li>Official solutions with explanation after hints</li>
               <li>SQL query quality analysis on correct answers</li>
               <li>1 easy benchmark per rolling 7 days</li>
@@ -1034,10 +1034,10 @@ function PricingSection({ userPlan, currency }) {
               </div>
             </div>
             <ul className="landing-tier-list">
-              <li>Everything in Free — no hard cap on practice</li>
+              <li>Everything in Free, no hard cap on practice</li>
               <li>All {ACTIVE_Q || '…'} questions, every medium + hard</li>
               <li>3 benchmark mocks per day · 3 custom drills per day</li>
-              <li>Exclusive mock-only question bank — questions reserved for mock sessions, never shown in practice</li>
+              <li>Exclusive mock-only question bank: questions reserved for mock sessions, never shown in practice</li>
               <li>Detailed mock history, per-question solutions, and concept breakdowns</li>
               <li>Weakest concept analysis + drill recommendations</li>
               <li>All learning paths</li>
@@ -1050,7 +1050,7 @@ function PricingSection({ userPlan, currency }) {
               {(proColCta() === 'both' || proColCta() === 'lifetime_only') && (
                 <UpgradeButton
                   tier="lifetime_pro"
-                  label={proColCta() === 'lifetime_only' ? `Switch to lifetime — ${p.lifetimePro}` : `Lifetime access — ${p.lifetimePro}`}
+                  label={proColCta() === 'lifetime_only' ? `Switch to lifetime (${p.lifetimePro})` : `Lifetime access (${p.lifetimePro})`}
                   compact
                   className="landing-tier-lifetime-btn"
                   source="landing_tier_lifetime"
@@ -1070,9 +1070,9 @@ function PricingSection({ userPlan, currency }) {
             </div>
             <ul className="landing-tier-list">
               <li>Everything in Pro</li>
-              <li>Unlimited mock sessions — benchmarks, drills, and Interview Loop</li>
-              <li><strong>Interview Loop</strong> — chain-driven sessions where each follow-up pivots like a real interviewer (scale, business rule, data quality, ambiguity…)</li>
-              <li>Focus mode — target weak concepts in timed mocks</li>
+              <li>Unlimited mock sessions: benchmarks, drills, and Interview Loop</li>
+              <li><strong>Interview Loop</strong>: chain-driven sessions where each follow-up pivots like a real interviewer (scale, business rule, data quality, ambiguity…)</li>
+              <li>Focus mode: target weak concepts in timed mocks</li>
               <li>Per-dimension weak-spot detection (what kinds of pivots break you)</li>
               <li>Cross-session trend analytics + readiness score (per-track 0–100)</li>
               <li>Personalised study plan</li>
@@ -1085,7 +1085,7 @@ function PricingSection({ userPlan, currency }) {
               {(eliteColCta() === 'both' || eliteColCta() === 'lifetime_only') && (
                 <UpgradeButton
                   tier="lifetime_elite"
-                  label={eliteColCta() === 'lifetime_only' ? `Switch to lifetime — ${p.lifetimeElite}` : `Lifetime access — ${p.lifetimeElite}`}
+                  label={eliteColCta() === 'lifetime_only' ? `Switch to lifetime (${p.lifetimeElite})` : `Lifetime access (${p.lifetimeElite})`}
                   compact
                   className="landing-tier-lifetime-btn"
                   source="landing_tier_lifetime"
@@ -1387,10 +1387,10 @@ export default function LandingPage() {
   return (
     <>
       <Helmet>
-        <title>datathink — SQL, Python &amp; Data Interview Practice</title>
-        <meta name="description" content="Develop the data-professional reasoning that matters on the job — across SQL, Python, Pandas, PySpark, Data Engineering, Data Modeling, Statistics, ML, and Experimentation. Real datasets, real execution, real interview shapes." />
-        <meta property="og:title" content="datathink — SQL, Python &amp; Data Interview Practice" />
-        <meta property="og:description" content="9 tracks training the reasoning that makes data professionals genuinely effective — SQL, Python, Pandas, PySpark, Data Engineering, Data Modeling, Statistics, ML, Experimentation. Interview success follows." />
+        <title>datathink | SQL, Python &amp; Data Interview Practice</title>
+        <meta name="description" content="Develop the data-professional reasoning that matters on the job, across SQL, Python, Pandas, PySpark, Data Engineering, Data Modeling, Statistics, ML, and Experimentation. Real datasets, real execution, real interview shapes." />
+        <meta property="og:title" content="datathink | SQL, Python &amp; Data Interview Practice" />
+        <meta property="og:description" content="9 tracks training the reasoning that makes data professionals genuinely effective: SQL, Python, Pandas, PySpark, Data Engineering, Data Modeling, Statistics, ML, Experimentation. Interview success follows." />
         <meta property="og:url" content="https://datathink.co/" />
         <meta property="og:image" content="https://datathink.co/og-image.png?v=4" />
         <link rel="canonical" href="https://datathink.co/" />
