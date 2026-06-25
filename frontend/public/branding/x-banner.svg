@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- datathink X (Twitter) profile banner — Forest & Ink (1500×500).
-     Canonical two-diagonal-squares mark + data/think wordmark on the
-     deep forest-ink ground. Safe-zone: all elements sit within y 90–340
-     to clear X's bottom profile-info overlay (~160 px) and avatar circle.
+     Horizontal lockup (two-diagonal-squares mark + data/think wordmark, side by side)
+     above the tagline + durable stat row, centered on the deep forest-ink ground.
+     Safe-zone: all elements sit within y≈135-322 so X's bottom profile overlay
+     (~160 px) and the bottom-left avatar never occlude the composition.
      Source of truth for branding/x-banner.png — re-render via scripts/render-brand-assets.mjs. -->
 <svg xmlns="http://www.w3.org/2000/svg" width="1500" height="500" viewBox="0 0 1500 500" role="img" aria-label="datathink — develop the reasoning that makes you effective with data">
   <!-- Forest-ink background -->
@@ -14,22 +15,22 @@
   <line x1="1" y1="0" x2="1" y2="500" stroke="#E8F5E9" stroke-opacity="0.05"/>
   <line x1="1499" y1="0" x2="1499" y2="500" stroke="#E8F5E9" stroke-opacity="0.05"/>
 
-  <!-- Mark — two-diagonal-squares (scale 2.4), centered at x=750.
-       Local visual center: x≈19.5, y≈26. translate_x = 750 - 19.5*2.4 ≈ 703.2.
-       translate_y = 44 → mark spans y≈54-159, leaving a clean gap above the wordmark cap line (~y185). -->
-  <g transform="translate(703.2,44) scale(2.4)">
+  <!-- Lockup: mark + wordmark SIDE BY SIDE, centered at x=750.
+       Wordmark width measured 309.6 (Inter 72 / letter-spacing -1.5).
+       Lockup width = mark(84) + gap(26) + 309.6 = 419.6; left edge = 750 - 209.8 = 540.2.
+       Mark translate_x = 540.2 - 2*2.4 = 535.4; wordmark start x = 540.2 + 84 + 26 = 650.2.
+       Mark vertical center (translate_y + 62.4 = 188.4) aligned to the wordmark optical center. -->
+  <g transform="translate(535.4,126) scale(2.4)">
     <rect x="2" y="22" width="26" height="26" rx="6" fill="#2FBE6B"/>
     <rect x="22" y="4" width="15" height="15" rx="4" fill="#87B09A"/>
   </g>
-
-  <!-- Wordmark "datathink" -->
-  <text x="750" y="235" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="72" letter-spacing="-1.5">
+  <text x="650.2" y="214" text-anchor="start" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="72" letter-spacing="-1.5">
     <tspan font-weight="300" fill="#87B09A">data</tspan><tspan font-weight="700" fill="#E8F5E9">think</tspan>
   </text>
 
   <!-- Tagline -->
-  <text x="750" y="290" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-weight="400" font-size="28" fill="#A8BDB4">Develop the reasoning that makes you effective with data.</text>
+  <text x="750" y="274" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-weight="400" font-size="28" fill="#A8BDB4">Develop the reasoning that makes you effective with data.</text>
 
   <!-- Stat row — durable counts; signals curation + the mock-exclusive bank -->
-  <text x="750" y="332" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-weight="500" font-size="20" fill="#87B09A">9 tracks&#160;&#160;·&#160;&#160;850+ curated questions&#160;&#160;·&#160;&#160;1,000+ mock-exclusive</text>
+  <text x="750" y="316" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-weight="500" font-size="20" fill="#87B09A">9 tracks&#160;&#160;·&#160;&#160;850+ curated questions&#160;&#160;·&#160;&#160;1,000+ mock-exclusive</text>
 </svg>
