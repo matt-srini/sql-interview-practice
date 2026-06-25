@@ -511,8 +511,8 @@ export default function RoleInterviewPrepPage() {
 
         {/* ── CLOSING STRIP ────────────────────────────────────── */}
         <section className="lp-section lp-section-rule ip-closing">
-          <div className="lp-inner ip-closing-inner">
-            <Reveal>
+          <div className="lp-inner">
+            <Reveal className="ip-closing-inner">
               <span className="ip-closing-text">Preparing for a different role?</span>
               <Link to="/interview-prep" className="ip-closing-link">See all roles →</Link>
             </Reveal>
