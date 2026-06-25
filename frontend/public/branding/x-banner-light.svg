@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- datathink X (Twitter) profile banner — Forest & Ink LIGHT variant (1500×500).
+     A light-ground alternate of x-banner.svg for light-background placements
+     (emails, docs, press). Source of truth for branding/x-banner-light.png —
+     re-render via scripts/render-brand-assets.mjs.
+     Safe-zone: all elements sit within y≈135-322 so X's bottom profile overlay
+     (~160 px) and the bottom-left avatar never occlude the composition. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="500" viewBox="0 0 1500 500" role="img" aria-label="datathink — develop the reasoning that makes you effective with data">
+  <!-- Light page ground -->
+  <rect width="1500" height="500" fill="#F5F7F4"/>
+
+  <!-- Subtle hairline frame -->
+  <line x1="0" y1="1" x2="1500" y2="1" stroke="#14291B" stroke-opacity="0.06"/>
+  <line x1="0" y1="499" x2="1500" y2="499" stroke="#14291B" stroke-opacity="0.06"/>
+  <line x1="1" y1="0" x2="1" y2="500" stroke="#14291B" stroke-opacity="0.06"/>
+  <line x1="1499" y1="0" x2="1499" y2="500" stroke="#14291B" stroke-opacity="0.06"/>
+
+  <!-- Lockup: mark + wordmark SIDE BY SIDE, centered at x=750.
+       Wordmark width measured 309.6 (Inter 72 / letter-spacing -1.5).
+       Lockup width = mark(84) + gap(26) + 309.6 = 419.6; left edge = 750 - 209.8 = 540.2.
+       Mark translate_x = 540.2 - 2*2.4 = 535.4; wordmark start x = 540.2 + 84 + 26 = 650.2.
+       Mark vertical center (translate_y + 62.4 = 188.4) aligned to the wordmark optical center. -->
+  <g transform="translate(535.4,126) scale(2.4)">
+    <rect x="2" y="22" width="26" height="26" rx="6" fill="#166534"/>
+    <rect x="22" y="4" width="15" height="15" rx="4" fill="#4B6858"/>
+  </g>
+  <text x="650.2" y="214" text-anchor="start" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="72" letter-spacing="-1.5">
+    <tspan font-weight="300" fill="#4B6858">data</tspan><tspan font-weight="700" fill="#14291B">think</tspan>
+  </text>
+
+  <!-- Tagline -->
+  <text x="750" y="274" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-weight="400" font-size="28" fill="#4B6858">Develop the reasoning that makes you effective with data.</text>
+
+  <!-- Stat row — durable counts; signals curation + the mock-exclusive bank -->
+  <text x="750" y="316" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-weight="500" font-size="20" fill="#4B6858">9 tracks&#160;&#160;·&#160;&#160;850+ curated questions&#160;&#160;·&#160;&#160;1,000+ mock-exclusive</text>
+</svg>

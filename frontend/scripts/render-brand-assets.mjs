@@ -29,9 +29,11 @@ const TARGETS = [
   { output: 'apple-touch-icon.png', source: 'icon-maskable.svg',  width: 180,  height: 180, colorScheme: 'dark'  },
   { output: 'icon-192.png',         source: 'icon-maskable.svg',  width: 192,  height: 192, colorScheme: 'dark'  },
   { output: 'icon-512.png',         source: 'icon-maskable.svg',  width: 512,  height: 512, colorScheme: 'dark'  },
+  { output: 'icon-512-light.png',   source: 'icon-512-light.svg', width: 512,  height: 512, colorScheme: 'light' },
   { output: 'og-image.png',         source: 'og-image.svg',       width: 1200, height: 630, colorScheme: 'dark'  },
   { output: 'og-image-light.png',   source: 'og-image-light.svg', width: 1200, height: 630, colorScheme: 'light' },
   { output: 'branding/x-banner.png', source: 'branding/x-banner.svg', width: 1500, height: 500, colorScheme: 'dark', fonts: true },
+  { output: 'branding/x-banner-light.png', source: 'branding/x-banner-light.svg', width: 1500, height: 500, colorScheme: 'light', fonts: true },
 ];
 
 const only = process.argv[2];

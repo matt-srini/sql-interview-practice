@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- datathink app icon — Forest & Ink LIGHT variant (512×512).
+     Light-ground alternate of icon-maskable.svg for light placements
+     (light app surfaces, avatars/logos on light backgrounds). White ground
+     with a subtle hairline border for edge definition + deep-green mark.
+     Same mark geometry as icon-maskable.svg. Source of truth for icon-512-light.png. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="datathink">
+  <rect width="512" height="512" fill="#FFFFFF"/>
+  <rect x="6" y="6" width="500" height="500" fill="none" stroke="#14291B" stroke-opacity="0.12" stroke-width="8"/>
+  <g transform="translate(119.5,74) scale(7)">
+    <rect x="2" y="22" width="26" height="26" rx="6" fill="#166534"/>
+    <rect x="22" y="4" width="15" height="15" rx="4" fill="#4B6858"/>
+  </g>
+</svg>
