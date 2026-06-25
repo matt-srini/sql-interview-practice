@@ -1,7 +1,10 @@
 """SEO assertions — title rewrite, JSON-LD, robots.txt, sitemap.xml, canonical, role pages."""
 import os
 import re
+import shutil
 import sys
+import tempfile
+from pathlib import Path
 
 import pytest
 
@@ -15,12 +18,36 @@ os.environ.setdefault("TESTING", "1")
 
 from starlette.testclient import TestClient
 import backend.main as main
+from routers import spa  # the SPA router module main.app actually uses (sys.modules["routers.spa"])
 
 app = main.app
 
 
+@pytest.fixture(scope="module", autouse=True)
+def _frontend_index():
+    """The backend-tests CI job runs pytest without building the frontend, so
+    frontend/dist/index.html is absent and the SPA would 404 every HTML route
+    (the cause of the long-standing CI red on these 3 SEO tests). Point the SPA
+    at a temp dir holding the real *source* frontend/index.html — the authored
+    static SEO layer that _inject_seo rewrites — so these tests validate
+    _inject_seo without depending on a Vite build. Build output and source carry
+    identical SEO tags; the build only adds asset/script tags _inject_seo ignores."""
+    source_index = Path(REPO_ROOT) / "frontend" / "index.html"
+    tmp = Path(tempfile.mkdtemp(prefix="seo-dist-"))
+    shutil.copy(source_index, tmp / "index.html")
+    orig_dir, orig_cache = spa.FRONTEND_DIST_DIR, spa._INDEX_HTML_CACHE
+    spa.FRONTEND_DIST_DIR = tmp
+    spa._INDEX_HTML_CACHE = None
+    try:
+        yield
+    finally:
+        spa.FRONTEND_DIST_DIR = orig_dir
+        spa._INDEX_HTML_CACHE = orig_cache
+        shutil.rmtree(tmp, ignore_errors=True)
+
+
 @pytest.fixture(scope="module")
-def client():
+def client(_frontend_index):
     with TestClient(app, raise_server_exceptions=True) as c:
         yield c
 
