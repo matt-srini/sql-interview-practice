@@ -270,6 +270,7 @@ export default function Topbar({
                           `topbar-practice-item topbar-practice-item--secondary${isActive ? ' topbar-practice-item--active' : ''}`
                         }
                         to="/interview-prep"
+                        end
                         onClick={() => setByRoleOpen(false)}
                       >
                         <span className="topbar-practice-item-glyph" aria-hidden="true">◆</span>
@@ -404,6 +405,7 @@ export default function Topbar({
                           `topbar-mobile-item topbar-mobile-item--secondary${isActive ? ' topbar-mobile-item--active' : ''}`
                         }
                         to="/interview-prep"
+                        end
                         onClick={() => setMobileMenuOpen(false)}
                       >
                         <span className="topbar-practice-item-glyph" aria-hidden="true">◆</span>
