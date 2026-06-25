@@ -55,6 +55,12 @@ const SHARED_REASONING = {
   ],
 };
 
+const FREE_PRACTICE_FAQ = {
+  q: 'Can I practice for free?',
+  a: 'More than you might expect. Every easy question is free, and medium and hard unlock as you solve, so a free account goes a long way. Samples need no account at all. Paid plans lift the unlock caps and add the mock-only question bank, mock interviews, and deep analytics.',
+  link: { label: 'More details →', to: '/pricing' },
+};
+
 const ROLE_CONTENT = {
   'data-engineer': {
     helmet: {
@@ -109,10 +115,7 @@ const ROLE_CONTENT = {
         q: 'How is this different from LeetCode-style prep?',
         a: 'datathink trains the reasoning a data engineer uses on the job, not pattern memorization. Code runs on real engines, and the reasoning tracks test judgment with realistic scenarios rather than multiple-choice trivia. Two-step hints build the mental model before the technique, and learning paths take you from foundational to advanced, concept by concept. Elite plans add per-track readiness scores and Interview Loops: chain-driven mock sessions where each follow-up pivots like a real interviewer, the way a real screen escalates.',
       },
-      {
-        q: 'Can I practice for free?',
-        a: 'Yes. Every track has free sample questions with no account required. Paid plans unlock the full question bank, mock interviews, and analytics.',
-      },
+      FREE_PRACTICE_FAQ,
       {
         q: 'How long does it take to prepare?',
         a: 'It depends on your starting point. Most candidates work in focused sessions across the five tracks, and the dashboard surfaces your weakest concepts so you spend time where it moves the needle.',
@@ -173,10 +176,7 @@ const ROLE_CONTENT = {
         q: 'How is this different from LeetCode-style prep?',
         a: 'datathink trains the reasoning an analyst uses on the job, not pattern memorization. Code runs on real engines, two-step hints build the mental model before the technique, and learning paths take you from foundational to advanced. Elite plans add per-track readiness scores and Interview Loops, chain-driven mock sessions that pivot like a real interviewer.',
       },
-      {
-        q: 'Can I practice for free?',
-        a: 'Yes. Every track has free sample questions with no account required. Paid plans unlock the full question bank, mock interviews, and analytics.',
-      },
+      FREE_PRACTICE_FAQ,
     ],
   },
 
@@ -233,10 +233,7 @@ const ROLE_CONTENT = {
         q: 'How is this different from LeetCode-style prep?',
         a: 'datathink trains the reasoning an analytics engineer uses on the job, not pattern memorization. Code runs on real engines, two-step hints build the mental model first, and learning paths take you from foundational to advanced. Elite plans add per-track readiness scores and Interview Loops, chain-driven mock sessions that pivot like a real interviewer.',
       },
-      {
-        q: 'Can I practice for free?',
-        a: 'Yes. Every track has free sample questions with no account required. Paid plans unlock the full question bank, mock interviews, and analytics.',
-      },
+      FREE_PRACTICE_FAQ,
     ],
   },
 
@@ -297,16 +294,13 @@ const ROLE_CONTENT = {
         q: 'How is this different from LeetCode-style prep?',
         a: 'datathink trains the reasoning a data scientist uses on the job, not pattern memorization. Code runs on real engines, two-step hints build the mental model first, and learning paths take you from foundational to advanced. Elite plans add per-track readiness scores and Interview Loops, chain-driven mock sessions that pivot like a real interviewer.',
       },
-      {
-        q: 'Can I practice for free?',
-        a: 'Yes. Every track has free sample questions with no account required. Paid plans unlock the full question bank, mock interviews, and analytics.',
-      },
+      FREE_PRACTICE_FAQ,
     ],
   },
 };
 
 // ── FAQ item component ───────────────────────────────────────────────────────
-function FaqItem({ q, a }) {
+function FaqItem({ q, a, link }) {
   const [open, setOpen] = useState(false);
   return (
     <div className={`ip-faq-item${open ? ' is-open' : ''}`}>
@@ -319,7 +313,14 @@ function FaqItem({ q, a }) {
         {q}
         <span className="ip-faq-arrow" aria-hidden="true">{open ? '−' : '+'}</span>
       </button>
-      {open && <div className="ip-faq-a">{a}</div>}
+      {open && (
+        <div className="ip-faq-a">
+          {a}
+          {link && (
+            <Link className="ip-faq-link" to={link.to}>{link.label}</Link>
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -493,7 +494,7 @@ export default function RoleInterviewPrepPage() {
               <h2 className="lp-section-h2">{roleData.label} interview questions</h2>
               <div className="ip-faq-list">
                 {faq.map((item) => (
-                  <FaqItem key={item.q} q={item.q} a={item.a} />
+                  <FaqItem key={item.q} q={item.q} a={item.a} link={item.link} />
                 ))}
               </div>
             </Reveal>

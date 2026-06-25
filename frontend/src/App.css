@@ -14959,6 +14959,19 @@ button.mock-focus-locked:hover {
   background: var(--surface-card);
 }
 
+.ip-faq-link {
+  display: inline-block;
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.ip-faq-link:hover {
+  text-decoration: underline;
+}
+
 /* ── Closing strip ─────────────────────────────────────────── */
 .ip-closing {
   padding: 48px 0;
