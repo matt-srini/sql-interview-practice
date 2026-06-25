@@ -134,7 +134,13 @@ SECURE_COOKIES = (_getenv("SECURE_COOKIES", "true" if IS_PROD else "false") or "
 
 # Observability
 SENTRY_DSN = _getenv("SENTRY_DSN")
-SENTRY_RELEASE = _getenv("SENTRY_RELEASE")
+# Fall back to Railway's per-deploy commit SHA, mirroring the frontend build
+# (vite.config.js: SENTRY_RELEASE || RAILWAY_GIT_COMMIT_SHA) so backend and
+# frontend report the SAME release without any manual env var. Note: Railway's
+# `${{ RAILWAY_GIT_COMMIT_SHA }}` REFERENCE syntax does NOT resolve for
+# Railway-provided vars (it yields empty) — but the var is injected directly
+# into the runtime env, so reading it here works.
+SENTRY_RELEASE = _getenv("SENTRY_RELEASE") or _getenv("RAILWAY_GIT_COMMIT_SHA")
 SENTRY_TRACES_SAMPLE_RATE = _get_float("SENTRY_TRACES_SAMPLE_RATE", "0.0")
 VITE_SENTRY_DSN = _getenv("VITE_SENTRY_DSN")
 VITE_POSTHOG_KEY = _getenv("VITE_POSTHOG_KEY")
