@@ -43,9 +43,19 @@ failure point. Every event carries two stable Sentry tags:
 
 ## 2. Sentry alert rules to create
 
+> **Getting to the alert builder:** Alerts are **not** under the org gear/Settings.
+> Reach the builder with **⌘K → "Create Alert"**, or the direct URL
+> `https://<org>.sentry.io/alerts/rules/` → **Create Alert**.
+>
+> **Free-plan note:** the **Issues** alerts (Rules A, C, D) work on the free
+> Developer plan — these are the must-haves. The **Metric** alerts (Rules B, E,
+> the spike rules) require a paid **Team** plan; if "Metric" isn't offered as an
+> alert type, skip B/E for now. Use **email** as the action unless the Slack
+> integration is connected.
+
 ### Rule A — Any payment failure (highest priority)
 
-> Settings → Alerts → Create Alert → Issues (or Error)
+> Create Alert → Issues (or Error)
 
 | Field | Value |
 |---|---|
@@ -60,7 +70,7 @@ This catches all stages in a single rule. Tune down the noise by also adding:
 
 ### Rule B — Error-rate spike (high volume = attack or outage)
 
-> Settings → Alerts → Create Alert → Metric Alert → Number of Errors
+> Create Alert → Metric Alert → Number of Errors
 
 | Field | Value |
 |---|---|
@@ -98,7 +108,7 @@ dropped by `before_send` in `sentry_utils.py`, so these fire only on real errors
 
 ### Rule D — Any new production issue
 
-> Settings → Alerts → Create Alert → Issues
+> Create Alert → Issues
 
 | Field | Value |
 |---|---|
@@ -113,7 +123,7 @@ class of error the first time it ever happens, instead of when a user emails you
 
 ### Rule E — Overall error-rate spike
 
-> Settings → Alerts → Create Alert → Metric Alert → Number of Errors
+> Create Alert → Metric Alert → Number of Errors
 
 | Field | Value |
 |---|---|
@@ -137,7 +147,7 @@ Use **UptimeRobot** (free tier) or **Better Stack** (free tier) to monitor the
 
 1. **Monitor type:** HTTP(s)
 2. **URL:** `https://api.datathink.co/health` (or your Railway domain)
-3. **Interval:** 1 minute
+3. **Interval:** 5 minutes (UptimeRobot free-tier floor; Better Stack free does 30s–1min)
 4. **Alert contact:** email + Slack webhook
 5. **Alert after:** 2 consecutive failures (avoids single-blip noise)
 6. **Keyword match (optional):** `"status":"ok"` — ensures the endpoint returns a
