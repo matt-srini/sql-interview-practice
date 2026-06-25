@@ -14757,6 +14757,44 @@ button.mock-focus-locked:hover {
   min-height: 62vh;
   display: flex;
   align-items: center;
+  position: relative;
+}
+
+/* Scroll cue — subtle bouncing chevron at the bottom of the centered hero,
+   so a visitor landing directly (e.g. from search) knows there is more below. */
+.ip-scroll-cue {
+  position: absolute;
+  bottom: 22px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  background: none;
+  border: none;
+  border-radius: 50%;
+  color: var(--text-secondary);
+  cursor: pointer;
+  opacity: 0.65;
+  transition: opacity 0.18s ease, color 0.18s ease;
+  animation: ip-scroll-bounce 1.8s ease-in-out infinite;
+}
+
+.ip-scroll-cue:hover {
+  opacity: 1;
+  color: var(--text-strong);
+}
+
+@keyframes ip-scroll-bounce {
+  0%, 100% { transform: translateX(-50%) translateY(0); }
+  50% { transform: translateX(-50%) translateY(5px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ip-scroll-cue { animation: none; }
 }
 
 .ip-hero-inner {

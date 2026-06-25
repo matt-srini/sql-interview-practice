@@ -76,6 +76,14 @@ export default function InterviewPrepIndexPage() {
               Pick the role you are interviewing for. Each path bundles the tracks that role is tested on, on real execution engines, with mock interviews and reasoning-first questions.
             </p>
           </div>
+          <button
+            type="button"
+            className="ip-scroll-cue"
+            aria-label="Scroll to content"
+            onClick={(e) => e.currentTarget.closest('section')?.nextElementSibling?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+          >
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9" /></svg>
+          </button>
         </section>
 
         {/* ── ROLE CARDS ─────────────────────────────────────── */}
