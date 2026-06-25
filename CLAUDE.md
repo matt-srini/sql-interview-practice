@@ -63,6 +63,7 @@ The five-perspective pushback in § Standing instructions reads this section as 
   | System design, data flows, execution model, scaling | `docs/architecture.md` |
   | API routes, routers, backend behaviour, persistence | `docs/backend.md` |
   | Pages, components, routes, design tokens, frontend behaviour | `docs/frontend.md` |
+  | **SEO: titles, meta, robots/sitemap, structured data** | `docs/seo.md` (architecture); runtime SoT = `backend/routers/spa.py` `_build_seo_meta` (per-route crawler meta) + `backend/routers/system.py` (robots/sitemap). Canonical domain = `backend/config.py` `CANONICAL_BASE_URL` (one place). No em-dashes in SEO strings. |
   | Dataset schema, row counts, edge cases | `docs/datasets.md` |
   | Env vars, Docker, Railway, deployment, secrets | `docs/deployment.md` |
   | **Pending production DB migrations (canonical runbook)** | `docs/deployment.md` § Pending production DB migrations |

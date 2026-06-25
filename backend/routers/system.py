@@ -5,6 +5,7 @@ from fastapi import APIRouter
 from fastapi.responses import JSONResponse, PlainTextResponse, Response
 
 from config import (
+    CANONICAL_BASE_URL,
     FRONTEND_BASE_URL,
     GITHUB_CLIENT_ID,
     GITHUB_CLIENT_SECRET,
@@ -15,7 +16,6 @@ from config import (
 )
 from database import get_loaded_tables
 from db import ping
-from path_loader import get_all_paths
 
 router = APIRouter()
 
@@ -90,101 +90,66 @@ async def catalog_counts() -> dict:
     return result
 
 
+_CANONICAL_BASE = CANONICAL_BASE_URL
+
+
 @router.get("/robots.txt", response_class=PlainTextResponse, include_in_schema=False)
 async def robots_txt() -> str:
-    base = FRONTEND_BASE_URL.rstrip("/")
     return (
         "User-agent: *\n"
         "Allow: /\n"
-        "Disallow: /api/\n"
+        "Disallow: /auth\n"
         "Disallow: /dashboard\n"
         "Disallow: /mock\n"
-        "Disallow: /auth\n"
-        f"Sitemap: {base}/sitemap.xml\n"
+        "Disallow: /api/\n"
+        "\n"
+        f"Sitemap: {_CANONICAL_BASE}/sitemap.xml\n"
     )
 
 
 @router.get("/sitemap.xml", include_in_schema=False)
 async def sitemap_xml() -> Response:
-    base = FRONTEND_BASE_URL.rstrip("/")
+    from xml.sax.saxutils import escape as xml_escape
+
+    from routers.spa import _get_seo_meta  # lazy import to avoid circular at module load
+
+    base = _CANONICAL_BASE
     today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
 
-    # Static public URLs
-    static_urls = [
-        ("", "1.0", "daily"),       # landing
-        ("/learn", "0.9", "weekly"),
-        ("/faq", "0.5", "monthly"),
-        ("/contact", "0.4", "monthly"),
-        ("/privacy", "0.3", "monthly"),
-        ("/terms", "0.3", "monthly"),
-        ("/refund-policy", "0.3", "monthly"),
-        ("/learn/sql", "0.8", "weekly"),
-        ("/learn/python", "0.8", "weekly"),
-        ("/learn/pandas", "0.8", "weekly"),
-        ("/learn/pyspark", "0.8", "weekly"),
-        ("/practice/sql", "0.7", "weekly"),
-        ("/practice/python", "0.7", "weekly"),
-        ("/practice/pandas", "0.7", "weekly"),
-        ("/practice/pyspark", "0.7", "weekly"),
-        ("/sample/sql/easy", "0.7", "weekly"),
-        ("/sample/sql/medium", "0.7", "weekly"),
-        ("/sample/sql/hard", "0.7", "weekly"),
-        ("/sample/python/easy", "0.7", "weekly"),
-        ("/sample/python/medium", "0.7", "weekly"),
-        ("/sample/python/hard", "0.7", "weekly"),
-        ("/sample/pandas/easy", "0.7", "weekly"),
-        ("/sample/pandas/medium", "0.7", "weekly"),
-        ("/sample/pandas/hard", "0.7", "weekly"),
-        ("/sample/pyspark/easy", "0.7", "weekly"),
-        ("/sample/pyspark/medium", "0.7", "weekly"),
-        ("/sample/pyspark/hard", "0.7", "weekly"),
-    ]
+    meta_paths = [p for p, m in _get_seo_meta().items() if not m.get("noindex")]
+    extra_static = ["/contact", "/privacy", "/terms", "/refund-policy"]
+    ordered = list(dict.fromkeys(["/"] + sorted(p for p in meta_paths if p != "/") + extra_static))
 
-    # Learning path URLs
-    try:
-        paths = get_all_paths()
-        path_urls = [
-            (f"/learn/{p['topic']}/{p['slug']}", "0.8", "weekly")
-            for p in paths
-            if "topic" in p and "slug" in p
-        ]
-    except Exception:
-        path_urls = []
+    def _priority_cf(path: str) -> tuple[str, str]:
+        segments = [s for s in path.strip("/").split("/") if s]
+        n = len(segments)
+        if path == "/":
+            return ("1.0", "daily")
+        if path in extra_static:
+            return ("0.3", "monthly")
+        if path == "/learn" or (n == 2 and segments[0] in ("practice", "learn")):
+            return ("0.8", "weekly")
+        if n == 3 and segments[0] == "learn":
+            return ("0.7", "weekly")
+        if segments[0] == "sample" or path == "/faq":
+            return ("0.6", "weekly")
+        if n == 4 and segments[0] == "practice" and segments[2] == "questions":
+            return ("0.5", "weekly")
+        return ("0.5", "weekly")
 
-    # Easy question URLs — all 4 tracks
-    _EASY_Q_CFG = [
-        ("sql",         "/practice/sql/questions/",         "questions",             "get_questions_by_difficulty"),
-        ("python",      "/practice/python/questions/",      "python_questions",      "get_all_questions"),
-        ("pandas", "/practice/pandas/questions/", "pandas_questions", "get_all_questions"),
-        ("pyspark",     "/practice/pyspark/questions/",     "pyspark_questions",     "get_all_questions"),
-    ]
-    easy_question_urls = []
-    try:
-        import importlib
-        for _topic, _prefix, _module, _fn in _EASY_Q_CFG:
-            mod = importlib.import_module(_module)
-            fn = getattr(mod, _fn)
-            if _fn == "get_questions_by_difficulty":
-                qs = fn().get("easy", [])
-            else:
-                qs = [q for q in fn() if q.get("difficulty") == "easy" and not q.get("mock_only")]
-            easy_question_urls += [(f"{_prefix}{q['id']}", "0.6", "monthly") for q in qs]
-    except Exception:
-        pass
-
-    all_urls = static_urls + path_urls + easy_question_urls
-
-    def url_entry(loc: str, priority: str, changefreq: str) -> str:
+    def url_entry(path: str) -> str:
+        pri, cf = _priority_cf(path)
+        loc = xml_escape(f"{base}{path}")
         return (
             f"  <url>\n"
-            f"    <loc>{base}{loc}</loc>\n"
+            f"    <loc>{loc}</loc>\n"
             f"    <lastmod>{today}</lastmod>\n"
-            f"    <changefreq>{changefreq}</changefreq>\n"
-            f"    <priority>{priority}</priority>\n"
+            f"    <changefreq>{cf}</changefreq>\n"
+            f"    <priority>{pri}</priority>\n"
             f"  </url>"
         )
 
-    entries = "\n".join(url_entry(loc, pri, freq) for loc, pri, freq in all_urls)
+    entries = "\n".join(url_entry(p) for p in ordered)
     xml = (
         '<?xml version="1.0" encoding="UTF-8"?>\n'
         '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'

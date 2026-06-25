@@ -148,6 +148,7 @@ VITE_BACKEND_URL = _getenv("VITE_BACKEND_URL")
 # FRONTEND_BASE_URL: where to redirect users after OAuth (defaults to APP_BASE_URL in production single-service deploys)
 APP_BASE_URL = _getenv("APP_BASE_URL", "http://localhost:8000")
 FRONTEND_BASE_URL = _getenv("FRONTEND_BASE_URL", "http://localhost:5173")
+CANONICAL_BASE_URL = _getenv("CANONICAL_BASE_URL", "https://datathink.co")
 
 # OAuth providers
 GOOGLE_CLIENT_ID = _getenv("GOOGLE_CLIENT_ID")

@@ -5,11 +5,11 @@ from html import escape as html_escape
 from fastapi import APIRouter, HTTPException, Request, Response
 from fastapi.responses import FileResponse, HTMLResponse
 
-from config import FRONTEND_BASE_URL, FRONTEND_DIST_DIR, VITE_BACKEND_URL, VITE_POSTHOG_HOST, VITE_POSTHOG_KEY, VITE_SENTRY_DSN
+from config import CANONICAL_BASE_URL, FRONTEND_BASE_URL, FRONTEND_DIST_DIR, VITE_BACKEND_URL, VITE_POSTHOG_HOST, VITE_POSTHOG_KEY, VITE_SENTRY_DSN
 
 router = APIRouter()
 
-BASE_URL = "https://datathink.co"
+BASE_URL = CANONICAL_BASE_URL
 
 _TRACK_LABELS = {
     "sql": "SQL", "python": "Python", "pandas": "Pandas", "pyspark": "PySpark",
@@ -69,7 +69,7 @@ def _build_seo_meta() -> dict:
     total = sum(tc.values())
 
     _PRACTICE_DESC = {
-        "sql":              f"Your SQL practice workspace. {tc.get('sql', 0)} questions by difficulty — joins, aggregations, window functions, and CTEs with instant DuckDB execution and solution analysis.",
+        "sql":              f"Your SQL practice workspace. {tc.get('sql', 0)} questions by difficulty: joins, aggregations, window functions, and CTEs with instant DuckDB execution and solution analysis.",
         "python":           f"Your Python practice workspace. {tc.get('python', 0)} algorithm and data processing questions with automated test case feedback and step-by-step hints.",
         "pandas":           f"Your Pandas practice workspace. {tc.get('pandas', 0)} DataFrame manipulation questions with live execution and side-by-side output comparison.",
         "pyspark":          f"Your PySpark practice workspace. {tc.get('pyspark', 0)} MCQ, predict-output, debug, and scenario questions covering core Spark concepts and performance.",
@@ -82,51 +82,51 @@ def _build_seo_meta() -> dict:
 
     meta: dict = {
         "/": {
-            "title": "datathink — SQL, Python & Data Interview Practice",
-            "description": f"Practice SQL, Python, Pandas, PySpark, and more in a real execution environment. {total}+ questions, instant feedback, and curated learning paths for data professionals.",
+            "title": "Data Engineer, Analyst & Scientist Interview Prep | datathink",
+            "description": f"Premium data interview practice on real execution engines: SQL, Python, ML, statistics and more. {total}+ questions with instant feedback and curated learning paths.",
         },
         "/learn": {
-            "title": "Learning Paths — datathink",
+            "title": "Data Interview Learning Paths | datathink",
             "description": "Curated learning paths across SQL, Python, Pandas, PySpark, Statistics, ML, and Experimentation to build interview-ready skills step by step.",
         },
         "/learn/sql": {
-            "title": "SQL Learning Paths — datathink",
+            "title": "SQL Learning Paths | datathink",
             "description": "Curated SQL learning paths covering window functions, aggregation, cohort analysis, and more.",
         },
         "/learn/python": {
-            "title": "Python Learning Paths — datathink",
+            "title": "Python Learning Paths | datathink",
             "description": "Curated Python learning paths covering algorithms, data structures, and data processing patterns.",
         },
         "/learn/pandas": {
-            "title": "Pandas Learning Paths — datathink",
+            "title": "Pandas Learning Paths | datathink",
             "description": "Curated Pandas learning paths covering DataFrame manipulation, groupby, reshaping, and time series.",
         },
         "/learn/pyspark": {
-            "title": "PySpark Learning Paths — datathink",
+            "title": "PySpark Learning Paths | datathink",
             "description": "Curated PySpark learning paths covering Spark core concepts, performance, streaming, and Delta Lake.",
         },
     }
     for slug, desc in _PRACTICE_DESC.items():
         track_label = _TRACK_LABELS.get(slug, slug.replace("-", " ").title())
         meta[f"/practice/{slug}"] = {
-            "title": f"{track_label} Interview Practice — datathink",
+            "title": f"{track_label} Interview Questions | datathink",
             "description": desc,
         }
 
-    # Sample pages: 4 tracks × 3 difficulties
+    # Sample pages: 9 tracks × 3 difficulties
     for topic, label in _TRACK_LABELS.items():
         for diff, diff_label in [("easy", "Easy"), ("medium", "Medium"), ("hard", "Hard")]:
             meta[f"/sample/{topic}/{diff}"] = {
-                "title": f"Free {diff_label} {label} Sample Questions — datathink",
+                "title": f"Free {label} Interview Questions ({diff_label}) | datathink",
                 "description": (
-                    f"Try free {diff_label.lower()} {label} interview questions — no account required. "
+                    f"Try free {diff_label.lower()} {label} interview questions, no account required. "
                     "Real execution environment with instant feedback."
                 ),
             }
 
     meta["/faq"] = {
-        "title": "Frequently Asked Questions — datathink",
-        "description": "Common questions about datathink — free access, no-account practice, SQL and Python topics, company coverage, question unlocks, mock interviews, and plan differences.",
+        "title": "Frequently Asked Questions | datathink",
+        "description": "Common questions about datathink: free access, no-account practice, SQL and Python topics, company coverage, question unlocks, mock interviews, and plan differences.",
     }
 
     # Pages crawlers should not index
@@ -142,7 +142,7 @@ def _build_seo_meta() -> dict:
             raw_desc = f"{p.get('description', '')} {p.get('outcomes', '')}".strip()
             desc = raw_desc[:152] + "..." if len(raw_desc) > 155 else raw_desc
             meta[f"/learn/{topic}/{slug}"] = {
-                "title": f"{p['title']} — datathink",
+                "title": f"{p['title']} | datathink",
                 "description": desc,
             }
     except Exception:
@@ -165,17 +165,14 @@ def _build_seo_meta() -> dict:
             else:
                 questions = [q for q in fn() if q.get("difficulty") == "easy" and not q.get("mock_only")]
             for q in questions:
-                concepts = q.get("concepts", [])
-                primary = concepts[0].title() if concepts else ""
-                concept_segment = f" {primary}" if primary else ""
-                concepts_preview = ", ".join(concepts[:3])
+                concepts_preview = ", ".join(q.get("concepts", [])[:3])
                 raw_desc = q.get("description", "")
                 desc = (raw_desc[:120].rstrip() + "...") if len(raw_desc) > 120 else raw_desc
                 full_desc = f"Practice: {desc}"
                 if concepts_preview:
                     full_desc += f" Covers {concepts_preview}."
                 meta[f"/practice/{url_topic}/questions/{q['id']}"] = {
-                    "title": f"{q['title']} — {label}{concept_segment} — datathink",
+                    "title": f"{q['title']} | {label} Interview Question | datathink",
                     "description": full_desc,
                 }
     except Exception:
@@ -236,6 +233,32 @@ def _inject_seo(html: str, url_path: str) -> str:
         f'<meta property="og:image" content="{og_image}" />'
         f'<meta name="twitter:image" content="{og_image}" />'
     )
+
+    # Homepage-only: inject Organization + WebSite JSON-LD
+    if url_path == "/":
+        ld = {
+            "@context": "https://schema.org",
+            "@graph": [
+                {
+                    "@type": "Organization",
+                    "@id": f"{BASE_URL}/#organization",
+                    "name": "datathink",
+                    "url": f"{BASE_URL}/",
+                    "logo": f"{BASE_URL}/icon-512.png",
+                    "description": "Premium data interview practice platform for data engineers, analysts, analytics engineers and data scientists.",
+                },
+                {
+                    "@type": "WebSite",
+                    "@id": f"{BASE_URL}/#website",
+                    "name": "datathink",
+                    "url": f"{BASE_URL}/",
+                    "publisher": {"@id": f"{BASE_URL}/#organization"},
+                },
+            ],
+        }
+        ld_script = '<script type="application/ld+json">' + json.dumps(ld, ensure_ascii=False) + '</script>'
+        inject = inject + ld_script
+
     return html.replace("</head>", f"{inject}</head>", 1)
 
 

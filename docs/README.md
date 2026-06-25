@@ -13,6 +13,7 @@ This is the navigation hub for all platform documentation. Each doc below owns a
 | [`architecture.md`](architecture.md) | System design, request lifecycles, data model, execution pipelines, scaling |
 | [`backend.md`](backend.md) | All API routes, routers, execution pipeline, identity model |
 | [`frontend.md`](frontend.md) | Routes, pages, components, design system, data flows |
+| [`seo.md`](seo.md) | SEO architecture: per-route meta injection, titles, robots/sitemap, structured data, roadmap |
 | [`datasets.md`](datasets.md) | All 11 dataset tables — columns, row counts, intentional edge cases |
 | [`deployment.md`](deployment.md) | Local dev, Docker, production image, env vars, Railway |
 | [`USERGUIDE.md`](USERGUIDE.md) | End-user guide to the platform |

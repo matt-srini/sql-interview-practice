@@ -87,6 +87,10 @@ Security controls on auth:
 |---|---|---|
 | GET | `/health` | `{ status, postgres, tables_loaded }` |
 | GET | `/api/config` | Runtime frontend flags, currently `{ oauth_providers: ["google"|"github", ...] }` (providers are listed only when client id, client secret, and redirect URI are all configured) |
+| GET | `/robots.txt` | Plain text. Allows all, disallows `/auth` `/dashboard` `/mock` `/api/`, points to the sitemap. |
+| GET | `/sitemap.xml` | XML sitemap **derived from `spa.py` `_get_seo_meta()`** (all non-`noindex` routes) + static legal pages. Self-maintaining. See [`seo.md`](seo.md). |
+
+`/robots.txt` + `/sitemap.xml` live on the `system` router (included before the SPA catch-all so they win the match) and use `config.CANONICAL_BASE_URL` for absolute URLs.
 
 ### Catalog — `/api/catalog`
 
@@ -173,6 +177,8 @@ Paddle signature: header `Paddle-Signature: ts=<unix>;h1=<hmac>` where `h1 = HMA
 ### SPA / static
 
 `GET /` and `GET /{asset_path:path}` serve `frontend/dist` assets. Falls back to `index.html` for SPA routes. `/api/*` paths are excluded from fallback.
+
+**Per-route SEO injection.** Before serving `index.html`, `spa.py` `_inject_seo()` server-rewrites `<title>`, `meta description`, `og:*`, and `canonical` per URL from `_build_seo_meta()`, and injects `Organization` + `WebSite` JSON-LD on `/`. This is the crawler-visible SEO source of truth (no JS required); `index.html` and per-page Helmet are the static-default and client-nav renders of it. Full architecture, title conventions, and roadmap: [`seo.md`](seo.md).
 
 ---
 

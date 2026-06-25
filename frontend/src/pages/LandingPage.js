@@ -1387,10 +1387,10 @@ export default function LandingPage() {
   return (
     <>
       <Helmet>
-        <title>datathink | SQL, Python &amp; Data Interview Practice</title>
-        <meta name="description" content="Develop the data-professional reasoning that matters on the job, across SQL, Python, Pandas, PySpark, Data Engineering, Data Modeling, Statistics, ML, and Experimentation. Real datasets, real execution, real interview shapes." />
-        <meta property="og:title" content="datathink | SQL, Python &amp; Data Interview Practice" />
-        <meta property="og:description" content="9 tracks training the reasoning that makes data professionals genuinely effective: SQL, Python, Pandas, PySpark, Data Engineering, Data Modeling, Statistics, ML, Experimentation. Interview success follows." />
+        <title>Data Engineer, Analyst &amp; Scientist Interview Prep | datathink</title>
+        <meta name="description" content="Premium data interview practice on real execution engines: SQL, Python, ML, statistics and more. 870+ questions with instant feedback and curated learning paths." />
+        <meta property="og:title" content="Data Engineer, Analyst &amp; Scientist Interview Prep | datathink" />
+        <meta property="og:description" content="Premium data interview practice on real execution engines: SQL, Python, ML, statistics and more. 870+ questions with instant feedback and curated learning paths." />
         <meta property="og:url" content="https://datathink.co/" />
         <meta property="og:image" content="https://datathink.co/og-image.png?v=4" />
         <link rel="canonical" href="https://datathink.co/" />

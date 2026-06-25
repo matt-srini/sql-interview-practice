@@ -290,6 +290,7 @@ The `FRONTEND_DIST_DIR` env var defaults to `/app/frontend/dist` inside the imag
 | `OAUTH_STATE_TTL_MINUTES` | — | OAuth state token TTL in minutes; default `5` |
 | `APP_BASE_URL` | Strongly recommended | Public backend origin used for OAuth callback URLs; in single-service deploys this is usually the same as the frontend origin |
 | `FRONTEND_BASE_URL` | Strongly recommended | Public frontend origin used in redirects and email links |
+| `CANONICAL_BASE_URL` | Optional | Canonical public origin for SEO absolute URLs (canonical tags, `og:url`, sitemap `<loc>`, JSON-LD). Defaults to `https://datathink.co`. Single source of truth for the SEO domain — see [`seo.md`](seo.md). |
 | `ALLOWED_ORIGINS` | Strongly recommended | Comma-separated browser origins allowed by CORS and production CSRF checks |
 | `RESEND_API_KEY` | Recommended | Enables verification and password-reset emails |
 | `EMAIL_FROM` | Recommended | Sender identity for auth emails |
