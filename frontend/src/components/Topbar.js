@@ -4,6 +4,7 @@ import api from '../api';
 import { useAuth } from '../contexts/AuthContext';
 import { TRACK_META } from '../contexts/TopicContext';
 import { TRACK_SLUGS } from '../trackRegistry';
+import { ROLES } from '../roleRegistry';
 import BrandMark from './BrandMark';
 
 /**
@@ -42,10 +43,12 @@ export default function Topbar({
 }) {
   const { user, logout } = useAuth();
   const [practiceOpen, setPracticeOpen] = useState(false);
+  const [byRoleOpen, setByRoleOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [bannerDismissed, setBannerDismissed] = useState(false);
   const [resendStatus, setResendStatus] = useState('idle'); // 'idle' | 'sending' | 'sent'
   const dropdownRef = useRef(null);
+  const byRoleRef = useRef(null);
   const mobileMenuRef = useRef(null);
   const location = useLocation();
 
@@ -68,6 +71,7 @@ export default function Topbar({
   // Close dropdowns on route change
   useEffect(() => {
     setPracticeOpen(false);
+    setByRoleOpen(false);
     setMobileMenuOpen(false);
   }, [location.pathname]);
 
@@ -89,6 +93,25 @@ export default function Topbar({
       document.removeEventListener('keydown', onKey);
     };
   }, [practiceOpen]);
+
+  // Close By Role dropdown on outside click or Escape
+  useEffect(() => {
+    if (!byRoleOpen) return;
+    const onMouseDown = (e) => {
+      if (byRoleRef.current && !byRoleRef.current.contains(e.target)) {
+        setByRoleOpen(false);
+      }
+    };
+    const onKey = (e) => {
+      if (e.key === 'Escape') setByRoleOpen(false);
+    };
+    document.addEventListener('mousedown', onMouseDown);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('mousedown', onMouseDown);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [byRoleOpen]);
 
   // Close mobile menu on outside click or Escape
   useEffect(() => {
@@ -118,6 +141,7 @@ export default function Topbar({
   const brandLinkClass = `${isApp ? 'app-practice-home ' : ''}brand-wordmark`;
   const actionsClass = isApp ? 'app-topbar-actions' : 'landing-topbar-right';
   const practiceDropdownClass = `topbar-practice-dropdown${isApp ? ' app-practice-dropdown' : ''}`;
+  const byRoleDropdownClass = `topbar-practice-dropdown${isApp ? ' app-practice-dropdown' : ''}`;
 
   const handleBrandClick = (event) => {
     if (location.pathname !== '/') return;
@@ -208,6 +232,48 @@ export default function Topbar({
                       >
                         <span className="topbar-practice-item-glyph" aria-hidden="true">★</span>
                         Try a sample
+                      </NavLink>
+                    </div>
+                  )}
+                </div>
+
+                <div className={byRoleDropdownClass} ref={byRoleRef}>
+                  <button
+                    className={`topbar-auth-link topbar-practice-trigger${byRoleOpen ? ' topbar-practice-trigger--open' : ''}${location.pathname.startsWith('/interview-prep') ? ' topbar-auth-link--active' : ''}`}
+                    onClick={() => setByRoleOpen((v) => !v)}
+                    aria-haspopup="true"
+                    aria-expanded={byRoleOpen}
+                    type="button"
+                  >
+                    By Role{' '}
+                    <span className="topbar-practice-caret">
+                      {byRoleOpen ? '▴' : '▾'}
+                    </span>
+                  </button>
+                  {byRoleOpen && (
+                    <div className="topbar-practice-menu">
+                      {ROLES.map((role) => (
+                        <NavLink
+                          key={role.slug}
+                          className={({ isActive }) =>
+                            `topbar-practice-item${isActive ? ' topbar-practice-item--active' : ''}`
+                          }
+                          to={`/interview-prep/${role.slug}`}
+                          onClick={() => setByRoleOpen(false)}
+                        >
+                          {role.label}
+                        </NavLink>
+                      ))}
+                      <div className="topbar-practice-menu-divider" />
+                      <NavLink
+                        className={({ isActive }) =>
+                          `topbar-practice-item topbar-practice-item--secondary${isActive ? ' topbar-practice-item--active' : ''}`
+                        }
+                        to="/interview-prep"
+                        onClick={() => setByRoleOpen(false)}
+                      >
+                        <span className="topbar-practice-item-glyph" aria-hidden="true">◆</span>
+                        All roles
                       </NavLink>
                     </div>
                   )}
@@ -318,6 +384,30 @@ export default function Topbar({
                       >
                         <span className="topbar-practice-item-glyph" aria-hidden="true">★</span>
                         Try a sample
+                      </NavLink>
+                      <div className="topbar-mobile-divider" />
+                      <div className="topbar-mobile-section-label">By Role</div>
+                      {ROLES.map((role) => (
+                        <NavLink
+                          key={role.slug}
+                          className={({ isActive }) =>
+                            `topbar-mobile-item${isActive ? ' topbar-mobile-item--active' : ''}`
+                          }
+                          to={`/interview-prep/${role.slug}`}
+                          onClick={() => setMobileMenuOpen(false)}
+                        >
+                          {role.label}
+                        </NavLink>
+                      ))}
+                      <NavLink
+                        className={({ isActive }) =>
+                          `topbar-mobile-item topbar-mobile-item--secondary${isActive ? ' topbar-mobile-item--active' : ''}`
+                        }
+                        to="/interview-prep"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        <span className="topbar-practice-item-glyph" aria-hidden="true">◆</span>
+                        All roles
                       </NavLink>
                       <div className="topbar-mobile-divider" />
                       <NavLink

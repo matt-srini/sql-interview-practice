@@ -232,7 +232,7 @@ SEO role landing page (auth-agnostic — same content logged in or out). Config-
 
 Roles index — the auth-agnostic "all roles" destination (fixes the old "See all roles" link that pointed at the logged-out-only homepage role selector). Four role cards (from `ROLES`), each linking to its `/interview-prep/<slug>` page with the role's track chips. Helmet + `BreadcrumbList` + `ItemList` JSON-LD.
 
-**Shared pieces:** `frontend/src/roleRegistry.js` is the **single source of truth** for the role→track mapping + `slug` + `hasPage` (consumed by the landing role selector, the role pages, the index, and the Sample Hub `?role=` filter — mirror of [`specs/platform-north-star.md`](specs/platform-north-star.md) §Role-to-track). `frontend/src/components/Reveal.js` is the shared scroll-reveal wrapper (`Reveal` + `useInView`, the `.lp-reveal` IntersectionObserver pattern extracted from the landing).
+**Shared pieces:** `frontend/src/roleRegistry.js` is the **single source of truth** for the role→track mapping + `slug` + `hasPage` (consumed by the landing role selector, the role pages, the index, and the Sample Hub `?role=` filter — mirror of [`specs/platform-north-star.md`](specs/platform-north-star.md) §Role-to-track). `frontend/src/components/Reveal.js` is the shared scroll-reveal wrapper (`Reveal` + `useInView`, the `.lp-reveal` IntersectionObserver pattern extracted from the landing). The `Topbar` carries a **"By Role" dropdown** (the four roles → `/interview-prep/<slug>` + "All roles" → `/interview-prep`, mirroring the Practice dropdown) so role pages are reachable from every page — important since the logged-in landing has no role selector.
 
 ### ProgressDashboard (`/dashboard`)
 
