@@ -7,3 +7,10 @@
 **/dist
 frontend/.npm-cache
 backend/sql_practice.duckdb
+
+# Never bake local secrets into the image. backend/.env holds the prod DATABASE_URL;
+# `COPY backend/ ./` would otherwise copy it to /app/.env, readable by the sandbox.
+*.env
+.env
+.env.*
+!.env.example
