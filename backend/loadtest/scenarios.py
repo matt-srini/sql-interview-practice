@@ -11,15 +11,26 @@ and read; a minority execute code (the expensive path); a smaller minority run a
 mock session or open the dashboard.
 
     WEIGHTS (relative):
-      anon_browse_sample   50   land → catalog → open a sample → submit a sample (1 cheap SQL exec)
-      browse_only          25   pure catalog / question-detail reads (no execution)
-      practice_execute     15   register → solve a practice question WITH code execution (subprocess — expensive)
-      mock_session          5   start → fetch → submit → finish a mock (DB-heavy, no code exec via PySpark MCQ)
-      dashboard_read        5   dashboard + coaching insights reads
+      anon_browse_sample            50   land → catalog → open a sample → submit a sample (1 cheap SQL exec)
+      browse_only                   25   pure catalog / question-detail reads (no execution)
+      practice_execute              12   register → solve a practice question WITH code execution (subprocess — expensive)
+      pandas_execute                 8   register → submit a CORRECT pandas solution (numpy/pandas sandbox path)
+      statistics_numerical_execute   5   register → submit a CORRECT statistics-numerical solution (numpy sandbox path)
+      mock_session                   5   start → fetch → submit → finish a mock (DB-heavy, no code exec via PySpark MCQ)
+      dashboard_read                 5   dashboard + coaching insights reads
 
 The driver runs a continuous /health + /api/catalog *probe* alongside these,
 independent of the weights, to measure head-of-line blocking (a cheap endpoint's
 latency while heavy executions are in flight).
+
+The ``pandas_execute`` and ``statistics_numerical_execute`` journeys close the
+blind spot the 2026-06-08 load test had: the original harness only submitted a
+trivial Python-algorithm ``def solve(): return None`` and never exercised the
+numpy/pandas import path (the OpenBLAS path).  They also use a **correctness
+oracle**: the submitted code is the known-correct solution so ``body.correct``
+must be ``True`` on a healthy server.  A 200-with-{error} body (e.g. the
+OpenBLAS RLIMIT_AS abort that silently returns HTTP 200) is caught here because
+the driver scores it "ok" on status code alone — the oracle catches it.
 """
 from __future__ import annotations
 
@@ -32,6 +43,29 @@ import random
 # per-question solutions.
 _SQL_ANSWER = "SELECT 1"
 _PY_ANSWER = "def solve(*args, **kwargs):\n    return None\n"
+
+# --------------------------------------------------------------------------- #
+# Correct solutions for the correctness-oracle journeys (A1)
+#
+# Pandas easy #31001 — "Select Columns and Drop Nulls"
+# Practice question (not mock_only); uses df_users DataFrame.
+# --------------------------------------------------------------------------- #
+_PANDAS_ID = 31001
+_PANDAS_ANSWER = """\
+import pandas as pd
+
+def solve(df_users):
+    return df_users[['name', 'email']].dropna(subset=['email']).reset_index(drop=True)
+"""
+
+# Statistics easy #71002 — "Computing the Sample Mean"
+# Practice question (not mock_only); subtype="numerical" (code execution path).
+# --------------------------------------------------------------------------- #
+_STATS_ID = 71002
+_STATS_ANSWER = """\
+def solve(data: list[float]) -> float:
+    return round(sum(data) / len(data), 4)
+"""
 
 
 # --------------------------------------------------------------------------- #
@@ -87,6 +121,52 @@ async def practice_execute(vu) -> None:
     )
 
 
+async def pandas_execute(vu) -> None:
+    """Register → submit a CORRECT pandas solution → assert body.correct is True.
+
+    This is the path that imports numpy/pandas in the sandbox (the OpenBLAS path
+    the 2026-06-08 load harness never exercised — its only code-exec journey used
+    a Python-algorithm stub that never touched numpy).
+
+    The correctness oracle catches the silent 200-{error} OpenBLAS-abort failure
+    that a status-code-only check cannot see: if the sandbox aborts due to
+    RLIMIT_AS exhaustion the body comes back as ``{"error": "..."}`` with HTTP 200
+    — the driver classifies it "ok" but ``body.correct`` is absent/False, so the
+    oracle records a FAIL.
+    """
+    await vu.ensure_registered()
+    payload = await vu.post(
+        "/api/pandas/submit",
+        json={"question_id": _PANDAS_ID, "code": _PANDAS_ANSWER, "duration_ms": 5000},
+        name="submit_pandas_exec",
+    )
+    vu.recorder.add_correctness_check(
+        "pandas_correct",
+        isinstance(payload, dict) and payload.get("correct") is True,
+    )
+
+
+async def statistics_numerical_execute(vu) -> None:
+    """Register → submit a CORRECT statistics-numerical solution → assert correct is True.
+
+    Also a numpy-importing sandbox path (statistics numerical questions run through
+    ``python_evaluator.evaluate_python_code`` in a subprocess).  The correctness
+    oracle serves the same purpose as in ``pandas_execute``: a sandbox abort or
+    eval error returns HTTP 200 with ``{"error": ...}`` — caught here because
+    ``body.correct`` will not be ``True``.
+    """
+    await vu.ensure_registered()
+    payload = await vu.post(
+        "/api/statistics/submit",
+        json={"question_id": _STATS_ID, "code": _STATS_ANSWER, "duration_ms": 3000},
+        name="submit_stats_numerical_exec",
+    )
+    vu.recorder.add_correctness_check(
+        "stats_numerical_correct",
+        isinstance(payload, dict) and payload.get("correct") is True,
+    )
+
+
 async def mock_session(vu) -> None:
     """Start → fetch → submit → finish a mock session (DB-heavy).
 
@@ -133,7 +213,9 @@ async def dashboard_read(vu) -> None:
 WEIGHTED_JOURNEYS = [
     (anon_browse_sample, 50),
     (browse_only, 25),
-    (practice_execute, 15),
+    (practice_execute, 12),
+    (pandas_execute, 8),
+    (statistics_numerical_execute, 5),
     (mock_session, 5),
     (dashboard_read, 5),
 ]

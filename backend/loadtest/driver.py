@@ -74,18 +74,52 @@ class Sample:
     klass: str          # ok | rejected | throttled | error
 
 
+@dataclass
+class CorrectnessCheck:
+    t: float            # monotonic timestamp
+    name: str           # oracle name (e.g. "pandas_correct")
+    passed: bool        # True iff the response body was correct
+
+
 class Recorder:
     """Single-event-loop sample store (plain list append is safe here)."""
 
     def __init__(self) -> None:
         self.samples: list[Sample] = []
         self.probe: list[Sample] = []
+        self.correctness: list[CorrectnessCheck] = []
 
     def add(self, s: Sample) -> None:
         self.samples.append(s)
 
     def add_probe(self, s: Sample) -> None:
         self.probe.append(s)
+
+    def add_correctness_check(self, name: str, passed: bool) -> None:
+        """Record whether a journey's correctness oracle passed.
+
+        Journeys that submit a known-correct solution call this with the result
+        of ``payload.get("correct") is True``.  A False here means the server
+        returned HTTP 200 with an error body (e.g. an OpenBLAS sandbox abort)
+        that the status-code-only classifier would count as "ok".
+        """
+        self.correctness.append(CorrectnessCheck(time.monotonic(), name, passed))
+
+    def correctness_summary(self) -> dict:
+        """Return per-oracle {total, passed, pass_rate_pct} keyed by name."""
+        by_name: dict[str, list[bool]] = {}
+        for c in self.correctness:
+            by_name.setdefault(c.name, []).append(c.passed)
+        result = {}
+        for name, checks in sorted(by_name.items()):
+            total = len(checks)
+            passed = sum(1 for ok in checks if ok)
+            result[name] = {
+                "total": total,
+                "passed": passed,
+                "pass_rate_pct": round(100.0 * passed / total, 1) if total else 0.0,
+            }
+        return result
 
 
 def _pct(values: list[float], q: float) -> float:
@@ -329,10 +363,13 @@ class LoadEngine:
 # --------------------------------------------------------------------------- #
 # Report
 # --------------------------------------------------------------------------- #
-def print_report(windows: list[Window], as_json: bool) -> None:
+def print_report(windows: list[Window], recorder: Recorder | None, as_json: bool) -> None:
     rows = [w.summary() for w in windows]
     if as_json:
-        print(json.dumps(rows, indent=2))
+        payload: dict = {"windows": rows}
+        if recorder is not None:
+            payload["correctness"] = recorder.correctness_summary()
+        print(json.dumps(payload, indent=2))
         return
     hdr = (
         f"{'VUs':>5} {'req':>7} {'rps':>7} {'p50':>7} {'p95':>8} {'p99':>9} "
@@ -353,6 +390,20 @@ def print_report(windows: list[Window], as_json: bool) -> None:
         "\nLegend: err%=5xx+transport rate · thr=429 throttled · rej=4xx business rejects (locks/limits) ·"
         "\n        /health p95 = event-loop-lag proxy · /cat p95 = Postgres-pool proxy."
     )
+
+    # Correctness oracle — catches 200-with-{error} silent failures (e.g. OpenBLAS abort)
+    if recorder is not None:
+        summary = recorder.correctness_summary()
+        if summary:
+            print("\nCorrectness oracle:")
+            print(f"  {'oracle':<40} {'passed':>8} {'total':>8} {'pass%':>7}  result")
+            print("  " + "-" * 72)
+            for name, s in summary.items():
+                marker = "PASS" if s["pass_rate_pct"] >= 100.0 else "FAIL ← silent 200-error"
+                print(
+                    f"  {name:<40} {s['passed']:>8} {s['total']:>8} "
+                    f"{s['pass_rate_pct']:>6.1f}%  {marker}"
+                )
 
 
 def _parse_args(argv: list[str]) -> argparse.Namespace:
@@ -382,7 +433,7 @@ async def _amain(args: argparse.Namespace) -> None:
               f"psutil={'on' if psutil and args.server_pid else 'off'}")
     engine = LoadEngine(args.base_url, origin, args.timeout, args.server_pid)
     windows = await engine.run_ramp(steps, step_seconds)
-    print_report(windows, args.json)
+    print_report(windows, engine.recorder, args.json)
 
 
 def main(argv: list[str] | None = None) -> None:
