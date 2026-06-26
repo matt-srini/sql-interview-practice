@@ -2734,10 +2734,25 @@ select {
   pointer-events: none;
   transition: opacity 140ms ease-out, background 140ms ease-out, color 140ms ease-out;
 }
-.lp-tour-wrap:hover .lp-tour-dismiss,
+/* Keyboard focus always reveals it (accessibility) */
 .lp-tour-dismiss:focus-visible {
   opacity: 1;
   pointer-events: auto;
+}
+/* Pointer devices reveal it on hover */
+@media (hover: hover) {
+  .lp-tour-wrap:hover .lp-tour-dismiss {
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+/* Touch devices have no hover — keep the dismiss control always visible so it's
+   reachable (otherwise a phone user can never remove the shortcut) */
+@media (hover: none) {
+  .lp-tour-dismiss {
+    opacity: 1;
+    pointer-events: auto;
+  }
 }
 .lp-tour-dismiss:hover {
   background: color-mix(in srgb, var(--text-secondary) 12%, transparent);
