@@ -315,7 +315,7 @@ Full route tree: [`docs/frontend.md`](docs/frontend.md) §Route tree.
 
 `:topic` values: `sql` | `python` | `pandas` | `pyspark` | `data-engineering` | `data-modeling` | `statistics` | `ml-fundamentals` | `experimentation`
 
-**Role interview-prep pages (SEO):** `/interview-prep` (roles index) + `/interview-prep/:role` (`data-engineer` | `data-analyst` | `analytics-engineer` | `data-scientist`) — auth-agnostic role landing pages. **`frontend/src/roleRegistry.js` is the single source of truth for the role→track mapping** (id, slug, hasPage, tracks; mirror of [`docs/specs/platform-north-star.md`](docs/specs/platform-north-star.md) §Role-to-track), consumed by the landing role selector, the role pages, the index, and the Sample Hub `?role=` filter. See [`docs/seo.md`](docs/seo.md) §Roadmap (Phase 2) + [`docs/frontend.md`](docs/frontend.md).
+**Role interview-prep pages (SEO):** `/interview-prep` (roles index) + `/interview-prep/:role` (`data-engineer` | `data-analyst` | `analytics-engineer` | `data-scientist`) — auth-agnostic role landing pages. **`frontend/src/roleRegistry.js` is the single source of truth for the role→track mapping** (id, slug, hasPage, tracks; mirror of [`docs/specs/platform-north-star.md`](docs/specs/platform-north-star.md) §Role-to-track), consumed by the landing role selector, the role pages, the index, and the Sample Hub `?role=` filter, and **derived by** the mock role selector (`MockHub` `MOCK_ROLES`, including the Mixed benchmark question count via `mockModeConfig` = the role's `tracks.length`) and the dashboard role filter (`ProgressDashboard` `ROLE_TRACK_FILTERS`) — no surface restates the mapping or the count. See [`docs/seo.md`](docs/seo.md) §Roadmap (Phase 2) + [`docs/frontend.md`](docs/frontend.md).
 
 ---
 
