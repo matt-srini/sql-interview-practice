@@ -1,3 +1,6 @@
+import { roleByMockToken } from './roleRegistry';
+import { TRACK_META } from './trackRegistry';
+
 // The 8 universal follow-up (chain pivot) dimensions — canonical source:
 // docs/concept-taxonomy.md §"The 8 universal follow-up dimensions". `label` is the
 // human-readable name shown in the pivot card heading and analytics; `blurb` is the
@@ -105,28 +108,16 @@ export const BENCHMARK_BLUEPRINTS = {
   },
 };
 
-// Mixed-track benchmark blueprints per role (mirrors MIXED_BENCHMARK_CONFIGS on the backend)
+// Mixed-track benchmark config per role: ONLY the values that are NOT derivable from the
+// track mix — the session time (mirrors time_limit_s in backend mock.py
+// MIXED_BENCHMARK_CONFIGS) and an editorial blurb. The question count and the track list
+// shown in the summary are DERIVED from the role's canonical tracks (roleRegistry, the SoT)
+// in getBenchmarkBlueprint / getSessionQuestionCount — never restated here.
 export const MIXED_BENCHMARK_BLUEPRINTS = {
-  data_analyst: {
-    timeMinutes: 55,
-    summary: '4 questions across SQL · Statistics · Pandas · Python',
-    description: 'Role-based benchmark calibrated for analytical workflows.',
-  },
-  data_engineer: {
-    timeMinutes: 70,
-    summary: '5 questions across Python · SQL · PySpark · Data Engineering · Data Modeling',
-    description: 'Role-based benchmark covering the full data-engineering tool stack.',
-  },
-  analytics_engineer: {
-    timeMinutes: 55,
-    summary: '4 questions across SQL · Data Modeling · Pandas · Python',
-    description: 'Role-based benchmark for modeling, transformation, and analytical SQL.',
-  },
-  data_scientist: {
-    timeMinutes: 80,
-    summary: '6 questions across ML Fundamentals · Statistics · Experimentation · Python · Pandas · SQL',
-    description: 'Role-based benchmark spanning modeling, statistics, experimentation, and the code underneath.',
-  },
+  data_analyst:       { timeMinutes: 55, description: 'Role-based benchmark calibrated for analytical workflows.' },
+  data_engineer:      { timeMinutes: 70, description: 'Role-based benchmark covering the full data-engineering tool stack.' },
+  analytics_engineer: { timeMinutes: 55, description: 'Role-based benchmark for modeling, transformation, and analytical SQL.' },
+  data_scientist:     { timeMinutes: 80, description: 'Role-based benchmark spanning modeling, statistics, experimentation, and the code underneath.' },
 };
 
 export function supportsBenchmarkMode(track) {
@@ -134,7 +125,20 @@ export function supportsBenchmarkMode(track) {
 }
 
 export function getBenchmarkBlueprint(track, role) {
-  if (track === 'mixed') return role ? (MIXED_BENCHMARK_BLUEPRINTS[role] ?? null) : null;
+  if (track === 'mixed') {
+    const entry = role ? roleByMockToken(role) : null;
+    const cfg = role ? MIXED_BENCHMARK_BLUEPRINTS[role] : null;
+    if (!entry || !cfg) return null;
+    // Count + track-list summary derive from the role's canonical tracks (roleRegistry);
+    // only time + blurb come from config. Nothing restates the question count.
+    const labels = entry.tracks.map((t) => TRACK_META[t]?.label ?? t);
+    return {
+      numQuestions: entry.tracks.length,
+      timeMinutes: cfg.timeMinutes,
+      summary: `${entry.tracks.length} questions across ${labels.join(' · ')}`,
+      description: cfg.description,
+    };
+  }
   return BENCHMARK_BLUEPRINTS[track] ?? null;
 }
 
@@ -212,8 +216,8 @@ export function getMockModeCards(track, plan = 'free') {
 export function getSessionQuestionCount(mode, track, customCount, role) {
   if (mode === 'benchmark') {
     if (track === 'mixed') {
-      // All role blueprints have 4 slots
-      return 4;
+      // One slot per canonical track — derived from roleRegistry (the SoT), never hardcoded.
+      return roleByMockToken(role)?.tracks.length ?? null;
     }
     return getBenchmarkBlueprint(track)?.numQuestions ?? 0;
   }

@@ -12,6 +12,7 @@ import {
   dimensionLabel,
   dimensionBlurb,
 } from './mockModeConfig';
+import { ROLES, mockRoleToken } from './roleRegistry';
 
 describe('mockModeConfig', () => {
   it('exposes benchmark blueprints for supported tracks', () => {
@@ -177,5 +178,26 @@ describe('formatLoopDifficulty', () => {
     expect(formatLoopDifficulty('hard', false)).toBe('hard');
     expect(formatLoopDifficulty('', false)).toBe('');
     expect(formatLoopDifficulty(null, true)).toBe('');
+  });
+});
+
+describe('Mixed benchmark count + summary derive from roleRegistry (no hardcode)', () => {
+  it('getSessionQuestionCount returns the role track count for every role', () => {
+    ROLES.forEach((r) => {
+      expect(getSessionQuestionCount('benchmark', 'mixed', null, mockRoleToken(r))).toBe(r.tracks.length);
+    });
+  });
+
+  it('getBenchmarkBlueprint derives numQuestions + a track-list summary per role', () => {
+    ROLES.forEach((r) => {
+      const bp = getBenchmarkBlueprint('mixed', mockRoleToken(r));
+      expect(bp.numQuestions).toBe(r.tracks.length);
+      expect(bp.summary.startsWith(`${r.tracks.length} questions across`)).toBe(true);
+    });
+  });
+
+  it('Data Scientist Mixed benchmark is 6 questions (regression: was hardcoded 4)', () => {
+    expect(getSessionQuestionCount('benchmark', 'mixed', null, 'data_scientist')).toBe(6);
+    expect(getBenchmarkBlueprint('mixed', 'data_scientist').numQuestions).toBe(6);
   });
 });

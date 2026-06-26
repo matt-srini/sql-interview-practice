@@ -4,9 +4,12 @@
  * `slug`    — URL segment used in /interview-prep/:role
  * `hasPage` — true when a dedicated /interview-prep/<slug> page is published
  *
- * Used by:
+ * Used by (everything role→track derives from here — no second hardcoded mapping):
  *   - LandingPage RoleSelectorSection (tabs + track panels)
  *   - RoleInterviewPrepPage (config-driven SEO page per role)
+ *   - MockHub MOCK_ROLES (mock role selector) — derived
+ *   - ProgressDashboard ROLE_TRACK_FILTERS (dashboard role filter) — derived
+ *   - mockModeConfig (Mixed benchmark question count + track summary) — derived
  */
 export const ROLES = [
   {
@@ -42,3 +45,12 @@ export const ROLES = [
     tracks: ['ml-fundamentals', 'statistics', 'experimentation', 'python', 'pandas', 'sql'],
   },
 ];
+
+// ── Derived role accessors ───────────────────────────────────────────────────
+// The mock/API role token is the underscored slug ('data-scientist' → 'data_scientist').
+// MockHub's MOCK_ROLES, the dashboard's ROLE_TRACK_FILTERS, the Mixed benchmark question
+// count, and the backend role token all derive from here. Nothing restates the mapping.
+export const mockRoleToken = (role) => role.slug.replace(/-/g, '_');
+
+export const roleByMockToken = (token) =>
+  ROLES.find((r) => mockRoleToken(r) === token) ?? null;

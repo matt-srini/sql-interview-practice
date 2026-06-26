@@ -4,6 +4,7 @@ import { Helmet } from 'react-helmet-async';
 import api from '../api';
 import { useAuth } from '../contexts/AuthContext';
 import { TRACK_SLUGS, TRACK_LABELS } from '../trackRegistry';
+import { ROLES, mockRoleToken } from '../roleRegistry';
 import Topbar from '../components/Topbar';
 import UpgradeButton from '../components/UpgradeButton';
 import { track as trackEvent } from '../analytics';
@@ -22,14 +23,9 @@ import {
 // Tracks that pool into a single mixed-track session (in_mixed_mock=True in backend).
 const MIXED_MOCK_TRACKS = ['sql', 'python', 'pandas', 'pyspark'];
 
-// Canonical role→track mapping — identical to frontend/src/roleRegistry.js and
-// backend tracks.py _ROLE_TRACKS. Keep in lockstep (see DECISIONS.md 2026-06-26).
-export const MOCK_ROLES = [
-  { id: 'data_analyst',       label: 'Data Analyst',       tracks: ['sql', 'statistics', 'pandas', 'python'] },
-  { id: 'data_engineer',      label: 'Data Engineer',      tracks: ['python', 'sql', 'pyspark', 'data-engineering', 'data-modeling'] },
-  { id: 'analytics_engineer', label: 'Analytics Engineer', tracks: ['sql', 'data-modeling', 'pandas', 'python'] },
-  { id: 'data_scientist',     label: 'Data Scientist',     tracks: ['ml-fundamentals', 'statistics', 'experimentation', 'python', 'pandas', 'sql'] },
-];
+// Mock role selector — DERIVED from roleRegistry (the SoT). The id is the backend/API
+// role token (underscored slug). No second hardcoded role→track mapping to drift.
+export const MOCK_ROLES = ROLES.map((r) => ({ id: mockRoleToken(r), label: r.label, tracks: r.tracks }));
 
 const DIFFICULTIES = ['easy', 'medium', 'hard', 'mixed'];
 

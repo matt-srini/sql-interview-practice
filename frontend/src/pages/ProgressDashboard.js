@@ -5,19 +5,16 @@ import api from '../api';
 import { useAuth } from '../contexts/AuthContext';
 import { TRACK_META } from '../contexts/TopicContext';
 import { TRACK_SLUGS, TRACK_LABELS } from '../trackRegistry';
+import { ROLES } from '../roleRegistry';
 import { useCatalogCounts } from '../contexts/CatalogCountsContext';
 import Topbar from '../components/Topbar';
 import Skeleton from '../components/Skeleton';
 import UpgradeButton from '../components/UpgradeButton';
 import { formatLoopDifficulty } from '../mockModeConfig';
 
-// Role → tracks filter for Track overview section
-export const ROLE_TRACK_FILTERS = [
-  { id: 'analyst',   label: 'Data Analyst',       tracks: ['sql', 'statistics', 'pandas', 'python'] },
-  { id: 'engineer',  label: 'Data Engineer',      tracks: ['python', 'sql', 'pyspark', 'data-engineering', 'data-modeling'] },
-  { id: 'ae',        label: 'Analytics Eng',      tracks: ['sql', 'data-modeling', 'pandas', 'python'] },
-  { id: 'scientist', label: 'Data Scientist',     tracks: ['ml-fundamentals', 'statistics', 'experimentation', 'python', 'pandas', 'sql'] },
-];
+// Role → tracks filter for the Track overview section — DERIVED from roleRegistry (the
+// SoT). No second hardcoded role→track mapping to drift.
+export const ROLE_TRACK_FILTERS = ROLES.map((r) => ({ id: r.id, label: r.label, tracks: r.tracks }));
 
 function formatRelativeTime(isoString) {
   if (!isoString) return '';

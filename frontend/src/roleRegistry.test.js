@@ -3,14 +3,11 @@ import { ROLES } from './roleRegistry';
 import { MOCK_ROLES } from './pages/MockHub';
 import { ROLE_TRACK_FILTERS } from './pages/ProgressDashboard';
 
-// The role→track mapping is duplicated across three frontend surfaces: the
-// curriculum SoT (roleRegistry ROLES), the mock role selector (MockHub
-// MOCK_ROLES), and the dashboard role filter (ProgressDashboard
-// ROLE_TRACK_FILTERS). They MUST encode the same four track-sets. This guard
-// would have caught the drift fixed on 2026-06-26 (the Data Scientist mock set
-// had silently diverged from the curriculum, and pandas was missing). A cleaner
-// future refactor is to derive the latter two from roleRegistry; until then this
-// parity test is the guard. See docs/decisions/DECISIONS.md 2026-06-26.
+// MockHub MOCK_ROLES and the dashboard ROLE_TRACK_FILTERS are now DERIVED from
+// roleRegistry ROLES (the SoT) — there is no second hardcoded role→track mapping.
+// This test verifies the derivation stays correct and fails loudly if anyone
+// re-hardcodes either list and lets it drift (the 2026-06-26 bug). See
+// docs/decisions/DECISIONS.md 2026-06-26.
 
 // Order- and id/label-independent: compare the *set of track-sets*.
 const trackSets = (rolesArray) =>
