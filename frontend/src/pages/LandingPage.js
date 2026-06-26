@@ -447,11 +447,13 @@ function HeroSection({ user, dashData, paths = [], reduced }) {
               Find your role ↓
             </button>
           </div>
-          <LandingTour />
         </div>
         <div className="lp-hero-right">
           <HeroIDE reduced={reduced} />
         </div>
+      </div>
+      <div className="lp-inner lp-hero-tour">
+        <LandingTour />
       </div>
     </section>
   );
