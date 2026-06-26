@@ -52,6 +52,16 @@ This section is the **canonical citation for terminology pushback**. When a doc 
 - Do not add fake editors to tracks that are not genuinely executable.
 - Where a track is hybrid, subtype must be explicit in the payload and UI.
 
+## MCQ wrong-answer journey (gated re-attempt)
+
+On MCQ-response questions a wrong answer is **gated** — neither a free retry loop nor a dead end:
+
+1. **Wrong submit** → verdict "Not quite" (never "Keep iterating" — that copy is code-track-only, where re-running is legitimate). The options lock and Submit disables; the only way forward is the reasoning ladder.
+2. **Hint ladder** → hints reveal one at a time, with a quiet "Skip to the answer". The terminal "Reveal the answer" step lights the correct option tile and renders the explanation **in place** (co-located with the trigger — fixes a mobile blind spot where the reveal otherwise landed off-screen).
+3. **Re-attempt** → revealing re-opens the options (`MCQPanel canReselect`); the user selects the correct answer and submits → **solved**.
+
+The post-reveal solve **counts toward unlock thresholds identically to a code-track solve** — there is no reveal penalty (a code-track user can likewise reveal the Official Solution before solving). The unlock ladder measures engagement/pacing, not first-try mastery; mastery signals (first-try accuracy) belong on the dashboard. "Next" appears only on a solve and never points at the current question. Runtime SoT: `frontend/src/pages/QuestionPage.js` + `frontend/src/components/MCQPanel.js`. Why: `docs/decisions/DECISIONS.md` 2026-06-26.
+
 ## Metadata contract
 
 The modality migration should converge on these concepts:

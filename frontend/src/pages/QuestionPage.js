@@ -214,6 +214,7 @@ export default function QuestionPage() {
   const [historyOpen, setHistoryOpen] = useState(false);
   const priorAttemptCountRef = useRef(0);
   const verdictRef = useRef(null);
+  const answerRef = useRef(null);
 
   // Refs used by Monaco keyboard commands to avoid stale closures.
   // Updated inline on every render (before any early return that uses them).
@@ -542,6 +543,17 @@ export default function QuestionPage() {
       }
     }
   }, [submitResult]);
+
+  // After an MCQ answer is revealed, bring the in-place answer block into view
+  // (belt-and-suspenders; the answer is already co-located with the trigger).
+  useEffect(() => {
+    if (showSolution && renderMode === 'mcq' && answerRef.current) {
+      const rect = answerRef.current.getBoundingClientRect();
+      if (rect.top < 80 || rect.bottom > window.innerHeight) {
+        answerRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    }
+  }, [showSolution, renderMode]);
 
   function formatRelativeTime(isoString) {
     const diff = Date.now() - new Date(isoString).getTime();
@@ -973,7 +985,10 @@ export default function QuestionPage() {
     && (submitResult.correct || hintsShown >= (question.hints?.length ?? 0));
 
   const isSubmitDisabled = submitting || running || isLocked
-    || (renderMode === 'mcq' && selectedOption === null);
+    || (renderMode === 'mcq' && selectedOption === null)
+    // MCQ is gated, not terminal: lock submit once answered until the answer is
+    // revealed (forces the reasoning journey), and after a correct solve.
+    || (renderMode === 'mcq' && !!submitResult && (submitResult.correct || !showSolution));
 
   return (
     <main className="container question-page question-page-challenge">
@@ -1294,9 +1309,10 @@ export default function QuestionPage() {
                 selectedOption={selectedOption}
                 onSelect={setSelectedOption}
                 submitted={!!submitResult}
+                canReselect={renderMode === 'mcq' && !!submitResult && !submitResult.correct && showSolution}
                 correct={submitResult?.correct ?? null}
-                correctIndex={submitResult?.correct_index ?? null}
-                explanation={(submitResult?.correct || showSolution) ? (submitResult?.explanation ?? '') : ''}
+                correctIndex={(submitResult?.correct || showSolution) ? (submitResult?.correct_index ?? null) : null}
+                explanation={submitResult?.correct ? (submitResult?.explanation ?? '') : ''}
                 locked={isLocked}
                 explanationLabel={isReasoningTrack ? 'Reasoning' : 'Explanation'}
                 lockedCopy={isReasoningTrack
@@ -1333,7 +1349,7 @@ export default function QuestionPage() {
                     >
                       Drill complete →
                     </button>
-                  ) : !pathNavBar && nextQuestionId ? (
+                  ) : !pathNavBar && nextQuestionId && nextQuestionId !== Number(id) ? (
                     <button
                       className="btn btn-success"
                       onClick={() => navigate(`/practice/${topic}/questions/${nextQuestionId}`)}
@@ -1611,8 +1627,8 @@ export default function QuestionPage() {
             <div className={`submit-outcome${celebrateSolve ? ' submit-outcome-celebrate' : ''}`} ref={verdictRef}>
               <div className={`verdict ${submitResult.correct ? 'verdict-correct' : 'verdict-incorrect'}`}>
                 <div className="verdict-header-row">
-                  <span className="verdict-label">{submitResult.correct ? 'Correct' : 'Keep iterating'}</span>
-                  {canRevealSolution && (
+                  <span className="verdict-label">{submitResult.correct ? 'Correct' : (renderMode === 'mcq' ? 'Not quite' : 'Keep iterating')}</span>
+                  {canRevealSolution && renderMode !== 'mcq' && (
                     <button
                       className="btn btn-secondary workspace-inline-action verdict-solution-toggle"
                       onClick={() => setShowSolution((value) => !value)}
@@ -1623,8 +1639,12 @@ export default function QuestionPage() {
                 </div>
                 <p className="verdict-copy">
                   {submitResult.correct
-                    ? 'Your submission matches the expected result.'
-                    : 'Your submission does not match the expected result yet.'}
+                    ? (renderMode === 'mcq' ? "That's the right answer." : 'Your submission matches the expected result.')
+                    : (renderMode === 'mcq'
+                        ? (showSolution
+                            ? 'Now select the correct answer above to mark this solved.'
+                            : 'Work through the reasoning below, then reveal the answer.')
+                        : 'Your submission does not match the expected result yet.')}
                 </p>
                 {submissionInsight && (
                   <p className="verdict-insight">{submissionInsight}</p>
@@ -1843,7 +1863,7 @@ export default function QuestionPage() {
                 </div>
               )}
 
-              {!submitResult.correct && question.hints?.length > 0 && (
+              {!submitResult.correct && question.hints?.length > 0 && renderMode !== 'mcq' && (
                 <div className="hint-stepper">
                   <div className="hint-stepper-header">
                     <span className="hint-stepper-title">{hasSingleHint ? 'Hint' : 'Hints'}</span>
@@ -1877,6 +1897,62 @@ export default function QuestionPage() {
                       <span className="hint-reveal-arrow">→</span>
                       Review Official Solution
                     </button>
+                  )}
+                </div>
+              )}
+
+              {/* MCQ reasoning ladder — terminal, one-way: optional hints, then reveal the answer in place. */}
+              {!submitResult.correct && renderMode === 'mcq' && (
+                <div className="hint-stepper mcq-ladder">
+                  {question.hints?.length > 0 && (
+                    <div className="hint-stepper-header">
+                      <span className="hint-stepper-title">{hasSingleHint ? 'Hint' : 'Hints'}</span>
+                      {!hasSingleHint && (
+                        <span className="hint-stepper-progress">{hintsShown}/{question.hints.length} revealed</span>
+                      )}
+                    </div>
+                  )}
+                  {question.hints?.slice(0, hintsShown).map((hint, index) => (
+                    <div key={index} className="hint-step hint-step--revealed">
+                      <div className="hint-step-meta">
+                        <span className="hint-step-num">{index + 1}</span>
+                        <span className="hint-step-label">{hintStepLabels[index] ?? `Hint ${index + 1}`}</span>
+                      </div>
+                      <p className="hint-step-content">{hint}</p>
+                    </div>
+                  ))}
+                  {!showSolution && (question.hints?.length ?? 0) > hintsShown && (
+                    <button
+                      className="hint-reveal-btn"
+                      onClick={() => setHintsShown((c) => c + 1)}
+                    >
+                      <span className="hint-reveal-arrow">→</span>
+                      Reveal {hintStepLabels[hintsShown] ?? `Hint ${hintsShown + 1}`}
+                    </button>
+                  )}
+                  {!showSolution && hintsShown >= (question.hints?.length ?? 0) && (
+                    <button
+                      className="hint-reveal-btn hint-reveal-solution-cta"
+                      onClick={() => { setShowSolution(true); setSelectedOption(null); }}
+                    >
+                      <span className="hint-reveal-arrow">→</span>
+                      Reveal the answer
+                    </button>
+                  )}
+                  {!showSolution && (question.hints?.length ?? 0) > hintsShown && (
+                    <button
+                      className="hint-skip-link"
+                      onClick={() => { setShowSolution(true); setSelectedOption(null); }}
+                    >
+                      Skip to the answer
+                    </button>
+                  )}
+                  {showSolution && (
+                    <div className="mcq-answer-reveal" ref={answerRef}>
+                      <div className="mcq-answer-label">Answer</div>
+                      <p className="mcq-answer-text">{submitResult.explanation}</p>
+                      <p className="mcq-answer-cta">Select the correct answer above, then submit to mark this solved.</p>
+                    </div>
                   )}
                 </div>
               )}

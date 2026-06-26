@@ -147,5 +147,6 @@ async def submit_ml_answer(
 
     return {
         "correct": correct,
+        "correct_index": q.get("correct_option"),
         "explanation": q.get("explanation", ""),
     }

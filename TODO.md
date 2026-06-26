@@ -121,6 +121,19 @@ a role-Mixed-mock slot. Until then the role pages stay honest without a "coming 
 
 ---
 
+## P2 — First-try accuracy on the dashboard (all tiers)
+Surface a **first-try accuracy** signal on the dashboard for **all** plan tiers (not Elite-gated).
+Rationale: the MCQ wrong-answer journey (2026-06-26, `docs/decisions/DECISIONS.md`) deliberately lets
+post-reveal solves count toward unlock thresholds, so the unlock ladder measures **engagement, not
+mastery** — first-try accuracy is where mastery / answer-peeking should surface instead, keeping the
+gate honest. The data already exists: `submissions` logs every attempt with `is_correct`, and the solve
+handler already computes `first_try` (`priorAttemptCountRef.current === 0`) — so this is a dashboard
+compute + render, not new tracking. Scope: per-track first-try accuracy (first-attempt-correct ÷
+questions attempted) added to `GET /api/dashboard/insights` + a card on `ProgressDashboard`, visible to
+Free / Pro / Elite.
+
+---
+
 ### Config notes (operator)
 - Railway: `MAX_CONCURRENT_EXECUTIONS=6` is set (8 vCPU − 2). Replica Memory left at the 8 GB
   plan max (billed on actual usage; gives OOM headroom above app + 6×512 MB sandbox peak).

@@ -11468,6 +11468,54 @@ select {
   text-align: left;
 }
 .hint-reveal-btn:hover { background: rgba(91, 106, 240, 0.06); }
+
+/* MCQ reasoning-ladder: quiet skip affordance + in-place answer reveal */
+.hint-skip-link {
+  display: block;
+  width: 100%;
+  padding: 0.5rem 1rem 0.65rem;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  text-align: left;
+  transition: color 0.15s ease;
+}
+
+.hint-skip-link:hover {
+  color: var(--text-secondary);
+  text-decoration: underline;
+}
+
+.mcq-answer-reveal {
+  padding: 0.85rem 1rem 0.95rem;
+  border-top: 1px solid var(--border-subtle);
+  animation: hint-reveal 0.2s ease;
+}
+
+.mcq-answer-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--accent);
+  margin-bottom: 0.4rem;
+}
+
+.mcq-answer-text {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.65;
+  color: var(--text-secondary);
+}
+
+.mcq-answer-cta {
+  margin: 0.6rem 0 0;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--accent);
+}
 .hint-reveal-arrow { font-size: 0.8rem; transition: transform 0.15s; }
 .hint-reveal-btn:hover .hint-reveal-arrow { transform: translateX(3px); }
 .hint-reveal-solution-cta {

@@ -200,6 +200,7 @@ async def submit_statistics_answer(
         return {
             "correct": correct,
             "subtype": subtype,
+            "correct_index": q.get("correct_option"),
             "explanation": q.get("explanation", ""),
         }
 
