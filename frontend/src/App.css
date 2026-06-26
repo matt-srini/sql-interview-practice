@@ -2898,6 +2898,13 @@ select {
   box-shadow: 0 8px 24px rgba(0,0,0,0.12);
   padding: 0.5rem 0;
   z-index: 200;
+  /* Cap to the viewport below the sticky topbar (~76px) and scroll inside —
+     the Practice + By Role sections together overflow short phones otherwise. */
+  max-height: calc(100vh - 96px);
+  max-height: calc(100dvh - 96px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
 }
 
 .topbar-mobile-section-label {
