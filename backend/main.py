@@ -69,9 +69,9 @@ init_sentry()
 # oversubscribing every core with CPU-bound sandbox work, and bounds peak sandbox
 # memory (concurrency × RLIMIT_AS 512 MB) so the container memory cap can be sized
 # sensibly. On an 8-vCPU box this is 6 → ~3 GB peak sandbox memory, 2 cores free.
-import os as _os  # noqa: E402
 from config import _get_int  # noqa: E402
-_DEFAULT_CONCURRENCY = max(2, (_os.cpu_count() or 4) - 2)
+from config import effective_cpu_count as _effective_cpu_count  # noqa: E402
+_DEFAULT_CONCURRENCY = max(2, _effective_cpu_count() - 2)
 _MAX_CONCURRENT_EXECUTIONS = _get_int("MAX_CONCURRENT_EXECUTIONS", str(_DEFAULT_CONCURRENCY))
 _execution_semaphore = asyncio.Semaphore(_MAX_CONCURRENT_EXECUTIONS)
 

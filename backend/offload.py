@@ -35,6 +35,8 @@ import asyncio
 import os
 from typing import Any, Callable, TypeVar
 
+from config import effective_cpu_count
+
 T = TypeVar("T")
 
 # Serializes all DuckDB in-process engine access. asyncio primitives created at
@@ -45,9 +47,9 @@ _sql_lock = asyncio.Lock()
 
 def _hash_concurrency() -> int:
     # PBKDF2 is CPU-bound and releases the GIL, so the natural ceiling is roughly the
-    # core count; leave one core for the event loop itself. Override with
+    # cgroup-aware CPU count; leave one core for the event loop itself. Override with
     # MAX_CONCURRENT_HASHES (kept independent of MAX_CONCURRENT_EXECUTIONS on purpose).
-    default = max(2, (os.cpu_count() or 4) - 1)
+    default = max(2, effective_cpu_count() - 1)
     raw = os.environ.get("MAX_CONCURRENT_HASHES")
     if raw is None:
         return default

@@ -284,3 +284,44 @@ def get_async_database_url() -> str:
 	if DATABASE_URL.startswith("postgresql://"):
 		return DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://", 1)
 	return DATABASE_URL
+
+
+def _cgroup_cpu_quota() -> "int | None":
+	"""vCPU equivalent from the Linux cgroup CPU quota, or None if unlimited/unavailable.
+
+	os.cpu_count() reports the HOST core count inside a container (it ignores the cgroup
+	CPU quota), so concurrency defaults derived from it over-allocate on a many-core host.
+	This reads the quota: cgroup v2 (cpu.max) first, then v1 (cfs quota/period).
+	"""
+	# cgroup v2: /sys/fs/cgroup/cpu.max == "<quota_us> <period_us>" or "max <period_us>"
+	try:
+		parts = Path("/sys/fs/cgroup/cpu.max").read_text().split()
+		if parts and parts[0] == "max":
+			return None  # explicitly unlimited
+		if len(parts) == 2:
+			q, p = int(parts[0]), int(parts[1])
+			if q > 0 and p > 0:
+				return max(1, q // p)
+	except (OSError, ValueError):
+		pass
+	# cgroup v1: cpu.cfs_quota_us / cpu.cfs_period_us (quota == -1 means unlimited)
+	try:
+		q = int(Path("/sys/fs/cgroup/cpu/cpu.cfs_quota_us").read_text().strip())
+		p = int(Path("/sys/fs/cgroup/cpu/cpu.cfs_period_us").read_text().strip())
+		if q > 0 and p > 0:
+			return max(1, q // p)
+	except (OSError, ValueError):
+		pass
+	return None
+
+
+def effective_cpu_count() -> int:
+	"""CPU count that respects a container's cgroup CPU quota; falls back to os.cpu_count().
+
+	Use this instead of os.cpu_count() when sizing concurrency / thread-pool defaults so a
+	container scheduled on a many-core host does not over-allocate. Always returns >= 1.
+	"""
+	quota = _cgroup_cpu_quota()
+	if quota is not None:
+		return quota
+	return os.cpu_count() or 4
