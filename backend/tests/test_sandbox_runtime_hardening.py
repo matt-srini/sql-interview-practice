@@ -17,7 +17,7 @@ from python_sandbox_harness import _guarded_import, _safe_builtins, _IMPORT_DENY
 
 
 def test_guarded_import_blocks_dangerous_modules():
-    for mod in ("subprocess", "socket", "ctypes", "importlib", "builtins", "multiprocessing", "pickle"):
+    for mod in ("subprocess", "ctypes", "importlib", "builtins", "multiprocessing", "pickle"):
         with pytest.raises(ImportError):
             _guarded_import(mod)
 
@@ -40,10 +40,14 @@ def test_safe_builtins_uses_guarded_import():
 
 
 def test_import_deny_covers_core_dangerous_modules():
-    for mod in ("subprocess", "socket", "ctypes", "importlib", "multiprocessing"):
+    for mod in ("subprocess", "ctypes", "importlib", "multiprocessing", "pickle"):
         assert mod in _IMPORT_DENY
-    # os/sys are intentionally absent — they are the env-scrub / Landlock layer's domain.
-    assert "os" not in _IMPORT_DENY and "sys" not in _IMPORT_DENY
+    # os/sys/socket/resource are intentionally absent — controlled by the AST allowlist /
+    # env-scrub / seccomp / RLIMIT layers, and imported as probes by the sandbox security
+    # tests (test_sandbox_env_isolation, _seccomp, _resource_limits). Denying their import
+    # would break those probes without adding control.
+    for mod in ("os", "sys", "socket", "resource"):
+        assert mod not in _IMPORT_DENY
 
 
 @pytest.mark.skipif(sys.platform != "linux", reason="seccomp exec-block is Linux-only")

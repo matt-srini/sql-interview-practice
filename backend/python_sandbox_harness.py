@@ -28,20 +28,24 @@ _HARNESS_BUILTINS_DENY = frozenset({
 })
 
 # Modules user code must never import at RUNTIME. The AST guard already rejects
-# non-allowlisted `import` statements (including os/sys); this is the defense-in-depth
-# backstop for a guard escape that reaches the real __import__ via a builtins walk. It
-# targets the code-execution / native / IPC / introspection modules that the seccomp
-# exec-block and env-scrub do not themselves cover. os/sys are deliberately NOT listed:
-# they are gated by the AST allowlist in prod, the env is already scrubbed of secrets,
-# the only residual reach (os.open file-read) is the domain of the pending Landlock
-# filesystem scope, and the env-isolation tests legitimately probe via `import os`.
+# non-allowlisted `import` statements; this is the defense-in-depth backstop for a guard
+# escape that reaches the real __import__ via a builtins walk. It targets the
+# code-execution / native / IPC / introspection / deserialization modules that no other
+# layer covers (ctypes, multiprocessing, pickle, importlib, ...).
+#
+# Deliberately NOT listed -- each is controlled by a more fundamental layer AND is
+# imported as a PROBE by the sandbox security tests, so denying its import would break
+# those probes without adding control:
+#   os, sys  -> AST allowlist + scrubbed env (residual os.open file-read is Landlock's job)
+#   socket   -> the seccomp network filter denies the socket() syscall regardless of import
+#   resource -> the hard RLIMIT caps cannot be raised by an unprivileged setrlimit()
 # numpy/pandas are imported by trusted harness code BEFORE user code runs, so this never
 # affects them; legitimate allowlisted user imports (math/numpy/...) are not on the list.
 _IMPORT_DENY = frozenset({
-    "subprocess", "socket", "_socket", "shutil", "pathlib", "tempfile",
+    "subprocess", "shutil", "pathlib", "tempfile",
     "glob", "signal", "ctypes", "_ctypes", "importlib", "builtins", "posix", "nt",
     "_posixsubprocess", "multiprocessing", "asyncio", "pty", "fcntl", "mmap",
-    "resource", "_thread", "threading", "platform", "sysconfig", "site", "runpy",
+    "_thread", "threading", "platform", "sysconfig", "site", "runpy",
     "code", "codeop", "inspect", "gc", "pickle", "shelve", "marshal",
 })
 
