@@ -107,6 +107,18 @@ that ship Node 24 (newer `checkout`/`setup-python` patch tags already do), or te
 `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24=true` on the job. Recorded so the September removal doesn't
 silently break CI.
 
+## P2 — Product sense / metrics / case-study reasoning round (DS + Analyst)
+The Data Scientist (and Data Analyst) interview loop includes a **product-sense / metric-design /
+metric-diagnosis / open case-study** round the catalog does not cover today — confirmed by a
+2026-06-26 audit (curriculum + concept-taxonomy + external research; see `docs/decisions/DECISIONS.md`).
+It is a standalone round at Uber/Stripe/Airbnb and load-bearing inside Meta's analytical rounds, so it
+is the most material curriculum gap for those two roles. **Deferred to post-MVP** because it needs an
+**open-ended / free-response evaluation format** the platform does not have yet (all content is MCQ or
+code-execution) — that format is the real build, not just authoring questions. Scope when picked up:
+(1) decide the response + grading model (rubric-scored free response, or a structured multi-step case),
+(2) author a seed set via the question-authoring agent, (3) wire it into the role pages and optionally
+a role-Mixed-mock slot. Until then the role pages stay honest without a "coming soon" chip.
+
 ---
 
 ### Config notes (operator)
