@@ -12,27 +12,7 @@ import TierBanner from '../components/TierBanner';
 import UpgradeButton from '../components/UpgradeButton';
 import Skeleton from '../components/Skeleton';
 import { summarizeQuestionForms } from '../questionFormLabel';
-
-function pickNextQuestionId(catalog) {
-  if (!catalog) return null;
-  const order = ['easy', 'medium', 'hard'];
-  for (const diff of order) {
-    const g = catalog.groups?.find((x) => x.difficulty === diff);
-    if (!g) continue;
-    const next = g.questions.find((q) => q.is_next) ?? g.questions.find((q) => q.state !== 'locked');
-    if (next) return next.id;
-  }
-  return null;
-}
-
-function pickFirstQuestionId(catalog) {
-  if (!catalog) return null;
-  for (const g of (catalog.groups ?? [])) {
-    const first = g.questions.find((q) => q.state !== 'locked');
-    if (first) return first.id;
-  }
-  return null;
-}
+import { pickNextQuestionId, pickFirstQuestionId } from '../utils/catalogNav';
 
 const HUB_DESC_TEMPLATES = {
   sql:              n => `Your SQL practice workspace. ${n} questions by difficulty — joins, aggregations, window functions, and CTEs with instant DuckDB execution and solution analysis.`,

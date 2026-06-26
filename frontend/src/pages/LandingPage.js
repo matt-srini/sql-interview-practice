@@ -366,9 +366,11 @@ function HeroSection({ user, dashData, paths = [], reduced }) {
     const recent = dashData?.recent_activity?.[0];
     const topic = recent?.topic || 'sql';
     const meta = TRACK_META[topic] || TRACK_META.sql;
-    const href = recent
-      ? `/practice/${topic}/questions/${recent.question_id}`
-      : `/practice/${topic}`;
+    // Resume into the most-recent track on the user's NEXT-UP question, not the
+    // last question they solved. Next-up needs the track catalog (not loaded
+    // here), so defer resolution to AppShell via ?resume=1. (recent_activity is
+    // practice-only — see docs/backend.md — so `topic` is always a real track.)
+    const href = `/practice/${topic}?resume=1`;
     const firstName = (user?.name || user?.email || '').split(/[\s@]/)[0] || 'there';
     const tracksMap = dashData?.tracks || {};
     const totalSolved = Object.values(tracksMap).reduce((s, t) => s + (t?.solved ?? 0), 0);

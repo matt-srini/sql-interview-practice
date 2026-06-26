@@ -7,6 +7,7 @@ import { useCatalog } from '../catalogContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useTopic } from '../contexts/TopicContext';
 import TrackHubPage from '../pages/TrackHubPage';
+import { pickContinueQuestionId } from '../utils/catalogNav';
 import api from '../api';
 export default function AppShell() {
   const { catalog, loading, error, refresh } = useCatalog();
@@ -85,6 +86,24 @@ export default function AppShell() {
     if (firstMatch) {
       navigate(`${location.pathname}/questions/${firstMatch.id}`, { replace: true });
     }
+  }, [isAtHub, loading, error, catalog, location.pathname, location.search, navigate]);
+
+
+  // ── Resume entry (?resume=1) ────────────────────────────────────────────────
+  // The landing "Resume" card links to /practice/<topic>?resume=1 instead of a
+  // hard-coded question id, so it lands the user on their NEXT-UP question (the
+  // SidebarNav "NEXT") rather than re-opening one they already solved. The
+  // catalog (and thus next-up) isn't available on the landing page, so we resolve
+  // it here, once the catalog has loaded, reusing the same pickContinueQuestionId
+  // the hub's Continue button uses. Navigating without the search string drops the
+  // ?resume= param.
+  useEffect(() => {
+    if (!isAtHub || loading || error || !catalog) return;
+    const params = new URLSearchParams(location.search);
+    if (!params.get('resume')) return;
+    const targetId = pickContinueQuestionId(catalog);
+    if (!targetId) return;
+    navigate(`${location.pathname}/questions/${targetId}`, { replace: true });
   }, [isAtHub, loading, error, catalog, location.pathname, location.search, navigate]);
 
 

@@ -117,3 +117,44 @@ describe('AppShell concept-drill hub redirect', () => {
     expect(screen.getByTestId('loc').textContent).not.toContain('/questions/');
   });
 });
+
+/**
+ * AppShell ?resume= redirect (2026-06-26).
+ *
+ * The logged-in landing "Resume" card links to /practice/<topic>?resume=1 (not a
+ * hard-coded question id), so AppShell must redirect to the user's NEXT-UP
+ * question — never re-open one they already solved. Reuses pickContinueQuestionId,
+ * the same next-up resolver the hub's Continue button uses.
+ */
+describe('AppShell ?resume= redirect', () => {
+  const RESUME_CATALOG = {
+    groups: [
+      { difficulty: 'easy', questions: [
+        { id: 5001, state: 'solved' },
+        { id: 5002, state: 'unlocked', is_next: true },
+      ] },
+    ],
+  };
+
+  it('redirects ?resume=1 to the next-up question (not a solved one) and strips the param', async () => {
+    mockUseAuth.mockReturnValue({ user: { plan: 'free', streak_days: 0 }, loading: false, refreshUser: vi.fn() });
+    mockUseCatalog.mockReturnValue({ catalog: RESUME_CATALOG, loading: false, error: null, refresh: vi.fn() });
+    renderAt('/practice/sql?resume=1');
+
+    await waitFor(() => {
+      expect(screen.getByTestId('loc').textContent).toBe('/practice/sql/questions/5002');
+    });
+    expect(screen.getByTestId('loc').textContent).not.toContain('resume=');
+  });
+
+  it('does not redirect without ?resume= — the bare hub stays on the hub', async () => {
+    mockUseAuth.mockReturnValue({ user: { plan: 'free', streak_days: 0 }, loading: false, refreshUser: vi.fn() });
+    mockUseCatalog.mockReturnValue({ catalog: RESUME_CATALOG, loading: false, error: null, refresh: vi.fn() });
+    renderAt('/practice/sql');
+
+    await waitFor(() => {
+      expect(screen.getByTestId('track-hub')).toBeInTheDocument();
+    });
+    expect(screen.getByTestId('loc').textContent).toBe('/practice/sql');
+  });
+});

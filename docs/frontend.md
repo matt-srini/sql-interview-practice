@@ -59,7 +59,7 @@ Editorial 8-section layout (Phase E redesign). All sections use the `lp-*` CSS n
 
 **Sections:**
 
-1. **Hero** — Logged-out: 2-col grid with interview-urgent eyebrow copy, a large headline tying interview readiness to durable on-the-job reasoning, CTAs ("Try a free sample →" / "Find your role ↓"), and `HeroIDE` component (character-by-character SQL typing animation, result rows stream in ~55ms/row). Logged-in: 3-card strip (Resume / Dashboard / Mock) using `.lp-li-card`.
+1. **Hero** — Logged-out: 2-col grid with interview-urgent eyebrow copy, a large headline tying interview readiness to durable on-the-job reasoning, CTAs ("Try a free sample →" / "Find your role ↓"), and `HeroIDE` component (character-by-character SQL typing animation, result rows stream in ~55ms/row). Logged-in: 3-card strip (Resume / Dashboard / Mock) using `.lp-li-card`. The **Resume** card links to `/practice/<topic>?resume=1` for the user's most-recent practice track (`recent_activity[0].topic`, which is practice-only — see [backend.md](backend.md) §`/api/dashboard`) — **not** a hard-coded question id. AppShell resolves `?resume=1` to the track's **next-up** question (the SidebarNav "NEXT"), so Resume continues forward instead of re-opening a question the user already solved.
 2. **Thesis** — 3-column editorial with mono index numbers: "Recognition ≠ reasoning" · "Depth, not breadth" · "Real engines".
 3. **Wrong / Right** — 2-col diff table; right column rows stagger in on intersection.
 4. **Role Selector** — `role="tablist"` with 4 tabs (Data Analyst · Data Engineer · Analytics Engineer · Data Scientist). Each panel shows an ordered list of relevant tracks as cards (left 3px border in track color via inline style). Coming-soon tracks display a `lp-badge-soon` badge and no CTA link. Arrow-key keyboard navigation.
@@ -331,6 +331,7 @@ OG cards: `og-image.png` (1200×630, dark), `og-image-light.png` (1200×630, lig
 - Desktop: sidebar 328px, collapsible; toggle is a `‹` icon button (`.sidebar-collapse-btn`); a `›` expand button (`.sidebar-expand-btn`) appears in the content area when collapsed
 - Mobile (<900px): sidebar becomes fixed overlay with backdrop; hamburger button in topbar
 - **Focus mode**: reading `?focus=1` from the URL auto-collapses the sidebar; the focus toggle pill in the topbar adds/removes the param.
+- **Resume entry (`?resume=1`)**: when present on a hub URL (`/practice/:topic?resume=1`, the landing "Resume" card's target), AppShell waits for the catalog, then redirects (`replace`, param stripped) to the track's **next-up** question via `pickContinueQuestionId` (`utils/catalogNav.js`) — the *same* next-up resolver TrackHubPage's Continue button uses (`is_next` flagged across difficulties first, else first unlocked). So Resume lands on the next question to do, never a solved one. Mirrors the `?drill=`/`?concepts=` hub-redirect effects.
 - **Session goal widget**: shown in the sidebar for logged-in users. Tracks questions solved since the session started (captured once from catalog, stored in `sessionStorage`). Goal is adjustable (1–20), stored in `localStorage`.
 - Upgrade panel shown for `free` and `pro` plan users; lives in the sidebar beneath the question list
 - Unlock nudge message shown in sidebar for free-plan users who have locked questions

@@ -189,6 +189,16 @@ describe('LandingPage', () => {
       });
     });
 
+    it('Resume card links to the most-recent track with ?resume=1 (next-up, not a hard-coded question)', async () => {
+      // recent_activity[0].topic === 'sql' → /practice/sql?resume=1; AppShell then
+      // redirects to that track's next-up question. The card must NOT deep-link a
+      // specific (already-solved) question id like /practice/sql/questions/1.
+      renderWithPlan('free');
+      await waitFor(() => expect(screen.getByText('Resume')).toBeInTheDocument());
+      const resumeCard = screen.getByText('Resume').closest('a');
+      expect(resumeCard).toHaveAttribute('href', '/practice/sql?resume=1');
+    });
+
     it('does not show the hero headline for logged-in users', async () => {
       renderWithPlan('free');
       await waitFor(() => {
