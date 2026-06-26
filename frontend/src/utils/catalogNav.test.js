@@ -1,10 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import { pickNextQuestionId, pickFirstQuestionId, pickContinueQuestionId } from './catalogNav';
+import { pickNextUpQuestionId, pickFirstQuestionId, pickContinueQuestionId } from './catalogNav';
 
 const catalog = (groups) => ({ groups });
 
 describe('catalogNav', () => {
-  describe('pickNextQuestionId', () => {
+  describe('pickNextUpQuestionId (is_next only — null when nothing actionable)', () => {
     it('returns the flagged is_next question', () => {
       const c = catalog([
         { difficulty: 'easy', questions: [
@@ -12,17 +12,15 @@ describe('catalogNav', () => {
           { id: 2, state: 'unlocked', is_next: true },
         ] },
       ]);
-      expect(pickNextQuestionId(c)).toBe(2);
+      expect(pickNextUpQuestionId(c)).toBe(2);
     });
 
     it('prefers a flagged is_next in a later difficulty over an already-solved earlier one', () => {
-      // All easy solved (no is_next there); next-up is in medium. The whole point
-      // of the Resume fix: do NOT land on a solved easy question.
       const c = catalog([
         { difficulty: 'easy', questions: [{ id: 1, state: 'solved' }, { id: 2, state: 'solved' }] },
         { difficulty: 'medium', questions: [{ id: 20, state: 'unlocked', is_next: true }] },
       ]);
-      expect(pickNextQuestionId(c)).toBe(20);
+      expect(pickNextUpQuestionId(c)).toBe(20);
     });
 
     it('scans easy→hard for the flag regardless of group array order', () => {
@@ -30,29 +28,28 @@ describe('catalogNav', () => {
         { difficulty: 'medium', questions: [{ id: 20, state: 'unlocked', is_next: true }] },
         { difficulty: 'easy', questions: [{ id: 10, state: 'unlocked', is_next: true }] },
       ]);
-      expect(pickNextQuestionId(c)).toBe(10);
+      expect(pickNextUpQuestionId(c)).toBe(10);
     });
 
-    it('falls back to the first unlocked question when nothing is flagged (track fully solved)', () => {
+    it('returns null when the track is fully solved (no is_next anywhere)', () => {
       const c = catalog([
         { difficulty: 'easy', questions: [{ id: 1, state: 'solved' }, { id: 2, state: 'solved' }] },
+        { difficulty: 'medium', questions: [{ id: 20, state: 'solved' }] },
       ]);
-      expect(pickNextQuestionId(c)).toBe(1);
+      expect(pickNextUpQuestionId(c)).toBeNull();
     });
 
-    it('skips locked questions in the fallback', () => {
+    it('returns null when all accessible are solved and the rest are locked', () => {
       const c = catalog([
-        { difficulty: 'easy', questions: [{ id: 1, state: 'locked' }, { id: 2, state: 'unlocked' }] },
+        { difficulty: 'easy', questions: [{ id: 1, state: 'solved' }] },
+        { difficulty: 'hard', questions: [{ id: 30, state: 'locked' }] },
       ]);
-      expect(pickNextQuestionId(c)).toBe(2);
+      expect(pickNextUpQuestionId(c)).toBeNull();
     });
 
-    it('returns null for empty / missing catalog or an all-locked track', () => {
-      expect(pickNextQuestionId(null)).toBeNull();
-      expect(pickNextQuestionId(catalog([]))).toBeNull();
-      expect(pickNextQuestionId(catalog([
-        { difficulty: 'easy', questions: [{ id: 1, state: 'locked' }] },
-      ]))).toBeNull();
+    it('returns null for empty / missing catalog', () => {
+      expect(pickNextUpQuestionId(null)).toBeNull();
+      expect(pickNextUpQuestionId(catalog([]))).toBeNull();
     });
   });
 
@@ -63,7 +60,12 @@ describe('catalogNav', () => {
       ]);
       expect(pickFirstQuestionId(c)).toBe(1);
     });
-
+    it('skips locked questions', () => {
+      const c = catalog([
+        { difficulty: 'easy', questions: [{ id: 1, state: 'locked' }, { id: 2, state: 'unlocked' }] },
+      ]);
+      expect(pickFirstQuestionId(c)).toBe(2);
+    });
     it('returns null when everything is locked', () => {
       expect(pickFirstQuestionId(catalog([
         { difficulty: 'easy', questions: [{ id: 1, state: 'locked' }] },
@@ -71,17 +73,16 @@ describe('catalogNav', () => {
     });
   });
 
-  describe('pickContinueQuestionId', () => {
-    it('prefers next-up over the first question', () => {
+  describe('pickContinueQuestionId (next-up, else first unlocked)', () => {
+    it('prefers next-up', () => {
       const c = catalog([
         { difficulty: 'easy', questions: [{ id: 1, state: 'solved' }, { id: 2, state: 'unlocked', is_next: true }] },
       ]);
       expect(pickContinueQuestionId(c)).toBe(2);
     });
-
-    it('falls back to the first unlocked question', () => {
+    it('falls back to the first unlocked question when there is no next-up (fully solved)', () => {
       const c = catalog([
-        { difficulty: 'easy', questions: [{ id: 1, state: 'solved' }] },
+        { difficulty: 'easy', questions: [{ id: 1, state: 'solved' }, { id: 2, state: 'solved' }] },
       ]);
       expect(pickContinueQuestionId(c)).toBe(1);
     });

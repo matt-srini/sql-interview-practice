@@ -157,4 +157,24 @@ describe('AppShell ?resume= redirect', () => {
     });
     expect(screen.getByTestId('loc').textContent).toBe('/practice/sql');
   });
+
+  it('stays on the hub when there is no next-up (track fully solved), stripping ?resume=', async () => {
+    const SOLVED_CATALOG = {
+      groups: [
+        { difficulty: 'easy', questions: [
+          { id: 6001, state: 'solved' },
+          { id: 6002, state: 'solved' },
+        ] },
+      ],
+    };
+    mockUseAuth.mockReturnValue({ user: { plan: 'elite', streak_days: 0 }, loading: false, refreshUser: vi.fn() });
+    mockUseCatalog.mockReturnValue({ catalog: SOLVED_CATALOG, loading: false, error: null, refresh: vi.fn() });
+    renderAt('/practice/sql?resume=1');
+
+    await waitFor(() => {
+      expect(screen.getByTestId('loc').textContent).toBe('/practice/sql');
+    });
+    expect(screen.getByTestId('loc').textContent).not.toContain('/questions/');
+    expect(screen.getByTestId('track-hub')).toBeInTheDocument();
+  });
 });

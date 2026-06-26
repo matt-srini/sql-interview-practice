@@ -12,7 +12,7 @@ import TierBanner from '../components/TierBanner';
 import UpgradeButton from '../components/UpgradeButton';
 import Skeleton from '../components/Skeleton';
 import { summarizeQuestionForms } from '../questionFormLabel';
-import { pickNextQuestionId, pickFirstQuestionId } from '../utils/catalogNav';
+import { pickNextUpQuestionId, pickFirstQuestionId } from '../utils/catalogNav';
 
 const HUB_DESC_TEMPLATES = {
   sql:              n => `Your SQL practice workspace. ${n} questions by difficulty — joins, aggregations, window functions, and CTEs with instant DuckDB execution and solution analysis.`,
@@ -35,7 +35,7 @@ export default function TrackHubPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  const nextId = useMemo(() => pickNextQuestionId(catalog), [catalog]);
+  const nextId = useMemo(() => pickNextUpQuestionId(catalog), [catalog]);
   const firstId = useMemo(() => pickFirstQuestionId(catalog), [catalog]);
   const continueId = nextId ?? firstId;
   const questionFormSummary = useMemo(
@@ -90,7 +90,7 @@ export default function TrackHubPage() {
     [catalog]
   );
   // User has exhausted all accessible questions (nothing left to solve right now)
-  const allAccessibleSolved = continueId === null && totalSolved > 0;
+  const allAccessibleSolved = nextId === null && totalSolved > 0;
 
   const overallPct = totalQuestions > 0 ? totalSolved / totalQuestions : 0;
 
@@ -217,15 +217,15 @@ export default function TrackHubPage() {
               <span className="thub-count-divider" aria-hidden="true" />
               <span className="thub-count-pct">{Math.round(overallPct * 100)}%</span>
             </div>
-            {continueId ? (
+            {!allAccessibleSolved ? (
               <button className="thub-cta-btn" onClick={handleContinue}>
                 {totalSolved > 0 ? 'Continue →' : 'Start →'}
               </button>
-            ) : allAccessibleSolved && hasLockedQuestions ? (
+            ) : hasLockedQuestions ? (
               <UpgradeButton tier="pro" label="Unlock more" compact source="hub_allsolved" />
-            ) : allAccessibleSolved ? (
+            ) : (
               <Link to="/" className="btn btn-secondary btn-compact">Explore tracks →</Link>
-            ) : null}
+            )}
           </div>
 
           <div className="thub-bar-track">

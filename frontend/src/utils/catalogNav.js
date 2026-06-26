@@ -11,24 +11,17 @@
 const DIFFICULTY_ORDER = ['easy', 'medium', 'hard'];
 
 /**
- * The user's next-up question id, or null if nothing is reachable.
- *
- * Two passes, both easy→hard:
- *  1. The backend-flagged `is_next` anywhere — a flag in a later difficulty wins
- *     over an earlier difficulty's already-solved questions, so "all easy solved,
- *     next-up in medium" correctly lands on medium (not a solved easy question).
- *  2. Fallback when nothing is flagged anywhere (e.g. the track is fully solved):
- *     the first unlocked question.
+ * The user's NEXT-UP question id — the backend-flagged `is_next`, scanning
+ * easy→hard — or null when the track has no actionable next question (every
+ * accessible question solved, or nothing unlocked). "No next-up" is a real,
+ * representable state (null): callers use it to show a completed/explore state
+ * instead of re-opening a solved question.
  */
-export function pickNextQuestionId(catalog) {
+export function pickNextUpQuestionId(catalog) {
   if (!catalog) return null;
-  const groupFor = (diff) => catalog.groups?.find((x) => x.difficulty === diff);
   for (const diff of DIFFICULTY_ORDER) {
-    const hit = groupFor(diff)?.questions.find((q) => q.is_next);
-    if (hit) return hit.id;
-  }
-  for (const diff of DIFFICULTY_ORDER) {
-    const hit = groupFor(diff)?.questions.find((q) => q.state !== 'locked');
+    const g = catalog.groups?.find((x) => x.difficulty === diff);
+    const hit = g?.questions.find((q) => q.is_next);
     if (hit) return hit.id;
   }
   return null;
@@ -36,7 +29,7 @@ export function pickNextQuestionId(catalog) {
 
 /**
  * The first unlocked question in the track, ignoring next-up. Fallback target
- * when a track has no next-up (e.g. fully solved).
+ * for an explicit "Continue/Start" action when there is no next-up.
  */
 export function pickFirstQuestionId(catalog) {
   if (!catalog) return null;
@@ -48,10 +41,10 @@ export function pickFirstQuestionId(catalog) {
 }
 
 /**
- * Where "Continue" / "Resume" should land: the next-up question if there is
- * one, else the first unlocked question. null if the catalog has nothing
- * reachable.
+ * Where an explicit "Continue" / "Start" click should land: the next-up
+ * question if there is one, else the first unlocked question. null only if
+ * nothing is reachable.
  */
 export function pickContinueQuestionId(catalog) {
-  return pickNextQuestionId(catalog) ?? pickFirstQuestionId(catalog);
+  return pickNextUpQuestionId(catalog) ?? pickFirstQuestionId(catalog);
 }

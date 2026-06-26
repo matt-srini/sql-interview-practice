@@ -7,7 +7,7 @@ import { useCatalog } from '../catalogContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useTopic } from '../contexts/TopicContext';
 import TrackHubPage from '../pages/TrackHubPage';
-import { pickContinueQuestionId } from '../utils/catalogNav';
+import { pickNextUpQuestionId } from '../utils/catalogNav';
 import api from '../api';
 export default function AppShell() {
   const { catalog, loading, error, refresh } = useCatalog();
@@ -92,18 +92,24 @@ export default function AppShell() {
   // ── Resume entry (?resume=1) ────────────────────────────────────────────────
   // The landing "Resume" card links to /practice/<topic>?resume=1 instead of a
   // hard-coded question id, so it lands the user on their NEXT-UP question (the
-  // SidebarNav "NEXT") rather than re-opening one they already solved. The
-  // catalog (and thus next-up) isn't available on the landing page, so we resolve
-  // it here, once the catalog has loaded, reusing the same pickContinueQuestionId
-  // the hub's Continue button uses. Navigating without the search string drops the
-  // ?resume= param.
+  // SidebarNav "NEXT") rather than re-opening one they already solved. The catalog
+  // (and thus next-up) isn't available on the landing page, so we resolve it here
+  // once it loads. Crucially we use pickNextUpQuestionId (is_next only): if the
+  // track has NO actionable next-up (every accessible question solved), we do NOT
+  // fall back to a solved question — we strip ?resume= and stay on the hub, which
+  // shows the completed state (Explore tracks / Unlock more).
   useEffect(() => {
     if (!isAtHub || loading || error || !catalog) return;
     const params = new URLSearchParams(location.search);
     if (!params.get('resume')) return;
-    const targetId = pickContinueQuestionId(catalog);
-    if (!targetId) return;
-    navigate(`${location.pathname}/questions/${targetId}`, { replace: true });
+    const targetId = pickNextUpQuestionId(catalog);
+    if (targetId) {
+      navigate(`${location.pathname}/questions/${targetId}`, { replace: true });
+    } else {
+      params.delete('resume');
+      const qs = params.toString();
+      navigate(`${location.pathname}${qs ? `?${qs}` : ''}`, { replace: true });
+    }
   }, [isAtHub, loading, error, catalog, location.pathname, location.search, navigate]);
 
 
