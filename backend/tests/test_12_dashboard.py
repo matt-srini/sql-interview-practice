@@ -83,6 +83,51 @@ def test_tc175_recent_activity_present():
     assert isinstance(body["recent_activity"], list)
 
 
+def test_tc175b_recent_activity_excludes_mock_only():
+    """TC-175b: A mock-only solve must NOT surface in recent_activity.
+
+    mock submit calls mark_solved() for every accepted answer (mock-only
+    questions included), so user_progress holds mock-only rows. Both
+    recent_activity consumers — the landing "Resume" card and the dashboard
+    feed — deep-link each row into /practice/<topic>/questions/<id>, where
+    mock-only questions are rejected ("Question not available in practice
+    mode"). recent_activity must therefore intersect with the practice
+    catalog. Regression guard for the Resume-into-a-mock-question bug;
+    see docs/decisions/DECISIONS.md (recent_activity ∩ catalog).
+    """
+    from datetime import datetime, timezone
+
+    from python_questions import get_mock_questions_by_difficulty as get_py_mock
+
+    mock_only_q = get_py_mock()["medium"][0]
+    assert mock_only_q.get("mock_only") is True  # sanity: fixture really is mock-only
+    practice_q = _sql_easy_qs[0]
+
+    with TestClient(app) as client:
+        user = _make_user(client, plan="elite")
+    # Older genuine practice solve, then the mock-only solve as the MOST recent —
+    # the exact shape that produced the broken Resume link.
+    _insert_progress(
+        user["id"], practice_q["id"], track="sql",
+        solved_at=datetime(2026, 1, 1, 10, 0, tzinfo=timezone.utc),
+    )
+    _insert_progress(
+        user["id"], mock_only_q["id"], track="python",
+        solved_at=datetime(2026, 1, 2, 10, 0, tzinfo=timezone.utc),
+    )
+
+    with TestClient(app) as client:
+        _make_user(client, plan="elite", existing_user=user)
+        r = client.get("/api/dashboard")
+    assert r.status_code == 200
+    activity = r.json()["recent_activity"]
+    ids = {(a["topic"], a["question_id"]) for a in activity}
+    # Mock-only row excluded even though it is the single most-recent solve...
+    assert ("python", mock_only_q["id"]) not in ids
+    # ...and the genuine practice solve still surfaces.
+    assert ("sql", practice_q["id"]) in ids
+
+
 # ---------------------------------------------------------------------------
 # TC-176 to TC-181: Insights endpoint
 # ---------------------------------------------------------------------------

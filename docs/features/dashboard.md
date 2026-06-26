@@ -62,7 +62,7 @@ Returns the track overview, recent activity, and concept tags for the current us
 
 **Notes:**
 - `pandas` is remapped to `pandas` in all keys before returning.
-- `recent_activity` is ordered newest-first, capped at 10.
+- `recent_activity` is ordered newest-first, capped at 10, and **practice-only** — mock-only solves are excluded by intersecting with the practice catalog (both the landing Resume card and this feed deep-link each row into `/practice`, where mock-only questions 404). See `docs/backend.md` §`/api/dashboard` and `docs/decisions/DECISIONS.md`.
 - `concepts_by_track` only includes tracks where at least one concept exists.
 - `by_difficulty` values are objects `{solved, total}`, not plain integers.
 - Data source: `user_progress` table (written on correct submission).

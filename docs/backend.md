@@ -265,6 +265,8 @@ This track uses `eval_kind="mixed"` with `mixed_subtype=True`. Each question has
 
 Response shape includes every active track: `{ tracks: { sql, python, pandas, pyspark, data-engineering, data-modeling, statistics, ml-fundamentals, experimentation }, concepts_by_track, recent_activity }`. Each track includes `by_difficulty: { easy: { solved, total }, medium: { solved, total }, hard: { solved, total } }` — note both `solved` and `total` are included in each difficulty object, not bare integers.
 
+`recent_activity` is **practice-only** (intersected with the practice catalog, mock-only solves excluded), like the solve-count and readiness reads on the same endpoint. `user_progress` holds mock-only solves too — mock submit calls `mark_solved()` for every accepted answer — but both consumers (the landing "Resume" card and the dashboard activity feed) deep-link each row into `/practice/<topic>/questions/<id>`, where mock-only questions are rejected ("Question not available in practice mode"). The filter lives in `routers/dashboard.py` (`q is None or q.get("mock_only")` → skip), which over-fetches from `get_recent_activity` and caps the result at 10 so a recent run of mock solves can't starve the feed. See [docs/decisions/DECISIONS.md](decisions/DECISIONS.md) (recent_activity ∩ catalog).
+
 `GET /api/dashboard/insights` response shape:
 
 ```json
