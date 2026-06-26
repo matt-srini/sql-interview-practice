@@ -2681,10 +2681,18 @@ select {
   outline-offset: 2px;
 }
 
-/* Opt-in landing-tour trigger — soft pill, clearly secondary to the hero CTAs */
-.lp-tour-link {
+/* Opt-in landing-tour trigger — soft pill on its own row below the hero grid.
+   Descendant selector beats `.lp-inner { margin: 0 auto }` (equal specificity,
+   defined later) so the top gap actually applies; left/right auto-centering kept. */
+.lp-hero .lp-hero-tour {
   margin-top: 1.5rem;
-  align-self: flex-start;
+}
+.lp-tour-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.lp-tour-link {
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -2704,6 +2712,36 @@ select {
 }
 .lp-tour-icon {
   flex-shrink: 0;
+}
+
+/* Dismiss control — a small "×" revealed on hover/focus, only after the tour has
+   been taken once. Keeping the shortcut is the default (do nothing); clicking the ×
+   removes it (landing_tour_pref=hide). Pure CSS reveal — no hover dead zone, and no
+   terminal "keep" state, so the dismiss path is always reachable. */
+.lp-tour-dismiss {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 140ms ease-out, background 140ms ease-out, color 140ms ease-out;
+}
+.lp-tour-wrap:hover .lp-tour-dismiss,
+.lp-tour-dismiss:focus-visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+.lp-tour-dismiss:hover {
+  background: color-mix(in srgb, var(--text-secondary) 12%, transparent);
+  color: var(--text-primary);
 }
 
 .onboarding-target-active {
