@@ -141,3 +141,55 @@ _LEGIT_SNIPPETS = [
 def test_legit_code_passes(name, topic, code):
     errs = validate_code(code, topic)
     assert not errs, f"FALSE POSITIVE [{name}]: legitimate code was rejected:\n{code}\nErrors: {errs}"
+
+
+# ---------------------------------------------------------------------------
+# GAP-1/2/3/4 vectors found in the 2026-06-26 sandbox audit.
+# Each vector bypasses the *attribute*-level guard (no ast.Attribute node is
+# produced) and must be caught by the string/bytes-literal token scan
+# (_DANGEROUS_TOKEN_RE) or by the _BLOCKED_ATTRIBUTES addition of _os/_sys/
+# modules/sys/os.
+# ---------------------------------------------------------------------------
+def test_runtime_string_and_reexport_reaches_are_blocked():
+    """GAP-1/2/3/4 vectors from the 2026-06-26 sandbox audit.
+
+    GAP-1: operator.attrgetter with a dunder string — no ast.Attribute node.
+    GAP-2: random._os module re-export — bypasses import block via attribute hop.
+    GAP-3: typing.sys module re-export — same attribute-hop pattern.
+    GAP-4: bytes-literal format bypass — b'...'.decode().format() hides dunder
+            in a bytes constant which the old str-only scan missed.
+    """
+    # GAP-1: operator.attrgetter('__globals__') — dunder hidden in a string arg
+    errs = validate_code(
+        "import operator\ndef solve():\n    return operator.attrgetter('__globals__')(solve)['__builtins__']\n",
+        "python",
+    )
+    assert errs, "GAP-1 NOT BLOCKED: operator.attrgetter('__globals__') passed the guard"
+
+    # GAP-2: random._os attribute hop — accesses real os via a private re-export
+    errs = validate_code(
+        "import random\ndef solve():\n    return random._os.getcwd()\n",
+        "python",
+    )
+    assert errs, "GAP-2 NOT BLOCKED: random._os attribute hop passed the guard"
+
+    # GAP-3: typing.sys module re-export — reaches sys.modules without importing sys
+    errs = validate_code(
+        "import typing\ndef solve():\n    return typing.sys.modules['os']\n",
+        "python",
+    )
+    assert errs, "GAP-3 NOT BLOCKED: typing.sys attribute hop passed the guard"
+
+    # GAP-4: bytes-literal format bypass — dunder hidden in a bytes constant
+    errs = validate_code(
+        "def solve():\n    return b'{0.__globals__}'.decode().format(solve)\n",
+        "python",
+    )
+    assert errs, "GAP-4 NOT BLOCKED: bytes-literal dunder format bypass passed the guard"
+
+    # GAP-1 (pandas track): same attrgetter vector must be blocked on the data track too
+    errs = validate_code(
+        "import operator\ndef solve(**k):\n    return operator.attrgetter('__globals__')(solve)['__builtins__']\n",
+        "pandas",
+    )
+    assert errs, "GAP-1 (pandas) NOT BLOCKED: operator.attrgetter('__globals__') passed the guard on pandas track"

@@ -7,9 +7,27 @@ For Pandas: allows a specific allowlist of safe imports.
 import ast
 import re
 
-# A {...} replacement field in a str.format / .format_map template. Used by the
-# guard to catch dunder access hidden inside a format string (see visit_Constant).
-_FORMAT_FIELD = re.compile(r"\{([^{}]*)\}")
+# Tokens that must never appear inside a STRING or BYTES literal: the escape-gadget
+# dunders (class/type-hierarchy walk, function/code/closure internals, object internals),
+# frame/traceback/generator internals, and the private module re-export handles
+# (random._os, etc.). They betray a runtime-string attribute reach the AST-level attribute
+# guard cannot see -- operator.attrgetter('__globals__'), "{0.__globals__}".format(x),
+# b'{0.__globals__}'.decode().format(x). We list the DANGEROUS dunders explicitly (not a
+# blanket __\w+__) so benign dunders that legitimately appear in strings -- "__main__",
+# "__name__", "__init__", "__doc__" -- are never false-flagged. Matched as whole
+# identifier tokens so ordinary words are never flagged either.
+_DANGEROUS_TOKEN_RE = re.compile(
+    r"(?<![A-Za-z0-9_])(?:"
+    r"__globals__|__builtins__|__import__|__class__|__bases__|__base__|__mro__|"
+    r"__subclasses__|__subclasshook__|__init_subclass__|__class_getitem__|"
+    r"__code__|__closure__|__func__|__self__|__wrapped__|__objclass__|"
+    r"__dict__|__getattribute__|__getattr__|__setattr__|__delattr__|"
+    r"__reduce__|__reduce_ex__|__weakref__|__loader__|__spec__|__build_class__|"
+    r"f_globals|f_builtins|f_locals|f_back|tb_frame|tb_next|gi_frame|gi_code|"
+    r"cr_frame|cr_code|ag_frame|func_globals|"
+    r"_os|_sys|_socket"
+    r")(?![A-Za-z0-9_])"
+)
 
 # Imports allowed for the algorithm (Python) track
 _ALGORITHM_ALLOWLIST = {
@@ -135,6 +153,16 @@ _BLOCKED_ATTRIBUTES = {
     "system",
     "popen",
     "subprocess",
+    # module re-export handles: random._os, typing.sys, sys.modules['os'] reach the
+    # real os/sys without an import statement -- block the attribute hop. (os/sys/modules
+    # are never numpy/pandas attributes; a DataFrame column named 'os' is still reachable
+    # via df['os'] subscript, just not df.os attribute access.)
+    "_os",
+    "_sys",
+    "_socket",
+    "sys",
+    "os",
+    "modules",
     # pandas / numpy filesystem and network I/O — blocked on all objects so
     # that pd.read_csv('/etc/passwd'), np.load('/etc/passwd'), etc. are caught
     # even though the user has not imported os/subprocess.
@@ -262,16 +290,18 @@ class _GuardVisitor(ast.NodeVisitor):
     # {x!r}, even {:_>10} fill) never contain "__" in the name part.
 
     def visit_Constant(self, node: ast.Constant) -> None:
-        if isinstance(node.value, str):
-            # Drop escaped braces so a {{literal}} isn't mistaken for a field.
-            s = node.value.replace("{{", "").replace("}}", "")
-            for field in _FORMAT_FIELD.findall(s):
-                name = field.split(":", 1)[0].split("!", 1)[0]
-                if "__" in name:
-                    self.errors.append(
-                        "format-string field accessing a dunder attribute is not allowed"
-                    )
-                    break
+        # Scan str AND bytes literals for any dunder / frame-internal / private-reexport
+        # token. Catches runtime-string attribute reaches (operator.attrgetter('__globals__'),
+        # getattr-by-name) and the bytes-literal format bypass -- none of which produce an
+        # ast.Attribute node, so visit_Attribute never sees them. Supersedes the older
+        # format-field-only scan (a dunder in a format field also matches this).
+        val = node.value
+        if isinstance(val, (str, bytes)):
+            s = val.decode("utf-8", "ignore") if isinstance(val, bytes) else val
+            if _DANGEROUS_TOKEN_RE.search(s):
+                self.errors.append(
+                    "string/bytes literal referencing an internal attribute is not allowed"
+                )
         self.generic_visit(node)
 
 

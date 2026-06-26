@@ -35,6 +35,13 @@ Keep entries to 4–6 lines. Friction kills logs; if it's longer than the change
 
 ## Entries
 
+## 2026-06-26 — Harden sandbox vs guard-escape file-read/RCE (defense-in-depth; Landlock deferred)
+**Area:** sandbox · security · **Status:** accepted
+**Decision:** The 2026-06-26 sandbox audit reproduced AST-guard escapes (`operator.attrgetter('__globals__')`, `random._os`, `typing.sys.modules['os']`, `b'{0.__globals__}'.decode().format(...)`) reaching `os`/`__import__`/`subprocess`, exfiltrable via the run-code response body (the network seccomp block does not help — data leaves on the legitimate HTTP response). Hardened defense-in-depth: the guard now scans string/bytes literals for escape-gadget dunders and blocks module re-export attributes (`_os`/`_sys`/`sys`/`os`/`modules`); the harness adds a restricted runtime `__import__` (denies `subprocess`/`ctypes`/`socket`/IPC/native modules) and a seccomp `execve`/`execveat` block (robustly kills subprocess); `.dockerignore` now excludes `*.env`; harness non-zero exits raise an explicit Sentry event (`capture_sandbox_failure`).
+**Rejected:** (1) Making the in-process AST guard airtight — impossible: `operator.attrgetter` with common-word strings (`'sys'`/`'modules'`) cannot be string-scanned without breaking legit code, so the denylist closes the reproduced vectors but is not a proven boundary. (2) Listing `os`/`sys` in the runtime import-deny — already gated by the AST allowlist, env is scrubbed, the env-isolation tests probe via `import os`, and the residual `os.open` file-read is Landlock's domain.
+**Deferred:** Landlock filesystem read-scoping — the only COMPLETE closure of arbitrary file-read (the in-process introspection tail remains reachable). Needs a Linux/Railway-kernel-validated pass; tracked for the next security iteration. Robust closures landed now: subprocess (seccomp exec-block), secret-bake (`.dockerignore`), observability (Sentry).
+**Affects:** `backend/python_guard.py`, `backend/python_sandbox_harness.py`, `backend/python_evaluator.py`, `backend/sentry_utils.py`, `.dockerignore`; tests `tests/test_guard_redteam.py`, `tests/test_sandbox_runtime_hardening.py`.
+
 ## 2026-06-26 — Pin sandbox BLAS thread pools to 1; log harness non-zero exits as WARNING
 **Area:** sandbox · ops · **Status:** accepted
 **Decision:** `_sandbox_env` now exports `OPENBLAS_NUM_THREADS`/`OMP_NUM_THREADS`/`MKL_NUM_THREADS`/`NUMEXPR_NUM_THREADS`=1 into every sandbox subprocess, and `_spawn_harness` emits `logger.warning` on any non-zero subprocess exit (infra-level failure: OOM / OpenBLAS abort / segfault / RLIMIT kill).
