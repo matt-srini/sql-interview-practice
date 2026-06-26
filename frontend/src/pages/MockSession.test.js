@@ -353,6 +353,33 @@ describe('MockSession navigation arrows', () => {
   });
 });
 
+// ── Schema/Description toggle reset on navigation ─────────────────────────────
+
+describe('MockSession schema toggle reset', () => {
+  it('Schema view does not persist when navigating to the next question', async () => {
+    // Both questions are SQL (makeQuestion defaults: track: 'sql', type: 'query', schema: [])
+    // so the Description/Schema toggle renders on Q1.
+    renderSession(makeSessionData(2));
+
+    // Wait for Q1 to be active
+    await screen.findByRole('button', { name: /Q1/ });
+
+    // Click the "Schema" toggle — SchemaViewer should appear
+    const schemaBtn = await screen.findByRole('button', { name: 'Schema' });
+    fireEvent.click(schemaBtn);
+    expect(screen.getByTestId('schema-viewer')).toBeInTheDocument();
+
+    // Navigate to Q2 via the Next question arrow
+    const nextBtn = screen.getByRole('button', { name: 'Next question' });
+    fireEvent.click(nextBtn);
+
+    // After navigation the toggle must have reset to Description — SchemaViewer gone
+    await waitFor(() => {
+      expect(screen.queryByTestId('schema-viewer')).not.toBeInTheDocument();
+    });
+  });
+});
+
 // ── "Next question →" button ────────────────────────────────────────────────────
 // Shows after ANY submit (correct or wrong) when not the last question.
 

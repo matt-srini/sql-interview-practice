@@ -5,7 +5,6 @@ export default function SchemaViewer({ schema }) {
   const [copiedColumn, setCopiedColumn] = useState('');
 
   const schemaEntries = useMemo(() => Object.entries(schema ?? {}), [schema]);
-  if (schemaEntries.length === 0) return null;
 
   const query = search.trim().toLowerCase();
   const filteredSchema = useMemo(() => {
@@ -19,6 +18,13 @@ export default function SchemaViewer({ schema }) {
       })
       .filter(([, columns]) => columns.length > 0);
   }, [schemaEntries, query]);
+
+  // Every hook above this line runs unconditionally. The empty-schema early return
+  // MUST stay below them: otherwise the hook count differs between an empty and a
+  // populated schema and React throws "Rendered fewer hooks than expected." (In a
+  // mock session a sticky Schema view can carry onto a schema-less question, which
+  // re-renders this component with an empty schema — the production crash.)
+  if (schemaEntries.length === 0) return null;
 
   const handleCopyColumn = async (column) => {
     try {

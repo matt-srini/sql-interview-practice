@@ -282,6 +282,14 @@ export default function MockSession() {
     };
   }, [currentQuestion?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Reset the Description/Schema toggle to Description whenever the active question
+  // changes. questionView is otherwise sticky; carried onto a schema-less question it
+  // renders an empty SchemaViewer (blank body, and previously a hooks-count crash).
+  // Resetting on navigation keeps every new question on its description by default.
+  useEffect(() => {
+    setQuestionView('description');
+  }, [currentQuestion?.id]);
+
   // Browser tab title
   useEffect(() => {
     if (status === 'active' && remainingS != null) {
@@ -1027,7 +1035,7 @@ export default function MockSession() {
                 </div>
               )}
 
-              {questionView === 'description' || q.type === 'reverse' ? (
+              {questionView === 'description' || q.track !== 'sql' || q.type === 'reverse' ? (
                 <>
                   {/* Scenario framing: description IS the scenario brief */}
                   {q.framing === 'scenario' && (
