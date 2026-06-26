@@ -131,6 +131,37 @@ def capture_payment_failure(
         _sentry_sdk.capture_message(message, level="error", scope=scope)
 
 
+def capture_sandbox_failure(
+    message: str,
+    *,
+    mode: str | None = None,
+    returncode: int | None = None,
+    extra: dict[str, Any] | None = None,
+) -> None:
+    """Capture a sandbox harness infra-failure as a Sentry error-level event.
+
+    A non-zero harness subprocess exit (OOM / OpenBLAS abort / segfault / RLIMIT kill)
+    is returned to the client as a normal HTTP 200 {error} body -- NOT a 5xx, NOT an
+    exception -- so without this explicit capture it is invisible to Sentry. (This is
+    the exact blind spot that hid the 2026-06 OpenBLAS RLIMIT_AS abort: 0 Sentry hits
+    in 90 days.) No-ops when Sentry is not initialised.
+
+    Tags: alert=sandbox_failure (single alert-rule filter), sandbox_mode, sandbox_rc.
+    """
+    if _sentry_sdk is None:
+        return
+
+    with _sentry_sdk.push_scope() as scope:
+        scope.set_tag("alert", "sandbox_failure")
+        if mode is not None:
+            scope.set_tag("sandbox_mode", str(mode))
+        if returncode is not None:
+            scope.set_tag("sandbox_rc", str(returncode))
+        if extra:
+            scope.set_context("sandbox_failure_detail", extra)
+        _sentry_sdk.capture_message(message, level="error", scope=scope)
+
+
 def set_sentry_user(user: dict[str, Any], *, is_authenticated: bool) -> None:
     if _sentry_sdk is None:
         return

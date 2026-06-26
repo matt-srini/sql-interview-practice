@@ -471,11 +471,22 @@ def _spawn_harness(payload: dict, timeout: int = CODE_TIMEOUT_SECONDS) -> dict:
         # A non-zero exit means the HARNESS ITSELF failed (OOM / OpenBLAS abort / segfault
         # / RLIMIT kill) — user code errors are caught inside the harness and returned with
         # exit 0. This was previously returned as a normal HTTP 200 {error} body, invisible
-        # to Sentry; log it so infra-level sandbox failures are observable.
+        # to Sentry; log it AND raise an explicit Sentry event so infra-level sandbox
+        # failures are observable and alertable.
         logger.warning(
             "Sandbox subprocess exited non-zero (code=%s, %.3fs): %s",
             proc.returncode, duration, stderr[:500] or "<no stderr>",
         )
+        try:
+            from sentry_utils import capture_sandbox_failure
+            capture_sandbox_failure(
+                "sandbox subprocess exited non-zero",
+                mode=payload.get("mode"),
+                returncode=proc.returncode,
+                extra={"duration_s": round(duration, 3), "stderr": stderr[:500]},
+            )
+        except Exception:
+            pass  # observability must never break execution
         return {"error": f"Runtime error:\n{stderr}" if stderr else "Code execution failed."}
 
     try:
