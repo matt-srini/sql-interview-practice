@@ -84,6 +84,23 @@ def get_execution_semaphore() -> asyncio.Semaphore:
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     init_query_engine()
+    # Sandbox Landlock FS read-scope availability — logged so we know whether the file-read
+    # boundary is actually active here (the harness applies it per-execution, but it fails
+    # OPEN if the kernel lacks Landlock, so this boot probe is how we confirm prod is covered).
+    try:
+        import landlock_sandbox
+        _ll_abi = landlock_sandbox.abi_version()
+        if _ll_abi:
+            logger.info("Sandbox Landlock FS read-scope: available (ABI v%s)", _ll_abi)
+        elif IS_PROD:
+            logger.warning(
+                "Sandbox Landlock FS read-scope: UNAVAILABLE on this kernel — sandbox "
+                "file-read is NOT scoped (fails open). See docs/specs/sandbox-threat-model.md."
+            )
+        else:
+            logger.info("Sandbox Landlock FS read-scope: unavailable (non-Linux / dev)")
+    except Exception as exc:  # never let the probe affect startup
+        logger.warning("Sandbox Landlock probe failed: %s", exc)
     await init_pool()
     if not IS_PROD:
         # In dev/staging, auto-apply schema so developers don't need to run

@@ -9,6 +9,7 @@ Two modes:
   - "data": run solve(**dataframes) and return DataFrame as JSON
 """
 import json
+import os
 import sys
 import traceback
 import io
@@ -394,12 +395,47 @@ def _json_default(o):
     raise TypeError(f"Object of type {type(o).__name__} is not JSON serializable")
 
 
+def _apply_landlock(mode: str, payload: dict) -> None:
+    """Restrict the sandbox's filesystem READS to the Python runtime + datasets + /tmp,
+    denying backend/content (the answer keys) and app source — the complete closure of the
+    arbitrary-file-read residual that the in-process guard only narrows. Applied AFTER the
+    payload is read (data mode needs csv_dir) and BEFORE user code runs. Linux >= 5.13 only;
+    fails open (the app logs Landlock availability at boot). See landlock_sandbox.py and
+    docs/specs/sandbox-threat-model.md."""
+    try:
+        import landlock_sandbox
+    except Exception:
+        return  # module/feature unavailable -> fail open; the other layers still apply
+    # /app/backend (the harness dir) must NOT be allowed wholesale — content/ lives under it.
+    harness_dir = os.path.realpath(os.path.dirname(__file__))
+    allow = {os.path.realpath(__file__)}  # this harness FILE specifically, not its dir
+    # Python runtime: stdlib + site-packages (pandas/numpy import AFTER this point).
+    for p in (sys.base_prefix, sys.prefix, os.path.dirname(os.path.realpath(sys.executable))):
+        if p:
+            allow.add(p)
+    for p in sys.path:
+        if not p:
+            continue
+        rp = os.path.realpath(p)
+        if os.path.isdir(rp) and rp != harness_dir and not rp.startswith(harness_dir + os.sep):
+            allow.add(rp)
+    # System libs (C-extension deps), locale/SSL config, kernel pseudo-fs (numpy cpu probe),
+    # and the writable scratch dir. None hold app secrets (the env is already scrubbed).
+    allow.update(("/usr", "/lib", "/lib64", "/opt", "/etc", "/proc", "/sys", "/tmp"))
+    if mode == "data":
+        csv_dir = payload.get("csv_dir")
+        if csv_dir:
+            allow.add(os.path.realpath(csv_dir))
+    landlock_sandbox.restrict_reads(sorted(allow))
+
+
 def main():
     _apply_sandbox_rlimits()
     _install_exec_block()
     payload = json.loads(sys.stdin.read())
     mode = payload.get("mode", "algorithm")
     user_code = payload.get("code", "")
+    _apply_landlock(mode, payload)  # FS read-scope: deny content/** + app source (Linux)
 
     if mode == "algorithm":
         test_cases = payload.get("test_cases", [])
