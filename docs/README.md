@@ -25,6 +25,13 @@ This is the navigation hub for all platform documentation. Each doc below owns a
 | [`specs/platform-north-star.md`](specs/platform-north-star.md) | Canonical product goal, role framing, practice/dashboard/mock relationship, filter policy |
 | [`specs/practice-modality-spec.md`](specs/practice-modality-spec.md) | Track modality matrix, practice interaction rules, metadata contract |
 | [`specs/mock-benchmark-spec.md`](specs/mock-benchmark-spec.md) | Benchmark-vs-drill split, mock invariants, analytics contract |
+| [`specs/sandbox-threat-model.md`](specs/sandbox-threat-model.md) | **Canonical sandbox threat model** — every code-execution defense layer, what each does and does not contain, and the residuals |
+
+## Audits
+
+| File | What it covers |
+|---|---|
+| [`audits/sandbox-PRR.md`](audits/sandbox-PRR.md) | **Sandbox PRR** (code-execution sandbox production-readiness review, 2026-06-26) — index for the security / reliability / scalability / observability hardening pass: findings, fixes, decisions, and what's deferred (Landlock) |
 
 ## Features
 

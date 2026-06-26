@@ -63,6 +63,7 @@ The Linux-gated tests are skipped on macOS dev and are the reason a hardening ch
 
 ## Related
 
-- [`docs/decisions/DECISIONS.md`](../decisions/DECISIONS.md) — the *why* (2026-06-26 entries: BLAS pin; guard-escape hardening + Landlock-deferred).
+- [`docs/audits/sandbox-PRR.md`](../audits/sandbox-PRR.md) — the **Sandbox PRR** index: the full code-execution-sandbox hardening pass this security layer is one axis of (findings, fixes, and decisions across security / reliability / scalability / observability).
+- [`docs/decisions/DECISIONS.md`](../decisions/DECISIONS.md) — the *why* (2026-06-26 entries: BLAS pin; guard-escape hardening + Landlock-deferred; cgroup concurrency + correctness oracle).
 - [`docs/deployment.md`](../deployment.md) § Sandbox security hardening — the OS-layer / Railway-equivalents table.
 - [`docs/backend.md`](../backend.md) § Python execution pipeline — the runtime data flow.
