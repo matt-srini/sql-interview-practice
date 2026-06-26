@@ -27,10 +27,65 @@ _HARNESS_BUILTINS_DENY = frozenset({
     "getattr", "setattr", "delattr", "globals", "locals", "vars",
 })
 
+# Modules user code must never import at RUNTIME. The AST guard already rejects
+# non-allowlisted `import` statements (including os/sys); this is the defense-in-depth
+# backstop for a guard escape that reaches the real __import__ via a builtins walk. It
+# targets the code-execution / native / IPC / introspection modules that the seccomp
+# exec-block and env-scrub do not themselves cover. os/sys are deliberately NOT listed:
+# they are gated by the AST allowlist in prod, the env is already scrubbed of secrets,
+# the only residual reach (os.open file-read) is the domain of the pending Landlock
+# filesystem scope, and the env-isolation tests legitimately probe via `import os`.
+# numpy/pandas are imported by trusted harness code BEFORE user code runs, so this never
+# affects them; legitimate allowlisted user imports (math/numpy/...) are not on the list.
+_IMPORT_DENY = frozenset({
+    "subprocess", "socket", "_socket", "shutil", "pathlib", "tempfile",
+    "glob", "signal", "ctypes", "_ctypes", "importlib", "builtins", "posix", "nt",
+    "_posixsubprocess", "multiprocessing", "asyncio", "pty", "fcntl", "mmap",
+    "resource", "_thread", "threading", "platform", "sysconfig", "site", "runpy",
+    "code", "codeop", "inspect", "gc", "pickle", "shelve", "marshal",
+})
+
+
+def _guarded_import(name, *args, **kwargs):
+    """Runtime backstop: deny imports of dangerous modules from user code."""
+    top = (name or "").split(".", 1)[0]
+    if top in _IMPORT_DENY:
+        raise ImportError(f"import of {top!r} is not allowed in the sandbox")
+    return _builtins.__import__(name, *args, **kwargs)
+
 
 def _safe_builtins() -> dict:
-    """A copy of the builtins namespace with the dangerous names removed."""
-    return {k: v for k, v in _builtins.__dict__.items() if k not in _HARNESS_BUILTINS_DENY}
+    """Builtins namespace with dangerous names removed and __import__ guarded."""
+    d = {k: v for k, v in _builtins.__dict__.items() if k not in _HARNESS_BUILTINS_DENY}
+    d["__import__"] = _guarded_import
+    return d
+
+
+def _install_exec_block() -> None:
+    """Deny execve/execveat in this process so a guard escape cannot spawn a subprocess
+    (os.system / subprocess.*). Installed at main() start -- AFTER Python's own launch
+    execve already happened -- so it only blocks NEW program execution; numpy/pandas
+    never execve, so legit code is unaffected. Composes with the network-egress seccomp
+    filter installed in the evaluator's preexec. Linux-only, fail-open (no pyseccomp /
+    non-Linux -> no-op, other layers still apply)."""
+    import sys as _sys
+    if _sys.platform != "linux":
+        return
+    try:
+        import errno as _errno
+        import pyseccomp as _seccomp
+    except Exception:
+        return
+    try:
+        flt = _seccomp.SyscallFilter(defaction=_seccomp.ALLOW)
+        for _name in ("execve", "execveat"):
+            try:
+                flt.add_rule(_seccomp.ERRNO(_errno.EPERM), _name)
+            except Exception:
+                pass
+        flt.load()
+    except Exception:
+        pass
 
 
 def _apply_sandbox_rlimits() -> None:
@@ -337,6 +392,7 @@ def _json_default(o):
 
 def main():
     _apply_sandbox_rlimits()
+    _install_exec_block()
     payload = json.loads(sys.stdin.read())
     mode = payload.get("mode", "algorithm")
     user_code = payload.get("code", "")
