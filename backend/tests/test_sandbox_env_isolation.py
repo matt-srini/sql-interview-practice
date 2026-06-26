@@ -51,3 +51,17 @@ def test_sandbox_env_is_a_minimal_allowlist(monkeypatch):
     assert "PYTHONPATH" not in env
     # Python can still start cleanly.
     assert env.get("PATH")
+    # Native-math thread pools pinned to 1 (OpenBLAS RLIMIT_AS abort guard).
+    assert env.get("OPENBLAS_NUM_THREADS") == "1"
+    assert env.get("OMP_NUM_THREADS") == "1"
+    assert env.get("MKL_NUM_THREADS") == "1"
+    assert env.get("NUMEXPR_NUM_THREADS") == "1"
+
+
+def test_sandbox_pins_blas_thread_env():
+    """Native-math thread pools must be pinned to 1 *inside the subprocess* (not merely in
+    the env dict) — the guard against the OpenBLAS RLIMIT_AS abort under a high host-core
+    count. End-to-end through _spawn_harness, mirroring the secret-probe tests above.
+    """
+    for key in ("OPENBLAS_NUM_THREADS", "OMP_NUM_THREADS", "MKL_NUM_THREADS", "NUMEXPR_NUM_THREADS"):
+        assert _run_probe(key) == "1", f"{key} not pinned to 1 in the sandbox subprocess"

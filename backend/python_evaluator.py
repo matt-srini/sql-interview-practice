@@ -326,6 +326,19 @@ def _sandbox_env() -> dict[str, str]:
     env["PYTHONIOENCODING"] = "utf-8"        # deterministic stdout for the JSON protocol
     env["PYTHONDONTWRITEBYTECODE"] = "1"     # no .pyc writes (also helps a read-only fs)
     env["PYTHONNOUSERSITE"] = "1"            # ignore ~/.local site-packages
+    # Pin native-math thread pools to one thread. numpy's bundled OpenBLAS (and any
+    # OpenMP/MKL/numexpr backend) otherwise sizes a per-core scratch-buffer pool to the
+    # HOST core count; in a container that over-reports cores, that reservation of
+    # *virtual* address space exceeds the 512 MB RLIMIT_AS the harness sets before it
+    # imports numpy, and OpenBLAS aborts the process ("Memory allocation still failed
+    # after 10 retries, giving up"). We already parallelize at the PROCESS level (the
+    # execution semaphore), so each sandbox wants exactly one BLAS thread — and a single
+    # thread also makes float reductions deterministic, matching the single-threaded
+    # DuckDB grading path. See docs/decisions/DECISIONS.md.
+    env["OPENBLAS_NUM_THREADS"] = "1"
+    env["OMP_NUM_THREADS"] = "1"
+    env["MKL_NUM_THREADS"] = "1"
+    env["NUMEXPR_NUM_THREADS"] = "1"
     # Deliberately NO PYTHONPATH → user code cannot import backend app modules.
     return env
 
@@ -455,6 +468,14 @@ def _spawn_harness(payload: dict, timeout: int = CODE_TIMEOUT_SECONDS) -> dict:
 
     if proc.returncode != 0:
         stderr = (stderr or "").strip()
+        # A non-zero exit means the HARNESS ITSELF failed (OOM / OpenBLAS abort / segfault
+        # / RLIMIT kill) — user code errors are caught inside the harness and returned with
+        # exit 0. This was previously returned as a normal HTTP 200 {error} body, invisible
+        # to Sentry; log it so infra-level sandbox failures are observable.
+        logger.warning(
+            "Sandbox subprocess exited non-zero (code=%s, %.3fs): %s",
+            proc.returncode, duration, stderr[:500] or "<no stderr>",
+        )
         return {"error": f"Runtime error:\n{stderr}" if stderr else "Code execution failed."}
 
     try:
