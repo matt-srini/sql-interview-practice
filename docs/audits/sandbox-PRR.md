@@ -23,13 +23,13 @@ A production Pandas execution failed with `OpenBLAS error: Memory allocation sti
 | 5 | `MAX_CONCURRENT_EXECUTIONS` default from `os.cpu_count()` over-reports host cores in a container → semaphore + peak sandbox RAM inflate (≤31 GB on a 64-core host) | Scalability | High (latent) | ✅ Fixed — cgroup-aware `effective_cpu_count()` | [DECISIONS](../decisions/DECISIONS.md) "cgroup-aware concurrency"; [deployment](../deployment.md) § Concurrency & scaling model |
 | 6 | The 2026-06-08 load test reported "no blockers" but could not see any of this | Test methodology | High | ✅ Fixed — pandas/stats journeys + **correctness oracle** + deterministic OpenBLAS CI repro | `backend/loadtest/`, `tests/test_sandbox_openblas_pin.py`; [deployment](../deployment.md) scope caveat |
 | 7 | No single doc described the sandbox threat model (what each layer contains / doesn't) | Documentation | Medium | ✅ Fixed — canonical threat-model doc + this index | [threat-model](../specs/sandbox-threat-model.md) |
-| 8 | Arbitrary file-read via the in-process introspection tail (the hardening closes known vectors, not the class) | Security | **Open residual** | ⏳ **Deferred — Landlock** filesystem read-scope | [threat-model](../specs/sandbox-threat-model.md) § Residuals |
+| 8 | Arbitrary file-read via the in-process introspection tail (the hardening narrows it; the guard can't close the class) | Security | **Critical (verified)** | ✅ **Closed by Landlock** (`landlock_sandbox.py`, CI-validated) — prod-active pending the Railway boot-log check | [threat-model](../specs/sandbox-threat-model.md) § Residuals; `tests/test_sandbox_landlock.py` |
 
 ---
 
 ## The verified escape (security highlight)
 
-The guard is a denylist over AST shapes; runtime-string attribute access (`operator.attrgetter('__globals__')`) and re-exported modules (`random._os`, `typing.sys.modules['os']`) sidestep it. Reproduced live: the escape read `backend/content/**` (the practice/mock **answer keys**) and `/etc/passwd`, **exfiltrated on the run-code response body** — so the network seccomp block does not mitigate it. The hardening (string/bytes escape-gadget scan + re-export attribute blocks + restricted runtime `__import__` + seccomp `execve` block) closes every reproduced vector and robustly closes subprocess; **arbitrary file-read is only fully closed by Landlock** (the open residual, #8). Full layer-by-layer model: [`docs/specs/sandbox-threat-model.md`](../specs/sandbox-threat-model.md).
+The guard is a denylist over AST shapes; runtime-string attribute access (`operator.attrgetter('__globals__')`) and re-exported modules (`random._os`, `typing.sys.modules['os']`) sidestep it. Reproduced live: the escape read `backend/content/**` (the practice/mock **answer keys**) and `/etc/passwd`, **exfiltrated on the run-code response body** — so the network seccomp block does not mitigate it. The hardening (string/bytes escape-gadget scan + re-export attribute blocks + restricted runtime `__import__` + seccomp `execve` block) closes every reproduced vector and robustly closes subprocess; **arbitrary file-read is now closed by Landlock** (#8 — landed + CI-validated; prod-active pending the boot-log check). Full layer-by-layer model: [`docs/specs/sandbox-threat-model.md`](../specs/sandbox-threat-model.md).
 
 ---
 
@@ -63,7 +63,7 @@ All in [`docs/decisions/DECISIONS.md`](../decisions/DECISIONS.md) (grep `Area: s
 
 ## What's left
 
-**Landlock filesystem read-scoping** is the one open item — the complete closure of the arbitrary file-read residual (#8). It is Linux-kernel-only, fails open if the Railway kernel lacks it, and needs CI-iterated validation (sandbox cannot read `content/**`; numpy/pandas still import). Tracked in [`docs/specs/sandbox-threat-model.md`](../specs/sandbox-threat-model.md) § Residuals.
+**Landlock is implemented + CI-validated** (`landlock_sandbox.py`, `tests/test_sandbox_landlock.py`): on a Landlock-capable kernel the sandbox cannot read `content/**` or app source, and pandas/numpy still execute. The **one open item** is a deploy-time check — Landlock is a kernel feature and fails *open*, so confirm it is actually active on **Railway's** host kernel via the boot-log line `Sandbox Landlock FS read-scope: available (ABI vN)` (a `... UNAVAILABLE ...` WARNING means the kernel lacks it; CI proves the code, but GitHub's kernel ≠ Railway's). Tracked in [`docs/specs/sandbox-threat-model.md`](../specs/sandbox-threat-model.md) § Residuals.
 
 ## SoT map
 

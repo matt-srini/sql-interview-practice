@@ -35,6 +35,13 @@ Keep entries to 4–6 lines. Friction kills logs; if it's longer than the change
 
 ## Entries
 
+## 2026-06-26 — Implement Landlock filesystem read-scope (closes the file-read residual)
+**Area:** sandbox · security · **Status:** accepted
+**Decision:** Closed the arbitrary-file-read residual the guard-hardening entry (below) deferred. `landlock_sandbox.py` applies a per-execution Linux **Landlock** ruleset (raw ctypes, no new dependency) inside the harness before user code runs, allowing read+exec only on the Python runtime + datasets + `/tmp` and denying everything else — so a guard escape that reaches `os` cannot read `backend/content/**` (answer keys) or app source, cutting the response-body exfil channel. CI-validated on a Landlock-capable kernel (`tests/test_sandbox_landlock.py`: deny-content/app-source + pandas-still-works).
+**Rejected / not chosen:** further in-process guard patching (cannot close the introspection-tail class); a third-party landlock binding (raw ctypes is dependency-free); blocking reads via seccomp (`open`/`read` are needed by Python itself — only a path-aware LSM like Landlock can scope by directory).
+**Caveat (open):** Landlock is a kernel feature and **fails open** — silently inactive if Railway's host kernel lacks the Landlock LSM (CI's GitHub kernel ≠ Railway's). The app logs availability at boot (`main.py`); confirm prod-active via that line. Until confirmed, file-read falls back to the guard's partial protection.
+**Affects:** `backend/landlock_sandbox.py`, `backend/python_sandbox_harness.py`, `backend/main.py`; tests `tests/test_sandbox_landlock.py`; docs `docs/specs/sandbox-threat-model.md`, `docs/audits/sandbox-PRR.md`, `docs/deployment.md` § Sandbox security hardening. Closes the deferral in the 2026-06-26 guard-escape entry below.
+
 ## 2026-06-26 — MCQ wrong-answer journey: gated re-attempt (Model B); solves count like code tracks
 **Area:** frontend · gating · **Status:** accepted
 **Decision:** On MCQ practice questions a wrong answer is neither a retry loop nor a dead end. The wrong submit locks the options + Submit (verdict "Not quite", no "Keep iterating"); the user works the hint ladder → "Reveal the answer" (lights the correct tile + shows the explanation in place); revealing re-opens the options (`MCQPanel canReselect`) so the user selects the correct one and submits → solved. The solve **counts toward unlock thresholds exactly like a code-track solve** (no reveal penalty). "Next" shows only on a solve and never navigates to the current question.

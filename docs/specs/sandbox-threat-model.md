@@ -10,7 +10,7 @@ Runtime SoT (the code these layers live in): `backend/python_guard.py`, `backend
 
 Three tracks execute user-submitted Python in a subprocess sandbox: **Python (algorithm)**, **Pandas**, and **Statistics-numerical**. SQL runs in DuckDB (no Python sandbox); the MCQ tracks execute nothing. The entry path for the three is: endpoint → `python_guard.guard_detail()` (reject at 400 if it fails) → `python_evaluator._spawn_harness()` → `python_sandbox_harness.py` in a scrubbed, resource-capped, seccomp-filtered subprocess.
 
-**Core assumption: the in-process AST guard is best-effort, not a boundary.** Safely sandboxing untrusted Python *in-process* is not achievable by denylisting — the object graph is too connected (a single reachable `os`/`__globals__`/`sys.modules` defeats it). So the guard is the *first* layer, and the real boundary is the **OS-level** layers (scrubbed env, seccomp, RLIMITs, non-root read-only FS, and — pending — Landlock). Every claim below is scoped accordingly.
+**Core assumption: the in-process AST guard is best-effort, not a boundary.** Safely sandboxing untrusted Python *in-process* is not achievable by denylisting — the object graph is too connected (a single reachable `os`/`__globals__`/`sys.modules` defeats it). So the guard is the *first* layer, and the real boundary is the **OS-level** layers (scrubbed env, seccomp, RLIMITs, non-root read-only FS, and Landlock filesystem read-scoping). Every claim below is scoped accordingly.
 
 ---
 
@@ -25,15 +25,15 @@ Three tracks execute user-submitted Python in a subprocess sandbox: **Python (al
 | **Memory / CPU / fork / disk bombs** | ✅ yes | RLIMITs (`AS` 512 MB, `CPU` 14 s, `NPROC` 256, `FSIZE` 64 MB) + wall timeout + process-group SIGKILL | See `docs/deployment.md` § Sandbox security hardening. |
 | **Native-math RLIMIT_AS abort** (OpenBLAS over-reserve) | ✅ yes | BLAS thread pins in `_sandbox_env` (`OPENBLAS/OMP/MKL/NUMEXPR_NUM_THREADS=1`) | Not a security threat but a correctness/availability one; see DECISIONS 2026-06-26. |
 | **Reaching `os`/`sys`/`__import__` via the guard** | ⚠️ **known vectors closed; not a proven boundary** | AST guard: blocks non-allowlisted imports, dangerous bare names, dangerous attributes **incl. re-export hops** (`_os`/`_sys`/`sys`/`os`/`modules`), and an explicit set of escape-gadget dunders in **string + bytes** literals (catches `operator.attrgetter('__globals__')`, `b'{0.__globals__}'.decode().format()`). Restricted runtime `__import__` denies native/IPC/deser modules. | The reproduced vectors (attrgetter, `random._os`, `typing.sys.modules`, bytes-format) are all blocked. A determined attacker can still reach `os` via the **introspection tail** (e.g. `attrgetter('sys')`+`attrgetter('modules')` — common-word strings can't be scanned without breaking legit code). |
-| **Arbitrary file READ** (answer keys in `content/`, app source) | ❌ **NOT fully contained — top residual** | Only the guard's reach-vectors above; nothing at the OS level restricts file reads today. | **This is the priority residual.** Once `os` is reached, `os.open` reads any `appuser`-readable file, and the value is **exfiltrated via the run-code response body** (`solve()`'s return is echoed to the client), so the network block does not help. Closure = **Landlock** (below). |
+| **Arbitrary file READ** (answer keys in `content/`, app source) | ✅ **contained by Landlock** (Linux ≥5.13; CI-validated) — see prod caveat | **Landlock** (`landlock_sandbox.py`, applied per-execution in the harness) read-scopes the sandbox to the Python runtime + datasets + `/tmp` and denies everything else, so `content/**` and app source are unreadable even after a guard escape — which also cuts the response-body exfil channel. **Prod caveat:** Landlock is a kernel feature and fails *open*; whether it is active on Railway's host kernel is confirmed via the boot-log line (Residuals, below). The in-process guard remains the fallback if the prod kernel lacks it. |
 
 ---
 
-## The exfiltration nuance (why file-read is the priority)
+## The exfiltration nuance (why file-read was the priority)
 
-A run-code response echoes `solve()`'s return value (or the resulting DataFrame) back to the client. So an attacker does **not** need network egress to exfiltrate: returning file contents as the solve output leaks them on the legitimate HTTP response. This is why the *network* seccomp block, while correct, does not mitigate the file-read residual — and why **filesystem read-scoping (Landlock) is the highest-value remaining hardening**, above any further in-process guard patching.
+A run-code response echoes `solve()`'s return value (or the resulting DataFrame) back to the client. So an attacker does **not** need network egress to exfiltrate: returning file contents as the solve output leaks them on the legitimate HTTP response. The *network* seccomp block, while correct, does not mitigate file-read — which is why **filesystem read-scoping (Landlock)** was the highest-value hardening, above any further in-process guard patching. Landlock removes the *read* itself, so there is nothing to return.
 
-The most product-relevant target is `backend/content/**` (the practice/mock **answer keys**): reading the expected answer for the current question defeats grading integrity directly, with no network needed.
+The most product-relevant target was `backend/content/**` (the practice/mock **answer keys**): reading the expected answer for the current question would defeat grading integrity directly, with no network needed — now blocked by Landlock (subject to the prod-kernel caveat above).
 
 ---
 
@@ -41,7 +41,8 @@ The most product-relevant target is `backend/content/**` (the practice/mock **an
 
 | Residual | Closure | Status |
 |---|---|---|
-| Arbitrary file-read via the in-process introspection tail | **Landlock** (Linux ≥5.13) filesystem read-scoping in the harness: allow-read the Python runtime + site-packages + the datasets dir + `/tmp` (rw), deny everything else (incl. `content/**` and app source). | ⏳ **planned (next security iteration)** — needs Railway-kernel verification; fails *open* if the kernel lacks Landlock, so it must log its active/inactive state at startup. |
+| Arbitrary file-read via the in-process introspection tail | **Landlock** (`landlock_sandbox.py`): per-execution filesystem read-scope allowing the Python runtime + site-packages + datasets dir + `/tmp`, denying everything else (incl. `content/**` and app source). | ✅ **implemented + CI-validated** (`tests/test_sandbox_landlock.py`). |
+| **Landlock active on the prod (Railway) host kernel** | Confirm via the boot-log line `Sandbox Landlock FS read-scope: available (ABI vN)`; a `... UNAVAILABLE ...` WARNING means the kernel lacks it and the sandbox fails *open* (guard-only file-read protection). | ⏳ **pending deploy verification** — Landlock is a kernel feature; CI proves the code on a supporting kernel, but GitHub's kernel ≠ Railway's. |
 | In-process guard is best-effort | (Accepted) The guard is defense-in-depth; the boundary is the OS layers + Landlock. New escape vectors are added to `tests/test_guard_redteam.py` as found. | accepted |
 
 ---
@@ -56,6 +57,7 @@ The most product-relevant target is `backend/content/**` (the practice/mock **an
 | RLIMITs (AS/CPU/NPROC/FSIZE) | `tests/test_sandbox_resource_limits.py` (Linux) |
 | Scrubbed env + BLAS pins | `tests/test_sandbox_env_isolation.py` |
 | OpenBLAS RLIMIT_AS abort (high-thread repro) | `tests/test_sandbox_openblas_pin.py` (Linux) |
+| Landlock file-read scope (deny content/source; pandas still works) | `tests/test_sandbox_landlock.py` (Linux) |
 
 The Linux-gated tests are skipped on macOS dev and are the reason a hardening change **must be CI-validated on a branch before landing** — several layers (RLIMITs, seccomp) only exist on Linux, and security tests probe them by importing `os`/`socket`/`resource` inside the sandbox (so those modules are deliberately *not* in the runtime import-deny).
 
