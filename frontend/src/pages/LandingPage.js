@@ -12,6 +12,7 @@ import Topbar from '../components/Topbar';
 import TrackProgressBar from '../components/TrackProgressBar';
 import PathProgressCard from '../components/PathProgressCard';
 import UpgradeButton from '../components/UpgradeButton';
+import LandingTour from '../components/LandingTour';
 import { detectCurrency, PRICES } from '../utils/currency';
 
 // ROLES is imported from roleRegistry.js (slug + hasPage added there)
@@ -446,6 +447,7 @@ function HeroSection({ user, dashData, paths = [], reduced }) {
               Find your role ↓
             </button>
           </div>
+          <LandingTour />
         </div>
         <div className="lp-hero-right">
           <HeroIDE reduced={reduced} />

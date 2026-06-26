@@ -2681,6 +2681,31 @@ select {
   outline-offset: 2px;
 }
 
+/* Opt-in landing-tour trigger — soft pill, clearly secondary to the hero CTAs */
+.lp-tour-link {
+  margin-top: 1.5rem;
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  border: none;
+  padding: 9px 15px;
+  border-radius: 999px;
+  font: inherit;
+  font-size: 0.84rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 150ms ease-out;
+}
+.lp-tour-link:hover {
+  background: var(--accent-soft-strong);
+}
+.lp-tour-icon {
+  flex-shrink: 0;
+}
+
 .onboarding-target-active {
   position: relative;
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 42%, transparent);
