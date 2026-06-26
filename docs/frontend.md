@@ -701,6 +701,7 @@ Full-screen layout. Does not use `AppShell`. Has two states:
 
 **Tooling:**
 - Unit tests: Vitest + React Testing Library + jsdom (`npm test`)
+- Lint: ESLint flat config (`eslint.config.js`), deliberately minimal — its one job is to enforce `react-hooks/rules-of-hooks` as an **error** (`npm run lint`, run in CI `frontend-build`); `exhaustive-deps` stays advisory (warn, does not fail CI). It is the static recurrence guard for the SchemaViewer "Rendered fewer hooks than expected" crash (a hook below an early return). We intentionally do not pull in a broad ruleset, so lint never fails CI on pre-existing style nits.
 - E2E: Playwright 1.59 (`npx playwright test`); config in `playwright.config.js`
 - E2E setup: `e2e/global-setup.js` creates one user per plan tier before the suite; credentials written to `e2e/.test-users.json` (gitignored) for reuse across all tests
 - `package.json` has `"type": "module"` (required for Playwright ESM config and globalSetup)

@@ -85,6 +85,12 @@ jobs:
       - name: Dependency audit (Node production deps)
         run: npm audit --omit=dev --audit-level=critical
 
+      - name: Lint (React Hooks rules)
+        # Enforces react-hooks/rules-of-hooks (error). Recurrence guard for the
+        # SchemaViewer "Rendered fewer hooks than expected" crash — a hook below an
+        # early return. exhaustive-deps stays advisory (warn) and does not fail CI.
+        run: npm run lint
+
       - name: Test
         run: npm test
 
