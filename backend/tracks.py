@@ -512,11 +512,18 @@ def mixed_mock_slugs() -> list[str]:
 
 # Role → tracks mapping for Mixed mock sessions.
 # Each role defines the pool of tracks drawn from in benchmark and custom drill.
+# CANONICAL role→track mapping — this MUST stay identical to the curriculum SoT
+# in frontend/src/roleRegistry.js (same sets, same order). The mock pool is no
+# longer a divergent subset: a role's Mixed benchmark and custom drill cover
+# exactly the tracks the role page lists. Keep these four in lockstep with
+# roleRegistry.js, ProgressDashboard ROLE_TRACK_FILTERS, MockHub MOCK_ROLES, and
+# docs/specs/platform-north-star.md § Role-to-track framing. See DECISIONS.md
+# 2026-06-26 (one-mapping reconciliation).
 _ROLE_TRACKS: dict[str, list[str]] = {
-    "data_analyst":        ["sql", "pandas", "statistics"],
-    "data_engineer":       ["sql", "python", "pyspark", "data-engineering"],
-    "analytics_engineer":  ["sql", "data-modeling", "pandas"],
-    "data_scientist":      ["python", "pandas", "statistics", "ml-fundamentals"],
+    "data_analyst":        ["sql", "statistics", "pandas", "python"],
+    "data_engineer":       ["python", "sql", "pyspark", "data-engineering", "data-modeling"],
+    "analytics_engineer":  ["sql", "data-modeling", "pandas", "python"],
+    "data_scientist":      ["ml-fundamentals", "statistics", "experimentation", "python", "pandas", "sql"],
 }
 
 VALID_MOCK_ROLES = set(_ROLE_TRACKS)

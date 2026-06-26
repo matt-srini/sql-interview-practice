@@ -22,11 +22,13 @@ import {
 // Tracks that pool into a single mixed-track session (in_mixed_mock=True in backend).
 const MIXED_MOCK_TRACKS = ['sql', 'python', 'pandas', 'pyspark'];
 
-const MOCK_ROLES = [
-  { id: 'data_analyst',       label: 'Data Analyst',       tracks: ['sql', 'pandas', 'statistics'] },
-  { id: 'data_engineer',      label: 'Data Engineer',      tracks: ['sql', 'python', 'pyspark', 'data-engineering'] },
-  { id: 'analytics_engineer', label: 'Analytics Engineer', tracks: ['sql', 'data-modeling', 'pandas'] },
-  { id: 'data_scientist',     label: 'Data Scientist',     tracks: ['python', 'pandas', 'statistics', 'ml-fundamentals'] },
+// Canonical role→track mapping — identical to frontend/src/roleRegistry.js and
+// backend tracks.py _ROLE_TRACKS. Keep in lockstep (see DECISIONS.md 2026-06-26).
+export const MOCK_ROLES = [
+  { id: 'data_analyst',       label: 'Data Analyst',       tracks: ['sql', 'statistics', 'pandas', 'python'] },
+  { id: 'data_engineer',      label: 'Data Engineer',      tracks: ['python', 'sql', 'pyspark', 'data-engineering', 'data-modeling'] },
+  { id: 'analytics_engineer', label: 'Analytics Engineer', tracks: ['sql', 'data-modeling', 'pandas', 'python'] },
+  { id: 'data_scientist',     label: 'Data Scientist',     tracks: ['ml-fundamentals', 'statistics', 'experimentation', 'python', 'pandas', 'sql'] },
 ];
 
 const DIFFICULTIES = ['easy', 'medium', 'hard', 'mixed'];

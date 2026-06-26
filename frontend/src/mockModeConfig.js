@@ -109,23 +109,23 @@ export const BENCHMARK_BLUEPRINTS = {
 export const MIXED_BENCHMARK_BLUEPRINTS = {
   data_analyst: {
     timeMinutes: 55,
-    summary: '4 questions across SQL · Pandas · Statistics',
+    summary: '4 questions across SQL · Statistics · Pandas · Python',
     description: 'Role-based benchmark calibrated for analytical workflows.',
   },
   data_engineer: {
-    timeMinutes: 55,
-    summary: '4 questions across SQL · Python · PySpark · Data Engineering',
+    timeMinutes: 70,
+    summary: '5 questions across Python · SQL · PySpark · Data Engineering · Data Modeling',
     description: 'Role-based benchmark covering the full data-engineering tool stack.',
   },
   analytics_engineer: {
     timeMinutes: 55,
-    summary: '4 questions across SQL · Data Modeling · Pandas',
+    summary: '4 questions across SQL · Data Modeling · Pandas · Python',
     description: 'Role-based benchmark for modeling, transformation, and analytical SQL.',
   },
   data_scientist: {
-    timeMinutes: 55,
-    summary: '4 questions across Python · Pandas · Statistics · ML Fundamentals',
-    description: 'Role-based benchmark spanning modeling, statistics, and algorithmic implementation.',
+    timeMinutes: 80,
+    summary: '6 questions across ML Fundamentals · Statistics · Experimentation · Python · Pandas · SQL',
+    description: 'Role-based benchmark spanning modeling, statistics, experimentation, and the code underneath.',
   },
 };
 

@@ -35,10 +35,10 @@ Benchmark blueprints:
 | Data Modeling | 5 constructed reasoning prompts | 40 min |
 | ML Fundamentals | 6 constructed reasoning prompts | 40 min |
 | Experimentation | 6 constructed reasoning prompts | 40 min |
-| **Mixed — Data Analyst** | SQL (2) + Pandas (1) + Statistics (1) | 55 min |
-| **Mixed — Data Engineer** | SQL (1) + Python (1) + PySpark (1) + Data Engineering (1) | 55 min |
-| **Mixed — Analytics Engineer** | SQL (2) + Data Modeling (1) + Pandas (1) | 55 min |
-| **Mixed — Data Scientist** | Python (1) + Pandas (1) + Statistics (1) + ML Fundamentals (1) | 55 min |
+| **Mixed — Data Analyst** | SQL (1) + Statistics (1) + Pandas (1) + Python (1) | 55 min |
+| **Mixed — Data Engineer** | Python (1) + SQL (1) + PySpark (1) + Data Engineering (1) + Data Modeling (1) | 70 min |
+| **Mixed — Analytics Engineer** | SQL (1) + Data Modeling (1) + Pandas (1) + Python (1) | 55 min |
+| **Mixed — Data Scientist** | ML Fundamentals (1) + Statistics (1) + Experimentation (1) + Python (1) + Pandas (1) + SQL (1) | 80 min |
 
 Benchmark composition follows track-specific type targets where the bank supports them. **The per-track per-difficulty blueprint must match the actual on-disk bank shape at that difficulty** — bank shape governs blueprint, not the other way around (see [`mock-benchmark-spec.md` § Blueprint feasibility](../specs/mock-benchmark-spec.md)). Runtime source of truth is `backend/routers/mock.py` (`_benchmark_type_targets`, `_pyspark_format_targets`, `difficulty_overrides`); the table below is the doc-side canonical render of that source. Any change to either the bank's per-difficulty type distribution or to a blueprint below must update both in the same commit and re-verify feasibility.
 
@@ -74,14 +74,14 @@ Custom drill validates server-side: `num_questions` must be 1–5, `time_minutes
 
 Mixed track always requires the user to select a **role** before starting any mock session (benchmark or custom drill). This scopes the question pool to the tracks that matter for that role.
 
-**Four roles (matching the Landing Page role selector):**
+**Four roles. The role→track pool is the canonical mapping — identical to `frontend/src/roleRegistry.js`, the Landing Page role selector, the dashboard role filter, and `backend/tracks.py` `_ROLE_TRACKS` (the mock pool is no longer a subset; it covers exactly the role's curriculum tracks — see [DECISIONS 2026-06-26](../decisions/DECISIONS.md)):**
 
 | Role | Tracks in pool |
 |---|---|
-| Data Analyst | SQL, Pandas, Statistics |
-| Data Engineer | SQL, Python, PySpark, Data Engineering |
-| Analytics Engineer | SQL, Data Modeling, Pandas |
-| Data Scientist | Python, Pandas, Statistics, ML Fundamentals |
+| Data Analyst | SQL, Statistics, Pandas, Python |
+| Data Engineer | Python, SQL, PySpark, Data Engineering, Data Modeling |
+| Analytics Engineer | SQL, Data Modeling, Pandas, Python |
+| Data Scientist | ML Fundamentals, Statistics, Experimentation, Python, Pandas, SQL |
 
 For **benchmark**, the role maps to a fixed blueprint (see table above).
 

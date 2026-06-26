@@ -2229,3 +2229,30 @@ def test_tc175_loop_escalated_stored_and_reflected_in_history():
         assert matching[0].get("escalates") is True, (
             f"Expected escalates=True in history row, got: {matching[0].get('escalates')!r}"
         )
+
+
+# ---------------------------------------------------------------------------
+# Role → track mapping consistency guard (DECISIONS 2026-06-26)
+# ---------------------------------------------------------------------------
+def test_role_track_mapping_is_internally_consistent():
+    """A role's Mixed benchmark must cover exactly its custom-drill pool, every
+    benchmark role must be a valid mock role, and every pooled track must be
+    registered. This is the guard that would have caught the role→track drift
+    (the DS mock pool had silently diverged from the curriculum). The canonical
+    set must stay in lockstep with frontend/src/roleRegistry.js — DECISIONS 2026-06-26."""
+    from routers.mock import MIXED_BENCHMARK_CONFIGS
+    from tracks import role_tracks, VALID_MOCK_ROLES, all_slugs
+
+    assert set(MIXED_BENCHMARK_CONFIGS) == VALID_MOCK_ROLES, (
+        "Every benchmark role must be a valid mock role and vice versa"
+    )
+    registered = set(all_slugs())
+    for role in VALID_MOCK_ROLES:
+        pool = set(role_tracks(role))
+        slots = set(MIXED_BENCHMARK_CONFIGS[role]["slots"])
+        assert slots == pool, (
+            f"{role}: benchmark slot tracks {slots} must equal the role pool {pool}"
+        )
+        assert pool <= registered, f"{role}: pool has unknown track(s): {pool - registered}"
+    # Pandas was added to Data Scientist on 2026-06-26 — regression guard.
+    assert "pandas" in set(role_tracks("data_scientist")), "Data Scientist pool must include pandas"

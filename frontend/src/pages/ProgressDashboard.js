@@ -12,11 +12,11 @@ import UpgradeButton from '../components/UpgradeButton';
 import { formatLoopDifficulty } from '../mockModeConfig';
 
 // Role → tracks filter for Track overview section
-const ROLE_TRACK_FILTERS = [
+export const ROLE_TRACK_FILTERS = [
   { id: 'analyst',   label: 'Data Analyst',       tracks: ['sql', 'statistics', 'pandas', 'python'] },
   { id: 'engineer',  label: 'Data Engineer',      tracks: ['python', 'sql', 'pyspark', 'data-engineering', 'data-modeling'] },
   { id: 'ae',        label: 'Analytics Eng',      tracks: ['sql', 'data-modeling', 'pandas', 'python'] },
-  { id: 'scientist', label: 'Data Scientist',     tracks: ['ml-fundamentals', 'statistics', 'experimentation', 'python', 'sql'] },
+  { id: 'scientist', label: 'Data Scientist',     tracks: ['ml-fundamentals', 'statistics', 'experimentation', 'python', 'pandas', 'sql'] },
 ];
 
 function formatRelativeTime(isoString) {

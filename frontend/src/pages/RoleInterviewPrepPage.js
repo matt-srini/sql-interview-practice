@@ -71,13 +71,13 @@ const ROLE_CONTENT = {
     hero: {
       eyebrow: 'Interview prep · Data Engineer',
       h1: 'Data Engineer Interview Prep',
-      sub: 'Data engineer interviews probe how you reason about data pipelines under real constraints: ingestion, the transformation logic you write in Python and SQL, idempotency, distributed processing, and the table designs that keep analytics correct. datathink trains that judgment on real execution engines, not flashcards.',
+      sub: 'A pipeline that is correct on Monday can quietly double-count after a Tuesday retry. Data engineer interviews push on exactly that kind of judgment: idempotent loads, the Python that sessionizes an event stream without holding it all in memory, when a broadcast join beats a shuffle, and the fact-table grain that keeps analytics honest as volume grows. datathink builds it on the real engines, the way the job does.',
       ctaPrimary: { label: 'Try a free sample →', to: '/sample?role=data-engineer' },
       ctaSecondary: { label: 'See the 5 tracks ↓', scrollTo: 'ip-tracks' },
     },
     whatSection: {
       h2: 'What data engineer interviews actually test',
-      body: 'Strong data engineers are not judged on syntax recall. They are judged on pipeline reasoning: choosing the right grain for a fact table, writing the Python that sessionizes an event stream without holding it all in memory, making a reload idempotent so a retry does not double-count, knowing when a broadcast join beats a shuffle, and writing SQL that stays correct as data scales. These are the decisions datathink drills, across the five tracks that make up the role.',
+      body: 'Syntax recall is not the job. A data engineer is judged on whether the pipeline survives production: picking a fact-table grain that will not silently lie, making a backfill idempotent so an at-least-once source cannot double-fire, salting a hot key when a skew join stalls, and writing SQL that stays correct as tables outgrow memory. That judgment is what the five tracks build, each on the engine where the mistake actually shows up.',
     },
     tracks: [
       {
@@ -132,13 +132,13 @@ const ROLE_CONTENT = {
     hero: {
       eyebrow: 'Interview prep · Data Analyst',
       h1: 'Data Analyst Interview Prep',
-      sub: 'Data analyst interviews test whether you can turn messy data into a defensible answer: SQL that gets the number right, the statistical judgment to know if it means anything, and the Python or Pandas to go beyond what a dashboard can show. datathink trains that reasoning on real execution engines, not flashcards.',
+      sub: 'Anyone can pull a number; a data analyst is hired to pull the right one and know whether it means anything. Interviews test that whole arc: SQL that joins and aggregates to the grain the question actually asked, the statistics to separate a real lift from sampling noise, and the Pandas to answer what a dashboard cannot. Every track runs on a real engine, so you are judged on the answer, not your recall of the syntax.',
       ctaPrimary: { label: 'Try a free sample →', to: '/sample?role=data-analyst' },
       ctaSecondary: { label: 'See the 4 tracks ↓', scrollTo: 'ip-tracks' },
     },
     whatSection: {
       h2: 'What data analyst interviews actually test',
-      body: 'Strong analysts are not judged on memorized syntax. They are judged on reasoning: writing the SQL that joins and aggregates to the right grain, knowing whether a lift is signal or noise, choosing the metric that actually answers the question, and reshaping data in Pandas when the warehouse cannot. These are the decisions datathink drills, across the four tracks that make up the role.',
+      body: 'The hard part of the analyst screen is not remembering a window function; it is defending the answer. You will be asked to choose the denominator that makes a metric honest, to say whether an 8% lift is signal or sampling noise, to catch the join fan-out that quietly double-counts revenue, and to reshape data in Pandas when the warehouse cannot. datathink drills each of those calls with reasoning questions and live execution, across the four tracks the role leans on.',
     },
     tracks: [
       {
@@ -189,13 +189,13 @@ const ROLE_CONTENT = {
     hero: {
       eyebrow: 'Interview prep · Analytics Engineer',
       h1: 'Analytics Engineer Interview Prep',
-      sub: 'Analytics engineer interviews probe the transformation layer: SQL precise enough to trust in production, the data modeling that decides whether downstream analytics scale, and the dbt habits that keep a warehouse sane. datathink trains that judgment on real execution engines, not flashcards.',
+      sub: 'The analytics engineer owns the layer every dashboard inherits, so a wrong grain here becomes a hundred wrong numbers downstream. Interviews probe that responsibility: the fact-table grain and keys that stay correct under slowly-changing dimensions, when to normalize versus denormalize, and SQL clean enough to trust in production and still read six months later. datathink trains it on the engines and schema problems the job is actually made of.',
       ctaPrimary: { label: 'Try a free sample →', to: '/sample?role=analytics-engineer' },
       ctaSecondary: { label: 'See the 4 tracks ↓', scrollTo: 'ip-tracks' },
     },
     whatSection: {
       h2: 'What analytics engineer interviews actually test',
-      body: 'Analytics engineers are judged on design, not recall: choosing the grain and keys of a model so it stays correct, knowing when to normalize and when to denormalize, writing SQL that is both right and maintainable, and reshaping data in Python or Pandas when transformation needs more than a query. These are the decisions datathink drills, across the four tracks that make up the role.',
+      body: 'Design is the whole game, and the interview rewards it over recall. The decisions compound: choosing a grain that will not need re-platforming later, picking an SCD Type 2 strategy when audit and reporting requirements disagree, conforming a dimension across two independently sourced systems, and writing transformation SQL a teammate can read and a model can depend on. Pandas and Python cover the steps that do not belong in a query. The four tracks rehearse each of those, the way a real design review would.',
     },
     tracks: [
       {
@@ -246,13 +246,13 @@ const ROLE_CONTENT = {
     hero: {
       eyebrow: 'Interview prep · Data Scientist',
       h1: 'Data Scientist Interview Prep',
-      sub: 'Data scientist interviews probe how you reason from data to a defensible model and a credible result: the ML judgment to know why a model works, the statistical inference behind a claim, the experiment design that proves causation, and the Python and SQL to do it. datathink trains that reasoning on real execution engines, not flashcards.',
+      sub: 'A data scientist has to get from raw data to a claim that survives scrutiny, and interviews test every step of that path. Expect to diagnose why a model that scored 0.95 offline drops to 0.70 in production, to say when a result is statistically real instead of underpowered noise, to design an experiment that isolates cause, and to do the Pandas, Python, and SQL the work actually runs on. datathink drills that reasoning on engines that execute, not flashcards.',
       ctaPrimary: { label: 'Try a free sample →', to: '/sample?role=data-scientist' },
-      ctaSecondary: { label: 'See the 5 tracks ↓', scrollTo: 'ip-tracks' },
+      ctaSecondary: { label: 'See the 6 tracks ↓', scrollTo: 'ip-tracks' },
     },
     whatSection: {
       h2: 'What data scientist interviews actually test',
-      body: 'Strong data scientists are not judged on memorized formulas. They are judged on judgment: choosing a model and explaining its bias-variance trade-off, knowing when a result is statistically real, designing an experiment that isolates cause, and writing the Python and SQL to get there. These are the decisions datathink drills, across the five tracks that make up the role.',
+      body: 'Memorized formulas do not get you through a data science loop; judgment does. You will be asked to read a learning curve and name bias versus variance, to spot the leakage hiding behind a too-good AUC, to choose a correction when a PM ran eight tests and one came back significant, to defend an experiment against sample-ratio mismatch, and to wrangle the data in Pandas and SQL before any of it. These are the calls the six tracks drill, with a timed mock and a post-mortem that names the ones you missed.',
     },
     tracks: [
       {
@@ -272,6 +272,10 @@ const ROLE_CONTENT = {
         desc: 'The data-processing and modeling code a data scientist writes every day.',
       },
       {
+        slug: 'pandas',
+        desc: 'DataFrame wrangling for exploratory analysis and feature prep, the hands-on step before a model.',
+      },
+      {
         slug: 'sql',
         desc: 'Pulling and shaping the data a model needs, correctly and at scale.',
       },
@@ -280,7 +284,7 @@ const ROLE_CONTENT = {
     faq: [
       {
         q: 'What should a data scientist study for interviews?',
-        a: 'Prioritize ML fundamentals, applied statistics, and experimentation, with Python and SQL underneath. datathink groups these into five tracks built around the data scientist interview, with reasoning questions, not trivia.',
+        a: 'Prioritize ML fundamentals, applied statistics, and experimentation, with Python, Pandas, and SQL underneath. datathink groups these into six tracks built around the data scientist interview, with reasoning questions, not trivia.',
       },
       {
         q: 'Do data scientist interviews include statistics and experimentation?',
@@ -327,7 +331,8 @@ function FaqItem({ q, a, link }) {
 
 // ── Track count heading helper ───────────────────────────────────────────────
 function tracksHeading(roleLabel, count) {
-  return `The ${count === 5 ? 'five' : 'four'} tracks for ${roleLabel.toLowerCase()}`;
+  const words = { 4: 'four', 5: 'five', 6: 'six', 7: 'seven' };
+  return `The ${words[count] || count} tracks for ${roleLabel.toLowerCase()}`;
 }
 
 // ── Main page component ──────────────────────────────────────────────────────

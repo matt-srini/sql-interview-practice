@@ -38,7 +38,7 @@ export const ROLES = [
     slug: 'data-scientist',
     label: 'Data Scientist',
     hasPage: true,
-    tagline: 'ML · statistical inference · Python for modelling',
-    tracks: ['ml-fundamentals', 'statistics', 'experimentation', 'python', 'sql'],
+    tagline: 'ML · statistical inference · Python & Pandas for modelling',
+    tracks: ['ml-fundamentals', 'statistics', 'experimentation', 'python', 'pandas', 'sql'],
   },
 ];

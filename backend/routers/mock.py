@@ -92,22 +92,26 @@ BENCHMARK_CONFIGS: dict[str, dict[str, int]] = {
 
 # Mixed benchmark blueprints: role → {track: slot_count, ...} + time_limit_s
 # Each role maps to a fixed per-track slot allocation for benchmark sessions.
+# One slot per canonical role track (tracks.py _ROLE_TRACKS), so a role's
+# benchmark covers exactly the tracks the role page lists — no divergent subset.
+# Time scales with slot count at ~825 s/slot. Keep the slot KEYS identical to
+# tracks.py _ROLE_TRACKS for the role. See DECISIONS.md 2026-06-26.
 MIXED_BENCHMARK_CONFIGS: dict[str, dict] = {
     "data_analyst": {
-        "slots": {"sql": 2, "pandas": 1, "statistics": 1},
-        "time_limit_s": 3300,  # 55 min
+        "slots": {"sql": 1, "statistics": 1, "pandas": 1, "python": 1},
+        "time_limit_s": 3300,  # 55 min, 4 slots
     },
     "data_engineer": {
-        "slots": {"sql": 1, "python": 1, "pyspark": 1, "data-engineering": 1},
-        "time_limit_s": 3300,
+        "slots": {"python": 1, "sql": 1, "pyspark": 1, "data-engineering": 1, "data-modeling": 1},
+        "time_limit_s": 4200,  # 70 min, 5 slots
     },
     "analytics_engineer": {
-        "slots": {"sql": 2, "data-modeling": 1, "pandas": 1},
-        "time_limit_s": 3300,
+        "slots": {"sql": 1, "data-modeling": 1, "pandas": 1, "python": 1},
+        "time_limit_s": 3300,  # 55 min, 4 slots
     },
     "data_scientist": {
-        "slots": {"python": 1, "pandas": 1, "statistics": 1, "ml-fundamentals": 1},
-        "time_limit_s": 3300,
+        "slots": {"ml-fundamentals": 1, "statistics": 1, "experimentation": 1, "python": 1, "pandas": 1, "sql": 1},
+        "time_limit_s": 4800,  # 80 min, 6 slots
     },
 }
 

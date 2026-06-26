@@ -62,7 +62,7 @@ Interview performance follows from reasoning quality. Build for the practitioner
 | Data Analyst | SQL, Statistics, Pandas, Python |
 | Data Engineer | Python, SQL, PySpark, Data Engineering, Data Modeling |
 | Analytics Engineer | SQL, Data Modeling, Pandas, Python |
-| Data Scientist | ML Fundamentals, Statistics, Experimentation, Python, SQL |
+| Data Scientist | ML Fundamentals, Statistics, Experimentation, Python, Pandas, SQL |
 
 This mapping is a product promise. Track quality and modality choices must strengthen, not weaken, the credibility of each role path.
 
