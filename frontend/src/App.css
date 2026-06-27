@@ -5358,7 +5358,8 @@ select {
 }
 
 @media (max-width: 900px) {
-  .duckdb-tip-table td:last-child {
+  .duckdb-tip-table td:last-child,
+  .duckdb-tip-table th:last-child {
     display: none;
   }
 }
