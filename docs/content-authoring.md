@@ -366,18 +366,17 @@ Durable lesson: **pair blind-solve QA with an adversarial stem↔key audit.** Bl
 
 **When to run.** Before any batch of new or edited questions is committed to `main`. After any bulk fix that touches `expected_*` or `solution_*` fields, re-run on every changed question. A question should be treated as "never blind-solved" after any edit to its stem, schema reference, or key logic.
 
-**Cadence for periodic bank audits.** Run Haiku first (cheap, fast) against every question in the target band:
-1. **Haiku blind-solve** — feed each question title + description + schema + hints (no internal content). Run ≥20 questions per agent call to keep total agent count low (≤8 agents per 160-question band). Collect Haiku's SQL/code/answer.
-2. **DuckDB comparison** — compare Haiku's answer vs `expected_*` using the same normalization as `evaluator.py` (order-insensitive unless `expected_*` has a trailing `ORDER BY`; whole-number floats normalized to integer strings; NULL normalized to "NULL" string). Collect mismatches.
-3. **Sonnet blind-solve on divergences** — for each Haiku mismatch, Sonnet re-solves with the same inputs (≥20 per agent). Collect Sonnet's answer.
-4. **Second comparison** — compare Sonnet vs `expected_*`. Classify each remaining divergence:
-   - `sonnet_match` — Haiku was wrong, Sonnet passes → Haiku failure, no content fix needed.
-   - `tiebreaker` — both model answers have the right data but in a different row order → `ORDER BY` in the key is non-deterministic; add a tiebreaker column to `expected_*` and `solution_*`.
-   - `dtype_artifact` — values match but types differ (e.g. float64 vs int64) → verify the real grader's normalization handles it (it normalizes whole-number floats to integer strings); if it does, no fix needed.
-   - `content_bug` — both models agree on a different answer than the key → investigate; the key is likely wrong. Fix `expected_*` and `solution_*`.
-   - `sonnet_fail` — Sonnet also diverges but is verifiably wrong on inspection → leave key unchanged; note for stem clarity review.
-5. **Fix + re-blind-solve** — for confirmed `content_bug` or `tiebreaker` fixes, apply fixes to `expected_*` and `solution_*`, then re-run Sonnet blind-solve on the changed questions. Iterate until all pass.
-6. **Approve + land** — present the fix list to the reviewer before merging. Do not merge before approval.
+**Cadence for periodic bank audits.** Sonnet blind-solves every question in the target band from a blank slate — no pre-existing suspicion, complete coverage by design:
+1. **Sonnet blind-solve** — for each question, feed only the public payload (title + description + schema + hints, no `expected_*`/`solution_*`/`explanation`). One Sonnet subagent per difficulty band (easy/medium/hard). Each agent writes its SQL/code for every question in the band, then runs the batch comparison via the runner script (`_mockqa/sql_bs_runner.py` for SQL). Collect results.
+2. **Comparison** — the runner compares agent output vs `expected_*` using `evaluator.normalize_dataframe`. Classify each result:
+   - `PASS` — results match.
+   - `ORDER_ONLY` — data correct; row order differs → `ORDER BY` in `expected_*` needs a deterministic tiebreaker column. Fix `expected_*` and `solution_*`.
+   - `DATA_MISMATCH` — different data. Inspect: is the agent answer correct per the stem? If yes → content bug; fix the key. If no → agent error; no fix, note for stem-clarity review.
+   - `AGENT_ERROR` — agent query raised an exception; investigate whether the stem or schema is ambiguous.
+   - `KEY_ERROR` — `expected_*` itself fails to execute; fix the key.
+3. **Fix confirmed bugs** — apply fixes to `expected_*` and `solution_*` for confirmed `ORDER_ONLY` and `DATA_MISMATCH` (content-bug verdict). Do not fix agent-error mismatches.
+4. **Consolidated re-blind-solve** — after all fixes are applied and landed on `main`, re-run Sonnet blind-solve on every edited question against the landed state. Per-batch green is not sufficient — a consolidated pass on the final state is required, because tiebreaker and precision classes can coincidentally pass per-batch but fail on the combined grader.
+5. **Approve + land** — present the full fix list to the reviewer before merging anything. Do not merge without approval.
 
 **Comparison normalization (mirrors `evaluator.py` `normalize_dataframe`).** Order-insensitive by default. Order-sensitive only when `expected_*` ends with a non-empty `ORDER BY` after stripping trailing `;` and whitespace. Whole-number floats (5.0) compare equal to integer 5. Any NULL/NaN/pd.NA → string "NULL". Float columns rounded to 5 dp before string conversion. Column order sorted; index reset. This normalization prevents false negatives (marking a correct query as wrong due to float rounding) and false positives (flagging dtype differences the real grader absorbs).
 
