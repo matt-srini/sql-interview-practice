@@ -3833,7 +3833,7 @@
     "enforce_concepts": true,
     "explanation": "Joining support_tickets to users adds plan_tier. GROUP BY issue_type + plan_tier creates the cross-tab. IN ('high','urgent') captures both high-severity priority levels. The high_priority_pct uses COUNT(*) as denominator (total tickets in the segment) — this correctly expresses the fraction of that segment's tickets that are high-priority.",
     "hints": [
-      "Use IN ('high','urgent') inside CASE WHEN to match both high-severity priority values in one expression.",
+      "The high_priority_count needs to capture two distinct priority levels in one conditional — before writing your aggregation, identify which priority labels the description considers high severity.",
       "The denominator for high_priority_pct is COUNT(*) — total tickets in the issue_type × plan_tier group, not just high-priority ones."
     ],
     "concepts": [

@@ -528,6 +528,16 @@ JSON schemas, datasets, ID ranges, concept arcs, and verification commands are *
 
 ## Verification (cross-track)
 
+### Blind-solve is mandatory for every authored or edited question
+
+A question is not ready to commit until it has been blind-solved and the solver's answer agrees with `expected_*`. This is not optional — it is the **final gate** before any question enters the bank.
+
+**For authored questions:** After writing `expected_*` and `solution_*`, blind-solve the question using only the title, description, visible schema, and hints. Run that answer against the fixed expected output via DuckDB (SQL/Pandas) or the Python evaluator. If the solver's answer diverges, the question is not shippable — either the question stem is under-specified, the key is wrong, or the hints mislead. Fix and re-run until solver and key agree.
+
+**For bulk key edits:** After any change to `expected_query`/`expected_code`/`solution_query`/`solution_code`, re-blind-solve every changed question. Do not skip this because the changes were "small" — a small edit to the ORDER BY, a changed filter, or a dtype fix can silently break the agreement.
+
+**The protocol is in § Blind-solve audit protocol** (above) — use it. Haiku for initial sweep, Sonnet for divergences, classify by root cause, fix and iterate.
+
 You are not done when the JSON looks right — it must load and run.
 
 ```bash
