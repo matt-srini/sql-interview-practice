@@ -34,6 +34,7 @@ from routers import data_modeling_questions as data_modeling_questions_router
 from routers import experimentation_questions as experimentation_questions_router
 from routers import ml_fundamentals_questions as ml_fundamentals_questions_router
 from routers import statistics_questions as statistics_questions_router
+from routers import product_sense_questions as product_sense_questions_router
 from routers import dashboard as dashboard_router
 from routers import insights as insights_router
 from routers import submissions as submissions_router
@@ -340,6 +341,7 @@ app.include_router(data_modeling_questions_router.router)
 app.include_router(experimentation_questions_router.router)
 app.include_router(ml_fundamentals_questions_router.router)
 app.include_router(statistics_questions_router.router)
+app.include_router(product_sense_questions_router.router)
 app.include_router(dashboard_router.router)
 app.include_router(insights_router.router)
 app.include_router(submissions_router.router)

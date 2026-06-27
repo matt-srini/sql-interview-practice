@@ -25,6 +25,7 @@ def derive_interaction_mode(track: str, question: dict[str, Any]) -> str:
         "data-modeling",
         "ml-fundamentals",
         "experimentation",
+        "product-sense",
     }:
         return "constructed_reasoning"
 

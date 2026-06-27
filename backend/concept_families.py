@@ -93,6 +93,13 @@ MOCK_ONLY_REALISM_FAMILIES: dict[str, set[str]] = {
     # practice questions and is re-combined under production framing in mock-only.
     # See docs/tracks/ml-fundamentals.md Coverage section and Phase 2 decision log.
     "ml-fundamentals": set(),
+    # Product Sense: NO realism families by design. Constructed reasoning
+    # (MCQ-only, no code execution); all 18 families grade directly as
+    # scenario / debug / conceptual / predict_output MCQ, so the "assessment
+    # lens" rationale that designates SQL/Pandas families mock-only does not
+    # apply. Every family appears in practice and recombines under stakeholder
+    # framing in mock-only. See docs/tracks/product-sense.md.
+    "product-sense": set(),
 }
 
 # ---------------------------------------------------------------------------
@@ -2168,6 +2175,131 @@ CONCEPT_FAMILIES: dict[str, dict[str, list[str]]] = {
             "LOW-SENSITIVITY METRIC",
             "METRIC GRANULARITY",
             "METRIC DEFINITION TIGHTNESS",
+        ],
+    },
+
+    # -----------------------------------------------------------------------
+    # Product Sense — 18 canonical families (docs/tracks/product-sense.md
+    # §Concept families). Order matters: first substring match wins, but
+    # authored tags are the canonical family names (exact match), so the
+    # extra aliases are fuzzy-resolution fallbacks only.
+    # -----------------------------------------------------------------------
+    "product-sense": {
+        "METRIC SELECTION & GOAL TRANSLATION": [
+            "METRIC SELECTION & GOAL TRANSLATION",
+            "METRIC SELECTION",
+            "GOAL TRANSLATION",
+            "SUCCESS METRIC",
+        ],
+        "GUARDRAIL & COUNTER-METRIC REASONING": [
+            "GUARDRAIL & COUNTER-METRIC REASONING",
+            "GUARDRAIL",
+            "COUNTER-METRIC",
+            "COUNTER METRIC",
+        ],
+        "METRIC GAMING & ROBUSTNESS": [
+            "METRIC GAMING & ROBUSTNESS",
+            "METRIC GAMING",
+            "GOODHART",
+            "GAMEABLE METRIC",
+            "ROBUST METRIC DESIGN",
+        ],
+        "METRIC DEFINITION INTEGRITY": [
+            "METRIC DEFINITION INTEGRITY",
+            "METRIC DEFINITION",
+            "DENOMINATOR CHOICE",
+            "UNIT OF ANALYSIS",
+        ],
+        "METRIC MOVEMENT DIAGNOSIS": [
+            "METRIC MOVEMENT DIAGNOSIS",
+            "METRIC MOVEMENT",
+            "METRIC DROP",
+            "ROOT-CAUSE DIAGNOSIS",
+        ],
+        "SEGMENTATION & DECOMPOSITION REASONING": [
+            "SEGMENTATION & DECOMPOSITION REASONING",
+            "SEGMENTATION & DECOMPOSITION",
+            "DECOMPOSITION REASONING",
+            "SIMPSON'S PARADOX",
+        ],
+        "REAL-CHANGE VS ARTIFACT": [
+            "REAL-CHANGE VS ARTIFACT",
+            "REAL CHANGE VS ARTIFACT",
+            "MEASUREMENT ARTIFACT",
+            "INSTRUMENTATION ARTIFACT",
+        ],
+        "FUNNEL & CONVERSION REASONING": [
+            "FUNNEL & CONVERSION REASONING",
+            "FUNNEL & CONVERSION",
+            "CONVERSION FUNNEL",
+            "DROP-OFF ANALYSIS",
+        ],
+        "RETENTION & COHORT REASONING": [
+            "RETENTION & COHORT REASONING",
+            "RETENTION & COHORT",
+            "COHORT CURVE",
+            "RETENTION CURVE",
+        ],
+        "ENGAGEMENT & STICKINESS REASONING": [
+            "ENGAGEMENT & STICKINESS REASONING",
+            "ENGAGEMENT & STICKINESS",
+            "STICKINESS RATIO",
+            "POWER-USER CURVE",
+        ],
+        "GROWTH & ACQUISITION REASONING": [
+            "GROWTH & ACQUISITION REASONING",
+            "GROWTH & ACQUISITION",
+            "GROWTH LOOP",
+            "GROWTH ACCOUNTING",
+            "VIRALITY",
+            "K-FACTOR",
+        ],
+        "CONFLICTING-METRIC & TRADE-OFF JUDGMENT": [
+            "CONFLICTING-METRIC & TRADE-OFF JUDGMENT",
+            "CONFLICTING-METRIC",
+            "CONFLICTING METRIC",
+            "TRADE-OFF JUDGMENT",
+            "TWO-SIDED TRADE-OFF",
+        ],
+        "SHIP / NO-SHIP DECISION": [
+            "SHIP / NO-SHIP DECISION",
+            "SHIP / NO-SHIP",
+            "SHIP NO-SHIP",
+            "SHIP DECISION",
+            "LAUNCH DECISION",
+        ],
+        "CAUSAL VS CORRELATIONAL JUDGMENT": [
+            "CAUSAL VS CORRELATIONAL JUDGMENT",
+            "CAUSAL VS CORRELATIONAL",
+            "CORRELATION VS CAUSATION",
+            "SELF-SELECTION",
+        ],
+        "PRODUCT HEALTH & STRATEGIC TRADE-OFFS": [
+            "PRODUCT HEALTH & STRATEGIC TRADE-OFFS",
+            "PRODUCT HEALTH",
+            "STRATEGIC TRADE-OFF",
+            "COMPOSITE HEALTH METRIC",
+            "WELLBEING METRIC",
+        ],
+        "PRODUCT CASE STRUCTURING": [
+            "PRODUCT CASE STRUCTURING",
+            "PRODUCT CASE",
+            "CASE STRUCTURING",
+            "STRUCTURED PRODUCT CASE",
+        ],
+        "OPPORTUNITY SIZING & ESTIMATION": [
+            "OPPORTUNITY SIZING & ESTIMATION",
+            "OPPORTUNITY SIZING",
+            "MARKET SIZING",
+            "FERMI ESTIMATION",
+        ],
+        "BUSINESS-MODEL METRIC FLUENCY": [
+            "BUSINESS-MODEL METRIC FLUENCY",
+            "BUSINESS-MODEL METRIC",
+            "BUSINESS MODEL METRIC",
+            "MARKETPLACE LIQUIDITY",
+            "TAKE RATE",
+            "UNIT ECONOMICS",
         ],
     },
 }

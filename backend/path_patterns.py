@@ -148,6 +148,17 @@ PATH_PATTERNS: dict[str, dict[str, str]] = {
         "behavioral-effects-and-interference": "Behavioral Effects & Interference",
         "hypothesis-testing-and-ci": "Hypothesis Testing & Confidence Intervals",
     },
+    "product-sense": {
+        "metric-design": "Metric Design",
+        "metric-diagnosis": "Metric Diagnosis",
+        "engagement-and-retention": "Engagement & Retention",
+        "funnel-analysis": "Funnel Analysis",
+        "growth-reasoning": "Growth Reasoning",
+        "trade-offs-and-ship-decisions": "Trade-offs & Ship Decisions",
+        "metric-gaming": "Metric Gaming & Product Health",
+        "product-cases": "Product Case Structuring",
+        "opportunity-sizing": "Opportunity Sizing",
+    },
 }
 
 

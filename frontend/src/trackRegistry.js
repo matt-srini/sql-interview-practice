@@ -111,6 +111,18 @@ export const TRACK_META = {
     mixedSubtype: false,
     tagline: 'experiment reasoning · scenario · predict output',
   },
+  'product-sense': {
+    label: 'Product Sense',
+    description: 'Metric design, diagnosis, trade-offs, and ship judgment: the product-sense reasoning a data scientist or analyst uses to decide what to measure, why a number moved, and whether a result is worth shipping.',
+    color: '#A63DBE',
+    apiPrefix: '/product-sense',
+    language: 'text',
+    hasRunCode: false,
+    hasMCQ: true,
+    mixedSubtype: false,
+    tagline: 'product judgment · scenario · diagnosis',
+    comingSoon: true,
+  },
 };
 
 // Active tracks only — safe for routing, catalog, mock, dashboard, etc.

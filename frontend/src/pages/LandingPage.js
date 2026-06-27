@@ -137,6 +137,18 @@ const IDE_TRACKS = [
     options: ['Novelty effect', 'Perfect randomization', 'Lower variance only', 'Guaranteed long-term lift'],
     correct: 0,
   },
+  {
+    slug: 'product-sense',
+    label: 'Product',
+    color: '#A63DBE',
+    fname: 'metric_read.md',
+    badge: 'Product Sense · Reasoning',
+    code: null,
+    type: 'conceptual',
+    question: 'Daily active users rose 4% after a feed change, but posts viewed per session fell and 7-day retention is flat. What is the most defensible read before shipping?',
+    options: ['Clear win — DAU is up, so ship to everyone', 'Ambiguous — flat retention is the guardrail; first tell a better feed apart from shallower sessions', 'Clear loss — fewer posts per session means disengagement', 'It does not matter — only revenue should drive the call'],
+    correct: 1,
+  },
 ];
 
 // ── Shared hooks and Reveal — imported from shared component ────────────────

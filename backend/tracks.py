@@ -23,6 +23,7 @@ import data_modeling_questions
 import experimentation_questions
 import ml_fundamentals_questions
 import pandas_questions
+import product_sense_questions
 import python_questions
 import pyspark_questions
 import questions as sql_questions
@@ -473,6 +474,59 @@ TRACKS: tuple[TrackConfig, ...] = (
             re.compile(r"\btraining[_\s-]serving\b", re.IGNORECASE),
             re.compile(r"\bfeature\s+importan\w*\b", re.IGNORECASE),
             re.compile(r"\bcalibrat\w*\b", re.IGNORECASE),
+        ),
+        in_mixed_mock=False,
+    ),
+    TrackConfig(
+        slug="product-sense",
+        db_topic="product-sense",
+        catalog_module=product_sense_questions,
+        label="Product Sense",
+        eval_kind="mcq",
+        unlock_profile="mcq",
+        content_dir=BACKEND_ROOT / "content" / "product_sense_questions",
+        concept_blocklist={
+            # Framework-name recall is this track's signature anti-pattern — the
+            # frameworks scaffold a candidate's reasoning, they are never the
+            # answer. Block the acronyms so they can't be smuggled in as a tag.
+            "heart",
+            "aarrr",
+            "circles",
+            "rice",
+            "ice",
+            "north star",
+            "jtbd",
+            "okr",
+            # Bare metric abbreviations are not reasoning families — they must be
+            # tagged under ENGAGEMENT & STICKINESS REASONING or BUSINESS-MODEL
+            # METRIC FLUENCY, never as a standalone concept.
+            "dau",
+            "wau",
+            "mau",
+            "dau/mau",
+            "ctr",
+            "gmv",
+            "nps",
+            "ltv",
+            "cac",
+            "aov",
+            "mrr",
+            "arr",
+            "roas",
+            "cpm",
+        },
+        hint_rules={"easy": (1, 2), "medium": (2, 3), "hard": (2, 3)},
+        first_hint_leak_patterns=(
+            re.compile(r"\bgoodhart\b", re.IGNORECASE),
+            re.compile(r"\bgaming\b", re.IGNORECASE),
+            re.compile(r"\bgameable\b", re.IGNORECASE),
+            re.compile(r"\bnovelty\s+effect\b", re.IGNORECASE),
+            re.compile(r"\bsimpson'?s\b", re.IGNORECASE),
+            re.compile(r"\bself[_\s-]selection\b", re.IGNORECASE),
+            re.compile(r"\bconfound\w*\b", re.IGNORECASE),
+            re.compile(r"\binstrumentation\b", re.IGNORECASE),
+            re.compile(r"\bvanity\s+metric\b", re.IGNORECASE),
+            re.compile(r"\bcannibaliz\w*\b", re.IGNORECASE),
         ),
         in_mixed_mock=False,
     ),

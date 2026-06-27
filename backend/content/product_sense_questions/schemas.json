@@ -1,0 +1,12 @@
+{
+  "difficulty_files": {
+    "easy": "easy.json",
+    "medium": "medium.json",
+    "hard": "hard.json"
+  },
+  "id_ranges": {
+    "easy":   [101001, 101999],
+    "medium": [102001, 102999],
+    "hard":   [103001, 103999]
+  }
+}
