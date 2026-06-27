@@ -2,14 +2,10 @@ import { describe, it, expect } from 'vitest';
 import { isFirstTrySolve } from './firstTrySolve';
 
 describe('isFirstTrySolve', () => {
-  const base = { backendPriorAttempts: 0, isFirstSubmitThisSession: true, solutionRevealed: false };
+  const base = { backendPriorAttempts: 0, isFirstSubmitThisSession: true };
 
-  it('is true only with no prior attempts, first submit this session, and no solution reveal', () => {
+  it('is true with no prior attempts and this being the first submit this session', () => {
     expect(isFirstTrySolve(base)).toBe(true);
-  });
-
-  it('is false when the official solution was revealed (answer-peeking)', () => {
-    expect(isFirstTrySolve({ ...base, solutionRevealed: true })).toBe(false);
   });
 
   it('is false when a prior submission was already made this session (e.g. a failed empty submit)', () => {
@@ -20,7 +16,11 @@ describe('isFirstTrySolve', () => {
     expect(isFirstTrySolve({ ...base, backendPriorAttempts: 2 })).toBe(false);
   });
 
-  it('is false when several disqualifiers hold at once (the reported bug: failed submit + solution reveal)', () => {
-    expect(isFirstTrySolve({ backendPriorAttempts: 0, isFirstSubmitThisSession: false, solutionRevealed: true })).toBe(false);
+  it('is false when both disqualifiers hold (prior backend attempts AND a prior submit this session)', () => {
+    expect(isFirstTrySolve({ backendPriorAttempts: 2, isFirstSubmitThisSession: false })).toBe(false);
   });
+
+  // Why no "solution revealed" case: the reveal UI only unlocks after a submission
+  // (a wrong one, pre-solve), so a reveal always implies isFirstSubmitThisSession=false
+  // — already covered above. See firstTrySolve.js.
 });

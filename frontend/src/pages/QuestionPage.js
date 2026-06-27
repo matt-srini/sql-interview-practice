@@ -217,13 +217,8 @@ export default function QuestionPage() {
   const [historyOpen, setHistoryOpen] = useState(false);
   const priorAttemptCountRef = useRef(0);
   // First-try honesty: a synchronous in-session submit counter (independent of the
-  // async pastAttempts refetch) + whether the official solution was revealed. Both
-  // reset on question change. See utils/firstTrySolve.js.
+  // async pastAttempts refetch), reset on question change. See utils/firstTrySolve.js.
   const submitAttemptsRef = useRef(0);
-  const hasRevealedSolutionRef = useRef(false);
-  // Latch "revealed the official solution" — persists across the submit's
-  // setShowSolution(false); reset only on question change (in the reset effect below).
-  useEffect(() => { if (showSolution) hasRevealedSolutionRef.current = true; }, [showSolution]);
   const verdictRef = useRef(null);
   const answerRef = useRef(null);
 
@@ -355,7 +350,6 @@ export default function QuestionPage() {
     setSelectedOption(null);
     setPastAttempts([]);
     submitAttemptsRef.current = 0;
-    hasRevealedSolutionRef.current = false;
     setPastAttemptsOpen(() => {
       try {
         return localStorage.getItem('last_seen_question_id') === String(id);
@@ -634,7 +628,6 @@ export default function QuestionPage() {
     const firstTrySolve = isFirstTrySolve({
       backendPriorAttempts: pastAttempts.length,
       isFirstSubmitThisSession,
-      solutionRevealed: hasRevealedSolutionRef.current,
     });
     setSubmitting(true);
     setRunResult(null);
