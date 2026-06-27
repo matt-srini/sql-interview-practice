@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { NavLink, useSearchParams } from 'react-router-dom';
+import { NavLink, useSearchParams, useParams } from 'react-router-dom';
 import Fuse from 'fuse.js';
 import { useTopic } from '../contexts/TopicContext';
 import { getQuestionFormLabel } from '../questionFormLabel';
@@ -579,6 +579,31 @@ export default function SidebarNav({ catalog, collapsedByDiff, toggleDiff, onNav
       .filter(Boolean);
   }, [bookmarkedIds, groups]);
 
+  // --- Active-question reveal (the fix for "sidebar stuck on the default view") ---
+  const { id: activeIdParam } = useParams();
+  const activeId = activeIdParam != null ? Number(activeIdParam) : null;
+  const sidebarRef = useRef(null);
+
+  // If the active question is an easy question beyond the collapsed row cap, expand
+  // the easy list so its row is actually rendered (otherwise it hides behind "Show all").
+  useEffect(() => {
+    if (activeId == null) return;
+    const easyG = groups.find((g) => g.difficulty === 'easy');
+    if (!easyG) return;
+    const sortedEasy = easyG.questions.slice().sort((a, b) => a.order - b.order);
+    const idx = sortedEasy.findIndex((q) => Number(q.id) === activeId);
+    if (idx >= EASY_ROW_DEFAULT) setEasyExpanded(true);
+  }, [activeId, groups]);
+
+  // Scroll the active row into view once its group / the easy list has expanded.
+  // block:'nearest' is a no-op when it's already visible. Re-runs when the active id
+  // or any visibility-affecting state changes, so it fires after the group opens.
+  useEffect(() => {
+    if (activeId == null) return;
+    const el = sidebarRef.current?.querySelector('.sidebar-question-active');
+    if (el) el.scrollIntoView({ block: 'nearest' });
+  }, [activeId, collapsedByDiff, easyExpanded, filteredGroups]);
+
   if (isLoading) {
     return (
       <div className="sidebar-inner sidebar-inner-loading" aria-label="Loading question bank">
@@ -600,7 +625,7 @@ export default function SidebarNav({ catalog, collapsedByDiff, toggleDiff, onNav
   }
 
   return (
-    <div className="sidebar-inner">
+    <div className="sidebar-inner" ref={sidebarRef}>
       <div className="sidebar-search-block">
         <label className="sidebar-search-label" htmlFor="sidebar-question-search">Search questions</label>
         <div className="sidebar-search-input-wrap">

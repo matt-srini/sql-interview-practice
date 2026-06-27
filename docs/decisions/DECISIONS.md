@@ -35,6 +35,12 @@ Keep entries to 4–6 lines. Friction kills logs; if it's longer than the change
 
 ## Entries
 
+## 2026-06-27 — Sidebar reveals the active question's group (was stuck on the easy-only default)
+**Area:** frontend · **Status:** accepted
+**Decision:** The question-list sidebar now reveals the question you're on. `AppShell` derives the active question's difficulty from the URL + catalog and a `useEffect` ensures that difficulty group is expanded (it only expands — never force-collapses the others, so manual toggles are kept); `SidebarNav` auto-expands the easy "Show all" cap when the active easy question is past row 10, and scrolls the active row into view. Root cause: `collapsedByDiff` was a hardcoded `{ easy:false, medium:true, hard:true }` that never reconciled with the active question, and AppShell does not remount between questions in a topic — so advancing to a Medium/Hard question left the active row inside a collapsed group. "Reveal active," the Linear/VSCode pattern.
+**Rejected:** (a) Force-collapse the non-active groups on each navigation — more surprising, fights user agency; revealing the active group is enough. (b) The genuinely cleaner abstraction — move `collapsedByDiff` *into* SidebarNav (it is used nowhere else in AppShell) so the sidebar owns all its own view state — was deferred as out-of-scope for a focused bug fix (larger blast radius: move state, drop two props, rework both test harnesses). Worth doing as a follow-up.
+**Affects:** `frontend/src/components/AppShell.js`, `frontend/src/components/SidebarNav.js`
+
 ## 2026-06-27 — First-try accuracy on the dashboard: practice-only, all-tier, its own section
 **Area:** frontend · **Status:** accepted
 **Decision:** Surface per-track **first-try accuracy** (`first_try_correct / first_try_attempted`) in the all-tier `/api/dashboard/insights` `per_track` payload + a dedicated full-width dashboard section below Track Overview. Scoped to the **practice catalog only** (mock-only + sample excluded by intersecting with `_PRACTICE_IDS`), reusing the FTC sets already computed for the Elite readiness "solve quality" component — no new tracking. Rationale: the unlock ladder deliberately counts post-reveal solves (engagement), so mastery / answer-peeking must surface somewhere else; first-try accuracy is that honest signal, and it must be **all-tier** (gating the honesty metric defeats the point).

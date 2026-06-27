@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import SidebarNav from './SidebarNav';
 import Topbar from './Topbar';
@@ -126,6 +126,32 @@ export default function AppShell() {
   function toggleDiff(diff) {
     setCollapsedByDiff((prev) => ({ ...prev, [diff]: !prev[diff] }));
   }
+
+  // Reveal the active question's difficulty group. The sidebar's collapse state
+  // otherwise keeps its initial easy-only view as you advance (AppShell does not
+  // remount between questions in a topic), so on a Medium/Hard question the active
+  // row sits inside a collapsed group and is never shown. Derive the active
+  // question's difficulty from the URL + catalog and ensure that group is expanded.
+  // Only expands — never force-collapses the others — so manual toggles are kept.
+  const activeQuestionId = useMemo(() => {
+    const m = location.pathname.match(/\/questions\/(\d+)/);
+    return m ? Number(m[1]) : null;
+  }, [location.pathname]);
+
+  const activeDifficulty = useMemo(() => {
+    if (activeQuestionId == null || !catalog?.groups) return null;
+    const group = catalog.groups.find((g) =>
+      g.questions?.some((q) => Number(q.id) === activeQuestionId)
+    );
+    return group?.difficulty ?? null;
+  }, [activeQuestionId, catalog]);
+
+  useEffect(() => {
+    if (!activeDifficulty) return;
+    setCollapsedByDiff((prev) =>
+      prev[activeDifficulty] ? { ...prev, [activeDifficulty]: false } : prev
+    );
+  }, [activeQuestionId, activeDifficulty]);
 
   function handleNavigateFromSidebar() {
     if (typeof window !== 'undefined' && window.matchMedia('(max-width: 900px)').matches) {

@@ -17,10 +17,11 @@ import { describe, it, expect, vi, beforeAll, beforeEach, afterEach } from 'vite
 import { render, screen, waitFor, cleanup } from '@testing-library/react';
 import { MemoryRouter, Routes, Route, useLocation } from 'react-router-dom';
 
-const { mockApiGet, mockUseAuth, mockUseCatalog } = vi.hoisted(() => ({
+const { mockApiGet, mockUseAuth, mockUseCatalog, sidebarProps } = vi.hoisted(() => ({
   mockApiGet: vi.fn(),
   mockUseAuth: vi.fn(),
   mockUseCatalog: vi.fn(),
+  sidebarProps: { current: null },
 }));
 
 vi.mock('../api', () => ({ default: { get: (...a) => mockApiGet(...a) } }));
@@ -29,7 +30,12 @@ vi.mock('../contexts/AuthContext', () => ({ useAuth: () => mockUseAuth() }));
 vi.mock('../contexts/TopicContext', () => ({
   useTopic: () => ({ topic: 'sql', meta: { label: 'SQL', color: '#3B7DD8', apiPrefix: '' } }),
 }));
-vi.mock('./SidebarNav', () => ({ default: () => <div data-testid="sidebar-nav" /> }));
+vi.mock('./SidebarNav', () => ({
+  default: (props) => {
+    sidebarProps.current = props;
+    return <div data-testid="sidebar-nav" />;
+  },
+}));
 vi.mock('./Topbar', () => ({ default: ({ belowTopbar }) => <div data-testid="topbar">{belowTopbar}</div> }));
 vi.mock('./UpgradeButton', () => ({ default: () => <button type="button">upgrade</button> }));
 vi.mock('../pages/TrackHubPage', () => ({ default: () => <div data-testid="track-hub">TRACK HUB</div> }));
@@ -176,5 +182,25 @@ describe('AppShell ?resume= redirect', () => {
     });
     expect(screen.getByTestId('loc').textContent).not.toContain('/questions/');
     expect(screen.getByTestId('track-hub')).toBeInTheDocument();
+  });
+});
+
+describe('AppShell reveals the active question difficulty group', () => {
+  it('expands the active question group (medium) so the active row is shown', async () => {
+    mockUseAuth.mockReturnValue({ user: { plan: 'pro', streak_days: 0 }, loading: false, refreshUser: vi.fn() });
+    mockUseCatalog.mockReturnValue({
+      catalog: { groups: [
+        { difficulty: 'easy', questions: [{ id: 1, state: 'solved' }] },
+        { difficulty: 'medium', questions: [{ id: 7001, state: 'unlocked' }] },
+        { difficulty: 'hard', questions: [{ id: 9001, state: 'locked' }] },
+      ] },
+      loading: false, error: null, refresh: vi.fn(),
+    });
+    renderAt('/practice/sql/questions/7001');
+    await waitFor(() => {
+      expect(sidebarProps.current?.collapsedByDiff?.medium).toBe(false);
+    });
+    // other groups keep their default (only the active group is force-expanded)
+    expect(sidebarProps.current?.collapsedByDiff?.hard).toBe(true);
   });
 });

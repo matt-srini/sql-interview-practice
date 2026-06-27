@@ -1,9 +1,13 @@
-import { describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useState } from 'react';
 import { MemoryRouter, Route, Routes, useParams } from 'react-router-dom';
 import SidebarNav from './SidebarNav';
+
+beforeAll(() => {
+  if (!Element.prototype.scrollIntoView) Element.prototype.scrollIntoView = () => {};
+});
 
 function QuestionStub() {
   const { id } = useParams();
@@ -186,6 +190,44 @@ describe('SidebarNav', () => {
     await waitFor(() => {
       expect(within(view.container).queryByText('Partitioning tradeoffs')).not.toBeInTheDocument();
     });
+  });
+
+  it('auto-expands the easy list and reveals the active easy question past the row cap', async () => {
+    const scrollSpy = vi.fn();
+    Element.prototype.scrollIntoView = scrollSpy;
+    // 12 easy questions; the active one (id 12) sits at index 11, past EASY_ROW_DEFAULT (10),
+    // so it would be hidden behind "Show all" unless the active-reveal effect expands the list.
+    const easyQuestions = Array.from({ length: 12 }, (_, i) => ({
+      id: i + 1, title: `Easy ${i + 1}`, difficulty: 'easy', order: i + 1, state: 'unlocked', is_next: false,
+    }));
+    const catalog = {
+      user_id: 'u1',
+      groups: [{ difficulty: 'easy', counts: { total: 12, solved: 0, unlocked: 12 }, questions: easyQuestions }],
+    };
+
+    render(
+      <MemoryRouter initialEntries={['/practice/sql/questions/12']}>
+        <Routes>
+          <Route
+            path="/practice/sql/questions/:id"
+            element={
+              <SidebarNav
+                catalog={catalog}
+                collapsedByDiff={{ easy: false }}
+                toggleDiff={() => {}}
+                onNavigate={() => {}}
+              />
+            }
+          />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    // The active row (Easy 12) is rendered without clicking "Show all", and the
+    // "Show all" button is gone because the list auto-expanded.
+    expect(await screen.findByText('Easy 12')).toBeInTheDocument();
+    expect(screen.queryByText(/Show all/i)).not.toBeInTheDocument();
+    await waitFor(() => expect(scrollSpy).toHaveBeenCalled());
   });
 
 });
