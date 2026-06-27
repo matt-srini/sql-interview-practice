@@ -43,23 +43,40 @@ and leadership wants a Friday decision — what's your call?"* — every reasoni
 (conflicting-metric judgment, guardrail logic, novelty suspicion, ship decision) was taught separately in
 practice; mock recombines them under time pressure.
 
-## §Mock-only composition (proposed)
+## §Mock-only composition — the two draw surfaces (`mock-standalone` vs `mock-chain`)
 
 Sized in [`04`](04-difficulty-split.md): **~100 mock-only (0 easy / ~45 medium / ~55 hard)**, ratio ≈1.15×.
-The families that **anchor** mock-only (where stakeholder pressure adds the most signal) are the
-judgment-dense ones:
+The mock-only pool is **not one pool** — it splits into two *draw surfaces* that different session modes
+consume, and which the balance validators group **separately**:
+
+| Sub-pool | ~Count (E / M / H) | Drawn by | Shape |
+|---|--:|---|---|
+| **`mock-standalone`** | **~70** (0 / ~33 / ~37) | **Benchmark** + **Custom** (Pro+) | self-contained single questions |
+| **`mock-chain`** | **~30 members** from **~10 chains** (parent + ~2 follow-ups) | **Interview Loop** (Elite) only | atomic parent→follow-up chains |
+| **Total mock-only** | **~100** | | |
+
+This split is **load-bearing for balance, not bookkeeping.** A session draws from exactly one surface (a
+Benchmark never serves a chain; a Loop serves only chains), so a biased chain pool is invisible if you
+average it into the combined `mock` group — the **dilution trap** that once hid a 15/15
+"correct-is-longest" chain batch behind a clean combined number. Therefore:
+
+- Author and balance-check **each surface on its own**: run `check_batch_balance.py` on the standalone
+  batch *and* on the chain batch separately (position ≤40%, unique-longest ≤45%).
+- Per the cross-track validator state, the `mock-chain` group starts **WARN-level** and is promoted to
+  ERROR only after the chain pool is debiased — so plan the chain batch to clear that bar from the start.
+
+**Anchoring families** (where stakeholder pressure adds the most signal), each ≤ the cross-track ~50%
+ceiling *per surface*:
 
 - `SHIP / NO-SHIP DECISION` — the canonical "decide under pressure" mock surface.
 - `CONFLICTING-METRIC & TRADE-OFF JUDGMENT` — two-sided / competing-goal tension.
 - `METRIC MOVEMENT DIAGNOSIS` + `SEGMENTATION & DECOMPOSITION` — "investigate this drop, now."
-- `METRIC GAMING & ROBUSTNESS` and `PRODUCT HEALTH & STRATEGIC TRADE-OFFS` — hard-tier strategic recombination.
+- `METRIC GAMING & ROBUSTNESS` + `PRODUCT HEALTH & STRATEGIC TRADE-OFFS` — hard-tier strategic recombination.
 
-No single family should exceed the cross-track ~50% anchoring ceiling. Type mix mirrors Experimentation:
-**scenario-heavy** (~70%) + `debug` (a flawed product/metric argument to fix) + a little `predict_output`
-(predict the right *read* of a described movement). No `conceptual` skew at medium/hard (the round is
-situational). Run `check_batch_balance.py` on every authored batch (the dumb-baseline guard) — and note
-that a biased **chain** sub-pool hides inside the combined mock group (the dilution trap), so the
-`mock-chain` draw-surface must be balanced on its own.
+**Type mix** (both surfaces, the `type` values from [`02`](02-track-design.md)): `scenario`-heavy (~70%,
+the Experimentation precedent) + `debug` (a flawed product/metric argument to fix) + a little
+`predict_output` (forward outcome prediction). No `conceptual` skew at medium/hard (the round is
+situational). Chains are **scenario-led** (the interviewer-dialogue shape).
 
 ## §Benchmark shape per difficulty (proposed)
 
@@ -91,10 +108,12 @@ track are `business_rule_pivot` (the goal/definition changes), `stakeholder_pivo
 pushes), `data_quality_pivot` (a logging gap surfaces), `ambiguity_pivot` (a term is left undefined), and
 `scale_pivot` (now across many markets).
 
-### Proposed chain designs (~8)
+### Proposed chain designs (8 shown · target ~10)
 
-Each is a parent (no `follow_up_dimension`) + an ordered pivot sequence. Every member's concept family is
-already taught in practice (subset rule).
+The 8 below are illustrative; the **`mock-chain` sizing target is ~10 chains (~30 members)** — the
+Experimentation precedent (10 chains / 30 members / 29% of mock-only). Each is a parent (no
+`follow_up_dimension`) + an ordered pivot sequence. Every member's concept family is already taught in
+practice (subset rule).
 
 | # | Parent (anchor) | Pivot sequence | Families exercised |
 |---|---|---|---|

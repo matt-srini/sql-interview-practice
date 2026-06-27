@@ -35,22 +35,44 @@ or the experiment's statistics (that lives in Experimentation):
 
 ## Modality
 
-**Constructed reasoning. No execution. Response: MCQ (4 options)** — identical to Experimentation /
-ML Fundamentals / PySpark / Data Engineering / Data Modeling. This is the "depth over fake execution"
-choice: product sense is a judgment skill, so a code editor would be theater.
+**Family: Constructed reasoning. No execution. `eval_kind: mcq`.** Per
+[`practice-modality-spec.md`](../../specs/practice-modality-spec.md) §Modality families, product sense is a
+textbook *Constructed reasoning* track — "analyse a scenario, design, tradeoff, or result and commit to a
+justified answer" (verbs: **diagnose · design · interpret · prioritise**) — the **same family as
+Experimentation / Data Engineering / Data Modeling**, and unlike PySpark, which is *code-adjacent*. It is
+**not executable** and **not hybrid**: nothing here is computed (the computation lives in SQL / Statistics),
+so there is **no numerical subtype and no code editor** — forcing one on would be the spec's
+"fake execution / code-editor-because-coding-feels-premium" anti-pattern. The product surface is the
+existing `MCQPanel` + `scenario_context` + `ConceptPanel`; no new UI.
 
-Question types (the same four as Experimentation):
+> **Terminology (the spec's pushback, applied).** `mcq` is the **response mechanism** (`eval_kind`), *never*
+> a question `type`. This is **not** "an MCQ track" — it is a constructed-reasoning track whose response
+> happens to be single-best-answer. Below are the real `type` values.
 
-- **`scenario`** — a `scenario_context` carries a real product situation (a metric read, a feature
-  decision, a marketplace tension); the prompt asks for the call. **The dominant type** — the round is
-  scenario-driven, so expect a heavy scenario skew (Experimentation runs ~72% scenario in mock-only).
-- **`conceptual`** — a product-reasoning principle anchored in a brief scenario (e.g. "which of these is
-  the better *guardrail* metric for a notifications launch, and why").
-- **`predict_output`** — given a described metric movement or segment table *in prose*, predict the
-  correct *read* ("given this segment breakdown, the most defensible conclusion is…"). Note: no numeric
-  execution — the "output" is the right interpretation, not a computed value.
-- **`debug`** — a flawed piece of product/metric reasoning (a gameable metric, a denominator that hides
-  the effect, a diagnosis that skipped the instrumentation check); identify the flaw.
+**Question `type` values — four of the six valid types, deliberately chosen (no force-fit):**
+
+- **`scenario`** — *the dominant type.* A `scenario_context` carries a real product situation (a metric
+  read, a feature decision, a marketplace tension); the prompt asks for the call/diagnosis/decision. The
+  round is scenario-driven, so expect a heavy scenario skew (Experimentation runs ~72% scenario in mock-only).
+- **`conceptual`** — a product-reasoning principle anchored in a brief scenario ("which of these is the
+  better *guardrail* for a notifications launch, and why").
+- **`debug`** — critique flawed product/metric *reasoning*: a gameable metric, a denominator that hides the
+  effect, a correlation-treated-as-causal leap, a diagnosis that skipped the instrumentation check. "Find
+  the flaw." (Illustrated in [`07`](07-sample-questions.md) H3.)
+- **`predict_output`** — *the smallest type,* scoped precisely as **forward outcome prediction**: given a
+  stated product change, predict which metrics move and in which direction ("we remove the like-count
+  display — predict the effect on posting rate and on engagement"). It tests the candidate's
+  behavioural/causal model, and is genuinely distinct from `scenario` (which hands you the result and asks
+  for judgment). This is the Experimentation precedent ("predict the right read"), **not** a code-output
+  force-fit — there is no numeric execution; the predicted *direction* is what's observably distinct across
+  options.
+
+**Two valid types are deliberately EXCLUDED (the no-force-fit discipline you'd expect):**
+
+- **`optimization`** — a *code-adjacent* type ("this works but is expensive — make it efficient," PySpark's
+  signature). A judgment round has nothing to optimise for compute; "improve this weak metric/analysis"
+  already lives in `debug`/`scenario`. Excluded.
+- **`numerical`** — Statistics' code-execution subtype. No computation is the skill here. Excluded.
 
 **Phase-2 open-response extension (out of scope for v1, recorded for completeness).** The one thing
 scenario-MCQ cannot do is make a candidate *generate* a metric system or case structure from a blank

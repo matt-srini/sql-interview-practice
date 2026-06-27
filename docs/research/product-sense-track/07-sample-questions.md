@@ -105,6 +105,31 @@ SQL/Stats/Experimentation — the [boundary rule](03-concept-taxonomy.md#boundar
 }
 ```
 
+### M3 · `GUARDRAIL & COUNTER-METRIC REASONING` (predict_output)
+
+*Illustrates the sharpened `predict_output` type from [`02`](02-track-design.md) — forward outcome
+prediction, not a code output: predict which metrics move and in which direction.*
+
+```json
+{
+  "difficulty": "medium",
+  "type": "predict_output",
+  "title": "Predict the effect of a pre-selected default tip",
+  "scenario_context": "A food-delivery app changes checkout so an 18% tip is PRE-SELECTED by default (previously the tip field defaulted to blank). Nothing else changes. You're asked to predict the directional effect after launch on two metrics: average tip per order, and checkout-completion rate (orders completed ÷ checkouts started).",
+  "description": "Which pair of directional predictions is the most defensible?",
+  "options": [
+    "Average tip ↑ and checkout-completion ↑ — the default both lifts tips and removes a decision, so checkout gets faster and more complete.",
+    "Average tip ↑ and checkout-completion ↓ — anchoring on the pre-filled 18% lifts the average tip, but a tip the user didn't choose adds friction/sticker-shock for a price-sensitive segment, so some abandon.",
+    "Average tip ↔ and checkout-completion ↓ — users just reset the tip to zero, so no tip lift, only added friction.",
+    "Average tip ↑ and checkout-completion ↔ — tips rise from anchoring, and completion is unaffected because tipping happens after the purchase decision."
+  ],
+  "correct_option": 1,
+  "explanation": "A pre-selected default reliably anchors the chosen value upward (the well-established default effect), so average tip rises — that part is not in doubt. The harder, correct half is predicting the guardrail: a tip the user must NOTICE and actively lower feels coercive to a price-sensitive segment and adds checkout friction, so completion dips. (Option B) predicts both directions, which is the skill. (Option A) sees only the upside and ignores that a forced default can repel. (Option C) denies the anchoring effect — it assumes everyone resets to zero, contradicting how defaults behave. (Option D) is wrong on the mechanics: the tip is set AT checkout, so it directly affects completion, not 'after the purchase decision.' The discriminator is forecasting that the nudge moves its target AND dents a guardrail — the same primary-vs-guardrail tension a launch review must anticipate.",
+  "hints": ["What does a pre-selected default reliably do to the value people end up choosing?", "If you opened checkout and saw a tip you didn't pick already added, would every user calmly proceed — or would some bail?"],
+  "concepts": ["GUARDRAIL & COUNTER-METRIC REASONING", "CONFLICTING-METRIC & TRADE-OFF JUDGMENT"]
+}
+```
+
 ## Hard
 
 ### H1 · `SHIP / NO-SHIP DECISION` (scenario)
@@ -184,4 +209,7 @@ SQL/Stats/Experimentation — the [boundary rule](03-concept-taxonomy.md#boundar
   single-number fix), and the explanation refutes each on its own reasoning ground.
 - **Difficulty is reasoning depth.** Easy = one role/translation; medium = hold-two-readings or a first
   decomposition; hard = a compound decision or an adversarial design.
+- **All four `type`s are represented** ([`02`](02-track-design.md) §Modality): `scenario` (E1, M1, M2, H1,
+  H2), `conceptual` (E2), `debug` (H3), and `predict_output` (M3, the forward-outcome-prediction shape) —
+  none rendered as the spec's forbidden "MCQ type"; MCQ is only the response mechanism.
 - **Realism without lifting.** Plausible products and internally-consistent numbers, all invented.

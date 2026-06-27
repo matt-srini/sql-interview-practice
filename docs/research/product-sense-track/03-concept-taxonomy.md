@@ -6,7 +6,9 @@
 > `backend/concept_families.py` *first* (the "new families require a PR to this file first" rule), before
 > any question is tagged.
 
-**Modality:** Constructed reasoning (MCQ). **Reasoning archetype:** decide *what to measure and why*,
+**Modality:** Constructed reasoning · `eval_kind: mcq` · question `type`s: `scenario` (dominant) ·
+`conceptual` · `debug` · `predict_output` (see [`02`](02-track-design.md) §Modality — `optimization` and
+`numerical` are deliberately excluded). **Reasoning archetype:** decide *what to measure and why*,
 *why a number moved*, and *which good to trade for which* — the judgment layer on top of the data, never
 its computation.
 

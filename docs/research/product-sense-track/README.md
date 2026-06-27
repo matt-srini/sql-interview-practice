@@ -102,7 +102,8 @@ mechanic* (see [`03-concept-taxonomy.md`](03-concept-taxonomy.md) §Boundary co-
 | `eval_kind` | `mcq` | Constructed-reasoning, no execution (mirrors Experimentation/ML/PySpark/DE/DM). |
 | `unlock_profile` | `mcq` | MCQ effort profile → the higher free-tier thresholds (10/17/25 · 12→5 cap), per [`backend/unlock.py`](../../../backend/unlock.py). |
 | `in_mixed_mock` | `false` | Like the other reasoning tracks; role-Mixed benchmarks draw from their declared role pools, not the generic mixed pool. |
-| Question types | `conceptual` · `scenario` · `predict_output` · `debug` | Same four as Experimentation; **scenario-heavy** is expected (the round is scenario-driven). |
+| Question types | `scenario` (dominant) · `conceptual` · `debug` · `predict_output` | Same four as Experimentation; `optimization`/`numerical` **excluded** (no compute to optimise, nothing numerical) — see [`02-track-design.md`](02-track-design.md) §Modality. `mcq` is the *response mechanism*, never a `type`. |
+| Mock-only pool | **~100** = `mock-standalone` (~70) + `mock-chain` (~30 members / ~10 chains) | Two **separately balance-checked** draw surfaces — Benchmark/Custom vs Interview Loop ([`04`](04-difficulty-split.md) · [`06`](06-mock-and-interview-loops.md)). |
 | ID range (TXNNN) | `T=?` — **needs a free digit** | Digits 1–9 are taken (see [`02-track-design.md`](02-track-design.md) §ID scheme); this is an open allocation question for whoever greenlights the track. |
 | Datasets | none (no execution) | Scenarios are self-contained narratives, like Experimentation. |
 | Hints | the active 1–3 hint ladder | Same hint discipline as every track. |

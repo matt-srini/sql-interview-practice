@@ -83,15 +83,22 @@ bank shape governs blueprint):
 | | Easy | Medium | Hard | Total |
 |---|--:|--:|--:|--:|
 | **Practice** | ~30 | ~33 | ~24 | **~87** |
-| **Mock-only** | 0 | ~45 | ~55 | **~100** |
+| **Mock-only — `mock-standalone`** | 0 | ~33 | ~37 | **~70** |
+| **Mock-only — `mock-chain`** (members) | 0 | ~12 | ~18 | **~30** |
+| **Mock-only — total** | 0 | ~45 | ~55 | **~100** |
 | **Sample** | 3 | 3 | 3 | **9** |
 
-- Mock/practice ratio ≈ **1.15×** (mid-band; chains included).
+- Mock/practice ratio ≈ **1.15×** (mid-band).
+- **Mock-only is two draw surfaces, not one** ([`06`](06-mock-and-interview-loops.md) is canonical):
+  `mock-standalone` (~70, feeds Benchmark + Custom) and `mock-chain` (~30 members from ~10 chains, feeds
+  Interview Loop only). They are **balance-checked separately** (the dilution trap) — both rows above sum
+  to the medium/hard mock totals.
 - The medium/hard mock skew is intentional — this round is hardest at the judgment-dense end, and the
   signature hard families (gaming, product-health, ship-decision) are where mock pressure adds the most.
-- Per the **subset rule** ([`06`](06-mock-and-interview-loops.md)), every mock-only question recombines a
-  *practice-taught* family at that difficulty or lower — so the practice bank must cover each family at
-  the difficulty its mock questions assume *before* those mock questions are authored.
+  No easy mock-only and no easy chains (every track).
+- Per the **subset rule** ([`06`](06-mock-and-interview-loops.md)), every mock-only question — standalone
+  *or* chain — recombines a *practice-taught* family at that difficulty or lower, so the practice bank
+  must cover each family at the difficulty its mock questions assume *before* those mock questions are authored.
 
 ## Difficulty anti-drift checks (at authoring time)
 
