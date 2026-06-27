@@ -54,8 +54,16 @@ def test_tc206_empty_history_returns_empty_array():
     assert r.json() == []
 
 
-def test_tc207_unauthenticated_returns_401():
-    """TC-207: Unauthenticated GET /api/submissions → 401."""
+def test_tc207_anonymous_caller_gets_own_submissions_not_401():
+    """TC-207: An anonymous (logged-out) caller gets their OWN submissions, not 401.
+
+    Anonymous-first identity: logged-out users have real user rows + session cookies
+    and their submissions ARE logged, so /api/submissions must return them. The old
+    require_authenticated_user gate 401'd anonymous callers, which starved the
+    workspace's pastAttempts and made every logged-out solve read as a 'first-try'.
+    The endpoint filters strictly by the caller's own user_id (no cross-user access).
+    """
     with TestClient(app) as client:
         r = client.get(f"/api/submissions?track=sql&question_id={_q_id}")
-    assert r.status_code == 401
+    assert r.status_code == 200
+    assert r.json() == []

@@ -19,6 +19,7 @@ import UpgradeButton from '../components/UpgradeButton';
 import { getQuestionFormLabel, getQuestionPromptGuidance } from '../questionFormLabel';
 import { parseSqlError } from '../utils/sqlErrorParser';
 import { pickSequentialNextQuestionId } from '../utils/catalogNav';
+import { isFirstTrySolve } from '../utils/firstTrySolve';
 import { renderDescription } from '../utils/renderDescription';
 import { useToast } from '../App';
 import { track } from '../analytics';
@@ -215,6 +216,14 @@ export default function QuestionPage() {
   });
   const [historyOpen, setHistoryOpen] = useState(false);
   const priorAttemptCountRef = useRef(0);
+  // First-try honesty: a synchronous in-session submit counter (independent of the
+  // async pastAttempts refetch) + whether the official solution was revealed. Both
+  // reset on question change. See utils/firstTrySolve.js.
+  const submitAttemptsRef = useRef(0);
+  const hasRevealedSolutionRef = useRef(false);
+  // Latch "revealed the official solution" — persists across the submit's
+  // setShowSolution(false); reset only on question change (in the reset effect below).
+  useEffect(() => { if (showSolution) hasRevealedSolutionRef.current = true; }, [showSolution]);
   const verdictRef = useRef(null);
   const answerRef = useRef(null);
 
@@ -345,6 +354,8 @@ export default function QuestionPage() {
     setHintsShown(0);
     setSelectedOption(null);
     setPastAttempts([]);
+    submitAttemptsRef.current = 0;
+    hasRevealedSolutionRef.current = false;
     setPastAttemptsOpen(() => {
       try {
         return localStorage.getItem('last_seen_question_id') === String(id);
@@ -618,6 +629,13 @@ export default function QuestionPage() {
   async function handleSubmit() {
     if (submitting) return;
     priorAttemptCountRef.current = pastAttempts.length;
+    const isFirstSubmitThisSession = submitAttemptsRef.current === 0;
+    submitAttemptsRef.current += 1;
+    const firstTrySolve = isFirstTrySolve({
+      backendPriorAttempts: pastAttempts.length,
+      isFirstSubmitThisSession,
+      solutionRevealed: hasRevealedSolutionRef.current,
+    });
     setSubmitting(true);
     setRunResult(null);
     setRunError(null);
@@ -638,7 +656,7 @@ export default function QuestionPage() {
       setSubmitResult(normalizeRunResult(res.data));
       track('question_submitted', { track: topic, question_id: Number(id), difficulty: question?.difficulty, correct: res.data.correct });
       if (res.data.correct) {
-        track('question_solved', { track: topic, question_id: Number(id), difficulty: question?.difficulty, first_try: priorAttemptCountRef.current === 0 });
+        track('question_solved', { track: topic, question_id: Number(id), difficulty: question?.difficulty, first_try: firstTrySolve });
         const lockedBefore = catalog?.groups?.reduce(
           (sum, group) => sum + group.questions.filter((entry) => entry.state === 'locked').length,
           0
@@ -659,7 +677,7 @@ export default function QuestionPage() {
         }
 
         const prior = priorAttemptCountRef.current;
-        if (prior === 0) {
+        if (firstTrySolve) {
           setSubmissionInsight('First-attempt solve — the system logged your approach.');
           setCelebrateSolve(true);
           notify({
@@ -670,7 +688,7 @@ export default function QuestionPage() {
         }
         else if (prior >= 3) setSubmissionInsight('Took a few tries — that\'s the shape of real learning.');
         // Auto-open writing notes on first-attempt correct solve
-        if (prior === 0) setSolutionAnalysisOpen(true);
+        if (firstTrySolve) setSolutionAnalysisOpen(true);
 
         const refreshedUser = await refreshUser();
         const nextStreakDays = refreshedUser?.streak_days ?? previousStreakDays;
