@@ -7,7 +7,7 @@ two big items are saved under [`docs/backlog/`](docs/backlog/).
 
 ---
 
-## P1 — Load & concurrency readiness  ✅ CLOSED (launch-ready Tier 1; 2 non-blocking operator config residuals)
+## P1 — Load & concurrency readiness  ✅ CLOSED (launch-ready Tier 1; 1 non-blocking operator config residual)
 **Prompt:** [`docs/backlog/session-concurrency-load.md`](docs/backlog/session-concurrency-load.md)
 
 ✅ **DONE (2026-06-08) — head-of-line blocking + the load harness.** All blocking evaluators now
@@ -30,14 +30,23 @@ degrades by latency and never crashes (**0 5xx at every level**), knee ~16–32 
 ~300 rps. Tier 1/2/3 scaling roadmap confirmed against the measured ceiling with concrete move-up
 triggers (`docs/deployment.md` § Concurrency & scaling model). Handoff report retained by the operator.
 
+✅ **DONE (2026-06-27) — proxy-IP rate-limit keying fixed + verified.** Prod logs had shown
+`client_ip=100.64.0.2 … 100.64.0.16` — all in `100.64.0.0/10` (RFC 6598 carrier-grade NAT =
+Railway's internal edge↔container fleet, **not** public client IPs), with a *single* user fanning
+across ~15 hops: the per-IP limiter (global 60/60s `ip_rate_limit_middleware` + the auth limiter,
+both keying `request.client.host`) was bucketing on Railway's proxy fleet, not real clients
+(under-protects per user **and** over-blocks under load → 429 storms at the ~300 rps peak). Cause:
+`FORWARDED_ALLOW_IPS` defaulted to `127.0.0.1` while Railway's peer is `100.64.x.x`, so uvicorn
+never trusted `X-Forwarded-For`. **Fix applied:** `FORWARDED_ALLOW_IPS=127.0.0.1,100.64.0.0/10`
+set on the Railway service (no image change — the Dockerfile already wires it into
+`--forwarded-allow-ips`; uvicorn 0.42 `_TrustedHosts` parses the CIDR, trusts only the
+non-routable Railway range — never `*` — and reverse-walks XFF to the spoof-resistant rightmost
+untrusted host). **Verified:** post-redeploy logs show every `/api/*` request keying on **real
+public client IPs** (`152.233.x.x`) instead of `100.64.x.x`; `/health` legitimately still shows
+the internal `100.64.0.2` (Railway's own prober, and `/health` is rate-limit-exempt). Full finding
+→ `docs/deployment.md` § Rate-limiter operational notes & findings.
+
 **Residual — non-blocking, operator config (NOT engineering):**
-- **Verify proxy-IP rate-limit keying before driving real traffic.** The per-IP limiter keys on
-  `request.client.host` (`routers/auth.py:233`); uvicorn derives that from `X-Forwarded-For` *only*
-  when the immediate peer is in `--forwarded-allow-ips` (default `127.0.0.1`; the app never reads XFF
-  itself). If Railway's hop isn't `127.0.0.1`, every client collapses into one 60/min bucket → mass
-  429s under launch load. **Check:** Railway logs for `client_ip=` (request-context middleware logs it)
-  — diverse public IPs = fine; one repeated internal/proxy IP = collapsed → set `FORWARDED_ALLOW_IPS=
-  <verified Railway hop>` (NEVER `*` — IP-spoofing hole). Dockerfile wiring already in place.
 - **`MAX_CONCURRENT_HASHES` default** = cores−1 (favors auth-burst throughput); `cores/2` is a safer
   default if bystander latency during simultaneous-auth bursts matters. Kept as-is; operator's call.
 

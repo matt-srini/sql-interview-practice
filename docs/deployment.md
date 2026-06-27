@@ -272,7 +272,7 @@ The `FRONTEND_DIST_DIR` env var defaults to `/app/frontend/dist` inside the imag
 | `FRONTEND_DIST_DIR` | — | Path to built SPA assets; defaults to `../frontend/dist` |
 | `RATE_LIMIT_REQUESTS` | — | Requests per window per IP; default `60` |
 | `RATE_LIMIT_WINDOW_SECONDS` | — | Window size in seconds; default `60` |
-| `FORWARDED_ALLOW_IPS` | — | Immediate-peer address(es) uvicorn trusts `X-Forwarded-For` from, deriving `request.client.host` (which the per-IP rate limiter keys on). Default `127.0.0.1` (= uvicorn's default; behaviour unchanged). Set to the **verified** Railway edge-proxy hop if per-IP keying is collapsing to one proxy bucket — **never `*`** (IP-spoofing hole). See § Rate-limiter operational notes & findings. |
+| `FORWARDED_ALLOW_IPS` | — | Immediate-peer address(es) uvicorn trusts `X-Forwarded-For` from, deriving `request.client.host` (which the per-IP rate limiter keys on). Default `127.0.0.1` (= uvicorn's default; behaviour unchanged). **On Railway set `127.0.0.1,100.64.0.0/10`** — the 2026-06-27 prod-log finding showed keying collapse onto Railway's internal `100.64.0.0/10` proxy fleet; the CIDR trusts only that range — **never `*`** (IP-spoofing hole). See § Rate-limiter operational notes & findings. |
 | `MAX_CONCURRENT_EXECUTIONS` | — | Max concurrent code executions (DuckDB SQL + subprocess sandboxes) across the app; default **cores − 2**. Bounds peak sandbox memory (× `RLIMIT_AS` 512 MB) and CPU. Prod sets `6` on the 8-vCPU replica. See `backend/offload.py`. |
 | `MAX_CONCURRENT_HASHES` | — | Max concurrent password hashes (PBKDF2, ~22 ms/call) run off the event loop; default **cores − 1**. Kept **independent** of `MAX_CONCURRENT_EXECUTIONS` (auth hashing vs. sandbox execution are different resource classes). A latency-vs-throughput knob — lower it (e.g. `cores/2`) to protect bystander latency during an auth burst at the cost of burst-drain speed; see § Concurrency & scaling model. See `backend/offload.py` `run_blocking_hash`. |
 | `DB_POOL_SIZE` | — | Postgres connection pool size per replica; default `10` |
@@ -540,15 +540,25 @@ The per-IP limiter (`RATE_LIMIT_REQUESTS`/`RATE_LIMIT_WINDOW_SECONDS`, default 6
 - **In-memory fallback is single-replica-only, and enforced** — `create_rate_limiter` raises at startup in production if `REDIS_URL` is unset or Redis init fails. The process-local `InMemoryRateLimiter` is dev-only; across horizontal replicas it would be per-replica (ineffective as a global limit), so **`REDIS_URL` is mandatory in prod** (already in the required-env list above and the Tier-2 scaling row).
 - **Transient Redis errors fail gracefully, not as 500s** — `check_safe` fails open for the coarse IP + auth-baseline limiters and closed for the token-issue limiter (see `docs/backend.md`).
 
-### Action item — verify per-IP keying behind the prod proxy
+### Finding (2026-06-27) — keying on Railway's proxy fleet; fix `FORWARDED_ALLOW_IPS=127.0.0.1,100.64.0.0/10` ✅ APPLIED + VERIFIED
 
-The middleware keys on `request.client.host`. The prod Dockerfile now starts `uvicorn` with `--forwarded-allow-ips "${FORWARDED_ALLOW_IPS:-127.0.0.1}"` — the default `127.0.0.1` reproduces uvicorn's built-in default (`proxy_headers=True`), so behaviour is **unchanged until `FORWARDED_ALLOW_IPS` is set**. Empirically (probe, this venv): `X-Forwarded-For` is **trusted from a `127.0.0.1` peer** (we rewrote `client.host` to `8.8.8.8` from loopback) and **ignored from any other peer**.
+The middleware keys on `request.client.host`. The prod Dockerfile starts `uvicorn` with `--forwarded-allow-ips "${FORWARDED_ALLOW_IPS:-127.0.0.1}"` — the default `127.0.0.1` reproduces uvicorn's built-in default, so behaviour is **unchanged until `FORWARDED_ALLOW_IPS` is set**.
 
-Consequence: per-IP rate limiting is correct **iff** Railway's edge proxy reaches the container from `127.0.0.1`. If it reaches it from another internal address, `X-Forwarded-For` is dropped and *every* client collapses into a single proxy-IP bucket — the 60/min limit becomes near-global (too aggressive for legitimate users sharing the egress, useless against a distributed abuser).
+**What the prod logs showed** (release `dfaa53b`, inspected 2026-06-27): every request logged `client_ip=` in `100.64.0.2 … 100.64.0.16` — all inside `100.64.0.0/10`, the **RFC 6598 carrier-grade-NAT range Railway uses for its internal edge↔container network** (not publicly routable, not real client IPs). A *single* logged-in user's normal session (dashboard → open question → run-query → submit) fanned out across **~15 distinct `100.64.x.x` hops**: Railway round-robins each connection over its internal proxy fleet.
 
-**To verify:** the app already logs `client_ip=<host>` per request — inspect prod logs for whether `client_ip` shows diverse real client IPs or one repeated internal/proxy address.
+**Diagnosis:** Railway's peer is `100.64.x.x`, not `127.0.0.1`, so uvicorn drops `X-Forwarded-For` and `request.client.host` is the **proxy socket peer**. The per-IP limiter (global 60/60s `ip_rate_limit_middleware` + the auth limiters) therefore buckets on **Railway's proxy fleet, not real clients** — the worst of both directions at once:
+- **Under-protects per real user** — one source's traffic splits across ~15 proxy buckets, so it gets ~15× the intended 60/min before any bucket trips (weak against a single abuser).
+- **Over-blocks under load** — many real users multiplex onto each proxy bucket, so at the measured ~300 rps peak a shared bucket overflows 60/60s and **429s innocent users** (the launch-blocking failure). Latent today only because concurrency is near-zero.
 
-**To fix (if it's keying on the proxy):** set the **`FORWARDED_ALLOW_IPS`** env var to the **actual Railway proxy hop** so uvicorn rewrites `client.host` from the trusted `X-Forwarded-For`. The Dockerfile already wires this env into `--forwarded-allow-ips`, so the fix is a **single env-var set — no image change**. **Never set it to `*`** — that lets any client spoof its IP to evade the limiter or frame another address. This is a deliberate deployment + security change pending confirmation of the real prod peer address; it is not applied automatically (the default keeps today's `127.0.0.1`-only trust).
+**Fix (operator, single env-var — no image change):** set on the Railway service
+
+```
+FORWARDED_ALLOW_IPS=127.0.0.1,100.64.0.0/10
+```
+
+then redeploy. The Dockerfile already wires this into `--forwarded-allow-ips`. Verified safe + expressible against the installed **uvicorn 0.42.0**: its `_TrustedHosts` parses CIDR (`ipaddress.ip_network`), so `100.64.0.0/10` is a valid trusted-network entry; it trusts **only** that (non-publicly-routable, Railway-internal) range — an external client cannot make packets originate from inside it — and `get_trusted_client_host` reverse-walks the XFF list returning the rightmost *untrusted* host, i.e. the real client Railway appended (spoof-resistant even if a client injects a fake leading XFF entry). **Never `*`** — that trusts XFF from any peer and lets clients spoof their IP to evade the limiter or frame another address.
+
+**✅ Verified (2026-06-27).** `FORWARDED_ALLOW_IPS=127.0.0.1,100.64.0.0/10` was set on the Railway service and the deploy restarted. Post-redeploy logs show every `/api/*` request now keying on **real public client IPs** (e.g. `152.233.12.245`, `152.233.13.166`) instead of `100.64.x.x` — the limiter keys on real clients. **One expected nuance:** `GET /health` still logs `client_ip=100.64.0.2` — that is Railway's *internal* health prober (it genuinely originates inside `100.64.0.0/10` and carries no client XFF), and `/health` is rate-limit-exempt (`main.py` `ip_rate_limit_middleware` early-returns on it), so it is correct, not a regression. Item closed.
 
 ---
 
