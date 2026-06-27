@@ -48,3 +48,31 @@ export function pickFirstQuestionId(catalog) {
 export function pickContinueQuestionId(catalog) {
   return pickNextUpQuestionId(catalog) ?? pickFirstQuestionId(catalog);
 }
+
+/**
+ * The next question AFTER `currentId` in catalog order (easy -> hard, by `order`
+ * within each group) — the per-question "Next" target in the practice workspace.
+ *
+ * This is SEQUENTIAL progression (Q10 -> Q11), deliberately NOT the global
+ * next-up (`is_next`): a user who just solved Q10 expects Q11, never a jump back
+ * to the first-unsolved question (which is what `is_next` points to — that bug is
+ * the reason this helper exists). Locked questions are skipped (never a navigable
+ * target, matching `pickFirstQuestionId`), so at the end of the unlocked run the
+ * result is null and the workspace simply hides the Next button. Returns null at
+ * the end of the catalog or when `currentId` is not found.
+ */
+export function pickSequentialNextQuestionId(catalog, currentId) {
+  if (!catalog || currentId == null) return null;
+  const ordered = [];
+  for (const diff of DIFFICULTY_ORDER) {
+    const g = catalog.groups?.find((x) => x.difficulty === diff);
+    const sorted = (g?.questions ?? []).slice().sort((a, b) => a.order - b.order);
+    ordered.push(...sorted);
+  }
+  const idx = ordered.findIndex((q) => Number(q.id) === Number(currentId));
+  if (idx === -1) return null;
+  for (let i = idx + 1; i < ordered.length; i += 1) {
+    if (ordered[i].state !== 'locked') return ordered[i].id;
+  }
+  return null;
+}

@@ -18,6 +18,7 @@ import { useAuth } from '../contexts/AuthContext';
 import UpgradeButton from '../components/UpgradeButton';
 import { getQuestionFormLabel, getQuestionPromptGuidance } from '../questionFormLabel';
 import { parseSqlError } from '../utils/sqlErrorParser';
+import { pickSequentialNextQuestionId } from '../utils/catalogNav';
 import { renderDescription } from '../utils/renderDescription';
 import { useToast } from '../App';
 import { track } from '../analytics';
@@ -94,14 +95,15 @@ export default function QuestionPage() {
   const defaultCode = meta.language === 'python' ? PYTHON_PLACEHOLDER : SQL_PLACEHOLDER;
   const draftKey = useMemo(() => `draft:${topic}:${id}`, [topic, id]);
 
-  const nextQuestionId = useMemo(() => {
-    if (!catalog) return null;
-    for (const group of (catalog.groups ?? [])) {
-      const next = group.questions.find((question) => question.is_next);
-      if (next) return next.id;
-    }
-    return null;
-  }, [catalog]);
+  // The workspace "Next" button advances SEQUENTIALLY (current question -> the next
+  // one in catalog order), NOT to the global next-up. Using is_next here was the bug
+  // where solving Q10 and clicking Next jumped to Q1 (the first-unsolved question)
+  // instead of Q11. Hub Continue / resume / the sidebar "NEXT" badge still use the
+  // next-up resolver — only this per-question button is sequential.
+  const nextQuestionId = useMemo(
+    () => pickSequentialNextQuestionId(catalog, id),
+    [catalog, id],
+  );
   const catalogQuestionMeta = useMemo(() => {
     if (!catalog) return null;
     const targetId = Number(id);

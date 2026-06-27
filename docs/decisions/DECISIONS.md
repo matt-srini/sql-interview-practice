@@ -35,6 +35,12 @@ Keep entries to 4–6 lines. Friction kills logs; if it's longer than the change
 
 ## Entries
 
+## 2026-06-27 — Workspace "Next" button advances sequentially, not to the global next-up
+**Area:** frontend · **Status:** accepted
+**Decision:** The per-question "Next Question" button in the practice workspace now advances to the next question **in catalog order after the current one** (new `pickSequentialNextQuestionId(catalog, currentId)` in `catalogNav.js`, skipping locked), not to the backend `is_next` next-up. Bug: `QuestionPage.nextQuestionId` used `is_next` and didn't even depend on the current `id`, so a user who solved Q10 and clicked Next jumped to Q1 (the first-unsolved question — exactly where `is_next` points) instead of Q11. Most visible logged-out / early on, when few questions are solved. The next-up resolver (`pickNextUpQuestionId`) still backs hub Continue, the resume redirect, and the sidebar "NEXT" badge — those *should* point at the recommended next-up; only this button is sequential, matching the path/drill Next (`questions[currentIndex+1]`).
+**Rejected:** (a) Keep `is_next` (the bug). (b) "Next unsolved *after* the current" (skip solved) — less predictable and inconsistent with the path/drill Next, which is pure sequential; a user clicking Next expects Q+1 whether or not it's solved.
+**Affects:** `frontend/src/utils/catalogNav.js`, `frontend/src/pages/QuestionPage.js`
+
 ## 2026-06-27 — Sidebar reveals the active question's group (was stuck on the easy-only default)
 **Area:** frontend · **Status:** accepted
 **Decision:** The question-list sidebar now reveals the question you're on. `AppShell` derives the active question's difficulty from the URL + catalog and a `useEffect` ensures that difficulty group is expanded (it only expands — never force-collapses the others, so manual toggles are kept); `SidebarNav` auto-expands the easy "Show all" cap when the active easy question is past row 10, and scrolls the active row into view. Root cause: `collapsedByDiff` was a hardcoded `{ easy:false, medium:true, hard:true }` that never reconciled with the active question, and AppShell does not remount between questions in a topic — so advancing to a Medium/Hard question left the active row inside a collapsed group. "Reveal active," the Linear/VSCode pattern.
