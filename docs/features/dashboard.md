@@ -9,6 +9,7 @@ The dashboard is the cross-track progress hub at `/dashboard` (`ProgressDashboar
 | Section | Description |
 |---|---|
 | **Track Overview** | One card per active track (all 9 tracks). Each shows solved/total (**practice catalog only**), an animated progress bar, accuracy %, and (Elite) a per-track readiness score badge. **Accuracy spans practice + mock submissions** (mock answers are recorded to `submissions`, so a track with 0 practice solves can still have an accuracy) — it renders as `—` when the track has **zero attempts** (never a misleading `0%`), and carries a muted `N in mock` qualifier on **any track with mock attempts** (`mock_attempts > 0`) so the practice+mock blend is always disclosed (this is what makes a `0 solved · 100% acc` row read true). On mobile (≤600px) the row reflows to two lines — name + readiness chip on the first, progress bar + count + accuracy (with the `N in mock` qualifier) on the second — dropping the tagline and the "Mock to level up" nudge to stay compact. Data from `/api/dashboard` (practice solved counts) + `/api/dashboard/insights` (accuracy %, `attempts`/`practice_attempts`/`mock_attempts`, readiness). _(There is no per-track solve-time display: the old "N min" line measured a misleading first-attempt→first-correct calendar gap and was removed — see `docs/decisions/DECISIONS.md` 2026-06-18.)_ |
+| **First-try accuracy** | **(All tiers — Free/Pro/Elite)** A full-width section below Track Overview. One row per track the user has attempted ≥1 **practice** question in: track dot, name, an `AccuracyBar`, and a `correct/attempted` fraction. The metric is `first_try_correct / first_try_attempted` — distinct **practice-catalog** questions whose *first* submission was correct ÷ distinct practice questions attempted (mock-only + sample excluded by construction). It is the **mastery / answer-peeking signal the unlock ladder deliberately does not measure** — the MCQ wrong-answer journey lets post-reveal solves still advance the gate (engagement), so first-try accuracy is where mastery surfaces instead, keeping the gate honest. Same denominator as the Elite readiness "solve quality" component. Tracks are role-filtered with Track Overview (`visibleTracks`); empty state when no practice attempt exists anywhere. Data from `/api/dashboard/insights` (`first_try_accuracy_pct`/`first_try_correct`/`first_try_attempted`). See `docs/decisions/DECISIONS.md` 2026-06-27. |
 | **Personalised study plan** | **(Elite)** An ordered list of 3–5 next steps based on weak concepts, practice gaps, and mock frequency. Non-Elite users see a gated upgrade prompt. |
 | **Focus card** | A single hero CTA. For Pro/Elite with weak-concept data: *Drill {top weak concept} → Go* — the [concept drill](../frontend.md#concept-drill), a Pro+ focused practice walk. Otherwise a cross-track pace insight or a continue-practice nudge. |
 | **Where to focus (weak areas)** | **(Pro/Elite)** Concept rows with accuracy %, a coaching summary, a primary *Drill this concept →* CTA (the concept drill), and an **honest secondary** *Or take the … path →* when a matching learning path exists. Pro and Elite both see the **full gap list** (the diagnosis is not paywalled between paid tiers — 2026-06-13, decision B); Elite's extra is the *prescription* (study plan + readiness scores), not more gaps. |
@@ -77,15 +78,15 @@ Returns per-track coaching metrics, weakest concepts, the cross-track pace insig
 ```json
 {
   "per_track": {
-    "sql":         { "solve_count": 12, "median_solve_seconds": 420, "accuracy_pct": 0.72 },
-    "python":      { "solve_count": 5,  "median_solve_seconds": 180, "accuracy_pct": 0.60 },
-    "pandas": { "solve_count": 0,  "median_solve_seconds": null, "accuracy_pct": 0.0 },
-    "pyspark":     { "solve_count": 3,  "median_solve_seconds": 30,  "accuracy_pct": 0.90 },
-    "data-engineering": { "solve_count": 0, "median_solve_seconds": null, "accuracy_pct": 0.0 },
-    "data-modeling": { "solve_count": 0, "median_solve_seconds": null, "accuracy_pct": 0.0 },
-    "statistics": { "solve_count": 0, "median_solve_seconds": null, "accuracy_pct": 0.0 },
-    "ml-fundamentals": { "solve_count": 0, "median_solve_seconds": null, "accuracy_pct": 0.0 },
-    "experimentation": { "solve_count": 0, "median_solve_seconds": null, "accuracy_pct": 0.0 }
+    "sql":         { "solve_count": 12, "accuracy_pct": 0.72, "attempts": 25, "practice_attempts": 22, "mock_attempts": 3, "first_try_accuracy_pct": 0.6, "first_try_correct": 12, "first_try_attempted": 20 },
+    "python":      { "solve_count": 5,  "accuracy_pct": 0.6,  "attempts": 9,  "practice_attempts": 9,  "mock_attempts": 0, "first_try_accuracy_pct": 0.5, "first_try_correct": 4,  "first_try_attempted": 8 },
+    "pandas":      { "solve_count": 0,  "accuracy_pct": null, "attempts": 0,  "practice_attempts": 0,  "mock_attempts": 0, "first_try_accuracy_pct": null, "first_try_correct": 0, "first_try_attempted": 0 },
+    "pyspark":     { "solve_count": 3,  "accuracy_pct": 0.9,  "attempts": 4,  "practice_attempts": 4,  "mock_attempts": 0, "first_try_accuracy_pct": 0.75, "first_try_correct": 3, "first_try_attempted": 4 },
+    "data-engineering": { "solve_count": 0, "accuracy_pct": null, "attempts": 0, "practice_attempts": 0, "mock_attempts": 0, "first_try_accuracy_pct": null, "first_try_correct": 0, "first_try_attempted": 0 },
+    "data-modeling":    { "solve_count": 0, "accuracy_pct": null, "attempts": 0, "practice_attempts": 0, "mock_attempts": 0, "first_try_accuracy_pct": null, "first_try_correct": 0, "first_try_attempted": 0 },
+    "statistics":       { "solve_count": 0, "accuracy_pct": null, "attempts": 0, "practice_attempts": 0, "mock_attempts": 0, "first_try_accuracy_pct": null, "first_try_correct": 0, "first_try_attempted": 0 },
+    "ml-fundamentals":  { "solve_count": 0, "accuracy_pct": null, "attempts": 0, "practice_attempts": 0, "mock_attempts": 0, "first_try_accuracy_pct": null, "first_try_correct": 0, "first_try_attempted": 0 },
+    "experimentation":  { "solve_count": 0, "accuracy_pct": null, "attempts": 0, "practice_attempts": 0, "mock_attempts": 0, "first_try_accuracy_pct": null, "first_try_correct": 0, "first_try_attempted": 0 }
   },
   "weakest_concepts": [
     {
@@ -96,18 +97,19 @@ Returns per-track coaching metrics, weakest concepts, the cross-track pace insig
       "recommended_question_ids": [42, 55]
     }
   ],
-  "cross_track_insight": "You solve SQL ~4 minutes slower than PySpark. Try 3 SQL mediums to close the gap.",
-  "streak_days": 3
+  "streak_days": 3,
+  "readiness_scores": null,
+  "study_plan": null
 }
 ```
 
 **Notes:**
-- `median_solve_seconds` is `null` when there are no solved questions on that track.
-- `accuracy_pct` is `0.0` when there are zero attempts on that track.
+- `accuracy_pct` is `null` (renders as `—`) when there are zero attempts on that track — never a misleading `0%`.
+- `first_try_accuracy_pct` is `null` when the user has attempted **no practice-catalog** questions on that track (`first_try_attempted == 0`); otherwise `first_try_correct / first_try_attempted` rounded to 3 dp. Practice-only by construction (mock-only + sample IDs are excluded), all tiers.
 - `weakest_concepts` contains at most 3 entries, sorted by recency-weighted accuracy ascending (worst first), with `attempts` as the tiebreaker. Only concepts with ≥ 3 total attempts appear. Attempts from the last 14 days count 1.5× so recent struggles surface ahead of stale history. **Both practice and mock attempts count** — the concept lookup (`_build_concepts_lookup` in `routers/insights.py`) spans practice + mock-only questions, so a miss on a mock-only question feeds weak-concept detection (a miss under interview pressure is a strong weakness signal). The **drill** a weak concept links to stays practice-only (`/api/practice/drill` reads the practice catalog), so mock-only questions are detected-from but never served back to the user.
-- `cross_track_insight` is `null` when fewer than 2 tracks have data, or when the fastest–slowest gap is < 60 seconds.
+- `readiness_scores` and `study_plan` are `null` for non-Elite plans (Elite-only — see below).
 - `streak_days` is 0 when the user has not solved anything today.
-- Data source: `submissions` table (all attempts, not just first-correct).
+- Data source: `submissions` table (all attempts). `accuracy_pct` counts every attempt; `first_try_accuracy_pct` counts only each question's *first* attempt (events are read oldest-first, `submitted_at ASC, id ASC`).
 
 ---
 
@@ -118,8 +120,11 @@ Returns per-track coaching metrics, weakest concepts, the cross-track pace insig
 | Field | How it is computed |
 |---|---|
 | `solve_count` | Distinct question IDs with a correct submission on this track |
-| `median_solve_seconds` | For each solved question: time from first attempt to first correct attempt. Median of those durations across all solved questions on the track. |
-| `accuracy_pct` | `correct_submissions / total_submissions` for this track. Rounded to 3 decimal places. |
+| `accuracy_pct` | `correct_submissions / total_submissions` for this track (practice + mock). Rounded to 3 decimal places. `null` when zero attempts. |
+| `attempts` / `practice_attempts` / `mock_attempts` | Total submissions on the track, split by whether the question ID is in the mock-only pool. |
+| `first_try_accuracy_pct` | `first_try_correct / first_try_attempted`, rounded to 3 dp; `null` when `first_try_attempted == 0`. |
+| `first_try_correct` | Distinct **practice-catalog** questions whose *first* (oldest) submission was correct. Question-level, so reruns/resubmits never dilute it — the same first-time-correct set the readiness "solve quality" component uses. |
+| `first_try_attempted` | Distinct **practice-catalog** questions with ≥1 submission (mock-only + sample excluded). The denominator for first-try accuracy. |
 
 ### Weakest concepts
 
@@ -218,4 +223,5 @@ Current coverage emphasis:
 
 - `/api/dashboard` response shape, difficulty counters, recent activity, concept tags, and slug normalization
 - `/api/dashboard/insights` metric computation, streak logic, weakest concept selection, cache behavior, and lifetime-plan access
+- First-try accuracy: first-attempt-decides semantics, practice-only scoping (mock-only excluded), `null` on zero practice attempts, and all-tier presence (Free)
 - Legacy regression coverage for the original executable-track slice is still deepest in tests; the product and API now operate across all 9 active tracks

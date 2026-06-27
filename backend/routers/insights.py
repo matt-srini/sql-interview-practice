@@ -91,6 +91,21 @@ def _build_mock_only_ids() -> dict[str, set[int]]:
 _MOCK_ONLY_IDS = _build_mock_only_ids()
 
 
+def _build_practice_ids() -> dict[str, set[int]]:
+    """{track: {practice question ids}} — the explicit practice catalog (easy+medium+hard),
+    excluding mock-only and sample IDs by construction. Mirrors the practice_ids set used in
+    _compute_readiness_scores so first-try accuracy and the readiness 'solve quality' component
+    measure the same denominator."""
+    lookup: dict[str, set[int]] = {}
+    for track, module in _TOPIC_MODULES.items():
+        grouped = module.get_questions_by_difficulty()
+        lookup[track] = {int(q["id"]) for qs in grouped.values() for q in qs}
+    return lookup
+
+
+_PRACTICE_IDS = _build_practice_ids()
+
+
 def _build_concept_question_index() -> dict[str, dict[str, list[dict[str, Any]]]]:
     """Returns {track: {concept: [question_dict, ...]}} sorted easy-first within each concept."""
     diff_order = {"easy": 0, "medium": 1, "hard": 2}
@@ -236,12 +251,26 @@ async def get_dashboard_insights(
         # Zero attempts -> null (renders as "—"), never a misleading 0% "you failed
         # everything". A track's accuracy spans practice + mock submissions.
         accuracy = round(correct / attempts, 3) if attempts else None
+        # First-try accuracy (ALL tiers): distinct PRACTICE questions whose first
+        # submission was correct ÷ distinct practice questions attempted. Practice
+        # catalog only (mock-only + sample excluded by the _PRACTICE_IDS intersect),
+        # so it measures the same denominator as the readiness 'solve quality'
+        # component. This is the mastery signal the unlock ladder deliberately does
+        # NOT measure (post-reveal solves still advance the gate). Null when the user
+        # has attempted no practice questions in the track (renders as "—").
+        practice_ids = _PRACTICE_IDS.get(track, set())
+        ft_attempted = len(per_track_first_seen.get(track, set()) & practice_ids)
+        ft_correct = len(per_track_ftc_question_ids.get(track, set()) & practice_ids)
+        first_try_accuracy = round(ft_correct / ft_attempted, 3) if ft_attempted else None
         per_track[track] = {
             "solve_count": len(per_track_solved_question_ids.get(track, set())),
             "accuracy_pct": accuracy,
             "attempts": attempts,
             "practice_attempts": per_track_practice_attempts.get(track, 0),
             "mock_attempts": per_track_mock_attempts.get(track, 0),
+            "first_try_accuracy_pct": first_try_accuracy,
+            "first_try_correct": ft_correct,
+            "first_try_attempted": ft_attempted,
         }
 
     weakest_concepts: list[dict[str, Any]] = []

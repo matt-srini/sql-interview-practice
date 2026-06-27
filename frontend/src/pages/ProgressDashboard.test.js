@@ -136,15 +136,15 @@ function makeDashboardPayload(overrides = {}) {
 function makeInsightsPayload(overrides = {}) {
   return {
     per_track: {
-      sql: { solve_count: 47, accuracy_pct: 0.82, attempts: 60, practice_attempts: 54, mock_attempts: 6 },
-      python: { solve_count: 0, accuracy_pct: null, attempts: 0, practice_attempts: 0, mock_attempts: 0 },
-      'pandas': { solve_count: 0, accuracy_pct: null, attempts: 0, practice_attempts: 0, mock_attempts: 0 },
-      pyspark: { solve_count: 0, accuracy_pct: null, attempts: 0, practice_attempts: 0, mock_attempts: 0 },
-      'data-engineering': { solve_count: 0, accuracy_pct: null, attempts: 0, practice_attempts: 0, mock_attempts: 0 },
-      'data-modeling': { solve_count: 0, accuracy_pct: 1.0, attempts: 7, practice_attempts: 0, mock_attempts: 7 },
-      statistics: { solve_count: 0, accuracy_pct: null, attempts: 0, practice_attempts: 0, mock_attempts: 0 },
-      'ml-fundamentals': { solve_count: 0, accuracy_pct: null, attempts: 0, practice_attempts: 0, mock_attempts: 0 },
-      experimentation: { solve_count: 0, accuracy_pct: null, attempts: 0, practice_attempts: 0, mock_attempts: 0 },
+      sql: { solve_count: 47, accuracy_pct: 0.82, attempts: 60, practice_attempts: 54, mock_attempts: 6, first_try_accuracy_pct: 0.741, first_try_correct: 40, first_try_attempted: 54 },
+      python: { solve_count: 0, accuracy_pct: null, attempts: 0, practice_attempts: 0, mock_attempts: 0, first_try_accuracy_pct: null, first_try_correct: 0, first_try_attempted: 0 },
+      'pandas': { solve_count: 0, accuracy_pct: null, attempts: 0, practice_attempts: 0, mock_attempts: 0, first_try_accuracy_pct: null, first_try_correct: 0, first_try_attempted: 0 },
+      pyspark: { solve_count: 0, accuracy_pct: null, attempts: 0, practice_attempts: 0, mock_attempts: 0, first_try_accuracy_pct: null, first_try_correct: 0, first_try_attempted: 0 },
+      'data-engineering': { solve_count: 0, accuracy_pct: null, attempts: 0, practice_attempts: 0, mock_attempts: 0, first_try_accuracy_pct: null, first_try_correct: 0, first_try_attempted: 0 },
+      'data-modeling': { solve_count: 0, accuracy_pct: 1.0, attempts: 7, practice_attempts: 0, mock_attempts: 7, first_try_accuracy_pct: null, first_try_correct: 0, first_try_attempted: 0 },
+      statistics: { solve_count: 0, accuracy_pct: null, attempts: 0, practice_attempts: 0, mock_attempts: 0, first_try_accuracy_pct: null, first_try_correct: 0, first_try_attempted: 0 },
+      'ml-fundamentals': { solve_count: 0, accuracy_pct: null, attempts: 0, practice_attempts: 0, mock_attempts: 0, first_try_accuracy_pct: null, first_try_correct: 0, first_try_attempted: 0 },
+      experimentation: { solve_count: 0, accuracy_pct: null, attempts: 0, practice_attempts: 0, mock_attempts: 0, first_try_accuracy_pct: null, first_try_correct: 0, first_try_attempted: 0 },
     },
     weakest_concepts: [],
     streak_days: 0,
@@ -365,5 +365,12 @@ describe('ProgressDashboard', () => {
     renderDashboard();
     expect(await screen.findByText(/Upgrade to Pro to see your weakest concepts/i)).toBeInTheDocument();
     expect(screen.queryByText('Drill this concept →')).toBeNull();
+  });
+
+  it('renders First-try accuracy section with fraction for SQL track', async () => {
+    renderDashboard();
+
+    expect(await screen.findByText('First-try accuracy')).toBeInTheDocument();
+    expect(await screen.findByText('40/54')).toBeInTheDocument();
   });
 });

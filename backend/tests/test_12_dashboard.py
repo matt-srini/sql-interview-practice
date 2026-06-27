@@ -1065,3 +1065,72 @@ def test_tc212_loop_ready_signal():
         **full,
     )
     assert e["sql"]["loop_ready"] is False
+
+
+def test_first_try_accuracy_practice_only_first_attempt_decides():
+    """First-try accuracy = distinct practice Qs whose FIRST submission was correct ÷ distinct
+    practice Qs attempted. Q0 first-correct (counts as first-try); Q1 first-wrong-then-correct
+    (attempted, but NOT first-try). => 1/2 = 0.5."""
+    from datetime import datetime, timezone, timedelta
+    base = datetime(2026, 1, 1, 12, 0, 0, tzinfo=timezone.utc)
+    with TestClient(app) as client:
+        user = _make_user(client, plan="free")
+    # Q0: first (and only) attempt correct -> first-try correct
+    _insert_submission(user["id"], _sql_easy_qs[0]["id"], is_correct=True, track="sql", submitted_at=base)
+    # Q1: first attempt WRONG, later attempt correct -> attempted but NOT first-try
+    _insert_submission(user["id"], _sql_easy_qs[1]["id"], is_correct=False, track="sql", submitted_at=base + timedelta(minutes=1))
+    _insert_submission(user["id"], _sql_easy_qs[1]["id"], is_correct=True, track="sql", submitted_at=base + timedelta(minutes=2))
+    with TestClient(app) as client:
+        _make_user(client, plan="free", existing_user=user)
+        r = client.get("/api/dashboard/insights")
+    sql = r.json().get("per_track", {}).get("sql", {})
+    assert sql.get("first_try_attempted") == 2
+    assert sql.get("first_try_correct") == 1
+    assert sql.get("first_try_accuracy_pct") == 0.5
+
+
+def test_first_try_accuracy_excludes_mock_only_questions():
+    """Mock-only questions are NOT in the practice catalog, so they never count toward
+    first-try accuracy even when answered correctly on the first try."""
+    from questions import get_mock_questions_by_difficulty as get_sql_mock
+    mock_id = int([q for qs in get_sql_mock().values() for q in qs][0]["id"])
+    with TestClient(app) as client:
+        user = _make_user(client, plan="pro")
+    _insert_submission(user["id"], mock_id, is_correct=True, track="sql")          # mock-only, first-correct
+    _insert_submission(user["id"], _sql_easy_qs[0]["id"], is_correct=True, track="sql")  # practice, first-correct
+    with TestClient(app) as client:
+        _make_user(client, plan="pro", existing_user=user)
+        r = client.get("/api/dashboard/insights")
+    sql = r.json().get("per_track", {}).get("sql", {})
+    # only the practice question is counted
+    assert sql.get("first_try_attempted") == 1
+    assert sql.get("first_try_correct") == 1
+    assert sql.get("first_try_accuracy_pct") == 1.0
+
+
+def test_first_try_accuracy_null_when_no_practice_attempts():
+    """A track with zero practice attempts -> first_try_accuracy_pct is None, first_try_attempted 0."""
+    with TestClient(app) as client:
+        user = _make_user(client, plan="free")
+    _insert_submission(user["id"], _sql_easy_qs[0]["id"], is_correct=True, track="sql")
+    with TestClient(app) as client:
+        _make_user(client, plan="free", existing_user=user)
+        r = client.get("/api/dashboard/insights")
+    per_track = r.json().get("per_track", {})
+    assert per_track.get("python", {}).get("first_try_accuracy_pct") is None
+    assert per_track.get("python", {}).get("first_try_attempted") == 0
+    assert per_track.get("sql", {}).get("first_try_accuracy_pct") == 1.0
+
+
+def test_first_try_accuracy_present_for_free_tier():
+    """First-try accuracy is an ALL-TIER signal — present in per_track for a free user."""
+    with TestClient(app) as client:
+        user = _make_user(client, plan="free")
+    _insert_submission(user["id"], _sql_easy_qs[0]["id"], is_correct=True, track="sql")
+    with TestClient(app) as client:
+        _make_user(client, plan="free", existing_user=user)
+        r = client.get("/api/dashboard/insights")
+    sql = r.json().get("per_track", {}).get("sql", {})
+    assert "first_try_accuracy_pct" in sql
+    assert "first_try_correct" in sql
+    assert "first_try_attempted" in sql

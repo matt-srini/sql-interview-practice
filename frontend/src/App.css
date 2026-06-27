@@ -6258,6 +6258,52 @@ select {
   color: var(--accent);
 }
 
+/* First-try accuracy section */
+.db-firsttry-sub {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  margin: 0 0 14px;
+  max-width: 70ch;
+  line-height: 1.5;
+}
+.db-firsttry-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.db-firsttry-row {
+  display: grid;
+  grid-template-columns: auto minmax(110px, 1fr) minmax(130px, 1.5fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 0.85rem 0.2rem;
+  border-bottom: 1px solid var(--border-subtle);
+  border-radius: 4px;
+  margin: 0 -0.2rem;
+  text-decoration: none;
+  color: inherit;
+  transition: background 0.12s;
+}
+.db-firsttry-row:last-child { border-bottom: none; }
+.db-firsttry-row:hover { background: var(--bg-hover, rgba(0,0,0,0.03)); }
+.db-firsttry-name {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-strong);
+}
+.db-firsttry-frac {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+  justify-self: end;
+}
+@media (max-width: 600px) {
+  .db-firsttry-row {
+    grid-template-columns: auto minmax(80px, 1fr) minmax(100px, 1.5fr) auto;
+    gap: 8px;
+  }
+}
+
 /* Readiness chip */
 .db-readiness-chip {
   display: flex;

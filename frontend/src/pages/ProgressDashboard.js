@@ -412,6 +412,42 @@ export default function ProgressDashboard() {
                   </div>
                 </section>
 
+                {/* FIRST-TRY ACCURACY (all tiers) */}
+                <section className="db-section">
+                  <h2 className="db-section-title">First-try accuracy</h2>
+                  <p className="db-firsttry-sub">
+                    How often you solve a practice question correctly on your <strong>first</strong> attempt — mastery before any hints or retries. Practice catalog only, so it stays an honest read on what you&#8217;ve actually internalised, not just what you&#8217;ve unlocked.
+                  </p>
+                  {(() => {
+                    const ftTracks = visibleTracks.filter(
+                      topic => (insights?.per_track?.[topic]?.first_try_attempted ?? 0) > 0
+                    );
+                    if (ftTracks.length === 0) {
+                      return (
+                        <p className="db-empty-copy db-empty-copy--muted">
+                          Solve a few practice questions to see your first-try accuracy here.
+                        </p>
+                      );
+                    }
+                    return (
+                      <div className="db-firsttry-list">
+                        {ftTracks.map(topic => {
+                          const meta = TRACK_META[topic];
+                          const pt = insights.per_track[topic];
+                          return (
+                            <Link key={topic} to={`/practice/${topic}`} className="db-firsttry-row">
+                              <span className="db-track-dot" style={{ background: meta.color }} />
+                              <span className="db-firsttry-name">{meta.label}</span>
+                              <AccuracyBar pct={pt.first_try_accuracy_pct} />
+                              <span className="db-firsttry-frac">{pt.first_try_correct}/{pt.first_try_attempted}</span>
+                            </Link>
+                          );
+                        })}
+                      </div>
+                    );
+                  })()}
+                </section>
+
                 <div className="db-lower-grid">
                   <div className="db-lower-main">
 
