@@ -360,6 +360,27 @@ A question is correct only if a strong candidate, reading the stem alone, can la
 
 Durable lesson: **pair blind-solve QA with an adversarial stem↔key audit.** Blind-solve alone cannot see a key that is wrong but coincides numerically, an unstated literal, or an unspecified output shape — and the audit alone misses precision gaps a blind solver catches by failing (e.g. 32055). Run BOTH lenses, then a consolidated re-solve on the landed state.
 
+### Blind-solve audit protocol
+
+**Definition.** A blind-solve reproduces exactly what a user sees in the UI: the question title, the question stem, the visible schema (column names and types only — from `SchemaViewer` for SQL/Pandas, from the `variables` field for Pandas), and the hints. It uses **nothing** from the question's internal content: no `expected_query`/`expected_code`, no `solution_query`/`solution_code`, no `explanation`, no `test_cases` answers. The solver must arrive at an answer the same way a real candidate would — by reading and reasoning, not by pattern-matching against a stored key.
+
+**When to run.** Before any batch of new or edited questions is committed to `main`. After any bulk fix that touches `expected_*` or `solution_*` fields, re-run on every changed question. A question should be treated as "never blind-solved" after any edit to its stem, schema reference, or key logic.
+
+**Cadence for periodic bank audits.** Run Haiku first (cheap, fast) against every question in the target band:
+1. **Haiku blind-solve** — feed each question title + description + schema + hints (no internal content). Run ≥20 questions per agent call to keep total agent count low (≤8 agents per 160-question band). Collect Haiku's SQL/code/answer.
+2. **DuckDB comparison** — compare Haiku's answer vs `expected_*` using the same normalization as `evaluator.py` (order-insensitive unless `expected_*` has a trailing `ORDER BY`; whole-number floats normalized to integer strings; NULL normalized to "NULL" string). Collect mismatches.
+3. **Sonnet blind-solve on divergences** — for each Haiku mismatch, Sonnet re-solves with the same inputs (≥20 per agent). Collect Sonnet's answer.
+4. **Second comparison** — compare Sonnet vs `expected_*`. Classify each remaining divergence:
+   - `sonnet_match` — Haiku was wrong, Sonnet passes → Haiku failure, no content fix needed.
+   - `tiebreaker` — both model answers have the right data but in a different row order → `ORDER BY` in the key is non-deterministic; add a tiebreaker column to `expected_*` and `solution_*`.
+   - `dtype_artifact` — values match but types differ (e.g. float64 vs int64) → verify the real grader's normalization handles it (it normalizes whole-number floats to integer strings); if it does, no fix needed.
+   - `content_bug` — both models agree on a different answer than the key → investigate; the key is likely wrong. Fix `expected_*` and `solution_*`.
+   - `sonnet_fail` — Sonnet also diverges but is verifiably wrong on inspection → leave key unchanged; note for stem clarity review.
+5. **Fix + re-blind-solve** — for confirmed `content_bug` or `tiebreaker` fixes, apply fixes to `expected_*` and `solution_*`, then re-run Sonnet blind-solve on the changed questions. Iterate until all pass.
+6. **Approve + land** — present the fix list to the reviewer before merging. Do not merge before approval.
+
+**Comparison normalization (mirrors `evaluator.py` `normalize_dataframe`).** Order-insensitive by default. Order-sensitive only when `expected_*` ends with a non-empty `ORDER BY` after stripping trailing `;` and whitespace. Whole-number floats (5.0) compare equal to integer 5. Any NULL/NaN/pd.NA → string "NULL". Float columns rounded to 5 dp before string conversion. Column order sorted; index reset. This normalization prevents false negatives (marking a correct query as wrong due to float rounding) and false positives (flagging dtype differences the real grader absorbs).
+
 ---
 
 ### Per-family coverage discipline
