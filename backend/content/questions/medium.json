@@ -2158,7 +2158,7 @@
     "debug_error": "Binder Error: Referenced table \"emp\" not found!\nCandidate tables: \"e\"\n\nLINE 4: WHERE emp.country = 'US'\n              ^",
     "starter_query": "SELECT department_name, COUNT(*) AS headcount, ROUND(AVG(salary), 2) AS avg_salary\nFROM employees e\nJOIN departments d ON e.department_id = d.department_id\nWHERE emp.country = 'US'\nGROUP BY department_name\nORDER BY headcount DESC, department_name ASC",
     "expected_query": "SELECT department_name, COUNT(*) AS headcount, ROUND(AVG(salary),2) AS avg_salary\nFROM employees e\nJOIN departments d ON e.department_id = d.department_id\nWHERE e.country = 'US'\nGROUP BY department_name\nORDER BY headcount DESC, department_name ASC",
-    "solution_query": "SELECT department_name,\n       COUNT(*) AS headcount,\n       ROUND(AVG(salary), 2) AS avg_salary\nFROM employees e\nJOIN departments d ON e.department_id = d.department_id\nWHERE e.country = 'US'\nGROUP BY department_name\nORDER BY headcount DESC;",
+    "solution_query": "SELECT department_name,\n       COUNT(*) AS headcount,\n       ROUND(AVG(salary), 2) AS avg_salary\nFROM employees e\nJOIN departments d ON e.department_id = d.department_id\nWHERE e.country = 'US'\nGROUP BY department_name\nORDER BY headcount DESC, department_name ASC",
     "required_concepts": [
       "join",
       "group_by",
@@ -3532,7 +3532,7 @@
       "users.csv"
     ],
     "expected_query": "SELECT u.user_id, u.name, u.email, u.signup_date, u.acquisition_channel\nFROM users u\nWHERE u.user_id NOT IN (\n    SELECT DISTINCT user_id FROM orders\n)\nORDER BY u.signup_date DESC, u.user_id ASC",
-    "solution_query": "SELECT u.user_id, u.name, u.email, u.signup_date, u.acquisition_channel\nFROM users u\nWHERE u.user_id NOT IN (\n    SELECT DISTINCT user_id FROM orders\n)\nORDER BY u.signup_date DESC;",
+    "solution_query": "SELECT u.user_id, u.name, u.email, u.signup_date, u.acquisition_channel\nFROM users u\nWHERE u.user_id NOT IN (\n    SELECT DISTINCT user_id FROM orders\n)\nORDER BY u.signup_date DESC, u.user_id ASC",
     "required_concepts": [
       "not_in",
       "subquery",
@@ -4032,7 +4032,7 @@
       "categories.csv"
     ],
     "expected_query": "SELECT\n  c.category_name,\n  COUNT(*) AS total_products,\n  SUM(CASE WHEN p.is_active = false THEN 1 ELSE 0 END) AS inactive_count,\n  ROUND(100.0 * SUM(CASE WHEN p.is_active = false THEN 1 ELSE 0 END) / COUNT(*), 1) AS inactive_pct\nFROM products p\nJOIN categories c ON p.category_id = c.category_id\nGROUP BY c.category_name\nORDER BY inactive_pct DESC, category_name ASC",
-    "solution_query": "SELECT\n  c.category_name,\n  COUNT(*) AS total_products,\n  SUM(CASE WHEN p.is_active = false THEN 1 ELSE 0 END) AS inactive_count,\n  ROUND(100.0 * SUM(CASE WHEN p.is_active = false THEN 1 ELSE 0 END) / COUNT(*), 1) AS inactive_pct\nFROM products p\nJOIN categories c ON p.category_id = c.category_id\nGROUP BY c.category_name\nORDER BY inactive_pct DESC",
+    "solution_query": "SELECT\n  c.category_name,\n  COUNT(*) AS total_products,\n  SUM(CASE WHEN p.is_active = false THEN 1 ELSE 0 END) AS inactive_count,\n  ROUND(100.0 * SUM(CASE WHEN p.is_active = false THEN 1 ELSE 0 END) / COUNT(*), 1) AS inactive_pct\nFROM products p\nJOIN categories c ON p.category_id = c.category_id\nGROUP BY c.category_name\nORDER BY inactive_pct DESC, category_name ASC",
     "required_concepts": [
       "case_when",
       "grouped_agg",
