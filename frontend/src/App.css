@@ -5252,9 +5252,14 @@ select {
 }
 
 .track-hub-db-note {
-  font-size: 0.82rem;
+  font-size: 0.81rem;
   color: var(--text-secondary);
-  margin: 0.35rem 0 0;
+  line-height: 1.5;
+  margin: 0.65rem 0 0;
+  padding: 0.4rem 0.65rem;
+  background: var(--accent-soft);
+  border-left: 2px solid var(--accent-soft-strong);
+  border-radius: 0 5px 5px 0;
 }
 
 .thub-db-link-btn {
@@ -5263,6 +5268,8 @@ select {
   padding: 0;
   color: var(--accent);
   font-size: inherit;
+  font-family: inherit;
+  font-weight: inherit;
   cursor: pointer;
   text-decoration: underline;
   text-underline-offset: 2px;
