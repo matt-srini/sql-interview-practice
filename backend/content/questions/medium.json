@@ -2156,8 +2156,8 @@
       "departments.csv"
     ],
     "debug_error": "Binder Error: Referenced table \"emp\" not found!\nCandidate tables: \"e\"\n\nLINE 4: WHERE emp.country = 'US'\n              ^",
-    "starter_query": "SELECT department_name, COUNT(*) AS headcount, ROUND(AVG(salary), 2) AS avg_salary\nFROM employees e\nJOIN departments d ON e.department_id = d.department_id\nWHERE emp.country = 'US'\nGROUP BY department_name\nORDER BY headcount DESC",
-    "expected_query": "SELECT department_name, COUNT(*) AS headcount, ROUND(AVG(salary),2) AS avg_salary\nFROM employees e\nJOIN departments d ON e.department_id = d.department_id\nWHERE e.country = 'US'\nGROUP BY department_name\nORDER BY headcount DESC",
+    "starter_query": "SELECT department_name, COUNT(*) AS headcount, ROUND(AVG(salary), 2) AS avg_salary\nFROM employees e\nJOIN departments d ON e.department_id = d.department_id\nWHERE emp.country = 'US'\nGROUP BY department_name\nORDER BY headcount DESC, department_name ASC",
+    "expected_query": "SELECT department_name, COUNT(*) AS headcount, ROUND(AVG(salary),2) AS avg_salary\nFROM employees e\nJOIN departments d ON e.department_id = d.department_id\nWHERE e.country = 'US'\nGROUP BY department_name\nORDER BY headcount DESC, department_name ASC",
     "solution_query": "SELECT department_name,\n       COUNT(*) AS headcount,\n       ROUND(AVG(salary), 2) AS avg_salary\nFROM employees e\nJOIN departments d ON e.department_id = d.department_id\nWHERE e.country = 'US'\nGROUP BY department_name\nORDER BY headcount DESC;",
     "required_concepts": [
       "join",
@@ -2642,7 +2642,7 @@
     "order": 62,
     "title": "Order payment breakdown with FILTER",
     "difficulty": "medium",
-    "description": "Write a query that returns, for each order `status`, the total order count and three conditional counts: `paid_count`, `pending_count`, and `failed_count` based on `payment_status`. Use the `FILTER(WHERE ...)` clause for the conditional aggregation. Order by `status` ascending.",
+    "description": "Write a query that returns, for each order `status`, the total order count and three conditional counts: `paid_count`, `pending_count`, and `failed_count` based on `payment_status`. Use the `FILTER(WHERE ...)` clause for the conditional aggregation. Return the total count as `total_orders`. Order by `status` ascending.",
     "dataset_files": [
       "orders.csv"
     ],
@@ -3331,7 +3331,7 @@
     "parent_id": 12079,
     "follow_up_dimension": "edge_case_pivot",
     "title": "Monthly revenue by plan tier including cancellation view",
-    "description": "After reviewing the completed-orders breakdown, the finance team asks: 'We're ignoring cancelled orders entirely — but what fraction of orders per segment are being cancelled? Can you add cancelled_orders and cancellation_rate_pct to the view?' Write a query that returns `plan_tier`, `order_month`, `completed_orders`, `cancelled_orders`, `revenue` (sum of net_amount for completed orders, rounded to 2 dp), and `cancellation_rate_pct` (cancelled_orders / total_orders × 100, rounded to 1 dp). Include all orders (both statuses). Order by `order_month` ascending, then `plan_tier` ascending.",
+    "description": "After reviewing the completed-orders breakdown, the finance team asks: 'We're ignoring cancelled orders entirely — but what fraction of orders per segment are being cancelled? Can you add cancelled_orders and cancellation_rate_pct to the view?' Write a query that returns `plan_tier`, `order_month` (formatted as a `'YYYY-MM'` string, e.g. `'2023-01'`), `completed_orders`, `cancelled_orders`, `revenue` (sum of net_amount for completed orders, rounded to 2 dp), and `cancellation_rate_pct` (cancelled_orders / total_orders × 100, rounded to 1 dp). Include all orders (both statuses). Order by `order_month` ascending, then `plan_tier` ascending.",
     "difficulty": "medium",
     "schema": {
       "users": [
@@ -3512,7 +3512,7 @@
     "mock_only": true,
     "framing": "scenario",
     "title": "Registered users who have never placed an order",
-    "description": "The re-engagement team wants to target users who signed up but have never ordered. Write a query that returns `user_id`, `name`, `email`, `signup_date`, and `acquisition_channel` for all users with no rows in the `orders` table. Order by `signup_date` descending.",
+    "description": "The re-engagement team wants to target users who signed up but have never ordered. Write a query that returns `user_id`, `name`, `email`, `signup_date`, and `acquisition_channel` for all users with no rows in the `orders` table. Order by `signup_date` descending, then `user_id` ascending.",
     "difficulty": "medium",
     "schema": {
       "users": [
@@ -3531,7 +3531,7 @@
       "orders.csv",
       "users.csv"
     ],
-    "expected_query": "SELECT u.user_id, u.name, u.email, u.signup_date, u.acquisition_channel\nFROM users u\nWHERE u.user_id NOT IN (\n    SELECT DISTINCT user_id FROM orders\n)\nORDER BY u.signup_date DESC",
+    "expected_query": "SELECT u.user_id, u.name, u.email, u.signup_date, u.acquisition_channel\nFROM users u\nWHERE u.user_id NOT IN (\n    SELECT DISTINCT user_id FROM orders\n)\nORDER BY u.signup_date DESC, u.user_id ASC",
     "solution_query": "SELECT u.user_id, u.name, u.email, u.signup_date, u.acquisition_channel\nFROM users u\nWHERE u.user_id NOT IN (\n    SELECT DISTINCT user_id FROM orders\n)\nORDER BY u.signup_date DESC;",
     "required_concepts": [
       "not_in",
@@ -4014,7 +4014,7 @@
     "mock_only": true,
     "framing": "scenario",
     "title": "Inactive product percentage by category",
-    "description": "A catalog manager needs to audit product health. For each category, return the total product count, the number of inactive products (is_active = false), and the inactive percentage rounded to 1 decimal. Output columns: category_name, total_products, inactive_count, inactive_pct. Order by inactive_pct descending.",
+    "description": "A catalog manager needs to audit product health. For each category, return the total product count, the number of inactive products (is_active = false), and the inactive percentage rounded to 1 decimal. Output columns: category_name, total_products, inactive_count, inactive_pct. Order by inactive_pct descending, then category_name ascending.",
     "difficulty": "medium",
     "schema": {
       "products": [
@@ -4031,7 +4031,7 @@
       "products.csv",
       "categories.csv"
     ],
-    "expected_query": "SELECT\n  c.category_name,\n  COUNT(*) AS total_products,\n  SUM(CASE WHEN p.is_active = false THEN 1 ELSE 0 END) AS inactive_count,\n  ROUND(100.0 * SUM(CASE WHEN p.is_active = false THEN 1 ELSE 0 END) / COUNT(*), 1) AS inactive_pct\nFROM products p\nJOIN categories c ON p.category_id = c.category_id\nGROUP BY c.category_name\nORDER BY inactive_pct DESC",
+    "expected_query": "SELECT\n  c.category_name,\n  COUNT(*) AS total_products,\n  SUM(CASE WHEN p.is_active = false THEN 1 ELSE 0 END) AS inactive_count,\n  ROUND(100.0 * SUM(CASE WHEN p.is_active = false THEN 1 ELSE 0 END) / COUNT(*), 1) AS inactive_pct\nFROM products p\nJOIN categories c ON p.category_id = c.category_id\nGROUP BY c.category_name\nORDER BY inactive_pct DESC, category_name ASC",
     "solution_query": "SELECT\n  c.category_name,\n  COUNT(*) AS total_products,\n  SUM(CASE WHEN p.is_active = false THEN 1 ELSE 0 END) AS inactive_count,\n  ROUND(100.0 * SUM(CASE WHEN p.is_active = false THEN 1 ELSE 0 END) / COUNT(*), 1) AS inactive_pct\nFROM products p\nJOIN categories c ON p.category_id = c.category_id\nGROUP BY c.category_name\nORDER BY inactive_pct DESC",
     "required_concepts": [
       "case_when",
@@ -4248,7 +4248,7 @@
     "mock_only": true,
     "framing": "scenario",
     "title": "Unique products viewed per device type",
-    "description": "A UX team wants to understand product discovery across device types. For each `device_type`, count the number of distinct products viewed (event_name = 'view_product') and the number of distinct users who viewed at least one product. Return `device_type`, `unique_products_viewed` (count of distinct non-NULL product_ids), and `unique_users` (count of distinct user_ids). Order by `unique_products_viewed` descending.",
+    "description": "A UX team wants to understand product discovery across device types. For each `device_type`, count the number of distinct products viewed (event_name = 'view_product') and the number of distinct users who viewed at least one product. Return `device_type`, `unique_products_viewed` (count of distinct non-NULL product_ids), and `unique_users` (count of distinct user_ids). Order by `unique_products_viewed` descending, then `device_type` ascending.",
     "difficulty": "medium",
     "schema": {
       "events": [
@@ -4267,7 +4267,7 @@
       "events.csv",
       "sessions.csv"
     ],
-    "expected_query": "SELECT\n  s.device_type,\n  COUNT(DISTINCT e.product_id) AS unique_products_viewed,\n  COUNT(DISTINCT s.user_id) AS unique_users\nFROM events e\nJOIN sessions s ON e.session_id = s.session_id\nWHERE e.event_name = 'view_product'\n  AND e.product_id IS NOT NULL\nGROUP BY s.device_type\nORDER BY unique_products_viewed DESC",
+    "expected_query": "SELECT\n  s.device_type,\n  COUNT(DISTINCT e.product_id) AS unique_products_viewed,\n  COUNT(DISTINCT s.user_id) AS unique_users\nFROM events e\nJOIN sessions s ON e.session_id = s.session_id\nWHERE e.event_name = 'view_product'\n  AND e.product_id IS NOT NULL\nGROUP BY s.device_type\nORDER BY unique_products_viewed DESC, device_type ASC",
     "solution_query": "SELECT\n  s.device_type,\n  COUNT(DISTINCT e.product_id) AS unique_products_viewed,\n  COUNT(DISTINCT s.user_id) AS unique_users\nFROM events e\nJOIN sessions s ON e.session_id = s.session_id\nWHERE e.event_name = 'view_product'\n  AND e.product_id IS NOT NULL\nGROUP BY s.device_type\nORDER BY unique_products_viewed DESC",
     "required_concepts": [
       "join",
