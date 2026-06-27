@@ -95,6 +95,7 @@ export default function TrackHubPage() {
   const overallPct = totalQuestions > 0 ? totalSolved / totalQuestions : 0;
 
   const [topicPaths, setTopicPaths] = useState([]);
+  const [duckdbTipOpen, setDuckdbTipOpen] = useState(false);
   useEffect(() => {
     api.get('/paths').then(r => setTopicPaths(r.data.filter(p => p.topic === topic))).catch(() => {});
   }, [topic]);
@@ -192,6 +193,39 @@ export default function TrackHubPage() {
             <span className="track-hub-tagline">{meta.tagline}</span>
           </div>
           <p className="track-hub-desc">{meta.description}</p>
+          {topic === 'sql' && (
+            <>
+              <p className="track-hub-db-note">
+                Runs on DuckDB — some Postgres/MySQL functions differ.{' '}
+                <button className="thub-db-link-btn" onClick={() => setDuckdbTipOpen(true)}>
+                  See syntax reference
+                </button>
+              </p>
+              {duckdbTipOpen && (
+                <div className="duckdb-tip-overlay" role="dialog" aria-modal="true" aria-label="DuckDB syntax reference" onClick={() => setDuckdbTipOpen(false)}>
+                  <div className="duckdb-tip-modal" onClick={(e) => e.stopPropagation()}>
+                    <div className="duckdb-tip-header">
+                      <span className="duckdb-tip-title">DuckDB syntax reference</span>
+                      <button className="duckdb-tip-close" onClick={() => setDuckdbTipOpen(false)} aria-label="Close">×</button>
+                    </div>
+                    <table className="duckdb-tip-table">
+                      <thead>
+                        <tr><th>Operation</th><th>Use in DuckDB</th><th>Not this</th></tr>
+                      </thead>
+                      <tbody>
+                        <tr><td>Date → string</td><td><code>STRFTIME('%Y-%m', date)</code></td><td><code>TO_CHAR(date, 'YYYY-MM')</code></td></tr>
+                        <tr><td>String → date</td><td><code>STRPTIME(str, '%Y-%m-%d')</code></td><td><code>TO_DATE</code></td></tr>
+                        <tr><td>Date bucketing</td><td><code>DATE_TRUNC('month', date)</code></td><td>—</td></tr>
+                        <tr><td>Date arithmetic</td><td><code>date::DATE + INTERVAL 7 DAY</code></td><td><code>DATE_ADD</code></td></tr>
+                        <tr><td>String concat</td><td><code>a || ' ' || b</code></td><td><code>CONCAT</code> (non-portable)</td></tr>
+                        <tr><td>NULL-last sort</td><td><code>ORDER BY col ASC NULLS LAST</code></td><td>—</td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
           {questionFormSummary.length > 1 && (
             <div className="track-hub-form-strip" aria-label="Question forms in this track">
               <span className="track-hub-form-strip-label">What you'll practice</span>

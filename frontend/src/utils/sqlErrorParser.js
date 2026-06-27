@@ -23,6 +23,14 @@ const HINTS = [
     pattern: /division by zero/i,
     userMessage: 'Division by zero occurred. Use NULLIF or a safe denominator check.',
   },
+  {
+    pattern: /scalar function with name to_char does not exist/i,
+    userMessage: "DuckDB doesn't have TO_CHAR — use STRFTIME('%Y-%m', date) for date formatting.",
+  },
+  {
+    pattern: /scalar function with name \w+ does not exist/i,
+    userMessage: 'Unknown function — this platform runs DuckDB, which differs from Postgres/MySQL in some built-ins. Visit the SQL track page for a syntax reference.',
+  },
 ];
 
 export function parseSqlError(errorText) {

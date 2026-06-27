@@ -617,6 +617,8 @@ export default function QuestionPage() {
     if (submitting) return;
     priorAttemptCountRef.current = pastAttempts.length;
     setSubmitting(true);
+    setRunResult(null);
+    setRunError(null);
     setSubmitResult(null);
     setSubmitError(null);
     setShowSolution(false);
