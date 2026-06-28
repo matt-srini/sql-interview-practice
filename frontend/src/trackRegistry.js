@@ -114,7 +114,7 @@ export const TRACK_META = {
   'product-sense': {
     label: 'Product Sense',
     description: 'Metric design, diagnosis, trade-offs, and ship judgment: the product-sense reasoning a data scientist or analyst uses to decide what to measure, why a number moved, and whether a result is worth shipping.',
-    color: '#A63DBE',
+    color: '#8E3B6E',
     apiPrefix: '/product-sense',
     language: 'text',
     hasRunCode: false,

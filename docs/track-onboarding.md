@@ -132,7 +132,7 @@ Also define **first-hint leak patterns** — regex patterns for answer-revealing
 
 Every track requires:
 
-- Exactly **one `foundational` path** (validator-enforced; UX entry point — gets the "Start here" pill on TrackHub).
+- **At least one `foundational` path** (validator floor: ≥ 1 — most tracks run **2–3**, content-driven; the UX entry point that gets the "Start here" pill on TrackHub).
 - At least **one `intermediate` path** (covers a mid-tier pattern cluster). Multiple intermediates allowed when a track has parallel mid-tier clusters.
 - At least **one `advanced` path** for tracks with 80+ practice questions. Tracks below that may launch with foundational + intermediate only and add advanced paths as the catalog grows.
 
@@ -478,6 +478,9 @@ Run every item before pushing the launch commit.
 | 7 | Statistics | `statistics` | Live |
 | 8 | ML Fundamentals | `ml-fundamentals` | Live |
 | 9 | Experimentation | `experimentation` | Live |
+| 10\* | Product Sense | `product-sense` | In development (worktree branch `product-sense-track`) |
+
+\* Track 10 has no free single leading digit (1–9 are exhausted), so it uses a two-digit ID prefix: `10XNNN` practice/mock, `10XS` samples. See [`content-authoring.md`](./content-authoring.md) § TXNNN ID scheme.
 
 ---
 

@@ -155,15 +155,17 @@ Per-track concept arcs: see each `docs/tracks/<track>.md`.
 
 This is the single authoritative source for the ID scheme. Where any other document conflicts, **this section wins.**
 
-### Scheme: `TXNNN` (5 digits)
+### Scheme: `TXNNN` (5 digits; `(TT)XNNN` for tracks ≥ 10)
 
 ```
-T   = track digit (1–9)
+T   = track digit (1–9; tracks 10+ widen to a two-digit prefix, e.g. 10)
 X   = difficulty digit (1=easy, 2=medium, 3=hard)
 NNN = sequence within that difficulty (001–999)
 ```
 
-Examples: `11005` = SQL easy #5 · `42017` = PySpark medium #17 · `53004` = Data Engineering hard #4.
+Examples: `11005` = SQL easy #5 · `42017` = PySpark medium #17 · `53004` = Data Engineering hard #4 · `102007` = Product Sense medium #7 (track 10).
+
+**Tracks beyond T9.** The single leading digit is exhausted (1–9 all assigned), so the 10th+ track widens the track prefix to two digits — `(TT)XNNN`. Track 10 (Product Sense) is `10XNNN` (6 digits: `101001–103999`). This is the minimal numeric extension: it preserves the X-difficulty + NNN-sequence structure, stays numeric (question-id columns are Postgres `INTEGER` and the loaders compare ids numerically against each track's `schemas.json` ranges), and needs no scheme rewrite or DB migration. Rationale + the rejected alpha-prefix alternative: [`DECISIONS.md`](./decisions/DECISIONS.md) (2026-06-28).
 
 ### Track assignments
 
@@ -178,16 +180,17 @@ Examples: `11005` = SQL easy #5 · `42017` = PySpark medium #17 · `53004` = Dat
 | Statistics | 7 | 71001–71999 | 72001–72999 | 73001–73999 |
 | ML Fundamentals | 8 | 81001–81999 | 82001–82999 | 83001–83999 |
 | Experimentation | 9 | 91001–91999 | 92001–92999 | 93001–93999 |
+| Product Sense | 10 | 101001–101999 | 102001–102999 | 103001–103999 |
 
-All T digits 1–9 are now allocated. New tracks beyond T9 require a T-assignment decision.
+Single digits 1–9 are all allocated; track 10 (Product Sense) uses the two-digit `10` prefix (`10XNNN`, per the scheme note above). Further tracks continue the pattern (`11XNNN`, …).
 
 ### Practice vs mock-only allocation
 
 Practice and `mock_only: true` questions share the same `TXNNN` space within each difficulty file. IDs are assigned in append order — by when the question was authored — with no guarantee that all practice IDs precede all mock-only IDs. Later-added practice questions may carry IDs that are numerically higher than earlier-added mock-only questions (e.g. Data Modeling medium has practice IDs 62035, 62036, 62077 interspersed with mock-only IDs). **Classification is determined solely by the `mock_only` flag, not by ID sequence or position in the file.** **No mock-only questions exist at easy** for any track (by design: easy is practice-only).
 
-### Sample IDs (3-digit TXS format, all tracks)
+### Sample IDs (`TXS` 3-digit; `10XS` 4-digit for tracks ≥ 10)
 
-All 9 tracks use a compact `TXS` format (`T` = track digit, `X` = difficulty digit, `S` = 1–3): 3 easy + 3 medium + 3 hard per track = 9 samples per track, 81 total. By track:
+Every track uses a compact sample format (`T` = track digit, `X` = difficulty digit, `S` = 1–3): 3 easy + 3 medium + 3 hard per track = 9 samples per track. Tracks 1–9 are 3-digit `TXS`; track 10 (Product Sense) widens to 4-digit `10XS`, matching the `(TT)XNNN` practice scheme. By track:
 
 | Track | T | Easy | Medium | Hard |
 |---|---|---|---|---|
@@ -200,8 +203,9 @@ All 9 tracks use a compact `TXS` format (`T` = track digit, `X` = difficulty dig
 | Statistics | 7 | 711–713 | 721–723 | 731–733 |
 | ML Fundamentals | 8 | 811–813 | 821–823 | 831–833 |
 | Experimentation | 9 | 911–913 | 921–923 | 931–933 |
+| Product Sense | 10 | 1011–1013 | 1021–1023 | 1031–1033 |
 
-3-digit TXS IDs never collide with 5-digit practice / mock-only IDs (`TXNNN`).
+Sample IDs (3-digit `TXS`, or 4-digit `10XS` for track 10) never collide with practice / mock-only IDs (`TXNNN` / `10XNNN`): samples are 3–4 digits, practice/mock are 5–6.
 
 **Storage:** Every track — SQL included — has a **dedicated sample file** at `backend/content/sample_questions/<track>.json`, loaded by `sample_questions.py` at startup. Sample questions are completely separate from the practice and mock pools — they must never duplicate practice or mock content. Author samples as independent content.
 

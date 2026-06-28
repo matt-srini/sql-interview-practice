@@ -1,6 +1,6 @@
 # Concept Taxonomy — canonical registry
 
-> **Source of truth for every `concepts` tag on every question, across all 9 tracks, plus the universal follow-up dimension taxonomy used in mock chains.** This file is the discipline. No `concepts` tag may appear in a question file unless it maps to a family registered here. New families require a PR to this file *first*.
+> **Source of truth for every `concepts` tag on every question, across all 10 tracks, plus the universal follow-up dimension taxonomy used in mock chains.** This file is the discipline. No `concepts` tag may appear in a question file unless it maps to a family registered here. New families require a PR to this file *first*.
 
 **Why this file exists.** Before this registry, concept tags drifted: SQL questions tagged with implementation primitives (`JOIN`, `GROUP BY`), PySpark questions accumulated 493 unique tags many of which were lowercase mechanic names (`shuffle`, `Catalyst optimizer`), Statistics tags were mixed-case and ad-hoc. The result was a fragmented inventory that mock focus mode and dashboard insights could only weakly aggregate over. This registry consolidates that history into per-track canonical families with explicit blocklists.
 
@@ -10,7 +10,7 @@
 
 If a family fails either test, it doesn't belong here. We are **not** building a textbook curriculum. We are surfacing the reasoning patterns serious practitioners and serious interviewers care about.
 
-> **⚡ gap families — Phase 2 status.** Families marked `⚡ *real-world gap*` were added by the 2026-05 refactor to surface reasoning the bank previously had only *implicitly*. **SQL Phase 2 complete:** `DOUBLE-COUNTING DETECTION`, `DATA QUALITY SKEPTICISM`, and `METRIC RECONCILIATION` now have practice coverage; `METRIC INTERPRETATION & DENOMINATOR CHOICE`, `OUTPUT SANITY VALIDATION`, and `PERFORMANCE-AWARE ANALYTICS` are established as **mock-only realism lenses** (appear only on `mock_only: true` questions, always co-occurring with ≥1 practice-grounded family; enforced by `_validate_mock_only_realism()`). **Python Phase 2 complete:** Python has **no ⚡/realism families by design** — Python's families are pure algorithmic patterns, and the candidate "lens" (complexity & memory) is **practice-gradable** via the executable harness (`O(n²)` times out, `load-everything` OOMs on the sized hidden inputs) and surfaces in mock as the `performance_pivot` chain dimension, not as a concept tag. **PySpark Phase 2 complete:** `DATA QUALITY SKEPTICISM`, `DOUBLE-COUNTING DETECTION`, and `OUTPUT SANITY VALIDATION` are practice-grounded (new practice questions authored; all three ⚡ markers removed from PySpark section). PySpark has no mock-only realism families — MCQ format makes all three reasoning lenses gradeable as `predict_output` / `debug`. **Pandas Phase 2 complete:** six new families grounded — `MEMORY & VECTORIZATION REASONING`, `DATA QUALITY SKEPTICISM`, `DOUBLE-COUNTING DETECTION` are practice-grounded; `METRIC INTERPRETATION & DENOMINATOR CHOICE`, `OUTPUT SANITY VALIDATION`, `PERFORMANCE-AWARE ANALYTICS` are mock-only realism lenses (same contract as the SQL realism trio). See Pandas section below for full entries. **Data Engineering Phase 2 complete:** DE has no mock-only realism families — all 21 concept families are practice-grounded (MCQ constructed-reasoning format makes every family directly gradeable as `scenario`/`debug`/`conceptual`; the "assessment lens" rationale for SQL/Pandas mock-only realism does not transfer). `MOCK_ONLY_REALISM_FAMILIES["data-engineering"] = set()` enforced in `concept_families.py`. **ML Fundamentals Phase 2 complete; BIAS/FAIRNESS Phase 2.5 complete (2026-05-26):** ML Fundamentals has 30 concept families (all UPPERCASE). `ALGORITHMIC FAIRNESS` added at position 30 — practice-grounded (path-ii preserved; `MOCK_ONLY_REALISM_FAMILIES["ml-fundamentals"] = set()` unchanged). No mock-only realism families by design: MCQ constructed-reasoning format makes every reasoning lens directly gradeable as `scenario`/`debug`/`conceptual`/`predict_output` — the "assessment lens" rationale for SQL/Pandas mock-only realism does not transfer. `MOCK_ONLY_REALISM_FAMILIES["ml-fundamentals"] = set()` enforced in `concept_families.py`. **Experimentation Phase 2 complete:** Experimentation has 24 concept families (all UPPERCASE). No mock-only realism families by design: MCQ constructed-reasoning format makes every reasoning lens (SRM diagnosis, novelty detection, peeking) directly gradeable as `scenario`/`debug`/`predict_output` — the "assessment lens" rationale for SQL/Pandas mock-only realism does not transfer. Registry expanded 22→24 with SEQUENTIAL TESTING and METRIC SENSITIVITY. `MOCK_ONLY_REALISM_FAMILIES["experimentation"] = set()` enforced in `concept_families.py`. **Data Modeling Phase 2 complete:** DM has no mock-only realism families — all 22 concept families are practice-grounded (MCQ constructed-reasoning format makes every family directly gradeable as `scenario`/`debug`/`conceptual`; the "assessment lens" rationale for SQL/Pandas mock-only realism does not transfer). `MOCK_ONLY_REALISM_FAMILIES["data-modeling"] = set()` enforced in `concept_families.py`. **Statistics Phase 2 complete:** Statistics has 13 concept families using lowercase canonical tag style (a deliberate exception to the UPPERCASE convention — preserves the existing corpus and matches academic/industry norms). No mock-only realism families by design: the dual-subtype format (conceptual MCQ + numerical Python execution) makes every reasoning lens directly gradeable regardless of subtype — the "assessment lens" rationale for SQL/Pandas mock-only realism (they can't grade as query-writing) does not apply when MCQ and code execution are both first-class. `MOCK_ONLY_REALISM_FAMILIES["statistics"] = set()` enforced in `concept_families.py`.
+> **⚡ gap families — Phase 2 status.** Families marked `⚡ *real-world gap*` were added by the 2026-05 refactor to surface reasoning the bank previously had only *implicitly*. **SQL Phase 2 complete:** `DOUBLE-COUNTING DETECTION`, `DATA QUALITY SKEPTICISM`, and `METRIC RECONCILIATION` now have practice coverage; `METRIC INTERPRETATION & DENOMINATOR CHOICE`, `OUTPUT SANITY VALIDATION`, and `PERFORMANCE-AWARE ANALYTICS` are established as **mock-only realism lenses** (appear only on `mock_only: true` questions, always co-occurring with ≥1 practice-grounded family; enforced by `_validate_mock_only_realism()`). **Python Phase 2 complete:** Python has **no ⚡/realism families by design** — Python's families are pure algorithmic patterns, and the candidate "lens" (complexity & memory) is **practice-gradable** via the executable harness (`O(n²)` times out, `load-everything` OOMs on the sized hidden inputs) and surfaces in mock as the `performance_pivot` chain dimension, not as a concept tag. **PySpark Phase 2 complete:** `DATA QUALITY SKEPTICISM`, `DOUBLE-COUNTING DETECTION`, and `OUTPUT SANITY VALIDATION` are practice-grounded (new practice questions authored; all three ⚡ markers removed from PySpark section). PySpark has no mock-only realism families — MCQ format makes all three reasoning lenses gradeable as `predict_output` / `debug`. **Pandas Phase 2 complete:** six new families grounded — `MEMORY & VECTORIZATION REASONING`, `DATA QUALITY SKEPTICISM`, `DOUBLE-COUNTING DETECTION` are practice-grounded; `METRIC INTERPRETATION & DENOMINATOR CHOICE`, `OUTPUT SANITY VALIDATION`, `PERFORMANCE-AWARE ANALYTICS` are mock-only realism lenses (same contract as the SQL realism trio). See Pandas section below for full entries. **Data Engineering Phase 2 complete:** DE has no mock-only realism families — all 21 concept families are practice-grounded (MCQ constructed-reasoning format makes every family directly gradeable as `scenario`/`debug`/`conceptual`; the "assessment lens" rationale for SQL/Pandas mock-only realism does not transfer). `MOCK_ONLY_REALISM_FAMILIES["data-engineering"] = set()` enforced in `concept_families.py`. **ML Fundamentals Phase 2 complete; BIAS/FAIRNESS Phase 2.5 complete (2026-05-26):** ML Fundamentals has 30 concept families (all UPPERCASE). `ALGORITHMIC FAIRNESS` added at position 30 — practice-grounded (path-ii preserved; `MOCK_ONLY_REALISM_FAMILIES["ml-fundamentals"] = set()` unchanged). No mock-only realism families by design: MCQ constructed-reasoning format makes every reasoning lens directly gradeable as `scenario`/`debug`/`conceptual`/`predict_output` — the "assessment lens" rationale for SQL/Pandas mock-only realism does not transfer. `MOCK_ONLY_REALISM_FAMILIES["ml-fundamentals"] = set()` enforced in `concept_families.py`. **Experimentation Phase 2 complete:** Experimentation has 24 concept families (all UPPERCASE). No mock-only realism families by design: MCQ constructed-reasoning format makes every reasoning lens (SRM diagnosis, novelty detection, peeking) directly gradeable as `scenario`/`debug`/`predict_output` — the "assessment lens" rationale for SQL/Pandas mock-only realism does not transfer. Registry expanded 22→24 with SEQUENTIAL TESTING and METRIC SENSITIVITY. `MOCK_ONLY_REALISM_FAMILIES["experimentation"] = set()` enforced in `concept_families.py`. **Data Modeling Phase 2 complete:** DM has no mock-only realism families — all 22 concept families are practice-grounded (MCQ constructed-reasoning format makes every family directly gradeable as `scenario`/`debug`/`conceptual`; the "assessment lens" rationale for SQL/Pandas mock-only realism does not transfer). `MOCK_ONLY_REALISM_FAMILIES["data-modeling"] = set()` enforced in `concept_families.py`. **Statistics Phase 2 complete:** Statistics has 13 concept families using lowercase canonical tag style (a deliberate exception to the UPPERCASE convention — preserves the existing corpus and matches academic/industry norms). No mock-only realism families by design: the dual-subtype format (conceptual MCQ + numerical Python execution) makes every reasoning lens directly gradeable regardless of subtype — the "assessment lens" rationale for SQL/Pandas mock-only realism (they can't grade as query-writing) does not apply when MCQ and code execution are both first-class. `MOCK_ONLY_REALISM_FAMILIES["statistics"] = set()` enforced in `concept_families.py`. **Product Sense registry added (2026-06-28):** Product Sense has 18 concept families (all UPPERCASE). No mock-only realism families by design: MCQ constructed-reasoning format makes every reasoning lens directly gradeable as `scenario`/`debug`/`conceptual`/`predict_output` — the "assessment lens" rationale for SQL/Pandas mock-only realism does not transfer. `MOCK_ONLY_REALISM_FAMILIES["product-sense"] = set()` enforced in `concept_families.py`.
 
 ---
 
@@ -1030,6 +1030,116 @@ Time-to-event modeling, hazard rates, censoring, Kaplan-Meier estimation — the
 |---|---|
 | `t-test`, `z-test`, `chi-squared` (alone, in experimentation context) | the test selection family or the broader statistical-significance family |
 | `Excel`, `Optimizely`, `Statsig` (alone) | the experimentation concept the tool implements |
+
+---
+
+## Product Sense — concept families
+
+**Modality:** Constructed reasoning. No execution. Question types: scenario (dominant) / conceptual / debug / predict_output. Response: MCQ.
+**Reasoning archetype:** Decide *what to measure and why*, *why a number moved*, and *which good to trade for which* — the judgment layer on top of the data, never its computation.
+**Current tag inventory:** 18 canonical families. Design discipline: ~74 micro-topics from 8 external taxonomies consolidated to 18 — tight enough to be a real diagnostic, granular enough that each family names a distinct reasoning move. Families are grouped below by sub-skill for readability; the machine registry (`backend/concept_families.py`) is flat. **No mock-only realism families:** MCQ constructed-reasoning format makes every reasoning lens directly gradeable as `scenario`/`debug`/`conceptual`/`predict_output` — the "assessment lens" rationale for SQL/Pandas mock-only realism does not apply. `MOCK_ONLY_REALISM_FAMILIES["product-sense"] = set()` enforced in `concept_families.py`.
+
+### Family registry
+
+#### §A — Metric design (4 families)
+
+| Family | Match patterns | Notes |
+|---|---|---|
+| `METRIC SELECTION & GOAL TRANSLATION` | `METRIC SELECTION & GOAL TRANSLATION`, `METRIC SELECTION`, `GOAL TRANSLATION`, `SUCCESS METRIC` | Turning a vague product goal into a defensible primary / success metric; connecting user action to business objective; recognising when a metric is representative + actionable vs a vanity restatement. **Difficulty:** easy → medium. |
+| `GUARDRAIL & COUNTER-METRIC REASONING` | `GUARDRAIL & COUNTER-METRIC REASONING`, `GUARDRAIL`, `COUNTER-METRIC`, `COUNTER METRIC` | The metric *system*, not the single number — distinguishing primary vs guardrail vs counter vs health metric; choosing the guardrail that would actually catch the disqualifying side effect; leading vs lagging. **Difficulty:** easy → medium. |
+| `METRIC GAMING & ROBUSTNESS` | `METRIC GAMING & ROBUSTNESS`, `METRIC GAMING`, `GOODHART`, `GAMEABLE METRIC`, `ROBUST METRIC DESIGN` | Goodhart's law in practice — which metric survives an adversarial team optimising for it; spotting the proxy that a team can inflate without delivering real value; designing a metric or counter-metric pair that resists gaming. **Difficulty:** medium → hard. A signature hard-tier family. |
+| `METRIC DEFINITION INTEGRITY` | `METRIC DEFINITION INTEGRITY`, `METRIC DEFINITION`, `DENOMINATOR CHOICE`, `UNIT OF ANALYSIS` | The choices that decide whether a metric *means what you claim* — unit of analysis (user vs session vs impression), population / denominator boundaries, time window, and how a composite metric can move for numerator *or* denominator reasons. **Boundary co-tag:** touches SQL's `METRIC INTERPRETATION & DENOMINATOR CHOICE` — but SQL owns *computing* the metric; this owns *choosing the definition for meaning*. Test the choice, never the query. **Difficulty:** medium → hard. |
+
+#### §B — Metric diagnosis (3 families)
+
+| Family | Match patterns | Notes |
+|---|---|---|
+| `METRIC MOVEMENT DIAGNOSIS` | `METRIC MOVEMENT DIAGNOSIS`, `METRIC MOVEMENT`, `METRIC DROP`, `ROOT-CAUSE DIAGNOSIS` | Structured investigation of "metric X moved Y% — why?": clarify the metric + magnitude + window → form MECE hypotheses → decide what to check first → validate. Rewards a structured decomposition (TROPICS / clarify→hypothesise→validate spine) over a guessed cause. **Difficulty:** medium → hard. |
+| `SEGMENTATION & DECOMPOSITION REASONING` | `SEGMENTATION & DECOMPOSITION REASONING`, `SEGMENTATION & DECOMPOSITION`, `DECOMPOSITION REASONING`, `SIMPSON'S PARADOX` | Whether a movement is *global or concentrated* — breaking a metric by segment (platform / region / cohort age / user type / channel) to localise a cause; Simpson's-paradox awareness (the aggregate can move opposite to every segment). **Difficulty:** medium → hard. |
+| `REAL-CHANGE VS ARTIFACT` | `REAL-CHANGE VS ARTIFACT`, `REAL CHANGE VS ARTIFACT`, `MEASUREMENT ARTIFACT`, `INSTRUMENTATION ARTIFACT` | Ruling out the *measurement* explanation before believing a number — instrumentation / logging gap / a release / a definition change; separating internal causes from external ones (seasonality, competitor, macro event); sudden-vs-gradual as a tell (step change smells like a release/bug; a drift smells like behaviour). **Boundary co-tag:** the skepticism sibling of SQL's `DATA QUALITY SKEPTICISM`, but applied to a business metric's *interpretation*, not a query's correctness. **Difficulty:** medium → hard. |
+
+#### §C — Engagement, retention & funnel reasoning (3 families)
+
+| Family | Match patterns | Notes |
+|---|---|---|
+| `FUNNEL & CONVERSION REASONING` | `FUNNEL & CONVERSION REASONING`, `FUNNEL & CONVERSION`, `CONVERSION FUNNEL`, `DROP-OFF ANALYSIS` | Reading a funnel as a sequence of conversion steps; locating the actionable drop-off (bottleneck-vs-biggest-opportunity: a 50% drop at low volume can matter less than a 5% drop at high volume); proposing where to intervene. **Boundary co-tag:** SQL owns `FUNNEL ANALYSIS` (the query); this owns *which* step matters and *what to do*. **Difficulty:** easy → hard. |
+| `RETENTION & COHORT REASONING` | `RETENTION & COHORT REASONING`, `RETENTION & COHORT`, `COHORT CURVE`, `RETENTION CURVE` | Interpreting retention — n-day (classic, bounded) vs rolling (unbounded) and when each flatters / penalises a product; reading a cohort table's *shape* (a healthy plateau vs continued decline); diagnosing "drop in all cohorts (product change) vs only new cohorts (acquisition / onboarding quality)"; churn and resurrection. **Boundary co-tag:** SQL owns `COHORT RETENTION` (the query); this owns *reading and acting on* the table. **Difficulty:** medium → hard. |
+| `ENGAGEMENT & STICKINESS REASONING` | `ENGAGEMENT & STICKINESS REASONING`, `ENGAGEMENT & STICKINESS`, `STICKINESS RATIO`, `POWER-USER CURVE` | DAU/WAU/MAU and the DAU/MAU stickiness ratio (and why the benchmark is product-category-dependent); breadth (sessions/user) vs depth (actions/session) and how they can diverge; the power-user curve as a diagnostic; spotting engagement *inflated by notifications* ("active because pushed" vs "active because wanted"). **Difficulty:** easy → hard. |
+
+#### §D — Growth reasoning (1 family)
+
+| Family | Match patterns | Notes |
+|---|---|---|
+| `GROWTH & ACQUISITION REASONING` | `GROWTH & ACQUISITION REASONING`, `GROWTH & ACQUISITION`, `GROWTH LOOP`, `GROWTH ACCOUNTING`, `VIRALITY`, `K-FACTOR` | Growth *loops* (compounding) vs the linear funnel; k-factor / virality conceptually (k = invites × invitee-conversion; k>1 is viral; why burst virality ≠ sustained); the growth-accounting identity (end = start + new + resurrected − churned) to localise which lever drives a change; channel quality (which channel yields high-LTV cohorts). **Difficulty:** medium → hard. |
+
+#### §E — Trade-offs & the ship decision (2 families)
+
+| Family | Match patterns | Notes |
+|---|---|---|
+| `CONFLICTING-METRIC & TRADE-OFF JUDGMENT` | `CONFLICTING-METRIC & TRADE-OFF JUDGMENT`, `CONFLICTING-METRIC`, `CONFLICTING METRIC`, `TRADE-OFF JUDGMENT`, `TWO-SIDED TRADE-OFF` | Resolving competing signals — two metrics moving opposite ways, two user groups (creator/viewer, host/guest, driver/rider), or two time horizons (short-term lift vs long-term LTV). Rewards naming the trade-off explicitly and choosing a defensible hierarchy for *this* goal. **Difficulty:** medium → hard. A signature family of the track. |
+| `SHIP / NO-SHIP DECISION` | `SHIP / NO-SHIP DECISION`, `SHIP / NO-SHIP`, `SHIP NO-SHIP`, `SHIP DECISION`, `LAUNCH DECISION` | The *product decision* on a result: practical vs statistical significance ("+0.1% on 100M users — worth the eng cost + tech debt?"); novelty-effect / decay suspicion (short-window social wins fade); a guardrail regression that gates a positive primary; reversibility + blast radius in the call. **Boundary co-tag:** the most-overlapping family with Experimentation. The rule: Experimentation owns *how to run / measure the test correctly* (power, SRM, CUPED); this owns *given the result, should you ship and why*. A question that turns on computing power or detecting SRM is Experimentation's; a question that turns on the launch judgment is this track's. Never test the mechanic here. **Difficulty:** medium → hard. A signature family of the track. |
+
+#### §F — Causal & strategic judgment (2 families)
+
+| Family | Match patterns | Notes |
+|---|---|---|
+| `CAUSAL VS CORRELATIONAL JUDGMENT` | `CAUSAL VS CORRELATIONAL JUDGMENT`, `CAUSAL VS CORRELATIONAL`, `CORRELATION VS CAUSATION`, `SELF-SELECTION` | The product-lens version of causal reasoning — spotting the "X correlates with good outcome, so incentivise X" trap (the "weekend sellers have 30% higher sales — bonus them?" archetype: self-selection, not causation); reasoning about the right counterfactual / control population; anticipating second-order effects. **Boundary co-tag:** Experimentation / Statistics own the *identification machinery* (IV, DiD, propensity, confounder / collider classification); this owns the *judgment* that a proposed action rests on a correlation and what would be needed to believe it. Test the trap-recognition, never the estimator. **Difficulty:** medium → hard. |
+| `PRODUCT HEALTH & STRATEGIC TRADE-OFFS` | `PRODUCT HEALTH & STRATEGIC TRADE-OFFS`, `PRODUCT HEALTH`, `STRATEGIC TRADE-OFF`, `COMPOSITE HEALTH METRIC`, `WELLBEING METRIC` | Holistic product-health reasoning (no single metric; a portfolio view); wellbeing / brand-safety / equity / trust metrics as guardrails; decision-making under incomplete information; when the technically-right answer and the deliverable diverge (stakeholder reality); the goal-metric tension case ("the explicit goal is to *reduce* time spent; define success"). The IC5/IC6-level family. **Difficulty:** hard. |
+
+#### §G — Cases & sizing (2 families)
+
+| Family | Match patterns | Notes |
+|---|---|---|
+| `PRODUCT CASE STRUCTURING` | `PRODUCT CASE STRUCTURING`, `PRODUCT CASE`, `CASE STRUCTURING`, `STRUCTURED PRODUCT CASE` | Imposing structure on an ambiguous, data-free product prompt — clarify → define success → decompose → recommend; "improve product X" as segment → pain-point → solution → instrument-it; keeping the structure stable as the interviewer adds constraints mid-stream. The synthesis family — it composes the others. **Difficulty:** medium → hard. |
+| `OPPORTUNITY SIZING & ESTIMATION` | `OPPORTUNITY SIZING & ESTIMATION`, `OPPORTUNITY SIZING`, `MARKET SIZING`, `FERMI ESTIMATION` | Fermi / market- / opportunity-sizing reasoning — top-down vs bottom-up decomposition, making + defending assumptions, sanity-checking the order of magnitude; used to *prioritise* ("is this worth building?"). **Difficulty:** medium → hard. |
+
+#### §H — Applied context (1 family)
+
+| Family | Match patterns | Notes |
+|---|---|---|
+| `BUSINESS-MODEL METRIC FLUENCY` | `BUSINESS-MODEL METRIC FLUENCY`, `BUSINESS-MODEL METRIC`, `BUSINESS MODEL METRIC`, `MARKETPLACE LIQUIDITY`, `TAKE RATE`, `UNIT ECONOMICS` | Knowing the metric vocabulary a business model lives by: marketplace (GMV, take rate, liquidity, per-side retention); SaaS (MRR/ARR, NRR, churn, LTV:CAC); ad-supported (CPM, CTR, fill rate); social/content (creation rate, virality, creator retention); e-commerce (AOV, repeat-purchase, cart abandonment). Usually a **co-tag** on a metric-design or diagnosis question set in a named business model. **Difficulty:** easy → medium. |
+
+### Boundary table
+
+This track's entire purpose is the *judgment layer*; its entire authoring risk is sliding into a neighbour's *mechanic*. Summary of load-bearing edges:
+
+| This family | Shares an edge with | The line (this track tests the left, the neighbour tests the right) |
+|---|---|---|
+| `SHIP / NO-SHIP DECISION` | Experimentation (A/B mechanics) | *should we ship given the result* ↔ *is the test designed / powered / valid* |
+| `CAUSAL VS CORRELATIONAL JUDGMENT` | Experimentation / Statistics | *is this action resting on a correlation* ↔ *the IV / DiD / propensity estimator* |
+| `METRIC DEFINITION INTEGRITY` | SQL (`METRIC INTERPRETATION & DENOMINATOR CHOICE`) | *which definition makes the metric mean what we claim* ↔ *how to compute it* |
+| `FUNNEL & CONVERSION REASONING` | SQL (`FUNNEL ANALYSIS`) | *which step to attack, what to do* ↔ *the funnel query* |
+| `RETENTION & COHORT REASONING` | SQL (`COHORT RETENTION`) | *reading + acting on the cohort table* ↔ *the cohort query* |
+| `REAL-CHANGE VS ARTIFACT` | SQL (`DATA QUALITY SKEPTICISM`) | *is the business metric's movement real* ↔ *is the query / data correct* |
+
+**Authoring rule (load-bearing):** a question belongs in Product Sense only if its *discriminator* is the product judgment. If a candidate could answer it by computing a value, deriving a statistic, or writing a query, it belongs in SQL / Statistics / Experimentation — move it.
+
+### Follow-up dimensions (for interview-loop chains)
+
+Chains use the **8 universal follow-up dimensions** unchanged (no new dimension needed — the 8 cover product-sense escalations cleanly). The natural pivots for this track:
+
+| Dimension | Product-sense escalation angle |
+|---|---|
+| `business_rule_pivot` | "Leadership just redefined the goal — does your success metric still hold?" |
+| `stakeholder_pivot` | "The PM / exec pushes to ship despite the guardrail — frame the push-back." |
+| `data_quality_pivot` | "A logging gap surfaced for the window you diagnosed — salvage the read." |
+| `scale_pivot` | "Same question, but now across 30 markets at 100× the users — what changes?" |
+| `ambiguity_pivot` | "Define 'engagement' for this — I'm not giving you one." |
+| `edge_case_pivot` | "The segment driving the metric is 0.5% of users — does your conclusion survive?" |
+| `abstraction_pivot` | "Generalise: what *class* of metric is always vulnerable to this gaming?" |
+| `performance_pivot` | *Least natural here* — the round isn't compute-bound; use sparingly. |
+
+### Product Sense blocklist
+
+| Blocked tag | Canonical alternative |
+|---|---|
+| `A/B test`, `experiment`, `p-value`, `power`, `SRM` (as primary discriminator) | Experimentation track — ship / no-ship judgment stays here only if the question turns on the *product call*, not the statistical mechanic |
+| `SQL`, `query`, `GROUP BY`, `JOIN` | SQL track — this track never tests computation |
+| `funnel query`, `cohort query`, `retention query` | SQL track — Product Sense owns reading and acting on the output, not writing the query |
+| `causal identification`, `instrumental variables`, `propensity scoring`, `DiD`, `regression discontinuity` | Experimentation or Statistics — this track owns trap-recognition, not the estimator |
+| `metric` (alone, as a bare tag) | a specific metric-family tag (e.g. `METRIC SELECTION`, `METRIC GAMING`) |
+
+*The machine-enforced lowercase blocklist lives in `backend/tracks.py` `concept_blocklist` (framework acronyms — heart / aarrr / circles / rice / ice — and bare metric abbreviations — dau / mau / ctr / gmv / nps / ltv / cac). The table above is the conceptual guidance; boundary terms (A/B test, SQL, query, p-value) are additionally rejected by the no-match rule — they resolve to no Product Sense family.*
 
 ---
 

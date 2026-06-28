@@ -140,7 +140,7 @@ const IDE_TRACKS = [
   {
     slug: 'product-sense',
     label: 'Product',
-    color: '#A63DBE',
+    color: '#8E3B6E',
     fname: 'metric_read.md',
     badge: 'Product Sense · Reasoning',
     code: null,
