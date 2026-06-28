@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import SidebarNav from './SidebarNav';
 import Topbar from './Topbar';
@@ -177,12 +177,15 @@ export default function AppShell() {
 
   // Path data — fetched when ?path= is present
   const [pathData, setPathData] = useState(null);
-  useEffect(() => {
+  const refreshPathData = useCallback(() => {
     if (!pathSlug) { setPathData(null); return; }
     api.get(`/paths/${pathSlug}`)
       .then(r => setPathData(r.data))
       .catch(() => setPathData(null));
   }, [pathSlug]);
+  useEffect(() => {
+    refreshPathData();
+  }, [refreshPathData]);
 
   // Drill data — fetched when ?drill= is present (Pro+ only); scopes the sidebar to one concept.
   const [drillData, setDrillData] = useState(null);
@@ -506,7 +509,7 @@ export default function AppShell() {
           )}
           {isAtHub ? <TrackHubPage /> : (
             <div key={location.key} className="route-transition">
-              <Outlet />
+              <Outlet context={{ refreshPathData }} />
             </div>
           )}
         </main>

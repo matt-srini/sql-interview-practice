@@ -14,8 +14,8 @@
  * backend drill result alone (the old catalog re-match would have found nothing here).
  */
 import { describe, it, expect, vi, beforeAll, beforeEach, afterEach } from 'vitest';
-import { render, screen, waitFor, cleanup } from '@testing-library/react';
-import { MemoryRouter, Routes, Route, useLocation } from 'react-router-dom';
+import { render, screen, waitFor, cleanup, fireEvent } from '@testing-library/react';
+import { MemoryRouter, Routes, Route, useLocation, useOutletContext } from 'react-router-dom';
 
 const { mockApiGet, mockUseAuth, mockUseCatalog, sidebarProps } = vi.hoisted(() => ({
   mockApiGet: vi.fn(),
@@ -202,5 +202,72 @@ describe('AppShell reveals the active question difficulty group', () => {
     });
     // other groups keep their default (only the active group is force-expanded)
     expect(sidebarProps.current?.collapsedByDiff?.hard).toBe(true);
+  });
+});
+
+/**
+ * AppShell path data refresh via Outlet context (2026-06-28).
+ *
+ * Regression guard for the bug where the PathSidebar tick (✓) did not appear after a
+ * solve until the user left and re-entered the path. Root cause: pathData was fetched
+ * once per pathSlug change only. Fix: AppShell exposes `refreshPathData` via
+ * `<Outlet context>` so QuestionPage can call it on a correct solve.
+ *
+ * This test renders a probe child that reads the outlet context and calls
+ * refreshPathData() on button click, then asserts the path GET was re-issued.
+ */
+function OutletContextProbe() {
+  const ctx = useOutletContext();
+  return (
+    <button
+      data-testid="refresh-btn"
+      onClick={() => ctx?.refreshPathData?.()}
+    >
+      refresh
+    </button>
+  );
+}
+
+describe('AppShell path data refresh', () => {
+  const PATH_PAYLOAD = {
+    title: 'Joins & Filtering Mastery',
+    topic: 'sql',
+    questions: [{ id: 1, title: 'Q1', order: 1, state: 'unlocked' }],
+    unlock_hint: null,
+  };
+
+  it('exposes refreshPathData via Outlet context; clicking it re-fetches the path', async () => {
+    mockUseAuth.mockReturnValue({ user: { plan: 'pro', streak_days: 0 }, loading: false, refreshUser: vi.fn() });
+    mockUseCatalog.mockReturnValue({ catalog: { groups: [] }, loading: false, error: null, refresh: vi.fn() });
+    mockApiGet.mockImplementation((url) => {
+      if (url === '/paths/joins-and-filtering') return Promise.resolve({ data: PATH_PAYLOAD });
+      return Promise.resolve({ data: {} });
+    });
+
+    render(
+      <MemoryRouter initialEntries={['/practice/sql/questions/1?path=joins-and-filtering']}>
+        <Routes>
+          <Route path="/practice/:topic" element={<AppShell />}>
+            <Route path="questions/:id" element={<OutletContextProbe />} />
+          </Route>
+        </Routes>
+      </MemoryRouter>
+    );
+
+    // Wait for initial fetch
+    await waitFor(() => {
+      const calls = mockApiGet.mock.calls.filter(c => c[0] === '/paths/joins-and-filtering');
+      expect(calls.length).toBeGreaterThanOrEqual(1);
+    });
+
+    const callsBefore = mockApiGet.mock.calls.filter(c => c[0] === '/paths/joins-and-filtering').length;
+
+    // Trigger the refresher via the probe button
+    fireEvent.click(screen.getByTestId('refresh-btn'));
+
+    await waitFor(() => {
+      const callsAfter = mockApiGet.mock.calls.filter(c => c[0] === '/paths/joins-and-filtering').length;
+      expect(callsAfter).toBe(callsBefore + 1);
+    });
   });
 });

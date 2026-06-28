@@ -157,6 +157,7 @@ Main practice screen. Layout and behavior vary by modality and topic:
 - Submission history fetched with `limit: 20`; `priorAttemptCountRef` tracks attempt count before each submit to compute insight text
 - **Path context**: when `?path=slug` is in the URL, fetches path data and shows a path nav bar (breadcrumb + position counter + prev/next links)
 - **Path context persistence**: sidebar question links preserve `?path=slug` so breadcrumb/path nav remains active while moving within a path.
+- **Path/drill solved-state refresh on solve**: `AppShell` exposes `refreshPathData` via `<Outlet context>`; on a correct submission `QuestionPage.handleSubmit` calls it (and its own `refreshPathContext`) so the `PathSidebar` tick and the path nav bar update immediately, instead of staying stale until the user leaves and re-enters the path (path data is otherwise fetched once per `pathSlug` change).
 
 #### Concept drill
 

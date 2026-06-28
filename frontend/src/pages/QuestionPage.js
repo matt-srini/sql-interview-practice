@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Link, useNavigate, useOutletContext, useParams, useSearchParams } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { format as formatSQL } from 'sql-formatter';
 import api from '../api';
@@ -61,12 +61,20 @@ export default function QuestionPage() {
   // Path context — set when arriving from a learning path (?path=slug)
   const pathSlug = searchParams.get('path');
   const [pathContext, setPathContext] = useState(null);
-  useEffect(() => {
+  const refreshPathContext = useCallback(() => {
     if (!pathSlug) { setPathContext(null); return; }
     api.get(`/paths/${pathSlug}`)
       .then(r => setPathContext(r.data))
       .catch(() => setPathContext(null));
   }, [pathSlug]);
+  useEffect(() => {
+    refreshPathContext();
+  }, [refreshPathContext]);
+
+  // AppShell provides refreshPathData via Outlet context so a correct solve can
+  // immediately re-fetch the path data in BOTH places (sidebar tick + nav bar).
+  const outletCtx = useOutletContext();
+  const refreshPathData = outletCtx?.refreshPathData;
 
   // Drill context — set when arriving from a concept drill (?drill=<concept>)
   const drillConcept = searchParams.get('drill');
@@ -656,6 +664,12 @@ export default function QuestionPage() {
         ) ?? 0;
         const previousStreakDays = user?.streak_days ?? 0;
         const refreshedCatalog = await refresh();
+        // Path/drill workspaces keep their own solved-state copies; refresh them so the
+        // just-solved question ticks in the sidebar (AppShell) and nav bar without leaving the path.
+        if (pathSlug) {
+          refreshPathContext();
+          if (refreshPathData) refreshPathData();
+        }
         const lockedAfter = refreshedCatalog?.groups?.reduce(
           (sum, group) => sum + group.questions.filter((entry) => entry.state === 'locked').length,
           0
