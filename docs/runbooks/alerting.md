@@ -146,7 +146,7 @@ Use **UptimeRobot** (free tier) or **Better Stack** (free tier) to monitor the
 ### Recommended settings (UptimeRobot)
 
 1. **Monitor type:** HTTP(s)
-2. **URL:** `https://api.datathink.co/health` (or your Railway domain)
+2. **URL:** `https://datathink.co/health`
 3. **Interval:** 5 minutes (UptimeRobot free-tier floor; Better Stack free does 30s–1min)
 4. **Alert contact:** email + Slack webhook
 5. **Alert after:** 2 consecutive failures (avoids single-blip noise)
