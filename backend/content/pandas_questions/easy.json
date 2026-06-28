@@ -180,7 +180,7 @@
     "topic": "pandas",
     "difficulty": "easy",
     "title": "First Event Type per User",
-    "description": "You have a DataFrame `df_events` loaded from the events dataset.\n\n**Columns:** `event_id`, `session_id`, `user_id`, `event_time`, `event_name`, `product_id`\n\nUsers often perform the same event type (e.g. `view_product`) multiple times across sessions. Return the **first occurrence** of each event type per user — one row per `(user_id, event_name)` pair using the earliest `event_time`. Output columns: `user_id`, `event_name`, `event_time`. Sort by `user_id` ascending, then `event_name` ascending.",
+    "description": "You have a DataFrame `df_events` loaded from the events dataset.\n\n**Columns:** `event_id`, `session_id`, `user_id`, `event_time`, `event_name`, `product_id`\n\nUsers often perform the same event type (e.g. `view_product`) multiple times across sessions. Return the **first occurrence** of each event type per user — one row per `(user_id, event_name)` pair using the earliest `event_time`. Output columns: `user_id`, `event_name`, `event_time` (as datetime). Sort by `user_id` ascending, then `event_name` ascending.",
     "dataframes": {
       "df_events": "events.csv"
     },
@@ -592,7 +592,7 @@
     "topic": "pandas",
     "difficulty": "easy",
     "title": "Users Registered After 2022",
-    "description": "You have a DataFrame `df_users` loaded from the users dataset.\n\n**Columns:** `user_id`, `name`, `email`, `signup_date`, `country`, `is_active`\n\nReturn users where `signup_date` is after 2022-12-31 (i.e. in 2023 or later). Output columns: `user_id`, `name`, `email`, `signup_date`. Sort by `signup_date` ascending.",
+    "description": "You have a DataFrame `df_users` loaded from the users dataset.\n\n**Columns:** `user_id`, `name`, `email`, `signup_date`, `country`, `is_active`\n\nReturn users where `signup_date` is after 2022-12-31 (i.e. in 2023 or later). Output columns: `user_id`, `name`, `email`, `signup_date` (as string `YYYY-MM-DD`). Sort by `signup_date` ascending.",
     "dataframes": {
       "df_users": "users.csv"
     },
@@ -835,7 +835,7 @@
     "topic": "pandas",
     "difficulty": "easy",
     "title": "Forward-Fill Missing Resolution Hours",
-    "description": "You have a DataFrame `df_support_tickets` loaded from the support_tickets dataset.\n\n**Columns:** `ticket_id`, `user_id`, `created_at`, `issue_type`, `priority`, `status`, `resolution_hours`\n\nOpen or pending tickets have a null `resolution_hours`. Sort the DataFrame by `created_at`, then forward-fill `resolution_hours` so each null is replaced by the most recently seen non-null value. Return columns `ticket_id`, `user_id`, `created_at`, `resolution_hours`, sorted by `created_at`.",
+    "description": "You have a DataFrame `df_support_tickets` loaded from the support_tickets dataset.\n\n**Columns:** `ticket_id`, `user_id`, `created_at`, `issue_type`, `priority`, `status`, `resolution_hours`\n\nOpen or pending tickets have a null `resolution_hours`. Sort the DataFrame by `created_at`, then forward-fill `resolution_hours` so each null is replaced by the most recently seen non-null value. Return columns `ticket_id`, `user_id`, `created_at` (as datetime), `resolution_hours`, sorted by `created_at`.",
     "dataframes": {
       "df_support_tickets": "support_tickets.csv"
     },
