@@ -50,6 +50,14 @@ This is the navigation hub for all platform documentation. Each doc below owns a
 | [`concept-hooks.md`](concept-hooks.md) | Socratic interview-hook inventory (used to seed concept coverage) |
 | [`tracks/`](tracks/) | Per-track philosophy, datasets, ID range, difficulty vocabulary, concept arc, authoring allocation — one file per track |
 
+## Growth / go-to-market
+
+| File | What it covers |
+|---|---|
+| [`growth/gtm-strategy.md`](growth/gtm-strategy.md) | **Canonical GTM SoT** — positioning→messaging, the reasoning-vs-grind wedge, ICP + anti-positioning, market-side launch checklist, channel strategy (LinkedIn / SEO / Reddit primary), the free-sample growth loop on the wired PostHog events, metrics/funnel, solo-founder cadence + the do-NOT list |
+| [`growth/editorial-calendar.md`](growth/editorial-calendar.md) | 12-week editorial calendar + the 1-pillar→many-cuts production system + weekly operating rhythm |
+| [`growth/starter-assets.md`](growth/starter-assets.md) | Example posts (LinkedIn/X/Reddit/newsletter/Show HN), subreddit target list + each sub's self-promo rule, brand-handle claim list, launch-day checklist, first-2-weeks day-by-day |
+
 ## Process / runbooks
 
 | File | What it covers |

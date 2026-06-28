@@ -83,6 +83,7 @@ The five-perspective pushback in § Standing instructions reads this section as 
   | Dashboard insights, weak-spot detection, readiness scores | `docs/features/dashboard.md` |
   | Product overview, tech stack, content footprint | This file (`CLAUDE.md`) |
   | User-facing platform guide | `docs/USERGUIDE.md` |
+  | **Go-to-market, social, distribution strategy (channels, content engine, growth loop, metrics)** | `docs/growth/gtm-strategy.md` (canonical) + `docs/growth/editorial-calendar.md` + `docs/growth/starter-assets.md` |
   | New track onboarding process | `docs/track-onboarding.md` |
   | **Why a decision was made + rejected alternatives (append-only)** | `docs/decisions/DECISIONS.md` |
 
