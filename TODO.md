@@ -65,10 +65,11 @@ now persists from the webhook `plan_id`; Paddle dual-rail billing parity). P1s l
 **payment alerting** (`capture_payment_failure` → Sentry, one `alert=payment_failure` tag across
 razorpay/paddle/account), **rollback runbook** (`docs/deployment.md`), and an opt-in **cookie
 consent** banner (PostHog gated until Accept). Why → `docs/decisions/DECISIONS.md` 2026-06-21.
-**Operator steps remaining (dashboard-only, no code):**
-- ✅ Rule D (new-issue baseline) — created + verified (2026-06-28)
-- ❌ Rules A + C (payment failure alerts) — `capture_payment_failure()` fires correctly; alert rules not yet created in Sentry UI → step-by-step in [`docs/runbooks/alerting.md`](docs/runbooks/alerting.md) §2
-- ❌ UptimeRobot `/health` monitor — not yet set up → [`docs/runbooks/alerting.md`](docs/runbooks/alerting.md) §3
+**Operator steps — all Sentry alert rules created (2026-06-28):**
+- ✅ Rule D (new-issue baseline) — created + verified
+- ✅ Rule A (`payment_failure — any`) — created
+- ✅ Rule C (`payment_failure — entitlement not applied`) — created
+- ✅ UptimeRobot `/health` monitor — created (verify URL resolves correctly)
 
 ## P2 — Revisit Interview Loop replay once the mock chain-pools are expanded ✅ DONE (2026-06-22)
 Closed. All three thin cells were expanded (Statistics-hard ✅, SQL ✅, Pandas-medium ✅ 2→8 on
