@@ -1001,7 +1001,7 @@
         "expected": 0.25
       }
     ],
-    "explanation": "E[X] = (1+2+3)/3 = 2. E[X²] = (1+4+9)/3 = 14/3. Var(X) = 14/3 − 4 = 2/3 ≈ 0.6667.",
+    "explanation": "For values=[1,2,3], probs=[0.2,0.3,0.5]: E[X] = 1×0.2 + 2×0.3 + 3×0.5 = 0.2 + 0.6 + 1.5 = 2.3; E[X²] = 1²×0.2 + 2²×0.3 + 3²×0.5 = 0.2 + 1.2 + 4.5 = 5.9; Var(X) = 5.9 − 2.3² = 5.9 − 5.29 = 0.61. For values=[0,1], probs=[0.5,0.5]: E[X]=0.5, E[X²]=0.5, Var(X)=0.5−0.25=0.25.",
     "hints": [
       "Variance measures spread around the mean — it is always non-negative.",
       "Compute E[X] and E[X²] as separate probability-weighted sums, then use Var(X) = E[X²] − (E[X])²."
