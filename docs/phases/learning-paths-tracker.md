@@ -52,7 +52,7 @@ Paths most affected by the Band-Aid (most-broadened focus_concepts):
 
 This makes Open Question #1 (does `level` still earn its place once the DAG is honored?) a real conversation. The DAG could subsume tie-breaker + sort; the "Start here" pill needs *some* way to identify the entry point, but that could be a separate boolean.
 
-**D-4. `tier` (`free` / `pro`) on paths is visibility-only.** Does NOT gate the questions inside (those follow practice unlock thresholds regardless of path tier). A pro path's questions are accessible to a free user who has unlocked them via threshold; they just don't see the path itself in the listing.
+**D-4. `tier` (`free` / `pro`) on paths is purely metadata.** Does NOT gate the questions inside, and does NOT filter which paths appear in the listing — all paths are returned for all users by the `/api/paths` router. Questions inside a path follow the standard plan policy (free = easy; Pro/Elite = all difficulties) regardless of path tier. The `tier` field is retained for schema backward compatibility only.
 
 **D-5. Pattern slug naming convention.** Kebab-case, lowercase, ASCII-only. Multi-word patterns use hyphens (e.g., `window-functions`, `cohort-and-retention`, `missing-data-and-preprocessing-hygiene`). Slugs ≤ 40 chars. Registered in `backend/path_patterns.py`.
 

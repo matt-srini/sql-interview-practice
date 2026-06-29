@@ -433,8 +433,8 @@ Direct upgrade buttons (all `UpgradeButton` instances) skip the landing page ent
 | **Landing — pricing section** | `UpgradeButton` | "Upgrade to Pro / Elite" + "Lifetime access — ₹X" | Plan allows the upgrade (see table below) | Opens Razorpay directly |
 | **Practice sidebar — bottom panel** | `UpgradeButton` | "Unlock Pro" / "Unlock Elite" | `free` or `pro` plan | Opens Razorpay; `successPath` preserves `?path=` if in path mode |
 | **Practice sidebar — path hint** | `<button>` | "Pro — unlock all ↗" / "Elite — unlock all ↗" | `free` plan + path mode + locked questions exist | Navigates to `/ + state.scrollTo` |
-| **Question page — locked callout** | `UpgradeButton` | "Unlock now with Pro" | `free` plan, question is threshold-locked | Opens Razorpay |
-| **Question page — hard gate** | `UpgradeButton` | "Upgrade to Pro" | `free` plan, hard question beyond free cap | Opens Razorpay |
+| **Question page — locked callout** | `UpgradeButton` | "Unlock now with Pro" | `free` plan, medium or hard question (Pro/Elite only) | Opens Razorpay |
+| **Question page — hard gate** | `UpgradeButton` | "Upgrade to Pro" | `free` plan, hard question (Pro/Elite only) | Opens Razorpay |
 | **Track hub — TierBanner** | `<button>` | "See plans →" | `free` plan | Navigates to `/ + state.scrollTo` |
 | **Dashboard — weak-areas gate** | `UpgradeButton` | "Upgrade to Pro" | `free` plan, "Where to focus" panel | Opens Razorpay |
 | **Landing — weak-spots gate** | `UpgradeButton` | "Upgrade to Pro" | `free` logged-in user with weak data | Opens Razorpay |

@@ -100,7 +100,7 @@ mechanic* (see [`03-concept-taxonomy.md`](03-concept-taxonomy.md) §Boundary co-
 | Track name | **Product Sense** (slug `product-sense`) | The universal round name candidates search for. Alternatives weighed in [`02-track-design.md`](02-track-design.md): *Metrics & Product Sense*, *Product Analytics*. |
 | Roles | Data Scientist + Data Analyst | Both loops contain this round; the analyst loop arguably leans on it harder. |
 | `eval_kind` | `mcq` | Constructed-reasoning, no execution (mirrors Experimentation/ML/PySpark/DE/DM). |
-| `unlock_profile` | `mcq` | MCQ effort profile → the higher free-tier thresholds (10/17/25 · 12→5 cap), per [`backend/unlock.py`](../../../backend/unlock.py). |
+| `unlock_profile` | `mcq` | Metadata field in `TrackConfig`; retained for schema compatibility. Not consumed by unlock logic — the flat access model uses plan only (free = easy; Pro/Elite = all). See [`backend/unlock.py`](../../../backend/unlock.py). |
 | `in_mixed_mock` | `false` | Like the other reasoning tracks; role-Mixed benchmarks draw from their declared role pools, not the generic mixed pool. |
 | Question types | `scenario` (dominant) · `conceptual` · `debug` · `predict_output` | Same four as Experimentation; `optimization`/`numerical` **excluded** (no compute to optimise, nothing numerical) — see [`02-track-design.md`](02-track-design.md) §Modality. `mcq` is the *response mechanism*, never a `type`. |
 | Mock-only pool | **~100** = `mock-standalone` (~70) + `mock-chain` (~30 members / ~10 chains) | Two **separately balance-checked** draw surfaces — Benchmark/Custom vs Interview Loop ([`04`](04-difficulty-split.md) · [`06`](06-mock-and-interview-loops.md)). |

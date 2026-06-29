@@ -112,7 +112,7 @@ Schema is defined in **two independent places that must be kept in sync manually
 
 ## Unlock model
 
-Pure policy function in `backend/unlock.py`. Signature: `compute_unlock_state(plan, solved_ids, catalog, track, path_state)` → returns `dict[question_id, "unlocked"|"locked"|"solved"]`. No DB reads — all inputs passed by the router.
+Pure policy function in `backend/unlock.py`. Signature: `compute_unlock_state(plan, solved_ids, catalog, track="sql")` → returns `dict[question_id, "unlocked"|"locked"|"solved"]`. No DB reads — all inputs passed by the router.
 
 | Plan | Access |
 |---|---|
@@ -300,7 +300,7 @@ PostgreSQL   Redis Cluster
 | `catalog_module` | module | Exposes `get_questions_by_difficulty()`, `get_mock_questions_by_difficulty()`, `get_public_question()` |
 | `label` | `str` | Human-readable name (e.g. `"Pandas"`) |
 | `eval_kind` | `str` | `"sql" \| "python" \| "pandas" \| "mcq"` — drives submission dispatch |
-| `unlock_profile` | `str` | `"code"` (SQL/Python/Pandas thresholds) or `"mcq"` (PySpark/DE — option-hiding balances lower effort) |
+| `unlock_profile` | `str` | `"code"` or `"mcq"` — metadata field retained for schema compatibility; not consumed by unlock logic in the flat access model |
 | `content_dir` | `Path` | Absolute path to the questions directory |
 | `concept_blocklist` | `set[str]` | Syntax-level concepts rejected by `validate_content.py` |
 | `hint_rules` | `dict` | Per-difficulty `(min, max)` hint count bounds |

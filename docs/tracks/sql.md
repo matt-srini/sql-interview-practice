@@ -112,8 +112,8 @@ This is the contract that prevents ad-hoc "practice or mock?" decisions during a
 | Question kind | Where it lives | When to author |
 |---|---|---|
 | **Practice easy (free on-ramp)** | `easy.json` no `mock_only` | When the question teaches one core SQL concept clearly. First-time exposure. Curriculum role: build vocabulary. |
-| **Practice medium (free with threshold unlock)** | `medium.json` no `mock_only` | When the question composes 2–3 concepts and reinforces prior tier. Curriculum role: build reasoning. |
-| **Practice hard (free with capped unlock, Pro full)** | `hard.json` no `mock_only` | When the question requires dependent reasoning steps. Curriculum role: build production-grade thinking. |
+| **Practice medium (Pro/Elite)** | `medium.json` no `mock_only` | When the question composes 2–3 concepts and reinforces prior tier. Curriculum role: build reasoning. |
+| **Practice hard (Pro/Elite)** | `hard.json` no `mock_only` | When the question requires dependent reasoning steps. Curriculum role: build production-grade thinking. |
 | **Practice path content (curated walks)** | Existing practice IDs referenced in `backend/content/paths/*.json` | When you are building a curated sequence. Do not author new questions just for paths — reference existing practice content. See [`docs/content-authoring.md`](../content-authoring.md) §Paths for path semantics. |
 | **Mock-only medium (Pro/Elite, single)** | `medium.json` with `mock_only: true` | When you can recombine medium-tier concepts the practice bank already teaches into a *fresh business scenario* (different KPI, time window, multi-table relationship), with mild ambiguity or dirty-data framing. No new concept families. The gap families (`METRIC INTERPRETATION`, `DATA QUALITY SKEPTICISM`, `DOUBLE-COUNTING DETECTION`) are natural fits *once practice teaches them* — until then, only recombine families with existing practice coverage. No chain. |
 | **Mock-only hard (Pro/Elite, single)** | `hard.json` with `mock_only: true` | Same as medium, raised difficulty. Often `reverse` or `debug` type. Still recombines learned hard-tier reasoning under unseen framing — never debuts a concept. |

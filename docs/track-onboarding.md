@@ -32,7 +32,7 @@ Before writing any code or content, answer every question below in a short spec 
 | **What does this track cover?** | Which DS/DE/analytics interview scenarios? What is explicitly out of scope? |
 | **Who is the audience?** | Which roles (from the landing page role selector) benefit? At what career level? |
 | **Eval kind** | `sql` · `python` · `pandas` · `mcq` · `mixed` — drives submission dispatch |
-| **Unlock profile** | `code` (SQL/Python/Pandas thresholds) or `mcq` (PySpark/MCQ — higher thresholds) |
+| **Unlock profile** | `code` or `mcq` — metadata field in `TrackConfig`; retained for schema compatibility. Not consumed by unlock logic (the flat access model uses plan only). |
 | **In mixed mock?** | Should this track appear in the `"mixed"` mock pool? |
 | **Track color** | Unique hex, consistent with the existing palette. Current palette: SQL `#5B6AF0` · Python `#2D9E6B` · Pandas `#C47F17` · PySpark `#D94F3D` · DE `#B9762B` · Data Modeling `#3F8E8C` · Statistics `#7A5AF0` · ML Fundamentals `#E0456A` · Experimentation `#0EA5E9` |
 | **Track slug** | URL-safe, hyphenated, unique. Becomes the `:topic` route param. |
@@ -142,7 +142,7 @@ Each path:
 - Declares `focus_concepts[]` resolving to the track's concept-family registry (so dashboard insights can recommend the path from a weak concept).
 - Lists 5–9 catalog question IDs in `questions[]`, ordered easy → hard within the pattern.
 
-Paths do not unlock anything — question unlocking is threshold-only (see `docs/backend.md` for the unlock-state computation). Path completion just marks every question solved, same as practice.
+Paths do not unlock anything — question access follows the plan policy (free = easy only; Pro/Elite = all difficulties; see [`docs/backend.md`](../docs/backend.md) § Unlock model). Path completion just marks every question solved, same as practice.
 
 ---
 

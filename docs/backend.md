@@ -606,7 +606,7 @@ Correct submissions also call `mark_solved()` and `record_submission()` to updat
 - `mixed_mock_slugs()` — slugs with `in_mixed_mock=True` (all four currently)
 
 All routers and utilities use these helpers instead of hardcoded track lists:
-- `unlock.py` — `unlock_profile` drives which free-tier threshold table applies
+- `unlock.py` — flat plan→access policy (free = easy only; Pro/Elite = all difficulties; no thresholds, no per-track caps)
 - `routers/mock.py` — `VALID_TRACKS`, `TRACK_TO_TOPIC`, catalog dispatch, and mixed-pool loop all derive from the registry
 - `routers/insights.py` — track enumeration replaced with `TRACKS`
 - `routers/sample.py` — run-code dispatch uses `eval_kind`; public-question lookup uses `catalog_module`

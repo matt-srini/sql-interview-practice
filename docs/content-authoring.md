@@ -665,11 +665,11 @@ Every practice question routes to exactly one pattern-path (or `null` if no patt
 
 **Level describes where the path sits in the track's pattern arc — not the difficulty mix of its questions.** Difficulty mix is whatever the catalog naturally supports for the patterns the path drills.
 
-- **`foundational`** — Covers the foundational patterns of the track: the building blocks every other path assumes. **Exactly one per track** (validator-enforced). UX promise: every track has one obvious entry point ("Start here").
+- **`foundational`** — Covers the foundational patterns of the track: the building blocks every other path assumes. **At least one per track** (validator-enforced ≥1; most tracks have 1, some have 2–3 for parallel base skills). UX promise: every track has one obvious entry point ("Start here").
 - **`intermediate`** — Mid-tier patterns sitting on top of the foundational layer. **One or more per track.** When a track has parallel mid-tier clusters (e.g. data-modeling: normalization vs dimensional), each gets its own intermediate path — they are not forced to compete for a singleton slot.
 - **`advanced`** — Advanced patterns assuming both foundations and some mid-tier exposure. **Zero or more per track.**
 
-Level has no unlock semantics. Levels are used for sort order on TrackHub, the "Start here" pill on the singleton foundational path, and Schema.org metadata. **Path completion does not unlock any practice questions** — unlocks follow the standard practice thresholds (see `docs/backend.md` for the unlock-state computation).
+Level has no unlock semantics. Levels are used for sort order on TrackHub, the "Start here" pill on the foundational path, and Schema.org metadata. **Path completion does not unlock any practice questions** — access follows the standard plan policy (free = easy; Pro/Elite = all difficulties; see [`docs/backend.md`](./backend.md) § Unlock model).
 
 #### Validator integrity rules
 
@@ -682,7 +682,7 @@ Level has no unlock semantics. Levels are used for sort order on TrackHub, the "
 5. **Question-tag alignment.** Every question in `questions[]` carries at least one concept tag that resolves to the same family as at least one of the path's `focus_concepts[]`. This is the mechanical guarantee that the path drills what it claims.
 6. **Prerequisite DAG.** Every `recommended_after[]` slug exists in the same track; the resulting graph is acyclic.
 7. **Question→path uniqueness (1:1 model).** Every question appears in at most one path across the entire bank. The product mental model is that each question belongs to exactly one pattern walk; a question in two paths means a user solving it advances both paths' progress counters, double-counting coverage and breaking the curriculum spine. Enforced by `_validate_paths` rule 7 and `test_rule7_question_appears_in_at_most_one_path`. **When two paths legitimately want the same question, pick the primary path based on the question's primary pattern, not on secondary technique tags** (e.g., "Sliding Window Maximum" is a sliding-window problem first, a monotonic-deque technique second).
-8. **Path-length range.** `questions[]` must contain between 4 and 20 entries (hard floor and ceiling, validator-enforced). Paths below 4 are fragments; paths above 20 indicate an insufficiently split pattern.
+8. **Path-length range.** `questions[]` must contain between 3 and 20 entries (hard floor and ceiling, enforced by `tests/test_paths_quality.py`). Paths below 3 are fragments; paths above 20 indicate an insufficiently split pattern.
 
 #### Path-size policy
 
@@ -690,7 +690,7 @@ Paths should hold **5–9 questions** in the sweet spot, **3 minimum** (hard flo
 
 #### What this section explicitly rejects (historical)
 
-The platform previously had a "path-completion unlock shortcut" mechanic (completing a foundational path unlocked all medium; completing intermediate unlocked the hard cap). **That mechanic was removed.** If you find a doc still describing it, that doc is stale — fix it and link here. The current model is: practice thresholds gate question unlocking; paths are curated walks that respect those gates.
+The platform previously had a "path-completion unlock shortcut" mechanic (completing a foundational path unlocked all medium; completing intermediate unlocked the hard cap). **That mechanic was removed.** If you find a doc still describing it, that doc is stale — fix it and link here. The current model: the plan policy gates question access (free = easy; Pro/Elite = all); paths are curated walks that respect that policy.
 
 ---
 
