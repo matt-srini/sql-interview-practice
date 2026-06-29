@@ -61,7 +61,7 @@ export const COMPARISON_GROUPS = [
       {
         feature: 'Learning paths',
         blurb: 'Curated, ordered walks through one pattern at a time.',
-        free: 'Free paths', pro: 'All', elite: 'All',
+        free: true, pro: 'All', elite: 'All',
         notes: { feature: 'paths' },
       },
     ],

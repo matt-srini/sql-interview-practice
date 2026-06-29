@@ -48,7 +48,7 @@ The entire `#landing-pricing` section is hidden only when `userPlan === 'lifetim
 | Easy questions (per-track easy bank) | ✓ All | ✓ All | ✓ All |
 | Medium questions | Not included (Pro/Elite only) | ✓ All | ✓ All |
 | Hard questions | Not included (Pro/Elite only) | ✓ All | ✓ All |
-| Learning paths | Free paths (`tier=free`) | All | All |
+| Learning paths | All (easy questions unlock; medium/hard require Pro) | All | All |
 | **Mock — easy `benchmark`** | 1 per rolling 7 days | 3 per day | Unlimited |
 | **Mock — `benchmark` (medium/hard)** | Blocked | 3 per day | Unlimited |
 | **Mock — `custom` drill** | Blocked | 3 per day | Unlimited |

@@ -16,7 +16,7 @@ import statistics_questions as stats_mod
 from db import get_solved_ids
 from deps import get_current_user
 from path_loader import get_all_paths, get_path
-from unlock import compute_unlock_state, normalize_plan
+from unlock import compute_unlock_state
 
 router = APIRouter()
 
@@ -52,19 +52,10 @@ async def _solved_for_topic(user_id: str, topic: str) -> set[int]:
     return await get_solved_ids(user_id, db_topic)
 
 
-def _can_access_path(path: dict, user_plan: str) -> bool:
-    """Free users can only access paths with tier='free'."""
-    effective_plan = normalize_plan(user_plan)
-    if effective_plan in ("pro", "elite"):
-        return True
-    return path.get("tier", "pro") == "free"
-
-
 @router.get("/api/paths")
 async def list_paths(current_user: dict[str, Any] = Depends(get_current_user)) -> list[dict[str, Any]]:
     """Return all paths with per-user progress counts and tier/access info."""
     paths = get_all_paths()
-    user_plan = current_user.get("plan", "free")
 
     # Fetch solved IDs for all topics we'll need (deduplicated)
     topics_needed = {p["topic"] for p in paths}
@@ -77,7 +68,6 @@ async def list_paths(current_user: dict[str, Any] = Depends(get_current_user)) -
         solved_ids = solved_by_topic[path["topic"]]
         question_ids = path["questions"]
         solved_count = sum(1 for qid in question_ids if int(qid) in solved_ids)
-        accessible = _can_access_path(path, user_plan)
         result.append(
             {
                 "slug": path["slug"],
@@ -91,8 +81,7 @@ async def list_paths(current_user: dict[str, Any] = Depends(get_current_user)) -
                 "outcomes": path.get("outcomes", ""),
                 "recommended_after": path.get("recommended_after", []),
                 "question_count": len(question_ids),
-                "solved_count": solved_count if accessible else 0,
-                "accessible": accessible,
+                "solved_count": solved_count,
             }
         )
     return result
@@ -114,43 +103,7 @@ async def get_path_detail(
     if mod is None:
         raise HTTPException(status_code=400, detail=f"Unknown topic: {topic}")
 
-    # Gate Pro paths for Free users
-    if not _can_access_path(path, user_plan):
-        # Return a limited view: overview + first 2 questions as preview, rest locked
-        preview_ids = path["questions"][:2]
-        questions_payload = []
-        for i, qid in enumerate(path["questions"]):
-            q = mod.get_question(int(qid))
-            if q is None:
-                continue
-            questions_payload.append(
-                {
-                    "id": q["id"],
-                    "title": q["title"],
-                    "difficulty": q["difficulty"],
-                    "order": q["order"],
-                    "state": "unlocked" if qid in preview_ids else "locked",
-                }
-            )
-        return {
-            "slug": path["slug"],
-            "title": path["title"],
-            "description": path["description"],
-            "topic": path["topic"],
-            "tier": path.get("tier", "pro"),
-            "level": path.get("level", "advanced"),
-            "display_order": path.get("display_order", 999),
-            "focus_concepts": path.get("focus_concepts", []),
-            "outcomes": path.get("outcomes", ""),
-            "recommended_after": path.get("recommended_after", []),
-            "accessible": False,
-            "question_count": len(questions_payload),
-            "solved_count": 0,
-            "questions": questions_payload,
-            "unlock_hint": None,
-        }
-
-    # Full access — compute unlock state
+    # Compute unlock state based on plan — free=easy only, pro/elite=all
     solved_ids = await _solved_for_topic(current_user["id"], topic)
     grouped = mod.get_questions_by_difficulty()
 
@@ -187,7 +140,6 @@ async def get_path_detail(
         "focus_concepts": path.get("focus_concepts", []),
         "outcomes": path.get("outcomes", ""),
         "recommended_after": path.get("recommended_after", []),
-        "accessible": True,
         "question_count": len(questions_payload),
         "solved_count": solved_count,
         "completed": completed,
