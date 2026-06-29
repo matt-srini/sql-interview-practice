@@ -6390,6 +6390,7 @@ select {
   display: flex;
   flex-direction: column;
   gap: 2px;
+  overflow: hidden;
 }
 .db-firsttry-row {
   display: grid;
@@ -6421,6 +6422,7 @@ select {
   .db-firsttry-row {
     grid-template-columns: auto minmax(80px, 1fr) minmax(100px, 1.5fr) auto;
     gap: 8px;
+    margin: 0;
   }
 }
 
