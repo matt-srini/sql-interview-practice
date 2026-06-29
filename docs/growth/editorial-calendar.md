@@ -82,10 +82,42 @@ Phases map to the launch sequence ([`gtm-strategy.md`](gtm-strategy.md) § 4): *
 
 | Wk | Pillar | Focus |
 |---|---|---|
-| 9 | The 9 tracks | Steady weekly rhythm; double down on the best-performing LinkedIn format |
+| 9 | The 9 tracks | Steady weekly rhythm; double down on the best-performing LinkedIn format; **kick off Track-mastery SEO Wave 2** (SQL pillar first — see below) |
 | 10 | Sample-as-hook | Begin India bootcamp-partnership outreach (operator grants for a cohort) |
 | 11 | Mock narratives | SEO pillar #3–4; first role+intent query should be approaching page 1 |
 | 12 | Dashboard/readiness | Quarter review: WAL trend, sample→activation, activation→paid; prune what didn't work |
+
+---
+
+## SEO pillar waves (the `/guides` series plan)
+
+`/guides` long-form is the durable Tier-1 compounding lever. Pillars ship in two waves; both seed from
+the pillar rotation above and link into the product surfaces. Publishing = dropping a markdown file
+into `backend/content/guides/` (frontmatter: title without brand suffix, description ≤160 chars, no
+em-dashes; see the starter article for voice).
+
+**Wave 1 — Role+intent pillars (in flight).** Target commercial role queries; roughly one per role.
+Internal-link each to its `/interview-prep/<role>` page + a `/sample/<track>`. These are SEO pillars
+#1–4 in the Ops columns (weeks 1–4). Examples: data engineer SQL, data analyst interview, bias-variance,
+A/B-test design, pandas vs SQL.
+
+**Wave 2 — Track-mastery pillars (next, after Wave 1 indexes).** One pillar per track answering "what
+does mastering `<track>` actually take, and how do you go from foundational to advanced." Maps directly
+to pillar-rotation theme **#2 (The 9 tracks)**; begins in Phase 4 (the "The 9 tracks" slot, wk 9+).
+
+- **Write the durable arc, not the volatile path list.** Each pillar narrates the track's concept arc
+  and load-bearing pattern families, sourced from that track's authoritative framing in
+  [`../tracks/<track>.md`](../tracks/) ("What this track trains") + [`../concept-taxonomy.md`](../concept-taxonomy.md).
+  **Link** to `/learn/<topic>` (the live paths surface) rather than enumerating path slugs — paths get
+  re-leveled, and a slug list would go stale (no-stale-docs trap).
+- **Differentiate genuinely per track.** SQL's grain/fan-out arc reads nothing like PySpark's
+  shuffle/skew arc or Experimentation's power/SRM arc. Nine templated twins is a doorway-page pattern
+  and breaks the useful + original bar (never volume-as-value). If a track can't sustain a distinct,
+  substantive pillar yet, skip it rather than pad it.
+- **Order:** start with the three highest-intent tracks (**SQL → Python → Pandas**) to prove the
+  format, then expand across the remaining six as signal warrants.
+- **Internal-link mesh:** role pillar (Wave 1) → track pillar (Wave 2) → `/learn/<topic>` +
+  `/sample/<track>`. This hub-and-spoke is the topical-authority payoff, worth more than any one article.
 
 ---
 

@@ -35,6 +35,13 @@ Keep entries to 4–6 lines. Friction kills logs; if it's longer than the change
 
 ## Entries
 
+## 2026-06-30 — Track-mastery `/guides` pillars as SEO Wave 2 (after role pillars)
+**Area:** process · **Status:** accepted
+**Decision:** Add a second `/guides` SEO wave: one "how to master `<track>`" pillar per track, written as the durable concept arc (sourced from `docs/tracks/<track>.md` framing + concept taxonomy) and linking to `/learn/<topic>`, not enumerating path slugs. Sequenced *after* Wave 1 role pillars index; start SQL → Python → Pandas, expand to the other six as signal warrants.
+**Rejected:** Building all 9 now from a shared template — doorway-page pattern, thin/near-duplicate, breaks the useful + original bar; and listing current path slugs — goes stale on the next path re-leveling.
+**Affects:** docs/growth/editorial-calendar.md (§ SEO pillar waves)
+**Supersedes:** none
+
 ## 2026-06-29 — Brand-led GTM: LinkedIn → Tier 2; SEO + product-led + Reddit are Tier 1; add paid-search experiment
 **Area:** process · **Status:** accepted
 **Decision:** Founder opted out of building a personal brand, so the GTM is **brand-led**: the company LinkedIn page is the primary publisher and the founder's personal profile is only an amplification layer (reshare each company post within ~60 min — no cultivated personality). This drops **LinkedIn from Tier 1 to Tier 2** (company-page reach is structurally lower; StrataScratch, not the DataLemur/Nick-Singh rocket, is the realistic comparable — accepted honestly). New **Tier 1** = SEO content engine (now unblocked — the `/guides` surface shipped) + the product-led free-sample loop + Reddit (disclosed human, value-first). Added a one-time, **budget-capped paid-search validation experiment** ($500 / 2 wk, kill criterion) as a thermometer for the free→paid rate, since all-organic won't yield that number for months. Codified the **disclosed-human rule**: brand-as-face is for broadcast surfaces (company LinkedIn, X, site, newsletter) only; Reddit/HN/Discord require a real, named, affiliation-disclosed human.
