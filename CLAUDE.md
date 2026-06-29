@@ -73,8 +73,8 @@ The five-perspective pushback in § Standing instructions reads this section as 
   | Concept-family registry (per-track) + follow-up dimension taxonomy | `docs/concept-taxonomy.md` |
   | Socratic interview-hook inventory (used to seed concept coverage) | `docs/concept-hooks.md` |
   | Pricing tiers, plan entitlements, Razorpay flows | `docs/features/pricing.md` |
-  | **Free-tier unlock thresholds + hard caps (canonical = code)** | `backend/unlock.py` — any doc/UI showing 8/15/25 · 10/17/25 · the caps is a *render*; keep in sync (parity test: `backend/tests/test_entitlement_parity.py`) |
-  | **User-facing tier comparison** (Free/Pro/Elite features + Free-unlock ladders) | `frontend/src/data/tierFeatures.js` (single display source) → rendered at `/pricing` (`PricingPage.js`); `docs/tier-wise-features.html` is a manual mirror |
+  | **Free-tier access policy (canonical = code)** | `backend/unlock.py` — flat model: free = all easy; medium + hard = Pro/Elite. No thresholds, no caps, no ladder (removed 2026-06-29). |
+  | **User-facing tier comparison** (Free/Pro/Elite features) | `frontend/src/data/tierFeatures.js` (single display source) → rendered at `/pricing` (`PricingPage.js`); `docs/tier-wise-features.html` is a manual mirror |
   | Plan prices (display vs charge amount) | `frontend/src/utils/currency.js` (display) + `backend/config.py` (charge) |
   | **Mock plan-tier matrix (canonical SoT)**, chain atomicity, Interview Loop contract | `docs/features/mock.md` |
   | Mock benchmark invariants, blueprint principles, modality-mode mapping | `docs/specs/mock-benchmark-spec.md` |
@@ -89,7 +89,7 @@ The five-perspective pushback in § Standing instructions reads this section as 
 
   When in doubt: update more docs, not fewer. Cross-link aggressively. Every doc should link back to its SoT siblings.
 
-- **Linked-docs / single-SoT rule.** Every fact has exactly one source of truth — a doc *or* a code file (an SoT can be code: `backend/routers/mock.py` for the mock matrix, `backend/unlock.py` for unlock thresholds, `frontend/src/data/tierFeatures.js` for the tier-comparison display). The SoT **declares itself** in a header ("Canonical source of truth for X"); everywhere else that shows the same fact is a **render of** it — link to the SoT, and either keep both current in the *same commit* or guard with a parity test. **Never silently restate a number or gate in a second place** — that is the exact mechanism behind every entitlement-drift bug we've hit (the dashboard Pro=1 vs landing Pro=3 split; the stale "793" mock count). [`docs/features/mock.md`](docs/features/mock.md) § Plan-tier Matrix is the model to copy: it declares itself canonical, names its runtime SoT, and every other doc links rather than restating.
+- **Linked-docs / single-SoT rule.** Every fact has exactly one source of truth — a doc *or* a code file (an SoT can be code: `backend/routers/mock.py` for the mock matrix, `backend/unlock.py` for the free-tier access policy, `frontend/src/data/tierFeatures.js` for the tier-comparison display). The SoT **declares itself** in a header ("Canonical source of truth for X"); everywhere else that shows the same fact is a **render of** it — link to the SoT, and either keep both current in the *same commit* or guard with a parity test. **Never silently restate a number or gate in a second place** — that is the exact mechanism behind every entitlement-drift bug we've hit (the dashboard Pro=1 vs landing Pro=3 split; the stale "793" mock count). [`docs/features/mock.md`](docs/features/mock.md) § Plan-tier Matrix is the model to copy: it declares itself canonical, names its runtime SoT, and every other doc links rather than restating.
 
 - **Docs serve the product, not the other way around.** The source-of-truth docs exist to describe and protect a great product — they are not a cage, and they are not infallible. When a proposal genuinely serves the product and our overall direction — **especially around content and curriculum** — and a doc disagrees, **update the doc to match the product**; do not bend good product (or good content) to fit a stale or incomplete rule. Our goal is a great experience for users, not fidelity to a doc we wrote once and may never revisit. This is the *complement* of "no stale docs," not a loophole: keep docs current, and when the right product move conflicts with what a doc says, **the doc is what changes** — deliberately, with the reasoning recorded in [`docs/decisions/DECISIONS.md`](docs/decisions/DECISIONS.md). The bar is real: the change must be *defensibly better for the product/user and aligned with the datathink positioning*, argued as such — never a shortcut to dodge the doc's discipline. (Canonical example: the 2026-06-10 `abstraction_pivot` decision — the question bank contained high-quality chains the documented 7-dimension taxonomy couldn't label, so we grew the taxonomy to 8 rather than mislabel good content. See `docs/decisions/DECISIONS.md`. This mirrors the long-standing rule in [`docs/specs/mock-benchmark-spec.md`](docs/specs/mock-benchmark-spec.md) § Blueprint feasibility: "Good questions are the product; blueprints are a derived contract … when the two conflict, fix the blueprint.")
 
@@ -210,7 +210,7 @@ Mock-only questions (`mock_only: true`) live in the same JSON files as practice 
 See [docs/content-authoring.md](docs/content-authoring.md) for the full mock-only authoring spec.
 
 - **Sample questions:** All 9 tracks × 3 difficulties × 3 questions = **81 dedicated sample questions** total. Sample questions live in `backend/content/sample_questions/<track>.json` and use the compact TXS ID format (SQL: 111–133, Python: 211–233, Pandas: 311–333, PySpark: 411–433, DE: 511–533, DM: 611–633, Statistics: 711–733, ML: 811–833, Exp: 911–933). Sample questions are never drawn from the practice or mock pools.
-- **Learning paths:** 96 total — SQL: 11, Python: 11, Pandas: 9, PySpark: 14, Data Engineering: 9, Data Modeling: 11, Statistics: 11, ML Fundamentals: 12, Experimentation: 8. A path's `level` is **content-driven** — it reflects the questions actually in it (difficulty + prerequisite position + concept role), not a fixed template; per-level counts are whatever the content warrants. Each track has **at least one** `foundational` path (the UX entry point, ordered first); most have 2–3. Paths are curated 5–9 question walks through a *pattern* (practitioner skill — see `docs/content-authoring.md` §Paths). Paths do not unlock anything; unlocks follow the standard practice thresholds.
+- **Learning paths:** 96 total — SQL: 11, Python: 11, Pandas: 9, PySpark: 14, Data Engineering: 9, Data Modeling: 11, Statistics: 11, ML Fundamentals: 12, Experimentation: 8. A path's `level` is **content-driven** — it reflects the questions actually in it (difficulty + prerequisite position + concept role), not a fixed template; per-level counts are whatever the content warrants. Each track has **at least one** `foundational` path (the UX entry point, ordered first); most have 2–3. Paths are curated 5–9 question walks through a *pattern* (practitioner skill — see `docs/content-authoring.md` §Paths). Paths do not unlock anything; access follows the standard plan policy (free = easy; Pro/Elite = all).
 - Every question has `hints` (currently 1–3 entries across the bank; new content should target the active hint ladder) and `concepts` (semantic pattern tags surfaced as pills)
 - SQL questions have a `companies` field (`["Meta", "Stripe", ...]`) used for the company filter in SidebarNav
 - SQL schemas validated against committed CSV headers at catalog load time
@@ -400,21 +400,15 @@ Token values, full palette, typography, and component specs: [`docs/design/color
 
 | Plan | Access |
 |---|---|
-| Free | All easy. Medium/hard unlock in batches as you solve questions (thresholds differ by track — see below). Hard is capped. |
-| Pro | All easy + all medium + all hard (no cap) |
+| Free | All easy (every track). Medium + hard are locked. |
+| Pro | All easy + all medium + all hard |
 | Elite | Full catalog |
 
-**Free-tier unlock thresholds (code tracks — SQL, Python, Pandas):**
-- Medium: 8 easy → 3 medium · 15 easy → 8 medium · 25 easy → all medium
-- Hard: 8 medium → 3 hard · 15 medium → 8 hard · 22 medium → 15 hard *(cap: 8)*
+**Flat free tier (no unlock ladder).** Free = every easy question across all 9 tracks; medium and hard require Pro/Elite. There are no solve thresholds, no batch unlocks, and no per-track caps — `unlock.py` is a pure plan→access policy. (This removed the old "unlock ladder"; see `docs/decisions/DECISIONS.md` 2026-06-29.)
 
-**Free-tier unlock thresholds (MCQ tracks — PySpark / Data Engineering):** option-hiding balances the lower effort per question:
-- Medium: 10 easy → 3 medium · 17 easy → 8 medium · 25 easy → all medium
-- Hard: 12 medium → 5 hard *(cap: 5)*
+Locked questions carry `state: "locked"`; locked MCQ questions return 200 with `locked: true` and no `options` or `correct_option` (stem visible; options and explanation hidden); submitting a locked question returns 403. The locking *mechanism* is unchanged — only the unlock *path* (the ladder) was removed.
 
-Locked MCQ questions return 200 with `locked: true` and no `options` or `correct_option` (stem visible; options and explanation hidden). Submitting a locked MCQ returns 403.
-
-**Learning paths and unlocks:** Paths are curated walks through the practice catalog and **do not unlock questions**. A user who solves a path question gets the same `solved` state and threshold advancement as solving from practice directly. See `docs/content-authoring.md` §Paths for the canonical path model (patterns, roles, validator integrity rules).
+**Learning paths and unlocks:** Paths are curated walks through the practice catalog and **do not unlock questions**. A user who solves a path question gets the same `solved` state as solving from practice directly. See `docs/content-authoring.md` §Paths for the canonical path model (patterns, roles, validator integrity rules).
 
 **Mock modes (canonical, post-Phase-3):** `benchmark` (fixed-shape track readiness signal, or role-based Mixed benchmark), `custom` (1–5 Q, 10–90 min — user-tuned to competency), `interview_loop` (Elite only — chain-driven iterative interviewer dialogue). Legacy `30min` (Sprint drill) and `60min` sessions in history are read-only; they cannot be started new. Mixed track requires role selection (Data Analyst / Data Engineer / Analytics Engineer / Data Scientist) for both benchmark and custom. Single source of truth: `docs/features/mock.md`.
 

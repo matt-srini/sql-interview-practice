@@ -53,17 +53,9 @@ export default function TrackHubPage() {
     return (catalog.groups ?? []).reduce((acc, g) => acc + g.questions.length, 0);
   }, [catalog, meta]);
 
-  const easySolved = useMemo(() => {
-    const g = catalog?.groups?.find(x => x.difficulty === 'easy');
-    return g ? g.questions.filter(q => q.state === 'solved').length : 0;
-  }, [catalog]);
   const mediumSolved = useMemo(() => {
     const g = catalog?.groups?.find(x => x.difficulty === 'medium');
     return g ? g.questions.filter(q => q.state === 'solved').length : 0;
-  }, [catalog]);
-  const easyTotal = useMemo(() => {
-    const g = catalog?.groups?.find(x => x.difficulty === 'easy');
-    return g ? g.questions.length : 0;
   }, [catalog]);
   const mediumTotal = useMemo(() => {
     const g = catalog?.groups?.find(x => x.difficulty === 'medium');
@@ -73,17 +65,8 @@ export default function TrackHubPage() {
     const g = catalog?.groups?.find(x => x.difficulty === 'hard');
     return g ? g.questions.length : 0;
   }, [catalog]);
-  const mediumUnlocked = useMemo(() => {
-    const g = catalog?.groups?.find(x => x.difficulty === 'medium');
-    return g ? g.questions.some(q => q.state !== 'locked') : false;
-  }, [catalog]);
-  const hardUnlocked = useMemo(() => {
-    const g = catalog?.groups?.find(x => x.difficulty === 'hard');
-    return g ? g.questions.some(q => q.state !== 'locked') : false;
-  }, [catalog]);
 
   // Milestone detection
-  const easyComplete = easyTotal > 0 && easySolved >= easyTotal;
   const mediumComplete = mediumTotal > 0 && mediumSolved >= mediumTotal;
   const hasLockedQuestions = useMemo(
     () => catalog?.groups?.some(g => g.questions.some(q => q.state === 'locked')) ?? false,
@@ -178,15 +161,7 @@ export default function TrackHubPage() {
         })}</script>
       </Helmet>
       <div className="track-hub-inner">
-        <TierBanner
-          plan={user?.plan ?? 'free'}
-          easySolved={easySolved}
-          mediumSolved={mediumSolved}
-          easyTotal={easyTotal}
-          mediumTotal={mediumTotal}
-          mediumUnlocked={mediumUnlocked}
-          hardUnlocked={hardUnlocked}
-        />
+        <TierBanner plan={user?.plan ?? 'free'} />
         <div className="track-hub-header">
           <div className="track-hub-title-row">
             <h2 className="track-hub-title">{meta.label} Practice</h2>
@@ -329,7 +304,7 @@ export default function TrackHubPage() {
           </div>
         )}
 
-        {/* Medium-complete milestone — all medium solved, hard partially locked */}
+        {/* Medium-complete milestone — all medium solved, hard still locked on free */}
         {!allAccessibleSolved && mediumComplete && (user?.plan === 'free') && (
           <div className="track-hub-milestone track-hub-milestone-tier">
             <span className="track-hub-milestone-icon" aria-hidden="true">🏆</span>
@@ -338,7 +313,7 @@ export default function TrackHubPage() {
                 You've mastered all {mediumTotal} medium questions!
               </p>
               <p className="track-hub-milestone-desc">
-                Hard questions are partially unlocked. Upgrade to Pro for the full hard track and access to mock-only questions. <Link to="/#landing-pricing" className="track-hub-inline-link">See pricing →</Link>
+                Hard questions require a Pro or Elite plan. <Link to="/#landing-pricing" className="track-hub-inline-link">See pricing →</Link>
               </p>
               <div className="track-hub-milestone-actions">
                 <UpgradeButton tier="pro" label="Unlock all hard questions" compact source="hub_milestone_medium_complete" />

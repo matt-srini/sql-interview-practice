@@ -11,21 +11,6 @@ const CHIP_VISIBLE_DEFAULT = 8;
 // How many rows to show before "Show all" in an easy group
 const EASY_ROW_DEFAULT = 10;
 
-// Mirror of backend/unlock.py thresholds (free plan progressive unlock, code tracks)
-const MEDIUM_THRESHOLDS = [8, 15, 25]; // easy_solved → medium unlocks
-const HARD_THRESHOLDS   = [8, 15, 22]; // medium_solved → hard unlocks
-
-function computeUnlockNudge(solved, thresholds) {
-  const next = thresholds.find(t => t > solved);
-  if (!next) return null;
-  const prevList = thresholds.filter(t => t <= solved);
-  const prev = prevList.length > 0 ? prevList[prevList.length - 1] : 0;
-  const gap = next - solved;
-  const bracketSize = next - prev;
-  const fillPct = Math.round(((bracketSize - gap) / bracketSize) * 100);
-  return { gap, fillPct };
-}
-
 function titleCase(value) {
   if (!value) return '';
   return `${value.charAt(0).toUpperCase()}${value.slice(1)}`;
@@ -39,7 +24,7 @@ function conceptSlug(concept) {
     .replace(/^-+|-+$/g, '');
 }
 
-function DifficultyHeader({ difficulty, counts, collapsed, onToggle, unlockNudge }) {
+function DifficultyHeader({ difficulty, counts, collapsed, onToggle }) {
   const isComplete = counts.solved === counts.total && counts.total > 0;
   return (
     <button
@@ -52,16 +37,9 @@ function DifficultyHeader({ difficulty, counts, collapsed, onToggle, unlockNudge
         <div className="sidebar-group-copy">
           <span className="sidebar-group-name">{titleCase(difficulty)}</span>
           <span className="sidebar-group-meta">{counts.solved} solved · {counts.total} total</span>
-          {isComplete ? (
+          {isComplete && (
             <span className="sidebar-group-complete">✓ Mastered</span>
-          ) : unlockNudge ? (
-            <div className="sidebar-unlock-bar">
-              <div className="sidebar-unlock-bar-track">
-                <div className="sidebar-unlock-bar-fill" style={{ width: `${unlockNudge.fillPct}%` }} />
-              </div>
-              <span className="sidebar-unlock-bar-label">{unlockNudge.gap} more to unlock</span>
-            </div>
-          ) : null}
+          )}
         </div>
       </div>
       <div className="sidebar-group-summary">
@@ -337,14 +315,6 @@ export default function SidebarNav({ catalog, collapsedByDiff, toggleDiff, onNav
   const [searchParams] = useSearchParams();
   const pathSlug = searchParams.get('path');
   const groups = catalog?.groups ?? [];
-
-  // Compute unlock nudges (free plan only)
-  const easyGroup = groups.find(g => g.difficulty === 'easy');
-  const mediumGroup = groups.find(g => g.difficulty === 'medium');
-  const easySolved = easyGroup?.counts?.solved ?? 0;
-  const mediumSolved = mediumGroup?.counts?.solved ?? 0;
-  const mediumNudge = plan === 'free' ? computeUnlockNudge(easySolved, MEDIUM_THRESHOLDS) : null;
-  const hardNudge = plan === 'free' ? computeUnlockNudge(mediumSolved, HARD_THRESHOLDS) : null;
 
   const [activeFilters, setActiveFilters] = useState(new Set());
   const [activeCompanyFilters, setActiveCompanyFilters] = useState(new Set());
@@ -735,10 +705,6 @@ export default function SidebarNav({ catalog, collapsedByDiff, toggleDiff, onNav
 
       {filteredGroups.map((g) => {
         const collapsed = Boolean(collapsedByDiff[g.difficulty]);
-        const hasLockedQuestions = g.questions.some(q => q.state === 'locked');
-        const nudge = g.difficulty === 'medium' && hasLockedQuestions ? mediumNudge
-          : g.difficulty === 'hard' && hasLockedQuestions ? hardNudge
-          : null;
         const sorted = g.questions.slice().sort((a, b) => a.order - b.order);
         const isEasy = g.difficulty === 'easy';
         const showRowCap = isEasy && !easyExpanded && sorted.length > EASY_ROW_DEFAULT;
@@ -752,7 +718,6 @@ export default function SidebarNav({ catalog, collapsedByDiff, toggleDiff, onNav
               counts={g.counts}
               collapsed={collapsed}
               onToggle={() => toggleDiff(g.difficulty)}
-              unlockNudge={nudge}
             />
             {!collapsed && (
               <div className="sidebar-question-list">

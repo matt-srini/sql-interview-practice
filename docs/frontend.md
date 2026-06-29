@@ -16,7 +16,7 @@ Defined in `frontend/src/App.js`:
 /auth/reset-password             → ResetPasswordPage (consume reset token, set new password)
 /auth/verify-email               → VerifyEmailPage (consume email verification token)
 /dashboard                       → ProgressDashboard (cross-track progress)
-/pricing                         → PricingPage (public Free/Pro/Elite feature comparison + Free-tier unlock ladders)
+/pricing                         → PricingPage (public Free/Pro/Elite feature comparison — flat model: Free = easy only, Pro/Elite = all)
 /mock                            → MockHub (mode/track/difficulty selector + history)  [AuthRequired]
 /mock/:id                        → MockSession (active session + inline summary)        [AuthRequired]
 /learn                           → LearningPathsIndex (all paths, grouped by track, topic pills)
@@ -109,7 +109,7 @@ Visited **directly** (a shared `/faq` URL, a crawler), each route renders as a s
 
 ### PricingPage (`/pricing`)
 
-Public, full-detail plan comparison (no auth gate) — the "no hiding behind short adjectives" surface. Renders entirely from a single data source, **`frontend/src/data/tierFeatures.js`** (`COMPARISON_TIERS`, `COMPARISON_GROUPS`, `FREE_UNLOCK`), so the matrix has one home and tracks the entitlement SoT (`pricing.md` / `mock.md` / `unlock.py`). Layout: tier summary cards (Pro featured, `UpgradeButton` CTAs) → grouped Free/Pro/Elite feature matrix (✓ / — / value per cell, Pro column tinted) → the **Free-tier unlock ladders** (code vs conceptual tracks, in plain language). Reached from a "Compare every feature in detail →" link below the landing `#landing-pricing` grid (`.lp-pricing-compare-link`). The internal mirror of the same content is `docs/tier-wise-features.html`.
+Public, full-detail plan comparison (no auth gate) — the "no hiding behind short adjectives" surface. Renders entirely from a single data source, **`frontend/src/data/tierFeatures.js`** (`COMPARISON_TIERS`, `COMPARISON_GROUPS`, `FOOTNOTES`), so the matrix has one home and tracks the entitlement SoT (`pricing.md` / `mock.md` / `unlock.py`). Layout: tier summary cards (Pro featured, `UpgradeButton` CTAs) → grouped Free/Pro/Elite feature matrix (✓ / — / value per cell, Pro column tinted). Free model: easy only — medium and hard show `—` in the Free column. Reached from a "Compare every feature in detail →" link below the landing `#landing-pricing` grid (`.lp-pricing-compare-link`). The internal mirror of the same content is `docs/tier-wise-features.html`.
 
 ### AccountPage (`/account`)
 
@@ -322,7 +322,7 @@ OG cards: `og-image.png` (1200×630, dark), `og-image-light.png` (1200×630, lig
 | OnboardingTooltip | `components/OnboardingTooltip.js` | First-visit, target-anchored walkthrough tooltip with Back/Next/Skip and Esc-to-close support |
 | Topbar | `components/Topbar.js` | Single unified top nav used by every page (landing, auth, 404, practice workspace, mock, dashboard, learning paths). Composition slots for `leftSlot`, `centerSlot`, `userExtras`, `belowTopbar`; three variants: `'landing'` (default, container-bounded), `'app'` (full-bleed workspace chrome), `'minimal'` (auth / verify / reset / 404 — brand + user pill only; theme toggle removed, light-only at launch). `showPricingLink` for logged-out visitors. The brand mark now uses the bar lockup assets from `frontend/public/branding/` (`lockup-bar-no-bg.svg` / `lockup-bar-reverse-no-bg.svg`) and always resolves to the top of the landing page. `lockup-bar-no-bg.svg` uses D `#5B6AF0` with bar `#242a60`; `lockup-bar-reverse-no-bg.svg` uses D `#FFFFFF` with bar `#5B6AF0`. |
 | ToastViewport | `components/ToastViewport.js` | Global in-app toast stack (first-solve, unlock, and streak milestone feedback) rendered by `ToastProvider` |
-| TierBanner | `components/TierBanner.js` | Inline upgrade prompt shown when a user hits a plan gate (e.g. locked hard questions); renders contextual copy and upgrade CTA |
+| TierBanner | `components/TierBanner.js` | One-line banner at the top of TrackHubPage. Free users see a flat message ("Free plan · Easy questions only. Upgrade to Pro for medium and hard.") + "See plans →" button. Pro/Elite see their plan label. No thresholds or solve-count logic. |
 | UpgradeButton | `components/UpgradeButton.js` | Reusable upgrade CTA. Picks the billing rail via `railForCurrency` (`utils/currency.js`) from the **silently detected** currency (`detectCurrency()` — India `Asia/Kolkata`/`Asia/Calcutta` → INR, else → USD): INR → Razorpay Checkout, any other currency → Paddle.js overlay (Merchant of Record). There is **no user-facing currency selector** (removed); every upgrade surface is rail-consistent without the caller threading a currency value. |
 
 ### AppShell

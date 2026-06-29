@@ -2,21 +2,20 @@
 <!--
   docs/tier-wise-features.html
   ─────────────────────────────────────────────────────────────────────────────
-  INTERNAL DOC — at-a-glance snapshot of the Free / Pro / Elite entitlement split
-  and the Free-tier difficulty-unlock ladders. NOT user-facing (not served, not
-  routed). Open it directly in a browser for a quick, scannable picture.
+  INTERNAL DOC — at-a-glance snapshot of the Free / Pro / Elite entitlement split.
+  NOT user-facing (not served, not routed). Open it directly in a browser for a
+  quick, scannable picture.
 
-  ⚠ THIS IS A MANUAL MIRROR, NOT A SOURCE OF TRUTH. It hand-copies numbers that
-  live elsewhere, so it WILL drift if you forget it (it already showed a stale
-  "793" once). It is a *render* of:
-    · backend/unlock.py                  (free-tier unlock thresholds + caps — CANONICAL)
+  ⚠ THIS IS A MANUAL MIRROR, NOT A SOURCE OF TRUTH. It hand-copies facts that
+  live elsewhere, so it WILL drift if you forget it. It is a *render* of:
+    · backend/unlock.py                  (free-tier access policy — CANONICAL)
     · frontend/src/data/tierFeatures.js  (the tier-comparison display copy — the live
                                           version of this table is the /pricing page)
     · docs/features/mock.md              (mock plan-tier matrix — CANONICAL)
     · docs/features/pricing.md           (entitlement matrix) · dashboard.md (coaching gates)
   When any of those change, update this file in the same commit — or just check the
   always-current /pricing page instead. See CLAUDE.md § "Linked-docs / single-SoT rule".
-  Snapshot date: 2026-06-13.
+  Snapshot date: 2026-06-29.
 -->
 <html lang="en">
 <head>
@@ -95,8 +94,8 @@
 
   <p class="doc-flag">Internal doc · not user-facing</p>
   <h1>datathink — Tier &amp; Unlock Reference</h1>
-  <p class="sub">The Free / Pro / Elite split at a glance, plus how Free users unlock medium and hard questions.</p>
-  <p class="sources">Snapshot <strong>2026-06-13</strong>. Sources of truth: <code>pricing.md</code> · <code>mock.md</code> · <code>unlock.py</code> · <code>dashboard.md</code>. USD anchors: Pro $15/mo · $149 lifetime · Elite $25/mo · $249 lifetime (INR &amp; full currency matrix in <code>pricing.md</code>).</p>
+  <p class="sub">The Free / Pro / Elite split at a glance. Free = all easy questions; medium and hard require Pro or Elite.</p>
+  <p class="sources">Snapshot <strong>2026-06-29</strong>. Sources of truth: <code>pricing.md</code> · <code>mock.md</code> · <code>unlock.py</code> · <code>dashboard.md</code>. USD anchors: Pro $15/mo · $149 lifetime · Elite $25/mo · $249 lifetime (INR &amp; full currency matrix in <code>pricing.md</code>).</p>
 
   <h2>1 · Differentiated features by tier</h2>
   <div class="legend">
@@ -126,14 +125,14 @@
         <td class="cell"><span class="chip yes">All</span></td>
       </tr>
       <tr>
-        <td class="feat">Medium questions <small>Free: unlocked by solving easy (see §2)</small></td>
-        <td class="cell"><span class="chip lim">unlock ladder</span></td>
+        <td class="feat">Medium questions <small>Free: not included — Pro and Elite only</small></td>
+        <td class="cell"><span class="chip no">—</span></td>
         <td class="cell"><span class="chip yes">All</span></td>
         <td class="cell"><span class="chip yes">All</span></td>
       </tr>
       <tr>
-        <td class="feat">Hard questions <small>Free: unlocked by solving medium, hard-capped (see §2)</small></td>
-        <td class="cell"><span class="chip lim">capped ladder</span></td>
+        <td class="feat">Hard questions <small>Free: not included — Pro and Elite only</small></td>
+        <td class="cell"><span class="chip no">—</span></td>
         <td class="cell"><span class="chip yes">All</span></td>
         <td class="cell"><span class="chip yes">All</span></td>
       </tr>
@@ -227,55 +226,13 @@
     <strong>The real Elite differentiator</strong> — Pro and Elite both see your weak-spot <em>diagnosis</em> (the gap list). Elite owns the <em>prescription &amp; depth</em>: the <strong>personalised study plan</strong>, <strong>per-track readiness scores</strong>, <strong>Interview Loop</strong>, focus mode, coaching debrief, deep analytics, and <strong>unlimited mock volume</strong>. Split: <strong>Pro = "here are your weak spots, drill them" · Elite = "here's your readiness, a plan to close the gaps, and the timed simulation that pressure-tests it."</strong>
   </p>
 
-  <h2>2 · Free-tier unlock ladders</h2>
-  <p class="sub" style="margin-bottom:18px;">Free users start with all easy questions. Medium unlocks in batches as you solve easy; hard unlocks in batches as you solve medium, with a per-track cap. Thresholds differ by track type (the conceptual/MCQ tracks ask for a few more solves, since each MCQ is lower-effort than running &amp; debugging code). Pro &amp; Elite have <strong>no</strong> gating — every difficulty is open.</p>
-
-  <div class="cards">
-    <div class="card">
-      <h3 style="color: var(--pro);">Code tracks</h3>
-      <p class="tracks">SQL · Python · Pandas · Statistics &nbsp;(<code style="font-size:.76rem;">unlock_profile = code</code>)</p>
-
-      <div class="ladder">
-        <div class="lh">Medium — by easy solved</div>
-        <div class="step"><span class="from">8 easy</span><span class="arr">→</span><span class="to">3 medium</span></div>
-        <div class="step"><span class="from">15 easy</span><span class="arr">→</span><span class="to">8 medium</span></div>
-        <div class="step"><span class="from">25 easy</span><span class="arr">→</span><span class="to">all medium</span></div>
-      </div>
-
-      <div class="ladder">
-        <div class="lh">Hard — by medium solved</div>
-        <div class="step"><span class="from">8 medium</span><span class="arr">→</span><span class="to">3 hard</span></div>
-        <div class="step"><span class="from">15 medium</span><span class="arr">→</span><span class="to">8 hard</span></div>
-      </div>
-      <span class="cap">Hard cap: 8 — the ceiling holds even past 15 medium</span>
-    </div>
-
-    <div class="card">
-      <h3 style="color: var(--elite);">Conceptual tracks</h3>
-      <p class="tracks">PySpark · Data Engineering · Data Modeling · ML Fundamentals · Experimentation &nbsp;(<code style="font-size:.76rem;">unlock_profile = mcq</code>)</p>
-
-      <div class="ladder">
-        <div class="lh">Medium — by easy solved</div>
-        <div class="step"><span class="from">10 easy</span><span class="arr">→</span><span class="to">3 medium</span></div>
-        <div class="step"><span class="from">17 easy</span><span class="arr">→</span><span class="to">8 medium</span></div>
-        <div class="step"><span class="from">25 easy</span><span class="arr">→</span><span class="to">all medium</span></div>
-      </div>
-
-      <div class="ladder">
-        <div class="lh">Hard — by medium solved</div>
-        <div class="step"><span class="from">12 medium</span><span class="arr">→</span><span class="to">5 hard</span></div>
-      </div>
-      <span class="cap">Hard cap: 5</span>
-    </div>
-  </div>
-
   <div class="notes">
-    <strong>Unlock mechanics</strong>
+    <strong>Free-tier access model</strong>
     <ul>
-      <li><strong>Per track, independent.</strong> The ladder runs separately for each track — solving SQL easy questions doesn't unlock Python medium.</li>
-      <li><strong>Paths don't change unlocks.</strong> A learning path is just an ordered grouping of existing practice questions — solving one advances the same per-track thresholds as solving from the practice catalog. Completing a path unlocks nothing extra.</li>
+      <li><strong>Free = easy only.</strong> All easy questions across all 9 tracks are open to Free users — no account required, no thresholds.</li>
+      <li><strong>Medium and hard require Pro or Elite.</strong> There are no unlock ladders, no batch thresholds, no per-track caps — just a clean plan boundary.</li>
       <li><strong>Locked behaves by track type.</strong> A locked <em>code</em> question is inaccessible; a locked <em>conceptual/MCQ</em> question returns <code>200</code> with <code>locked: true</code> — the stem shows, but options + explanation are hidden. Submitting any locked question → <code>403</code>.</li>
-      <li><strong>The cap is a hard ceiling.</strong> Free hard is capped at 8 (code) / 5 (MCQ) regardless of how many medium you solve — clearing the cap is a Pro upgrade, not a grind.</li>
+      <li><strong>Solved questions persist.</strong> A question solved before a plan change retains its <code>solved</code> state even if the user downgrades.</li>
     </ul>
   </div>
 

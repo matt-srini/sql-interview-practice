@@ -439,21 +439,15 @@ Files: `db.py`, `progress.py`, `unlock.py`
 
 | Plan | Access |
 |---|---|
-| Free | All easy. Medium/hard unlock in batches based on solves (track-specific thresholds). Hard is capped. |
-| Pro | All easy + all medium + all hard (no cap) |
+| Free | All easy. Medium and hard are locked — Pro or Elite required. |
+| Pro | All easy + all medium + all hard |
 | Elite | Full catalog |
 
-*(A **render of [`backend/unlock.py`](../backend/unlock.py)**, the canonical SoT — keep in sync per CLAUDE.md § Linked-docs / single-SoT rule.)*
+*(Canonical SoT: [`backend/unlock.py`](../backend/unlock.py) — keep in sync per CLAUDE.md § Linked-docs / single-SoT rule.)*
 
-**Free-tier thresholds — code tracks (SQL, Python, Pandas):**
-- Medium: 8 easy → 3 · 15 easy → 8 · 25 easy → all
-- Hard: 8 medium → 3 · 15 medium → 8 · 22 medium → 15 *(cap = 8)*
+**Free-tier access (flat model):** All easy questions open; no thresholds, no batch unlocks, no per-track caps. Medium and hard are locked for Free users regardless of solve count.
 
-**Free-tier thresholds — MCQ tracks (PySpark, Data Engineering)** (option-hiding balances the lower cognitive effort):
-- Medium: 10 easy → 3 · 17 easy → 8 · 25 easy → all
-- Hard: 12 medium → 5 *(cap = 5)*
-
-**Learning paths and unlocks:** Paths do **not** influence unlock state. `compute_unlock_state` is threshold-only. A user solving a question via the path UI gets the same `solved` mark and the same threshold-counter advancement as solving from practice directly. See [`docs/content-authoring.md`](./content-authoring.md) §Paths for the canonical model.
+**Learning paths and unlocks:** Paths do **not** influence unlock state. A user solving a question via the path UI gets the same `solved` mark as solving from practice directly. See [`docs/content-authoring.md`](./content-authoring.md) §Paths for the canonical model.
 
 **Mock limits** (post-Phase-3; enforced via `get_daily_benchmark_usage` / `get_daily_custom_usage` / `get_weekly_benchmark_usage`). Modes: `benchmark`, `custom`, `interview_loop`. Single source of truth: [`docs/features/mock.md`](./features/mock.md).
 - Free: 1 `benchmark` per rolling 7 days (easy only, practice-pool questions). No `custom`. No `interview_loop`.

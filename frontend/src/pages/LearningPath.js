@@ -38,38 +38,18 @@ export default function LearningPath() {
   const level = path?.level;
   const accessible = path?.accessible !== false;
 
-  // Determine unlock hint messaging (threshold-based only — no path shortcuts)
+  // Determine upgrade card messaging when there are locked questions
   function getUnlockCards() {
     if (!firstLockedDiff || plan === 'elite') return null;
-    const trackLabel = meta.label;
 
-    // Earn-it card (threshold-based)
-    let earnCard = null;
-    if (plan === 'free') {
-      if (firstLockedDiff === 'medium') {
-        earnCard = {
-          copy: `Solve 8 more easy ${trackLabel} questions to unlock medium.`,
-          ctaLink: `/practice/${path.topic}`,
-          ctaLabel: `Open ${trackLabel} practice →`,
-        };
-      } else if (firstLockedDiff === 'hard') {
-        earnCard = {
-          copy: `Solve 8 more medium ${trackLabel} questions to unlock hard.`,
-          ctaLink: `/practice/${path.topic}`,
-          ctaLabel: `Open ${trackLabel} practice →`,
-        };
-      }
-    }
-
-    // Skip-ahead card (upgrade)
     const skipCard = plan !== 'elite' ? {
-      copy: firstLockedDiff === 'hard' && plan === 'pro'
-        ? null
-        : `Or unlock all ${firstLockedDiff} + ${firstLockedDiff === 'medium' ? 'hard' : ''} questions instantly with Pro.`,
+      copy: plan === 'free'
+        ? `Unlock medium and hard with Pro.`
+        : null,
       upgradeTier: plan === 'free' ? 'pro' : 'elite',
     } : null;
 
-    return { earnCard, skipCard };
+    return { earnCard: null, skipCard };
   }
 
   const unlockCards = path ? getUnlockCards() : null;

@@ -41,13 +41,13 @@ The entire `#landing-pricing` section is hidden only when `userPlan === 'lifetim
 
 > **Mock plan gates: canonical source of truth is [`docs/features/mock.md`](./mock.md#plan-tier-matrix-canonical-sot).** Do not restate mock plan gates in this doc — link instead. The summary below is for at-a-glance reference; mock.md owns the full matrix, daily caps, rationale, and Interview Loop / chain mechanics.
 
-> **User-facing comparison:** the public `/pricing` page (`PricingPage.js`) renders a full, plain-language Free/Pro/Elite comparison + the Free-tier unlock ladders from a single data source, **`frontend/src/data/tierFeatures.js`**. When the entitlement matrix below changes, update `tierFeatures.js` too (and its internal mirror `docs/tier-wise-features.html`) — it's the customer-facing copy, deliberately jargon-free.
+> **User-facing comparison:** the public `/pricing` page (`PricingPage.js`) renders a full, plain-language Free/Pro/Elite comparison from a single data source, **`frontend/src/data/tierFeatures.js`**. When the entitlement matrix below changes, update `tierFeatures.js` too (and its internal mirror `docs/tier-wise-features.html`) — it's the customer-facing copy, deliberately jargon-free.
 
 | Feature | Free | Pro | Elite |
 |---|---|---|---|
 | Easy questions (per-track easy bank) | ✓ All | ✓ All | ✓ All |
-| Medium questions | Batch-gated by easy solves | ✓ All | ✓ All |
-| Hard questions | Batch-gated (cap: **8** code / **5** PySpark) | ✓ All (no cap) | ✓ All (no cap) |
+| Medium questions | Not included (Pro/Elite only) | ✓ All | ✓ All |
+| Hard questions | Not included (Pro/Elite only) | ✓ All | ✓ All |
 | Learning paths | Free paths (`tier=free`) | All | All |
 | **Mock — easy `benchmark`** | 1 per rolling 7 days | 3 per day | Unlimited |
 | **Mock — `benchmark` (medium/hard)** | Blocked | 3 per day | Unlimited |

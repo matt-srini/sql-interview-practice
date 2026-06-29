@@ -11,9 +11,7 @@
  *
  * The *enforcement* SoTs this copy must agree with (this file is a render of them —
  * keep in sync in the same commit; see CLAUDE.md § "Linked-docs / single-SoT rule"):
- *   · backend/unlock.py          (free-tier unlock thresholds + caps — canonical; the
- *                                  unlock numbers below are parity-tested against it in
- *                                  backend/tests/test_entitlement_parity.py — drift fails CI)
+ *   · backend/unlock.py          (free-tier access policy — canonical)
  *   · docs/features/mock.md      (mock plan-tier matrix — canonical SoT)
  *   · docs/features/pricing.md   (entitlement matrix) · docs/features/dashboard.md (coaching gates)
  * Internal mirror of this same data: docs/tier-wise-features.html (manual — keep in step).
@@ -52,13 +50,13 @@ export const COMPARISON_GROUPS = [
       },
       {
         feature: 'Medium questions',
-        blurb: 'On Free, medium opens in batches as you solve easy (see the unlock ladder below). Pro & Elite: open from the start.',
-        free: 'Unlocks as you solve', pro: 'All', elite: 'All',
+        blurb: 'Free covers easy questions only. Pro and Elite include all difficulties.',
+        free: false, pro: 'All', elite: 'All',
       },
       {
         feature: 'Hard questions',
-        blurb: 'On Free, hard opens as you solve medium, up to a per-track cap. Pro & Elite: no cap.',
-        free: 'Up to the free cap', pro: 'All', elite: 'All',
+        blurb: 'Free covers easy questions only. Pro and Elite include all difficulties.',
+        free: false, pro: 'All', elite: 'All',
       },
       {
         feature: 'Learning paths',
@@ -142,45 +140,6 @@ export const COMPARISON_GROUPS = [
     ],
   },
 ];
-
-/**
- * Free-tier difficulty unlocking, in plain language. Thresholds mirror backend/unlock.py:
- * code tracks (medium 8/15/25, hard 8/15, cap 8) and conceptual tracks
- * (medium 10/17/25, hard 12→5, cap 5).
- */
-export const FREE_UNLOCK = {
-  intro:
-    'Free starts with every easy question. Medium opens in batches as you solve easy; hard opens as you solve medium, up to a per-track cap. It runs separately for each track — and finishing a learning path also opens all of that track’s medium. Pro and Elite skip all of this: every difficulty is open from the start.',
-  groups: [
-    {
-      label: 'Code tracks',
-      tracks: 'SQL · Python · Pandas · Statistics',
-      medium: [
-        ['Solve 8 easy', '3 medium open'],
-        ['Solve 15 easy', '8 medium open'],
-        ['Solve 25 easy', 'all medium open'],
-      ],
-      hard: [
-        ['Solve 8 medium', '3 hard open'],
-        ['Solve 15 medium', '8 hard open'],
-      ],
-      cap: 'Free hard is capped at 8 per track — lifting the cap is a Pro upgrade, not more grinding.',
-    },
-    {
-      label: 'Conceptual tracks',
-      tracks: 'PySpark · Data Engineering · Data Modeling · ML Fundamentals · Experimentation',
-      medium: [
-        ['Solve 10 easy', '3 medium open'],
-        ['Solve 17 easy', '8 medium open'],
-        ['Solve 25 easy', 'all medium open'],
-      ],
-      hard: [
-        ['Solve 12 medium', '5 hard open'],
-      ],
-      cap: 'Free hard is capped at 5 per track — lifting the cap is a Pro upgrade.',
-    },
-  ],
-};
 
 /**
  * Footnotes referenced from the comparison (by `notes: { feature | free | pro | elite: <id> }`

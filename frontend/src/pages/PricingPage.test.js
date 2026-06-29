@@ -3,8 +3,9 @@
  *
  * Verifies:
  *   - The three tier names render (Free / Pro / Elite)
- *   - At least two feature names from the real data file render
- *   - An unlock-ladder string from the real data file renders
+ *   - Feature names from the real data file render
+ *   - The page heading renders
+ *   - Upgrade buttons render for anonymous users
  */
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
@@ -67,20 +68,15 @@ describe('PricingPage', () => {
     expect(screen.getByText('Personalised study plan')).toBeInTheDocument();
   });
 
-  it('renders unlock-ladder strings from FREE_UNLOCK', () => {
-    renderPricingPage();
-    // These come from FREE_UNLOCK.groups[0].medium[0] in tierFeatures.js
-    expect(screen.getByText('Solve 8 easy')).toBeInTheDocument();
-  });
-
   it('renders the page heading', () => {
     renderPricingPage();
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Every feature, spelled out.');
   });
 
-  it('renders the Free unlock section heading', () => {
+  it('does not render the unlock ladder section', () => {
     renderPricingPage();
-    expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent('How Free unlocks questions');
+    expect(screen.queryByText('How Free unlocks questions')).not.toBeInTheDocument();
+    expect(screen.queryByText('Solve 8 easy')).not.toBeInTheDocument();
   });
 
   it('shows upgrade buttons for an anonymous user', () => {

@@ -116,23 +116,17 @@ Pure policy function in `backend/unlock.py`. Signature: `compute_unlock_state(pl
 
 | Plan | Access |
 |---|---|
-| Free | All easy. Medium/hard unlock in batches based on solves (track-specific thresholds, see below). Hard is capped. |
-| Pro | All easy + all medium + all hard (no cap) |
+| Free | All easy. Medium and hard are locked — Pro or Elite required. |
+| Pro | All easy + all medium + all hard |
 | Elite | Full catalog |
 
-*(Numbers below are a **render of [`backend/unlock.py`](../backend/unlock.py)** — the canonical SoT for these thresholds. Change them there and update this render in the same commit; see CLAUDE.md § Linked-docs / single-SoT rule.)*
+*(Canonical SoT for the access policy is [`backend/unlock.py`](../backend/unlock.py). See CLAUDE.md § Linked-docs / single-SoT rule.)*
 
-**Free-tier thresholds — code tracks (SQL, Python, Pandas):**
-- Medium: 8 easy solved → 3 medium · 15 → 8 medium · 25 → all medium
-- Hard: 8 medium solved → 3 hard · 15 → 8 hard · 22 → 15 hard *(hard cap = 8)*
-
-**Free-tier thresholds — MCQ tracks (PySpark, Data Engineering):** option-hiding balances the lower effort per question:
-- Medium: 10 easy solved → 3 medium · 17 → 8 medium · 25 → all medium
-- Hard: 12 medium solved → 5 hard *(hard cap = 5)*
+**Free-tier access (flat model):** All easy questions are open — no thresholds, no batch unlocks, no per-track caps. Medium and hard are locked for Free users regardless of solve count.
 
 Locked MCQ questions return 200 with `locked: true` and no `options` / `correct_option` (stem always visible). Submitting a locked MCQ returns 403.
 
-**Learning paths and unlocks:** Paths are curated walks through the practice catalog and do not influence unlock state — `compute_unlock_state` is threshold-only. A user who solves a question via the path UI gets the same `solved` mark and threshold advancement as solving via practice. See [`docs/content-authoring.md`](./content-authoring.md) §Paths for the canonical path model.
+**Learning paths and unlocks:** Paths are curated walks through the practice catalog and do not influence unlock state. A user who solves a question via the path UI gets the same `solved` mark as solving via practice. See [`docs/content-authoring.md`](./content-authoring.md) §Paths for the canonical path model.
 
 Solved questions remain solved permanently regardless of plan changes or threshold reversals.
 

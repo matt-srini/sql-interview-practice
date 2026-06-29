@@ -1171,90 +1171,17 @@ export default function QuestionPage() {
               </section>
             )}
 
-            {isLocked && (() => {
-              const plan = user?.plan ?? 'free';
-              const difficulty = question?.difficulty;
-              // State 1: threshold-locked (Free, reachable by solving more)
-              const isThresholdLocked = plan === 'free' && (difficulty === 'medium' || difficulty === 'hard');
-
-              // Unlock thresholds mirror unlock.py exactly.
-              // Each entry: [solvedNeeded, maxQuestionsUnlocked]
-              const MEDIUM_THRESHOLDS = renderMode === 'mcq'
-                ? [[10, 3], [17, 8], [25, Infinity]]
-                : [[8, 3], [15, 8], [25, Infinity]];
-              const HARD_THRESHOLDS = renderMode === 'mcq'
-                ? [[12, 5]]
-                : [[8, 3], [15, 8], [22, Infinity]];
-
-              // 1-indexed position of this question in the sorted difficulty list
-              const sortedGroup = (catalogQuestionMeta?.group?.questions ?? [])
-                .slice().sort((a, b) => a.order - b.order);
-              const questionPos = sortedGroup.findIndex(q => Number(q.id) === Number(id)) + 1;
-
-              // Find the threshold tier that covers this question's position
-              const easyThresholdEntry  = MEDIUM_THRESHOLDS.find(([, max]) => questionPos <= max);
-              const medThresholdEntry   = HARD_THRESHOLDS.find(([, max]) => questionPos <= max);
-
-              const easySolved   = catalog?.groups?.find(g => g.difficulty === 'easy')?.counts?.solved ?? 0;
-              const mediumSolved = catalog?.groups?.find(g => g.difficulty === 'medium')?.counts?.solved ?? 0;
-
-              const nextEasyNeeded   = difficulty === 'medium' && easyThresholdEntry
-                ? Math.max(0, easyThresholdEntry[0] - easySolved)
-                : null;
-              const nextMediumNeeded = difficulty === 'hard' && medThresholdEntry
-                ? Math.max(0, medThresholdEntry[0] - mediumSolved)
-                : null;
-              const solveMoreCopy = difficulty === 'medium' && nextEasyNeeded > 0
-                ? `Solve ${nextEasyNeeded} more easy ${meta.label} question${nextEasyNeeded !== 1 ? 's' : ''} to unlock this.`
-                : difficulty === 'hard' && nextMediumNeeded > 0
-                ? `Solve ${nextMediumNeeded} more medium question${nextMediumNeeded !== 1 ? 's' : ''} to unlock this.`
-                : null;
-
-              // Celebration context — lead with what the user has achieved
-              const progressSolved = difficulty === 'medium' ? easySolved : mediumSolved;
-              const progressLabel = difficulty === 'medium' ? 'easy' : 'medium';
-              const progressCelebration = progressSolved >= 15
-                ? `You've solved ${progressSolved} ${progressLabel} questions — strong work.`
-                : progressSolved >= 8
-                ? `You've solved ${progressSolved} ${progressLabel} questions — solid progress.`
-                : progressSolved > 0
-                ? `You've solved ${progressSolved} ${progressLabel} question${progressSolved !== 1 ? 's' : ''} so far.`
-                : null;
-
-              return (
-                <div className="preview-locked-callout">
-                  {progressCelebration && (
-                    <p className="preview-locked-progress">{progressCelebration}</p>
-                  )}
-                  {isThresholdLocked && solveMoreCopy ? (
-                    <>
-                      <p className="preview-locked-headline">Preview mode</p>
-                      <p className="preview-locked-body">{solveMoreCopy} Or open access now.</p>
-                      <div className="preview-locked-actions">
-                        <Link to={`/practice/${topic}`} className="btn btn-secondary btn-compact">
-                          Go to next {difficulty === 'medium' ? 'easy' : 'medium'} →
-                        </Link>
-                        <UpgradeButton tier="pro" label="Unlock now with Pro" compact source="question_preview" />
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <p className="preview-locked-headline">
-                        {difficulty === 'hard' ? 'Hard practice is included with Pro' : 'Unlock with Pro'}
-                      </p>
-                      <p className="preview-locked-body">
-                        {difficulty === 'hard'
-                          ? 'Full hard access across all tracks, plus daily hard mock interviews.'
-                          : 'All medium and hard questions, plus full learning path access.'}
-                      </p>
-                      <div className="preview-locked-actions">
-                        <UpgradeButton tier="pro" compact source="question_preview_plan" />
-                      </div>
-                    </>
-                  )}
+            {isLocked && (
+              <div className="preview-locked-callout">
+                <p className="preview-locked-headline">Preview mode</p>
+                <p className="preview-locked-body">
+                  Medium and hard questions are part of Pro.
+                </p>
+                <div className="preview-locked-actions">
+                  <UpgradeButton tier="pro" label="Unlock with Pro" compact source="question_preview" />
                 </div>
-              );
-            })()}
+              </div>
+            )}
           </div>
 
           {showSchema && (

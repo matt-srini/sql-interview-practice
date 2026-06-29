@@ -1,24 +1,15 @@
 """
-Pure plan + solve-history → unlock policy.
+Pure plan → access policy.
 
-CANONICAL SOURCE OF TRUTH for the free-tier difficulty-unlock thresholds and hard
-caps (the `_FREE_*_THRESHOLDS_*` tables + `FREE_HARD_CAP_*` below). Any doc or UI
-that shows these numbers — 8/15/25 (code medium), 10/17/25 (mcq medium), the hard
-ladders, and the 8 / 5 caps — is a *render* of this file, not a second source:
-  · docs/features/pricing.md, docs/architecture.md, docs/backend.md  (doc renders)
-  · frontend/src/data/tierFeatures.js → /pricing  (the customer-facing render)
-  · frontend/src/components/TierBanner.js  (in-app unlock hints)
-  · docs/tier-wise-features.html  (internal mirror)
-Change the numbers HERE; update the renders in the same commit. The tierFeatures.js
-→ /pricing render is parity-tested against this file in
-backend/tests/test_entitlement_parity.py (drift fails CI). See CLAUDE.md
-§ "Linked-docs / single-SoT rule".
+Free: easy only (all easy questions unlocked, all medium and hard locked).
+Pro/Elite: all difficulties unlocked.
+No thresholds, no batch unlocks, no caps.
+
+Mock access rules (unchanged) live in compute_mock_access().
 """
 from __future__ import annotations
 
 from typing import Any
-
-from tracks import TRACKS, get_track
 
 
 # ── Lifetime plan normalisation ───────────────────────────────────────────────
@@ -40,90 +31,13 @@ def normalize_plan(plan: str) -> str:
     return _LIFETIME_PLAN_MAP.get(plan, plan)
 
 
-# ── Free-tier threshold tables ────────────────────────────────────────────────
-#
-# Each entry is (solved_threshold, questions_unlocked | None).
-# None means "unlock all". Tables are evaluated top-to-bottom; first match wins.
-#
-# Unlocks are driven purely by raw solve counts. Learning paths are curated
-# walks through the same practice catalog and do NOT unlock anything on their
-# own — solving a path question advances these thresholds exactly like solving
-# the same question from the practice catalog directly.
-
-# Code tracks: SQL, Python, Pandas
-_FREE_MEDIUM_THRESHOLDS_CODE: list[tuple[int, int | None]] = [
-    (25, None),   # 25 easy solved → all medium
-    (15, 8),      # 15 easy solved → 8 medium
-    (8, 3),       # 8 easy solved → 3 medium
-]
-
-_FREE_HARD_THRESHOLDS_CODE: list[tuple[int, int]] = [
-    (22, 15),     # 22 medium solved → 15 hard (= full cap)
-    (15, 8),      # 15 medium solved → 8 hard
-    (8, 3),       # 8 medium solved → 3 hard
-]
-
-FREE_HARD_CAP_CODE = 8
-
-# MCQ tracks (PySpark, Data Engineering) — thresholds balanced with option-hiding:
-# locked questions show the stem only, so the gap between locked-read and answered
-# is smaller than for code tracks (no running, no debugging).
-_FREE_MEDIUM_THRESHOLDS_MCQ: list[tuple[int, int | None]] = [
-    (25, None),   # 25 easy solved → all medium
-    (17, 8),      # 17 easy solved → 8 medium
-    (10, 3),      # 10 easy solved → 3 medium
-]
-
-_FREE_HARD_THRESHOLDS_MCQ: list[tuple[int, int]] = [
-    (12, 5),      # 12 medium solved → 5 hard (= full cap)
-]
-
-FREE_HARD_CAP_MCQ = 5
-
-
 # ── Helpers ───────────────────────────────────────────────────────────────────
-
-def _is_mcq_profile(track: str) -> bool:
-    """True when this track uses the MCQ unlock thresholds."""
-    try:
-        return get_track(track).unlock_profile == "mcq"
-    except ValueError:
-        return False
-
 
 def _sorted_catalog(catalog: dict[str, list[dict[str, Any]]]) -> dict[str, list[dict[str, Any]]]:
     return {
         difficulty: sorted(catalog.get(difficulty, []), key=lambda q: int(q.get("order", 0)))
         for difficulty in ("easy", "medium", "hard")
     }
-
-
-def _free_medium_limit(
-    total_medium: int,
-    easy_solved: int,
-    mcq_profile: bool,
-) -> int:
-    """Number of medium questions a Free user can access in this track."""
-    thresholds = _FREE_MEDIUM_THRESHOLDS_MCQ if mcq_profile else _FREE_MEDIUM_THRESHOLDS_CODE
-    for solved_threshold, limit in thresholds:
-        if easy_solved >= solved_threshold:
-            return total_medium if limit is None else min(limit, total_medium)
-    return 0
-
-
-def _free_hard_limit(
-    total_hard: int,
-    medium_solved: int,
-    mcq_profile: bool,
-) -> int:
-    """Number of hard questions a Free user can access in this track."""
-    cap = FREE_HARD_CAP_MCQ if mcq_profile else FREE_HARD_CAP_CODE
-
-    thresholds = _FREE_HARD_THRESHOLDS_MCQ if mcq_profile else _FREE_HARD_THRESHOLDS_CODE
-    for solved_threshold, limit in thresholds:
-        if medium_solved >= solved_threshold:
-            return min(limit, cap, total_hard)  # cap is always enforced regardless of threshold
-    return 0
 
 
 # ── Core unlock logic ─────────────────────────────────────────────────────────
@@ -142,21 +56,16 @@ def compute_unlock_state(
         solved_ids: set of question IDs the user has solved in this track
         catalog: {'easy': [...], 'medium': [...], 'hard': [...]}
         track: track slug — one of the 9 track slugs (e.g. 'sql', 'python',
-               'statistics', 'ml-fundamentals'). Affects Free-tier thresholds
-               (MCQ-profile tracks like PySpark/Data Engineering use higher
-               easy→medium thresholds; see unlock_profile).
+               'statistics', 'ml-fundamentals'). Unused in the flat model but
+               kept for call-site compatibility.
     """
     plan = normalize_plan(plan)
     ordered_catalog = _sorted_catalog(catalog)
     solved_set = {int(qid) for qid in solved_ids}
-    mcq_profile = _is_mcq_profile(track)
 
     easy_questions = ordered_catalog["easy"]
     medium_questions = ordered_catalog["medium"]
     hard_questions = ordered_catalog["hard"]
-
-    easy_solved = sum(1 for q in easy_questions if int(q["id"]) in solved_set)
-    medium_solved = sum(1 for q in medium_questions if int(q["id"]) in solved_set)
 
     if plan == "elite":
         limits = {
@@ -165,17 +74,18 @@ def compute_unlock_state(
             "hard":   len(hard_questions),
         }
     elif plan == "pro":
-        # Pro gets everything — no hard cap
+        # Pro gets everything — no cap
         limits = {
             "easy":   len(easy_questions),
             "medium": len(medium_questions),
             "hard":   len(hard_questions),
         }
     else:
+        # Free: easy only
         limits = {
             "easy":   len(easy_questions),
-            "medium": _free_medium_limit(len(medium_questions), easy_solved, mcq_profile),
-            "hard":   _free_hard_limit(len(hard_questions), medium_solved, mcq_profile),
+            "medium": 0,
+            "hard":   0,
         }
 
     unlock_state: dict[int, str] = {}
@@ -190,82 +100,6 @@ def compute_unlock_state(
         unlock_state[qid] = "solved"
 
     return unlock_state
-
-
-def get_unlock_hint(
-    plan: str,
-    solved_ids: set[int],
-    catalog: dict[str, list[dict[str, Any]]],
-    track: str = "sql",
-) -> str | None:
-    """
-    Return a short, personalised next-step unlock message for Free users.
-    Returns None for Pro/Elite (no gates to explain).
-    """
-    plan = normalize_plan(plan)
-    if plan in ("pro", "elite"):
-        return None
-
-    ordered = _sorted_catalog(catalog)
-    solved_set = {int(qid) for qid in solved_ids}
-    mcq = _is_mcq_profile(track)
-
-    easy_qs = ordered["easy"]
-    medium_qs = ordered["medium"]
-    hard_qs = ordered["hard"]
-
-    easy_solved = sum(1 for q in easy_qs if int(q["id"]) in solved_set)
-    medium_solved = sum(1 for q in medium_qs if int(q["id"]) in solved_set)
-
-    medium_thresholds = _FREE_MEDIUM_THRESHOLDS_MCQ if mcq else _FREE_MEDIUM_THRESHOLDS_CODE
-    hard_thresholds = _FREE_HARD_THRESHOLDS_MCQ if mcq else _FREE_HARD_THRESHOLDS_CODE
-    total_medium = len(medium_qs)
-    total_hard = len(hard_qs)
-
-    current_medium_limit = _free_medium_limit(total_medium, easy_solved, mcq)
-    current_hard_limit = _free_hard_limit(total_hard, medium_solved, mcq)
-
-    # Find the next medium threshold not yet reached
-    medium_hint: str | None = None
-    if current_medium_limit < total_medium:
-        for threshold, unlocks in reversed(medium_thresholds):
-            if easy_solved < threshold:
-                needed = threshold - easy_solved
-                if unlocks is None:
-                    medium_hint = f"Solve {needed} more easy question{'s' if needed != 1 else ''} to unlock all medium."
-                else:
-                    next_limit = min(unlocks, total_medium)
-                    medium_hint = f"Solve {needed} more easy question{'s' if needed != 1 else ''} to unlock {next_limit} medium."
-                break
-
-    # Find the next hard threshold not yet reached
-    hard_hint: str | None = None
-    if current_medium_limit == total_medium and current_hard_limit == 0 and len(hard_qs) > 0:
-        # All medium unlocked, no hard yet
-        first_threshold = hard_thresholds[-1][0]  # lowest threshold
-        if medium_solved < first_threshold:
-            needed = first_threshold - medium_solved
-            hard_hint = f"Solve {needed} more medium question{'s' if needed != 1 else ''} to unlock your first hard questions."
-    elif current_hard_limit > 0:
-        cap = FREE_HARD_CAP_MCQ if mcq else FREE_HARD_CAP_CODE
-        if current_hard_limit < cap:
-            for threshold, _ in reversed(hard_thresholds):
-                if medium_solved < threshold:
-                    needed = threshold - medium_solved
-                    hard_hint = f"Solve {needed} more medium question{'s' if needed != 1 else ''} to unlock more hard questions."
-                    break
-
-    # Prefer medium hint if medium is still gated; fall back to hard hint
-    if medium_hint:
-        return medium_hint
-    if hard_hint:
-        return hard_hint
-
-    # Everything is as unlocked as Free allows
-    cap = FREE_HARD_CAP_MCQ if mcq else FREE_HARD_CAP_CODE
-    if current_hard_limit > 0 and total_hard > cap:
-        return f"Free plan includes up to {cap} hard questions. Upgrade for the full set."
-    return None
 
 
 def get_next_questions(
