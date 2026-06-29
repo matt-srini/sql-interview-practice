@@ -652,7 +652,7 @@ Every practice question routes to exactly one pattern-path (or `null` if no patt
 | `title` | ✓ | ≤50 chars, user-facing |
 | `description` | ✓ | 1–2 sentences |
 | `topic` | ✓ | Must match a track slug |
-| `tier` | ✓ | `free` or `pro` — controls **path-listing visibility only** (the questions inside follow the practice access policy regardless: free = easy, Pro/Elite = all) |
+| `tier` | ✓ | `free` or `pro` — **semantically inert; retained for backward compatibility in path JSON schema**. All paths are accessible to all users. Questions inside follow the standard practice access policy: free = easy, Pro/Elite = all. |
 | `level` | ✓ | `foundational` \| `intermediate` \| `advanced` — defined below |
 | `display_order` | ✓ | 1-based integer, unique per `(topic, level)`. Lower = earlier in the track's recommended walk within that level. Foundational is always 1 (singleton). TrackHub sorts by `(level, display_order)`. |
 | `patterns` | ✓ | Non-empty array; every entry must resolve in `path_patterns.py` for the track |
