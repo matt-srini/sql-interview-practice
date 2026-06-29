@@ -51,6 +51,9 @@ export default defineConfig({
     strictPort: true,
     proxy: {
       '/api': backendTarget,
+      // /guides is a server-rendered backend route (not a React route); proxy it
+      // so the footer link works in local dev the way it does in production.
+      '/guides': backendTarget,
     },
   },
 

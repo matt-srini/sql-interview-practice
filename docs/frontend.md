@@ -49,6 +49,8 @@ Active tracks (`TRACK_SLUGS`): all 9 tracks above. `ALL_TRACK_SLUGS` is the same
 
 App-level route changes now animate with a short fade-in wrapper (`.route-transition`) around the route tree.
 
+**Server-rendered surface outside the React route tree:** `/guides` and `/guides/<slug>` are FastAPI-rendered HTML routes (not React pages). The React site footer on `LandingPage`, `InterviewPrepIndexPage`, and `RoleInterviewPrepPage` links to `/guides` via a plain `<a href="/guides">` — intentionally NOT a React Router `<Link>`, since `/guides` is not in the React route tree and a client-side nav would hit `NotFoundPage`.
+
 ---
 
 ## Pages

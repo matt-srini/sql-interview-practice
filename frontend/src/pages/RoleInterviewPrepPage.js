@@ -556,6 +556,7 @@ export default function RoleInterviewPrepPage() {
         <div className="landing-footer-inner">
           <span className="landing-footer-copy">&copy; 2026 datathink</span>
           <nav className="landing-footer-links" aria-label="Legal">
+            <a href="/guides">Guides</a>
             <Link to="/faq">FAQ</Link>
             <Link to="/privacy">Privacy Policy</Link>
             <Link to="/terms">Terms &amp; Conditions</Link>

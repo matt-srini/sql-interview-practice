@@ -1409,6 +1409,7 @@ export default function LandingPage() {
           <div className="landing-footer-inner">
             <span className="landing-footer-copy">&copy; 2026 datathink</span>
             <nav className="landing-footer-links" aria-label="Legal">
+              <a href="/guides">Guides</a>
               <Link to="/faq" state={{ backgroundLocation: location }}>FAQ</Link>
               <Link to="/privacy" state={{ backgroundLocation: location }}>Privacy Policy</Link>
               <Link to="/terms" state={{ backgroundLocation: location }}>Terms &amp; Conditions</Link>
