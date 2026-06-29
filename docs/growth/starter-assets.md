@@ -8,6 +8,11 @@ checklist, the brand-handle claim list, and a day-by-day first-two-weeks plan. E
 > We show the *why* behind an answer; we never hype, never engagement-bait, never claim volume as
 > value. All example posts below are **original drafts** — adapt, don't paste blind.
 >
+> **Channel model reminder.** LinkedIn example posts below are written as **company-page posts** — the
+> brand speaks, not the founder's personal voice. The founder reshares each company post within ~60
+> minutes. Reddit posts are written as a **disclosed human** (the founder, by name, with affiliation
+> stated) — never as a brand account or undisclosed fellow user.
+>
 > **Hook source.** For more "can you solve this?" / reasoning-teardown seeds, mine
 > [`../concept-hooks.md`](../concept-hooks.md) — a per-track Socratic-hook inventory whose Mock-Only
 > section was authored explicitly for "social media posts, ad copy, and email sequences." Each hook is
@@ -18,7 +23,7 @@ checklist, the brand-handle claim list, and a day-by-day first-two-weeks plan. E
 
 ## A. Example posts (10, in the datathink voice)
 
-### LinkedIn — carousel anchor (caption + slide skeleton)
+### LinkedIn — carousel anchor (company page; caption + slide skeleton)
 
 **Caption:**
 > Most candidates can write a window function. Far fewer can explain why the `PARTITION BY` is what
@@ -33,7 +38,7 @@ checklist, the brand-handle claim list, and a day-by-day first-two-weeks plan. E
 3) The follow-up the interviewer actually asks. 4) Why the naive partition breaks. 5–9) The reasoned
 build, one decision per slide. 10) The principle + soft CTA ("Train the reasoning, not the template").
 
-### LinkedIn — "recognition ≠ reasoning" story post (text)
+### LinkedIn — "recognition ≠ reasoning" story post (company page; text)
 
 > Two candidates, same question.
 >
@@ -51,7 +56,7 @@ build, one decision per slide. 10) The principle + soft CTA ("Train the reasonin
 >
 > What's a question that *looked* familiar in an interview and then wasn't? 👇
 
-### LinkedIn — role-prep post (text)
+### LinkedIn — role-prep post (company page; text)
 
 > If you're prepping for a Data Engineer interview the way you'd prep for a Data Analyst one, you're
 > studying the wrong things.
@@ -187,7 +192,7 @@ live (see [`gtm-strategy.md`](gtm-strategy.md) M1/M2 and [`../seo.md`](../seo.md
 | Channel | Handle | Status | sameAs? |
 |---|---|---|---|
 | LinkedIn (company) | `company/datathink-co` | live | ✓ in `sameAs` |
-| LinkedIn (founder personal) | (founder profile) | — | the primary channel; keep bio → datathink.co |
+| LinkedIn (founder personal) | (founder profile) | — | amplification layer — reshares company posts; keep bio → datathink.co |
 | X / Twitter | `@datathinkHQ` | live | ✓ in `sameAs` |
 | Reddit | `u/datathink` (or founder handle, disclosed) | claim | n/a (profile, not sameAs) |
 | YouTube | `@datathinkHQ` | live | ✓ in `sameAs` |

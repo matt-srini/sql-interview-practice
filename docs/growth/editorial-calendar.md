@@ -8,6 +8,11 @@ Cadence target: **solo founder, part-time** — the minimum-viable floor from
 **1-pillar → many-cuts** system: one reasoning teardown per week is the only real creative act; every
 channel post is a *cut* of it.
 
+**Channel model (2026-06-29):** LinkedIn posts originate on the **company page**; the founder
+reshares each post within ~60 minutes of publishing. No daily personal cadence, no cultivated founder
+personality. SEO pillar articles go to `/guides` (live, in sitemap — publishing = dropping a markdown
+file). Reddit participation is a disclosed human, not a brand account.
+
 ---
 
 ## The production system (one pillar → many cuts)
@@ -17,11 +22,12 @@ then cut it. Same thinking, seven surfaces:
 
 | Cut | Channel | Effort | Timing |
 |---|---|---|---|
-| Long-form / role-page section | SEO | (the pillar itself) | publish mid-week |
-| Document carousel (8–12 slides) | LinkedIn | ~1 hr | **anchor**, Tue–Thu AM |
-| Story / text cut | LinkedIn | ~20 min | +2 days after anchor |
+| Long-form article → `/guides` | SEO | (the pillar itself) | publish mid-week |
+| Document carousel (8–12 slides) | LinkedIn **company page** | ~1 hr | **anchor**, Tue–Thu AM |
+| Founder reshare of carousel | LinkedIn personal | ~5 min | within ~60 min of company post |
+| Story / text cut | LinkedIn **company page** | ~20 min | +2 days after anchor |
 | "Can you solve this?" thread | X | ~30 min | day after carousel |
-| Value comment / discussion | Reddit | ~15 min | when genuinely relevant |
+| Value comment / discussion (disclosed human) | Reddit | ~15 min | when genuinely relevant |
 | Educational section (60% of email) | Newsletter | ~1 hr | weekly send day |
 | 60–90s screen capture (optional) | YouTube Short | ~1 hr | only above the floor |
 
@@ -51,26 +57,26 @@ Phases map to the launch sequence ([`gtm-strategy.md`](gtm-strategy.md) § 4): *
 
 ### Phase 1 — Soft launch (weeks 1–2)
 
-| Wk | Pillar (weekly teardown) | LinkedIn anchor | X | Reddit | Newsletter | Ops |
+| Wk | Pillar (weekly teardown) | LinkedIn anchor (company page) | X | Reddit (disclosed human) | Newsletter | Ops |
 |---|---|---|---|---|---|---|
-| 1 | Reasoning vs. recall | Carousel: "The window-function answer that passes the test but fails the interview" | Build-in-public: "I'm launching datathink — here's the thesis" thread | Start daily helpful answers in r/SQL, r/dataengineering (no links) | Set up capture + welcome sequence (3 educational emails) | M1–M5, M9: handles, OG, PostHog dashboard, Search Console (M8) |
-| 2 | Role-true prep | Carousel: "What a Data Engineer interview *actually* spans (5 tracks)" → role page | "Can you solve this?" thread (free sample, no login) | Continue value answers; r/developersIndia + r/learnpython | First send (if ≥ a few subscribers) | Verify sample-link unfurls; UTM-tag every link |
+| 1 | Reasoning vs. recall | Carousel: "The window-function answer that passes the test but fails the interview"; founder reshares | Build-in-public: "I'm launching datathink — here's the thesis" thread | Start daily helpful answers in r/SQL, r/dataengineering (no links) | Set up capture + welcome sequence (3 educational emails) | M1–M5: handles, OG, Search Console (M8); M9 done (funnel wired); publish pillar #1 to `/guides` (M10) |
+| 2 | Role-true prep | Carousel: "What a Data Engineer interview *actually* spans (5 tracks)" → role page; founder reshares | "Can you solve this?" thread (free sample, no login) | Continue value answers; r/developersIndia + r/learnpython | First send (if ≥ a few subscribers) | Verify sample-link unfurls; UTM-tag every link (sample_landed now wired) |
 
 ### Phase 2 — Community value (weeks 3–6)
 
-| Wk | Pillar | LinkedIn anchor | X | Reddit | Newsletter | Ops |
+| Wk | Pillar | LinkedIn anchor (company page) | X | Reddit (disclosed human) | Newsletter | Ops |
 |---|---|---|---|---|---|---|
-| 3 | The 9 tracks | Carousel: "Why pandas tests something SQL never will" | Reply-guy week: 15 substantive replies to data accounts + 1 thread | Keep building karma; answer career Qs with real reasoning | Weekly send | Publish SEO pillar #1 (role+intent), internal-link role + sample |
-| 4 | Sample-as-hook | Carousel: "3 sample questions, 3 reasoning traps" | "Can you solve this?" thread #2 | **First earned resource mention** — only where rules allow (e.g. a direct "what tool" Q or r/developersIndia Monthly Showcase) | Weekly send | SEO pillar #2 |
-| 5 | Mock narratives | Story post: "My readiness benchmark told me I was weak where I felt strong" | Build-in-public progress thread (real numbers) | r/cscareerquestions: help job-seekers, no commercial angle | Weekly send | Begin PH/Show HN prep (assets, maker profile, HN karma) |
-| 6 | Dashboard/readiness | Carousel: "Your solve count is lying; first-try accuracy isn't" | Thread on the metric + sample | r/BusinessIntelligence Monday "Entering & Transitioning" thread (clean resource fit) | Weekly send | Finalize launch kit (M7); test funnel under load |
+| 3 | The 9 tracks | Carousel: "Why pandas tests something SQL never will"; founder reshares | Reply-guy week: 15 substantive replies to data accounts + 1 thread | Keep building karma; answer career Qs with real reasoning | Weekly send | Publish SEO pillar #2 to `/guides` (role+intent), internal-link role + sample |
+| 4 | Sample-as-hook | Carousel: "3 sample questions, 3 reasoning traps"; founder reshares | "Can you solve this?" thread #2 | **First earned resource mention** — disclosed, only where rules allow (e.g. a direct "what tool" Q or r/developersIndia Monthly Showcase) | Weekly send | SEO pillar #3 to `/guides`; consider running paid-search thermometer (§ 3.9) if organic baseline is visible |
+| 5 | Mock narratives | Story post: "Our readiness benchmark showed exactly where candidates' gaps are"; founder reshares | Build-in-public progress thread (real numbers) | r/cscareerquestions: help job-seekers, no commercial angle | Weekly send | Begin PH/Show HN prep (assets, maker profile, HN karma) |
+| 6 | Dashboard/readiness | Carousel: "Your solve count is lying; first-try accuracy isn't"; founder reshares | Thread on the metric + sample | r/BusinessIntelligence Monday "Entering & Transitioning" thread (clean resource fit) | Weekly send | Finalize launch kit (M7); test funnel under load |
 
 ### Phase 3 — Launch moment (weeks 6–8)
 
-| Wk | Pillar | LinkedIn anchor | X | Reddit | Newsletter | Ops |
+| Wk | Pillar | LinkedIn anchor (company page) | X | Reddit (disclosed human) | Newsletter | Ops |
 |---|---|---|---|---|---|---|
-| 7 | Reasoning vs. recall (flagship) | "Why we built datathink on real engines, not flashcards" (the manifesto post) | Build-in-public: "launching on PH/HN this week" | Continue value; do NOT post upvote asks anywhere | "We're launching" educational + soft ask | **Product Hunt launch** (12:01 AM PT) + **Show HN** (Tue–Thu 8–10 AM PT) |
-| 8 | Role-true prep | Carousel recap of launch learnings + a role page | Thread: launch retrospective, honest numbers | Genuine "I launched, here's what I learned" in a maker-friendly sub | Launch recap + best sample | Capture the spike; review attribution |
+| 7 | Reasoning vs. recall (flagship) | "Why we built datathink on real engines, not flashcards" (the manifesto post); founder reshares with personal note | Build-in-public: "launching on PH/HN this week" | Continue value; do NOT post upvote asks anywhere | "We're launching" educational + soft ask | **Product Hunt launch** (12:01 AM PT) + **Show HN** (Tue–Thu 8–10 AM PT) |
+| 8 | Role-true prep | Carousel recap of launch learnings + a role page; founder reshares | Thread: launch retrospective, honest numbers | Genuine "I launched, here's what I learned" in a maker-friendly sub (disclosed) | Launch recap + best sample | Capture the spike; review `sample_landed` UTM attribution by channel |
 
 ### Phase 4 — Sustained cadence (weeks 9–12)
 
@@ -92,5 +98,6 @@ Phases map to the launch sequence ([`gtm-strategy.md`](gtm-strategy.md) § 4): *
 - **Fri:** Assemble + send newsletter; (optional) YouTube Short from the teardown.
 - **Sat/Sun:** Light Reddit participation; batch next month's assets occasionally; 30-min metrics review.
 
-If a week is tight, **protect the pillar + the LinkedIn carousel + Reddit value participation** (the
-Tier-1 floor) and drop the rest. Consistency on the floor beats sporadic bursts on everything.
+If a week is tight, **protect the pillar + the LinkedIn company-page carousel + Reddit value
+participation** (the primary-channel floor) and drop the rest. Consistency on the floor beats
+sporadic bursts on everything.

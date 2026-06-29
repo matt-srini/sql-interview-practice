@@ -5,7 +5,7 @@ This doc owns the *market* side of launch. It is the sibling of the *technical* 
 work (closed — see [`../../TODO.md`](../../TODO.md) P1 and [`../backlog/session-launch-readiness.md`](../backlog/session-launch-readiness.md))
 and it does not re-audit it.
 
-Status: canonical planning spec · Owner: founder / growth · Last updated: 2026-06-28
+Status: canonical planning spec · Owner: founder / growth · Last updated: 2026-06-29
 Appendices: [`editorial-calendar.md`](editorial-calendar.md) (the 3-month calendar + production system)
 · [`starter-assets.md`](starter-assets.md) (example posts, subreddit rules, launch-day + first-2-weeks plan).
 
@@ -14,7 +14,8 @@ Appendices: [`editorial-calendar.md`](editorial-calendar.md) (the 3-month calend
 - Pricing, tiers, dual payment rails → [`../features/pricing.md`](../features/pricing.md)
 - Organic discovery, role pages, brand disambiguation → [`../seo.md`](../seo.md)
 - Role → track mapping → `frontend/src/roleRegistry.js` (the runtime SoT)
-- Channel-priority *why* + rejected alternatives → [`../decisions/DECISIONS.md`](../decisions/DECISIONS.md) (2026-06-28)
+- Channel-priority *why* + rejected alternatives → [`../decisions/DECISIONS.md`](../decisions/DECISIONS.md) (2026-06-28; brand-led model 2026-06-29)
+- Unlock-ladder removal + flat free model → [`../decisions/DECISIONS.md`](../decisions/DECISIONS.md) (2026-06-29)
 
 > **This strategy serves the reasoning-premium brand, not vanity growth.** Every tactic below was
 > run through the five CLAUDE.md lenses and the nine pushback questions. Where a common "growth"
@@ -67,6 +68,8 @@ company-process curation; LeetCode is volume + streaks. **None positions around 
 professional judgment.** The reasoning-depth frame is *unclaimed territory in the distribution
 language* — which is exactly where a smaller, newer brand should plant its flag, because we win the
 argument rather than the volume contest.
+
+One caveat on the wedge: the reasoning-vs-grind *language* is copyable. Any competitor can swap in "judgment" for "patterns" in their tagline. The durable defensibility lives in the **product**: the real DuckDB execution engine, the Python sandbox, the Interview Loop chain mechanics, and curriculum depth that took months to build. The messaging points at that moat; the moat itself is not the messaging.
 
 The wedge is a head-to-head we **welcome and name explicitly**:
 
@@ -144,11 +147,13 @@ legal/compliance, load — all CLOSED, see [`../../TODO.md`](../../TODO.md) P1).
 | M6 | **Legal / refund pages linkable** (`/privacy`, `/terms`, `/refund-policy`, `/contact`) | Trust + required for Product Hunt / paid traffic; already shipped (sitemap) | done |
 | M7 | **Launch asset kit** assembled: logo lockups (reuse `BrandMark` + `og-image-light.svg`), 3–5 product screenshots, a 30–60s screen-capture of solving a sample question, the pitch copy | PH/Show HN/press all need these on day 0 | founder |
 | M8 | **Google Search Console verified + sitemap submitted; Google Business Profile created** | The actual SERP-disambiguation levers ([`../seo.md`](../seo.md) Phase 3) — start the recrawl clock early | founder |
-| M9 | **PostHog funnel dashboard built** on the wired events (§ 6) before first traffic | You cannot improve a funnel you cannot see; the events already fire | founder |
+| M9 | **PostHog funnel dashboard built** on the wired events (§ 6) before first traffic. `sample_landed` (UTM capture on `/sample` entry) and `account_created` are now wired — the full impression→sample→signup→activation chain is instrumented (see § 6) | You cannot improve a funnel you cannot see; the events already fire | done (wired) |
+| M10 | **At least one pillar article published to `/guides`** (the server-rendered content surface, live in sitemap + footer) | The SEO content engine is unblocked — publishing one piece starts the indexing clock; waiting costs weeks of compounding | founder |
 
 **Go/no-go rule:** M1–M5 + M9 are hard gates (don't drive traffic you can't capture, convert, or
-measure). M6 is already done. M7–M8 should be done by the Product Hunt / Show HN moment, not
-necessarily the soft launch.
+measure). M6 is already done; M9 is done (funnel wired). M7–M8 should be done by the Product Hunt /
+Show HN moment, not necessarily the soft launch. M10 is a soft launch gate — start the indexing
+clock early.
 
 ---
 
@@ -156,28 +161,39 @@ necessarily the soft launch.
 
 Ranked by expected ROI **for this product** (reasoning-premium, solo founder part-time, dual
 India + global, contested bare brand). The priority call and its rejected alternatives are logged in
-[`../decisions/DECISIONS.md`](../decisions/DECISIONS.md) (2026-06-28).
+[`../decisions/DECISIONS.md`](../decisions/DECISIONS.md) (2026-06-28; revised 2026-06-29 — LinkedIn
+moved from Tier 1 to Tier 2 on the brand-led model decision; paid-search experiment added).
 
 | Tier | Channels | Role |
 |---|---|---|
-| **1 — primary, weekly** | LinkedIn (founder-led) · SEO / content engine · Reddit (community-first) | The core. Where the ICP is, the durable compounding lever, the highest-reach community. |
-| **2 — secondary, weekly-lighter** | X / Twitter · Newsletter | Dev credibility + the sample-question hook format; the owned-audience anchor. |
-| **3 — time-boxed / opportunistic** | Launch moment (Product Hunt + Show HN) · India partnerships (bootcamps) · data Discord/Slack communities | One-time spikes + backlinks + relationships, not sustained channels. |
-| **4 — defer / experiment** | Short-form video (YouTube Shorts) | High production cost for a solo founder; repurpose only, don't build a channel on it at launch. |
+| **1 — primary, weekly** | SEO / content engine · Product-led free-sample loop · Reddit (community-first, disclosed human) | The durable compounding levers. SEO is now unblocked (the `/guides` surface exists — publish into it). The no-login sample loop is the top-of-funnel wedge. Reddit is wide open to competitors but ban-risk, so strictly value-first. |
+| **2 — secondary, weekly-lighter** | LinkedIn (company-published + founder-amplified) · X / Twitter · Newsletter | Brand reach + dev credibility + the owned-audience anchor. LinkedIn company-page reach is structurally lower than a personal-brand channel — honest expectation: steady contributor, not a rocket. |
+| **3 — time-boxed / opportunistic** | Launch moment (Product Hunt + Show HN) · India partnerships (bootcamps) · data Discord/Slack communities | One-time spikes + backlinks + relationships, not sustained channels. Discord/Slack require a disclosed human, same as Reddit. |
+| **Experiment** | Small time-boxed paid-search validation (§ 3.9) | One-time thermometer: learn the free→paid conversion rate fast. Hard budget cap + kill criterion. Not a sustained channel. |
 
 The **free-sample growth loop (§ 5)** is the connective tissue across all four tiers — every channel's
 job is to put a free sample question in front of the right person.
 
-### 3.1 LinkedIn — Tier 1, the primary channel
+### 3.1 LinkedIn — Tier 2 (company-published + founder-amplified)
 
-**Why it fits.** The data-career audience for all four roles lives on LinkedIn, in both India and
-globally. India is the fastest-growing major LinkedIn market, and the practical-skill-plus-career-
-outcome content that performs there is exactly the reasoning-vs-grind narrative we own. The one
-proven competitor playbook in this space is **LinkedIn-personal-brand-led** (DataLemur's Nick Singh
-built a 160K+ follower "Top Voice" moat and used it as the acquisition engine; StrataScratch, which
-leaned on a 16K *company page* instead of a personal brand, has far less reach). The lesson is
-explicit: **the founder's personal profile is the channel; the company page is secondary** (company
-pages get a fraction of feed allocation).
+**Why it fits (and honest expectations).** The data-career audience for all four roles lives on
+LinkedIn, in both India and globally. India is the fastest-growing major LinkedIn market, and the
+practical-skill-plus-career-outcome content that performs there is exactly the reasoning-vs-grind
+narrative we own. The channel is right; the model is brand-led — not founder-personal-brand-led.
+
+**The model.** The **company page (`company/datathink-co`) is the primary publisher.** The founder's
+personal profile is an **amplification layer**: reshare each company post within the first ~60
+minutes to seed distribution (the first-hour engagement signal matters for reach), and occasionally
+add a first-person note on a post. No cultivated founder personality, no daily personal cadence.
+
+**Honest reach expectation.** The proven competitor playbook in this space is founder-personal-brand-
+led: DataLemur's Nick Singh built a 160K+ follower "Top Voice" moat and used it as the primary
+acquisition engine. StrataScratch, which leaned on a company page instead, has far less reach.
+Company-page reach is *structurally lower* than a personal-brand channel — the feed allocation
+differs. We are not going to replicate the DataLemur rocket on this model. The realistic comparable
+is StrataScratch: a steady, growing contributor-presence that builds brand recognition and entity
+signals, not a flywheel of personal viral posts. That is the honest expectation, and it is enough —
+the brand advantage is that it compounds without being a single person's identity.
 
 **Content angle / format.** The 2026 algorithm rewards *dwell time* ("Depth Score"), and the formats
 that win are **native document/PDF carousels** (highest engagement of any format) and **multi-image
@@ -200,11 +216,11 @@ Post archetypes (rotate; all ladder to a § 1 pillar):
 **Cadence (solo, part-time).** One deep carousel per week is the anchor (one deep post reliably
 beats five thin ones under the new algorithm). Add 1–2 lighter text/image posts (a puzzle, a hook).
 Post Tue–Thu mornings; reply to comments hard in the first 60 minutes (decisive for distribution).
+The founder reshares each company post promptly after it goes live.
 
 **Risk / rules.** No engagement-bait ("comment 'SQL' and I'll DM you the link" mechanics are a
 DataLemur staple we **reject** — see § 7; they juice a vanity comment count and train the audience to
-transact, not think). No follower-buying. Keep the company page alive (M1/M2) but invest the time in
-the personal profile.
+transact, not think). No follower-buying.
 
 ### 3.2 SEO / content engine — Tier 1, the durable compounding lever
 
@@ -215,10 +231,17 @@ targets** (`/interview-prep/<role>`), the per-track pages target "`<Track>` Inte
 the sitemap is self-maintaining. Content compounds — a good role-prep article keeps acquiring for
 years, unlike a post that decays in 48 hours.
 
-**Content angle.** Every content-engine pillar piece (§ 4) gets a long-form home that targets a
-role+intent query and **internally links to the matching role page and free sample track**. The
-competitor SEO playbook to beat is the "company-specific question page" (DataLemur/StrataScratch rank
-well on "<Company> SQL interview questions") — we **don't** copy the company-dump angle (it's the
+**The content home now exists — ship into it.** The server-rendered `/guides` surface is live:
+crawlable HTML, in the sitemap, linked from the site footer. Publishing a pillar article = dropping a
+markdown file into `backend/content/guides/`. The content engine is unblocked — this item moves from
+"we must build a home" to "we have a home, publish." (Role/FAQ page-body prerendering was
+deliberately deferred — Google renders their JS and the role pages already ship server-side meta +
+JSON-LD.)
+
+**Content angle.** Every content-engine pillar piece (§ 4) gets a long-form home at `/guides` that
+targets a role+intent query and **internally links to the matching role page and free sample track**.
+The competitor SEO playbook to beat is the "company-specific question page" (DataLemur/StrataScratch
+rank well on "<Company> SQL interview questions") — we **don't** copy the company-dump angle (it's the
 grind frame we reject); we win the **role + reasoning** angle they've left open ("how to *think
 through* a Data Engineer SQL round," not "the 8 questions Company X asks").
 
@@ -258,11 +281,17 @@ when it genuinely adds value (≈ weekly), and a resource mention only where the
 allow it. Per-subreddit rules are catalogued in [`starter-assets.md`](starter-assets.md) § Subreddit
 targets — **read each sub's rules before posting; they differ sharply.**
 
+**Disclosed human, not a faceless brand.** Brand-as-face works for broadcast surfaces (company
+LinkedIn, X, the site, newsletter), but Reddit requires a **real, disclosed human** — never a
+faceless brand account, and never an undisclosed "fellow user" who happens to recommend the product.
+The founder's account (or another named human) is the Reddit presence, with affiliation disclosed
+every time a resource mention is made. The same applies to data Discord/Slack (§ 3.8).
+
 **Risk / rules.** Read the rules of every sub before first post. Never astroturf (no fake "has anyone
 tried datathink?" threads — that's the exact tactic § 7 rejects and the fastest way to get banned).
 One account, real history, real participation. Assume mods can see your full post history.
 
-### 3.4 X / Twitter — Tier 2
+### 3.4 X / Twitter — Tier 2 (dev credibility + global layer)
 
 **Why it fits.** Best channel for the **global indie/dev/build-in-public layer** and for engaging
 influencers in the data community; feeds the `@datathinkHQ` `sameAs` signal. The "can you solve
@@ -342,10 +371,30 @@ core product into the grind-market floor; partner on *access*, not on price eros
 ### 3.8 Data Discord / Slack communities — Tier 3
 
 **Why it fits.** Relationship-building with practitioners (DataTalks.Club ≈ 80K Slack members;
-MLOps Community ≈ 28K). Same 20:1 value-first norm as Reddit. Slow, supporting role — a place to be
-genuinely helpful and let the brand surface, not a volume channel.
+MLOps Community ≈ 28K). Same 20:1 value-first norm as Reddit. Same disclosed-human rule (§ 3.3): a
+real, named participant who discloses affiliation when the product comes up — never a brand account.
+Slow, supporting role — a place to be genuinely helpful and let the brand surface, not a volume channel.
 
-### 3.9 Short-form video (YouTube Shorts) — Tier 4, defer / experiment
+### 3.9 Paid-search validation experiment — one-time thermometer
+
+**What it is.** A single, time-boxed validation experiment — not a sustained channel. ~$300–500 over
+~2 weeks, on high-intent queries (e.g. "data engineer interview prep," "SQL interview practice") that
+point at `/sample`. Measured through the already-wired funnel: `sample_landed` (UTM) →
+`account_created` → `plan_upgraded`.
+
+**Purpose: learn the free→paid conversion rate fast.** The all-organic plan won't yield a
+trustworthy free→paid number for months. A small paid experiment gives a directional read within
+weeks — is the conversion rate 0.5% or 3%? That number determines whether organic-only is viable
+or whether paid deserves a real budget. This is a thermometer, not a faucet.
+
+**Hard constraints.** Budget cap: $500, non-negotiable. Kill criterion: if cost-per-`account_created`
+exceeds a 3× target CAC after 7 days, pause immediately. Interpret cautiously — paid-traffic intent
+and organic intent differ; this is a signal, not a plan.
+
+**When.** Run after the funnel is verified (M9 + `sample_landed` confirmed firing) and after the
+soft-launch SEO/community phase gives a baseline organic conversion rate to compare against.
+
+### 3.10 Short-form video (YouTube Shorts) — defer / repurpose only
 
 **Why deferred.** Highest production cost per output for a solo founder; ROI is acquisition-only (no
 meaningful revenue). **Do not build a video-first strategy at launch.** The *only* sustainable version:
@@ -388,11 +437,11 @@ surfaces.
 ```
 WEEKLY PILLAR ARTIFACT  (one reasoning teardown — the week's single creative act)
   │
-  ├─ Long-form post / role-page section ........ SEO landing target (internal-links role + sample)
-  ├─ LinkedIn document carousel (8–12 slides) .. the week's anchor post
-  ├─ LinkedIn text "story" cut ................. the recognition≠reasoning angle, comment-bait-free
+  ├─ Long-form article → /guides .............. SEO landing target (internal-links role + sample)
+  ├─ LinkedIn carousel (company page, 8–12 slides) the week's anchor post; founder reshares ~60 min later
+  ├─ LinkedIn text "story" cut (company page) .. the recognition≠reasoning angle, comment-bait-free
   ├─ X thread ("can you solve this?" + reasoning) the hook format, sample link at the end
-  ├─ Reddit value comment / discussion ......... reasoning shared as discussion, link only if allowed
+  ├─ Reddit value comment / discussion ......... disclosed human; reasoning as discussion, link only if allowed
   ├─ Newsletter section ........................ the educational 60% of the week's email
   └─ YouTube Short (optional, repurposed) ...... 60–90s screen-capture of the teardown
 ```
@@ -403,12 +452,15 @@ This is **one piece of work per week**, not seven. The calendar in
 
 ### Launch sequence
 
-1. **Soft launch (weeks 1–2).** Quietly live. Start LinkedIn + X posting, begin Reddit *value-only*
-   participation (no links yet), stand up the newsletter capture, build the PostHog dashboard (M9),
-   verify Search Console (M8). Goal: real signal + a few honest testimonials, no big splash.
-2. **Community value phase (weeks 3–6).** Establish the founder voice on LinkedIn/X; cross the
-   value-first threshold on Reddit so a resource mention is *earned*; publish the first 2–3 SEO pillar
-   pieces; grow the newsletter from in-product capture.
+1. **Soft launch (weeks 1–2).** Quietly live. Start LinkedIn company + X posting, begin Reddit
+   *value-only* participation (no links yet), stand up the newsletter capture, verify Search Console
+   (M8), publish the first pillar piece to `/guides` (M10 — start the indexing clock). PostHog
+   funnel dashboard is already built on wired events (M9 done). Goal: real signal + a few honest
+   testimonials, no big splash.
+2. **Community value phase (weeks 3–6).** Establish the brand voice on LinkedIn/X; cross the
+   value-first threshold on Reddit so a resource mention is *earned*; publish 2–3 more SEO pillar
+   pieces to `/guides`; grow the newsletter from in-product capture. Run the paid-search
+   thermometer (§ 3.9) once the organic baseline is established.
 3. **Launch moment (≈ week 6–8).** Product Hunt + Show HN, once there's genuine product signal and a
    small base to activate honestly. Time-boxed.
 4. **Sustained cadence (week 8+).** The weekly 1-pillar→many-cuts rhythm becomes steady-state;
@@ -424,22 +476,27 @@ next step. No signup wall to resent, nothing to lose by clicking.
 
 ### The loop, mapped to the wired PostHog events
 
-The measurement substrate already exists — these events fire today (see `CLAUDE.md` § Observability):
+The measurement substrate is fully wired — these events fire today (see `CLAUDE.md` § Observability):
 
 ```
    SOCIAL HOOK                         (LinkedIn/X "can you solve this?", Reddit resource share)
         │  [leading indicator: link clicks / referral traffic — channel-level, pre-product]
         ▼
-   SAMPLE QUESTION  (/sample, no login)
+   SAMPLE LANDING  (/sample, no login)
+        │  ── page entered ──▶  PostHog: sample_landed  +  UTM attribution  ◀── channel attribution
+        ▼
+   SAMPLE QUESTION  (/sample/<track>/<diff>)
         │  ── user submits ──▶  PostHog: sample_submitted     ◀── the wedge activation event
         ▼
    "TRY THE FULL TRACK"  (sample → practice CTA)
         │
         ▼
    FREE ACCOUNT  (anonymous-first identity; registration upgrades the session in place)
+        │  ── account created ──▶  PostHog: account_created   ◀── "made an account" signal
         │  ── first real solve ──▶  PostHog: question_submitted → question_solved
         ▼
-   FREE TIER  (all easy unlocked; a medium/hard question prompts an upgrade — backend/unlock.py)
+   FREE TIER  (all easy questions, all 9 tracks — no ladder, no thresholds)
+        │  [the medium / hard wall prompts an upgrade — the clean, honest conversion moment]
         │  ── tries a benchmark ──▶  PostHog: mock_started → mock_completed
         ▼
    PRO / ELITE
@@ -447,22 +504,26 @@ The measurement substrate already exists — these events fire today (see `CLAUD
            ── payment verified ─────▶  PostHog: plan_upgraded
 ```
 
-### Gaps to close (events I'd want — not assumed to exist)
+**On the free-tier model:** Free = all easy across 9 tracks, ungated. The unlock ladder (batch
+thresholds, per-track caps) was removed (2026-06-29). Medium and hard questions require Pro/Elite —
+a clear, honest wall. The conversion moment is "you've worked through the easy questions, now go
+deeper" — not a gamified drip. No founding-member pricing, no grandfathering cohorts, no scarcity
+hooks. (The grandfathering idea was considered and rejected; see
+[`../decisions/DECISIONS.md`](../decisions/DECISIONS.md) 2026-06-29.)
 
-The funnel's *pre-product* steps (the social→sample handoff) are **not** currently instrumented. Flag
-for engineering (do **not** assume these exist):
+### Measurement gaps — now closed
 
-- **`sample_landed`** (or UTM capture on `/sample` entry) — to attribute which channel/post drove the
-  sample. Today we can see `sample_submitted` but not *where the sampler came from*. This is the single
-  most valuable add for measuring channel ROI (§ 6).
-- **`sample_shared`** — fired when a user uses a share affordance on a solved sample (see artifacts
-  below). Powers the viral coefficient.
-- **`signup_started` / `account_created`** distinct from the first `question_*` event — to separate
-  "made an account" from "activated." (May be partially inferable from existing identity events;
-  confirm before building.)
+The funnel's pre-product steps are instrumented (shipped):
 
-These are *requests to engineering*, scoped here so the strategy is honest about what it can measure
-today vs. what it needs.
+- **`sample_landed` + UTM capture** — fired on `/sample` entry, attributes which channel/post drove
+  the sample. The impression→sample handoff is now measurable.
+- **`account_created`** — distinct from the first `question_*` event; separates "made an account"
+  from "activated."
+
+Remaining open item:
+- **`sample_shared`** — to be fired when a user uses a share affordance on a solved sample (see
+  artifacts below). Powers the viral coefficient. Not yet wired — flag for engineering when the
+  share UI ships.
 
 ### Shareable artifacts (the loop's fuel)
 
@@ -490,17 +551,18 @@ upstream of revenue (activated learners are who convert to Pro/Elite). It's deri
 
 ### The funnel (on existing events)
 
-| Stage | Definition | Event(s) | Today? |
+| Stage | Definition | Event(s) | Wired? |
 |---|---|---|---|
-| Impression | Saw a post / SERP / unfurl | channel-native analytics | ✗ (channel dashboards) |
-| Sample | Tried a sample question | `sample_submitted` | ✓ |
-| Signup | Created an account | identity / (`account_created` — gap) | ~ |
+| Impression | Saw a post / SERP / unfurl | channel-native analytics | ✗ (channel dashboards only) |
+| Sample landed | Hit `/sample` from a channel link | `sample_landed` + UTM | ✓ (wired) |
+| Sample tried | Submitted a sample answer | `sample_submitted` | ✓ |
+| **Signup** | Created an account | `account_created` | ✓ (wired) |
 | **Activation** | Solved ≥1 real question (**north-star**) | `question_solved` | ✓ |
 | Engaged | Ran a mock benchmark | `mock_started` → `mock_completed` | ✓ |
 | Paid | Upgraded | `plan_upgrade_started` → `plan_upgraded` | ✓ |
 
-The **impression → sample** handoff is the measurement gap (§ 5 — needs `sample_landed`/UTM). Until
-then, attribute it with per-channel link analytics + UTM tags on every posted link.
+The full chain from social hook to paid conversion is now measurable on wired events. The only
+remaining gap is the impression row — which always lives in channel dashboards, not the product.
 
 ### Per-channel leading indicators (what to watch *before* conversions show up)
 
@@ -527,11 +589,12 @@ Reddit thread). Build it in PostHog on the wired events (M9) before first traffi
 - **3 months:** A repeatable weekly pillar→cuts rhythm; LinkedIn posts reliably driving sample clicks;
   ≥1 role+intent query on page 1; a launch-moment spike captured (PH/HN); newsletter in the hundreds;
   first organic Pro conversions attributable to a channel.
-- **6 months:** Compounding SEO (multiple role/track queries ranking); LinkedIn the dependable primary
-  channel; Reddit a trusted-contributor presence (not a promoter); newsletter low-thousands; a
-  predictable WAL→paid rate good enough to forecast; ≥1 live India partnership. The brand's *role+intent*
-  + community + entity signals are visibly improving disambiguation (per [`../seo.md`](../seo.md) Phase 3),
-  even if the bare-brand panel is still contested.
+- **6 months:** Compounding SEO (multiple role/track queries ranking, `/guides` articles indexed);
+  LinkedIn company page a reliable secondary reach driver with founder amplification; Reddit a
+  trusted-contributor presence (not a promoter); newsletter low-thousands; a predictable WAL→paid
+  rate good enough to forecast; ≥1 live India partnership. The brand's *role+intent* + community +
+  entity signals are visibly improving disambiguation (per [`../seo.md`](../seo.md) Phase 3), even
+  if the bare-brand panel is still contested.
 
 ---
 
@@ -545,9 +608,9 @@ is what makes that survivable: the only real creative act each week is the pilla
 | Cadence | Time |
 |---|---|
 | 1 pillar artifact (the week's reasoning teardown) | ~3–4 hrs |
-| → LinkedIn carousel (the anchor) + 1 text cut | ~1 hr (cut, not create) |
+| → LinkedIn carousel (company page, anchor) + 1 text cut + founder reshare | ~1 hr (cut, not create) |
 | → X: 1 thread + daily replies | ~20 min/day |
-| → Reddit: daily light value participation | ~15 min/day |
+| → Reddit: daily light value participation (disclosed human) | ~15 min/day |
 | → Newsletter: assemble the weekly email from the pillar | ~1 hr |
 | Weekly metrics review | ~30 min |
 
