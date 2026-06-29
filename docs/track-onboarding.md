@@ -55,7 +55,7 @@ The concept coverage map becomes the canonical reference during authoring — if
 
 ### 1.2 Question counts
 
-Decide counts before authoring. Once set, do not increase counts arbitrarily — the unlock thresholds and mock pool sizing depend on stable totals.
+Decide counts before authoring. Once set, do not increase counts arbitrarily — mock pool sizing depends on stable totals.
 
 **Guideline ranges by eval_kind:**
 

@@ -594,7 +594,7 @@ Mock-only add-on bank: **1,169 questions** (Pro/Elite only). Samples: **81 total
 
 #### What a learning path is
 
-A learning path is a **curated 5–9 question walk through a pattern**, drawing entirely from the existing practice catalog. Paths sit *on top of* practice; they do not introduce new questions and do not bypass the practice-track unlock thresholds. A user who completes a path's question via the path or directly from practice gets the same `solved` state, and the same unlock-threshold counters advance either way.
+A learning path is a **curated 5–9 question walk through a pattern**, drawing entirely from the existing practice catalog. Paths sit *on top of* practice; they do not introduce new questions and do not change practice access (free = easy; Pro/Elite = all). A user who completes a path's question via the path or directly from practice gets the same `solved` state either way.
 
 Paths are not comprehensive. Most questions in the catalog are never in any path. That is intentional — paths are for guided mastery of a specific pattern, not for cataloguing everything that touches the pattern.
 
@@ -652,7 +652,7 @@ Every practice question routes to exactly one pattern-path (or `null` if no patt
 | `title` | ✓ | ≤50 chars, user-facing |
 | `description` | ✓ | 1–2 sentences |
 | `topic` | ✓ | Must match a track slug |
-| `tier` | ✓ | `free` or `pro` — controls **path-listing visibility only** (the questions inside follow practice unlock thresholds regardless) |
+| `tier` | ✓ | `free` or `pro` — controls **path-listing visibility only** (the questions inside follow the practice access policy regardless: free = easy, Pro/Elite = all) |
 | `level` | ✓ | `foundational` \| `intermediate` \| `advanced` — defined below |
 | `display_order` | ✓ | 1-based integer, unique per `(topic, level)`. Lower = earlier in the track's recommended walk within that level. Foundational is always 1 (singleton). TrackHub sorts by `(level, display_order)`. |
 | `patterns` | ✓ | Non-empty array; every entry must resolve in `path_patterns.py` for the track |
@@ -706,7 +706,7 @@ Sample questions are a **first-impression discovery surface**: shown to anonymou
 
 - Must stand alone as an interesting, representative first touch — not as a warm-up for the practice arc.
 - Never appear in the practice or mock catalog; they are completely separate content.
-- Record no progress toward challenge unlock thresholds.
+- Record no progress toward the challenge `solved` state.
 - Use IDs in the compact TXS format (see § TXNNN ID scheme → Sample IDs for per-track ranges).
 
 Because samples are the first experience a user has with a track, quality failures here erode trust in the entire bank — even if the practice bank is clean.

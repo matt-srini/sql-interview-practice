@@ -57,7 +57,7 @@ const SHARED_REASONING = {
 
 const FREE_PRACTICE_FAQ = {
   q: 'Can I practice for free?',
-  a: 'More than you might expect. Every easy question is free, and medium and hard unlock as you solve, so a free account goes a long way. Samples need no account at all. Paid plans lift the unlock caps and add the mock-only question bank, mock interviews, and deep analytics.',
+  a: 'More than you might expect. Every easy question is free across all 9 tracks, and samples need no account at all. Pro and Elite add every medium and hard question, plus the mock-only question bank, mock interviews, and deep analytics.',
   link: { label: 'More details →', to: '/pricing' },
 };
 

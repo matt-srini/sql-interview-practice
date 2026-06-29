@@ -255,8 +255,8 @@ async def get_dashboard_insights(
         # submission was correct ÷ distinct practice questions attempted. Practice
         # catalog only (mock-only + sample excluded by the _PRACTICE_IDS intersect),
         # so it measures the same denominator as the readiness 'solve quality'
-        # component. This is the mastery signal the unlock ladder deliberately does
-        # NOT measure (post-reveal solves still advance the gate). Null when the user
+        # component. This is the mastery signal a raw solve count deliberately does
+        # NOT measure (a post-reveal solve still counts as solved). Null when the user
         # has attempted no practice questions in the track (renders as "—").
         practice_ids = _PRACTICE_IDS.get(track, set())
         ft_attempted = len(per_track_first_seen.get(track, set()) & practice_ids)

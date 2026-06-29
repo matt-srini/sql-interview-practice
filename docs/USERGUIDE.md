@@ -46,9 +46,9 @@ Hints are progressive. The platform reveals them one at a time after you submit.
 
 ## Unlock system
 
-Free users get all easy questions and unlock medium and hard in batches as they solve more of the curriculum. Thresholds differ by modality (code vs MCQ tracks).
+Free users get every easy question across all 9 tracks, free forever. Medium and hard questions are part of Pro and Elite.
 
-Pro unlocks all practice difficulties across all tracks. Elite keeps full catalog access and adds the premium mock and dashboard layers.
+Pro unlocks all practice difficulties (every medium and hard) across all tracks. Elite keeps full catalog access and adds the premium mock and dashboard layers.
 
 ## Learning paths
 

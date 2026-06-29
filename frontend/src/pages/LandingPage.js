@@ -969,8 +969,8 @@ function PricingSection({ userPlan, currency }) {
               </div>
             </div>
             <ul className="landing-tier-list">
-              <li>All easy questions{FREE_EASY ? ` (${FREE_EASY})` : ''}</li>
-              <li>Medium + hard unlock as you solve (hard cap: 8 per code track, 5 per reasoning track)</li>
+              <li>All easy questions{FREE_EASY ? ` (${FREE_EASY})` : ''}, free forever</li>
+              <li>Medium + hard questions with Pro &amp; Elite</li>
               <li>2-step progressive hints: mental model first, technique second</li>
               <li>Official solutions with explanation after hints</li>
               <li>SQL query quality analysis on correct answers</li>
@@ -994,7 +994,7 @@ function PricingSection({ userPlan, currency }) {
               </div>
             </div>
             <ul className="landing-tier-list">
-              <li>Everything in Free, no hard cap on practice</li>
+              <li>Everything in Free</li>
               <li>All {ACTIVE_Q || '…'} questions, every medium + hard</li>
               <li>3 benchmark mocks per day · 3 custom drills per day</li>
               <li>Exclusive mock-only question bank: questions reserved for mock sessions, never shown in practice</li>

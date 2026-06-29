@@ -60,7 +60,7 @@ On MCQ-response questions a wrong answer is **gated** — neither a free retry l
 2. **Hint ladder** → hints reveal one at a time, with a quiet "Skip to the answer". The terminal "Reveal the answer" step lights the correct option tile and renders the explanation **in place** (co-located with the trigger — fixes a mobile blind spot where the reveal otherwise landed off-screen).
 3. **Re-attempt** → revealing re-opens the options (`MCQPanel canReselect`); the user selects the correct answer and submits → **solved**.
 
-The post-reveal solve **counts toward unlock thresholds identically to a code-track solve** — there is no reveal penalty (a code-track user can likewise reveal the Official Solution before solving). The unlock ladder measures engagement/pacing, not first-try mastery; mastery signals (first-try accuracy) belong on the dashboard. "Next" appears only on a solve and never points at the current question. Runtime SoT: `frontend/src/pages/QuestionPage.js` + `frontend/src/components/MCQPanel.js`. Why: `docs/decisions/DECISIONS.md` 2026-06-26.
+The post-reveal solve **counts as a solve identically to a code-track solve** — there is no reveal penalty (a code-track user can likewise reveal the Official Solution before solving). A raw solve count measures engagement/pacing, not first-try mastery; mastery signals (first-try accuracy) belong on the dashboard. "Next" appears only on a solve and never points at the current question. Runtime SoT: `frontend/src/pages/QuestionPage.js` + `frontend/src/components/MCQPanel.js`. Why: `docs/decisions/DECISIONS.md` 2026-06-26.
 
 ## Metadata contract
 

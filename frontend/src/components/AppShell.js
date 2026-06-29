@@ -266,19 +266,6 @@ export default function AppShell() {
   const planPillClass = `shell-pill shell-pill-plan shell-pill-plan-${normalisedPlan}`;
 
   const planLabel = normalisedPlan === 'elite' ? 'Elite' : normalisedPlan === 'pro' ? 'Pro' : 'Free';
-  const mediumGroup = catalog?.groups?.find(g => g.difficulty === 'medium');
-  const lockedMediumCount = mediumGroup?.questions?.filter(q => q.state === 'locked').length ?? 0;
-  const lockedHardCount = (catalog?.groups?.find(g => g.difficulty === 'hard'))?.questions?.filter(q => q.state === 'locked').length ?? 0;
-  const showUnlockNudge = !!(normalisedPlan === 'free' && (lockedMediumCount > 0 || lockedHardCount > 0) && catalog);
-  const unlockNudgeByTrack = {
-    sql: 'Medium unlocks at 8, 15, and 25 easy solves. Hard unlocks at 8, 15, and 22 medium solves (capped at 15 hard).',
-    python: 'Medium unlocks at 8, 15, and 25 easy solves. Hard unlocks at 8, 15, and 22 medium solves (capped at 15 hard).',
-    'pandas': 'Medium unlocks at 8, 15, and 25 easy solves. Hard unlocks at 8, 15, and 22 medium solves (capped at 15 hard).',
-    pyspark: 'Medium unlocks at 10, 17, and 25 easy solves. Hard unlocks at 12 medium solves (capped at 5 hard).',
-    'data-engineering': 'Medium unlocks at 10, 17, and 25 easy solves. Hard unlocks at 12 medium solves (capped at 5 hard).',
-  };
-  const unlockNudgeCopy = unlockNudgeByTrack[topic] ?? unlockNudgeByTrack.sql;
-
   const sidebarToggleNode = isMobile ? (
     <button
       className="btn btn-secondary sidebar-toggle"
@@ -405,11 +392,6 @@ export default function AppShell() {
                   plan={user?.plan ?? 'free'}
                 />
               )}
-              {showUnlockNudge && (
-                <div className="sidebar-unlock-nudge">
-                  Questions unlock as you solve them. {unlockNudgeCopy} The sequence builds real competence.
-                </div>
-              )}
               {/* Session goal widget */}
               {user && (
                 <div className={`session-goal-widget${goalMet ? ' session-goal-widget--met' : ''}`}>
@@ -451,7 +433,7 @@ export default function AppShell() {
                       : normalisedPlan === 'free' && totalSolvedSidebar > 0
                       ? `${totalSolvedSidebar} question${totalSolvedSidebar !== 1 ? 's' : ''} down — or get full access instantly.`
                       : normalisedPlan === 'free'
-                      ? 'Questions unlock as you solve — or get full access instantly.'
+                      ? 'Easy questions are free — upgrade for all medium and hard.'
                       : 'Unlimited mocks, Interview Loop, and per-session coaching.'}
                   </p>
                   <div className="upgrade-actions">
@@ -518,31 +500,8 @@ export default function AppShell() {
   );
 }
 
-// MCQ tracks use different thresholds than code tracks
-const _MCQ_TOPICS = new Set(['pyspark', 'data-engineering']);
-
-function _unlockRules(topic) {
-  if (_MCQ_TOPICS.has(topic)) {
-    return [
-      { easy: 10, unlocks: '3 medium' },
-      { easy: 17, unlocks: '8 medium' },
-      { easy: 25, unlocks: 'all medium' },
-      { medium: 12, unlocks: '5 hard (cap)' },
-    ];
-  }
-  return [
-    { easy: 8,  unlocks: '3 medium' },
-    { easy: 15, unlocks: '8 medium' },
-    { easy: 25, unlocks: 'all medium' },
-    { medium: 8,  unlocks: '3 hard' },
-    { medium: 15, unlocks: '8 hard' },
-    { medium: 22, unlocks: 'all hard (cap: 8)' },
-  ];
-}
-
 // ── Path sidebar panel ────────────────────────────────────────────────────────
 function PathSidebar({ pathData, pathSlug, topic, meta, currentId, onNavigate, plan }) {
-  const [hintOpen, setHintOpen] = useState(false);
   const navigate = useNavigate();
   if (!pathData) {
     return (
@@ -605,34 +564,7 @@ function PathSidebar({ pathData, pathSlug, topic, meta, currentId, onNavigate, p
       {plan === 'free' && questions.some(q => q.state === 'locked') && (
         <div className="path-sidebar-hint">
           <div className="path-sidebar-hint-row">
-            <p className="path-sidebar-hint-text">Some questions are locked — free tier.</p>
-            <div className="path-sidebar-hint-help-wrap">
-              <button
-                className="path-sidebar-hint-help"
-                aria-label="How unlocking works"
-                aria-expanded={hintOpen}
-                onClick={() => setHintOpen(o => !o)}
-              >?</button>
-              {hintOpen && (
-                <div className="path-sidebar-hint-popover" role="tooltip">
-                  <p className="path-sidebar-hint-popover-title">How questions unlock</p>
-                  <p className="path-sidebar-hint-popover-sub">Solves in this track count globally — not just within this path.</p>
-                  <table className="path-sidebar-hint-table">
-                    <tbody>
-                      {_unlockRules(topic).map((r, i) => (
-                        <tr key={i}>
-                          <td>{r.easy != null ? `${r.easy} easy solved` : `${r.medium} medium solved`}</td>
-                          <td>→ {r.unlocks}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                  {pathData.unlock_hint && (
-                    <p className="path-sidebar-hint-popover-next">Your next step: {pathData.unlock_hint.replace(/\.$/, '')}</p>
-                  )}
-                </div>
-              )}
-            </div>
+            <p className="path-sidebar-hint-text">Some questions are locked — the free tier covers easy. Medium and hard are part of Pro.</p>
           </div>
           <div className="path-sidebar-hint-actions">
             <button type="button" className="path-sidebar-hint-link path-sidebar-hint-link--pro" onClick={() => navigate('/', { state: { scrollTo: 'landing-pricing' } })}>Pro — unlock all ↗</button>

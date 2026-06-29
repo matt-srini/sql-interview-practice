@@ -439,7 +439,7 @@ The measurement substrate already exists — these events fire today (see `CLAUD
    FREE ACCOUNT  (anonymous-first identity; registration upgrades the session in place)
         │  ── first real solve ──▶  PostHog: question_submitted → question_solved
         ▼
-   UNLOCK LADDER  (free-tier thresholds advance as they solve — backend/unlock.py)
+   FREE TIER  (all easy unlocked; a medium/hard question prompts an upgrade — backend/unlock.py)
         │  ── tries a benchmark ──▶  PostHog: mock_started → mock_completed
         ▼
    PRO / ELITE

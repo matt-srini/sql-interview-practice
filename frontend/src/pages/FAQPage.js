@@ -10,7 +10,7 @@ const FAQ_JSON_LD = [
   {
     "@type": "Question",
     "name": "Is datathink free to use?",
-    "acceptedAnswer": { "@type": "Answer", "text": "Yes. All easy questions across all nine tracks are free, including for visitors without an account. Medium and hard questions unlock progressively as you solve more easy questions. No credit card required." }
+    "acceptedAnswer": { "@type": "Answer", "text": "Yes. All easy questions across all nine tracks are free, including for visitors without an account. Medium and hard questions are part of Pro and Elite. No credit card required." }
   },
   {
     "@type": "Question",
@@ -35,7 +35,7 @@ const FAQ_JSON_LD = [
   {
     "@type": "Question",
     "name": "How do question unlocks work?",
-    "acceptedAnswer": { "@type": "Answer", "text": "Easy questions are available to everyone from the start. Medium and hard questions unlock as you solve more — the more you practice, the more you unlock. Pro and Elite subscribers get immediate access to all questions." }
+    "acceptedAnswer": { "@type": "Answer", "text": "Easy questions are free for everyone, including visitors without an account. Medium and hard questions are part of Pro and Elite, which unlock the full question bank immediately." }
   },
   {
     "@type": "Question",
@@ -45,7 +45,7 @@ const FAQ_JSON_LD = [
   {
     "@type": "Question",
     "name": "What is the difference between Free, Pro, and Elite?",
-    "acceptedAnswer": { "@type": "Answer", "text": "Free gives access to all easy questions, progressive medium/hard unlocks as you practice, and one easy benchmark per rolling 7 days. Pro unlocks every question immediately, adds the mock-only question pool, and provides 3 benchmarks plus 3 custom drills per day, detailed history, and weakest-concept drill recommendations. Elite includes everything in Pro plus Interview Loop mode, focus-mode targeting, per-dimension weak-spot detection, readiness scoring, study plans, coaching debriefs, and unlimited sessions. Visit datathink.co for the full pricing comparison." }
+    "acceptedAnswer": { "@type": "Answer", "text": "Free gives access to all easy questions across all nine tracks and one easy benchmark per rolling 7 days. Pro unlocks every medium and hard question, adds the mock-only question pool, and provides 3 benchmarks plus 3 custom drills per day, detailed history, and weakest-concept drill recommendations. Elite includes everything in Pro plus Interview Loop mode, focus-mode targeting, per-dimension weak-spot detection, readiness scoring, study plans, coaching debriefs, and unlimited sessions. Visit datathink.co for the full pricing comparison." }
   }
 ];
 
@@ -81,7 +81,7 @@ export default function FAQPage({ isModal = false }) {
         <dl className="faq-list">
           <div className="faq-item">
             <dt className="faq-q">Is datathink free to use?</dt>
-            <dd className="faq-a">Yes. All easy questions across all nine tracks are free, including for visitors without an account. Medium and hard questions unlock progressively as you solve more easy questions. No credit card required.</dd>
+            <dd className="faq-a">Yes. All easy questions across all nine tracks are free, including for visitors without an account. Medium and hard questions are part of Pro and Elite. No credit card required.</dd>
           </div>
           <div className="faq-item">
             <dt className="faq-q">Can I practice without creating an account?</dt>
@@ -101,7 +101,7 @@ export default function FAQPage({ isModal = false }) {
           </div>
           <div className="faq-item">
             <dt className="faq-q">How do question unlocks work?</dt>
-            <dd className="faq-a">Easy questions are available to everyone from the start. Medium and hard questions unlock as you solve more — the more you practice, the more you unlock. Pro and Elite subscribers get immediate access to all questions.</dd>
+            <dd className="faq-a">Easy questions are free for everyone, including visitors without an account. Medium and hard questions are part of Pro and Elite, which unlock the full question bank immediately.</dd>
           </div>
           <div className="faq-item">
             <dt className="faq-q">What are mock sessions?</dt>
@@ -110,7 +110,7 @@ export default function FAQPage({ isModal = false }) {
           <div className="faq-item">
             <dt className="faq-q">What is the difference between Free, Pro, and Elite?</dt>
             <dd className="faq-a">
-              Free gives access to all easy questions, progressive medium/hard unlocks as you practice, and one easy benchmark per rolling 7 days. Pro unlocks every question immediately, adds the mock-only question pool, and provides 3 benchmarks plus 3 custom drills per day, detailed history, and weakest-concept drill recommendations. Elite includes everything in Pro plus Interview Loop mode, focus-mode targeting, per-dimension weak-spot detection, readiness scoring, study plans, coaching debriefs, and unlimited sessions.{' '}
+              Free gives access to all easy questions across all nine tracks and one easy benchmark per rolling 7 days. Pro unlocks every medium and hard question, adds the mock-only question pool, and provides 3 benchmarks plus 3 custom drills per day, detailed history, and weakest-concept drill recommendations. Elite includes everything in Pro plus Interview Loop mode, focus-mode targeting, per-dimension weak-spot detection, readiness scoring, study plans, coaching debriefs, and unlimited sessions.{' '}
               {pricingLink}
             </dd>
           </div>

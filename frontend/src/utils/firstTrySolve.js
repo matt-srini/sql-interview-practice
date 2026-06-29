@@ -1,7 +1,7 @@
 /**
  * Whether a correct submission counts as a genuine "first-try solve" — the mastery /
- * honesty signal that the unlock ladder deliberately does not measure (post-reveal
- * solves still advance the gate). Both conditions must hold:
+ * honesty signal that a raw solve count deliberately does not measure (a post-reveal
+ * solve still counts as solved). Both conditions must hold:
  *   - backendPriorAttempts === 0   : no submissions were logged for this question
  *       before this view (from /api/submissions; now populated for anonymous users too).
  *   - isFirstSubmitThisSession      : this is the first submission in the current question

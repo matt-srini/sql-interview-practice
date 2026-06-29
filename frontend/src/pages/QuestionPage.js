@@ -1057,7 +1057,7 @@ export default function QuestionPage() {
                 Next →
               </Link>
             ) : pathNavBar.next ? (
-              <span className="path-nav-btn path-nav-btn--disabled" title="Locked — solve more questions to unlock">Next 🔒</span>
+              <span className="path-nav-btn path-nav-btn--disabled" title="Locked — medium and hard are part of Pro">Next 🔒</span>
             ) : (
               <span className="path-nav-btn path-nav-btn--disabled">Last question</span>
             )}
