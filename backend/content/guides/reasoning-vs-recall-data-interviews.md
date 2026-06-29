@@ -13,10 +13,10 @@ Recognition is not reasoning.
 
 Recognizing a pattern lets you reproduce it when conditions are identical. Reasoning lets you construct the right approach when they are not. In a real interview, conditions are never identical to what you practiced.
 
-Consider `PARTITION BY`. A candidate who memorized "use ROW_NUMBER with PARTITION BY user_id" can answer a question about deduplicating user rows. The same candidate who understands *why* PARTITION BY divides the dataset before ranking can answer a question about per-product sales rank, per-region cohort retention, or per-experiment variant assignment — because the underlying operation is the same: define a group, rank within it.
+Consider `PARTITION BY`. A candidate who memorized "use ROW_NUMBER with PARTITION BY user_id" can answer a question about deduplicating user rows. The same candidate who understands *why* PARTITION BY divides the dataset before ranking can answer a question about per-product sales rank, per-region cohort retention, or per-experiment variant assignment, because the underlying operation is the same: define a group, rank within it.
 
 The difference is not intelligence. It is how the practice was done.
 
 Drills that ask you to reproduce a known answer train recognition. Problems that ask you to explain your reasoning, handle a twist, or defend your approach under follow-up questions train the actual skill.
 
-That is what this platform is built for. If you want to test whether your reasoning holds up, try a free sample — no account required — at [/sample](/sample).
+That is what this platform is built for. If you want to test whether your reasoning holds up, try a free sample (no account required) at [/sample](/sample).

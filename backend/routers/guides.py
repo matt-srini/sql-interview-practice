@@ -17,10 +17,9 @@ _GUIDES_DIR = Path(__file__).parent.parent / "content" / "guides"
 _TEMPLATES_DIR = Path(__file__).parent.parent / "templates"
 _templates = Jinja2Templates(directory=str(_TEMPLATES_DIR))
 
-_MD = markdown.Markdown(
-    extensions=["fenced_code", "tables", "toc", "sane_lists"],
-    output_format="html",
-)
+# Per-call rendering (markdown.markdown builds a fresh converter each time) keeps
+# the handler thread-safe; a shared Markdown instance would race on concurrent reqs.
+_MD_EXTENSIONS = ["fenced_code", "tables", "toc", "sane_lists"]
 
 _OG_IMAGE = f"{CANONICAL_BASE_URL}/og-image.png?v=4"
 _ORG_ID = f"{CANONICAL_BASE_URL}/#organization"
@@ -37,8 +36,9 @@ def _load_guide(path: Path) -> dict | None:
     meta = post.metadata
     if not meta.get("slug"):
         return None
-    _MD.reset()
-    body_html = _MD.convert(post.content)
+    body_html = markdown.markdown(
+        post.content, extensions=_MD_EXTENSIONS, output_format="html"
+    )
     pub = _date_str(meta.get("date", ""))
     upd = _date_str(meta.get("updated", meta.get("date", "")))
     return {
