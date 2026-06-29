@@ -284,6 +284,7 @@ def _inject_seo(html: str, url_path: str) -> str:
                     "sameAs": [
                         "https://www.linkedin.com/company/datathink-co",
                         "https://x.com/datathinkHQ",
+                        "https://www.youtube.com/@datathinkHQ",
                     ],
                 },
                 {

@@ -190,7 +190,7 @@ live (see [`gtm-strategy.md`](gtm-strategy.md) M1/M2 and [`../seo.md`](../seo.md
 | LinkedIn (founder personal) | (founder profile) | — | the primary channel; keep bio → datathink.co |
 | X / Twitter | `@datathinkHQ` | live | ✓ in `sameAs` |
 | Reddit | `u/datathink` (or founder handle, disclosed) | claim | n/a (profile, not sameAs) |
-| YouTube | `@datathink` | claim | add to sameAs when active |
+| YouTube | `@datathinkHQ` | live | ✓ in `sameAs` |
 | Product Hunt | `datathink` (maker + product) | claim pre-launch | n/a |
 | Hacker News | founder account (age + karma) | seed early | n/a |
 | Newsletter (LinkedIn + email) | "datathink weekly" | set up | n/a |

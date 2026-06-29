@@ -63,6 +63,7 @@ def test_homepage_title_and_jsonld(client):
     assert '"sameAs"' in body
     assert "https://www.linkedin.com/company/datathink-co" in body
     assert "https://x.com/datathinkHQ" in body
+    assert "https://www.youtube.com/@datathinkHQ" in body
 
 
 def test_robots_txt(client):

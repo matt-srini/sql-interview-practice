@@ -44,7 +44,7 @@ Homepage description (premium positioning lives here, not in the title): *"Premi
 
 ## Structured data (JSON-LD)
 
-- **Homepage (`/`)** — `Organization` + `WebSite` graph, injected server-side by `_inject_seo` (crawler-visible). This is the **entity anchor** that helps Google distinguish datathink.co from the other "DataThink" entities. `sameAs` lists the verified first-party profiles (LinkedIn `company/datathink-co` and X `@datathinkHQ`); GitHub is omitted (private). Never point `sameAs` at the imposter "DataThink" profiles.
+- **Homepage (`/`)** — `Organization` + `WebSite` graph, injected server-side by `_inject_seo` (crawler-visible). This is the **entity anchor** that helps Google distinguish datathink.co from the other "DataThink" entities. `sameAs` lists the verified first-party profiles (LinkedIn `company/datathink-co`, X `@datathinkHQ`, and YouTube `@datathinkHQ`); GitHub is omitted (private). Never point `sameAs` at the imposter "DataThink" profiles.
 - **Inner pages** — role interview-prep pages (`BreadcrumbList` 3-level + `FAQPage`), the `/interview-prep` index (`BreadcrumbList` + `ItemList`), FAQ, learning paths, track hubs, and sample pages carry their own JSON-LD via Helmet (client-rendered).
 
 ## noindex
