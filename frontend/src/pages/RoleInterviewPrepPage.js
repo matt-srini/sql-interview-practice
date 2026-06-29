@@ -83,22 +83,27 @@ const ROLE_CONTENT = {
       {
         slug: 'python',
         desc: 'Data-processing algorithms: sessionization, dedup, streaming aggregation, and the logic behind pipeline transforms.',
+        emphasis: 'Core. Medium-to-hard data-processing logic, not LeetCode DSA.',
       },
       {
         slug: 'sql',
         desc: 'Window functions, aggregation, and the query depth that holds up as tables grow.',
+        emphasis: 'Core. Almost always screened; medium-to-hard depth that holds at scale.',
       },
       {
         slug: 'pyspark',
         desc: 'Distributed processing: shuffles, joins, partitioning, and the trade-offs behind a tuned Spark job.',
+        emphasis: 'Heavily weighted at big-data shops. Conceptual to medium-hard: shuffles, joins, skew.',
       },
       {
         slug: 'data-engineering',
         desc: 'Pipeline design: ETL vs ELT, idempotency, orchestration, CDC, and schema evolution.',
+        emphasis: 'Core. Pipeline scenario reasoning; medium-to-hard.',
       },
       {
         slug: 'data-modeling',
         desc: 'Dimensional modeling, grain, normalization, and SCDs, so downstream analytics scale instead of breaking.',
+        emphasis: 'Frequently tested. Grain and SCDs; solid medium is enough.',
       },
     ],
     reasoningSection: SHARED_REASONING,
@@ -144,18 +149,22 @@ const ROLE_CONTENT = {
       {
         slug: 'sql',
         desc: 'Joins, window functions, and the query patterns that turn raw tables into the metric a stakeholder asked for.',
+        emphasis: 'The core screen. Almost always tested; depth through hard matters most.',
       },
       {
         slug: 'statistics',
         desc: 'Hypothesis testing, confidence intervals, and the judgment to tell a real effect from noise.',
+        emphasis: 'Often tested. Solid conceptual-to-medium is usually enough.',
       },
       {
         slug: 'pandas',
         desc: 'Reshaping, grouping, and cleaning data in DataFrames when the question outgrows SQL.',
+        emphasis: 'Supporting. Medium fluency covers most screens.',
       },
       {
         slug: 'python',
         desc: 'The scripting and logic to automate analysis and handle data a query cannot.',
+        emphasis: 'Lighter weight. Easy-to-medium is usually enough.',
       },
     ],
     reasoningSection: SHARED_REASONING,
@@ -201,18 +210,22 @@ const ROLE_CONTENT = {
       {
         slug: 'sql',
         desc: 'Window functions, CTEs, and the precise, maintainable SQL the transformation layer depends on.',
+        emphasis: 'The core skill. Maintainable transformation SQL; hard-level depth pays off.',
       },
       {
         slug: 'data-modeling',
         desc: 'Dimensional modeling, grain, normalization, and the dbt-style design that decides whether analytics scale.',
+        emphasis: 'Co-core. Dimensional design and grain; medium-to-hard.',
       },
       {
         slug: 'pandas',
         desc: 'DataFrame transformation and reshaping for the steps that do not belong in SQL.',
+        emphasis: 'Supporting. Easy-to-medium suffices.',
       },
       {
         slug: 'python',
         desc: 'The scripting and logic behind reliable, testable transformation code.',
+        emphasis: 'Often a coding round. Medium is the realistic bar.',
       },
     ],
     reasoningSection: SHARED_REASONING,
@@ -258,26 +271,32 @@ const ROLE_CONTENT = {
       {
         slug: 'ml-fundamentals',
         desc: 'Model selection, bias-variance, evaluation metrics, and the production trade-offs interviewers probe.',
+        emphasis: 'Core. Medium-to-hard conceptual depth: bias-variance, evaluation, leakage.',
       },
       {
         slug: 'statistics',
         desc: 'Probability, inference, and hypothesis testing, the quantitative backbone of a defensible claim.',
+        emphasis: 'Core. Inference and probability, deep through hard.',
       },
       {
         slug: 'experimentation',
         desc: 'A/B design, power, and causal inference, so your conclusions hold up.',
+        emphasis: 'Core for product DS. A/B design and power; medium-to-hard.',
       },
       {
         slug: 'python',
         desc: 'The data-processing and modeling code a data scientist writes every day.',
+        emphasis: 'Supporting. Medium mastery is sufficient, not heavy DSA.',
       },
       {
         slug: 'pandas',
         desc: 'DataFrame wrangling for exploratory analysis and feature prep, the hands-on step before a model.',
+        emphasis: 'Supporting. Medium fluency for EDA and feature prep.',
       },
       {
         slug: 'sql',
         desc: 'Pulling and shaping the data a model needs, correctly and at scale.',
+        emphasis: 'Expected almost everywhere. Easy-to-medium, deeper at SQL-heavy shops.',
       },
     ],
     reasoningSection: SHARED_REASONING,
@@ -442,7 +461,7 @@ export default function RoleInterviewPrepPage() {
               </p>
             </Reveal>
             <div className="ip-track-grid">
-              {tracks.map(({ slug, desc }, index) => {
+              {tracks.map(({ slug, desc, emphasis }, index) => {
                 const meta = TRACK_META[slug];
                 if (!meta) return null;
                 return (
@@ -460,6 +479,12 @@ export default function RoleInterviewPrepPage() {
                         <span className="ip-track-label">{meta.label}</span>
                       </div>
                       <p className="ip-track-desc">{desc}</p>
+                      {emphasis && (
+                        <p className="ip-track-emphasis">
+                          <span className="ip-track-emphasis-label">Interview weight</span>
+                          {emphasis}
+                        </p>
+                      )}
                       <div className="ip-track-links">
                         <Link
                           to={`/practice/${slug}`}

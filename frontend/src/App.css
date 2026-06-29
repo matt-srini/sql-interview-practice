@@ -15189,6 +15189,25 @@ button.mock-focus-locked:hover {
   flex: 1;
 }
 
+.ip-track-emphasis {
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: var(--text-strong);
+  margin: 0;
+  padding-top: 0.625rem;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.ip-track-emphasis-label {
+  display: block;
+  font-size: 0.66rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--ip-track-color, var(--accent));
+  margin-bottom: 0.15rem;
+}
+
 .ip-track-links {
   display: flex;
   gap: 1rem;
