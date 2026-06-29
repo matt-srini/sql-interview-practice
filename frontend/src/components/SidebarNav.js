@@ -2,7 +2,6 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { NavLink, useSearchParams, useParams } from 'react-router-dom';
 import Fuse from 'fuse.js';
 import { useTopic } from '../contexts/TopicContext';
-import { useAuth } from '../contexts/AuthContext';
 import { getQuestionFormLabel } from '../questionFormLabel';
 import Skeleton from './Skeleton';
 
@@ -311,10 +310,8 @@ function QuestionFormFilter({ groups, activeFilters, onToggle, onClear }) {
   );
 }
 
-export default function SidebarNav({ catalog, collapsedByDiff, toggleDiff, onNavigate, plan = 'free', isLoading = false }) {
+export default function SidebarNav({ catalog, collapsedByDiff, toggleDiff, onNavigate, plan = 'free', isLoading = false, isAnonymous = false }) {
   const { topic } = useTopic();
-  const { user } = useAuth();
-  const isAnonymous = !user?.email;
   const [searchParams] = useSearchParams();
   const pathSlug = searchParams.get('path');
   const groups = catalog?.groups ?? [];

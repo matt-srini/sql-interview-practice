@@ -396,6 +396,7 @@ export default function AppShell() {
                   toggleDiff={toggleDiff}
                   onNavigate={handleNavigateFromSidebar}
                   plan={user?.plan ?? 'free'}
+                  isAnonymous={!user?.email}
                 />
               )}
               {/* Today's goal widget */}
