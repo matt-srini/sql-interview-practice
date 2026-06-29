@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { NavLink, useSearchParams, useParams } from 'react-router-dom';
 import Fuse from 'fuse.js';
 import { useTopic } from '../contexts/TopicContext';
+import { useAuth } from '../contexts/AuthContext';
 import { getQuestionFormLabel } from '../questionFormLabel';
 import Skeleton from './Skeleton';
 
@@ -312,6 +313,8 @@ function QuestionFormFilter({ groups, activeFilters, onToggle, onClear }) {
 
 export default function SidebarNav({ catalog, collapsedByDiff, toggleDiff, onNavigate, plan = 'free', isLoading = false }) {
   const { topic } = useTopic();
+  const { user } = useAuth();
+  const isAnonymous = !user?.email;
   const [searchParams] = useSearchParams();
   const pathSlug = searchParams.get('path');
   const groups = catalog?.groups ?? [];
@@ -745,6 +748,19 @@ export default function SidebarNav({ catalog, collapsedByDiff, toggleDiff, onNav
           </div>
         );
       })}
+
+      {isAnonymous && (() => {
+        const totalSolved = groups.reduce((sum, g) => sum + (g.counts?.solved ?? 0), 0);
+        if (totalSolved === 0) return null;
+        return (
+          <div className="sidebar-anon-nudge">
+            <span className="sidebar-anon-nudge-count">{totalSolved} solved</span>
+            <NavLink to="/auth?mode=register" className="sidebar-anon-nudge-link">
+              Sign up to save across devices →
+            </NavLink>
+          </div>
+        );
+      })()}
     </div>
   );
 }
