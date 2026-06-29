@@ -6390,7 +6390,6 @@ select {
   display: flex;
   flex-direction: column;
   gap: 2px;
-  overflow: hidden;
 }
 .db-firsttry-row {
   display: grid;
@@ -6422,7 +6421,6 @@ select {
   .db-firsttry-row {
     grid-template-columns: auto minmax(80px, 1fr) minmax(100px, 1.5fr) auto;
     gap: 8px;
-    margin: 0;
   }
 }
 
@@ -6916,7 +6914,7 @@ select {
     column-gap: 0.6rem;
     row-gap: 0.5rem;
   }
-  .db-track-dot       { grid-area: dot; }
+  .db-track-row .db-track-dot { grid-area: dot; }
   .db-track-name-col  { grid-area: name; min-width: 0; flex-shrink: 1; }
   .db-track-bar-col   { grid-area: bar; }
   .db-track-stats-col { grid-area: stats; display: flex; min-width: 0; }
