@@ -20,6 +20,7 @@ import { getQuestionFormLabel, getQuestionPromptGuidance } from '../questionForm
 import { parseSqlError } from '../utils/sqlErrorParser';
 import { pickSequentialNextQuestionId } from '../utils/catalogNav';
 import { isFirstTrySolve } from '../utils/firstTrySolve';
+import { incrementDailySolves } from '../utils/dailyGoal';
 import { renderDescription } from '../utils/renderDescription';
 import { useToast } from '../App';
 import { track } from '../analytics';
@@ -637,6 +638,9 @@ export default function QuestionPage() {
       backendPriorAttempts: pastAttempts.length,
       isFirstSubmitThisSession,
     });
+    // Capture pre-submit solved state so we can detect a genuine new solve below
+    // (catalogQuestionMeta is computed from the catalog snapshot before this submit).
+    const wasAlreadySolved = catalogQuestionMeta?.question?.state === 'solved';
     setSubmitting(true);
     setRunResult(null);
     setRunError(null);
@@ -658,6 +662,11 @@ export default function QuestionPage() {
       track('question_submitted', { track: topic, question_id: Number(id), difficulty: question?.difficulty, correct: res.data.correct });
       if (res.data.correct) {
         track('question_solved', { track: topic, question_id: Number(id), difficulty: question?.difficulty, first_try: firstTrySolve });
+        // Count this as a daily solve only if the question was NOT already solved before
+        // this submission (genuine first-solve, not a re-solve of an already-completed question).
+        if (!wasAlreadySolved) {
+          incrementDailySolves();
+        }
         const lockedBefore = catalog?.groups?.reduce(
           (sum, group) => sum + group.questions.filter((entry) => entry.state === 'locked').length,
           0

@@ -8,6 +8,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useTopic } from '../contexts/TopicContext';
 import TrackHubPage from '../pages/TrackHubPage';
 import { pickNextUpQuestionId } from '../utils/catalogNav';
+import { getDailySolves, EVENT_NAME as DAILY_SOLVES_EVENT } from '../utils/dailyGoal';
 import api from '../api';
 export default function AppShell() {
   const { catalog, loading, error, refresh } = useCatalog();
@@ -244,22 +245,27 @@ export default function AppShell() {
     (sum, g) => sum + g.questions.filter(q => q.state === 'solved').length, 0
   ) ?? 0;
 
-  const [sessionStartSolved, setSessionStartSolved] = useState(null);
+  // Today's goal: global, day-scoped daily solve counter (event-driven, resets at local midnight).
+  const [dailySolves, setDailySolves] = useState(() => getDailySolves());
   useEffect(() => {
-    if (!catalog || sessionStartSolved !== null) return;
-    const stored = sessionStorage.getItem('session-start-solved');
-    if (stored !== null) {
-      setSessionStartSolved(parseInt(stored, 10));
-    } else {
-      sessionStorage.setItem('session-start-solved', String(totalSolvedSidebar));
-      setSessionStartSolved(totalSolvedSidebar);
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [catalog]);
+    // Refresh on mount and whenever the count changes (same tab) or is updated from another tab.
+    setDailySolves(getDailySolves());
+    const handleSolvesChanged = () => setDailySolves(getDailySolves());
+    window.addEventListener(DAILY_SOLVES_EVENT, handleSolvesChanged);
+    window.addEventListener('storage', handleSolvesChanged);
+    // Re-read on focus/visibility so a tab left open past midnight resets cleanly.
+    window.addEventListener('focus', handleSolvesChanged);
+    document.addEventListener('visibilitychange', handleSolvesChanged);
+    return () => {
+      window.removeEventListener(DAILY_SOLVES_EVENT, handleSolvesChanged);
+      window.removeEventListener('storage', handleSolvesChanged);
+      window.removeEventListener('focus', handleSolvesChanged);
+      document.removeEventListener('visibilitychange', handleSolvesChanged);
+    };
+  }, []);
 
-  const sessionSolvedNow = sessionStartSolved !== null ? Math.max(0, totalSolvedSidebar - sessionStartSolved) : 0;
-  const goalProgress = Math.min(1, sessionGoal > 0 ? sessionSolvedNow / sessionGoal : 0);
-  const goalMet = sessionSolvedNow >= sessionGoal;
+  const goalProgress = Math.min(1, sessionGoal > 0 ? dailySolves / sessionGoal : 0);
+  const goalMet = dailySolves >= sessionGoal;
 
   const normalisedPlan = user?.plan?.startsWith('lifetime_') ? user.plan.replace('lifetime_', '') : (user?.plan ?? 'free');
   const showUpgradeControls = user && (normalisedPlan === 'free' || normalisedPlan === 'pro');
@@ -392,11 +398,11 @@ export default function AppShell() {
                   plan={user?.plan ?? 'free'}
                 />
               )}
-              {/* Session goal widget */}
+              {/* Today's goal widget */}
               {user && (
                 <div className={`session-goal-widget${goalMet ? ' session-goal-widget--met' : ''}`}>
                   <div className="session-goal-row">
-                    <span className="session-goal-label">Session goal</span>
+                    <span className="session-goal-label">Today</span>
                     <div className="session-goal-controls">
                       <button
                         className="session-goal-adj"
@@ -407,7 +413,7 @@ export default function AppShell() {
                           return next;
                         })}
                       >−</button>
-                      <span className="session-goal-count">{sessionSolvedNow}/{sessionGoal}</span>
+                      <span className="session-goal-count">{dailySolves}/{sessionGoal}</span>
                       <button
                         className="session-goal-adj"
                         aria-label="Increase goal"
@@ -419,10 +425,10 @@ export default function AppShell() {
                       >+</button>
                     </div>
                   </div>
-                  <div className="session-goal-bar" role="progressbar" aria-valuenow={sessionSolvedNow} aria-valuemax={sessionGoal}>
+                  <div className="session-goal-bar" role="progressbar" aria-valuenow={dailySolves} aria-valuemax={sessionGoal}>
                     <div className="session-goal-fill" style={{ width: `${goalProgress * 100}%` }} />
                   </div>
-                  {goalMet && <p className="session-goal-met">Goal reached — great session!</p>}
+                  {goalMet && <p className="session-goal-met">Goal reached — nice work today!</p>}
                 </div>
               )}
               {showUpgradeControls && (
