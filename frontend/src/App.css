@@ -7733,6 +7733,33 @@ select {
   color: var(--text-secondary);
 }
 
+.sidebar-anon-nudge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  margin-top: 8px;
+  border-top: 1px solid var(--border-subtle);
+  flex-wrap: wrap;
+}
+
+.sidebar-anon-nudge-count {
+  font-size: 12px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.sidebar-anon-nudge-link {
+  font-size: 12px;
+  color: var(--accent);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.sidebar-anon-nudge-link:hover {
+  text-decoration: underline;
+}
+
 /* Filters accordion */
 .sidebar-search-block {
   padding: 0.75rem 0.85rem 0.7rem;
