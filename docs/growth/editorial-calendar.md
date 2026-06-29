@@ -34,6 +34,10 @@ day is mechanical. Reuse the pillar — never create per-channel from scratch.
 · 4. Sample questions as hooks · 5. Mock-interview narratives · 6. Dashboard / readiness insights.
 (Definitions: [`gtm-strategy.md`](gtm-strategy.md) § 4.)
 
+**Seed each week's teardown from the ready-made hook bank** — [`../concept-hooks.md`](../concept-hooks.md)
+is a per-track inventory of Socratic hooks (its Mock-Only section authored explicitly for "social media
+posts, ad copy, and email sequences"). Pull a hook that fits the week's pillar instead of inventing one.
+
 ---
 
 ## 12-week calendar (3 months)

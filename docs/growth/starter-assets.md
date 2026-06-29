@@ -7,6 +7,12 @@ checklist, the brand-handle claim list, and a day-by-day first-two-weeks plan. E
 > **Voice reminder.** datathink is pro-reasoning, never anti-competitor. Confident, calm, specific.
 > We show the *why* behind an answer; we never hype, never engagement-bait, never claim volume as
 > value. All example posts below are **original drafts** — adapt, don't paste blind.
+>
+> **Hook source.** For more "can you solve this?" / reasoning-teardown seeds, mine
+> [`../concept-hooks.md`](../concept-hooks.md) — a per-track Socratic-hook inventory whose Mock-Only
+> section was authored explicitly for "social media posts, ad copy, and email sequences." Each hook is
+> a concept framed as a reasoning tension: a drop-in post seed. (Never lift a gated mock-only
+> question's content into a public post — the hook is the *tension*, not the answer.)
 
 ---
 

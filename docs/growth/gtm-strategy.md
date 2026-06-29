@@ -138,11 +138,11 @@ legal/compliance, load — all CLOSED, see [`../../TODO.md`](../../TODO.md) P1).
 |---|---|---|---|
 | M1 | **Brand handles claimed on every channel**, consistent name + bio + avatar (`BrandMark`) + link | Feeds SEO `sameAs` / disambiguation ([`../seo.md`](../seo.md) Phase 3); prevents impostor capture | founder |
 | M2 | **`sameAs` updated** in the homepage Organization JSON-LD as each handle goes live | The entity-corroboration lever — claiming without wiring it to `sameAs` wastes it | founder + spa.py |
-| M3 | **OG / share images** render correctly when a sample/role/track URL is unfurled on LinkedIn, X, Slack | Every shared link is a free impression; a broken unfurl kills CTR | founder |
+| M3 | **OG / share images** render correctly when a sample/role/track URL is unfurled on LinkedIn, X, Slack. **Infra already exists** — a versioned canonical OG card (`og-image.png?v=N`, server-injected by `spa.py` + Helmet per page) and a light-ground `og-image-light.svg` for email/doc placements (see [`../frontend.md`](../frontend.md) § OG image). This item = *verify* the unfurls + add the per-role OG cards already on the SEO roadmap ([`../seo.md`](../seo.md) Phase 3), not build from zero | founder |
 | M4 | **One-liner + 30-second pitch** finalized (§ 1) and used verbatim everywhere | Consistency is an entity signal and a memory aid | founder |
 | M5 | **Free-sample Hub (`/sample`) is the single primary CTA** in every bio and most posts | The no-login wedge (§ 5) is the whole top-of-funnel; one CTA, repeated | founder |
 | M6 | **Legal / refund pages linkable** (`/privacy`, `/terms`, `/refund-policy`, `/contact`) | Trust + required for Product Hunt / paid traffic; already shipped (sitemap) | done |
-| M7 | **Launch asset kit** assembled: logo lockups, 3–5 product screenshots, a 30–60s screen-capture of solving a sample question, the pitch copy | PH/Show HN/press all need these on day 0 | founder |
+| M7 | **Launch asset kit** assembled: logo lockups (reuse `BrandMark` + `og-image-light.svg`), 3–5 product screenshots, a 30–60s screen-capture of solving a sample question, the pitch copy | PH/Show HN/press all need these on day 0 | founder |
 | M8 | **Google Search Console verified + sitemap submitted; Google Business Profile created** | The actual SERP-disambiguation levers ([`../seo.md`](../seo.md) Phase 3) — start the recrawl clock early | founder |
 | M9 | **PostHog funnel dashboard built** on the wired events (§ 6) before first traffic | You cannot improve a funnel you cannot see; the events already fire | founder |
 
@@ -369,6 +369,15 @@ Each pillar is a renewable well that maps to a § 1 messaging pillar and to a re
 | **Sample questions as bite-size hooks** | `/sample` (no login) | Pillar 2 | "Can you solve this in 3 lines? (no login needed)" |
 | **Mock-interview narratives** | Mock / Interview Loop | Pillar 3 | "What a readiness benchmark told me I was actually weak at" |
 | **Dashboard / readiness insights** | Dashboard, first-try accuracy | Pillar 1 | "Your solve count is lying to you; first-try accuracy isn't" |
+
+> **Ready-made hook bank — don't write prompts from scratch.** [`../concept-hooks.md`](../concept-hooks.md)
+> is a per-track inventory of Socratic interview hooks, and its "Mock-Only Advanced Topics" section was
+> **authored explicitly for reuse as "social media posts, ad copy, and email sequences"** (its own
+> words). Each hook is a concept framed as the tension a candidate must reason through — i.e. a
+> drop-in seed for a "can you solve this?" / reasoning-teardown post. Mine it for the weekly pillar and
+> the X/LinkedIn hooks rather than inventing questions; it already maps to the concept families the
+> curriculum is built on. (Authoring caveat: hooks are *prompts about* questions — never lift a gated
+> mock-only question's content into a public post; the hook is the reasoning tension, not the answer.)
 
 ### The 1-pillar → many-cuts production system
 
