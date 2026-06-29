@@ -5,7 +5,7 @@
     "topic": "pandas",
     "difficulty": "medium",
     "title": "Orders with User Info",
-    "description": "You have two DataFrames: `df_orders` and `df_users`.\n\n**df_orders columns:** `order_id`, `user_id`, `order_date`, `status`, `gross_amount`, `discount_amount`, `net_amount`, `payment_status`\n**df_users columns:** `user_id`, `name`, `email`, `signup_date`, `country`, `acquisition_channel`, `plan_tier`, `is_active`\n\nPerform an **inner join** on `user_id`. Return a DataFrame with columns: `order_id`, `user_id`, `name`, `country`, `net_amount`, `status`. Sort by `order_id` ascending.",
+    "description": "Perform an **inner join** on `user_id`. Return a DataFrame with columns: `order_id`, `user_id`, `name`, `country`, `net_amount`, `status`. Sort by `order_id` ascending.",
     "dataframes": {
       "df_orders": "orders.csv",
       "df_users": "users.csv"
@@ -52,7 +52,7 @@
     "topic": "pandas",
     "difficulty": "medium",
     "title": "Users with No Orders",
-    "description": "You have two DataFrames: `df_users` and `df_orders`.\n\n**df_users columns:** `user_id`, `name`, `email`, `signup_date`, `country`, `acquisition_channel`, `plan_tier`, `is_active`\n**df_orders columns:** `order_id`, `user_id`, `order_date`, `status`, `gross_amount`, `discount_amount`, `net_amount`, `payment_status`\n\nFind users who have placed **no orders**. Return a DataFrame with columns `user_id` and `name`, sorted by `user_id` ascending.",
+    "description": "Find users who have placed **no orders**. Return a DataFrame with columns `user_id` and `name`, sorted by `user_id` ascending.",
     "dataframes": {
       "df_users": "users.csv",
       "df_orders": "orders.csv"
@@ -98,7 +98,7 @@
     "topic": "pandas",
     "difficulty": "medium",
     "title": "Monthly Revenue",
-    "description": "You have a DataFrame `df_orders` loaded from the orders dataset.\n\n**Columns:** `order_id`, `user_id`, `order_date`, `status`, `gross_amount`, `discount_amount`, `net_amount`, `payment_status`\n\nCompute total revenue (`net_amount`) grouped by month. Return a DataFrame with columns `month` (format `'YYYY-MM'`) and `total_revenue` (rounded to 2 decimal places), sorted by `month` ascending.",
+    "description": "Compute total revenue (`net_amount`) grouped by month. Return a DataFrame with columns `month` (format `'YYYY-MM'`) and `total_revenue` (rounded to 2 decimal places), sorted by `month` ascending.",
     "dataframes": {
       "df_orders": "orders.csv"
     },
@@ -133,7 +133,7 @@
     "topic": "pandas",
     "difficulty": "medium",
     "title": "Product Revenue from Order Items",
-    "description": "You have two DataFrames: `df_order_items` and `df_products`.\n\n**df_order_items columns:** `order_item_id`, `order_id`, `product_id`, `quantity`, `unit_price`, `line_amount`\n**df_products columns:** `product_id`, `product_name`, `category_id`, `brand`, `price`, `launch_date`, `is_active`\n\nJoin the two DataFrames on `product_id`. Compute `total_revenue` as the sum of `line_amount` per product. Return a DataFrame with columns `product_id`, `product_name`, `total_revenue` (rounded to 2 decimal places), sorted by `total_revenue` descending.",
+    "description": "Join the two DataFrames on `product_id`. Compute `total_revenue` as the sum of `line_amount` per product. Return a DataFrame with columns `product_id`, `product_name`, `total_revenue` (rounded to 2 decimal places), sorted by `total_revenue` descending.",
     "dataframes": {
       "df_order_items": "order_items.csv",
       "df_products": "products.csv"
@@ -177,7 +177,7 @@
     "topic": "pandas",
     "difficulty": "medium",
     "title": "User Average Order Amount per Row",
-    "description": "You have a DataFrame `df_orders` loaded from the orders dataset.\n\n**Columns:** `order_id`, `user_id`, `order_date`, `status`, `gross_amount`, `discount_amount`, `net_amount`, `payment_status`\n\nAdd a column `user_avg_order` containing each user's mean `net_amount` applied to every row for that user (use `groupby` + `transform`). Round `user_avg_order` to 2 decimal places. Return columns: `order_id`, `user_id`, `net_amount`, `user_avg_order`, sorted by `order_id` ascending.",
+    "description": "Add a column `user_avg_order` containing each user's mean `net_amount` applied to every row for that user (use `groupby` + `transform`). Round `user_avg_order` to 2 decimal places. Return columns: `order_id`, `user_id`, `net_amount`, `user_avg_order`, sorted by `order_id` ascending.",
     "dataframes": {
       "df_orders": "orders.csv"
     },
@@ -213,7 +213,7 @@
     "topic": "pandas",
     "difficulty": "medium",
     "title": "7-Day Rolling Revenue",
-    "description": "You have a DataFrame `df_orders` loaded from the orders dataset.\n\n**Columns:** `order_id`, `user_id`, `order_date`, `status`, `gross_amount`, `discount_amount`, `net_amount`, `payment_status`\n\nAggregate `net_amount` to daily totals. Then compute a 7-day rolling sum of daily revenue. Return a DataFrame with columns: `date` (string `'YYYY-MM-DD'`), `daily_revenue`, `rolling_7d_revenue`. Fill any NaN rolling values with `0`. Sort by `date` ascending.",
+    "description": "Aggregate `net_amount` to daily totals. Then compute a 7-day rolling sum of daily revenue. Return a DataFrame with columns: `date` (string `'YYYY-MM-DD'`), `daily_revenue`, `rolling_7d_revenue`. Fill any NaN rolling values with `0`. Sort by `date` ascending.",
     "dataframes": {
       "df_orders": "orders.csv"
     },
@@ -249,7 +249,7 @@
     "topic": "pandas",
     "difficulty": "medium",
     "title": "Rank Products by Price within Category",
-    "description": "You have a DataFrame `df_products` loaded from the products dataset.\n\n**Columns:** `product_id`, `product_name`, `category_id`, `brand`, `price`, `launch_date`, `is_active`\n\nAssign a dense rank to each product based on `price` descending **within each `category_id`**. Return columns: `product_id`, `product_name`, `category_id`, `price`, `price_rank` (integer). Sort by `category_id` ascending, then `price_rank` ascending.",
+    "description": "Assign a dense rank to each product based on `price` descending **within each `category_id`**. Return columns: `product_id`, `product_name`, `category_id`, `price`, `price_rank` (integer). Sort by `category_id` ascending, then `price_rank` ascending.",
     "dataframes": {
       "df_products": "products.csv"
     },
@@ -284,7 +284,7 @@
     "topic": "pandas",
     "difficulty": "medium",
     "title": "Revenue Contribution Percent",
-    "description": "You have a DataFrame `df_order_items` loaded from the order_items dataset.\n\n**Columns:** `order_item_id`, `order_id`, `product_id`, `quantity`, `unit_price`, `line_amount`\n\nCompute `total_revenue` (sum of `line_amount`) per `product_id`. Then add a `pct_of_total` column: each product's revenue divided by the overall total revenue, multiplied by 100, rounded to 2 decimal places. Return columns: `product_id`, `total_revenue`, `pct_of_total`. Sort by `total_revenue` descending.",
+    "description": "Compute `total_revenue` (sum of `line_amount`) per `product_id`. Then add a `pct_of_total` column: each product's revenue divided by the overall total revenue, multiplied by 100, rounded to 2 decimal places. Return columns: `product_id`, `total_revenue`, `pct_of_total`. Sort by `total_revenue` descending.",
     "dataframes": {
       "df_order_items": "order_items.csv"
     },
@@ -317,7 +317,7 @@
     "topic": "pandas",
     "difficulty": "medium",
     "title": "Orders Grouped by Month-Year",
-    "description": "You have a DataFrame `df_orders` loaded from the orders dataset.\n\n**Columns:** `order_id`, `user_id`, `order_date`, `status`, `gross_amount`, `discount_amount`, `net_amount`, `payment_status`\n\nGroup orders by month using the `'YYYY-MM'` format. Return a DataFrame with columns: `month`, `order_count`, `avg_order_value` (mean of `net_amount`, rounded to 2 decimal places). Sort by `month` ascending.",
+    "description": "Group orders by month using the `'YYYY-MM'` format. Return a DataFrame with columns: `month`, `order_count`, `avg_order_value` (mean of `net_amount`, rounded to 2 decimal places). Sort by `month` ascending.",
     "dataframes": {
       "df_orders": "orders.csv"
     },
@@ -352,7 +352,7 @@
     "topic": "pandas",
     "difficulty": "medium",
     "title": "Price Bucket Segmentation",
-    "description": "You have a DataFrame `df_products` loaded from the products dataset.\n\n**Columns:** `product_id`, `product_name`, `category_id`, `brand`, `price`, `launch_date`, `is_active`\n\nSegment products into three price buckets using `pd.cut`:\n- `'budget'`: price < 50\n- `'mid'`: 50 ≤ price < 200\n- `'premium'`: price ≥ 200\n\nReturn columns: `product_id`, `product_name`, `price`, `price_bucket`. Sort by `price` ascending.",
+    "description": "Segment products into three price buckets using `pd.cut`:\n- `'budget'`: price < 50\n- `'mid'`: 50 ≤ price < 200\n- `'premium'`: price ≥ 200\n\nReturn columns: `product_id`, `product_name`, `price`, `price_bucket`. Sort by `price` ascending.",
     "dataframes": {
       "df_products": "products.csv"
     },
@@ -386,7 +386,7 @@
     "topic": "pandas",
     "difficulty": "medium",
     "title": "Top 10 Products by Revenue (Three-Table Join)",
-    "description": "You have three DataFrames: `df_orders`, `df_order_items`, and `df_products`.\n\n**df_orders columns:** `order_id`, `user_id`, `order_date`, `status`, `gross_amount`, `discount_amount`, `net_amount`, `payment_status`\n**df_order_items columns:** `order_item_id`, `order_id`, `product_id`, `quantity`, `unit_price`, `line_amount`\n**df_products columns:** `product_id`, `product_name`, `category_id`, `brand`, `price`, `launch_date`, `is_active`\n\nJoin all three tables. Compute `total_revenue` (sum of `line_amount`) per product. Return the **top 10** products with columns: `product_name`, `category_id`, `total_revenue`. Sort by `total_revenue` descending.",
+    "description": "Join all three tables. Compute `total_revenue` (sum of `line_amount`) per product. Return the **top 10** products with columns: `product_name`, `category_id`, `total_revenue`. Sort by `total_revenue` descending.",
     "dataframes": {
       "df_orders": "orders.csv",
       "df_order_items": "order_items.csv",
@@ -441,7 +441,7 @@
     "topic": "pandas",
     "difficulty": "medium",
     "title": "Support Ticket Resolution Rate",
-    "description": "You have a DataFrame `df_tickets` loaded from the support_tickets dataset.\n\n**Columns:** `ticket_id`, `user_id`, `created_at`, `issue_type`, `priority`, `status`, `resolution_hours`\n\nCompute the overall resolution rate. Return a single-row DataFrame with columns: `total_tickets` (int), `resolved_tickets` (int, where `status == 'resolved'`), `resolution_rate_pct` (rounded to 1 decimal place).",
+    "description": "Compute the overall resolution rate. Return a single-row DataFrame with columns: `total_tickets` (int), `resolved_tickets` (int, where `status == 'resolved'`), `resolution_rate_pct` (rounded to 1 decimal place).",
     "dataframes": {
       "df_tickets": "support_tickets.csv"
     },
@@ -475,7 +475,7 @@
     "topic": "pandas",
     "difficulty": "medium",
     "title": "Cumulative Employee Salary by Department",
-    "description": "You have a DataFrame `df_employees` loaded from the employees dataset.\n\n**Columns:** `employee_id`, `employee_name`, `email`, `salary`, `department_id`, `hire_date`, `country`\n\nSort employees by `department_id` ascending, then `salary` ascending. Add a column `cumulative_salary` containing the running cumulative sum of `salary` **within each department**. Return columns: `employee_id`, `department_id`, `employee_name`, `salary`, `cumulative_salary`. Sort by `department_id` ascending, `salary` ascending.",
+    "description": "Sort employees by `department_id` ascending, then `salary` ascending. Add a column `cumulative_salary` containing the running cumulative sum of `salary` **within each department**. Return columns: `employee_id`, `department_id`, `employee_name`, `salary`, `cumulative_salary`. Sort by `department_id` ascending, `salary` ascending.",
     "dataframes": {
       "df_employees": "employees.csv"
     },
@@ -510,7 +510,7 @@
     "topic": "pandas",
     "difficulty": "medium",
     "title": "Merge Payments with Orders",
-    "description": "You have two DataFrames: `df_orders` and `df_payments`.\n\n**df_orders columns:** `order_id`, `user_id`, `order_date`, `status`, `gross_amount`, `discount_amount`, `net_amount`, `payment_status`\n**df_payments columns:** `payment_id`, `order_id`, `payment_date`, `payment_method`, `amount`, `status`\n\nLeft-join `df_orders` to `df_payments` on `order_id`. Return columns: `order_id`, `user_id`, `net_amount`, `payment_method`, `status` (from payments — rename to `payment_status_detail`). Fill missing `payment_method` and `payment_status_detail` values with `'none'`. Sort by `order_id` ascending.",
+    "description": "Left-join `df_orders` to `df_payments` on `order_id`. Return columns: `order_id`, `user_id`, `net_amount`, `payment_method`, `status` (from payments — rename to `payment_status_detail`). Fill missing `payment_method` and `payment_status_detail` values with `'none'`. Sort by `order_id` ascending.",
     "dataframes": {
       "df_orders": "orders.csv",
       "df_payments": "payments.csv"
@@ -555,7 +555,7 @@
     "topic": "pandas",
     "difficulty": "medium",
     "title": "Users with Sessions from Multiple Device Types",
-    "description": "You have a DataFrame `df_sessions` loaded from the sessions dataset.\n\n**Columns:** `session_id`, `user_id`, `session_start`, `device_type`, `traffic_source`, `country`\n\nFind users who have sessions from **more than one distinct device type** (e.g., a user who has both desktop and mobile sessions). Return a DataFrame with columns `user_id` and `device_count` (the number of distinct device types used), sorted by `user_id` ascending.",
+    "description": "Find users who have sessions from **more than one distinct device type** (e.g., a user who has both desktop and mobile sessions). Return a DataFrame with columns `user_id` and `device_count` (the number of distinct device types used), sorted by `user_id` ascending.",
     "dataframes": {
       "df_sessions": "sessions.csv"
     },
@@ -589,7 +589,7 @@
     "topic": "pandas",
     "difficulty": "medium",
     "title": "Top 20 Order Items by Revenue",
-    "description": "You have a DataFrame `df_order_items` loaded from the order_items dataset.\n\n**Columns:** `order_item_id`, `order_id`, `product_id`, `quantity`, `unit_price`, `line_amount`\n\nCompute `item_revenue` as `unit_price * quantity` for each row. Return the top 20 rows by `item_revenue` (descending) with columns: `order_item_id`, `product_id`, `unit_price`, `quantity`, `item_revenue`. Sort by `item_revenue` descending.",
+    "description": "Compute `item_revenue` as `unit_price * quantity` for each row. Return the top 20 rows by `item_revenue` (descending) with columns: `order_item_id`, `product_id`, `unit_price`, `quantity`, `item_revenue`. Sort by `item_revenue` descending.",
     "dataframes": {
       "df_order_items": "order_items.csv"
     },
@@ -622,7 +622,7 @@
     "topic": "pandas",
     "difficulty": "medium",
     "title": "Sessions per User by Device Type (Pivot)",
-    "description": "You have a DataFrame `df_sessions` loaded from the sessions dataset.\n\n**Columns:** `session_id`, `user_id`, `session_start`, `device_type`, `traffic_source`, `country`\n\nCount the number of sessions each user had on each `device_type`. Pivot the result so each `device_type` becomes a column. Fill missing combinations with `0`. Return a DataFrame with `user_id` as a column and one column per device type. Sort by `user_id` ascending. Column order should be: `user_id` followed by device type columns sorted alphabetically.",
+    "description": "Count the number of sessions each user had on each `device_type`. Pivot the result so each `device_type` becomes a column. Fill missing combinations with `0`. Return a DataFrame with `user_id` as a column and one column per device type. Sort by `user_id` ascending. Column order should be: `user_id` followed by device type columns sorted alphabetically.",
     "dataframes": {
       "df_sessions": "sessions.csv"
     },
@@ -656,7 +656,7 @@
     "topic": "pandas",
     "difficulty": "medium",
     "title": "Category Revenue Share",
-    "description": "You have three DataFrames: `df_order_items`, `df_products`, and `df_categories`.\n\n**df_order_items columns:** `order_item_id`, `order_id`, `product_id`, `quantity`, `unit_price`, `line_amount`\n**df_products columns:** `product_id`, `product_name`, `category_id`, `brand`, `price`, `launch_date`, `is_active`\n**df_categories columns:** `category_id`, `category_name`, `parent_category`\n\nJoin the three tables. Compute `total_revenue` (sum of `line_amount`) per category. Add `pct_of_total` (revenue share %, rounded to 2 decimal places). Return columns: `category_name`, `total_revenue`, `pct_of_total`. Sort by `total_revenue` descending.",
+    "description": "Join the three tables. Compute `total_revenue` (sum of `line_amount`) per category. Add `pct_of_total` (revenue share %, rounded to 2 decimal places). Return columns: `category_name`, `total_revenue`, `pct_of_total`. Sort by `total_revenue` descending.",
     "dataframes": {
       "df_order_items": "order_items.csv",
       "df_products": "products.csv",
@@ -705,7 +705,7 @@
     "topic": "pandas",
     "difficulty": "medium",
     "title": "Employee Salary Percentile Rank",
-    "description": "You have a DataFrame `df_employees` loaded from the employees dataset.\n\n**Columns:** `employee_id`, `employee_name`, `email`, `salary`, `department_id`, `hire_date`, `country`\n\nCompute `salary_percentile` as the percentile rank of each employee's salary across all employees (use `.rank(pct=True) * 100`, rounded to 1 decimal place). Return columns: `employee_id`, `employee_name`, `salary`, `salary_percentile`. Sort by `salary_percentile` descending.",
+    "description": "Compute `salary_percentile` as the percentile rank of each employee's salary across all employees (use `.rank(pct=True) * 100`, rounded to 1 decimal place). Return columns: `employee_id`, `employee_name`, `salary`, `salary_percentile`. Sort by `salary_percentile` descending.",
     "dataframes": {
       "df_employees": "employees.csv"
     },
@@ -740,7 +740,7 @@
     "topic": "pandas",
     "difficulty": "medium",
     "title": "Days Between Order and Payment",
-    "description": "You have two DataFrames: `df_orders` and `df_payments`.\n\n**df_orders columns:** `order_id`, `user_id`, `order_date`, `status`, `gross_amount`, `discount_amount`, `net_amount`, `payment_status`\n**df_payments columns:** `payment_id`, `order_id`, `payment_date`, `payment_method`, `amount`, `status`\n\nInner-join orders and payments on `order_id`. Compute `days_to_payment` as the number of days between `payment_date` and `order_date` (as an integer). Return columns: `order_id`, `order_date`, `payment_date`, `days_to_payment`. Sort by `days_to_payment` descending.",
+    "description": "Inner-join orders and payments on `order_id`. Compute `days_to_payment` as the number of days between `payment_date` and `order_date` (as an integer). Return columns: `order_id`, `order_date`, `payment_date`, `days_to_payment`. Sort by `days_to_payment` descending.",
     "dataframes": {
       "df_orders": "orders.csv",
       "df_payments": "payments.csv"
@@ -784,7 +784,7 @@
     "topic": "pandas",
     "difficulty": "medium",
     "title": "Order Items Above Product Average Price",
-    "description": "You have a DataFrame `df_order_items` loaded from the order_items dataset.\n\n**Columns:** `order_item_id`, `order_id`, `product_id`, `quantity`, `unit_price`, `line_amount`\n\nFor each product, compute its average `unit_price` across all order items. Add a column `avg_price` (per-product mean, rounded to 2 decimal places) and a boolean column `above_avg` that is `True` when the row's `unit_price` exceeds that product's average. Return all columns plus `avg_price` and `above_avg`. Sort by `order_item_id` ascending.",
+    "description": "For each product, compute its average `unit_price` across all order items. Add a column `avg_price` (per-product mean, rounded to 2 decimal places) and a boolean column `above_avg` that is `True` when the row's `unit_price` exceeds that product's average. Return all columns plus `avg_price` and `above_avg`. Sort by `order_item_id` ascending.",
     "dataframes": {
       "df_order_items": "order_items.csv"
     },
@@ -818,7 +818,7 @@
     "topic": "pandas",
     "difficulty": "medium",
     "title": "Top Product per Category by Revenue",
-    "description": "You have two DataFrames: `df_order_items` and `df_products`.\n\n**df_order_items columns:** `order_item_id`, `order_id`, `product_id`, `quantity`, `unit_price`, `line_amount`\n**df_products columns:** `product_id`, `product_name`, `category_id`, `brand`, `price`, `launch_date`, `is_active`\n\nFor each `category_id`, find the **single product** with the highest total revenue (sum of `line_amount`). Return one row per category with columns: `category_id`, `product_id`, `total_revenue`. Sort by `category_id` ascending.",
+    "description": "For each `category_id`, find the **single product** with the highest total revenue (sum of `line_amount`). Return one row per category with columns: `category_id`, `product_id`, `total_revenue`. Sort by `category_id` ascending.",
     "dataframes": {
       "df_order_items": "order_items.csv",
       "df_products": "products.csv"
@@ -862,7 +862,7 @@
     "topic": "pandas",
     "difficulty": "medium",
     "title": "Revenue by Day of Week",
-    "description": "You have a DataFrame `df_orders` loaded from the orders dataset.\n\n**Columns:** `order_id`, `user_id`, `order_date`, `status`, `gross_amount`, `discount_amount`, `net_amount`, `payment_status`\n\nExtract the `day_of_week` from `order_date` (Monday = 0, Sunday = 6). Map it to a `day_name` string (`'Monday'`, `'Tuesday'`, ..., `'Sunday'`). Return a DataFrame with columns: `day_of_week` (int), `day_name` (str), `total_revenue` (sum of `net_amount`, rounded to 2 dec), `avg_revenue` (mean of `net_amount`, rounded to 2 dec). Sort by `day_of_week` ascending.",
+    "description": "Extract the `day_of_week` from `order_date` (Monday = 0, Sunday = 6). Map it to a `day_name` string (`'Monday'`, `'Tuesday'`, ..., `'Sunday'`). Return a DataFrame with columns: `day_of_week` (int), `day_name` (str), `total_revenue` (sum of `net_amount`, rounded to 2 dec), `avg_revenue` (mean of `net_amount`, rounded to 2 dec). Sort by `day_of_week` ascending.",
     "dataframes": {
       "df_orders": "orders.csv"
     },
@@ -897,7 +897,7 @@
     "topic": "pandas",
     "difficulty": "medium",
     "title": "Event Count per Session",
-    "description": "You have two DataFrames: `df_events` and `df_sessions`.\n\n**df_events columns:** `event_id`, `session_id`, `user_id`, `event_time`, `event_name`, `product_id`\n**df_sessions columns:** `session_id`, `user_id`, `session_start`, `device_type`, `traffic_source`, `country`\n\nJoin events and sessions on `session_id`. Count the number of events per session. Return columns: `session_id`, `user_id`, `device_type`, `event_count`. Sort by `event_count` descending.",
+    "description": "Join events and sessions on `session_id`. Count the number of events per session. Return columns: `session_id`, `user_id`, `device_type`, `event_count`. Sort by `event_count` descending.",
     "dataframes": {
       "df_events": "events.csv",
       "df_sessions": "sessions.csv"
@@ -939,7 +939,7 @@
     "topic": "pandas",
     "difficulty": "medium",
     "title": "Employees Above Department Average Salary",
-    "description": "You have a DataFrame `df_employees` loaded from the employees dataset.\n\n**Columns:** `employee_id`, `employee_name`, `email`, `salary`, `department_id`, `hire_date`, `country`\n\nFor each employee, add a column `dept_avg_salary` containing the average salary for their department (use `groupby` + `transform`, rounded to 2 decimal places). Add a boolean column `above_avg` that is `True` when the employee's `salary` exceeds `dept_avg_salary`. Return columns: `employee_id`, `employee_name`, `department_id`, `salary`, `dept_avg_salary`, `above_avg`. Sort by `department_id` ascending, then `salary` descending.",
+    "description": "For each employee, add a column `dept_avg_salary` containing the average salary for their department (use `groupby` + `transform`, rounded to 2 decimal places). Add a boolean column `above_avg` that is `True` when the employee's `salary` exceeds `dept_avg_salary`. Return columns: `employee_id`, `employee_name`, `department_id`, `salary`, `dept_avg_salary`, `above_avg`. Sort by `department_id` ascending, then `salary` descending.",
     "dataframes": {
       "df_employees": "employees.csv"
     },
@@ -974,7 +974,7 @@
     "topic": "pandas",
     "difficulty": "medium",
     "title": "Weekly revenue with resample",
-    "description": "You have a DataFrame `df_orders`.\n\n**Columns:** `order_id`, `user_id`, `order_date`, `status`, `gross_amount`, `discount_amount`, `net_amount`, `payment_status`\n\n1. Convert `order_date` to datetime and set it as the index.\n2. Resample to Monday-anchored weekly bins (`'W-MON'`) and sum `net_amount`.\n3. Return a DataFrame with columns `week_start` (Monday date as string `'YYYY-MM-DD'`) and `weekly_revenue` (rounded to 2 decimal places). Sort by `week_start` ascending.",
+    "description": "1. Convert `order_date` to datetime and set it as the index.\n2. Resample to Monday-anchored weekly bins (`'W-MON'`) and sum `net_amount`.\n3. Return a DataFrame with columns `week_start` (Monday date as string `'YYYY-MM-DD'`) and `weekly_revenue` (rounded to 2 decimal places). Sort by `week_start` ascending.",
     "dataframes": {
       "df_orders": "orders.csv"
     },
@@ -1009,7 +1009,7 @@
     "topic": "pandas",
     "difficulty": "medium",
     "title": "Order status pivot table by country",
-    "description": "You have two DataFrames: `df_orders` and `df_users`.\n\n**df_orders columns:** `order_id`, `user_id`, `order_date`, `status`, `net_amount`\n**df_users columns:** `user_id`, `name`, `country`\n\n1. Inner join on `user_id`.\n2. Create a pivot table: rows = `country`, columns = order `status`, values = sum of `net_amount`. Fill missing cells with `0`.\n3. Reset the index so `country` is a regular column. Sort by `country` ascending.",
+    "description": "1. Inner join on `user_id`.\n2. Create a pivot table: rows = `country`, columns = order `status`, values = sum of `net_amount`. Fill missing cells with `0`.\n3. Reset the index so `country` is a regular column. Sort by `country` ascending.",
     "dataframes": {
       "df_orders": "orders.csv",
       "df_users": "users.csv"
@@ -1055,7 +1055,7 @@
     "topic": "pandas",
     "difficulty": "medium",
     "title": "Salary rank and percentile by department",
-    "description": "You have two DataFrames: `df_employees` and `df_departments`.\n\n**df_employees columns:** `employee_id`, `employee_name`, `salary`, `department_id` (salary is nullable — some rows have no salary recorded)\n**df_departments columns:** `department_id`, `department_name`, `region`\n\n1. Exclude employees with no recorded salary.\n2. Inner join on `department_id`.\n3. Within each `department_name`, compute:\n   - `salary_rank`: rank of salary descending (dense rank, 1 = highest)\n   - `salary_pct`: percentile rank using `rank(pct=True)` ascending (0–1 range, rounded to 2 dp)\n4. Return `employee_name`, `department_name`, `salary`, `salary_rank`, `salary_pct`. Sort by `department_name`, `salary_rank`.",
+    "description": "1. Exclude employees with no recorded salary.\n2. Inner join on `department_id`.\n3. Within each `department_name`, compute:\n   - `salary_rank`: rank of salary descending (dense rank, 1 = highest)\n   - `salary_pct`: percentile rank using `rank(pct=True)` ascending (0–1 range, rounded to 2 dp)\n4. Return `employee_name`, `department_name`, `salary`, `salary_rank`, `salary_pct`. Sort by `department_name`, `salary_rank`.",
     "dataframes": {
       "df_employees": "employees.csv",
       "df_departments": "departments.csv"
@@ -1097,7 +1097,7 @@
     "topic": "pandas",
     "difficulty": "medium",
     "title": "Named aggregation: order stats by status",
-    "description": "You have a DataFrame `df_orders`.\n\n**Columns:** `order_id`, `user_id`, `order_date`, `status`, `gross_amount`, `discount_amount`, `net_amount`, `payment_status`\n\nUsing pandas named aggregation syntax, compute per `status`:\n- `order_count`: number of orders\n- `avg_revenue`: mean `net_amount` (rounded to 2 dp)\n- `max_revenue`: max `net_amount`\n- `min_revenue`: min `net_amount`\n- `total_revenue`: sum `net_amount` (rounded to 2 dp)\n\nReturn a DataFrame with `status` as a column (not index), sorted by `total_revenue` descending.",
+    "description": "Using pandas named aggregation syntax, compute per `status`:\n- `order_count`: number of orders\n- `avg_revenue`: mean `net_amount` (rounded to 2 dp)\n- `max_revenue`: max `net_amount`\n- `min_revenue`: min `net_amount`\n- `total_revenue`: sum `net_amount` (rounded to 2 dp)\n\nReturn a DataFrame with `status` as a column (not index), sorted by `total_revenue` descending.",
     "dataframes": {
       "df_orders": "orders.csv"
     },
@@ -1132,7 +1132,7 @@
     "topic": "pandas",
     "difficulty": "medium",
     "title": "Second-order retention rate by country",
-    "description": "You have two DataFrames: `df_orders` and `df_users`.\n\n**df_orders columns:** `order_id`, `user_id`, `order_date`, `status`\n**df_users columns:** `user_id`, `name`, `country`\n\nCompute the **second-order retention rate** per country:\n1. Filter to completed orders only.\n2. Count completed orders per user → `order_count`.\n3. Join with `df_users` to get `country`.\n4. Per country, count:\n   - `single_order_users`: users with exactly 1 completed order\n   - `retained_users`: users with 2 or more completed orders\n5. Compute `retention_rate` = `retained_users / (single_order_users + retained_users)`, rounded to 2 dp.\n6. Return `country`, `single_order_users`, `retained_users`, `retention_rate`, sorted by `retention_rate` descending.",
+    "description": "Compute the **second-order retention rate** per country:\n1. Filter to completed orders only.\n2. Count completed orders per user → `order_count`.\n3. Join with `df_users` to get `country`.\n4. Per country, count:\n   - `single_order_users`: users with exactly 1 completed order\n   - `retained_users`: users with 2 or more completed orders\n5. Compute `retention_rate` = `retained_users / (single_order_users + retained_users)`, rounded to 2 dp.\n6. Return `country`, `single_order_users`, `retained_users`, `retention_rate`, sorted by `retention_rate` descending.",
     "dataframes": {
       "df_orders": "orders.csv",
       "df_users": "users.csv"
@@ -1180,7 +1180,7 @@
     "topic": "pandas",
     "difficulty": "medium",
     "title": "Orders with Most Line Items",
-    "description": "You have two DataFrames: `df_orders` (orders dataset) and `df_order_items` (order_items dataset).\n\n**df_orders columns:** `order_id`, `user_id`, `order_date`, `status`, `net_amount`\n\n**df_order_items columns:** `order_item_id`, `order_id`, `product_id`, `quantity`, `unit_price`, `line_amount`\n\nJoin the two DataFrames on `order_id` and count the number of distinct line items (`order_item_id`) per order. Return columns `order_id` and `item_count`, sorted by `item_count` descending. Return only the top 10 orders.",
+    "description": "Join the two DataFrames on `order_id` and count the number of distinct line items (`order_item_id`) per order. Return columns `order_id` and `item_count`, sorted by `item_count` descending. Return only the top 10 orders.",
     "dataframes": {
       "df_orders": "orders.csv",
       "df_order_items": "order_items.csv"
@@ -1226,7 +1226,7 @@
     "difficulty": "medium",
     "mock_only": true,
     "title": "Revenue and unique buyers by acquisition channel",
-    "description": "You have two DataFrames: `df_orders` and `df_users`.\n\n**df_orders columns:** `order_id`, `user_id`, `status`, `net_amount`\n**df_users columns:** `user_id`, `acquisition_channel`\n\nFor each acquisition channel, compute the total net revenue from completed orders (rounded to 2 dp) and the count of distinct users who placed at least one completed order. Return a DataFrame with columns `acquisition_channel`, `total_revenue`, and `user_count`, sorted by `total_revenue` descending.",
+    "description": "For each acquisition channel, compute the total net revenue from completed orders (rounded to 2 dp) and the count of distinct users who placed at least one completed order. Return a DataFrame with columns `acquisition_channel`, `total_revenue`, and `user_count`, sorted by `total_revenue` descending.",
     "dataframes": {
       "df_orders": "orders.csv",
       "df_users": "users.csv"
@@ -1273,7 +1273,7 @@
     "difficulty": "medium",
     "mock_only": true,
     "title": "Top 10 products by order frequency",
-    "description": "You have two DataFrames: `df_order_items` and `df_products`.\n\n**df_order_items columns:** `order_item_id`, `order_id`, `product_id`, `quantity`, `unit_price`, `line_amount`\n**df_products columns:** `product_id`, `product_name`\n\nFor each product, compute the number of distinct orders that included it (`order_frequency`) and its total line revenue. Return a DataFrame with columns `product_name`, `order_frequency`, and `total_revenue` (rounded to 2 dp) for the 10 most frequently ordered products, sorted by `order_frequency` descending.",
+    "description": "For each product, compute the number of distinct orders that included it (`order_frequency`) and its total line revenue. Return a DataFrame with columns `product_name`, `order_frequency`, and `total_revenue` (rounded to 2 dp) for the 10 most frequently ordered products, sorted by `order_frequency` descending.",
     "dataframes": {
       "df_order_items": "order_items.csv",
       "df_products": "products.csv"
@@ -1318,7 +1318,7 @@
     "difficulty": "medium",
     "mock_only": true,
     "title": "Payment failure rate by method",
-    "description": "You have a DataFrame `df_payments`.\n\n**Columns:** `payment_id`, `payment_method`, `status`, `amount`\n\nFor each payment method compute the number of `paid` payments, the number of `failed` payments, and the failure rate as a percentage (failed / total × 100, rounded to 1 dp), where **total is the count of ALL payment records for that method — every status (paid, failed, refunded, chargeback, …) — not just paid + failed**. Return a DataFrame with columns `payment_method`, `paid_count`, `failed_count`, and `failure_rate_pct`, sorted by `failure_rate_pct` descending.",
+    "description": "For each payment method compute the number of `paid` payments, the number of `failed` payments, and the failure rate as a percentage (failed / total × 100, rounded to 1 dp), where **total is the count of ALL payment records for that method — every status (paid, failed, refunded, chargeback, …) — not just paid + failed**. Return a DataFrame with columns `payment_method`, `paid_count`, `failed_count`, and `failure_rate_pct`, sorted by `failure_rate_pct` descending.",
     "dataframes": {
       "df_payments": "payments.csv"
     },
@@ -1352,7 +1352,7 @@
     "difficulty": "medium",
     "mock_only": true,
     "title": "Above-average spenders",
-    "description": "You have two DataFrames: `df_orders` and `df_users`.\n\n**df_orders columns:** `order_id`, `user_id`, `status`, `net_amount`\n**df_users columns:** `user_id`, `name`, `country`\n\nIdentify users whose total net amount from completed orders exceeds the average total spend across all users who placed at least one completed order. Return a DataFrame with columns `user_id`, `name`, `country`, and `total_spend` (rounded to 2 dp), sorted by `total_spend` descending.",
+    "description": "Identify users whose total net amount from completed orders exceeds the average total spend across all users who placed at least one completed order. Return a DataFrame with columns `user_id`, `name`, `country`, and `total_spend` (rounded to 2 dp), sorted by `total_spend` descending.",
     "dataframes": {
       "df_orders": "orders.csv",
       "df_users": "users.csv"
@@ -1400,7 +1400,7 @@
     "mock_only": true,
     "framing": "scenario",
     "title": "Above-median salary count per department",
-    "description": "The HR team asks: \"Which departments have the most employees earning above the department middle band?\"\n\nYou have two DataFrames: `df_employees` and `df_departments`.\n\n**df_employees columns:** `employee_id`, `employee_name`, `salary`, `department_id`, `hire_date`, `country`\n**df_departments columns:** `department_id`, `department_name`, `region`\n\nFor each department (include only departments that have employees), compute the **median salary** and count how many employees earn **strictly above** the department median. Return a DataFrame with columns: `department_name`, `median_salary` (float, rounded to 2 dp), and `above_median_count` (int). Sort by `department_name` ascending.\n\n*Hint: use `groupby.transform(\"median\")` to broadcast the per-department median back to each employee row before flagging.*",
+    "description": "The HR team asks: \"Which departments have the most employees earning above the department middle band?\"\n\nFor each department (include only departments that have employees), compute the **median salary** and count how many employees earn **strictly above** the department median. Return a DataFrame with columns: `department_name`, `median_salary` (float, rounded to 2 dp), and `above_median_count` (int). Sort by `department_name` ascending.\n\n*Hint: use `groupby.transform(\"median\")` to broadcast the per-department median back to each employee row before flagging.*",
     "dataframes": {
       "df_employees": "employees.csv",
       "df_departments": "departments.csv"
@@ -1442,7 +1442,7 @@
     "difficulty": "medium",
     "mock_only": true,
     "title": "Category revenue share",
-    "description": "You have three DataFrames: `df_order_items`, `df_products`, and `df_categories`.\n\n**df_order_items columns:** `product_id`, `line_amount`\n**df_products columns:** `product_id`, `category_id`\n**df_categories columns:** `category_id`, `category_name`\n\nFor each product category, compute the total line revenue and its percentage share of all-category revenue. Return a DataFrame with columns `category_name`, `total_revenue` (rounded to 2 dp), and `revenue_pct` (rounded to 1 dp), sorted by `total_revenue` descending.",
+    "description": "For each product category, compute the total line revenue and its percentage share of all-category revenue. Return a DataFrame with columns `category_name`, `total_revenue` (rounded to 2 dp), and `revenue_pct` (rounded to 1 dp), sorted by `total_revenue` descending.",
     "dataframes": {
       "df_order_items": "order_items.csv",
       "df_products": "products.csv",
@@ -1492,7 +1492,7 @@
     "difficulty": "medium",
     "mock_only": true,
     "title": "Session breakdown by device type",
-    "description": "You have a DataFrame `df_sessions`.\n\n**Columns:** `session_id`, `user_id`, `device_type`\n\nFor each device type, compute the total session count, the number of distinct users, and the average sessions per user (rounded to 1 dp). Return a DataFrame with columns `device_type`, `session_count`, `user_count`, and `sessions_per_user`, sorted by `session_count` descending.",
+    "description": "For each device type, compute the total session count, the number of distinct users, and the average sessions per user (rounded to 1 dp). Return a DataFrame with columns `device_type`, `session_count`, `user_count`, and `sessions_per_user`, sorted by `session_count` descending.",
     "dataframes": {
       "df_sessions": "sessions.csv"
     },
@@ -1661,7 +1661,7 @@
     "topic": "pandas",
     "difficulty": "medium",
     "title": "Match Events to Most Recent Prior Order",
-    "description": "You have two DataFrames: `df_events` (event log) and `df_orders` (orders).\n\n**df_events columns:** `event_id`, `session_id`, `user_id`, `event_time`, `event_name`, `product_id`\n**df_orders columns:** `order_id`, `user_id`, `order_date`, `status`, `gross_amount`, `discount_amount`, `net_amount`, `payment_status`\n\nFor each event, find the most recent order placed by the **same user** at or before the event time. Use `pd.merge_asof` with `direction='backward'` and `by='user_id'`.\n\nReturn columns `event_id`, `user_id`, `event_time`, and `order_id` (NaN if the user has no prior order). Sort by `event_id`.",
+    "description": "For each event, find the most recent order placed by the **same user** at or before the event time. Use `pd.merge_asof` with `direction='backward'` and `by='user_id'`.\n\nReturn columns `event_id`, `user_id`, `event_time`, and `order_id` (NaN if the user has no prior order). Sort by `event_id`.",
     "dataframes": {
       "df_events": "events.csv",
       "df_orders": "orders.csv"
@@ -1705,7 +1705,7 @@
     "topic": "pandas",
     "difficulty": "medium",
     "title": "Fill Missing Emails with combine_first",
-    "description": "You have a DataFrame `df_users`.\n\n**Columns:** `user_id`, `name`, `email`, `signup_date`, `country`, `acquisition_channel`, `plan_tier`, `is_active`\n\nSome users have a null `email`. Build a fallback `pd.Series` indexed by `user_id` that assigns `'user{user_id}@placeholder.com'` to every null-email user. Then use `Series.combine_first` to fill the nulls in the original email column from the fallback.\n\nReturn columns `user_id`, `name`, `email`, sorted by `user_id`.",
+    "description": "Some users have a null `email`. Build a fallback `pd.Series` indexed by `user_id` that assigns `'user{user_id}@placeholder.com'` to every null-email user. Then use `Series.combine_first` to fill the nulls in the original email column from the fallback.\n\nReturn columns `user_id`, `name`, `email`, sorted by `user_id`.",
     "dataframes": {
       "df_users": "users.csv"
     },
@@ -1740,7 +1740,7 @@
     "topic": "pandas",
     "difficulty": "medium",
     "title": "Compute Discount Rate and Flag with assign",
-    "description": "You have a DataFrame `df_orders`.\n\n**Columns:** `order_id`, `user_id`, `order_date`, `status`, `gross_amount`, `discount_amount`, `net_amount`, `payment_status`\n\nUsing two chained `.assign()` calls:\n1. Add `discount_pct` = `discount_amount / gross_amount` rounded to 4 decimal places.\n2. Add `is_discounted` = `True` where `discount_pct > 0`.\n\nReturn columns `order_id`, `gross_amount`, `discount_amount`, `discount_pct`, `is_discounted`, sorted by `order_id`.",
+    "description": "Using two chained `.assign()` calls:\n1. Add `discount_pct` = `discount_amount / gross_amount` rounded to 4 decimal places.\n2. Add `is_discounted` = `True` where `discount_pct > 0`.\n\nReturn columns `order_id`, `gross_amount`, `discount_amount`, `discount_pct`, `is_discounted`, sorted by `order_id`.",
     "dataframes": {
       "df_orders": "orders.csv"
     },
@@ -1775,7 +1775,7 @@
     "topic": "pandas",
     "difficulty": "medium",
     "title": "Build a Transformation Pipeline with pipe",
-    "description": "You have a DataFrame `df_orders`.\n\n**Columns:** `order_id`, `user_id`, `order_date`, `status`, `gross_amount`, `discount_amount`, `net_amount`, `payment_status`\n\nDefine two helper functions inside `solve`:\n- `add_discount_pct(df)`: returns a copy of `df` with `discount_pct = round(discount_amount / gross_amount, 4)`.\n- `flag_high_value(df, threshold)`: returns a copy of `df` with `high_value = net_amount > threshold`.\n\nChain them using `.pipe()`:\n```python\ndf_orders.pipe(add_discount_pct).pipe(flag_high_value, threshold=200)\n```\n\nReturn columns `order_id`, `net_amount`, `discount_pct`, `high_value`, sorted by `order_id`.",
+    "description": "Define two helper functions inside `solve`:\n- `add_discount_pct(df)`: returns a copy of `df` with `discount_pct = round(discount_amount / gross_amount, 4)`.\n- `flag_high_value(df, threshold)`: returns a copy of `df` with `high_value = net_amount > threshold`.\n\nChain them using `.pipe()`:\n```python\ndf_orders.pipe(add_discount_pct).pipe(flag_high_value, threshold=200)\n```\n\nReturn columns `order_id`, `net_amount`, `discount_pct`, `high_value`, sorted by `order_id`.",
     "dataframes": {
       "df_orders": "orders.csv"
     },
@@ -1810,7 +1810,7 @@
     "topic": "pandas",
     "difficulty": "medium",
     "title": "Convert Event Timestamps to New York Time",
-    "description": "You have a DataFrame `df_events`.\n\n**Columns:** `event_id`, `session_id`, `user_id`, `event_time`, `event_name`, `product_id`\n\nThe `event_time` column contains timestamps stored as UTC (no timezone info). Convert them to New York time:\n1. Parse `event_time` with `pd.to_datetime`.\n2. Localize to UTC with `.dt.tz_localize('UTC')`.\n3. Convert to `'America/New_York'` with `.dt.tz_convert('America/New_York')`.\n\nReturn columns `event_id`, `hour_utc` (integer hour in UTC) and `hour_ny` (integer hour in New York time), sorted by `event_id`.",
+    "description": "The `event_time` column contains timestamps stored as UTC (no timezone info). Convert them to New York time:\n1. Parse `event_time` with `pd.to_datetime`.\n2. Localize to UTC with `.dt.tz_localize('UTC')`.\n3. Convert to `'America/New_York'` with `.dt.tz_convert('America/New_York')`.\n\nReturn columns `event_id`, `hour_utc` (integer hour in UTC) and `hour_ny` (integer hour in New York time), sorted by `event_id`.",
     "dataframes": {
       "df_events": "events.csv"
     },
@@ -1844,7 +1844,7 @@
     "difficulty": "medium",
     "mock_only": true,
     "title": "Unnest Product Lists with explode",
-    "description": "You have a DataFrame `df_order_items`.\n\n**Columns:** `order_item_id`, `order_id`, `product_id`, `quantity`, `unit_price`, `line_amount`\n\n**Step 1 — Group:** for each `order_id`, collect `product_id` values into a sorted list. Reset the index and name the column `product_ids`.\n\n**Step 2 — Filter:** keep only orders with 2 or more products.\n\n**Step 3 — Explode:** call `.explode('product_ids')` to get one row per (order, product). Rename `product_ids` back to `product_id` and cast to `int`.\n\nReturn columns `order_id` and `product_id`, sorted by `order_id` then `product_id`.",
+    "description": "**Step 1 — Group:** for each `order_id`, collect `product_id` values into a sorted list. Reset the index and name the column `product_ids`.\n\n**Step 2 — Filter:** keep only orders with 2 or more products.\n\n**Step 3 — Explode:** call `.explode('product_ids')` to get one row per (order, product). Rename `product_ids` back to `product_id` and cast to `int`.\n\nReturn columns `order_id` and `product_id`, sorted by `order_id` then `product_id`.",
     "dataframes": {
       "df_order_items": "order_items.csv"
     },
@@ -1878,7 +1878,7 @@
     "difficulty": "medium",
     "mock_only": true,
     "title": "Revenue Distribution by Quartile",
-    "description": "You have a DataFrame `df_orders`.\n\n**Columns:** `order_id`, `user_id`, `order_date`, `status`, `gross_amount`, `discount_amount`, `net_amount`, `payment_status`\n\n1. Filter to `status == 'completed'` orders.\n2. Use `.assign()` with `pd.qcut` to add a `quartile` column dividing `net_amount` into four equal-frequency bins labelled `'Q1'`, `'Q2'`, `'Q3'`, `'Q4'`.\n3. Group by `quartile` (pass `observed=True`) and compute `order_count` and `avg_revenue` (mean `net_amount`, rounded to 2 dp).\n\nReturn columns `quartile` (cast to `str`), `order_count`, `avg_revenue`, sorted by `quartile`.",
+    "description": "1. Filter to `status == 'completed'` orders.\n2. Use `.assign()` with `pd.qcut` to add a `quartile` column dividing `net_amount` into four equal-frequency bins labelled `'Q1'`, `'Q2'`, `'Q3'`, `'Q4'`.\n3. Group by `quartile` (pass `observed=True`) and compute `order_count` and `avg_revenue` (mean `net_amount`, rounded to 2 dp).\n\nReturn columns `quartile` (cast to `str`), `order_count`, `avg_revenue`, sorted by `quartile`.",
     "dataframes": {
       "df_orders": "orders.csv"
     },

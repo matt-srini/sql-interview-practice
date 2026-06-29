@@ -5,7 +5,7 @@
     "topic": "pandas",
     "difficulty": "easy",
     "title": "Select Columns and Drop Nulls",
-    "description": "You have a DataFrame `df_users` loaded from the users dataset.\n\n**Columns:** `user_id`, `name`, `email`, `signup_date`, `country`, `is_active`\n\nSelect only the `name` and `email` columns, then drop any rows where `email` is null. Return the resulting DataFrame.",
+    "description": "Select only the `name` and `email` columns, then drop any rows where `email` is null. Return the resulting DataFrame.",
     "dataframes": {
       "df_users": "users.csv"
     },
@@ -41,7 +41,7 @@
     "topic": "pandas",
     "difficulty": "easy",
     "title": "Count Orders by Status",
-    "description": "You have a DataFrame `df_orders` loaded from the orders dataset.\n\n**Columns:** `order_id`, `user_id`, `order_date`, `status`, `gross_amount`, `net_amount`\n\nCount the number of orders for each `status`. Return a DataFrame with columns `['status', 'count']`, sorted by `count` descending.",
+    "description": "Count the number of orders for each `status`. Return a DataFrame with columns `['status', 'count']`, sorted by `count` descending.",
     "dataframes": {
       "df_orders": "orders.csv"
     },
@@ -76,7 +76,7 @@
     "topic": "pandas",
     "difficulty": "easy",
     "title": "Fill Missing Salaries with Mean",
-    "description": "You have a DataFrame `df_employees` loaded from the employees dataset.\n\n**Columns:** `employee_id`, `employee_name`, `email`, `salary`, `department_id`, `hire_date`, `country`\n\nSome employees have a null `salary`. Fill those null values with the mean salary of all employees (computed from non-null values). Return the full DataFrame with the filled values.",
+    "description": "Some employees have a null `salary`. Fill those null values with the mean salary of all employees (computed from non-null values). Return the full DataFrame with the filled values.",
     "dataframes": {
       "df_employees": "employees.csv"
     },
@@ -110,7 +110,7 @@
     "topic": "pandas",
     "difficulty": "easy",
     "title": "Extract Email Domain",
-    "description": "You have a DataFrame `df_users` loaded from the users dataset.\n\n**Columns:** `user_id`, `name`, `email`, `signup_date`, `country`, `is_active`\n\nSome rows have null `email`. First drop those rows, then add a new column `email_domain` that contains the domain part of the email address (everything after the `@` symbol — e.g. `'gmail.com'` from `'user@gmail.com'`). Return the full DataFrame with the new column.",
+    "description": "Some rows have null `email`. First drop those rows, then add a new column `email_domain` that contains the domain part of the email address (everything after the `@` symbol — e.g. `'gmail.com'` from `'user@gmail.com'`). Return the full DataFrame with the new column.",
     "dataframes": {
       "df_users": "users.csv"
     },
@@ -145,7 +145,7 @@
     "topic": "pandas",
     "difficulty": "easy",
     "title": "Total Order Amount by Status",
-    "description": "You have a DataFrame `df_orders` loaded from the orders dataset.\n\n**Columns:** `order_id`, `user_id`, `order_date`, `status`, `gross_amount`, `net_amount`\n\nCompute the sum of `net_amount` for each `status`. Return a DataFrame with columns `['status', 'net_amount']`, sorted by `status` ascending.",
+    "description": "Compute the sum of `net_amount` for each `status`. Return a DataFrame with columns `['status', 'net_amount']`, sorted by `status` ascending.",
     "dataframes": {
       "df_orders": "orders.csv"
     },
@@ -180,7 +180,7 @@
     "topic": "pandas",
     "difficulty": "easy",
     "title": "First Event Type per User",
-    "description": "You have a DataFrame `df_events` loaded from the events dataset.\n\n**Columns:** `event_id`, `session_id`, `user_id`, `event_time`, `event_name`, `product_id`\n\nUsers often perform the same event type (e.g. `view_product`) multiple times across sessions. Return the **first occurrence** of each event type per user — one row per `(user_id, event_name)` pair using the earliest `event_time`. Output columns: `user_id`, `event_name`, `event_time` (as datetime). Sort by `user_id` ascending, then `event_name` ascending.",
+    "description": "Users often perform the same event type (e.g. `view_product`) multiple times across sessions. Return the **first occurrence** of each event type per user — one row per `(user_id, event_name)` pair using the earliest `event_time`. Output columns: `user_id`, `event_name`, `event_time` (as datetime). Sort by `user_id` ascending, then `event_name` ascending.",
     "dataframes": {
       "df_events": "events.csv"
     },
@@ -213,7 +213,7 @@
     "topic": "pandas",
     "difficulty": "easy",
     "title": "Rename a Column",
-    "description": "You have a DataFrame `df_employees` loaded from the employees dataset.\n\n**Columns:** `employee_id`, `employee_name`, `email`, `salary`, `department_id`, `hire_date`, `country`\n\nRename the column `salary` to `annual_salary`. Return the full DataFrame with the renamed column.",
+    "description": "Rename the column `salary` to `annual_salary`. Return the full DataFrame with the renamed column.",
     "dataframes": {
       "df_employees": "employees.csv"
     },
@@ -247,7 +247,7 @@
     "topic": "pandas",
     "difficulty": "easy",
     "title": "Top Products by Order Quantity",
-    "description": "You have a DataFrame `df_order_items` loaded from the order_items dataset.\n\n**Columns:** `order_item_id`, `order_id`, `product_id`, `quantity`, `unit_price`, `line_amount`\n\nReturn the top 5 `product_id`s by total quantity ordered. Output columns: `product_id`, `total_quantity`. Sort by `total_quantity` descending.",
+    "description": "Return the top 5 `product_id`s by total quantity ordered. Output columns: `product_id`, `total_quantity`. Sort by `total_quantity` descending.",
     "dataframes": {
       "df_order_items": "order_items.csv"
     },
@@ -281,7 +281,7 @@
     "topic": "pandas",
     "difficulty": "easy",
     "title": "High-Salary Employees",
-    "description": "You have a DataFrame `df_employees` loaded from the employees dataset.\n\n**Columns:** `employee_id`, `employee_name`, `email`, `salary`, `department_id`, `hire_date`, `country`\n\nReturn employees with `salary` greater than 60000. Include only columns `employee_id`, `employee_name`, `salary`. Sort by `salary` descending.",
+    "description": "Return employees with `salary` greater than 60000. Include only columns `employee_id`, `employee_name`, `salary`. Sort by `salary` descending.",
     "dataframes": {
       "df_employees": "employees.csv"
     },
@@ -316,7 +316,7 @@
     "topic": "pandas",
     "difficulty": "easy",
     "title": "Orders Placed in 2023",
-    "description": "You have a DataFrame `df_orders` loaded from the orders dataset.\n\n**Columns:** `order_id`, `user_id`, `order_date`, `status`, `gross_amount`, `net_amount`\n\nFilter orders where `order_date` falls in the year 2023. Return columns `order_id`, `user_id`, `order_date`, `net_amount`, sorted by `order_date` ascending.",
+    "description": "Filter orders where `order_date` falls in the year 2023. Return columns `order_id`, `user_id`, `order_date`, `net_amount`, sorted by `order_date` ascending.",
     "dataframes": {
       "df_orders": "orders.csv"
     },
@@ -351,7 +351,7 @@
     "topic": "pandas",
     "difficulty": "easy",
     "title": "Average Order Value per User",
-    "description": "You have a DataFrame `df_orders` loaded from the orders dataset.\n\n**Columns:** `order_id`, `user_id`, `order_date`, `status`, `gross_amount`, `net_amount`\n\nCompute the average `net_amount` per `user_id`. Return a DataFrame with columns `user_id` and `avg_order_value` (rounded to 2 decimal places). Sort by `avg_order_value` descending.",
+    "description": "Compute the average `net_amount` per `user_id`. Return a DataFrame with columns `user_id` and `avg_order_value` (rounded to 2 decimal places). Sort by `avg_order_value` descending.",
     "dataframes": {
       "df_orders": "orders.csv"
     },
@@ -386,7 +386,7 @@
     "topic": "pandas",
     "difficulty": "easy",
     "title": "Latest Order per User",
-    "description": "You have a DataFrame `df_orders` loaded from the orders dataset.\n\n**Columns:** `order_id`, `user_id`, `order_date`, `status`, `gross_amount`, `net_amount`\n\nReturn each user's most recent order. Output columns: `user_id`, `order_id`, `order_date`. Sort by `user_id` ascending.",
+    "description": "Return each user's most recent order. Output columns: `user_id`, `order_id`, `order_date`. Sort by `user_id` ascending.",
     "dataframes": {
       "df_orders": "orders.csv"
     },
@@ -421,7 +421,7 @@
     "topic": "pandas",
     "difficulty": "easy",
     "title": "Support Tickets by Status",
-    "description": "You have a DataFrame `df_support_tickets` loaded from the support_tickets dataset.\n\n**Columns:** `ticket_id`, `user_id`, `created_at`, `issue_type`, `priority`, `status`, `resolution_hours`\n\nCount the number of tickets for each `status`. Return a DataFrame with columns `status` and `ticket_count`, sorted by `ticket_count` descending.",
+    "description": "Count the number of tickets for each `status`. Return a DataFrame with columns `status` and `ticket_count`, sorted by `ticket_count` descending.",
     "dataframes": {
       "df_support_tickets": "support_tickets.csv"
     },
@@ -455,7 +455,7 @@
     "topic": "pandas",
     "difficulty": "easy",
     "title": "Employee Count by Department",
-    "description": "You have a DataFrame `df_employees` loaded from the employees dataset.\n\n**Columns:** `employee_id`, `employee_name`, `email`, `salary`, `department_id`, `hire_date`, `country`\n\nCount the number of employees in each `department_id`. Return a DataFrame with columns `department_id` and `employee_count`, sorted by `department_id` ascending.",
+    "description": "Count the number of employees in each `department_id`. Return a DataFrame with columns `department_id` and `employee_count`, sorted by `department_id` ascending.",
     "dataframes": {
       "df_employees": "employees.csv"
     },
@@ -489,7 +489,7 @@
     "topic": "pandas",
     "difficulty": "easy",
     "title": "Revenue per Product",
-    "description": "You have a DataFrame `df_order_items` loaded from the order_items dataset.\n\n**Columns:** `order_item_id`, `order_id`, `product_id`, `quantity`, `unit_price`, `line_amount`\n\nCompute total revenue per `product_id` using `line_amount` (which already equals `unit_price * quantity`). Return columns `product_id` and `total_revenue` (rounded to 2 decimal places), sorted by `total_revenue` descending.",
+    "description": "Compute total revenue per `product_id` using `line_amount` (which already equals `unit_price * quantity`). Return columns `product_id` and `total_revenue` (rounded to 2 decimal places), sorted by `total_revenue` descending.",
     "dataframes": {
       "df_order_items": "order_items.csv"
     },
@@ -522,7 +522,7 @@
     "topic": "pandas",
     "difficulty": "easy",
     "title": "Orders with Missing or Zero Discount",
-    "description": "You have a DataFrame `df_orders` loaded from the orders dataset.\n\n**Columns:** `order_id`, `user_id`, `order_date`, `status`, `gross_amount`, `discount_amount`, `net_amount`, `payment_status`\n\nReturn orders where `discount_amount` is null or equal to zero (orders with no discount recorded). Output columns: `order_id`, `user_id`, `order_date`, `discount_amount`. Sort by `order_id` ascending.",
+    "description": "Return orders where `discount_amount` is null or equal to zero (orders with no discount recorded). Output columns: `order_id`, `user_id`, `order_date`, `discount_amount`. Sort by `order_id` ascending.",
     "dataframes": {
       "df_orders": "orders.csv"
     },
@@ -557,7 +557,7 @@
     "topic": "pandas",
     "difficulty": "easy",
     "title": "Extract Order Date (Date Only)",
-    "description": "You have a DataFrame `df_orders` loaded from the orders dataset.\n\n**Columns:** `order_id`, `user_id`, `order_date`, `status`, `gross_amount`, `net_amount`\n\nAdd a new column `order_day` containing only the date part of `order_date` (no time component). Return columns `order_id`, `user_id`, `order_day`, `net_amount`, sorted by `order_day` ascending.",
+    "description": "Add a new column `order_day` containing only the date part of `order_date` (no time component). Return columns `order_id`, `user_id`, `order_day`, `net_amount`, sorted by `order_day` ascending.",
     "dataframes": {
       "df_orders": "orders.csv"
     },
@@ -592,7 +592,7 @@
     "topic": "pandas",
     "difficulty": "easy",
     "title": "Users Registered After 2022",
-    "description": "You have a DataFrame `df_users` loaded from the users dataset.\n\n**Columns:** `user_id`, `name`, `email`, `signup_date`, `country`, `is_active`\n\nReturn users where `signup_date` is after 2022-12-31 (i.e. in 2023 or later). Output columns: `user_id`, `name`, `email`, `signup_date` (as string `YYYY-MM-DD`). Sort by `signup_date` ascending.",
+    "description": "Return users where `signup_date` is after 2022-12-31 (i.e. in 2023 or later). Output columns: `user_id`, `name`, `email`, `signup_date` (as string `YYYY-MM-DD`). Sort by `signup_date` ascending.",
     "dataframes": {
       "df_users": "users.csv"
     },
@@ -627,7 +627,7 @@
     "topic": "pandas",
     "difficulty": "easy",
     "title": "Bin users by signup tenure",
-    "description": "You have a DataFrame `df_users`.\n\n**Columns:** `user_id`, `name`, `signup_date`, `plan_tier`, `is_active`\n\n1. Convert `signup_date` to datetime and compute `days_since_signup` = days between `signup_date` and `2025-01-01`.\n2. Use `pd.cut` with bins `[0, 90, 365, 730, float('inf')]` and labels `['new', 'recent', 'established', 'veteran']` to create a `tenure_group` column.\n3. Return `user_id`, `plan_tier`, `days_since_signup`, `tenure_group`, sorted by `user_id` ascending.",
+    "description": "1. Convert `signup_date` to datetime and compute `days_since_signup` = days between `signup_date` and `2025-01-01`.\n2. Use `pd.cut` with bins `[0, 90, 365, 730, float('inf')]` and labels `['new', 'recent', 'established', 'veteran']` to create a `tenure_group` column.\n3. Return `user_id`, `plan_tier`, `days_since_signup`, `tenure_group`, sorted by `user_id` ascending.",
     "dataframes": {
       "df_users": "users.csv"
     },
@@ -662,7 +662,7 @@
     "topic": "pandas",
     "difficulty": "easy",
     "title": "Categorize orders by amount",
-    "description": "You have a DataFrame `df_orders`.\n\n**Columns:** `order_id`, `user_id`, `order_date`, `status`, `gross_amount`, `discount_amount`, `net_amount`, `payment_status`\n\n1. Use `pd.cut` on `net_amount` with bins `[0, 100, 500, 1000, float('inf')]` and labels `['small', 'medium', 'large', 'whale']` to create an `order_size` column.\n2. Count orders per `order_size`. Return a DataFrame with columns `order_size` and `count`, sorted by `order_size` (use the natural category order: small, medium, large, whale).",
+    "description": "1. Use `pd.cut` on `net_amount` with bins `[0, 100, 500, 1000, float('inf')]` and labels `['small', 'medium', 'large', 'whale']` to create an `order_size` column.\n2. Count orders per `order_size`. Return a DataFrame with columns `order_size` and `count`, sorted by `order_size` (use the natural category order: small, medium, large, whale).",
     "dataframes": {
       "df_orders": "orders.csv"
     },
@@ -697,7 +697,7 @@
     "topic": "pandas",
     "difficulty": "easy",
     "title": "Filter tickets by keyword in issue type",
-    "description": "You have a DataFrame `df_support_tickets`.\n\n**Columns:** `ticket_id`, `user_id`, `created_at`, `issue_type`, `priority`, `status`, `resolution_hours`\n\nReturn all tickets where `issue_type` contains the substring `'billing'` (case-insensitive). Return `ticket_id`, `user_id`, `issue_type`, `status`, `priority`, sorted by `ticket_id` ascending.",
+    "description": "Return all tickets where `issue_type` contains the substring `'billing'` (case-insensitive). Return `ticket_id`, `user_id`, `issue_type`, `status`, `priority`, sorted by `ticket_id` ascending.",
     "dataframes": {
       "df_support_tickets": "support_tickets.csv"
     },
@@ -731,7 +731,7 @@
     "topic": "pandas",
     "difficulty": "easy",
     "title": "Revenue by year",
-    "description": "You have a DataFrame `df_orders`.\n\n**Columns:** `order_id`, `user_id`, `order_date`, `status`, `gross_amount`, `discount_amount`, `net_amount`, `payment_status`\n\n1. Convert `order_date` to datetime and extract the year into a column `year`.\n2. Group by `year` and compute:\n   - `total_revenue`: sum of `net_amount`, rounded to 2 decimal places\n   - `order_count`: number of orders\n3. Return `year`, `total_revenue`, `order_count`, sorted by `year` ascending.",
+    "description": "1. Convert `order_date` to datetime and extract the year into a column `year`.\n2. Group by `year` and compute:\n   - `total_revenue`: sum of `net_amount`, rounded to 2 decimal places\n   - `order_count`: number of orders\n3. Return `year`, `total_revenue`, `order_count`, sorted by `year` ascending.",
     "dataframes": {
       "df_orders": "orders.csv"
     },
@@ -766,7 +766,7 @@
     "topic": "pandas",
     "difficulty": "easy",
     "title": "Flag Failed Payments with .loc",
-    "description": "You have a DataFrame `df_orders` loaded from the orders dataset.\n\n**Columns:** `order_id`, `user_id`, `order_date`, `status`, `gross_amount`, `discount_amount`, `net_amount`, `payment_status`\n\nAdd a boolean column `needs_review` that is `True` for rows where `payment_status == 'failed'`, and `False` otherwise. Use `.loc` for the assignment to avoid `SettingWithCopyWarning`. Return all columns sorted by `order_id`.",
+    "description": "Add a boolean column `needs_review` that is `True` for rows where `payment_status == 'failed'`, and `False` otherwise. Use `.loc` for the assignment to avoid `SettingWithCopyWarning`. Return all columns sorted by `order_id`.",
     "dataframes": {
       "df_orders": "orders.csv"
     },
@@ -801,7 +801,7 @@
     "topic": "pandas",
     "difficulty": "easy",
     "title": "Drop Events Without a Product",
-    "description": "You have a DataFrame `df_events` loaded from the events dataset.\n\n**Columns:** `event_id`, `session_id`, `user_id`, `event_time`, `event_name`, `product_id`\n\nThe `product_id` column has some null values (events not linked to a product). Remove only rows where `product_id` is null by passing `subset=['product_id']` to `dropna`. Return columns `event_id`, `user_id`, `event_name`, `product_id`, sorted by `event_id`.",
+    "description": "The `product_id` column has some null values (events not linked to a product). Remove only rows where `product_id` is null by passing `subset=['product_id']` to `dropna`. Return columns `event_id`, `user_id`, `event_name`, `product_id`, sorted by `event_id`.",
     "dataframes": {
       "df_events": "events.csv"
     },
@@ -835,7 +835,7 @@
     "topic": "pandas",
     "difficulty": "easy",
     "title": "Forward-Fill Missing Resolution Hours",
-    "description": "You have a DataFrame `df_support_tickets` loaded from the support_tickets dataset.\n\n**Columns:** `ticket_id`, `user_id`, `created_at`, `issue_type`, `priority`, `status`, `resolution_hours`\n\nOpen or pending tickets have a null `resolution_hours`. Sort the DataFrame by `created_at`, then forward-fill `resolution_hours` so each null is replaced by the most recently seen non-null value. Return columns `ticket_id`, `user_id`, `created_at` (as datetime), `resolution_hours`, sorted by `created_at`.",
+    "description": "Open or pending tickets have a null `resolution_hours`. Sort the DataFrame by `created_at`, then forward-fill `resolution_hours` so each null is replaced by the most recently seen non-null value. Return columns `ticket_id`, `user_id`, `created_at` (as datetime), `resolution_hours`, sorted by `created_at`.",
     "dataframes": {
       "df_support_tickets": "support_tickets.csv"
     },
@@ -869,7 +869,7 @@
     "topic": "pandas",
     "difficulty": "easy",
     "title": "Event Count per Product Including Null Group",
-    "description": "You have a DataFrame `df_events` loaded from the events dataset.\n\n**Columns:** `event_id`, `session_id`, `user_id`, `event_time`, `event_name`, `product_id`\n\nCount the number of events per `product_id`. Include events where `product_id` is null as their own group (a `NaN` row in the output). Return columns `product_id` and `event_count`, sorted by `event_count` descending.",
+    "description": "Count the number of events per `product_id`. Include events where `product_id` is null as their own group (a `NaN` row in the output). Return columns `product_id` and `event_count`, sorted by `event_count` descending.",
     "dataframes": {
       "df_events": "events.csv"
     },
@@ -902,7 +902,7 @@
     "topic": "pandas",
     "difficulty": "easy",
     "title": "Average Order Value by Status",
-    "description": "You have a DataFrame `df_orders` loaded from the orders dataset.\n\n**Columns:** `order_id`, `user_id`, `order_date`, `status`, `gross_amount`, `discount_amount`, `net_amount`, `payment_status`\n\nCompute the average `net_amount` per `status` using named aggregation and `as_index=False`. Round the result to 2 decimal places. Return columns `status` and `avg_net_amount`, sorted by `status` alphabetically.",
+    "description": "Compute the average `net_amount` per `status` using named aggregation and `as_index=False`. Round the result to 2 decimal places. Return columns `status` and `avg_net_amount`, sorted by `status` alphabetically.",
     "dataframes": {
       "df_orders": "orders.csv"
     },
@@ -937,7 +937,7 @@
     "topic": "pandas",
     "difficulty": "easy",
     "title": "Sessions by channel group",
-    "description": "You have a DataFrame `df_sessions` loaded from the sessions dataset.\n\n**Columns:** `session_id`, `user_id`, `session_start`, `device_type`, `traffic_source`, `country`\n\nThe `traffic_source` column contains values like `paid_search`, `paid_social`, `organic`, `direct`, `referral`, `email`. Some sources are compound (separated by `_`); others are single words.\n\nCreate a `channel_group` column that takes only the **prefix before the first underscore** (or the whole value if there is no underscore). Then count the number of sessions per `channel_group`. Return a DataFrame with columns `channel_group` and `session_count`, sorted by `session_count` descending.",
+    "description": "The `traffic_source` column contains values like `paid_search`, `paid_social`, `organic`, `direct`, `referral`, `email`. Some sources are compound (separated by `_`); others are single words.\n\nCreate a `channel_group` column that takes only the **prefix before the first underscore** (or the whole value if there is no underscore). Then count the number of sessions per `channel_group`. Return a DataFrame with columns `channel_group` and `session_count`, sorted by `session_count` descending.",
     "dataframes": {
       "df_sessions": "sessions.csv"
     },

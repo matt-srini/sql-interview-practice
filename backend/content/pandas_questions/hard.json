@@ -5,7 +5,7 @@
     "topic": "pandas",
     "difficulty": "hard",
     "title": "Monthly Cohort Retention",
-    "description": "You have two DataFrames: `df_users` (users dataset) and `df_orders` (orders dataset).\n\n**df_users columns:** `user_id`, `name`, `email`, `signup_date`, `country`, `acquisition_channel`, `plan_tier`, `is_active`\n**df_orders columns:** `order_id`, `user_id`, `order_date`, `status`, `gross_amount`, `discount_amount`, `net_amount`, `payment_status`\n\nCompute monthly cohort retention:\n1. Define each user's **cohort** as the month-year of their **first order** (format `YYYY-MM`).\n2. For each user-order pair, compute `months_since_first` = the number of whole months between the cohort month and the order month.\n3. For each cohort, count how many distinct users ordered in each `months_since_first` bucket.\n4. Divide by the cohort size (users at `months_since_first=0`) to get the retention fraction (rounded to 2 decimal places).\n5. Return a pivot table where:\n   - **rows** are `cohort_month` (sorted ascending)\n   - **columns** are `months_since_first` (0, 1, 2, … sorted ascending)\n   - **values** are the retention fraction (0.0–1.0)\n   - Fill missing values with `0.0`\n\nThe returned DataFrame's index should be `cohort_month` and its columns should be integers.",
+    "description": "Compute monthly cohort retention:\n1. Define each user's **cohort** as the month-year of their **first order** (format `YYYY-MM`).\n2. For each user-order pair, compute `months_since_first` = the number of whole months between the cohort month and the order month.\n3. For each cohort, count how many distinct users ordered in each `months_since_first` bucket.\n4. Divide by the cohort size (users at `months_since_first=0`) to get the retention fraction (rounded to 2 decimal places).\n5. Return a pivot table where:\n   - **rows** are `cohort_month` (sorted ascending)\n   - **columns** are `months_since_first` (0, 1, 2, … sorted ascending)\n   - **values** are the retention fraction (0.0–1.0)\n   - Fill missing values with `0.0`\n\nThe returned DataFrame's index should be `cohort_month` and its columns should be integers.",
     "dataframes": {
       "df_users": "users.csv",
       "df_orders": "orders.csv"
@@ -53,7 +53,7 @@
     "topic": "pandas",
     "difficulty": "hard",
     "title": "Revenue Percentile Rank by Category",
-    "description": "You have two DataFrames: `df_order_items` (order_items dataset) and `df_products` (products dataset).\n\n**df_order_items columns:** `order_item_id`, `order_id`, `product_id`, `quantity`, `unit_price`, `line_amount`\n**df_products columns:** `product_id`, `product_name`, `category_id`, `brand`, `price`, `launch_date`, `is_active`\n\n1. Compute each product's **total revenue** as the sum of `line_amount` from `df_order_items`.\n2. Join with `df_products` to get `category_id`.\n3. Within each `category_id`, assign a **percentile rank** using `rank(pct=True)` on `total_revenue`.\n4. Return a DataFrame with columns `product_id`, `category_id`, `total_revenue`, `revenue_percentile` (rounded to 2 decimal places).\n5. Sort by `category_id` ascending, then `revenue_percentile` descending.",
+    "description": "1. Compute each product's **total revenue** as the sum of `line_amount` from `df_order_items`.\n2. Join with `df_products` to get `category_id`.\n3. Within each `category_id`, assign a **percentile rank** using `rank(pct=True)` on `total_revenue`.\n4. Return a DataFrame with columns `product_id`, `category_id`, `total_revenue`, `revenue_percentile` (rounded to 2 decimal places).\n5. Sort by `category_id` ascending, then `revenue_percentile` descending.",
     "dataframes": {
       "df_order_items": "order_items.csv",
       "df_products": "products.csv"
@@ -97,7 +97,7 @@
     "topic": "pandas",
     "difficulty": "hard",
     "title": "30-Day Moving Average Revenue",
-    "description": "You have a DataFrame `df_orders` loaded from the orders dataset.\n\n**Columns:** `order_id`, `user_id`, `order_date`, `status`, `gross_amount`, `discount_amount`, `net_amount`, `payment_status`\n\n1. Aggregate orders to **daily total revenue** (sum of `net_amount` per day).\n2. Sort by date ascending.\n3. Compute a **30-day rolling mean** of daily revenue with `min_periods=1`.\n4. Return a DataFrame with columns:\n   - `date` — date as a string in `YYYY-MM-DD` format\n   - `daily_revenue` — sum of `net_amount` for that day (rounded to 2 dp)\n   - `ma_30d` — 30-day rolling mean (rounded to 2 dp)\n5. Sort by `date` ascending.",
+    "description": "1. Aggregate orders to **daily total revenue** (sum of `net_amount` per day).\n2. Sort by date ascending.\n3. Compute a **30-day rolling mean** of daily revenue with `min_periods=1`.\n4. Return a DataFrame with columns:\n   - `date` — date as a string in `YYYY-MM-DD` format\n   - `daily_revenue` — sum of `net_amount` for that day (rounded to 2 dp)\n   - `ma_30d` — 30-day rolling mean (rounded to 2 dp)\n5. Sort by `date` ascending.",
     "dataframes": {
       "df_orders": "orders.csv"
     },
@@ -133,7 +133,7 @@
     "topic": "pandas",
     "difficulty": "hard",
     "title": "User Lifetime Value Rank",
-    "description": "You have a DataFrame `df_orders` loaded from the orders dataset.\n\n**Columns:** `order_id`, `user_id`, `order_date`, `status`, `gross_amount`, `discount_amount`, `net_amount`, `payment_status`\n\n1. Compute each user's **lifetime value** as the sum of `net_amount` across all their orders.\n2. Add a **rank** column where rank 1 = highest lifetime value (use `method='min'` for ties).\n3. Return columns `user_id`, `lifetime_value` (rounded to 2 dp), `ltv_rank`.\n4. Sort by `ltv_rank` ascending.",
+    "description": "1. Compute each user's **lifetime value** as the sum of `net_amount` across all their orders.\n2. Add a **rank** column where rank 1 = highest lifetime value (use `method='min'` for ties).\n3. Return columns `user_id`, `lifetime_value` (rounded to 2 dp), `ltv_rank`.\n4. Sort by `ltv_rank` ascending.",
     "dataframes": {
       "df_orders": "orders.csv"
     },
@@ -168,7 +168,7 @@
     "topic": "pandas",
     "difficulty": "hard",
     "title": "Cumulative Revenue per User",
-    "description": "You have a DataFrame `df_orders` loaded from the orders dataset.\n\n**Columns:** `order_id`, `user_id`, `order_date`, `status`, `gross_amount`, `discount_amount`, `net_amount`, `payment_status`\n\nFor each user, compute the **running cumulative sum** of `net_amount` sorted by `order_date`.\n\nReturn a DataFrame with columns:\n- `order_id`\n- `user_id`\n- `order_date` (as string YYYY-MM-DD)\n- `net_amount` (rounded to 2 dp)\n- `cumulative_revenue` (running sum of `net_amount` per user up to and including each order, rounded to 2 dp)\n\nSort by `user_id` ascending, then `order_date` ascending.",
+    "description": "For each user, compute the **running cumulative sum** of `net_amount` sorted by `order_date`.\n\nReturn a DataFrame with columns:\n- `order_id`\n- `user_id`\n- `order_date` (as string YYYY-MM-DD)\n- `net_amount` (rounded to 2 dp)\n- `cumulative_revenue` (running sum of `net_amount` per user up to and including each order, rounded to 2 dp)\n\nSort by `user_id` ascending, then `order_date` ascending.",
     "dataframes": {
       "df_orders": "orders.csv"
     },
@@ -204,7 +204,7 @@
     "topic": "pandas",
     "difficulty": "hard",
     "title": "Monthly Revenue Trend with Growth Rate",
-    "description": "You have a DataFrame `df_orders` loaded from the orders dataset.\n\n**Columns:** `order_id`, `user_id`, `order_date`, `status`, `gross_amount`, `discount_amount`, `net_amount`, `payment_status`\n\n1. Aggregate `net_amount` to **monthly revenue** (format: `YYYY-MM`).\n2. Compute `mom_growth_pct` = month-over-month % change rounded to 1 dp (NaN for the first month).\n3. Compute `rolling_3m_avg` = 3-month trailing rolling mean of `revenue` with `min_periods=1`, rounded to 2 dp.\n4. Return columns: `month` (string `YYYY-MM`), `revenue` (rounded to 2 dp), `mom_growth_pct`, `rolling_3m_avg`.\n5. Sort by `month` ascending.",
+    "description": "1. Aggregate `net_amount` to **monthly revenue** (format: `YYYY-MM`).\n2. Compute `mom_growth_pct` = month-over-month % change rounded to 1 dp (NaN for the first month).\n3. Compute `rolling_3m_avg` = 3-month trailing rolling mean of `revenue` with `min_periods=1`, rounded to 2 dp.\n4. Return columns: `month` (string `YYYY-MM`), `revenue` (rounded to 2 dp), `mom_growth_pct`, `rolling_3m_avg`.\n5. Sort by `month` ascending.",
     "dataframes": {
       "df_orders": "orders.csv"
     },
@@ -240,7 +240,7 @@
     "topic": "pandas",
     "difficulty": "hard",
     "title": "Support Ticket Resolution Rate by Month",
-    "description": "You have a DataFrame `df_support_tickets` loaded from the support_tickets dataset.\n\n**Columns:** `ticket_id`, `user_id`, `created_at`, `issue_type`, `priority`, `status`, `resolution_hours`\n\n1. Parse `created_at` to datetime and extract the month as `YYYY-MM`.\n2. Per month, compute:\n   - `total_tickets` — count of all tickets\n   - `resolved_tickets` — count of tickets where `status == 'resolved'`\n   - `resolution_rate_pct` — `resolved_tickets / total_tickets * 100`, rounded to 1 dp\n3. Return columns: `month`, `total_tickets`, `resolved_tickets`, `resolution_rate_pct`.\n4. Sort by `month` ascending.",
+    "description": "1. Parse `created_at` to datetime and extract the month as `YYYY-MM`.\n2. Per month, compute:\n   - `total_tickets` — count of all tickets\n   - `resolved_tickets` — count of tickets where `status == 'resolved'`\n   - `resolution_rate_pct` — `resolved_tickets / total_tickets * 100`, rounded to 1 dp\n3. Return columns: `month`, `total_tickets`, `resolved_tickets`, `resolution_rate_pct`.\n4. Sort by `month` ascending.",
     "dataframes": {
       "df_support_tickets": "support_tickets.csv"
     },
@@ -274,7 +274,7 @@
     "topic": "pandas",
     "difficulty": "hard",
     "title": "Employee Salary Distribution by Department",
-    "description": "You have two DataFrames: `df_employees` (employees dataset) and `df_departments` (departments dataset).\n\n**df_employees columns:** `employee_id`, `employee_name`, `email`, `salary`, `department_id`, `hire_date`, `country`\n**df_departments columns:** `department_id`, `department_name`, `region`\n\n1. Join employees with departments on `department_id`.\n2. Per `department_name`, compute:\n   - `employee_count`\n   - `min_salary` (rounded to 2 dp)\n   - `max_salary` (rounded to 2 dp)\n   - `avg_salary` (rounded to 2 dp)\n   - `median_salary` (rounded to 2 dp)\n3. Return columns: `department_name`, `employee_count`, `min_salary`, `max_salary`, `avg_salary`, `median_salary`.\n4. Sort by `avg_salary` descending.",
+    "description": "1. Join employees with departments on `department_id`.\n2. Per `department_name`, compute:\n   - `employee_count`\n   - `min_salary` (rounded to 2 dp)\n   - `max_salary` (rounded to 2 dp)\n   - `avg_salary` (rounded to 2 dp)\n   - `median_salary` (rounded to 2 dp)\n3. Return columns: `department_name`, `employee_count`, `min_salary`, `max_salary`, `avg_salary`, `median_salary`.\n4. Sort by `avg_salary` descending.",
     "dataframes": {
       "df_employees": "employees.csv",
       "df_departments": "departments.csv"
@@ -314,7 +314,7 @@
     "topic": "pandas",
     "difficulty": "hard",
     "title": "Cross-Tab: Country × Order Status",
-    "description": "You have two DataFrames: `df_orders` (orders dataset) and `df_users` (users dataset).\n\n**df_orders columns:** `order_id`, `user_id`, `order_date`, `status`, `gross_amount`, `discount_amount`, `net_amount`, `payment_status`\n**df_users columns:** `user_id`, `name`, `email`, `signup_date`, `country`, `acquisition_channel`, `plan_tier`, `is_active`\n\n1. Join orders with users on `user_id` to get `country`.\n2. Use `pd.crosstab` to produce a table: **rows = country**, **columns = status**, **values = count of orders**.\n3. Add a `Total` column = sum across all status columns.\n4. Sort by `Total` descending.\n5. Drop the `Total` column before returning.\n\nThe returned DataFrame's index should be `country` and columns should be the distinct order statuses.",
+    "description": "1. Join orders with users on `user_id` to get `country`.\n2. Use `pd.crosstab` to produce a table: **rows = country**, **columns = status**, **values = count of orders**.\n3. Add a `Total` column = sum across all status columns.\n4. Sort by `Total` descending.\n5. Drop the `Total` column before returning.\n\nThe returned DataFrame's index should be `country` and columns should be the distinct order statuses.",
     "dataframes": {
       "df_orders": "orders.csv",
       "df_users": "users.csv"
@@ -361,7 +361,7 @@
     "topic": "pandas",
     "difficulty": "hard",
     "title": "Stack/Unstack: Order Status × Month",
-    "description": "You have a DataFrame `df_orders` loaded from the orders dataset.\n\n**Columns:** `order_id`, `user_id`, `order_date`, `status`, `gross_amount`, `discount_amount`, `net_amount`, `payment_status`\n\n1. Extract `month` as `YYYY-MM` string from `order_date`.\n2. Create a **pivot table**: rows = `status`, columns = `month`, values = count of orders. Fill NaN with 0 (as int).\n3. **Stack** the pivot back to a long-format DataFrame with columns: `status`, `month`, `count`.\n4. Sort by `status` ascending, then `month` ascending.\n5. Return the long-format DataFrame with a reset index.",
+    "description": "1. Extract `month` as `YYYY-MM` string from `order_date`.\n2. Create a **pivot table**: rows = `status`, columns = `month`, values = count of orders. Fill NaN with 0 (as int).\n3. **Stack** the pivot back to a long-format DataFrame with columns: `status`, `month`, `count`.\n4. Sort by `status` ascending, then `month` ascending.\n5. Return the long-format DataFrame with a reset index.",
     "dataframes": {
       "df_orders": "orders.csv"
     },
@@ -396,7 +396,7 @@
     "topic": "pandas",
     "difficulty": "hard",
     "title": "User Engagement Score",
-    "description": "You have three DataFrames: `df_events` (events dataset), `df_sessions` (sessions dataset), and `df_orders` (orders dataset).\n\n**df_events columns:** `event_id`, `session_id`, `user_id`, `event_time`, `event_name`, `product_id`\n**df_sessions columns:** `session_id`, `user_id`, `session_start`, `device_type`, `traffic_source`, `country`\n**df_orders columns:** `order_id`, `user_id`, `order_date`, `status`, `gross_amount`, `discount_amount`, `net_amount`, `payment_status`\n\n1. Per `user_id`, compute: `event_count`, `session_count`, `order_count`.\n2. Min-max normalise each count to the range [0, 1] (if max == min, set to 0).\n3. `engagement_score = 0.3 * norm_events + 0.3 * norm_sessions + 0.4 * norm_orders` (rounded to 3 dp).\n4. Return columns: `user_id`, `event_count`, `session_count`, `order_count`, `engagement_score`.\n5. Sort by `engagement_score` descending, then `user_id` ascending.",
+    "description": "1. Per `user_id`, compute: `event_count`, `session_count`, `order_count`.\n2. Min-max normalise each count to the range [0, 1] (if max == min, set to 0).\n3. `engagement_score = 0.3 * norm_events + 0.3 * norm_sessions + 0.4 * norm_orders` (rounded to 3 dp).\n4. Return columns: `user_id`, `event_count`, `session_count`, `order_count`, `engagement_score`.\n5. Sort by `engagement_score` descending, then `user_id` ascending.",
     "dataframes": {
       "df_events": "events.csv",
       "df_sessions": "sessions.csv",
@@ -449,7 +449,7 @@
     "topic": "pandas",
     "difficulty": "hard",
     "title": "Multi-Step Funnel Analysis",
-    "description": "You have three DataFrames: `df_events` (events dataset), `df_sessions` (sessions dataset), and `df_orders` (orders dataset).\n\n**df_events columns:** `event_id`, `session_id`, `user_id`, `event_time`, `event_name`, `product_id`\n**df_sessions columns:** `session_id`, `user_id`, `session_start`, `device_type`, `traffic_source`, `country`\n**df_orders columns:** `order_id`, `user_id`, `order_date`, `status`, `gross_amount`, `discount_amount`, `net_amount`, `payment_status`\n\nBuild a 3-stage funnel:\n1. **Stage 1 — Has Event:** users present in `df_events`\n2. **Stage 2 — Has Session:** users present in both events and sessions\n3. **Stage 3 — Has Order:** users present in events, sessions, and orders\n\nReturn a DataFrame with **3 rows** and columns:\n- `stage` — `'has_event'`, `'has_session'`, `'has_order'`\n- `user_count` — number of distinct users at that stage\n- `pct_of_event_users` — percentage relative to stage-1 user count, rounded to 1 dp",
+    "description": "Build a 3-stage funnel:\n1. **Stage 1 — Has Event:** users present in `df_events`\n2. **Stage 2 — Has Session:** users present in both events and sessions\n3. **Stage 3 — Has Order:** users present in events, sessions, and orders\n\nReturn a DataFrame with **3 rows** and columns:\n- `stage` — `'has_event'`, `'has_session'`, `'has_order'`\n- `user_count` — number of distinct users at that stage\n- `pct_of_event_users` — percentage relative to stage-1 user count, rounded to 1 dp",
     "dataframes": {
       "df_events": "events.csv",
       "df_sessions": "sessions.csv",
@@ -502,7 +502,7 @@
     "topic": "pandas",
     "difficulty": "hard",
     "title": "Revenue Anomaly Detection (IQR)",
-    "description": "You have a DataFrame `df_orders` loaded from the orders dataset.\n\n**Columns:** `order_id`, `user_id`, `order_date`, `status`, `gross_amount`, `discount_amount`, `net_amount`, `payment_status`\n\n1. Aggregate `net_amount` to **daily revenue** (sum per calendar day).\n2. Compute the IQR of daily revenue: Q1 (25th percentile) and Q3 (75th percentile).\n3. Flag each day as `is_anomaly = True` if `daily_revenue < Q1 - 1.5 * IQR` **or** `daily_revenue > Q3 + 1.5 * IQR`.\n4. Return columns: `date` (string `YYYY-MM-DD`), `daily_revenue` (rounded to 2 dp), `is_anomaly` (bool).\n5. Sort by `date` ascending.",
+    "description": "1. Aggregate `net_amount` to **daily revenue** (sum per calendar day).\n2. Compute the IQR of daily revenue: Q1 (25th percentile) and Q3 (75th percentile).\n3. Flag each day as `is_anomaly = True` if `daily_revenue < Q1 - 1.5 * IQR` **or** `daily_revenue > Q3 + 1.5 * IQR`.\n4. Return columns: `date` (string `YYYY-MM-DD`), `daily_revenue` (rounded to 2 dp), `is_anomaly` (bool).\n5. Sort by `date` ascending.",
     "dataframes": {
       "df_orders": "orders.csv"
     },
@@ -538,7 +538,7 @@
     "topic": "pandas",
     "difficulty": "hard",
     "title": "Product Affinity Pairs",
-    "description": "You have a DataFrame `df_order_items` loaded from the order_items dataset.\n\n**Columns:** `order_item_id`, `order_id`, `product_id`, `quantity`, `unit_price`, `line_amount`\n\nFind pairs of products that are frequently **co-purchased** in the same order:\n1. Self-join `df_order_items` on `order_id` to create all (product_a, product_b) pairs where `product_a < product_b` (to avoid duplicates).\n2. Count the number of distinct orders each pair co-occurs in (`co_occurrence_count`).\n3. Return columns: `product_a_id`, `product_b_id`, `co_occurrence_count`.\n4. Sort by `co_occurrence_count` descending.\n5. Return the **top 10** pairs.",
+    "description": "Find pairs of products that are frequently **co-purchased** in the same order:\n1. Self-join `df_order_items` on `order_id` to create all (product_a, product_b) pairs where `product_a < product_b` (to avoid duplicates).\n2. Count the number of distinct orders each pair co-occurs in (`co_occurrence_count`).\n3. Return columns: `product_a_id`, `product_b_id`, `co_occurrence_count`.\n4. Sort by `co_occurrence_count` descending.\n5. Return the **top 10** pairs.",
     "dataframes": {
       "df_order_items": "order_items.csv"
     },
@@ -571,7 +571,7 @@
     "topic": "pandas",
     "difficulty": "hard",
     "title": "Forecast Next Month Revenue",
-    "description": "You have a DataFrame `df_orders` loaded from the orders dataset.\n\n**Columns:** `order_id`, `user_id`, `order_date`, `status`, `gross_amount`, `discount_amount`, `net_amount`, `payment_status`\n\n1. Aggregate to **monthly revenue** (sum of `net_amount`, format `YYYY-MM`), sorted ascending.\n2. Use `pct_change()` on the monthly revenue series to compute month-over-month growth rates, then take the **mean** of all non-NaN growth rates.\n3. **Forecast** the next month's revenue = `last_month_revenue * (1 + avg_growth)`, rounded to 2 dp.\n4. Compute the next calendar month label from the last observed month.\n5. Return a DataFrame with all historical rows **plus** the forecast row, columns:\n   - `month` (string `YYYY-MM`)\n   - `revenue` (rounded to 2 dp)\n   - `is_forecast` (bool — `False` for historical, `True` for forecast row)\n6. Sort by `month` ascending.",
+    "description": "1. Aggregate to **monthly revenue** (sum of `net_amount`, format `YYYY-MM`), sorted ascending.\n2. Use `pct_change()` on the monthly revenue series to compute month-over-month growth rates, then take the **mean** of all non-NaN growth rates.\n3. **Forecast** the next month's revenue = `last_month_revenue * (1 + avg_growth)`, rounded to 2 dp.\n4. Compute the next calendar month label from the last observed month.\n5. Return a DataFrame with all historical rows **plus** the forecast row, columns:\n   - `month` (string `YYYY-MM`)\n   - `revenue` (rounded to 2 dp)\n   - `is_forecast` (bool — `False` for historical, `True` for forecast row)\n6. Sort by `month` ascending.",
     "dataframes": {
       "df_orders": "orders.csv"
     },
@@ -607,7 +607,7 @@
     "topic": "pandas",
     "difficulty": "hard",
     "title": "Employee Tenure Calculation",
-    "description": "You have a DataFrame `df_employees` loaded from the employees dataset.\n\n**Columns:** `employee_id`, `employee_name`, `email`, `salary`, `department_id`, `hire_date`, `country`\n\n1. Compute `tenure_days` = number of days from `hire_date` to **2026-04-01** (use this fixed reference date).\n2. Compute `tenure_years` = `tenure_days / 365.25`, rounded to 1 dp.\n3. Assign `tenure_band`:\n   - `'junior'` if `tenure_years < 2`\n   - `'mid'` if `2 <= tenure_years <= 5`\n   - `'senior'` if `tenure_years > 5`\n4. Return columns: `employee_id`, `employee_name`, `hire_date` (as string `YYYY-MM-DD`), `tenure_days` (int), `tenure_years`, `tenure_band`.\n5. Sort by `tenure_days` descending.",
+    "description": "1. Compute `tenure_days` = number of days from `hire_date` to **2026-04-01** (use this fixed reference date).\n2. Compute `tenure_years` = `tenure_days / 365.25`, rounded to 1 dp.\n3. Assign `tenure_band`:\n   - `'junior'` if `tenure_years < 2`\n   - `'mid'` if `2 <= tenure_years <= 5`\n   - `'senior'` if `tenure_years > 5`\n4. Return columns: `employee_id`, `employee_name`, `hire_date` (as string `YYYY-MM-DD`), `tenure_days` (int), `tenure_years`, `tenure_band`.\n5. Sort by `tenure_days` descending.",
     "dataframes": {
       "df_employees": "employees.csv"
     },
@@ -641,7 +641,7 @@
     "topic": "pandas",
     "difficulty": "hard",
     "title": "Churn Proxy — Users Inactive 90 Days",
-    "description": "You have a DataFrame `df_orders` loaded from the orders dataset.\n\n**Columns:** `order_id`, `user_id`, `order_date`, `status`, `gross_amount`, `discount_amount`, `net_amount`, `payment_status`\n\n1. Per user, compute their **last order date**.\n2. Compute `days_since_last_order` = (max order date in dataset) − last_order_date, in days (integer).\n3. Flag `is_churned = True` if `days_since_last_order > 90`.\n4. Return columns: `user_id`, `last_order_date` (string `YYYY-MM-DD`), `days_since_last_order` (int), `is_churned` (bool).\n5. Sort by `days_since_last_order` descending.",
+    "description": "1. Per user, compute their **last order date**.\n2. Compute `days_since_last_order` = (max order date in dataset) − last_order_date, in days (integer).\n3. Flag `is_churned = True` if `days_since_last_order > 90`.\n4. Return columns: `user_id`, `last_order_date` (string `YYYY-MM-DD`), `days_since_last_order` (int), `is_churned` (bool).\n5. Sort by `days_since_last_order` descending.",
     "dataframes": {
       "df_orders": "orders.csv"
     },
@@ -676,7 +676,7 @@
     "topic": "pandas",
     "difficulty": "hard",
     "title": "Session-to-Order Attribution Rate",
-    "description": "You have two DataFrames: `df_sessions` (sessions dataset) and `df_orders` (orders dataset).\n\n**df_sessions columns:** `session_id`, `user_id`, `session_start`, `device_type`, `traffic_source`, `country`\n**df_orders columns:** `order_id`, `user_id`, `order_date`, `status`, `gross_amount`, `discount_amount`, `net_amount`, `payment_status`\n\nA session is **attributed** to an order if the **same user** placed an order within **24 hours** after `session_start`.\n\n1. For each session, check whether any order from the same user has `order_date` in the window `[session_start, session_start + 24h)`.\n2. Compute:\n   - `total_sessions` — total number of sessions\n   - `attributed_sessions` — sessions with at least one attributed order\n   - `attribution_rate_pct` — `attributed_sessions / total_sessions * 100`, rounded to 1 dp\n3. Return a **single-row** DataFrame with columns: `total_sessions`, `attributed_sessions`, `attribution_rate_pct`.",
+    "description": "A session is **attributed** to an order if the **same user** placed an order within **24 hours** after `session_start`.\n\n1. For each session, check whether any order from the same user has `order_date` in the window `[session_start, session_start + 24h)`.\n2. Compute:\n   - `total_sessions` — total number of sessions\n   - `attributed_sessions` — sessions with at least one attributed order\n   - `attribution_rate_pct` — `attributed_sessions / total_sessions * 100`, rounded to 1 dp\n3. Return a **single-row** DataFrame with columns: `total_sessions`, `attributed_sessions`, `attribution_rate_pct`.",
     "dataframes": {
       "df_sessions": "sessions.csv",
       "df_orders": "orders.csv"
@@ -720,7 +720,7 @@
     "topic": "pandas",
     "difficulty": "hard",
     "title": "Geographic Revenue Heatmap",
-    "description": "You have two DataFrames: `df_orders` (orders dataset) and `df_users` (users dataset).\n\n**df_orders columns:** `order_id`, `user_id`, `order_date`, `status`, `gross_amount`, `discount_amount`, `net_amount`, `payment_status`\n**df_users columns:** `user_id`, `name`, `email`, `signup_date`, `country`, `acquisition_channel`, `plan_tier`, `is_active`\n\n1. Join orders with users on `user_id` to get `country`.\n2. Pivot: **rows = country**, **columns = order status**, **values = total `net_amount`** (sum).\n3. Fill NaN with `0.0`, round all values to 2 dp.\n4. Add a `Total` column = sum across all status columns (rounded to 2 dp).\n5. Sort by `Total` descending.\n6. Return the pivot DataFrame with `country` as the index, status columns, and `Total` column.",
+    "description": "1. Join orders with users on `user_id` to get `country`.\n2. Pivot: **rows = country**, **columns = order status**, **values = total `net_amount`** (sum).\n3. Fill NaN with `0.0`, round all values to 2 dp.\n4. Add a `Total` column = sum across all status columns (rounded to 2 dp).\n5. Sort by `Total` descending.\n6. Return the pivot DataFrame with `country` as the index, status columns, and `Total` column.",
     "dataframes": {
       "df_orders": "orders.csv",
       "df_users": "users.csv"
@@ -767,7 +767,7 @@
     "topic": "pandas",
     "difficulty": "hard",
     "title": "Customer RFM Segmentation",
-    "description": "You have a DataFrame `df_orders` loaded from the orders dataset.\n\n**Columns:** `order_id`, `user_id`, `order_date`, `status`, `gross_amount`, `discount_amount`, `net_amount`, `payment_status`\n\nCompute **RFM segmentation** for each user:\n\n1. Use the **maximum order date** in the dataset as the reference date.\n2. Per user compute:\n   - `recency` = days since last order (integer)\n   - `frequency` = number of orders (integer)\n   - `monetary` = sum of `net_amount` (rounded to 2 dp)\n3. Score each dimension 1–3:\n   - **Recency:** ≤ 30 days → 3, 31–90 days → 2, > 90 days → 1\n   - **Frequency:** 1 order → 1, 2–3 orders → 2, ≥ 4 orders → 3\n   - **Monetary:** bottom third of users → 1, middle third → 2, top third → 3 (use `pd.qcut` with 3 equal-sized buckets; label as 1, 2, 3)\n4. `rfm_score` = recency_score + frequency_score + monetary_score\n5. `segment`:\n   - `rfm_score` 7–9 → `'Champions'`\n   - `rfm_score` 5–6 → `'Loyal'`\n   - `rfm_score` 3–4 → `'At Risk'`\n6. Return columns: `user_id`, `recency`, `frequency`, `monetary`, `rfm_score`, `segment`.\n7. Sort by `rfm_score` descending, then `user_id` ascending.",
+    "description": "Compute **RFM segmentation** for each user:\n\n1. Use the **maximum order date** in the dataset as the reference date.\n2. Per user compute:\n   - `recency` = days since last order (integer)\n   - `frequency` = number of orders (integer)\n   - `monetary` = sum of `net_amount` (rounded to 2 dp)\n3. Score each dimension 1–3:\n   - **Recency:** ≤ 30 days → 3, 31–90 days → 2, > 90 days → 1\n   - **Frequency:** 1 order → 1, 2–3 orders → 2, ≥ 4 orders → 3\n   - **Monetary:** bottom third of users → 1, middle third → 2, top third → 3 (use `pd.qcut` with 3 equal-sized buckets; label as 1, 2, 3)\n4. `rfm_score` = recency_score + frequency_score + monetary_score\n5. `segment`:\n   - `rfm_score` 7–9 → `'Champions'`\n   - `rfm_score` 5–6 → `'Loyal'`\n   - `rfm_score` 3–4 → `'At Risk'`\n6. Return columns: `user_id`, `recency`, `frequency`, `monetary`, `rfm_score`, `segment`.\n7. Sort by `rfm_score` descending, then `user_id` ascending.",
     "dataframes": {
       "df_orders": "orders.csv"
     },
@@ -802,7 +802,7 @@
     "topic": "pandas",
     "difficulty": "hard",
     "title": "Memory optimization with dtype conversion",
-    "description": "You have a DataFrame `df_orders`.\n\n**Columns:** `order_id`, `user_id`, `order_date`, `status`, `gross_amount`, `discount_amount`, `net_amount`, `payment_status`\n\nDemonstrate memory optimization:\n1. Compute `original_bytes` = `df.memory_usage(deep=True).sum()`\n2. Convert `status` and `payment_status` to `pd.Categorical` dtype\n3. Convert `order_id` and `user_id` to `int32`\n4. Compute `optimized_bytes` after these changes\n5. Return a DataFrame with columns `metric` and `value`:\n   - Row 0: `'original_bytes'`, original memory\n   - Row 1: `'optimized_bytes'`, new memory\n   - Row 2: `'reduction_pct'`, `round((original - optimized) / original * 100, 1)`",
+    "description": "Demonstrate memory optimization:\n1. Compute `original_bytes` = `df.memory_usage(deep=True).sum()`\n2. Convert `status` and `payment_status` to `pd.Categorical` dtype\n3. Convert `order_id` and `user_id` to `int32`\n4. Compute `optimized_bytes` after these changes\n5. Return a DataFrame with columns `metric` and `value`:\n   - Row 0: `'original_bytes'`, original memory\n   - Row 1: `'optimized_bytes'`, new memory\n   - Row 2: `'reduction_pct'`, `round((original - optimized) / original * 100, 1)`",
     "dataframes": {
       "df_orders": "orders.csv"
     },
@@ -837,7 +837,7 @@
     "topic": "pandas",
     "difficulty": "hard",
     "title": "MultiIndex salary analysis",
-    "description": "You have two DataFrames: `df_employees` and `df_departments`.\n\n**df_employees columns:** `employee_id`, `employee_name`, `salary`, `department_id`\n**df_departments columns:** `department_id`, `department_name`, `region`\n\n1. Merge on `department_id` (inner join).\n2. Compute mean salary per (`region`, `department_name`) using `groupby`.\n3. Set the index to a MultiIndex of (`region`, `department_name`).\n4. Use `.xs('EMEA', level='region')` to extract the sub-DataFrame for the `'EMEA'` region.\n5. Return a DataFrame with `department_name` as a regular column and `mean_salary` (rounded to 2 dp), sorted by `mean_salary` descending.",
+    "description": "1. Merge on `department_id` (inner join).\n2. Compute mean salary per (`region`, `department_name`) using `groupby`.\n3. Set the index to a MultiIndex of (`region`, `department_name`).\n4. Use `.xs('EMEA', level='region')` to extract the sub-DataFrame for the `'EMEA'` region.\n5. Return a DataFrame with `department_name` as a regular column and `mean_salary` (rounded to 2 dp), sorted by `mean_salary` descending.",
     "dataframes": {
       "df_employees": "employees.csv",
       "df_departments": "departments.csv"
@@ -877,7 +877,7 @@
     "topic": "pandas",
     "difficulty": "hard",
     "title": "Funnel conversion analysis from events",
-    "description": "You have a DataFrame `df_events`.\n\n**Columns:** `event_id`, `session_id`, `user_id`, `event_time`, `event_name`, `product_id`\n\nCompute a 3-stage conversion funnel:\n- **Stage 1** (`view_product`): users with at least one `'view_product'` event\n- **Stage 2** (`add_to_cart`): users who also have at least one `'add_to_cart'` event\n- **Stage 3** (`purchase`): users who also have at least one `'purchase'` event\n\nEach stage must be a subset of the previous.\n\nReturn a DataFrame with columns `stage`, `user_count`, `conversion_from_top` (rate vs stage 1 user count, rounded to 2 dp — 1.00 for stage 1). Rows ordered: stage 1, 2, 3.",
+    "description": "Compute a 3-stage conversion funnel:\n- **Stage 1** (`view_product`): users with at least one `'view_product'` event\n- **Stage 2** (`add_to_cart`): users who also have at least one `'add_to_cart'` event\n- **Stage 3** (`purchase`): users who also have at least one `'purchase'` event\n\nEach stage must be a subset of the previous.\n\nReturn a DataFrame with columns `stage`, `user_count`, `conversion_from_top` (rate vs stage 1 user count, rounded to 2 dp — 1.00 for stage 1). Rows ordered: stage 1, 2, 3.",
     "dataframes": {
       "df_events": "events.csv"
     },
@@ -911,7 +911,7 @@
     "difficulty": "hard",
     "mock_only": true,
     "title": "Monthly revenue by acquisition channel",
-    "description": "You have two DataFrames: `df_orders` and `df_users`.\n\n**df_orders columns:** `order_id`, `user_id`, `order_date`, `status`, `net_amount`\n**df_users columns:** `user_id`, `acquisition_channel`\n\nBreak down completed-order revenue by acquisition channel and calendar month. For each combination, return `acquisition_channel`, `month` (formatted `YYYY-MM`), `total_revenue` (rounded to 2 dp), and `order_count`. Include only rows where `total_revenue` exceeds 50 000. Order by `month` ascending, then `total_revenue` descending.",
+    "description": "Break down completed-order revenue by acquisition channel and calendar month. For each combination, return `acquisition_channel`, `month` (formatted `YYYY-MM`), `total_revenue` (rounded to 2 dp), and `order_count`. Include only rows where `total_revenue` exceeds 50 000. Order by `month` ascending, then `total_revenue` descending.",
     "dataframes": {
       "df_orders": "orders.csv",
       "df_users": "users.csv"
@@ -962,7 +962,7 @@
     "difficulty": "hard",
     "mock_only": true,
     "title": "Top 3 products per category with revenue rank",
-    "description": "You have three DataFrames: `df_order_items`, `df_products`, and `df_categories`.\n\n**df_order_items columns:** `product_id`, `line_amount`\n**df_products columns:** `product_id`, `product_name`, `category_id`\n**df_categories columns:** `category_id`, `category_name`\n\nFor each category, find the top 3 products by total revenue. Return `category_name`, `product_name`, `total_revenue` (rounded to 2 dp), `revenue_rank` (1 = highest within category), and `is_top` (1 if rank = 1, else 0). Include only ranks 1–3. Order by `category_name` ascending, then `revenue_rank` ascending.",
+    "description": "For each category, find the top 3 products by total revenue. Return `category_name`, `product_name`, `total_revenue` (rounded to 2 dp), `revenue_rank` (1 = highest within category), and `is_top` (1 if rank = 1, else 0). Include only ranks 1–3. Order by `category_name` ascending, then `revenue_rank` ascending.",
     "dataframes": {
       "df_order_items": "order_items.csv",
       "df_products": "products.csv",
@@ -1014,7 +1014,7 @@
     "mock_only": true,
     "framing": "scenario",
     "title": "30-day conversion rate by channel and country",
-    "description": "The growth team asks: 'Among users who signed up in 2024, what percentage converted (placed at least one completed order within 30 days of signup)? Break it down by acquisition channel and country.'\n\nYou have two DataFrames: `df_users` and `df_orders`.\n\n**df_users columns:** `user_id`, `acquisition_channel`, `country`, `signup_date`\n**df_orders columns:** `order_id`, `user_id`, `order_date`, `status`\n\nReturn `acquisition_channel`, `country`, `total_signups`, `converted_count`, and `conversion_rate_pct` (rounded to 1 dp). Exclude channel+country combinations with fewer than 5 signups. Order by `conversion_rate_pct` descending.",
+    "description": "The growth team asks: 'Among users who signed up in 2024, what percentage converted (placed at least one completed order within 30 days of signup)? Break it down by acquisition channel and country.'\n\nReturn `acquisition_channel`, `country`, `total_signups`, `converted_count`, and `conversion_rate_pct` (rounded to 1 dp). Exclude channel+country combinations with fewer than 5 signups. Order by `conversion_rate_pct` descending.",
     "dataframes": {
       "df_users": "users.csv",
       "df_orders": "orders.csv"
@@ -1066,7 +1066,7 @@
     "mock_only": true,
     "framing": "scenario",
     "title": "Cumulative paid revenue by payment method",
-    "description": "The payments team asks: 'What does our cumulative paid revenue look like over time, broken out by payment method?'\n\nYou have a DataFrame `df_payments`.\n\n**Columns:** `payment_id`, `payment_method`, `payment_date`, `status`, `amount`\n\nFor each payment method compute the monthly paid revenue and a running total (cumulative sum ordered by month). Return `payment_method`, `month` (formatted `YYYY-MM`), `monthly_paid` (rounded to 2 dp), and `cumulative_paid` (rounded to 2 dp). Order by `payment_method` ascending, then `month` ascending.",
+    "description": "The payments team asks: 'What does our cumulative paid revenue look like over time, broken out by payment method?'\n\nFor each payment method compute the monthly paid revenue and a running total (cumulative sum ordered by month). Return `payment_method`, `month` (formatted `YYYY-MM`), `monthly_paid` (rounded to 2 dp), and `cumulative_paid` (rounded to 2 dp). Order by `payment_method` ascending, then `month` ascending.",
     "dataframes": {
       "df_payments": "payments.csv"
     },
@@ -1105,7 +1105,7 @@
     "mock_only": true,
     "framing": "scenario",
     "title": "Top-spender loyalty tier segmentation",
-    "description": "The marketing team asks: 'Who are our highest-value customers, and how should we tier them?'\n\nYou have two DataFrames: `df_orders` and `df_users`.\n\n**df_orders columns:** `order_id`, `user_id`, `status`, `net_amount`\n**df_users columns:** `user_id`, `name`, `country`\n\nCompute each user's total spend, order count, and average order value from completed orders. Assign a `loyalty_tier`: `'Platinum'` if total spend > 20 000, `'Gold'` if > 10 000, otherwise `'Silver'`. Return only users whose total spend is at or above the 80th percentile. Columns: `user_id`, `name`, `country`, `total_spend`, `order_count`, `avg_order_value` (both rounded to 2 dp), and `loyalty_tier`. Order by `total_spend` descending.",
+    "description": "The marketing team asks: 'Who are our highest-value customers, and how should we tier them?'\n\nCompute each user's total spend, order count, and average order value from completed orders. Assign a `loyalty_tier`: `'Platinum'` if total spend > 20 000, `'Gold'` if > 10 000, otherwise `'Silver'`. Return only users whose total spend is at or above the 80th percentile. Columns: `user_id`, `name`, `country`, `total_spend`, `order_count`, `avg_order_value` (both rounded to 2 dp), and `loyalty_tier`. Order by `total_spend` descending.",
     "dataframes": {
       "df_orders": "orders.csv",
       "df_users": "users.csv"
@@ -1157,7 +1157,7 @@
     "mock_only": true,
     "framing": "scenario",
     "title": "Department salary spread and percentiles",
-    "description": "HR wants to identify departments where compensation is unusually spread. Write a function that computes, for each department with at least 10 employees: `department_name`, `headcount`, `min_salary`, `max_salary`, `salary_range` (max minus min, rounded to 2 dp), `p25_salary` (25th percentile, rounded to 2 dp), and `p75_salary` (75th percentile, rounded to 2 dp). Order by `salary_range` descending.\n\nYou have two DataFrames: `df_employees` and `df_departments`.\n\n**df_employees columns:** `employee_id`, `department_id`, `salary`\n**df_departments columns:** `department_id`, `department_name`",
+    "description": "HR wants to identify departments where compensation is unusually spread. Write a function that computes, for each department with at least 10 employees: `department_name`, `headcount`, `min_salary`, `max_salary`, `salary_range` (max minus min, rounded to 2 dp), `p25_salary` (25th percentile, rounded to 2 dp), and `p75_salary` (75th percentile, rounded to 2 dp). Order by `salary_range` descending.",
     "dataframes": {
       "df_employees": "employees.csv",
       "df_departments": "departments.csv"
@@ -1199,7 +1199,7 @@
     "mock_only": true,
     "framing": "scenario",
     "title": "30-day conversion with average first-order value",
-    "description": "The growth team wants a deeper conversion view: extend the 30-day conversion analysis to also include the average value of the first qualifying order for users who converted.\n\nYou have two DataFrames: `df_users` and `df_orders`.\n\n**df_users columns:** `user_id`, `acquisition_channel`, `country`, `signup_date`\n**df_orders columns:** `order_id`, `user_id`, `order_date`, `status`, `net_amount`\n\nReturn `acquisition_channel`, `country`, `total_signups`, `converted_count`, `conversion_rate_pct` (rounded to 1 dp), and `avg_first_order_value` (average `net_amount` of each converted user's earliest qualifying completed order, rounded to 2 dp, NULL/NaN for non-converting groups). Exclude groups with fewer than 5 signups. Order by `conversion_rate_pct` descending.",
+    "description": "The growth team wants a deeper conversion view: extend the 30-day conversion analysis to also include the average value of the first qualifying order for users who converted.\n\nReturn `acquisition_channel`, `country`, `total_signups`, `converted_count`, `conversion_rate_pct` (rounded to 1 dp), and `avg_first_order_value` (average `net_amount` of each converted user's earliest qualifying completed order, rounded to 2 dp, NULL/NaN for non-converting groups). Exclude groups with fewer than 5 signups. Order by `conversion_rate_pct` descending.",
     "dataframes": {
       "df_users": "users.csv",
       "df_orders": "orders.csv"
@@ -1336,7 +1336,7 @@
     "mock_only": true,
     "framing": "scenario",
     "title": "High-volume support users",
-    "description": "The support team asks: 'Which users are filing too many tickets, and how long are they waiting?' Write a function that returns users with more than 3 support tickets (across all statuses): `user_id`, `name`, `ticket_count`, `avg_resolution_hours` (rounded to 1 dp), and `max_resolution_hours` (rounded to 0 dp). Order by `avg_resolution_hours` descending.\n\nYou have two DataFrames: `df_users` and `df_support`.\n\n**df_users columns:** `user_id`, `name`\n**df_support columns:** `ticket_id`, `user_id`, `resolution_hours`",
+    "description": "The support team asks: 'Which users are filing too many tickets, and how long are they waiting?' Write a function that returns users with more than 3 support tickets (across all statuses): `user_id`, `name`, `ticket_count`, `avg_resolution_hours` (rounded to 1 dp), and `max_resolution_hours` (rounded to 0 dp). Order by `avg_resolution_hours` descending.",
     "dataframes": {
       "df_users": "users.csv",
       "df_support": "support_tickets.csv"
@@ -1477,7 +1477,7 @@
     "difficulty": "hard",
     "mock_only": true,
     "title": "User churn identification",
-    "description": "You have two DataFrames: `df_orders` and `df_users`.\n\n**df_orders columns:** `order_id`, `user_id`, `order_date`, `status`\n**df_users columns:** `user_id`, `name`, `country`, `signup_date`\n\nIdentify users who have placed at least one completed order in the past but whose most recent completed order is more than 180 days before 2025-01-01 (the reference date). These are potential churned users.\n\nReturn `user_id`, `name`, `country`, `last_order_date` (date string, the date of their most recent completed order), and `days_since_last_order` (integer: days between last_order_date and 2025-01-01). Order by `days_since_last_order` descending.",
+    "description": "Identify users who have placed at least one completed order in the past but whose most recent completed order is more than 180 days before 2025-01-01 (the reference date). These are potential churned users.\n\nReturn `user_id`, `name`, `country`, `last_order_date` (date string, the date of their most recent completed order), and `days_since_last_order` (integer: days between last_order_date and 2025-01-01). Order by `days_since_last_order` descending.",
     "dataframes": {
       "df_orders": "orders.csv",
       "df_users": "users.csv"
@@ -1525,7 +1525,7 @@
     "difficulty": "hard",
     "mock_only": true,
     "title": "Monthly order volume and revenue trend (2024)",
-    "description": "You have a DataFrame `df_orders`.\n\n**Columns:** `order_id`, `order_date`, `status`, `net_amount`\n\nFor each calendar month in 2024, compute the count of completed orders and the total completed-order revenue. Also include `mom_revenue_change` — the difference in `total_revenue` from the previous month (rounded to 2 dp, NaN for January). Return `month` (formatted `YYYY-MM`), `order_count`, `total_revenue` (rounded to 2 dp), and `mom_revenue_change`. Order by `month` ascending.",
+    "description": "For each calendar month in 2024, compute the count of completed orders and the total completed-order revenue. Also include `mom_revenue_change` — the difference in `total_revenue` from the previous month (rounded to 2 dp, NaN for January). Return `month` (formatted `YYYY-MM`), `order_count`, `total_revenue` (rounded to 2 dp), and `mom_revenue_change`. Order by `month` ascending.",
     "dataframes": {
       "df_orders": "orders.csv"
     },
