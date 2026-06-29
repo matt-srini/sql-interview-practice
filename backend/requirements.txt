@@ -26,3 +26,7 @@ pyseccomp
 # Pin minimum safe versions for packages with known CVEs
 pygments>=2.20.0
 requests>=2.33.0
+# Server-rendered /guides surface: markdown rendering + frontmatter parsing
+markdown
+python-frontmatter
+jinja2

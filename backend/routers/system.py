@@ -111,6 +111,7 @@ async def robots_txt() -> str:
 async def sitemap_xml() -> Response:
     from xml.sax.saxutils import escape as xml_escape
 
+    from routers.guides import get_all_guide_slugs  # lazy import to avoid circular at module load
     from routers.spa import _get_seo_meta  # lazy import to avoid circular at module load
 
     base = _CANONICAL_BASE
@@ -135,21 +136,28 @@ async def sitemap_xml() -> Response:
             return ("0.6", "weekly")
         if n == 4 and segments[0] == "practice" and segments[2] == "questions":
             return ("0.5", "weekly")
+        if segments[0] == "guides":
+            return ("0.7", "weekly")
         return ("0.5", "weekly")
 
-    def url_entry(path: str) -> str:
+    def url_entry(path: str, lastmod: str = today) -> str:
         pri, cf = _priority_cf(path)
         loc = xml_escape(f"{base}{path}")
         return (
             f"  <url>\n"
             f"    <loc>{loc}</loc>\n"
-            f"    <lastmod>{today}</lastmod>\n"
+            f"    <lastmod>{lastmod}</lastmod>\n"
             f"    <changefreq>{cf}</changefreq>\n"
             f"    <priority>{pri}</priority>\n"
             f"  </url>"
         )
 
-    entries = "\n".join(url_entry(p) for p in ordered)
+    # Guides: /guides index + each non-draft guide page with its own lastmod
+    guide_entries_str = url_entry("/guides")
+    for g in get_all_guide_slugs():
+        guide_entries_str += "\n" + url_entry(f"/guides/{g['slug']}", lastmod=g["updated"])
+
+    entries = "\n".join(url_entry(p) for p in ordered) + "\n" + guide_entries_str
     xml = (
         '<?xml version="1.0" encoding="UTF-8"?>\n'
         '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'

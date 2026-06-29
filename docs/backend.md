@@ -50,6 +50,7 @@ Registered in `backend/main.py`:
 | `routers/insights.py` | `/api/dashboard` | Coaching insights: per-track speed/accuracy, weakest concepts, streak |
 | `routers/paths.py` | `/api/paths` | Learning path catalog and path detail with per-question state |
 | `routers/mock.py` | `/api/mock` | Mock interview sessions (start, submit, finish, history) |
+| `routers/guides.py` | `/guides`, `/guides/{slug}` | **Server-rendered** long-form article surface (fully crawlable HTML, not part of the React SPA). `GET /guides` → index of all non-draft guides sorted by date desc. `GET /guides/{slug}` → full article page; 404 if missing or `draft: true`. Content store: `backend/content/guides/*.md` (YAML frontmatter: `title`, `description`, `slug`, `date`, `updated`, `draft`). Rendered via Jinja2 templates (`backend/templates/`). Each page emits its own `<title>`, meta description, canonical URL, OG tags, and JSON-LD (`Article` + `BreadcrumbList` for detail; `BreadcrumbList` + `ItemList` for index) — `_build_seo_meta` in `spa.py` does **not** cover `/guides/*`. Registered in `main.py` **before** the SPA catch-all. Non-draft slugs are added to `sitemap.xml` by `system.py` via `get_all_guide_slugs()`. |
 | `routers/spa.py` | — | Static assets + SPA fallback; `_build_seo_meta()` injects per-route title/description/canonical for all known routes including ~139 easy question pages (the four executable tracks SQL/Python/Pandas/PySpark; the five reasoning tracks are not currently SEO-prerendered) |
 
 ---

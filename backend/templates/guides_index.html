@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block head_extra %}
+<script type="application/ld+json">{{ index_ld | safe }}</script>
+{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb">
+  <a href="/">Home</a>
+  <span>/</span>
+  <span>Guides</span>
+</nav>
+
+<div class="prose">
+  <h1>Guides</h1>
+  <p>Long-form articles on data interview preparation, reasoning depth, and professional data practice.</p>
+</div>
+
+<ul class="guide-list">
+  {% for guide in guides %}
+  <li class="guide-card">
+    <h2><a href="/guides/{{ guide.slug }}">{{ guide.title }}</a></h2>
+    <p>{{ guide.description }}</p>
+    <span class="guide-date">{{ guide.date }}</span>
+  </li>
+  {% endfor %}
+</ul>
+{% endblock %}

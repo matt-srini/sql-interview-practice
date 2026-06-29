@@ -37,10 +37,22 @@ This is a React SPA. Crawlers and social unfurlers (LinkedIn, Slack, X, Facebook
 
 Homepage description (premium positioning lives here, not in the title): *"Premium data interview practice on real execution engines: SQL, Python, ML, statistics and more. {N}+ questions with instant feedback and curated learning paths."* (`{N}` is the live non-mock question total in spa.py; the static layers use a safe `870+`.)
 
+## /guides — server-rendered content surface (`backend/routers/guides.py`)
+
+Unlike every other URL on datathink, `/guides` and `/guides/{slug}` are **fully server-rendered HTML** — real `<h1>/<p>` in the response body, zero JS required. The React SPA is **not** involved; the guides router sits in `backend/routers/guides.py` and is registered in `main.py` **before** the SPA catch-all so the routes are never swallowed by it.
+
+- **Content store:** `backend/content/guides/*.md` — Markdown files with YAML frontmatter (`title`, `description`, `slug`, `date`, `updated`, `draft`). `draft: true` files return 404 and are excluded from the index and sitemap.
+- **Rendering:** `python-frontmatter` parses frontmatter; `markdown` (extensions: `fenced_code`, `tables`, `toc`, `sane_lists`) renders the body. Templates: `backend/templates/guide.html` and `backend/templates/guides_index.html` (share `base.html`). Rendered via Jinja2 (`fastapi.templating.Jinja2Templates`).
+- **Per-page `<head>`:** Each guide page owns its own `<title>`, meta description, canonical link, OG tags, and JSON-LD — **`_build_seo_meta` in `routers/spa.py` does NOT cover `/guides/*`**. The guides router generates all SEO metadata itself.
+- **Structured data:**
+  - Guide pages: `Article` (headline, datePublished, dateModified, author/publisher = datathink Organization) + `BreadcrumbList` (Home › Guides › title).
+  - Index page: `BreadcrumbList` (Home › Guides) + `ItemList` of all non-draft guides.
+- **Sitemap:** `backend/routers/system.py` calls `get_all_guide_slugs()` from the guides router and appends `/guides` + each `/guides/{slug}` to the sitemap with the guide's own `updated` date as `lastmod` (priority 0.7, weekly). robots.txt does not disallow `/guides`.
+
 ## robots.txt & sitemap.xml (`backend/routers/system.py`)
 
 - **`GET /robots.txt`** — `Allow: /`; `Disallow:` `/auth`, `/dashboard`, `/mock`, `/api/`; points to `{CANONICAL_BASE_URL}/sitemap.xml`. Registered on the `system` router, which is included **before** the SPA catch-all, so it wins the route match.
-- **`GET /sitemap.xml`** — **derived from `_get_seo_meta()`**, not hand-listed: every non-`noindex` route key, plus a small static set of indexable pages not in the meta map (`/contact`, `/privacy`, `/terms`, `/refund-policy`). Self-maintaining — adding a route to the spa.py meta map automatically adds it to the sitemap. Priority/changefreq assigned by path pattern (home 1.0 daily; track/learn roots 0.8; learn-paths 0.7; samples/faq 0.6; per-question 0.5; legal 0.3). Currently ~281 URLs covering all 9 tracks' practice + 27 sample pages + learn paths + easy per-question pages.
+- **`GET /sitemap.xml`** — **derived from `_get_seo_meta()`**, not hand-listed: every non-`noindex` route key, plus a small static set of indexable pages not in the meta map (`/contact`, `/privacy`, `/terms`, `/refund-policy`), **plus `/guides` and every non-draft `/guides/{slug}` entry** (appended via `get_all_guide_slugs()` from `routers/guides.py`, each with its own `lastmod` from the guide's `updated` field). Self-maintaining — adding a route to the spa.py meta map automatically adds it to the sitemap; adding a non-draft `.md` file to `backend/content/guides/` automatically includes it. Priority/changefreq assigned by path pattern (home 1.0 daily; track/learn roots 0.8; learn-paths + guides 0.7; samples/faq 0.6; per-question 0.5; legal 0.3). Currently ~281 SPA URLs covering all 9 tracks' practice + 27 sample pages + learn paths + easy per-question pages, plus the guides surface.
 
 ## Structured data (JSON-LD)
 
@@ -63,4 +75,5 @@ Homepage description (premium positioning lives here, not in the title): *"Premi
 
 ## Tests
 
-`backend/tests/test_seo_phase1.py` — homepage title + JSON-LD presence, robots.txt content, sitemap includes (home, every track incl. reasoning tracks) / excludes (noindex) assertions.
+- `backend/tests/test_seo_phase1.py` — homepage title + JSON-LD presence, robots.txt content, sitemap includes (home, every track incl. reasoning tracks) / excludes (noindex) assertions.
+- `backend/tests/test_guides.py` — `/guides` index (200, contains starter guide link), `/guides/{slug}` (200, exact sentence, `<title>` tag, canonical URL, `Article` JSON-LD), 404 on missing slug, sitemap contains `/guides/{slug}`, no em-dash in frontmatter, draft guide is excluded (404 on direct hit, absent from index and sitemap).

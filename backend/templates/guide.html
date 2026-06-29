@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block head_extra %}
+<script type="application/ld+json">{{ article_ld | safe }}</script>
+{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb">
+  <a href="/">Home</a>
+  <span>/</span>
+  <a href="/guides">Guides</a>
+  <span>/</span>
+  <span>{{ guide.title }}</span>
+</nav>
+
+<article class="prose">
+  <h1>{{ guide.title }}</h1>
+  <div class="article-meta">Published {{ guide.date }}{% if guide.updated and guide.updated != guide.date %} &middot; Updated {{ guide.updated }}{% endif %}</div>
+  {{ body_html | safe }}
+</article>
+{% endblock %}
