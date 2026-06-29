@@ -47,6 +47,22 @@ def monkeypatch_module():
     mp.undo()
 
 
+@pytest.fixture(autouse=True)
+def _reset_rate_limit():
+    """Reset the in-memory per-IP rate limiter before each test.
+
+    These tests use a custom DB-free client (above) that does NOT opt into
+    conftest's `isolated_state`, which is what normally clears the limiter. The
+    limiter is active for non-localhost test clients (TestClient IP is
+    'testclient'), so without this reset the cumulative request count across the
+    full suite trips a 429 on the later guides requests -- green in isolation,
+    red in CI (the exact failure caught on the first branch CI run).
+    """
+    from main import _clear_rate_limit_state
+    _clear_rate_limit_state()
+    yield
+
+
 @pytest.fixture(autouse=False)
 def draft_guide_file():
     DRAFT_PATH.write_text(DRAFT_CONTENT, encoding="utf-8")
