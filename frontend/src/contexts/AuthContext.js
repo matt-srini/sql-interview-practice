@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import * as Sentry from '@sentry/react';
 import api from '../api';
-import { identifyUser, resetIdentity } from '../analytics';
+import { identifyUser, resetIdentity, track } from '../analytics';
 
 function setSentryUser(user) {
   // Only tag authenticated users (anonymous rows have no email).
@@ -52,6 +52,18 @@ export function AuthProvider({ children }) {
     setUser(res.data.user);
     identifyUser(res.data.user);
     setSentryUser(res.data.user);
+    // Fire account_created only for new password registrations (not logins).
+    // OAuth and magic-link sign-ins both redirect through the backend without
+    // returning a "is_new" signal to the frontend, so account_created is not
+    // fired for those paths.
+    // TODO: fire account_created for OAuth/magic-link too — needs a backend
+    // "created" flag in the /api/auth/me response or a redirect param from the
+    // OAuth/magic-link callback.
+    if (!res.data.password_added) {
+      // password_added=true means the user added a password to an existing OAuth
+      // account — not a new account creation, so don't fire.
+      track('account_created', { method: 'password' });
+    }
     return res.data;
   }, []);
 

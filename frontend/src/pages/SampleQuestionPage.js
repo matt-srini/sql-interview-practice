@@ -15,7 +15,7 @@ import { useCatalogCounts } from '../contexts/CatalogCountsContext';
 import BrandMark from '../components/BrandMark';
 import { renderDescription } from '../utils/renderDescription';
 import { normalizeRunResult, rowCountLabel } from '../normalizeResult';
-import { track } from '../analytics';
+import { track, captureSampleLanded } from '../analytics';
 
 const SQL_PLACEHOLDER = '-- Write your SQL query here\nSELECT ';
 const PYTHON_PLACEHOLDER = '# Write your solution here\n';
@@ -58,6 +58,10 @@ export default function SampleQuestionPage() {
   const allCounts = useCatalogCounts();
   const trackTotal = allCounts[topic]?.total ?? 0;
   const navigate = useNavigate();
+
+  // Fire sample_landed once per session — session guard in captureSampleLanded
+  // means internal navigation between track/difficulty combos won't re-fire it.
+  useEffect(() => { captureSampleLanded(); }, []);
 
   const defaultCode = meta.language === 'python' ? PYTHON_PLACEHOLDER : SQL_PLACEHOLDER;
   const sampleBasePath = `/sample/${topic}`;

@@ -487,6 +487,8 @@ Initialized via `analytics.js` when `VITE_POSTHOG_KEY` is available. In local de
 
 | Event | Location | Properties |
 |---|---|---|
+| `sample_landed` | SampleHubPage, SampleQuestionPage | `utm_source`, `utm_medium`, `utm_campaign`, `utm_content`, `utm_term` (present only), `referrer`, `role`; session-guarded (fires once per browser session) |
+| `account_created` | AuthContext `register()` | `method: 'password'`; fires on new password registrations only — OAuth/magic-link not yet captured (no backend "created" signal) |
 | `question_submitted` | QuestionPage | `track`, `question_id`, `difficulty`, `correct` |
 | `question_solved` | QuestionPage | `track`, `question_id`, `difficulty`, `first_try` |
 | `sample_submitted` | SampleQuestionPage | `track`, `difficulty`, `question_id`, `correct` |

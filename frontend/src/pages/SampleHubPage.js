@@ -6,6 +6,7 @@ import Topbar from '../components/Topbar';
 import { useAuth } from '../contexts/AuthContext';
 import { TRACK_SLUGS, TRACK_META } from '../trackRegistry';
 import { ROLES } from '../roleRegistry';
+import { captureSampleLanded } from '../analytics';
 
 const DIFFICULTIES = ['easy', 'medium', 'hard'];
 
@@ -28,6 +29,9 @@ export default function SampleHubPage() {
   const roleParam = searchParams.get('role');
   const roleEntry = ROLES.find((r) => r.slug === roleParam) ?? null;
   const visibleSlugs = roleEntry ? roleEntry.tracks : TRACK_SLUGS;
+
+  // Fire sample_landed once per session — captures UTM/referrer for attribution.
+  useEffect(() => { captureSampleLanded(); }, []);
 
   // Fetch tried-counts when logged in. Anonymous users skip — we don't show
   // the tried markers for them (matches the "no friction" promise — we don't
