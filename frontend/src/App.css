@@ -6509,34 +6509,6 @@ select {
   border-color: var(--accent);
 }
 
-/* Loop-ready callout bar — shown below the track table; keeps track rows lean on mobile */
-.db-loop-ready-bar {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  margin-top: 12px;
-}
-.db-loop-ready-btn {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: var(--accent-soft);
-  border: 1px solid var(--accent-soft-strong);
-  border-radius: var(--radius-sm);
-  padding: 8px 12px;
-  font-size: 0.82rem;
-  font-weight: 600;
-  color: var(--accent-strong);
-  cursor: pointer;
-  text-align: left;
-  transition: background 120ms ease, border-color 120ms ease;
-  font-family: inherit;
-}
-.db-loop-ready-btn:hover {
-  background: var(--accent-soft-strong);
-  border-color: var(--accent);
-}
-
 /* Track overview — role filter */
 .db-track-overview-head {
   display: flex;
@@ -6935,10 +6907,9 @@ select {
 
   /* Track rows reflow to a two-line layout on mobile. Desktop packs the dot,
      name, bar, count, accuracy, and readiness chip onto one line; that line
-     cannot survive ~375px — the old single-line rule hid the chip + accuracy
-     and let the "Mock to level up" nudge starve the bar, clipping the count.
-     Grid keeps every detail visible:
-       row 1:  ● name .............. [readiness chip] →
+     cannot survive ~375px. Grid keeps every detail visible:
+       row 1:  ● name ....... [chip]
+                              [loop CTA if applicable]
        row 2:    ▓▓▓░░ count ............... NN% acc      */
   .db-track-row {
     display: grid;
@@ -6954,14 +6925,20 @@ select {
   .db-track-name-col  { grid-area: name; min-width: 0; flex-shrink: 1; }
   .db-track-bar-col   { grid-area: bar; }
   .db-track-stats-col { grid-area: stats; display: flex; min-width: 0; }
-  .db-track-right-col { grid-area: right; min-width: auto; flex-shrink: 0; gap: 0.4rem; }
+  /* Right col stacks chip + loop CTA vertically; arrow dropped (whole row is a link) */
+  .db-track-right-col {
+    grid-area: right;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.25rem;
+  }
+  .db-track-arrow { display: none; }
   /* Tagline is the lowest-value detail — drop it so the row holds to two clean lines */
   .db-track-tagline { display: none; }
   /* Restore the headline readiness chip / upsell gate (desktop-only before) */
   .db-track-right-col .db-readiness-chip,
   .db-track-right-col .db-readiness-gate { display: flex; }
-  /* The "Mock to level up" nudge is the secondary signal that broke the old
-     single-line layout; the now-visible capped chip already conveys it */
+  /* The "Mock to level up" nudge is the secondary signal; chip already conveys it */
   .db-readiness-mocknudge { display: none; }
   /* Long track names ellipsize instead of wrapping and breaking row alignment */
   .db-track-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

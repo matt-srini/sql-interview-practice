@@ -379,49 +379,37 @@ export default function ProgressDashboard() {
                                 Readiness <span className="db-elite-badge">Elite</span>
                               </button>
                             ) : null}
-                            {readiness?.mock_limited && (
+                            {readiness?.loop_ready ? (
+                              <button
+                                type="button"
+                                className="db-readiness-loopcta"
+                                title={`You've benchmarked ${meta.label} and reached interview-readiness — an Interview Loop is the real-interview test to pressure-check it.`}
+                                onClick={e => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  navigate('/mock', {
+                                    state: {
+                                      mockPreset: {
+                                        track: topic,
+                                        mode: 'interview_loop',
+                                        difficulty: 'hard',
+                                        note: `You've benchmarked ${meta.label} and reached "${readiness.label}" readiness. An Interview Loop is the real-interview test to pressure-check it.`,
+                                      },
+                                    },
+                                  });
+                                }}
+                              >
+                                Ready for a Loop →
+                              </button>
+                            ) : readiness?.mock_limited ? (
                               <span className="db-readiness-mocknudge">Mock to level up</span>
-                            )}
+                            ) : null}
                             <span className="db-track-arrow">→</span>
                           </div>
                         </Link>
                       );
                     })}
                   </div>
-
-                  {/* Loop-ready callout — surface below the table so track rows stay lean on mobile */}
-                  {isElite && visibleTracks.some(t => insights?.readiness_scores?.[t]?.loop_ready) && (
-                    <div className="db-loop-ready-bar">
-                      {visibleTracks
-                        .filter(t => insights?.readiness_scores?.[t]?.loop_ready)
-                        .map(t => {
-                          const m = TRACK_META[t];
-                          const r = insights.readiness_scores[t];
-                          return (
-                            <button
-                              key={t}
-                              type="button"
-                              className="db-loop-ready-btn"
-                              onClick={() =>
-                                navigate('/mock', {
-                                  state: {
-                                    mockPreset: {
-                                      track: t,
-                                      mode: 'interview_loop',
-                                      difficulty: 'hard',
-                                      note: `You've benchmarked ${m.label} and reached "${r.label}" readiness. An Interview Loop is the real-interview test to pressure-check it.`,
-                                    },
-                                  },
-                                })
-                              }
-                            >
-                              <span className="db-track-dot" style={{ background: m.color }} />
-                              {m.label} is interview-ready — Start an Interview Loop →
-                            </button>
-                          );
-                        })}
-                    </div>
-                  )}
                 </section>
 
                 {/* FIRST-TRY ACCURACY (all tiers) */}
