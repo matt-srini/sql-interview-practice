@@ -93,8 +93,8 @@ Phases map to the launch sequence ([`gtm-strategy.md`](gtm-strategy.md) § 4): *
 
 `/guides` long-form is the durable Tier-1 compounding lever. Pillars ship in two waves; both seed from
 the pillar rotation above and link into the product surfaces. Publishing = dropping a markdown file
-into `backend/content/guides/` (frontmatter: title without brand suffix, description ≤160 chars, no
-em-dashes; see the starter article for voice).
+into `backend/content/guides/`. **Voice, persona, frontmatter, and anti-AI-tell rules are the SoT in
+[`guides-style-guide.md`](guides-style-guide.md)** — read it before authoring any guide.
 
 **Wave 1 — Role+intent pillars (in flight).** Target commercial role queries; roughly one per role.
 Internal-link each to its `/interview-prep/<role>` page + a `/sample/<track>`. These are SEO pillars

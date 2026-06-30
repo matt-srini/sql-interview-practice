@@ -73,6 +73,7 @@ Every change to code, strategy, or product behaviour MUST update the relevant So
 | Product overview, tech stack, content footprint | This file (`CLAUDE.md`) |
 | User-facing platform guide | `docs/USERGUIDE.md` |
 | **Go-to-market, distribution strategy** | `docs/growth/gtm-strategy.md` + `docs/growth/editorial-calendar.md` + `docs/growth/starter-assets.md` |
+| **`/guides` article voice, persona, rules** | `docs/growth/guides-style-guide.md` (senior-practitioner persona, anti-AI-tells, frontmatter + SEO mechanics) |
 | New track onboarding process | `docs/track-onboarding.md` |
 | **Why a decision was made + rejected alternatives** | `docs/decisions/DECISIONS.md` |
 
