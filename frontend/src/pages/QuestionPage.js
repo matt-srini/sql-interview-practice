@@ -23,6 +23,7 @@ import { isFirstTrySolve } from '../utils/firstTrySolve';
 import { incrementDailySolves } from '../utils/dailyGoal';
 import { renderDescription } from '../utils/renderDescription';
 import { useToast } from '../App';
+import { useAnonProgress } from '../contexts/AnonProgressContext';
 import { track } from '../analytics';
 import { normalizeRunResult, rowCountLabel } from '../normalizeResult';
 
@@ -58,6 +59,8 @@ export default function QuestionPage() {
   const navigate = useNavigate();
   const { user, refreshUser } = useAuth();
   const { notify } = useToast();
+  const { total: crossTrackTotal, refresh: refreshAnonProgress } = useAnonProgress();
+  const isAnonymous = !user?.email;
 
   // Path context — set when arriving from a learning path (?path=slug)
   const pathSlug = searchParams.get('path');
@@ -666,6 +669,7 @@ export default function QuestionPage() {
         // this submission (genuine first-solve, not a re-solve of an already-completed question).
         if (!wasAlreadySolved) {
           incrementDailySolves();
+          if (isAnonymous) refreshAnonProgress();
         }
         const previousStreakDays = user?.streak_days ?? 0;
         await refresh();
@@ -1596,6 +1600,12 @@ export default function QuestionPage() {
                 </p>
                 {submissionInsight && (
                   <p className="verdict-insight">{submissionInsight}</p>
+                )}
+                {submitResult?.correct && isAnonymous && crossTrackTotal > 0 && (
+                  <p className="verdict-anon-nudge">
+                    {crossTrackTotal} question{crossTrackTotal !== 1 ? 's' : ''} solved{' '}—{' '}
+                    <Link to="/auth?mode=register">sign up to save your progress →</Link>
+                  </p>
                 )}
               </div>
               {shouldShowFeedback && (

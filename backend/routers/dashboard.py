@@ -147,3 +147,19 @@ async def get_dashboard(
         "concepts_by_track": concepts_by_track,
         "recent_activity": recent_activity,
     }
+
+
+@router.get("/progress/solved-total")
+async def get_solved_total(
+    current_user: dict[str, Any] = Depends(get_current_user),
+) -> dict[str, Any]:
+    total = 0
+    for topic, module in _TOPIC_MODULES.items():
+        solved_ids = await get_solved_ids(current_user["id"], topic=topic)
+        catalog_ids = {
+            int(q["id"])
+            for qs in module.get_questions_by_difficulty().values()
+            for q in qs
+        }
+        total += len(solved_ids & catalog_ids)
+    return {"total": total}

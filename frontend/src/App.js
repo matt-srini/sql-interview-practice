@@ -12,6 +12,7 @@ import { CatalogProvider } from './catalogContext';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { TopicProvider } from './contexts/TopicContext';
 import { CatalogCountsProvider } from './contexts/CatalogCountsContext';
+import { AnonProgressProvider } from './contexts/AnonProgressContext';
 import AppShell from './components/AppShell';
 import ErrorBoundary from './components/ErrorBoundary';
 import AuthPage from './pages/AuthPage';
@@ -325,6 +326,7 @@ export default function App() {
     <ThemeProvider>
     <BrowserRouter>
       <AuthProvider>
+        <AnonProgressProvider>
         <CatalogCountsProvider>
         <ToastProvider>
           <ErrorBoundary>
@@ -332,6 +334,7 @@ export default function App() {
           </ErrorBoundary>
         </ToastProvider>
         </CatalogCountsProvider>
+        </AnonProgressProvider>
       </AuthProvider>
       <CookieConsent />
     </BrowserRouter>

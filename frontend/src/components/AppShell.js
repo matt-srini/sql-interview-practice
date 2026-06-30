@@ -5,6 +5,7 @@ import Topbar from './Topbar';
 import UpgradeButton from './UpgradeButton';
 import { useCatalog } from '../catalogContext';
 import { useAuth } from '../contexts/AuthContext';
+import { useAnonProgress } from '../contexts/AnonProgressContext';
 import { useTopic } from '../contexts/TopicContext';
 import TrackHubPage from '../pages/TrackHubPage';
 import { pickNextUpQuestionId } from '../utils/catalogNav';
@@ -244,6 +245,7 @@ export default function AppShell() {
   const totalSolvedSidebar = catalog?.groups?.reduce(
     (sum, g) => sum + g.questions.filter(q => q.state === 'solved').length, 0
   ) ?? 0;
+  const { total: totalSolvedAllTracks } = useAnonProgress();
 
   // Today's goal: global, day-scoped daily solve counter (event-driven, resets at local midnight).
   const [dailySolves, setDailySolves] = useState(() => getDailySolves());
@@ -397,6 +399,7 @@ export default function AppShell() {
                   onNavigate={handleNavigateFromSidebar}
                   plan={user?.plan ?? 'free'}
                   isAnonymous={!user?.email}
+                  totalSolvedAllTracks={totalSolvedAllTracks}
                 />
               )}
               {/* Today's goal widget */}

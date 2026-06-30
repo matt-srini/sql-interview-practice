@@ -310,7 +310,7 @@ function QuestionFormFilter({ groups, activeFilters, onToggle, onClear }) {
   );
 }
 
-export default function SidebarNav({ catalog, collapsedByDiff, toggleDiff, onNavigate, plan = 'free', isLoading = false, isAnonymous = false }) {
+export default function SidebarNav({ catalog, collapsedByDiff, toggleDiff, onNavigate, plan = 'free', isLoading = false, isAnonymous = false, totalSolvedAllTracks = 0 }) {
   const { topic } = useTopic();
   const [searchParams] = useSearchParams();
   const pathSlug = searchParams.get('path');
@@ -747,13 +747,15 @@ export default function SidebarNav({ catalog, collapsedByDiff, toggleDiff, onNav
       })}
 
       {isAnonymous && (() => {
-        const totalSolved = groups.reduce((sum, g) => sum + (g.counts?.solved ?? 0), 0);
-        if (totalSolved === 0) return null;
+        const displayCount = totalSolvedAllTracks > 0
+          ? totalSolvedAllTracks
+          : groups.reduce((sum, g) => sum + (g.counts?.solved ?? 0), 0);
+        if (displayCount === 0) return null;
         return (
           <div className="sidebar-anon-nudge">
-            <span className="sidebar-anon-nudge-count">{totalSolved} solved</span>
+            <span className="sidebar-anon-nudge-count">{displayCount} solved across all tracks</span>
             <NavLink to="/auth?mode=register" className="sidebar-anon-nudge-link">
-              Sign up to save across devices →
+              Sign up to save your progress →
             </NavLink>
           </div>
         );

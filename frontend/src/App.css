@@ -4314,6 +4314,21 @@ select {
   font-style: italic;
 }
 
+.verdict-anon-nudge {
+  margin-top: 0.5rem;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.verdict-anon-nudge a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.verdict-anon-nudge a:hover {
+  text-decoration: underline;
+}
+
 .verdict-correct {
   background: var(--success-soft);
   color: var(--success-text);
