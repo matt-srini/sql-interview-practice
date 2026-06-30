@@ -183,19 +183,21 @@ export default function TrackHubPage() {
                       <span className="duckdb-tip-title">DuckDB syntax reference</span>
                       <button className="duckdb-tip-close" onClick={() => setDuckdbTipOpen(false)} aria-label="Close">×</button>
                     </div>
-                    <table className="duckdb-tip-table">
-                      <thead>
-                        <tr><th>Operation</th><th>Use in DuckDB</th><th>Not this</th></tr>
-                      </thead>
-                      <tbody>
-                        <tr><td>Date → string</td><td><code>STRFTIME('%Y-%m', date)</code></td><td><code>TO_CHAR(date, 'YYYY-MM')</code></td></tr>
-                        <tr><td>String → date</td><td><code>STRPTIME(str, '%Y-%m-%d')</code></td><td><code>TO_DATE</code></td></tr>
-                        <tr><td>Date bucketing</td><td><code>DATE_TRUNC('month', date)</code></td><td>—</td></tr>
-                        <tr><td>Date arithmetic</td><td><code>date::DATE + INTERVAL 7 DAY</code></td><td><code>DATE_ADD</code></td></tr>
-                        <tr><td>String concat</td><td><code>a || ' ' || b</code></td><td><code>CONCAT</code> (non-portable)</td></tr>
-                        <tr><td>NULL-last sort</td><td><code>ORDER BY col ASC NULLS LAST</code></td><td>—</td></tr>
-                      </tbody>
-                    </table>
+                    <div className="duckdb-tip-table-wrap">
+                      <table className="duckdb-tip-table">
+                        <thead>
+                          <tr><th>Operation</th><th>Use in DuckDB</th><th>Not this</th></tr>
+                        </thead>
+                        <tbody>
+                          <tr><td>Date → string</td><td><code>STRFTIME('%Y-%m', date)</code></td><td><code>TO_CHAR(date, 'YYYY-MM')</code></td></tr>
+                          <tr><td>String → date</td><td><code>STRPTIME(str, '%Y-%m-%d')</code></td><td><code>TO_DATE</code></td></tr>
+                          <tr><td>Date bucketing</td><td><code>DATE_TRUNC('month', date)</code></td><td>—</td></tr>
+                          <tr><td>Date arithmetic</td><td><code>date::DATE + INTERVAL 7 DAY</code></td><td><code>DATE_ADD</code></td></tr>
+                          <tr><td>String concat</td><td><code>a || ' ' || b</code></td><td><code>CONCAT</code> (non-portable)</td></tr>
+                          <tr><td>NULL-last sort</td><td><code>ORDER BY col ASC NULLS LAST</code></td><td>—</td></tr>
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
                 </div>
               )}

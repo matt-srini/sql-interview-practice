@@ -5371,6 +5371,20 @@ select {
   }
 }
 
+.duckdb-tip-table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 600px) {
+  .duckdb-tip-modal {
+    padding: 1rem 0.75rem;
+  }
+  .duckdb-tip-table code {
+    white-space: nowrap;
+  }
+}
+
 .track-hub-form-strip {
   margin-top: 1rem;
   display: flex;
