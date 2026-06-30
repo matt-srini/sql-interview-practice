@@ -171,9 +171,9 @@ export default function TrackHubPage() {
           {topic === 'sql' && (
             <>
               <p className="track-hub-db-note">
-                Runs on DuckDB — some Postgres/MySQL functions differ.{' '}
+                Queries run on DuckDB, so a few functions work differently from Postgres or MySQL.{' '}
                 <button className="thub-db-link-btn" onClick={() => setDuckdbTipOpen(true)}>
-                  See syntax reference
+                  Quick reference
                 </button>
               </p>
               {duckdbTipOpen && (
