@@ -194,13 +194,13 @@ live (see [`gtm-strategy.md`](gtm-strategy.md) M1/M2 and [`../seo.md`](../seo.md
 | LinkedIn (company) | `company/datathink-co` | live | ✓ in `sameAs` |
 | LinkedIn (founder personal) | (founder profile) | — | amplification layer — reshares company posts; keep bio → datathink.co |
 | X / Twitter | `@datathinkHQ` | live | ✓ in `sameAs` |
-| Reddit | `u/datathink` (or founder handle, disclosed) | claim | n/a (profile, not sameAs) |
+| Reddit | `u/datathinkHQ` (founder account, disclosed) | live | n/a (profile, not sameAs) |
 | YouTube | `@datathinkHQ` | live | ✓ in `sameAs` |
 | Product Hunt | `datathink` (maker + product) | claim pre-launch | n/a |
 | Hacker News | founder account (age + karma) | seed early | n/a |
 | Newsletter (LinkedIn + email) | "datathink weekly" | set up | n/a |
 | GitHub | (private — intentionally omitted from sameAs) | — | ✗ (per seo.md) |
-| Instagram (optional) | `@datathink` | defensive claim | optional |
+| Instagram (optional) | `@datathinkHQ` | live | optional |
 | TikTok (optional) | `@datathink` | defensive claim | optional |
 
 **Defensive claiming matters:** on a contested brand, claiming a handle you won't actively use still
