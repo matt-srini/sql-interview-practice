@@ -6419,9 +6419,17 @@ select {
 }
 @media (max-width: 600px) {
   .db-firsttry-row {
-    grid-template-columns: auto minmax(80px, 1fr) minmax(100px, 1.5fr) auto;
-    gap: 8px;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-areas:
+      "dot name frac"
+      ".   bar  bar";
+    row-gap: 4px;
+    column-gap: 8px;
   }
+  .db-firsttry-row .db-track-dot { grid-area: dot; }
+  .db-firsttry-name { grid-area: name; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .db-firsttry-row .db-accuracy-bar-wrap { grid-area: bar; margin: 0; }
+  .db-firsttry-frac { grid-area: frac; }
 }
 
 /* Readiness chip */
@@ -6497,6 +6505,34 @@ select {
   transition: background 120ms ease, border-color 120ms ease;
 }
 .db-readiness-loopcta:hover {
+  background: var(--accent-soft-strong);
+  border-color: var(--accent);
+}
+
+/* Loop-ready callout bar — shown below the track table; keeps track rows lean on mobile */
+.db-loop-ready-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 12px;
+}
+.db-loop-ready-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--accent-soft);
+  border: 1px solid var(--accent-soft-strong);
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--accent-strong);
+  cursor: pointer;
+  text-align: left;
+  transition: background 120ms ease, border-color 120ms ease;
+  font-family: inherit;
+}
+.db-loop-ready-btn:hover {
   background: var(--accent-soft-strong);
   border-color: var(--accent);
 }
@@ -8270,6 +8306,11 @@ select {
   border-color: var(--accent);
   color: var(--accent);
   background: var(--accent-soft);
+}
+.mock-schema-inline {
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border-subtle);
 }
 .mock-schema {
   display: flex;

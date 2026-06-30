@@ -353,29 +353,24 @@ describe('MockSession navigation arrows', () => {
   });
 });
 
-// ── Schema/Description toggle reset on navigation ─────────────────────────────
+// ── Schema always visible for SQL questions ───────────────────────────────────
 
-describe('MockSession schema toggle reset', () => {
-  it('Schema view does not persist when navigating to the next question', async () => {
-    // Both questions are SQL (makeQuestion defaults: track: 'sql', type: 'query', schema: [])
-    // so the Description/Schema toggle renders on Q1.
+describe('MockSession schema always visible', () => {
+  it('SchemaViewer is present on load and stays visible after navigating questions', async () => {
     renderSession(makeSessionData(2));
 
-    // Wait for Q1 to be active
     await screen.findByRole('button', { name: /Q1/ });
 
-    // Click the "Schema" toggle — SchemaViewer should appear
-    const schemaBtn = await screen.findByRole('button', { name: 'Schema' });
-    fireEvent.click(schemaBtn);
+    // Schema is always shown — no tab needed
     expect(screen.getByTestId('schema-viewer')).toBeInTheDocument();
 
-    // Navigate to Q2 via the Next question arrow
+    // Navigate to Q2
     const nextBtn = screen.getByRole('button', { name: 'Next question' });
     fireEvent.click(nextBtn);
 
-    // After navigation the toggle must have reset to Description — SchemaViewer gone
+    // Schema remains visible on Q2 as well
     await waitFor(() => {
-      expect(screen.queryByTestId('schema-viewer')).not.toBeInTheDocument();
+      expect(screen.getByTestId('schema-viewer')).toBeInTheDocument();
     });
   });
 });

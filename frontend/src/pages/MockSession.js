@@ -90,7 +90,6 @@ export default function MockSession() {
   const [showExitConfirm, setShowExitConfirm] = useState(false);
   const [showDiscardPrompt, setShowDiscardPrompt] = useState(false);
   const [discardError, setDiscardError] = useState(null);
-  const [questionView, setQuestionView] = useState('description');  // 'description'|'schema'
   const [mobileQuestionOpen, setMobileQuestionOpen] = useState(false);
   const [expandedSolutions, setExpandedSolutions] = useState({}); // {qId: bool}
   const [loadError, setLoadError] = useState(null);
@@ -282,13 +281,6 @@ export default function MockSession() {
     };
   }, [currentQuestion?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Reset the Description/Schema toggle to Description whenever the active question
-  // changes. questionView is otherwise sticky; carried onto a schema-less question it
-  // renders an empty SchemaViewer (blank body, and previously a hooks-count crash).
-  // Resetting on navigation keeps every new question on its description by default.
-  useEffect(() => {
-    setQuestionView('description');
-  }, [currentQuestion?.id]);
 
   // Browser tab title
   useEffect(() => {
@@ -1017,68 +1009,50 @@ export default function MockSession() {
                 {flagged[q.id] ? '⚑ Flagged' : '⚐ Flag for review'}
               </button>
 
-              {/* Description / Schema toggle (SQL only, skip for reverse which has its own view) */}
-              {q.track === 'sql' && q.schema && q.type !== 'reverse' && (
-                <div className="mock-view-toggle">
-                  <button
-                    className={`mock-view-btn ${questionView === 'description' ? 'active' : ''}`}
-                    onClick={() => setQuestionView('description')}
-                  >
-                    Description
-                  </button>
-                  <button
-                    className={`mock-view-btn ${questionView === 'schema' ? 'active' : ''}`}
-                    onClick={() => setQuestionView('schema')}
-                  >
-                    Schema
-                  </button>
+              {/* Scenario framing: description IS the scenario brief */}
+              {q.framing === 'scenario' && (
+                <div className="mock-scenario-brief">
+                  <span className="mock-scenario-brief-label">Scenario</span>
+                  <div>{renderDescription(q.description)}</div>
                 </div>
               )}
 
-              {questionView === 'description' || q.track !== 'sql' || q.type === 'reverse' ? (
-                <>
-                  {/* Scenario framing: description IS the scenario brief */}
-                  {q.framing === 'scenario' && (
-                    <div className="mock-scenario-brief">
-                      <span className="mock-scenario-brief-label">Scenario</span>
-                      <div>{renderDescription(q.description)}</div>
+              {/* Reverse SQL: show target result table instead of description */}
+              {q.type === 'reverse' ? (
+                <div className="mock-reverse-block">
+                  <p className="mock-reverse-prompt">Write a query that produces this result:</p>
+                  {q.result_preview?.length > 0 && (
+                    <div className="results-scroll">
+                      <table className="results-table">
+                        <thead>
+                          <tr>
+                            {Object.keys(q.result_preview[0]).map(col => (
+                              <th key={col}>{col}</th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {q.result_preview.map((row, i) => (
+                            <tr key={i}>
+                              {Object.values(row).map((cell, j) => (
+                                <td key={j}>{String(cell ?? '')}</td>
+                              ))}
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
                     </div>
                   )}
+                </div>
+              ) : q.framing !== 'scenario' ? (
+                <div className="mock-question-description">{renderDescription(q.description)}</div>
+              ) : null}
 
-                  {/* Reverse SQL: show target result table instead of description */}
-                  {q.type === 'reverse' ? (
-                    <div className="mock-reverse-block">
-                      <p className="mock-reverse-prompt">Write a query that produces this result:</p>
-                      {q.result_preview?.length > 0 && (
-                        <div className="results-scroll">
-                          <table className="results-table">
-                            <thead>
-                              <tr>
-                                {Object.keys(q.result_preview[0]).map(col => (
-                                  <th key={col}>{col}</th>
-                                ))}
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {q.result_preview.map((row, i) => (
-                                <tr key={i}>
-                                  {Object.values(row).map((cell, j) => (
-                                    <td key={j}>{String(cell ?? '')}</td>
-                                  ))}
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        </div>
-                      )}
-                    </div>
-                  ) : q.framing !== 'scenario' ? (
-                    /* Normal description (hidden for scenario — already shown above) */
-                    <div className="mock-question-description">{renderDescription(q.description)}</div>
-                  ) : null}
-                </>
-              ) : (
-                <SchemaViewer schema={q.schema || {}} />
+              {/* Schema inline below description (SQL only, not for reverse) */}
+              {q.track === 'sql' && q.schema && q.type !== 'reverse' && (
+                <div className="mock-schema-inline">
+                  <SchemaViewer schema={q.schema || {}} />
+                </div>
               )}
 
               {/* Concept tags are intentionally NOT shown during an active mock session:
