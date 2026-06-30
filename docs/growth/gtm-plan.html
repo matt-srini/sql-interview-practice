@@ -1,0 +1,1776 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>datathink · GTM Strategy</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --primary: #1864ab;
+  --primary-light: #e7f5ff;
+  --t1: #2b8a3e;
+  --t1-light: #ebfbee;
+  --t2: #d9480f;
+  --t2-light: #fff4e6;
+  --t3: #6741d9;
+  --t3-light: #f3f0ff;
+  --exp: #e67700;
+  --exp-light: #fff9db;
+  --danger: #c92a2a;
+  --danger-light: #fff5f5;
+  --teal: #0c8599;
+  --teal-light: #e6fcf5;
+  --gray-900: #1c1c2e;
+  --gray-700: #374151;
+  --gray-500: #6b7280;
+  --gray-300: #d1d5db;
+  --gray-100: #f3f4f6;
+  --gray-50: #f9fafb;
+  --white: #ffffff;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.08);
+  --shadow: 0 4px 6px rgba(0,0,0,0.05), 0 2px 4px rgba(0,0,0,0.06);
+  --shadow-md: 0 10px 15px rgba(0,0,0,0.06), 0 4px 6px rgba(0,0,0,0.05);
+  --radius: 10px;
+  --radius-sm: 6px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background: #f0f2f5;
+  color: var(--gray-900);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* ── Header ── */
+.site-header {
+  background: linear-gradient(135deg, #1a3a6e 0%, var(--primary) 100%);
+  color: white;
+  padding: 28px 32px 24px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.18);
+}
+.header-inner { max-width: 1400px; margin: 0 auto; }
+.header-top { display: flex; align-items: baseline; gap: 14px; margin-bottom: 4px; }
+.site-header h1 { font-size: 22px; font-weight: 700; letter-spacing: -0.3px; }
+.header-badge {
+  background: rgba(255,255,255,0.18);
+  border: 1px solid rgba(255,255,255,0.3);
+  border-radius: 20px;
+  padding: 2px 10px;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+}
+.header-sub { font-size: 13px; opacity: 0.8; font-style: italic; }
+
+/* ── Tabs ── */
+.tab-nav {
+  background: var(--white);
+  border-bottom: 2px solid var(--gray-100);
+  position: sticky;
+  top: 78px;
+  z-index: 90;
+  box-shadow: var(--shadow-sm);
+}
+.tab-nav-inner {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  gap: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.tab-nav-inner::-webkit-scrollbar { display: none; }
+.tab-btn {
+  padding: 14px 20px;
+  border: none;
+  background: none;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--gray-500);
+  cursor: pointer;
+  white-space: nowrap;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px;
+  transition: color 0.15s, border-color 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.tab-btn:hover { color: var(--gray-700); }
+.tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); font-weight: 600; }
+.tab-icon { font-size: 15px; }
+
+/* ── Main content ── */
+.main { max-width: 1400px; margin: 0 auto; padding: 28px 24px 60px; }
+
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* ── Section titles ── */
+.section-title {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--gray-500);
+  margin-bottom: 14px;
+  margin-top: 32px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--gray-200, #e5e7eb);
+}
+.section-title:first-child { margin-top: 0; }
+
+/* ── Cards ── */
+.card {
+  background: var(--white);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  padding: 20px;
+  border: 1px solid var(--gray-300);
+}
+.card-grid { display: grid; gap: 16px; }
+.card-grid-2 { grid-template-columns: repeat(2, 1fr); }
+.card-grid-3 { grid-template-columns: repeat(3, 1fr); }
+.card-grid-4 { grid-template-columns: repeat(4, 1fr); }
+
+.card h3 { font-size: 14px; font-weight: 600; margin-bottom: 8px; }
+.card p, .card li { font-size: 13px; color: var(--gray-700); line-height: 1.65; }
+.card ul { padding-left: 16px; }
+.card ul li { margin-bottom: 4px; }
+
+/* bordered cards */
+.card-t1 { border-left: 4px solid var(--t1); background: var(--t1-light); }
+.card-t2 { border-left: 4px solid var(--t2); background: var(--t2-light); }
+.card-t3 { border-left: 4px solid var(--t3); background: var(--t3-light); }
+.card-exp { border-left: 4px solid var(--exp); background: var(--exp-light); }
+.card-primary { border-left: 4px solid var(--primary); background: var(--primary-light); }
+.card-teal { border-left: 4px solid var(--teal); background: var(--teal-light); }
+.card-danger { border-left: 4px solid var(--danger); background: var(--danger-light); }
+
+/* ── Badges ── */
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+}
+.badge-done { background: #d3f9d8; color: #1a4a1f; }
+.badge-todo { background: #f3f4f6; color: #6b7280; border: 1px solid #d1d5db; }
+.badge-partial { background: #fff3bf; color: #5a3800; }
+.badge-live { background: #dbe4ff; color: #2c3e8a; }
+.badge-t1 { background: var(--t1-light); color: var(--t1); border: 1px solid var(--t1); }
+.badge-t2 { background: var(--t2-light); color: var(--t2); border: 1px solid var(--t2); }
+.badge-t3 { background: var(--t3-light); color: var(--t3); border: 1px solid var(--t3); }
+
+/* ── Hero value prop ── */
+.hero-prop {
+  background: linear-gradient(135deg, #1a3a6e, var(--primary));
+  color: white;
+  border-radius: var(--radius);
+  padding: 28px 32px;
+  margin-bottom: 24px;
+}
+.hero-prop .label { font-size: 11px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; opacity: 0.7; margin-bottom: 8px; }
+.hero-prop .value-prop { font-size: 22px; font-weight: 700; line-height: 1.35; margin-bottom: 12px; letter-spacing: -0.3px; }
+.hero-prop .supporting { font-size: 14px; opacity: 0.85; line-height: 1.6; max-width: 700px; }
+
+/* ── Pillars grid ── */
+.pillar-card {
+  background: white;
+  border-radius: var(--radius);
+  padding: 18px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--gray-300);
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+}
+.pillar-num {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: white;
+  font-size: 15px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.pillar-body h3 { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+.pillar-body p { font-size: 13px; color: var(--gray-700); line-height: 1.55; }
+
+/* ── Two-col layout ── */
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+
+/* ── Tier header ── */
+.tier-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.tier-tag {
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+}
+.tier-name { font-size: 15px; font-weight: 700; }
+
+/* Channel cards */
+.channel-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(0,0,0,0.06);
+}
+.channel-item:last-child { border-bottom: none; }
+.channel-icon { font-size: 20px; flex-shrink: 0; margin-top: 1px; }
+.channel-name { font-weight: 600; font-size: 13px; margin-bottom: 2px; }
+.channel-desc { font-size: 12px; color: var(--gray-500); line-height: 1.5; }
+
+/* ── Content engine flow ── */
+.flow-wrap {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: 20px;
+  align-items: start;
+}
+.pillar-source {
+  background: var(--primary);
+  color: white;
+  border-radius: var(--radius);
+  padding: 20px;
+  text-align: center;
+  position: relative;
+}
+.pillar-source h3 { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+.pillar-source p { font-size: 12px; opacity: 0.85; }
+.pillar-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  color: var(--primary);
+  padding: 8px 0;
+}
+.cuts-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+.cut-card {
+  background: white;
+  border: 1px solid var(--gray-300);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  box-shadow: var(--shadow-sm);
+}
+.cut-card .cut-icon { font-size: 18px; margin-bottom: 6px; }
+.cut-card .cut-name { font-size: 12px; font-weight: 700; margin-bottom: 4px; }
+.cut-card .cut-desc { font-size: 11px; color: var(--gray-500); line-height: 1.5; }
+.cut-badge {
+  display: inline-block;
+  margin-top: 6px;
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: 10px;
+  font-weight: 600;
+}
+
+/* ── Pillar rotation ── */
+.rotation-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 16px; }
+.rotation-card {
+  background: white;
+  border: 1px solid var(--gray-300);
+  border-radius: var(--radius-sm);
+  padding: 14px;
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+.rotation-num {
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  background: var(--gray-100);
+  color: var(--gray-700);
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.rotation-body .r-title { font-size: 12px; font-weight: 600; margin-bottom: 2px; }
+.rotation-body .r-desc { font-size: 11px; color: var(--gray-500); line-height: 1.5; }
+
+/* ── Weekly rhythm ── */
+.rhythm-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; }
+.rhythm-day {
+  background: white;
+  border: 1px solid var(--gray-300);
+  border-radius: var(--radius-sm);
+  padding: 12px 10px;
+  text-align: center;
+}
+.rhythm-day .day-name {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--primary);
+  margin-bottom: 8px;
+  padding-bottom: 6px;
+  border-bottom: 2px solid var(--primary-light);
+}
+.rhythm-day .day-task {
+  font-size: 11px;
+  color: var(--gray-700);
+  line-height: 1.5;
+  text-align: left;
+}
+.rhythm-day.primary-day { border-color: var(--primary); background: var(--primary-light); }
+
+/* ── Funnel ── */
+.funnel-wrap { display: grid; grid-template-columns: 1fr 320px; gap: 24px; align-items: start; }
+.funnel-steps { display: flex; flex-direction: column; gap: 0; }
+.funnel-step {
+  background: white;
+  border: 2px solid var(--gray-300);
+  border-radius: var(--radius-sm);
+  padding: 14px 18px;
+  position: relative;
+  box-shadow: var(--shadow-sm);
+}
+.funnel-step.step-hook { border-color: #4263eb; background: #edf2ff; }
+.funnel-step.step-sample { border-color: #2b8a3e; background: #ebfbee; }
+.funnel-step.step-question { border-color: #e67700; background: #fff4e6; }
+.funnel-step.step-account { border-color: #7048e8; background: #f3f0ff; }
+.funnel-step.step-free { border-color: #1864ab; background: #e7f5ff; }
+.funnel-step.step-paid { border-color: #c92a2a; background: #fff5f5; }
+.step-title { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+.step-sub { font-size: 12px; color: var(--gray-700); }
+.step-event {
+  display: inline-block;
+  margin-top: 6px;
+  background: rgba(0,0,0,0.07);
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-size: 11px;
+  font-family: 'Courier New', monospace;
+  font-weight: 600;
+}
+.funnel-arrow {
+  text-align: center;
+  font-size: 18px;
+  color: var(--gray-400, #9ca3af);
+  padding: 2px 0;
+  line-height: 1;
+}
+
+/* WAL card */
+.wal-card {
+  background: linear-gradient(135deg, #0c4a6e, var(--teal));
+  color: white;
+  border-radius: var(--radius);
+  padding: 20px;
+  margin-bottom: 16px;
+}
+.wal-card .wal-label { font-size: 11px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; opacity: 0.75; margin-bottom: 6px; }
+.wal-card .wal-def { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
+.wal-card .wal-sub { font-size: 13px; opacity: 0.85; }
+
+/* Funnel table */
+.funnel-table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+.funnel-table th { text-align: left; font-size: 11px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; color: var(--gray-500); padding: 8px 10px; border-bottom: 2px solid var(--gray-300); background: var(--gray-50); }
+.funnel-table td { padding: 10px 10px; font-size: 12px; border-bottom: 1px solid var(--gray-100); vertical-align: top; }
+.funnel-table tr:last-child td { border-bottom: none; }
+.funnel-table .event-code { font-family: 'Courier New', monospace; font-size: 11px; background: var(--gray-100); padding: 2px 6px; border-radius: 3px; }
+
+/* ── Launch phases ── */
+.phases-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-top: 8px;
+}
+.phase-card {
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--gray-300);
+}
+.phase-hdr {
+  padding: 12px 14px;
+  color: white;
+  font-weight: 700;
+  font-size: 12px;
+}
+.phase-body {
+  padding: 14px;
+  background: white;
+  font-size: 12px;
+}
+.phase-week {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  opacity: 0.8;
+  margin-bottom: 4px;
+}
+.phase-body ul { padding-left: 14px; }
+.phase-body li { margin-bottom: 4px; line-height: 1.5; color: var(--gray-700); }
+.phase-goal {
+  margin-top: 10px;
+  padding: 8px;
+  background: rgba(0,0,0,0.04);
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--gray-700);
+}
+
+.phase-1 .phase-hdr { background: var(--t1); }
+.phase-1 { border-color: var(--t1); }
+.phase-2 .phase-hdr { background: var(--exp); }
+.phase-2 { border-color: var(--exp); }
+.phase-3 .phase-hdr { background: var(--t2); }
+.phase-3 { border-color: var(--t2); }
+.phase-4 .phase-hdr { background: var(--primary); }
+.phase-4 { border-color: var(--primary); }
+
+/* ── Checklist ── */
+.checklist { display: flex; flex-direction: column; gap: 8px; }
+.checklist-item {
+  display: grid;
+  grid-template-columns: 36px 1fr auto;
+  gap: 12px;
+  align-items: center;
+  background: white;
+  border: 1px solid var(--gray-300);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  box-shadow: var(--shadow-sm);
+}
+.checklist-item.is-done { border-color: var(--t1); background: #f0fdf4; }
+.checklist-item.is-partial { border-color: var(--exp); background: #fffbeb; }
+.ci-code {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--primary);
+  letter-spacing: 0.5px;
+}
+.ci-body .ci-title { font-size: 13px; font-weight: 600; margin-bottom: 2px; }
+.ci-body .ci-detail { font-size: 12px; color: var(--gray-500); }
+.gate-pill {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 20px;
+  background: #fee2e2;
+  color: #991b1b;
+  white-space: nowrap;
+}
+
+/* ── Handles table ── */
+.handles-table { width: 100%; border-collapse: collapse; }
+.handles-table th { text-align: left; font-size: 11px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; color: var(--gray-500); padding: 10px 14px; border-bottom: 2px solid var(--gray-300); background: var(--gray-50); }
+.handles-table td { padding: 12px 14px; font-size: 13px; border-bottom: 1px solid var(--gray-100); vertical-align: middle; }
+.handles-table tr:last-child td { border-bottom: none; }
+.handle-name { font-weight: 600; font-size: 14px; }
+.handle-code { font-family: 'Courier New', monospace; font-size: 12px; background: var(--gray-100); padding: 3px 8px; border-radius: 4px; }
+.sames-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; }
+.sames-yes { background: var(--t1); }
+.sames-no { background: var(--gray-300); }
+
+/* ── Do-not list ── */
+.donot-list { display: flex; flex-direction: column; gap: 10px; }
+.donot-item {
+  background: white;
+  border: 1px solid var(--gray-300);
+  border-left: 4px solid var(--danger);
+  border-radius: var(--radius-sm);
+  padding: 14px 18px;
+  display: grid;
+  grid-template-columns: 22px 1fr;
+  gap: 12px;
+  box-shadow: var(--shadow-sm);
+}
+.donot-x { font-size: 16px; font-weight: 900; color: var(--danger); margin-top: 1px; }
+.donot-title { font-size: 13px; font-weight: 700; margin-bottom: 3px; }
+.donot-why { font-size: 12px; color: var(--gray-500); line-height: 1.55; }
+
+/* ── ICP grid ── */
+.icp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+/* ── Wedge table ── */
+.wedge-table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+.wedge-table th { font-size: 12px; font-weight: 700; padding: 10px 14px; text-align: left; }
+.wedge-table th:first-child { background: #fee2e2; color: #991b1b; }
+.wedge-table th:last-child { background: #dcfce7; color: #166534; }
+.wedge-table td { font-size: 12px; padding: 9px 14px; border-top: 1px solid var(--gray-100); color: var(--gray-700); }
+.wedge-table td:first-child { background: #fff5f5; }
+.wedge-table td:last-child { background: #f0fdf4; }
+
+/* ── "What working looks like" ── */
+.milestones { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+.milestone-card {
+  background: white;
+  border: 1px solid var(--gray-300);
+  border-radius: var(--radius);
+  padding: 16px;
+  box-shadow: var(--shadow-sm);
+}
+.milestone-time { font-size: 11px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; color: var(--primary); margin-bottom: 8px; }
+.milestone-card ul { padding-left: 14px; }
+.milestone-card li { font-size: 12px; color: var(--gray-700); margin-bottom: 4px; line-height: 1.5; }
+
+/* ── Anti-positioning ── */
+.anti-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+.anti-item {
+  background: white;
+  border: 1px solid var(--gray-300);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  font-size: 12px;
+  color: var(--gray-700);
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+.anti-x { color: var(--danger); font-weight: 800; flex-shrink: 0; }
+
+/* ── per-channel indicators ── */
+.indicators-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+.indicator-card {
+  background: white;
+  border: 1px solid var(--gray-300);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  box-shadow: var(--shadow-sm);
+}
+.indicator-channel { font-size: 11px; font-weight: 700; letter-spacing: 0.3px; text-transform: uppercase; color: var(--gray-500); margin-bottom: 6px; }
+.indicator-card ul { padding-left: 14px; }
+.indicator-card li { font-size: 12px; color: var(--gray-700); margin-bottom: 3px; line-height: 1.5; }
+
+/* ── SEO Waves ── */
+.waves-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 12px; }
+.wave-card {
+  background: white;
+  border: 1px solid var(--gray-300);
+  border-radius: var(--radius);
+  padding: 18px;
+  box-shadow: var(--shadow-sm);
+}
+.wave-card .wave-num { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+.wave-card h3 { font-size: 14px; font-weight: 700; margin-bottom: 8px; }
+.wave-card p, .wave-card li { font-size: 12px; color: var(--gray-700); line-height: 1.6; }
+.wave-card ul { padding-left: 14px; margin-top: 8px; }
+.wave-card li { margin-bottom: 4px; }
+
+/* ── Reddit subreddits ── */
+.reddit-table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 12px; }
+.reddit-table th { font-size: 11px; font-weight: 700; letter-spacing: 0.3px; text-transform: uppercase; color: var(--gray-500); padding: 8px 12px; border-bottom: 2px solid var(--gray-300); background: var(--gray-50); text-align: left; }
+.reddit-table td { padding: 9px 12px; border-bottom: 1px solid var(--gray-100); color: var(--gray-700); vertical-align: top; }
+.reddit-table tr:last-child td { border-bottom: none; }
+.sub-name { font-weight: 700; color: var(--t3); font-size: 13px; }
+
+/* ── Responsive ── */
+@media (max-width: 960px) {
+  .card-grid-4 { grid-template-columns: repeat(2, 1fr); }
+  .card-grid-3 { grid-template-columns: repeat(2, 1fr); }
+  .two-col { grid-template-columns: 1fr; }
+  .phases-row { grid-template-columns: repeat(2, 1fr); }
+  .rhythm-grid { grid-template-columns: repeat(4, 1fr); }
+  .flow-wrap { grid-template-columns: 1fr; }
+  .funnel-wrap { grid-template-columns: 1fr; }
+  .cuts-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 640px) {
+  .main { padding: 16px 12px 40px; }
+  .card-grid-2, .card-grid-3, .card-grid-4 { grid-template-columns: 1fr; }
+  .phases-row { grid-template-columns: 1fr; }
+  .rhythm-grid { grid-template-columns: repeat(2, 1fr); }
+  .icp-grid { grid-template-columns: 1fr; }
+  .anti-list { grid-template-columns: 1fr; }
+  .cuts-grid { grid-template-columns: 1fr; }
+  .milestones { grid-template-columns: 1fr; }
+  .waves-grid { grid-template-columns: 1fr; }
+  .indicators-grid { grid-template-columns: 1fr; }
+  .rotation-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* ── Info box ── */
+.info-box {
+  background: var(--primary-light);
+  border: 1px solid #bfdbf7;
+  border-radius: var(--radius-sm);
+  padding: 12px 16px;
+  font-size: 12px;
+  color: var(--primary);
+  margin-bottom: 20px;
+  line-height: 1.6;
+}
+.info-box strong { font-weight: 700; }
+
+.rule-box {
+  background: #fff5f5;
+  border: 1px solid #fca5a5;
+  border-radius: var(--radius-sm);
+  padding: 12px 16px;
+  font-size: 12px;
+  color: #991b1b;
+  margin-bottom: 20px;
+  line-height: 1.6;
+}
+
+/* spacer */
+.spacer { height: 20px; }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-inner">
+    <div class="header-top">
+      <h1>datathink · GTM Strategy</h1>
+      <span class="header-badge">Canonical Plan</span>
+    </div>
+    <p class="header-sub">"Train the reasoning, not the answer" — interview success is the consequence, not the goal.</p>
+  </div>
+</header>
+
+<nav class="tab-nav">
+  <div class="tab-nav-inner">
+    <button class="tab-btn active" data-tab="overview"><span class="tab-icon">🎯</span> Overview</button>
+    <button class="tab-btn" data-tab="channels"><span class="tab-icon">📡</span> Channels</button>
+    <button class="tab-btn" data-tab="content"><span class="tab-icon">✍️</span> Content Engine</button>
+    <button class="tab-btn" data-tab="funnel"><span class="tab-icon">🔁</span> Growth Loop</button>
+    <button class="tab-btn" data-tab="launch"><span class="tab-icon">🚀</span> Launch Plan</button>
+    <button class="tab-btn" data-tab="metrics"><span class="tab-icon">📊</span> Metrics</button>
+    <button class="tab-btn" data-tab="handles"><span class="tab-icon">🔗</span> Handles</button>
+    <button class="tab-btn" data-tab="donots"><span class="tab-icon">🚫</span> Do-Not List</button>
+  </div>
+</nav>
+
+<main class="main">
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- TAB: OVERVIEW -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<section class="tab-panel active" id="tab-overview">
+
+  <div class="hero-prop">
+    <div class="label">Core Value Proposition</div>
+    <div class="value-prop">"Train the reasoning behind the right answer — not the answer."</div>
+    <div class="supporting">datathink is data-interview practice on real engines — SQL, Python, pandas, stats, ML and more — that trains the judgment a data professional actually uses on the job. Acing the interview is the consequence, not the goal.</div>
+  </div>
+
+  <div class="section-title">4 Messaging Pillars — every piece of content ladders up to exactly one</div>
+  <div class="card-grid card-grid-2">
+    <div class="pillar-card">
+      <div class="pillar-num">①</div>
+      <div class="pillar-body">
+        <h3>Recognition ≠ Reasoning</h3>
+        <p>The candidate who memorized the window-function template freezes when the question is rephrased. The one who understands <em>why</em> the partition is what it is, adapts.</p>
+      </div>
+    </div>
+    <div class="pillar-card">
+      <div class="pillar-num">②</div>
+      <div class="pillar-body">
+        <h3>Depth over Breadth</h3>
+        <p>You don't need 2,000 questions. You need the ~30 patterns that recur for years in the role, each understood cold.</p>
+      </div>
+    </div>
+    <div class="pillar-card">
+      <div class="pillar-num">③</div>
+      <div class="pillar-body">
+        <h3>Real Engines, Real Judgment</h3>
+        <p>"Looks right" and "is right" are different queries. We run your SQL on DuckDB and your Python in a real sandbox — because the job is the second one.</p>
+      </div>
+    </div>
+    <div class="pillar-card">
+      <div class="pillar-num">④</div>
+      <div class="pillar-body">
+        <h3>Role-True Prep</h3>
+        <p>A Data Engineer and a Data Analyst are not preparing for the same interview. We map prep to the role you're actually targeting.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-title">ICP — Who We're For</div>
+  <div class="icp-grid">
+    <div class="card">
+      <h3 style="margin-bottom:10px;">4 Roles</h3>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <span class="badge badge-live">Data Analyst</span>
+        <span class="badge badge-live">Data Engineer</span>
+        <span class="badge badge-live">Analytics Engineer</span>
+        <span class="badge badge-live">Data Scientist</span>
+      </div>
+      <div style="margin-top:14px;">
+        <div style="font-size:12px;font-weight:700;color:var(--gray-500);margin-bottom:6px;">TWO STATES</div>
+        <div style="font-size:13px;margin-bottom:4px;"><strong>Job-seekers</strong> — high urgency, price-sensitive. The free-sample wedge is for them.</div>
+        <div style="font-size:13px;"><strong>Practicing professionals</strong> — leveling up. Lower urgency, higher WTP for depth. The Pro/Elite buyer.</div>
+      </div>
+    </div>
+    <div class="card">
+      <h3 style="margin-bottom:10px;">Two Geographies (both first-class)</h3>
+      <div style="margin-bottom:12px;">
+        <div style="font-size:13px;font-weight:700;margin-bottom:4px;">🇮🇳 India</div>
+        <div style="font-size:12px;color:var(--gray-700);">INR pricing · fastest-growing LinkedIn market · r/developersIndia · bootcamp partnerships</div>
+      </div>
+      <div>
+        <div style="font-size:13px;font-weight:700;margin-bottom:4px;">🌐 Global (US/EU-led)</div>
+        <div style="font-size:12px;color:var(--gray-700);">USD via Paddle (Merchant of Record) · X / Hacker News / Product Hunt · global indie/dev layer</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-title">The Competitive Wedge — a head-to-head we welcome</div>
+  <table class="wedge-table">
+    <thead>
+      <tr>
+        <th>The grind market trains…</th>
+        <th>datathink trains…</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>Pattern recognition ("I've seen this one")</td><td>Reasoning ("I understand <em>why</em> this is the answer")</td></tr>
+      <tr><td>Breadth — 1,000s of near-duplicate questions</td><td>Depth — fewer questions, each exercising real judgment</td></tr>
+      <tr><td>Synthetic toy data</td><td>Real execution engines (DuckDB, real Python sandbox)</td></tr>
+      <tr><td>Generic "interview questions"</td><td>Role-true prep (4 roles, the tracks that compose each)</td></tr>
+      <tr><td>Streak/leaderboard dopamine loop</td><td>Progress that reflects mastery (first-try accuracy, readiness)</td></tr>
+    </tbody>
+  </table>
+
+  <div class="section-title">Anti-Positioning — what we refuse to be</div>
+  <div class="anti-list">
+    <div class="anti-item"><span class="anti-x">✗</span> Not a flashcard / rote-recall bank ("1,000 SQL questions" is not a value claim)</div>
+    <div class="anti-item"><span class="anti-x">✗</span> Not a leaderboard / streak-dopamine product (retention via mastery, not daily-cap tricks)</div>
+    <div class="anti-item"><span class="anti-x">✗</span> Not a "cram the night before" cheat sheet (depth takes sessions)</div>
+    <div class="anti-item"><span class="anti-x">✗</span> Not a company-question-dump ("50 questions Meta asks")</div>
+    <div class="anti-item"><span class="anti-x">✗</span> Not an AI-answer-generator (we train <em>your</em> reasoning, we don't do it for you)</div>
+    <div class="anti-item"><span class="anti-x">✗</span> Not FAANG-grind-flavored (the reasoning-depth frame is unclaimed territory — we plant our flag there)</div>
+  </div>
+
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- TAB: CHANNELS -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<section class="tab-panel" id="tab-channels">
+
+  <div class="info-box">
+    <strong>Channel strategy principle:</strong> The free-sample growth loop (<code>/sample</code>, no login) is the connective tissue across all tiers — every channel's job is to put a free sample question in front of the right person.
+  </div>
+
+  <div class="card card-t1" style="margin-bottom:14px;">
+    <div class="tier-header">
+      <span class="tier-tag" style="background:var(--t1);color:white;">TIER 1</span>
+      <span class="tier-name">Primary — weekly, durable compounding</span>
+    </div>
+    <div class="card-grid card-grid-3">
+      <div>
+        <div class="channel-item">
+          <span class="channel-icon">🔍</span>
+          <div>
+            <div class="channel-name">SEO / Content Engine</div>
+            <div class="channel-desc"><strong>Unblocked.</strong> The <code>/guides</code> surface is live — crawlable HTML, in the sitemap, linked from footer. Publishing = dropping a markdown file into <code>backend/content/guides/</code>. Win on <strong>role+intent</strong> queries ("how to think through a Data Engineer SQL round"), not company-question-dumps.</div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="channel-item">
+          <span class="channel-icon">🎯</span>
+          <div>
+            <div class="channel-name">Product-Led Free-Sample Loop</div>
+            <div class="channel-desc"><strong>The primary CTA everywhere.</strong> <code>/sample</code>, no login, 81 sample questions across 9 tracks. No signup wall to resent. Every social bio, every post footer, every link: <code>/sample</code>.</div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="channel-item">
+          <span class="channel-icon">🟠</span>
+          <div>
+            <div class="channel-name">Reddit (disclosed human)</div>
+            <div class="channel-desc"><strong>Highest reach, highest ban risk.</strong> Exact ICP is active in r/dataengineering, r/datascience, r/SQL, r/learnSQL, r/developersIndia. No competitor runs a real community presence here. <strong>20:1 value-first rule.</strong> Weeks 1–6: participate, do not link.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card card-t2" style="margin-bottom:14px;">
+    <div class="tier-header">
+      <span class="tier-tag" style="background:var(--t2);color:white;">TIER 2</span>
+      <span class="tier-name">Secondary — weekly-lighter, brand reach</span>
+    </div>
+    <div class="card-grid card-grid-3">
+      <div>
+        <div class="channel-item">
+          <span class="channel-icon">💼</span>
+          <div>
+            <div class="channel-name">LinkedIn (company page)</div>
+            <div class="channel-desc"><strong>Company page is the primary publisher.</strong> Founder's personal profile is amplification — reshares each company post within ~60 min. Honest expectation: steady contributor-presence, not a viral rocket (company-page reach is structurally lower than personal brand). 2026 algorithm rewards <strong>carousel dwell time</strong>.</div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="channel-item">
+          <span class="channel-icon">𝕏</span>
+          <div>
+            <div class="channel-name">X / Twitter (@datathinkHQ)</div>
+            <div class="channel-desc">Best channel for the <strong>global indie/dev/build-in-public layer</strong>. "Can you solve this?" thread format is native here. 1 original thread + 3–4 substantive replies/day is the floor. Reply-guy strategy: add value in others' threads before posting your own.</div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="channel-item">
+          <span class="channel-icon">📧</span>
+          <div>
+            <div class="channel-name">Newsletter (datathink weekly)</div>
+            <div class="channel-desc"><strong>The one asset we own outright.</strong> No algorithm between us and the reader. Start capturing from day 1. Mix: 60% educational (reasoning breakdown), 30% product, 10% behind-the-scenes. Welcome sequence matters more than cadence — first 3 emails set retention.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card card-t3" style="margin-bottom:14px;">
+    <div class="tier-header">
+      <span class="tier-tag" style="background:var(--t3);color:white;">TIER 3</span>
+      <span class="tier-name">Time-boxed / Opportunistic</span>
+    </div>
+    <div class="card-grid card-grid-3">
+      <div>
+        <div class="channel-item">
+          <span class="channel-icon">🏆</span>
+          <div>
+            <div class="channel-name">Product Hunt + Show HN</div>
+            <div class="channel-desc">One-time spike of qualified traffic + durable backlinks. PH strong finish ≈ 500–2,000 visitors/day. Front-page Show HN ≈ 20k–80k visits in 24h (technical, global). Prep, don't wing it — see <strong>Launch Plan</strong> tab.</div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="channel-item">
+          <span class="channel-icon">🇮🇳</span>
+          <div>
+            <div class="channel-name">India Bootcamp Partnerships</div>
+            <div class="channel-desc">Offer cohorts free Pro access for a term. Operationally trivial: <code>POST /api/admin/grant-plan</code> already exists. Co-branded role-prep content with India data-career creators. Higher effort + sales cycle, but outsized if it lands.</div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="channel-item">
+          <span class="channel-icon">💬</span>
+          <div>
+            <div class="channel-name">Data Discord / Slack</div>
+            <div class="channel-desc">DataTalks.Club (~80K members), MLOps Community (~28K). Same 20:1 value-first rule as Reddit. Same disclosed-human rule. Slow, supporting role — be genuinely helpful and let the brand surface.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card card-exp" style="margin-bottom:24px;">
+    <div class="tier-header">
+      <span class="tier-tag" style="background:var(--exp);color:white;">EXPERIMENT</span>
+      <span class="tier-name">Paid Search — one-time thermometer, not a sustained channel</span>
+    </div>
+    <p style="font-size:13px;color:var(--gray-700);margin-bottom:10px;"><strong>Purpose:</strong> learn the free→paid conversion rate fast. The all-organic plan won't yield a trustworthy number for months. A small paid run gives a directional read within weeks.</p>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;">
+      <span class="badge badge-partial">$300–500 budget cap (non-negotiable)</span>
+      <span class="badge badge-partial">2-week window</span>
+      <span class="badge badge-partial">Kill if CAC &gt; 3× target after 7 days</span>
+      <span class="badge badge-partial">Run AFTER organic baseline is visible</span>
+    </div>
+    <p style="font-size:12px;color:var(--gray-500);margin-top:10px;">Target queries: "data engineer interview prep", "SQL interview practice" → <code>/sample</code>. Measure via <code>sample_landed</code> UTM → <code>account_created</code> → <code>plan_upgraded</code>.</p>
+  </div>
+
+  <div class="section-title">Reddit Subreddit Map</div>
+  <div class="info-box">
+    <strong>Hard rule (all subs):</strong> value before promotion. Weeks 1–6: participate, do not link. Build ~4–6 weeks of karma before any resource mention. Always disclose affiliation. Prefer megathreads.
+  </div>
+  <table class="reddit-table">
+    <thead>
+      <tr>
+        <th>Subreddit</th>
+        <th>~Size</th>
+        <th>Posture</th>
+        <th>Best Entry Point</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td><span class="sub-name">r/dataengineering</span></td><td>463k</td><td>Brand-skeptical; cold promo removed</td><td>Career/Help flair answers — become known first</td></tr>
+      <tr><td><span class="sub-name">r/datascience</span></td><td>2.8M</td><td>Large, bot-heavy moderation</td><td>Substantive career/technical answers; no cold promo</td></tr>
+      <tr><td><span class="sub-name">r/SQL</span></td><td>283k</td><td>Technical, help-oriented</td><td>Answer DB-specific questions; "free community resource" later</td></tr>
+      <tr><td><span class="sub-name">r/learnpython</span></td><td>1.0M</td><td><strong>Most promo-tolerant</strong> — free guide posts survive</td><td>Genuinely pedagogical free resource; wiki/FAQ culture</td></tr>
+      <tr><td><span class="sub-name">r/developersIndia</span></td><td>1.6M</td><td><strong>Monthly Showcase Sundays</strong> (verified recurring)</td><td>Monthly Showcase Sunday — the India channel entry point</td></tr>
+      <tr><td><span class="sub-name">r/BusinessIntelligence</span></td><td>74k</td><td><strong>Weekly thread:</strong> "Entering &amp; Transitioning into BI" (Mondays)</td><td>The Monday transitioning thread — cleanest low-risk slot</td></tr>
+      <tr><td><span class="sub-name">r/cscareerquestions</span></td><td>2.4M</td><td>High cynicism toward tools; promo culturally risky</td><td>Help job-seekers with zero commercial angle</td></tr>
+      <tr><td><span class="sub-name">r/learnSQL</span></td><td>&lt;50k</td><td>More tolerant of free pedagogical resources</td><td>Free, no-paywall resource framed as learning aid</td></tr>
+    </tbody>
+  </table>
+
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- TAB: CONTENT ENGINE -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<section class="tab-panel" id="tab-content">
+
+  <div class="info-box">
+    <strong>The discipline that makes a solo, part-time cadence survivable:</strong> produce one substantial pillar artifact per week, then cut it into every channel's native format. One unit of thinking, many surfaces. Never create per-channel from scratch.
+  </div>
+
+  <div class="section-title">The Production System</div>
+  <div class="flow-wrap">
+    <div>
+      <div class="pillar-source">
+        <h3>WEEKLY PILLAR ARTIFACT</h3>
+        <p style="font-size:12px;opacity:0.9;margin-top:6px;">One reasoning teardown<br>the week's single creative act<br>(~3–4 hrs)</p>
+      </div>
+      <div style="text-align:center;padding:10px 0;font-size:22px;color:var(--primary);">↓</div>
+      <div style="font-size:11px;text-align:center;color:var(--gray-500);margin-bottom:6px;">Cut into every channel:</div>
+    </div>
+    <div class="cuts-grid">
+      <div class="cut-card">
+        <div class="cut-icon">🔍</div>
+        <div class="cut-name">Long-form → /guides</div>
+        <div class="cut-desc">SEO landing target. Publish mid-week. Internal-link to role page + sample track.</div>
+        <div class="cut-badge" style="background:var(--t1-light);color:var(--t1);">Tier 1 · durable</div>
+      </div>
+      <div class="cut-card">
+        <div class="cut-icon">💼</div>
+        <div class="cut-name">LinkedIn carousel (8–12 slides)</div>
+        <div class="cut-desc">Anchor post · Tue–Thu AM · reply hard 1st hour. Company page publishes; founder reshares ~60 min later.</div>
+        <div class="cut-badge" style="background:var(--t2-light);color:var(--t2);">Tier 2 · anchor</div>
+      </div>
+      <div class="cut-card">
+        <div class="cut-icon">💼</div>
+        <div class="cut-name">LinkedIn story cut</div>
+        <div class="cut-desc">Text-only, recognition≠reasoning angle. +2 days after carousel. Company page.</div>
+        <div class="cut-badge" style="background:var(--t2-light);color:var(--t2);">Tier 2 · +2d</div>
+      </div>
+      <div class="cut-card">
+        <div class="cut-icon">𝕏</div>
+        <div class="cut-name">X thread "can you solve this?"</div>
+        <div class="cut-desc">Hook tweet + reasoning thread. Sample link at the end. Day after carousel.</div>
+        <div class="cut-badge" style="background:var(--t2-light);color:var(--t2);">Tier 2 · hook</div>
+      </div>
+      <div class="cut-card">
+        <div class="cut-icon">🟠</div>
+        <div class="cut-name">Reddit value comment</div>
+        <div class="cut-desc">Disclosed human. Reasoning as discussion, not an ad. Link only where rules explicitly allow.</div>
+        <div class="cut-badge" style="background:var(--t1-light);color:var(--t1);">Tier 1 · 15 min</div>
+      </div>
+      <div class="cut-card">
+        <div class="cut-icon">📧</div>
+        <div class="cut-name">Newsletter section</div>
+        <div class="cut-desc">Educational 60% of the weekly email. Assemble from the pillar on Friday.</div>
+        <div class="cut-badge" style="background:var(--t2-light);color:var(--t2);">Tier 2 · owned</div>
+      </div>
+      <div class="cut-card">
+        <div class="cut-icon">▶️</div>
+        <div class="cut-name">YouTube Short (optional)</div>
+        <div class="cut-desc">60–90s screen-capture of the teardown. Only above the floor. Repurpose, never create from scratch.</div>
+        <div class="cut-badge" style="background:#f3f4f6;color:#6b7280;">Optional · above floor</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-title">Pillar Rotation — cycle through all 6 so content stays varied</div>
+  <div class="rotation-grid">
+    <div class="rotation-card">
+      <div class="rotation-num">①</div>
+      <div class="rotation-body">
+        <div class="r-title">Reasoning vs. recall</div>
+        <div class="r-desc">Why the memorized template freezes when the question is rephrased. Maps to Pillar 1.</div>
+      </div>
+    </div>
+    <div class="rotation-card">
+      <div class="rotation-num">②</div>
+      <div class="rotation-body">
+        <div class="r-title">The 9 tracks, one skill each</div>
+        <div class="r-desc">"What pandas tests that SQL never will — and why both matter." Maps to Pillar 2/3.</div>
+      </div>
+    </div>
+    <div class="rotation-card">
+      <div class="rotation-num">③</div>
+      <div class="rotation-body">
+        <div class="r-title">Role-true prep</div>
+        <div class="r-desc">"The 5 tracks a Data Engineer interview really spans." → /interview-prep/data-engineer. Maps to Pillar 4.</div>
+      </div>
+    </div>
+    <div class="rotation-card">
+      <div class="rotation-num">④</div>
+      <div class="rotation-body">
+        <div class="r-title">Sample questions as hooks</div>
+        <div class="r-desc">"Can you solve this in 3 lines? (no login needed)" → /sample. Maps to Pillar 2.</div>
+      </div>
+    </div>
+    <div class="rotation-card">
+      <div class="rotation-num">⑤</div>
+      <div class="rotation-body">
+        <div class="r-title">Mock-interview narratives</div>
+        <div class="r-desc">"What a readiness benchmark told me I was actually weak at." Maps to Pillar 3.</div>
+      </div>
+    </div>
+    <div class="rotation-card">
+      <div class="rotation-num">⑥</div>
+      <div class="rotation-body">
+        <div class="r-title">Dashboard / readiness insights</div>
+        <div class="r-desc">"Your solve count is lying to you; first-try accuracy isn't." Maps to Pillar 1.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-title">Hook Bank — don't write prompts from scratch</div>
+  <div class="card card-primary">
+    <h3 style="margin-bottom:6px;">docs/concept-hooks.md</h3>
+    <p>A per-track inventory of Socratic interview hooks. The Mock-Only section was authored explicitly for <em>"social media posts, ad copy, and email sequences."</em> Each hook is a concept framed as the tension a candidate must reason through — a drop-in seed for a "can you solve this?" post.</p>
+    <p style="margin-top:8px;color:var(--danger);font-weight:600;font-size:12px;">⚠️ Never lift a gated mock-only question's content into a public post. The hook is the reasoning tension, not the answer.</p>
+  </div>
+
+  <div class="section-title">SEO Pillar Waves — the /guides series plan</div>
+  <div class="waves-grid">
+    <div class="wave-card">
+      <div class="wave-num" style="color:var(--t1);">WAVE 1 — IN FLIGHT (weeks 1–4)</div>
+      <h3>Role + Intent Pillars</h3>
+      <p>Target commercial role queries. ~One per role. Internal-link each to its <code>/interview-prep/&lt;role&gt;</code> page + a <code>/sample/&lt;track&gt;</code>.</p>
+      <ul>
+        <li>Data engineer SQL reasoning</li>
+        <li>Data analyst interview structure</li>
+        <li>Bias-variance tradeoff (practical)</li>
+        <li>A/B test design</li>
+        <li>pandas vs SQL decision</li>
+      </ul>
+    </div>
+    <div class="wave-card">
+      <div class="wave-num" style="color:var(--primary);">WAVE 2 — AFTER WAVE 1 INDEXES (wk 9+)</div>
+      <h3>Track-Mastery Pillars</h3>
+      <p>One pillar per track: "what does mastering &lt;track&gt; actually take?" Start with highest-intent tracks, prove the format, then expand.</p>
+      <ul>
+        <li><strong>SQL</strong> — grain/fan-out arc, window functions, CTEs</li>
+        <li><strong>Python</strong> — algorithm reasoning, test-case thinking</li>
+        <li><strong>Pandas</strong> — DataFrame mental model, groupby intuition</li>
+        <li>…then remaining 6 tracks as signal warrants</li>
+      </ul>
+      <p style="margin-top:8px;color:var(--gray-500);font-size:11px;">Link to <code>/learn/&lt;topic&gt;</code> (live paths surface) not hardcoded path slugs — they get re-leveled.</p>
+    </div>
+  </div>
+
+  <div class="section-title">Weekly Rhythm — 6–8 focused hours/week</div>
+  <div class="rhythm-grid">
+    <div class="rhythm-day">
+      <div class="day-name">Mon</div>
+      <div class="day-task">Reddit/X value participation (no creation)<br><br>Pick the week's pillar topic</div>
+    </div>
+    <div class="rhythm-day primary-day">
+      <div class="day-name">Tue</div>
+      <div class="day-task">Write + design pillar teardown<br><br>LinkedIn carousel posts AM<br><br><strong>→ Reply hard 1st hour</strong><br>Founder reshares ~60 min after</div>
+    </div>
+    <div class="rhythm-day primary-day">
+      <div class="day-name">Wed</div>
+      <div class="day-task">Publish SEO long-form to <code>/guides</code><br><br>X "can you solve this?" thread</div>
+    </div>
+    <div class="rhythm-day">
+      <div class="day-name">Thu</div>
+      <div class="day-task">LinkedIn story cut (+2d from carousel)<br><br>Daily X substantive replies</div>
+    </div>
+    <div class="rhythm-day primary-day">
+      <div class="day-name">Fri</div>
+      <div class="day-task">Assemble + send newsletter<br><br>(opt.) YouTube Short from teardown</div>
+    </div>
+    <div class="rhythm-day">
+      <div class="day-name">Sat</div>
+      <div class="day-task">Light Reddit participation</div>
+    </div>
+    <div class="rhythm-day">
+      <div class="day-name">Sun</div>
+      <div class="day-task">Batch next month's carousel assets<br><br>30-min metrics review: WAL + sample→activation + top post</div>
+    </div>
+  </div>
+  <div class="card" style="margin-top:14px;display:flex;gap:20px;align-items:flex-start;flex-wrap:wrap;">
+    <div>
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--t1);letter-spacing:0.5px;margin-bottom:4px;">🛡 Protect the floor</div>
+      <div style="font-size:13px;">Pillar + LinkedIn carousel + Reddit value participation.<br>Consistency on the floor beats sporadic bursts on everything.</div>
+    </div>
+    <div>
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--gray-500);letter-spacing:0.5px;margin-bottom:4px;">⬆ Above the floor (only if floor is met)</div>
+      <div style="font-size:13px;">2nd LinkedIn post · daily X originals · YouTube Shorts · bootcamp outreach</div>
+    </div>
+  </div>
+
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- TAB: GROWTH LOOP -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<section class="tab-panel" id="tab-funnel">
+
+  <div class="funnel-wrap">
+    <div>
+      <div class="section-title" style="margin-top:0;">The Free-Sample Growth Loop</div>
+      <div class="funnel-steps">
+        <div class="funnel-step step-hook">
+          <div class="step-title">① SOCIAL HOOK</div>
+          <div class="step-sub">LinkedIn · X · Reddit · Show HN — "can you solve this?" or reasoning teardown</div>
+        </div>
+        <div class="funnel-arrow">↓ link click / referral traffic</div>
+        <div class="funnel-step step-sample">
+          <div class="step-title">② SAMPLE LANDING — <code>/sample</code></div>
+          <div class="step-sub">No login. No signup wall. 81 sample questions across 9 tracks.</div>
+          <div class="step-event">sample_landed + UTM ✓</div>
+        </div>
+        <div class="funnel-arrow">↓ user submits an answer</div>
+        <div class="funnel-step step-question">
+          <div class="step-title">③ SAMPLE QUESTION — <code>/sample/&lt;track&gt;/&lt;diff&gt;</code></div>
+          <div class="step-sub">Runs on a real DuckDB engine or Python sandbox. Graded on reasoning, not string-match.</div>
+          <div class="step-event">sample_submitted ✓</div>
+        </div>
+        <div class="funnel-arrow">↓ "try the full track" CTA</div>
+        <div class="funnel-step step-account">
+          <div class="step-title">④ FREE ACCOUNT</div>
+          <div class="step-sub">Anonymous-first identity → in-place registration. Session upgrades seamlessly.</div>
+          <div class="step-event">account_created ✓</div>
+        </div>
+        <div class="funnel-arrow">↓ first real solve</div>
+        <div class="funnel-step step-free">
+          <div class="step-title">⑤ FREE TIER — all easy, all 9 tracks, flat</div>
+          <div class="step-sub">No unlock ladder, no thresholds, no per-track caps. Free = all easy.</div>
+          <div class="step-event">question_solved ✓  ← ★ WAL lives here</div>
+        </div>
+        <div class="funnel-arrow">↓ hits medium/hard wall = the honest conversion moment</div>
+        <div class="funnel-step step-paid">
+          <div class="step-title">⑥ PRO / ELITE</div>
+          <div class="step-sub">Medium + hard questions. Pro: 3 benchmarks/day. Elite: unlimited + Interview Loop.</div>
+          <div class="step-event">plan_upgrade_started → plan_upgraded ✓</div>
+        </div>
+      </div>
+      <div class="spacer"></div>
+      <div class="card card-t1" style="margin-top:4px;">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--t1);letter-spacing:0.5px;margin-bottom:6px;">▶ Open wiring item</div>
+        <div style="font-size:13px;"><strong>sample_shared</strong> — to be fired when a user uses a share affordance on a solved sample. Powers the viral coefficient. Not yet wired — engineering flag when share UI ships.</div>
+      </div>
+    </div>
+    <div>
+      <div class="wal-card">
+        <div class="wal-label">★ North Star Metric</div>
+        <div class="wal-def">WAL — Weekly Activated Learners</div>
+        <div class="wal-sub">Distinct users who signed up AND solved ≥1 real (non-sample) question in a 7-day window.<br><br>Why: captures the moment the product delivered its core value. Honest (a vanity signup that never solves doesn't count). Directly upstream of revenue.</div>
+      </div>
+      <div class="card" style="margin-top:12px;">
+        <h3 style="margin-bottom:10px;">Shareable Artifacts (loop fuel)</h3>
+        <ul>
+          <li style="font-size:12px;margin-bottom:6px;"><strong>Sample-question OG cards</strong> — "Can you solve this? — datathink, no login" image unfurls on any shared <code>/sample/&lt;track&gt;/&lt;diff&gt;</code> URL</li>
+          <li style="font-size:12px;margin-bottom:6px;"><strong>Role-readiness shares</strong> — "I'm interview-ready for Data Engineer on datathink" from the readiness score (Elite, opt-in). Honest signal, not a vanity badge.</li>
+          <li style="font-size:12px;"><strong>"I solved X"</strong> — tasteful share on a solved sample. Guardrail: must reflect real accomplishment, never a manufactured streak-flex.</li>
+        </ul>
+      </div>
+      <div class="card card-danger" style="margin-top:12px;">
+        <h3 style="margin-bottom:6px;">Free-tier model (flat, 2026-06-29)</h3>
+        <ul style="font-size:12px;">
+          <li>Free = all easy questions, all 9 tracks, ungated</li>
+          <li>Medium + hard = Pro/Elite only</li>
+          <li>No unlock ladder, no batch thresholds, no per-track caps</li>
+          <li>No founding-member pricing, no scarcity hooks</li>
+        </ul>
+        <p style="font-size:11px;color:var(--gray-500);margin-top:8px;">Canonical SoT: <code>backend/unlock.py</code></p>
+      </div>
+    </div>
+  </div>
+
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- TAB: LAUNCH PLAN -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<section class="tab-panel" id="tab-launch">
+
+  <div class="section-title">4-Phase Launch Sequence</div>
+  <div class="phases-row">
+    <div class="phase-card phase-1">
+      <div class="phase-hdr">
+        <div class="phase-week">PHASE 1</div>
+        Soft Launch
+      </div>
+      <div class="phase-body">
+        <div style="font-size:11px;font-weight:600;color:var(--t1);margin-bottom:8px;">WEEKS 1–2</div>
+        <ul>
+          <li>Post on LinkedIn (company page) + X build-in-public thesis thread</li>
+          <li>Reddit: value-only — NO datathink links yet</li>
+          <li>Stand up newsletter capture + 3-email welcome sequence (educational)</li>
+          <li>Google Search Console + submit sitemap (M8)</li>
+          <li>Publish 1st <code>/guides</code> pillar (M10 — start indexing clock)</li>
+          <li>Verify OG unfurls on LinkedIn/X/Slack (M3)</li>
+          <li>PostHog funnel dashboard already live (M9 ✓)</li>
+        </ul>
+        <div class="phase-goal">Goal: real signal + first testimonials. No big splash.</div>
+      </div>
+    </div>
+    <div class="phase-card phase-2">
+      <div class="phase-hdr">
+        <div class="phase-week">PHASE 2</div>
+        Community Value
+      </div>
+      <div class="phase-body">
+        <div style="font-size:11px;font-weight:600;color:var(--exp);margin-bottom:8px;">WEEKS 3–6</div>
+        <ul>
+          <li>Establish datathink brand voice on LinkedIn + X</li>
+          <li>Cross Reddit 20:1 value-first threshold (~4–6 wks genuine participation)</li>
+          <li>Publish 2–3 more SEO pillars to <code>/guides</code></li>
+          <li>Grow newsletter via in-product capture + social bios</li>
+          <li>Paid-search thermometer (§3.9) if organic baseline visible ($300–500)</li>
+          <li>Week 4: first earned Reddit resource mention (disclosed, megathreads only)</li>
+          <li>Begin PH/Show HN prep (assets, maker profile, HN karma)</li>
+        </ul>
+        <div class="phase-goal">Goal: earned community presence, first resource mentions.</div>
+      </div>
+    </div>
+    <div class="phase-card phase-3">
+      <div class="phase-hdr">
+        <div class="phase-week">PHASE 3</div>
+        Launch Moment
+      </div>
+      <div class="phase-body">
+        <div style="font-size:11px;font-weight:600;color:var(--t2);margin-bottom:8px;">WEEKS 6–8</div>
+        <ul>
+          <li><strong>Product Hunt</strong> — go live 12:01 AM PT; reply every comment within 10 min for first 4 hours</li>
+          <li><strong>Show HN</strong> — Tue–Thu 8–10 AM PT (or Sun 6–9 PM PT); need ~8–10 upvotes + 2–3 substantive comments in first 30 min</li>
+          <li>LinkedIn "manifesto" post: "why we built on real engines, not flashcards"</li>
+          <li>X build-in-public launch thread with honest numbers</li>
+          <li><strong>NO upvote asks anywhere</strong> — both platforms penalize/flag them</li>
+          <li>Review <code>sample_landed</code> UTM attribution by channel after launch</li>
+        </ul>
+        <div class="phase-goal">Goal: qualified traffic spike + durable backlinks + entity signals.</div>
+      </div>
+    </div>
+    <div class="phase-card phase-4">
+      <div class="phase-hdr">
+        <div class="phase-week">PHASE 4</div>
+        Sustained Cadence
+      </div>
+      <div class="phase-body">
+        <div style="font-size:11px;font-weight:600;color:var(--primary);margin-bottom:8px;">WEEK 8+</div>
+        <ul>
+          <li>1-pillar → many-cuts rhythm: steady state</li>
+          <li>Double down on best-performing LinkedIn format</li>
+          <li>SEO Wave 2 — track-mastery pillars (SQL → Python → Pandas first)</li>
+          <li>India bootcamp partnership outreach (operator grants, no coupon)</li>
+          <li>WAL→paid rate becomes forecastable</li>
+          <li>Quarterly review: WAL trend, sample→activation, activation→paid</li>
+        </ul>
+        <div class="phase-goal">Goal: compounding SEO + predictable conversion rate.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-title">Launch Readiness Checklist — M1–M10</div>
+  <div class="rule-box">
+    <strong>Go/No-Go rule:</strong> M1–M5 + M9 are hard gates — don't drive traffic you can't capture, convert, or measure. M6 and M9 already done. M7–M8 needed by PH/HN day (not soft launch). M10 = start the SEO indexing clock early.
+  </div>
+  <div class="checklist">
+    <div class="checklist-item is-done">
+      <div class="ci-code">M1</div>
+      <div class="ci-body">
+        <div class="ci-title">Brand handles claimed on every channel — consistent name, bio, avatar, link</div>
+        <div class="ci-detail">Feeds SEO sameAs / disambiguation. Prevents impostor capture on a contested brand.</div>
+      </div>
+      <div><span class="badge badge-done">✓ Done</span> <span class="gate-pill">HARD GATE</span></div>
+    </div>
+    <div class="checklist-item is-partial">
+      <div class="ci-code">M2</div>
+      <div class="ci-body">
+        <div class="ci-title">sameAs updated in homepage Organization JSON-LD as each handle goes live</div>
+        <div class="ci-detail">Wire in <code>spa.py</code>. Claiming without sameAs-wiring wastes the entity-corroboration signal.</div>
+      </div>
+      <div><span class="badge badge-partial">Partial</span> <span class="gate-pill">HARD GATE</span></div>
+    </div>
+    <div class="checklist-item">
+      <div class="ci-code">M3</div>
+      <div class="ci-body">
+        <div class="ci-title">OG / share images render correctly when a URL is unfurled on LinkedIn, X, Slack</div>
+        <div class="ci-detail">Infra already exists (versioned <code>og-image.png?v=N</code>, server-injected). This item = verify unfurls + add per-role OG cards.</div>
+      </div>
+      <div><span class="badge badge-todo">To do</span> <span class="gate-pill">HARD GATE</span></div>
+    </div>
+    <div class="checklist-item">
+      <div class="ci-code">M4</div>
+      <div class="ci-body">
+        <div class="ci-title">One-liner + 30-second pitch finalized and used verbatim everywhere</div>
+        <div class="ci-detail">Consistency is an entity signal and a memory aid. Every bio, every post, every intro.</div>
+      </div>
+      <div><span class="badge badge-todo">To do</span> <span class="gate-pill">HARD GATE</span></div>
+    </div>
+    <div class="checklist-item">
+      <div class="ci-code">M5</div>
+      <div class="ci-body">
+        <div class="ci-title">Free-sample Hub (<code>/sample</code>) is the single primary CTA in every bio and most posts</div>
+        <div class="ci-detail">The no-login wedge is the whole top-of-funnel. One CTA, repeated everywhere.</div>
+      </div>
+      <div><span class="badge badge-todo">To do</span> <span class="gate-pill">HARD GATE</span></div>
+    </div>
+    <div class="checklist-item is-done">
+      <div class="ci-code">M6</div>
+      <div class="ci-body">
+        <div class="ci-title">Legal / refund pages linkable (<code>/privacy</code>, <code>/terms</code>, <code>/refund-policy</code>, <code>/contact</code>)</div>
+        <div class="ci-detail">Required for Product Hunt and paid traffic. Already shipped and in sitemap.</div>
+      </div>
+      <div><span class="badge badge-done">✓ Done</span></div>
+    </div>
+    <div class="checklist-item">
+      <div class="ci-code">M7</div>
+      <div class="ci-body">
+        <div class="ci-title">Launch asset kit assembled: logo lockups, 3–5 product screenshots, 30–60s screen-capture</div>
+        <div class="ci-detail">PH/Show HN/press all need these on day 0. Reuse BrandMark + og-image-light.svg.</div>
+      </div>
+      <div><span class="badge badge-todo">By PH day</span></div>
+    </div>
+    <div class="checklist-item">
+      <div class="ci-code">M8</div>
+      <div class="ci-body">
+        <div class="ci-title">Google Search Console verified + sitemap submitted; Google Business Profile created</div>
+        <div class="ci-detail">The actual SERP-disambiguation levers. Start the recrawl clock early. "datathink" bare-brand is contested — GBP helps.</div>
+      </div>
+      <div><span class="badge badge-todo">To do</span></div>
+    </div>
+    <div class="checklist-item is-done">
+      <div class="ci-code">M9</div>
+      <div class="ci-body">
+        <div class="ci-title">PostHog funnel dashboard built on wired events before first traffic</div>
+        <div class="ci-detail"><code>sample_landed</code> (UTM) and <code>account_created</code> now wired. Full impression→sample→signup→activation chain instrumented.</div>
+      </div>
+      <div><span class="badge badge-done">✓ Done</span> <span class="gate-pill">HARD GATE</span></div>
+    </div>
+    <div class="checklist-item">
+      <div class="ci-code">M10</div>
+      <div class="ci-body">
+        <div class="ci-title">At least one pillar article published to <code>/guides</code></div>
+        <div class="ci-detail">The SEO content engine is unblocked. Publishing one piece starts the indexing clock. Waiting costs weeks of compounding.</div>
+      </div>
+      <div><span class="badge badge-todo">Soft gate</span></div>
+    </div>
+  </div>
+
+  <div class="section-title">Product Hunt Launch Day</div>
+  <div class="card-grid card-grid-2" style="margin-top:8px;">
+    <div class="card">
+      <h3 style="margin-bottom:8px;">Timeline</h3>
+      <ul style="font-size:12px;color:var(--gray-700);">
+        <li style="margin-bottom:5px;"><strong>T-30 days:</strong> Maker profile complete with real activity history. Seed HN karma (250+) via genuine technical comments. PH followers warmed.</li>
+        <li style="margin-bottom:5px;"><strong>T-14 days:</strong> Gallery images showing actual product workflow finalized. Maker comment drafted (&lt;800 chars, concrete, no hype). Show HN title locked.</li>
+        <li style="margin-bottom:5px;"><strong>T-7 days:</strong> Full funnel tested under spike load. OG unfurls verified (M3).</li>
+        <li style="margin-bottom:5px;"><strong>Launch day:</strong> Go live 12:01 AM PT. Reply every comment within 10 min for first 4 hours.</li>
+        <li><strong>Measure:</strong> activation rate from launch traffic (sample→solve), not leaderboard rank alone.</li>
+      </ul>
+    </div>
+    <div class="card card-danger">
+      <h3 style="margin-bottom:8px;">Do NOT on launch day</h3>
+      <ul style="font-size:12px;color:var(--gray-700);">
+        <li style="margin-bottom:5px;">✗ Vote rings or public "upvote me" posts — PH and HN both flag/penalize these</li>
+        <li style="margin-bottom:5px;">✗ Hype superlatives in the maker comment</li>
+        <li style="margin-bottom:5px;">✗ Undisclosed "I use this tool" comments from team accounts</li>
+        <li>✗ Coordinated public upvote asks in any community</li>
+      </ul>
+      <p style="font-size:12px;color:var(--gray-500);margin-top:10px;">These are honesty-gated communities. The reasoning-premium brand should <em>want</em> the scrutiny — welcome it.</p>
+    </div>
+  </div>
+
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- TAB: METRICS -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<section class="tab-panel" id="tab-metrics">
+
+  <div class="wal-card">
+    <div class="wal-label">★ North Star Metric</div>
+    <div class="wal-def">WAL — Weekly Activated Learners</div>
+    <div class="wal-sub">Distinct users who, in a 7-day window, signed up AND solved ≥1 real (non-sample) question.<br><br>Why this and not signups or visits: it captures the moment the product delivered its core value (a reasoned solve), it's honest, and it sits directly upstream of revenue.</div>
+  </div>
+
+  <div class="section-title">Funnel — all events wired in PostHog</div>
+  <table class="funnel-table">
+    <thead>
+      <tr>
+        <th>Stage</th>
+        <th>Definition</th>
+        <th>PostHog Event(s)</th>
+        <th>Wired?</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Impression</strong></td>
+        <td>Saw a post / SERP result / share unfurl</td>
+        <td><span style="font-size:12px;color:var(--gray-500);">channel-native analytics</span></td>
+        <td><span class="badge badge-todo">External only</span></td>
+      </tr>
+      <tr>
+        <td><strong>Sample landed</strong></td>
+        <td>Hit <code>/sample</code> from a channel link</td>
+        <td><span class="event-code">sample_landed + UTM</span></td>
+        <td><span class="badge badge-done">✓ Wired</span></td>
+      </tr>
+      <tr>
+        <td><strong>Sample tried</strong></td>
+        <td>Submitted a sample answer</td>
+        <td><span class="event-code">sample_submitted</span></td>
+        <td><span class="badge badge-done">✓ Wired</span></td>
+      </tr>
+      <tr>
+        <td><strong>Signup</strong></td>
+        <td>Created an account</td>
+        <td><span class="event-code">account_created</span></td>
+        <td><span class="badge badge-done">✓ Wired</span></td>
+      </tr>
+      <tr style="background:#f0fdf4;">
+        <td><strong>★ Activation (WAL)</strong></td>
+        <td>Solved ≥1 real question — the north star moment</td>
+        <td><span class="event-code">question_solved</span></td>
+        <td><span class="badge badge-done">✓ Wired</span></td>
+      </tr>
+      <tr>
+        <td><strong>Engaged</strong></td>
+        <td>Ran a mock benchmark</td>
+        <td><span class="event-code">mock_started → mock_completed</span></td>
+        <td><span class="badge badge-done">✓ Wired</span></td>
+      </tr>
+      <tr>
+        <td><strong>Paid</strong></td>
+        <td>Upgraded to Pro or Elite</td>
+        <td><span class="event-code">plan_upgrade_started → plan_upgraded</span></td>
+        <td><span class="badge badge-done">✓ Wired</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="section-title">Per-Channel Leading Indicators — what to watch before conversions show up</div>
+  <div class="indicators-grid">
+    <div class="indicator-card">
+      <div class="indicator-channel">💼 LinkedIn</div>
+      <ul>
+        <li>Dwell time / post impressions (carousel "Depth Score")</li>
+        <li>Comment count on "can you solve this?" posts</li>
+        <li>Profile visits after company-page post</li>
+        <li>Follower quality (data-role titles, not bots)</li>
+      </ul>
+    </div>
+    <div class="indicator-card">
+      <div class="indicator-channel">🔍 SEO</div>
+      <ul>
+        <li>Search Console impressions + clicks on role/track queries</li>
+        <li>Page-1 keyword count (role+intent queries)</li>
+        <li>Sample page entrances from organic search</li>
+        <li>Brand disambiguation improvement vs datathink.io</li>
+      </ul>
+    </div>
+    <div class="indicator-card">
+      <div class="indicator-channel">🟠 Reddit</div>
+      <ul>
+        <li>Comment karma in target subs (trust signal)</li>
+        <li>Upvotes on value posts</li>
+        <li>Referral clicks only where a link was rule-permitted</li>
+        <li>Community trust is the primary metric, not links</li>
+      </ul>
+    </div>
+    <div class="indicator-card">
+      <div class="indicator-channel">𝕏 X / Twitter</div>
+      <ul>
+        <li>Thread profile-visit lift</li>
+        <li>Reply engagement from data accounts (not bots)</li>
+        <li>Sample-link CTR from threads</li>
+        <li>Follower quality (data/dev/ML audience)</li>
+      </ul>
+    </div>
+    <div class="indicator-card">
+      <div class="indicator-channel">📧 Newsletter</div>
+      <ul>
+        <li>Subscriber growth rate (week-over-week)</li>
+        <li><strong>Click rate</strong> — not open rate (unreliable post-iOS)</li>
+        <li><strong>Reply rate</strong> — high-signal, shows real engagement</li>
+        <li>Forward rate (referral proxy)</li>
+      </ul>
+    </div>
+    <div class="indicator-card">
+      <div class="indicator-channel">📊 Weekly Review (30 min)</div>
+      <ul>
+        <li>WAL trend (week-over-week)</li>
+        <li>Sample → activation rate</li>
+        <li>Activation → paid rate</li>
+        <li>Top-performing post by sample clicks</li>
+        <li>Newsletter growth</li>
+        <li>One qualitative note (best comment/DM/thread)</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="section-title">What "Working" Looks Like</div>
+  <div class="milestones">
+    <div class="milestone-card">
+      <div class="milestone-time">At 1 Month</div>
+      <ul>
+        <li>Funnel + PostHog dashboard live</li>
+        <li>Founder voice established on LinkedIn + X</li>
+        <li>Reddit value-first threshold crossed</li>
+        <li>First SEO pieces indexed (M10 done)</li>
+        <li>Newsletter capturing from in-product</li>
+        <li>WAL is small but <strong>measured and trending up week-over-week</strong> — leading indicators matter more than absolute numbers at this stage</li>
+      </ul>
+    </div>
+    <div class="milestone-card">
+      <div class="milestone-time">At 3 Months</div>
+      <ul>
+        <li>Repeatable weekly pillar → cuts rhythm</li>
+        <li>LinkedIn posts reliably driving sample clicks</li>
+        <li>≥1 role+intent query on page 1 of Google</li>
+        <li>A launch-moment spike captured (PH/HN)</li>
+        <li>Newsletter in the hundreds</li>
+        <li>First organic Pro conversions attributable to a channel</li>
+      </ul>
+    </div>
+    <div class="milestone-card">
+      <div class="milestone-time">At 6 Months</div>
+      <ul>
+        <li>Compounding SEO (multiple role/track queries ranking)</li>
+        <li><code>/guides</code> articles indexed and driving traffic</li>
+        <li>LinkedIn company page a reliable secondary reach driver</li>
+        <li>Reddit a trusted-contributor presence (not a promoter)</li>
+        <li>Newsletter low-thousands</li>
+        <li>Predictable WAL→paid rate good enough to forecast</li>
+        <li>≥1 live India bootcamp partnership</li>
+        <li>Brand disambiguation measurably improving vs datathink.io</li>
+      </ul>
+    </div>
+  </div>
+
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- TAB: HANDLES -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<section class="tab-panel" id="tab-handles">
+
+  <div class="info-box">
+    <strong>Why handles matter for SEO:</strong> Every live, active social profile becomes a <code>sameAs</code> entry in the homepage Organization JSON-LD — wired in <code>spa.py</code>. These are entity-corroboration signals Google reads when disambiguating the "datathink" brand query vs the competing <code>datathink.io</code> knowledge panel. Claiming without wiring wastes the signal.
+  </div>
+
+  <div class="card" style="margin-bottom:20px;">
+    <table class="handles-table">
+      <thead>
+        <tr>
+          <th>Channel</th>
+          <th>Handle</th>
+          <th>Status</th>
+          <th>sameAs</th>
+          <th>Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>💼 LinkedIn (company)</strong></td>
+          <td><span class="handle-code">company/datathink-co</span></td>
+          <td><span class="badge badge-done">✓ Live</span></td>
+          <td><span class="sames-dot sames-yes"></span> In sameAs</td>
+          <td>Primary publisher. Algorithm rewards dwell time (carousels).</td>
+        </tr>
+        <tr>
+          <td>💼 LinkedIn (founder personal)</td>
+          <td><span class="handle-code">srinivas-assampally</span></td>
+          <td><span class="badge badge-done">✓ Live</span></td>
+          <td><span class="sames-dot sames-no"></span> Amplification only</td>
+          <td>Reshares every company post within ~60 min. No daily personal cadence.</td>
+        </tr>
+        <tr>
+          <td><strong>𝕏 X / Twitter</strong></td>
+          <td><span class="handle-code">@datathinkHQ</span></td>
+          <td><span class="badge badge-done">✓ Live</span></td>
+          <td><span class="sames-dot sames-yes"></span> In sameAs</td>
+          <td>Dev credibility + global indie layer. "Can you solve this?" thread format native here.</td>
+        </tr>
+        <tr>
+          <td><strong>▶️ YouTube</strong></td>
+          <td><span class="handle-code">@datathinkHQ</span></td>
+          <td><span class="badge badge-done">✓ Live</span></td>
+          <td><span class="sames-dot sames-yes"></span> In sameAs</td>
+          <td>Shorts only (repurposed from pillar). 1 Short/week max above the floor.</td>
+        </tr>
+        <tr>
+          <td><strong>🟠 Reddit</strong></td>
+          <td><span class="handle-code">u/datathinkHQ</span></td>
+          <td><span class="badge badge-done">✓ Live</span></td>
+          <td><span class="sames-dot sames-no"></span> Profile, not sameAs</td>
+          <td>Founder account. Disclosed human in every post. Account: matt.srini@gmail.com</td>
+        </tr>
+        <tr>
+          <td><strong>🏆 Product Hunt</strong></td>
+          <td><span class="handle-code">@srinivas_a</span></td>
+          <td><span class="badge badge-done">✓ Live</span></td>
+          <td><span class="sames-dot sames-no"></span> Maker account</td>
+          <td>Founder/maker account. Build genuine activity history before launch. HN karma needed first.</td>
+        </tr>
+        <tr>
+          <td><strong>🔶 Hacker News</strong></td>
+          <td><span class="handle-code">srinivas_a</span></td>
+          <td><span class="badge badge-done">✓ Live</span></td>
+          <td><span class="sames-dot sames-no"></span> n/a</td>
+          <td><strong>Start building karma NOW.</strong> Need 250+ before launch. Genuine technical comments only. No link-dropping.</td>
+        </tr>
+        <tr>
+          <td><strong>📸 Instagram</strong></td>
+          <td><span class="handle-code">@datathinkHQ</span></td>
+          <td><span class="badge badge-done">✓ Live</span></td>
+          <td><span class="sames-dot sames-no"></span> Optional</td>
+          <td>Defensive claim — prevents impostor capture. No active posting required.</td>
+        </tr>
+        <tr>
+          <td>🎵 TikTok</td>
+          <td><span class="handle-code">@datathink</span></td>
+          <td><span class="badge badge-todo">→ Claim</span></td>
+          <td><span class="sames-dot sames-no"></span> Optional</td>
+          <td>Defensive claim only. Claim with placeholder bio + logo.</td>
+        </tr>
+        <tr>
+          <td>📧 Newsletter</td>
+          <td><span class="handle-code">datathink weekly</span></td>
+          <td><span class="badge badge-todo">→ Set up</span></td>
+          <td><span class="sames-dot sames-no"></span> n/a</td>
+          <td>LinkedIn newsletter + email (ConvertKit/Beehiiv). Wire in-product capture + 3-email welcome sequence.</td>
+        </tr>
+        <tr>
+          <td>🐙 GitHub</td>
+          <td><span style="color:var(--gray-500);font-size:12px;">private</span></td>
+          <td><span class="badge badge-todo">Private</span></td>
+          <td><span class="sames-dot sames-no"></span> Intentionally omitted</td>
+          <td>Per seo.md: never point sameAs at GitHub to avoid leaking repo structure.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section-title">LinkedIn Model — important details</div>
+  <div class="two-col">
+    <div class="card card-primary">
+      <h3 style="margin-bottom:8px;">Company Page is the Primary Publisher</h3>
+      <p>The <strong>company page (<code>company/datathink-co</code>)</strong> posts first. The founder's personal profile is an <em>amplification layer only</em> — reshares each company post within ~60 minutes to seed distribution (first-hour engagement signal matters for reach).</p>
+      <p style="margin-top:8px;">No cultivated founder personality. No daily personal cadence. The brand compounds without being a single person's identity.</p>
+    </div>
+    <div class="card">
+      <h3 style="margin-bottom:8px;">Honest Reach Expectation</h3>
+      <p>DataLemur's Nick Singh built a 160K+ follower "Top Voice" moat on personal brand — that's structurally not this model. Realistic comparable: StrataScratch (company-page-led) — a steady, growing contributor-presence that builds brand recognition. Not a viral rocket. That's enough.</p>
+      <p style="margin-top:8px;font-size:12px;color:var(--gray-500);">2026 algorithm rewards <strong>dwell time</strong> ("Depth Score"). Carousel format wins. One deep carousel/week reliably beats five thin posts.</p>
+    </div>
+  </div>
+
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- TAB: DO-NOT LIST -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<section class="tab-panel" id="tab-donots">
+
+  <div class="rule-box">
+    <strong>Why this list exists:</strong> These are the "growth" tactics that fail the two lenses — "is this serving the user or a metric?" and "would I be embarrassed defending this in a year?" They're tempting because they work short-term in the grind market. Adopting them quietly converts datathink into the market we're differentiating against.
+  </div>
+
+  <div class="donot-list">
+    <div class="donot-item">
+      <div class="donot-x">✗</div>
+      <div>
+        <div class="donot-title">Comment-to-unlock engagement bait</div>
+        <div class="donot-why">"Comment 'SQL' and I'll DM you the link" — this is a known DataLemur staple that we explicitly reject. It juices a vanity comment count, trains the audience to transact rather than reason, and clutters the feed. The antithesis of a reasoning brand.</div>
+      </div>
+    </div>
+    <div class="donot-item">
+      <div class="donot-x">✗</div>
+      <div>
+        <div class="donot-title">Astroturfing of any kind</div>
+        <div class="donot-why">Fake "has anyone tried datathink?" threads, sockpuppet praise, undisclosed recommendations. Dishonest, brand-lethal on Reddit/HN (assume mods can see your full post history), and the antithesis of a reasoning brand. One account, real history, real participation.</div>
+      </div>
+    </div>
+    <div class="donot-item">
+      <div class="donot-x">✗</div>
+      <div>
+        <div class="donot-title">Follower / upvote buying, engagement pods, vote rings</div>
+        <div class="donot-why">Vanity, detectable, penalized by all platforms. PH and HN both explicitly flag coordinated upvote activity. Don't even try.</div>
+      </div>
+    </div>
+    <div class="donot-item">
+      <div class="donot-x">✗</div>
+      <div>
+        <div class="donot-title">Daily-streak / leaderboard dopamine as a marketing hook</div>
+        <div class="donot-why">This is the anti-positioning. Retention must come from mastery, not manufactured FOMO. Distinct from honest progress surfacing like first-try accuracy — that's fine and encouraged. Streaks as a marketing lever are not.</div>
+      </div>
+    </div>
+    <div class="donot-item">
+      <div class="donot-x">✗</div>
+      <div>
+        <div class="donot-title">Company-question-dump content</div>
+        <div class="donot-why">"The 50 questions Meta asks" is the grind frame. It contradicts the filter policy (SQL company filter is a practice convenience, never a marketing lever) and the positioning. The angle we've deliberately left open for others to own.</div>
+      </div>
+    </div>
+    <div class="donot-item">
+      <div class="donot-x">✗</div>
+      <div>
+        <div class="donot-title">Spray-and-pray cross-posting to 20 subreddits</div>
+        <div class="donot-why">Bans the account, signals nothing, wastes the community credibility wedge we're carefully building. One disclosed human, genuine participation, per-sub rules followed. Not a numbers game.</div>
+      </div>
+    </div>
+    <div class="donot-item">
+      <div class="donot-x">✗</div>
+      <div>
+        <div class="donot-title">Manufactured scarcity</div>
+        <div class="donot-why">Fake "24 hours left" timers, fake cohort caps, fake "founding member" limits. Erodes the trust a premium reasoning brand runs on. No grandfathering cohorts, no scarcity hooks — decision logged in decisions/DECISIONS.md (2026-06-29).</div>
+      </div>
+    </div>
+    <div class="donot-item">
+      <div class="donot-x">✗</div>
+      <div>
+        <div class="donot-title">AI-spun thin SEO pages at volume</div>
+        <div class="donot-why">Degrades the entity quality that SEO Phase 3 depends on. Google's helpful-content filter catches these. Quality over quantity. Nine templated track pillars that read identically is a doorway-page pattern. Write each one as a genuinely distinct piece or don't write it.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-title" style="margin-top:28px;">If a future tactic isn't on this list…</div>
+  <div class="card card-primary">
+    <p>…but fails the same two lenses, it belongs here. Append to this list (and to <code>docs/growth/gtm-strategy.md</code> §7). The bar is: does this serve the user or a vanity metric? Would I be embarrassed defending this in a year? If either answer is uncomfortable, it's a do-not.</p>
+  </div>
+
+</section>
+
+</main>
+
+<script>
+const tabs = document.querySelectorAll('.tab-btn');
+const panels = document.querySelectorAll('.tab-panel');
+
+tabs.forEach(btn => {
+  btn.addEventListener('click', () => {
+    const target = btn.dataset.tab;
+    tabs.forEach(t => t.classList.remove('active'));
+    panels.forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-' + target).classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+});
+</script>
+</body>
+</html>
