@@ -380,14 +380,12 @@ export default function MockHub() {
       }
       return { blocked: false, chip: null };
     }
-    const upgradeLabel = a.needs_upgrade ? `${a.needs_upgrade === 'elite' ? 'Elite' : 'Pro'} unlocks this` : null;
+    const upgradeLabel = a.needs_upgrade ? `Available with ${a.needs_upgrade === 'elite' ? 'Elite' : 'Pro'}` : null;
     return {
       blocked: true,
       chip: a.block_copy,
       chipAction: a.needs_upgrade
         ? <UpgradeButton tier={a.needs_upgrade} label={upgradeLabel} compact source={`mock_${diff}_blocked`} />
-        : a.block_reason === 'not_unlocked'
-        ? <Link to={`/practice/${track}`} className="btn btn-secondary btn-compact">Practice to unlock →</Link>
         : null,
     };
   }
@@ -1042,7 +1040,7 @@ export default function MockHub() {
             )}
             {!analyticsLoading && analytics && benchmarkAnalytics && benchmarkAnalytics.total_sessions === 0 && (
               <p className="mock-analytics-empty">
-                Complete your first benchmark session to unlock comparable benchmark analytics.
+                Complete your first benchmark session to see comparable benchmark analytics.
                 {analytics.mode_breakdown?.drill > 0 ? ` You already have ${analytics.mode_breakdown.drill} drill session${analytics.mode_breakdown.drill !== 1 ? 's' : ''} tracked separately.` : ''}
               </p>
             )}

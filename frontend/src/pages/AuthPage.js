@@ -51,7 +51,7 @@ async function resendVerification() {
 
 const MODE_META = {
   signin: { title: 'Sign in', subtitle: 'Pick up your practice session' },
-  signup: { title: 'Create account', subtitle: 'Save progress and unlock more practice' },
+  signup: { title: 'Create account', subtitle: 'Save progress and access the full question bank' },
   magic: { title: 'Magic link', subtitle: 'Get a one-time sign-in link by email' },
   forgot: { title: 'Reset password', subtitle: 'We\'ll send a reset link to your email' },
 };

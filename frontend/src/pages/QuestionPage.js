@@ -667,31 +667,14 @@ export default function QuestionPage() {
         if (!wasAlreadySolved) {
           incrementDailySolves();
         }
-        const lockedBefore = catalog?.groups?.reduce(
-          (sum, group) => sum + group.questions.filter((entry) => entry.state === 'locked').length,
-          0
-        ) ?? 0;
         const previousStreakDays = user?.streak_days ?? 0;
-        const refreshedCatalog = await refresh();
+        await refresh();
         // Path/drill workspaces keep their own solved-state copies; refresh them so the
         // just-solved question ticks in the sidebar (AppShell) and nav bar without leaving the path.
         if (pathSlug) {
           refreshPathContext();
           if (refreshPathData) refreshPathData();
         }
-        const lockedAfter = refreshedCatalog?.groups?.reduce(
-          (sum, group) => sum + group.questions.filter((entry) => entry.state === 'locked').length,
-          0
-        ) ?? lockedBefore;
-        const unlockedNow = Math.max(0, lockedBefore - lockedAfter);
-        if (unlockedNow > 0) {
-          notify({
-            tone: 'success',
-            title: `${unlockedNow} new question${unlockedNow !== 1 ? 's' : ''} unlocked`,
-            message: 'You just opened the next tier in this track.',
-          });
-        }
-
         const prior = priorAttemptCountRef.current;
         if (firstTrySolve) {
           setSubmissionInsight('First-attempt solve — the system logged your approach.');

@@ -387,7 +387,7 @@ export default function SampleQuestionPage() {
               <span className="section-meta">{totalSamples} attempted</span>
             </div>
             <p className="sample-challenge-copy">
-              Ready for the full {trackTotal ? `${trackTotal}-question ` : ''}{topicLabel} track? Pro unlocks every medium + hard question.
+              Ready for the full {trackTotal ? `${trackTotal}-question ` : ''}{topicLabel} track? Pro includes every medium and hard question.
             </p>
             <div className="sample-challenge-actions">
               <Link className="btn btn-primary sample-challenge-button" to={challengePath}>
@@ -581,7 +581,7 @@ export default function SampleQuestionPage() {
               <p className="sample-challenge-copy">
                 {attemptedCount < totalSamples
                   ? `Question ${position} of ${totalSamples} in this ${difficulty} set. Submitting or "Another sample →" advances; refreshing keeps you here.`
-                  : `You've attempted all ${totalSamples} ${difficulty} samples. The full ${topicLabel} track has ${trackTotal || 'many'} questions — Pro unlocks medium + hard.`}
+                  : `You've attempted all ${totalSamples} ${difficulty} samples. The full ${topicLabel} track has ${trackTotal || 'many'} questions — medium and hard are included with Pro.`}
               </p>
               <div className="sample-challenge-actions">
                 {attemptedCount < totalSamples && (

@@ -37,22 +37,22 @@ Each question lives in the same core workspace:
 ## Run vs submit
 
 - `Run` is only available on executable questions. It lets you inspect output without affecting progress.
-- `Submit` is the scoring action. A correct submit marks the question solved and can unlock more questions.
+- `Submit` is the scoring action. A correct submit marks the question solved and advances your progress.
 - On reasoning-first tracks there is no fake `Run` step. You read, reason, and submit.
 
 ## Hints and solutions
 
 Hints are progressive. The platform reveals them one at a time after you submit. Full solutions stay gated behind the hint ladder so you do not short-circuit the learning loop.
 
-## Unlock system
+## Question access by plan
 
 Free users get every easy question across all 9 tracks, free forever. Medium and hard questions are part of Pro and Elite.
 
-Pro unlocks all practice difficulties (every medium and hard) across all tracks. Elite keeps full catalog access and adds the premium mock and dashboard layers.
+Pro gives access to all practice difficulties (every medium and hard) across all tracks. Elite keeps full catalog access and adds the premium mock and dashboard layers.
 
 ## Learning paths
 
-Learning paths are curated 5–9 question walks layered on top of the practice bank. They are not a separate curriculum and they do not shortcut unlocks. Each path masters one *pattern* (a practitioner skill like "Window Functions" or "Causal Inference") by walking through existing practice questions easy → hard within that pattern.
+Learning paths are curated 5–9 question walks layered on top of the practice bank. They are not a separate curriculum and they do not add extra questions or change your access. Each path masters one *pattern* (a practitioner skill like "Window Functions" or "Causal Inference") by walking through existing practice questions easy → hard within that pattern.
 
 ## Mock sessions
 

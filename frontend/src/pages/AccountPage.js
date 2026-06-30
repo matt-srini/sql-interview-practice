@@ -761,7 +761,7 @@ export default function AccountPage() {
                   >
                     Upgrade to Pro or Elite
                   </button>{' '}
-                  to unlock all questions and mock interviews.
+                  to access all questions and mock interviews.
                 </p>
               )}
 

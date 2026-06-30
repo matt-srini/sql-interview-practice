@@ -34,8 +34,8 @@ const FAQ_JSON_LD = [
   },
   {
     "@type": "Question",
-    "name": "How do question unlocks work?",
-    "acceptedAnswer": { "@type": "Answer", "text": "Easy questions are free for everyone, including visitors without an account. Medium and hard questions are part of Pro and Elite, which unlock the full question bank immediately." }
+    "name": "What questions can I access on each plan?",
+    "acceptedAnswer": { "@type": "Answer", "text": "Easy questions are free for everyone, including visitors without an account. Medium and hard questions are part of Pro and Elite — upgrading gives you immediate access to the full question bank." }
   },
   {
     "@type": "Question",
@@ -45,7 +45,7 @@ const FAQ_JSON_LD = [
   {
     "@type": "Question",
     "name": "What is the difference between Free, Pro, and Elite?",
-    "acceptedAnswer": { "@type": "Answer", "text": "Free gives access to all easy questions across all nine tracks and one easy benchmark per rolling 7 days. Pro unlocks every medium and hard question, adds the mock-only question pool, and provides 3 benchmarks plus 3 custom drills per day, detailed history, and weakest-concept drill recommendations. Elite includes everything in Pro plus Interview Loop mode, focus-mode targeting, per-dimension weak-spot detection, readiness scoring, study plans, coaching debriefs, and unlimited sessions. Visit datathink.co for the full pricing comparison." }
+    "acceptedAnswer": { "@type": "Answer", "text": "Free gives access to all easy questions across all nine tracks and one easy benchmark per rolling 7 days. Pro includes every medium and hard question, the mock-only question pool, and provides 3 benchmarks plus 3 custom drills per day, detailed history, and weakest-concept drill recommendations. Elite includes everything in Pro plus Interview Loop mode, focus-mode targeting, per-dimension weak-spot detection, readiness scoring, study plans, coaching debriefs, and unlimited sessions. Visit datathink.co for the full pricing comparison." }
   }
 ];
 
@@ -100,8 +100,8 @@ export default function FAQPage({ isModal = false }) {
             <dd className="faq-a">SQL questions are tagged with companies including Amazon, Meta, Google, Stripe, Netflix, Shopify, LinkedIn, and more. You can filter by company in the SQL practice workspace sidebar.</dd>
           </div>
           <div className="faq-item">
-            <dt className="faq-q">How do question unlocks work?</dt>
-            <dd className="faq-a">Easy questions are free for everyone, including visitors without an account. Medium and hard questions are part of Pro and Elite, which unlock the full question bank immediately.</dd>
+            <dt className="faq-q">What questions can I access on each plan?</dt>
+            <dd className="faq-a">Easy questions are free for everyone, including visitors without an account. Medium and hard questions are part of Pro and Elite — upgrading gives you immediate access to the full question bank.</dd>
           </div>
           <div className="faq-item">
             <dt className="faq-q">What are mock sessions?</dt>
@@ -110,7 +110,7 @@ export default function FAQPage({ isModal = false }) {
           <div className="faq-item">
             <dt className="faq-q">What is the difference between Free, Pro, and Elite?</dt>
             <dd className="faq-a">
-              Free gives access to all easy questions across all nine tracks and one easy benchmark per rolling 7 days. Pro unlocks every medium and hard question, adds the mock-only question pool, and provides 3 benchmarks plus 3 custom drills per day, detailed history, and weakest-concept drill recommendations. Elite includes everything in Pro plus Interview Loop mode, focus-mode targeting, per-dimension weak-spot detection, readiness scoring, study plans, coaching debriefs, and unlimited sessions.{' '}
+              Free gives access to all easy questions across all nine tracks and one easy benchmark per rolling 7 days. Pro includes every medium and hard question, the mock-only question pool, and provides 3 benchmarks plus 3 custom drills per day, detailed history, and weakest-concept drill recommendations. Elite includes everything in Pro plus Interview Loop mode, focus-mode targeting, per-dimension weak-spot detection, readiness scoring, study plans, coaching debriefs, and unlimited sessions.{' '}
               {pricingLink}
             </dd>
           </div>

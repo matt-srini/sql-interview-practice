@@ -272,7 +272,7 @@ export default function TrackHubPage() {
               </p>
               <p className="track-hub-milestone-desc">
                 {user?.plan === 'free'
-                  ? `That's ${totalSolved} questions down. Upgrade to unlock the full ${hardTotal > 0 ? `hard track (${hardTotal} questions)` : 'question bank'} and keep building.`
+                  ? `That's ${totalSolved} questions down. Upgrade to Pro for the full ${hardTotal > 0 ? `hard track (${hardTotal} questions)` : 'question bank'} and keep building.`
                   : `That's real depth. Upgrade to Elite for full access and unlimited mock interviews.`}
               </p>
               <div className="track-hub-milestone-actions">

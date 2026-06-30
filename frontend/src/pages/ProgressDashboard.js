@@ -92,7 +92,7 @@ function ReadinessModal({ onClose }) {
           {[
             { label: 'Practice coverage', desc: "How broadly you've solved across easy, medium, and hard difficulties in this track." },
             { label: 'Solve quality', desc: 'Whether you solve cleanly on the first attempt — first-time-correct mastery, not just eventual solves.' },
-            { label: 'Mock performance', desc: 'Your accuracy under timed mock-interview conditions — practice alone tops out at "Getting there"; mocks unlock the top bands.' },
+            { label: 'Mock performance', desc: 'Your accuracy under timed mock-interview conditions — the top readiness bands require both strong practice coverage and timed mock performance.' },
           ].map(s => (
             <div key={s.label} className="readiness-modal-signal">
               <span className="readiness-signal-dot" />
@@ -416,7 +416,7 @@ export default function ProgressDashboard() {
                 <section className="db-section">
                   <h2 className="db-section-title">First-try accuracy</h2>
                   <p className="db-firsttry-sub">
-                    How often you solve a practice question correctly on your <strong>first</strong> attempt — mastery before any hints or retries. Practice catalog only, so it stays an honest read on what you&#8217;ve actually internalised, not just what you&#8217;ve unlocked.
+                    How often you solve a practice question correctly on your <strong>first</strong> attempt — mastery before any hints or retries. Practice catalog only, so it stays an honest read on what you&#8217;ve actually internalised, not just what you&#8217;ve attempted.
                   </p>
                   {(() => {
                     const ftTracks = visibleTracks.filter(

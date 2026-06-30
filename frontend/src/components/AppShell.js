@@ -574,8 +574,8 @@ function PathSidebar({ pathData, pathSlug, topic, meta, currentId, onNavigate, p
             <p className="path-sidebar-hint-text">Some questions are locked — the free tier covers easy. Medium and hard are part of Pro.</p>
           </div>
           <div className="path-sidebar-hint-actions">
-            <button type="button" className="path-sidebar-hint-link path-sidebar-hint-link--pro" onClick={() => navigate('/', { state: { scrollTo: 'landing-pricing' } })}>Pro — unlock all ↗</button>
-            <button type="button" className="path-sidebar-hint-link path-sidebar-hint-link--elite" onClick={() => navigate('/', { state: { scrollTo: 'landing-pricing' } })}>Elite — unlock all ↗</button>
+            <button type="button" className="path-sidebar-hint-link path-sidebar-hint-link--pro" onClick={() => navigate('/', { state: { scrollTo: 'landing-pricing' } })}>Pro — all difficulties ↗</button>
+            <button type="button" className="path-sidebar-hint-link path-sidebar-hint-link--elite" onClick={() => navigate('/', { state: { scrollTo: 'landing-pricing' } })}>Elite — all difficulties ↗</button>
           </div>
         </div>
       )}
