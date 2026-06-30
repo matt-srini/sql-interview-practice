@@ -9,13 +9,18 @@ export default function OnboardingTooltip({ isOpen, steps, onClose }) {
   const [stepIndex, setStepIndex] = useState(0);
   const [anchorRect, setAnchorRect] = useState(null);
   const scrollTimerRef = useRef(null);
+  const completedRef = useRef(false);
 
   const totalSteps = steps?.length ?? 0;
   const step = totalSteps > 0 ? steps[stepIndex] : null;
 
-  // Reset on close
+  // Reset on close; scroll to top if the user finished the whole tour
   useEffect(() => {
     if (!isOpen) {
+      if (completedRef.current) {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        completedRef.current = false;
+      }
       setStepIndex(0);
       setAnchorRect(null);
     }
@@ -114,7 +119,11 @@ export default function OnboardingTooltip({ isOpen, steps, onClose }) {
   const isLastStep = stepIndex === totalSteps - 1;
 
   function goNext() {
-    if (isLastStep) { onClose?.(); return; }
+    if (isLastStep) {
+      completedRef.current = true;
+      onClose?.();
+      return;
+    }
     setAnchorRect(null);
     setStepIndex((i) => i + 1);
   }
