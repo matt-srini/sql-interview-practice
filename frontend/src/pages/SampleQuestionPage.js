@@ -542,8 +542,27 @@ export default function SampleQuestionPage() {
 
               <div className="description-text">{renderDescription(question.description)}</div>
 
-              {meta.hasMCQ && question.code_snippet && (
-                <pre className="question-code-snippet">{question.code_snippet}</pre>
+              {meta.hasMCQ && (question.code_snippet || question.scenario_context) && (
+                <section className="question-evidence-stack" aria-label="Prompt context">
+                  <div className="question-evidence-header">
+                    <span className="question-evidence-kicker">Prompt context</span>
+                    <span className="question-evidence-note">Review the prompt artifacts alongside the written scenario.</span>
+                  </div>
+                  <div className={`question-evidence-grid${question.code_snippet && question.scenario_context ? ' question-evidence-grid--split' : ''}`}>
+                    {question.code_snippet && (
+                      <div className="question-evidence-card">
+                        <span className="question-evidence-card-label">Code path</span>
+                        <pre className="question-code-snippet">{question.code_snippet}</pre>
+                      </div>
+                    )}
+                    {question.scenario_context && (
+                      <div className="question-evidence-card scenario-context-block">
+                        <span className="question-evidence-card-label scenario-context-label">Observed output / logs</span>
+                        <pre className="scenario-context-pre">{question.scenario_context}</pre>
+                      </div>
+                    )}
+                  </div>
+                </section>
               )}
 
               <div className="locked-callout locked-callout-sample">
