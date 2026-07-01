@@ -1525,12 +1525,11 @@ export default function QuestionPage() {
             </div>
           )}
 
-          {/* Python run results */}
+          {/* Python run results — per-case stdout lives in each TestCasePanel row (in its
+              input's context); the aggregate output is just their join, so no separate
+              PrintOutputPanel for test-case tracks (see DECISIONS 2026-07-01). Pandas/SQL keep theirs. */}
           {isPythonRunResult && topic === 'python' && (
-            <>
-              <TestCasePanel results={runResult.test_results ?? []} hiddenSummary={null} />
-              <PrintOutputPanel output={runResult.stdout ?? ''} />
-            </>
+            <TestCasePanel results={runResult.test_results ?? []} hiddenSummary={null} />
           )}
 
           {isPythonRunResult && topic === 'pandas' && (
@@ -1548,12 +1547,10 @@ export default function QuestionPage() {
             </>
           )}
 
-          {/* Statistics numerical run results */}
+          {/* Statistics numerical run results — same harness as Python; per-case stdout in
+              each row, aggregate is their join, so no separate panel. */}
           {isPythonRunResult && topic === 'statistics' && (
-            <>
-              <TestCasePanel results={runResult.test_results ?? []} hiddenSummary={null} />
-              <PrintOutputPanel output={runResult.stdout ?? ''} />
-            </>
+            <TestCasePanel results={runResult.test_results ?? []} hiddenSummary={null} />
           )}
 
           {submitError && <div className="error-box">{submitError}</div>}
@@ -1656,26 +1653,20 @@ export default function QuestionPage() {
             </div>
           )}
 
-          {/* Python submit: show test case results */}
+          {/* Python submit: show test case results (per-case stdout is the single home) */}
           {submitResult && topic === 'python' && (
-            <>
-              <TestCasePanel
-                results={submitResult.test_results ?? []}
-                hiddenSummary={submitResult.hidden_summary ?? null}
-              />
-              <PrintOutputPanel output={submitResult.stdout ?? ''} />
-            </>
+            <TestCasePanel
+              results={submitResult.test_results ?? []}
+              hiddenSummary={submitResult.hidden_summary ?? null}
+            />
           )}
 
           {/* Statistics numerical submit: show test case results (same shape as Python) */}
           {submitResult && topic === 'statistics' && (
-            <>
-              <TestCasePanel
-                results={submitResult.test_results ?? []}
-                hiddenSummary={submitResult.hidden_summary ?? null}
-              />
-              <PrintOutputPanel output={submitResult.stdout ?? ''} />
-            </>
+            <TestCasePanel
+              results={submitResult.test_results ?? []}
+              hiddenSummary={submitResult.hidden_summary ?? null}
+            />
           )}
 
           {/* Python-Data submit: show DataFrame output only on wrong answers */}

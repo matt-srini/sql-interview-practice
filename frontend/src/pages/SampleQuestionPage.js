@@ -712,11 +712,11 @@ export default function SampleQuestionPage() {
               </div>
             )}
 
+            {/* Per-case stdout lives in each TestCasePanel row (in its input's context);
+                the aggregate output is just their join, so no separate PrintOutputPanel
+                for test-case tracks — Pandas/SQL keep theirs below (see DECISIONS 2026-07-01). */}
             {topic === 'python' && pythonRunResults.length > 0 && (
-              <>
-                <TestCasePanel results={pythonRunResults} hiddenSummary={null} />
-                <PrintOutputPanel output={pythonRunOutput} />
-              </>
+              <TestCasePanel results={pythonRunResults} hiddenSummary={null} />
             )}
 
             {topic === 'pandas' && pandasRunResult && (
@@ -778,23 +778,17 @@ export default function SampleQuestionPage() {
             )}
 
             {topic === 'python' && submitResult && (
-              <>
-                <TestCasePanel
-                  results={pythonSubmitResults}
-                  hiddenSummary={submitResult.hidden_summary ?? null}
-                />
-                <PrintOutputPanel output={submitResult.stdout ?? ''} />
-              </>
+              <TestCasePanel
+                results={pythonSubmitResults}
+                hiddenSummary={submitResult.hidden_summary ?? null}
+              />
             )}
 
             {topic === 'statistics' && renderMode === 'code' && submitResult && (
-              <>
-                <TestCasePanel
-                  results={pythonSubmitResults}
-                  hiddenSummary={submitResult.hidden_summary ?? null}
-                />
-                <PrintOutputPanel output={submitResult.stdout ?? ''} />
-              </>
+              <TestCasePanel
+                results={pythonSubmitResults}
+                hiddenSummary={submitResult.hidden_summary ?? null}
+              />
             )}
 
             {topic === 'pandas' && submitResult?.user_result && (

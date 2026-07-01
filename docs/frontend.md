@@ -138,7 +138,7 @@ Main practice screen. Layout and behavior vary by modality and topic:
 | Track / modality slice | Editor | Left panel | Result area |
 |---|---|---|---|
 | SQL | Monaco (sql) | Schema viewer | ResultsTable (run + submit) |
-| Python / numerical Statistics | Monaco (python) | Description only | TestCasePanel + PrintOutputPanel |
+| Python / numerical Statistics | Monaco (python) | Description only | TestCasePanel only — per-case `stdout` renders inside each test row; **no separate PrintOutputPanel** (the aggregate is just the join of those per-case outputs, so it would only duplicate them — see [DECISIONS 2026-07-01](decisions/DECISIONS.md)) |
 | Pandas | Monaco (python) | VariablesPanel + description | ResultsTable + PrintOutputPanel |
 | PySpark and other reasoning-first tracks | Read-only snippet when present, otherwise no editor | Description and prompt context | Option-based or explanation-first verdict panel |
 
@@ -222,7 +222,7 @@ Standalone sample practice. No sidebar. No effect on challenge progression.
 
 Has the same **keyboard shortcuts** and **editor height toggle** as `QuestionPage` (same implementation pattern — refs for stale-closure safety, `localStorage` persistence). No `isLocked` guard since sample questions are always accessible.
 
-**Mixed-subtype rendering (Statistics).** For `mixedSubtype: true` tracks, `SampleQuestionPage` derives `renderMode` from the loaded question's `subtype` field rather than the static `meta.hasMCQ` flag — mirroring the same `renderMode` useMemo pattern used by `QuestionPage`. A `subtype === 'numerical'` question renders the Python editor with Run Code + Submit Answer; a `subtype === 'conceptual'` question renders the MCQ panel. Submit payload and draft-autosave logic are both gated on `renderMode`, not `meta.hasMCQ`. Statistics numerical sample submissions show `TestCasePanel` + `PrintOutputPanel` results (same panels as the Python track). This is a product contract — any new mixed-subtype track added to the registry must be exercised in the sample flow without additional frontend changes.
+**Mixed-subtype rendering (Statistics).** For `mixedSubtype: true` tracks, `SampleQuestionPage` derives `renderMode` from the loaded question's `subtype` field rather than the static `meta.hasMCQ` flag — mirroring the same `renderMode` useMemo pattern used by `QuestionPage`. A `subtype === 'numerical'` question renders the Python editor with Run Code + Submit Answer; a `subtype === 'conceptual'` question renders the MCQ panel. Submit payload and draft-autosave logic are both gated on `renderMode`, not `meta.hasMCQ`. Statistics numerical sample submissions show `TestCasePanel` results (same panel as the Python track — per-case `stdout` in each row, no separate `PrintOutputPanel`). This is a product contract — any new mixed-subtype track added to the registry must be exercised in the sample flow without additional frontend changes.
 
 Sample editor drafts are auto-saved per sample question key (`sample-draft:{topic}:{difficulty}:{questionId}`), restored on load, and can be cleared from the editor topbar.
 
@@ -312,7 +312,7 @@ OG cards: `og-image.png` (1200×630, dark), `og-image-light.png` (1200×630, lig
 | ResultsTable | `components/ResultsTable.js` | Tabular results with sticky headers, horizontal overflow cue, null value rendering, and optional `diffMode` for cell-level diff highlighting |
 | SchemaViewer | `components/SchemaViewer.js` | Dataset table schema with client-side search and click-to-copy column tokens |
 | TestCasePanel | `components/TestCasePanel.js` | Python test case results (pass/fail per case, input/expected/actual, hidden summary) |
-| PrintOutputPanel | `components/PrintOutputPanel.js` | Captured stdout block (rendered only if non-empty) |
+| PrintOutputPanel | `components/PrintOutputPanel.js` | Aggregate captured stdout block (rendered only if non-empty). Used by **Pandas** (and legacy SQL) result areas only — test-case tracks (Python / numerical Statistics) render per-case `stdout` inside `TestCasePanel` rows instead, so they do not pair this panel. |
 | VariablesPanel | `components/VariablesPanel.js` | Available DataFrame variables with CSV source and column list |
 | MCQPanel | `components/MCQPanel.js` | Radio-button response panel with configurable explanation/lock copy; still used for option-based reasoning tracks |
 | ConceptPanel | `components/ConceptPanel.js` | Slide-in concept detail panel opened from concept pills on `QuestionPage` |
