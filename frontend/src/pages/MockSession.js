@@ -1324,7 +1324,7 @@ export default function MockSession() {
               </h3>
               <ul className="mock-review-list">
                 {questions.map((question, i) => {
-                  const isSolved = solved[question.id];
+                  const isSolved = !isBenchmarkMode && solved[question.id];
                   const isFlagged = flagged[question.id] && !solved[question.id];
                   const isSubmitted = submitted[question.id] && !isSolved && !isFlagged;
                   return (
