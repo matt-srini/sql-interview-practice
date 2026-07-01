@@ -1159,7 +1159,9 @@ export default function QuestionPage() {
                   )}
                   {question.scenario_context && (
                     <div className="question-evidence-card scenario-context-block">
-                      <span className="question-evidence-card-label scenario-context-label">Observed output / logs</span>
+                      <span className="question-evidence-card-label scenario-context-label">
+                        {interactionMode === 'code_adjacent_reasoning' ? 'Observed output / logs' : 'Scenario'}
+                      </span>
                       <pre className="scenario-context-pre">{question.scenario_context}</pre>
                     </div>
                   )}

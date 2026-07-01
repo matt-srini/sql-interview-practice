@@ -5,7 +5,22 @@ import json
 from pathlib import Path
 from typing import Any, Optional
 
+from interaction_modes import resolve_interaction_mode
 from tracks import TRACKS
+
+
+# Tracks that derive_interaction_mode() supports — sql/python/pandas are
+# execution tracks with no MCQ evidence-stack UI, so interaction_mode is
+# meaningless for them and resolve_interaction_mode() would raise for an
+# unrecognized track name.
+_INTERACTION_MODE_TRACKS = {
+    "pyspark",
+    "data-engineering",
+    "data-modeling",
+    "statistics",
+    "ml-fundamentals",
+    "experimentation",
+}
 
 
 _DATASETS_DIR = Path(__file__).resolve().parent / "datasets"
@@ -159,6 +174,14 @@ def _load_track_samples(db_topic: str) -> dict[str, list[dict[str, Any]]]:
     sample_path = _SAMPLE_DIR / filename
     with sample_path.open("r", encoding="utf-8") as fh:
         questions: list[dict[str, Any]] = json.load(fh)
+    if db_topic in _INTERACTION_MODE_TRACKS:
+        # Every other track's catalog loader resolves interaction_mode at load
+        # time (see e.g. data_engineering_questions.py); the sample pool is a
+        # separate dedicated file per track and was missing this enrichment,
+        # so get_public_question()'s `question.get("interaction_mode")` always
+        # returned None here regardless of track.
+        for q in questions:
+            q["interaction_mode"] = resolve_interaction_mode(db_topic, q)
     grouped: dict[str, list[dict[str, Any]]] = {"easy": [], "medium": [], "hard": []}
     for q in questions:
         diff = str(q.get("difficulty", "")).lower()

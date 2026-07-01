@@ -105,6 +105,14 @@ export default function SampleQuestionPage() {
     return meta.hasMCQ ? 'mcq' : 'code';
   }, [meta.mixedSubtype, meta.hasMCQ, question?.subtype]);
 
+  // Mirrors QuestionPage.js's interactionMode derivation so the evidence-stack
+  // labels stay consistent between practice and sample for the same track.
+  const interactionMode = useMemo(() => {
+    const raw = String(question?.interaction_mode ?? '').trim().toLowerCase();
+    if (!raw) return renderMode === 'mcq' ? 'mcq' : 'code';
+    return raw.replace(/\s+/g, '_');
+  }, [question?.interaction_mode, renderMode]);
+
   // Refs for Monaco keyboard shortcuts
   const handleRunRef = useRef(null);
   const handleSubmitRef = useRef(null);
@@ -542,28 +550,37 @@ export default function SampleQuestionPage() {
 
               <div className="description-text">{renderDescription(question.description)}</div>
 
-              {meta.hasMCQ && (question.code_snippet || question.scenario_context) && (
-                <section className="question-evidence-stack" aria-label="Prompt context">
-                  <div className="question-evidence-header">
-                    <span className="question-evidence-kicker">Prompt context</span>
-                    <span className="question-evidence-note">Review the prompt artifacts alongside the written scenario.</span>
-                  </div>
-                  <div className={`question-evidence-grid${question.code_snippet && question.scenario_context ? ' question-evidence-grid--split' : ''}`}>
-                    {question.code_snippet && (
-                      <div className="question-evidence-card">
-                        <span className="question-evidence-card-label">Code path</span>
-                        <pre className="question-code-snippet">{question.code_snippet}</pre>
-                      </div>
-                    )}
-                    {question.scenario_context && (
-                      <div className="question-evidence-card scenario-context-block">
-                        <span className="question-evidence-card-label scenario-context-label">Observed output / logs</span>
-                        <pre className="scenario-context-pre">{question.scenario_context}</pre>
-                      </div>
-                    )}
-                  </div>
-                </section>
-              )}
+              {meta.hasMCQ && (question.code_snippet || question.scenario_context) && (() => {
+                const isCodeAdjacent = interactionMode === 'code_adjacent_reasoning';
+                const evidenceTitle = isCodeAdjacent ? 'Evidence to inspect' : 'Prompt context';
+                const evidenceNote = isCodeAdjacent
+                  ? 'Use these artifacts before you choose an answer.'
+                  : 'Review the prompt artifacts alongside the written scenario.';
+                return (
+                  <section className="question-evidence-stack" aria-label={evidenceTitle}>
+                    <div className="question-evidence-header">
+                      <span className="question-evidence-kicker">{evidenceTitle}</span>
+                      <span className="question-evidence-note">{evidenceNote}</span>
+                    </div>
+                    <div className={`question-evidence-grid${question.code_snippet && question.scenario_context ? ' question-evidence-grid--split' : ''}`}>
+                      {question.code_snippet && (
+                        <div className="question-evidence-card">
+                          <span className="question-evidence-card-label">Code path</span>
+                          <pre className="question-code-snippet">{question.code_snippet}</pre>
+                        </div>
+                      )}
+                      {question.scenario_context && (
+                        <div className="question-evidence-card scenario-context-block">
+                          <span className="question-evidence-card-label scenario-context-label">
+                            {isCodeAdjacent ? 'Observed output / logs' : 'Scenario'}
+                          </span>
+                          <pre className="scenario-context-pre">{question.scenario_context}</pre>
+                        </div>
+                      )}
+                    </div>
+                  </section>
+                );
+              })()}
 
               <div className="locked-callout locked-callout-sample">
                 Sample mode is separate from challenge progress. Move to the full track whenever you are ready.
