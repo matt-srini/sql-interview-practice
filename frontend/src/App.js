@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react';
-import { BrowserRouter, Navigate, Route, Routes, useLocation, useNavigate, useParams } from 'react-router-dom';
+import { BrowserRouter, Link, Navigate, Route, Routes, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { createPortal } from 'react-dom';
 
 // Prevent the browser from restoring a cached scroll position after client-side
@@ -210,7 +210,7 @@ function AppRoutes() {
         <Route path="/auth/verify-email" element={<VerifyEmailPage />} />
         <Route path="/dashboard" element={<ProgressDashboard />} />
         <Route path="/mock" element={<AuthRequired><MockHub /></AuthRequired>} />
-        <Route path="/mock/:id" element={<AuthRequired><MockSession /></AuthRequired>} />
+        <Route path="/mock/:id" element={<AuthRequired><ErrorBoundary fallback={<div className="mock-shell" style={{ alignItems: 'center', justifyContent: 'center' }}><div className="error-boundary-card"><h1 className="error-boundary-title">We couldn't display this session</h1><p className="error-boundary-body">Something went wrong loading this mock session. Head back to the lobby to resume or start fresh.</p><div className="error-boundary-actions"><Link to="/mock" className="btn btn-primary">Back to mock lobby</Link></div></div></div>}><MockSession /></ErrorBoundary></AuthRequired>} />
         <Route path="/account" element={<AuthRequired><AccountPage /></AuthRequired>} />
         <Route path="/sample" element={<SampleHubPage />} />
         <Route path="/sample/:topic/:difficulty" element={<SampleQuestionPage />} />

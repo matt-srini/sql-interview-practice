@@ -972,6 +972,9 @@ export default function MockSession() {
             {sessionDescriptor.description && (
               <p className="mock-session-context-copy">{sessionDescriptor.description}</p>
             )}
+            {sessionDescriptor.feedbackLine && (
+              <p className="mock-session-context-feedback">{sessionDescriptor.feedbackLine}</p>
+            )}
           </div>
 
           <div className="mock-session-rule">

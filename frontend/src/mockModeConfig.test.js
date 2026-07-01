@@ -101,6 +101,17 @@ describe('mockModeConfig', () => {
     });
   });
 
+  it('getMockSessionDescriptor returns a truthy feedbackLine string for benchmark, custom, and interview_loop', () => {
+    expect(typeof getMockSessionDescriptor('benchmark', 'sql').feedbackLine).toBe('string');
+    expect(getMockSessionDescriptor('benchmark', 'sql').feedbackLine.length).toBeGreaterThan(0);
+
+    expect(typeof getMockSessionDescriptor('custom', 'sql').feedbackLine).toBe('string');
+    expect(getMockSessionDescriptor('custom', 'sql').feedbackLine.length).toBeGreaterThan(0);
+
+    expect(typeof getMockSessionDescriptor('interview_loop', 'sql').feedbackLine).toBe('string');
+    expect(getMockSessionDescriptor('interview_loop', 'sql').feedbackLine.length).toBeGreaterThan(0);
+  });
+
   it('builds setup descriptors for drill planning surfaces', () => {
     expect(getMockSetupDescriptor('30min', 'sql', 2, 30)).toMatchObject({
       sectionLabel: 'Drill plan',

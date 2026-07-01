@@ -53,6 +53,7 @@ function renderTextRun(text, keyPrefix) {
 
 export function renderDescription(text) {
   if (!text) return null;
+  if (typeof text !== 'string') text = String(text);
   const parts = text.split(/(```[\s\S]*?```)/g);
   return parts.map((part, i) => {
     if (part.startsWith('```') && part.endsWith('```')) {

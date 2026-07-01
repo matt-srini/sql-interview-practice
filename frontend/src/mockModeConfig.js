@@ -255,6 +255,7 @@ export function getMockSessionDescriptor(mode, track, role) {
         title: 'Role-based mixed benchmark',
         summaryLine: `${benchmark.summary} · ${benchmark.timeMinutes} min fixed session`,
         description: benchmark.description,
+        feedbackLine: 'No feedback until you finish — this session measures your readiness.',
         isBenchmark: true,
       };
     }
@@ -265,6 +266,7 @@ export function getMockSessionDescriptor(mode, track, role) {
         title: 'Fixed-shape track benchmark',
         summaryLine: `${benchmark.summary} · ${benchmark.timeMinutes} min fixed session`,
         description: benchmark.description,
+        feedbackLine: 'No feedback until you finish — this session measures your readiness.',
         isBenchmark: true,
       };
     }
@@ -277,6 +279,7 @@ export function getMockSessionDescriptor(mode, track, role) {
       title: 'Iterative interview chain',
       summaryLine: '1 chain · 15 min per question',
       description: 'The capstone after benchmarking and drilling — a real interviewer follows up on each answer, probing deeper every round.',
+      feedbackLine: 'No feedback mid-chain — the interviewer follows up either way.',
       isBenchmark: false,
     };
   }
@@ -288,6 +291,7 @@ export function getMockSessionDescriptor(mode, track, role) {
       title: 'Custom follow-up drill',
       summaryLine: 'Flexible timing and scope',
       description: 'Use custom drills when you want to tune depth, duration, or concept coverage after reviewing a benchmark.',
+      feedbackLine: "You'll see whether each answer is correct after you submit. Full solutions come in the debrief.",
       isBenchmark: false,
     };
   }

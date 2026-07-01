@@ -102,4 +102,11 @@ describe('renderDescription', () => {
     const { container } = render(<div>{renderDescription('| just | text |\n| no | separator |')}</div>);
     expect(container.querySelector('table')).toBeNull();
   });
+
+  it('does not throw when passed a non-string object — coerces to string and renders', () => {
+    expect(() => {
+      const result = renderDescription({ description: 'x' });
+      render(<div>{result}</div>);
+    }).not.toThrow();
+  });
 });

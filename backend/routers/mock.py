@@ -1730,14 +1730,24 @@ async def submit_answer(
             code=body.code,
         )
 
-    # No correctness/solution reveal mid-session for benchmark + interview_loop (ALL tracks).
-    # The user already saw their own output via Run; submit is one-shot. Return a lean ack
-    # that exposes neither the verdict (correct/feedback) nor the answer key (expected_result,
-    # hidden_summary, public_results, error). Custom drills keep the full result.
-    # (mock-benchmark-spec.md § Benchmark invariants)
+    # Mid-session submit response is mode-dependent:
+    # • benchmark / interview_loop — no reveal at all: bare {"submitted": True}.
+    # • custom — verdict-only: {"correct": <bool>} (+ "error" if present).
+    # Neither reveals the answer key (expected_result, hidden_summary, public_results,
+    # user_result, feedback) or the solution mid-session; those are debrief-only.
+    # The custom UI only reads `result.correct`; the extra fields were unused and are
+    # stripped here so they don't ride along in the HTTP response body.
+    # (mock-benchmark-spec.md § Mid-session submit response contract)
     if session.get("mode") in ("benchmark", "interview_loop"):
         return {"submitted": True}
-    return result
+    # Custom drills reveal the verdict only (right/wrong) mid-session — never the
+    # answer key (public_results, hidden_summary, expected_result, user_result, feedback)
+    # or the solution. The mock UI only reads `correct`; the extra fields were unused
+    # and are stripped here so they don't ride along in the response.
+    lean = {"correct": result.get("correct")}
+    if result.get("error") is not None:
+        lean["error"] = result["error"]
+    return lean
 
 
 @router.post("/{session_id}/finish")

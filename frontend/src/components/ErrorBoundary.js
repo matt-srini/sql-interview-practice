@@ -31,6 +31,7 @@ export default class ErrorBoundary extends Component {
     if (!this.state.hasError) {
       return this.props.children;
     }
+    if (this.props.fallback) return this.props.fallback;
 
     return (
       <div className="error-boundary-page">

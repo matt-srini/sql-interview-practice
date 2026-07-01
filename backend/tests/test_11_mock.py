@@ -1067,6 +1067,62 @@ def test_tc169_solution_absent_during_session_submit():
     assert "solution" not in body or body.get("solution") is None
 
 
+def test_tc169b_custom_submit_verdict_only_strips_answer_key():
+    """TC-169b: Custom drill submit → verdict-only response.
+
+    The HTTP body must contain `correct` but must NOT contain answer-key fields
+    (hidden_summary, public_results, expected_result). Separately, a benchmark
+    submit must still return bare {"submitted": True} with no `correct` field.
+    """
+    with TestClient(app) as client:
+        _make_user(client, plan="pro")
+
+        # --- Custom drill: verdict only ---
+        r_start = client.post("/api/mock/start", json={
+            "mode": "custom", "track": "pyspark", "difficulty": "easy",
+            "num_questions": 1, "time_minutes": 30,
+        })
+        assert r_start.status_code in (200, 201), r_start.text
+        session_id = r_start.json()["session_id"]
+        first_q = r_start.json()["questions"][0]
+        q_obj = next((q for q in _pyspark_catalog["easy"] if q["id"] == first_q["id"]), None)
+        correct = q_obj["correct_option"] if q_obj else _pyspark_correct
+        r_submit = client.post(f"/api/mock/{session_id}/submit", json={
+            "question_id": first_q["id"],
+            "track": "pyspark",
+            "selected_option": correct,
+        })
+    assert r_submit.status_code == 200, r_submit.text
+    body = r_submit.json()
+    # Must have `correct` (the verdict the frontend reads)
+    assert "correct" in body, f"Expected 'correct' in custom submit response; got {body}"
+    # Must NOT expose answer-key fields
+    assert "hidden_summary" not in body, f"hidden_summary must not be in custom submit response; got {body}"
+    assert "public_results" not in body, f"public_results must not be in custom submit response; got {body}"
+    assert "expected_result" not in body, f"expected_result must not be in custom submit response; got {body}"
+
+    # --- Benchmark: bare ack only ---
+    with TestClient(app) as client:
+        _make_user(client, plan="pro")
+        r_bench = client.post("/api/mock/start", json={
+            "mode": "benchmark", "track": "pyspark", "difficulty": "easy",
+        })
+        assert r_bench.status_code in (200, 201), r_bench.text
+        bench_id = r_bench.json()["session_id"]
+        bench_q = r_bench.json()["questions"][0]
+        r_bench_submit = client.post(f"/api/mock/{bench_id}/submit", json={
+            "question_id": bench_q["id"],
+            "track": "pyspark",
+            "selected_option": _pyspark_correct,
+        })
+    assert r_bench_submit.status_code == 200, r_bench_submit.text
+    bench_body = r_bench_submit.json()
+    assert bench_body == {"submitted": True}, (
+        f"Benchmark submit must return bare {{'submitted': True}}; got {bench_body}"
+    )
+    assert "correct" not in bench_body, "Benchmark submit must not expose verdict mid-session"
+
+
 def test_tc170_solution_present_for_all_questions_after_finish():
     """TC-170: After finish, all questions in response have solution non-null."""
     with TestClient(app) as client:
