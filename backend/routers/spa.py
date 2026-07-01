@@ -285,6 +285,7 @@ def _inject_seo(html: str, url_path: str) -> str:
                         "https://www.linkedin.com/company/datathink-co",
                         "https://x.com/datathinkHQ",
                         "https://www.youtube.com/@datathinkHQ",
+                        "https://www.instagram.com/datathinkhq",
                     ],
                 },
                 {

@@ -200,7 +200,7 @@ live (see [`gtm-strategy.md`](gtm-strategy.md) M1/M2 and [`../seo.md`](../seo.md
 | Hacker News | founder account (age + karma) | seed early | n/a |
 | Newsletter (LinkedIn + email) | "datathink weekly" | set up | n/a |
 | GitHub | (private — intentionally omitted from sameAs) | — | ✗ (per seo.md) |
-| Instagram (optional) | `@datathinkHQ` | live | optional |
+| Instagram | `@datathinkhq` | live | ✓ in `sameAs` |
 | TikTok (optional) | `@datathink` | defensive claim | optional |
 
 **Defensive claiming matters:** on a contested brand, claiming a handle you won't actively use still
