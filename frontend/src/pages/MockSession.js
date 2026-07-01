@@ -1217,11 +1217,13 @@ export default function MockSession() {
                 </div>
               )}
 
-              {/* Python run results */}
+              {/* Python run results — per-case stdout lives inside each TestCasePanel row
+                  (in the input's context). The aggregate stdout is exactly the join of those
+                  per-case outputs (harness `print_output`), so a separate PrintOutputPanel here
+                  would only duplicate them below the results. Test cards are the single home. */}
               {q.track === 'python' && currentRunResult && !currentRunResult.error && (
                 <div ref={resultsCardRef}>
                   <TestCasePanel results={currentRunResult.test_results ?? []} hiddenSummary={null} />
-                  <PrintOutputPanel output={currentRunResult.stdout ?? ''} />
                 </div>
               )}
 
@@ -1241,11 +1243,11 @@ export default function MockSession() {
                 </div>
               )}
 
-              {/* Statistics numerical run results */}
+              {/* Statistics numerical run results — same harness as Python: per-case stdout is
+                  shown in each test row, and the aggregate is their join, so no separate panel. */}
               {q.track === 'statistics' && isRunCodeQuestion(q, meta) && currentRunResult && !currentRunResult.error && (
                 <div ref={resultsCardRef}>
                   <TestCasePanel results={currentRunResult.test_results ?? []} hiddenSummary={null} />
-                  <PrintOutputPanel output={currentRunResult.stdout ?? ''} />
                 </div>
               )}
 

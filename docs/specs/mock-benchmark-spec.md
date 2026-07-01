@@ -48,9 +48,9 @@ For MCQ tracks (`eval_kind == "mcq"`), the `correct` field must be stripped from
 | Mode | Purpose | Mid-session feedback | Composition |
 |---|---|---|---|
 | Benchmark mock | Measure readiness | Minimal, no verdict reveal beyond acceptance of submission | Track blueprint |
-| Drill / custom session | Target practice under constraints | Flexible | User-configured |
+| Drill / custom session | Target practice under constraints | **Verdict only** (right/wrong) — never the correct answer, MCQ correct index, hidden-test results, or explanation | User-configured |
 
-The product may keep both, but they should not be framed as the same thing.
+The product may keep both, but they should not be framed as the same thing. **The feedback split is the mechanism of that distinction, not an accident:** a benchmark measures, so it must not contaminate the signal with mid-session verdicts; a custom drill is *practice*, so a right/wrong signal is the point. Neither reveals the *solution* mid-session — the correct answer and explanation are debrief-only in both. Custom is deliberately more revealing than a benchmark and deliberately less than open practice mode (no inline hint ladder / answer reveal), which keeps it from collapsing into "practice with a timer." Runtime SoT: `routers/mock.py` `submit_answer` (bare `{"submitted": True}` for `benchmark`/`interview_loop`; full result for `custom`) and `pages/MockSession.js` (`isBenchmarkMode` gate on dot / button / pre-closure modal).
 
 ## Blueprint principle
 

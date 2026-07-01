@@ -35,6 +35,13 @@ Keep entries to 4–6 lines. Friction kills logs; if it's longer than the change
 
 ## Entries
 
+## 2026-07-01 — Mock run output: per-case stdout is the single home; no aggregate output panel on test-case tracks
+**Area:** mock · **Status:** accepted
+**Decision:** On mock code tracks that render per-case test rows (Python, Statistics numerical), the mid-session Run output drops the separate aggregate output panel. Each `TestCasePanel` row already shows that case's `stdout` in the context of its input, and the aggregate is literally `"\n".join(per-case stdout)` (harness `print_output`) — so a second panel below the results only duplicated it and competed with the pass/fail signal. `print()` stays a first-class debug channel; it just lands inside the relevant row. Pandas/SQL keep their standalone panel (they render a result table, not per-case rows, so it's the only home for stdout). Also confirmed-and-documented (no behaviour change) the deliberate mid-session **feedback split**: custom drill reveals the *verdict* (right/wrong) only; benchmark/interview_loop reveal nothing but submission acceptance; neither reveals the solution/explanation mid-session (debrief-only).
+**Rejected:** (a) Removing per-case stdout and keeping the aggregate blob — the blob loses input-context, the exact opposite of the reasoning-first read. (b) A collapsed "console" section — there is no separate console content to collapse once you accept per-case is canonical; collapsing would re-introduce the duplicate. (c) Gating test results behind a correct solve — breaks Run's purpose (the iterate-against-visible-examples loop) with no benchmark-integrity gain, since hidden tests already grade. (d) Making custom drill reveal solutions inline like practice mode — collapses the drill into "practice with a timer," which the mock surface explicitly rejects.
+**Affects:** frontend/src/pages/MockSession.js, docs/features/mock.md (§Session view Run code + Submit), docs/specs/mock-benchmark-spec.md (§Benchmark vs drill)
+**Supersedes:** none
+
 ## 2026-06-30 — Track-mastery `/guides` pillars as SEO Wave 2 (after role pillars)
 **Area:** process · **Status:** accepted
 **Decision:** Add a second `/guides` SEO wave: one "how to master `<track>`" pillar per track, written as the durable concept arc (sourced from `docs/tracks/<track>.md` framing + concept taxonomy) and linking to `/learn/<topic>`, not enumerating path slugs. Sequenced *after* Wave 1 role pillars index; start SQL → Python → Pandas, expand to the other six as signal warrants.
