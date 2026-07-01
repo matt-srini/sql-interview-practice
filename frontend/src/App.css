@@ -10029,6 +10029,51 @@ select {
   margin-bottom: 0.3rem;
 }
 
+/* Scenario context block — setup preamble for MCQ questions (DE, DM, PySpark, ML, Exp) */
+.mock-scenario-context-block {
+  background: var(--surface-raised, rgba(0,0,0,0.03));
+  border-left: 3px solid var(--accent);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  padding: 0.7rem 0.95rem;
+  margin-bottom: 0.9rem;
+  font-size: 0.87rem;
+  color: var(--text-secondary);
+}
+
+.mock-scenario-context-label {
+  display: block;
+  font-style: normal;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 0.3rem;
+}
+
+.mock-scenario-context-text {
+  margin: 0;
+  line-height: 1.6;
+}
+
+/* Code snippet block — code artifact for MCQ questions referencing code */
+.mock-code-snippet-block {
+  background: var(--editor-bg, #1e1e1e);
+  border-radius: var(--radius-sm);
+  padding: 0.75rem 1rem;
+  margin-bottom: 0.9rem;
+  overflow-x: auto;
+}
+
+.mock-code-snippet-pre {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--editor-fg, #d4d4d4);
+  white-space: pre;
+  line-height: 1.55;
+}
+
 /* Reverse SQL result preview */
 .mock-reverse-block { margin-bottom: 0.5rem; }
 .mock-reverse-prompt {

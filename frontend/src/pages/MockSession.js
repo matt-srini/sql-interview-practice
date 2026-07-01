@@ -1045,7 +1045,20 @@ export default function MockSession() {
                   )}
                 </div>
               ) : q.framing !== 'scenario' ? (
-                <div className="mock-question-description">{renderDescription(q.description)}</div>
+                <>
+                  {q.scenario_context && (
+                    <div className="mock-scenario-context-block">
+                      <span className="mock-scenario-context-label">Scenario</span>
+                      <p className="mock-scenario-context-text">{q.scenario_context}</p>
+                    </div>
+                  )}
+                  {q.code_snippet && (
+                    <div className="mock-code-snippet-block">
+                      <pre className="mock-code-snippet-pre">{q.code_snippet}</pre>
+                    </div>
+                  )}
+                  <div className="mock-question-description">{renderDescription(q.description)}</div>
+                </>
               ) : null}
 
               {/* Schema inline below description (SQL only, not for reverse) */}
