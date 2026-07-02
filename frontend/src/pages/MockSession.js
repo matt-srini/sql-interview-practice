@@ -1051,7 +1051,9 @@ export default function MockSession() {
                 <>
                   {q.scenario_context && (
                     <div className="mock-scenario-context-block">
-                      <span className="mock-scenario-context-label">Scenario</span>
+                      <span className="mock-scenario-context-label">
+                        {q.interaction_mode === 'code_adjacent_reasoning' ? 'Observed output / logs' : 'Scenario'}
+                      </span>
                       <p className="mock-scenario-context-text">{q.scenario_context}</p>
                     </div>
                   )}
