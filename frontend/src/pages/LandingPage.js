@@ -382,11 +382,14 @@ function HeroSection({ user, dashData, paths = [], reduced }) {
     const heroCopy = totalSolved > 0
       ? 'Pick up where you left off.'
       : 'Ready when you are. Start anywhere below.';
+    // "Welcome back" is wrong for someone who just registered — reserve it for users with
+    // prior progress; greet first-time (0 solved) identities with a plain "Welcome".
+    const eyebrow = totalSolved > 0 ? `Welcome back, ${firstName}` : `Welcome, ${firstName}`;
 
     return (
       <section className="lp-section lp-hero-loggedin">
         <div className="lp-inner">
-          <p className="lp-eyebrow">Welcome back, {firstName}</p>
+          <p className="lp-eyebrow">{eyebrow}</p>
           <p className="lp-hero-li-copy">
             {heroCopy}
           </p>

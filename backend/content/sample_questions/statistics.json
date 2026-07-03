@@ -30,7 +30,7 @@
     "difficulty": "easy",
     "type": "numerical",
     "subtype": "numerical",
-    "description": "Write `solve(values)` that takes a list of numbers and returns a tuple `(mean, std_dev)` where `mean` is the sample mean and `std_dev` is the **sample** standard deviation (ddof=1), both rounded to 4 decimal places.\n\nExample: `[2.0, 4.0, 4.0, 4.0, 5.0, 5.0, 7.0, 9.0]` → `(5.0, 2.0)`",
+    "description": "Write `solve(values)` that takes a list of numbers and returns a tuple `(mean, std_dev)` where `mean` is the sample mean and `std_dev` is the **sample** standard deviation (ddof=1), both rounded to 4 decimal places.\n\nExample: `[2.0, 4.0, 4.0, 4.0, 5.0, 5.0, 7.0, 9.0]` → `(5.0, 2.1381)`",
     "starter_code": "def solve(values: list[float]) -> tuple[float, float]:\n    pass",
     "expected_code": "def solve(values: list[float]) -> tuple[float, float]:\n    import statistics\n    mean = statistics.mean(values)\n    std = statistics.stdev(values)  # sample stdev (ddof=1)\n    return (round(mean, 4), round(std, 4))",
     "solution_code": "def solve(values: list[float]) -> tuple[float, float]:\n    import statistics\n    mean = statistics.mean(values)\n    std = statistics.stdev(values)  # sample stdev (ddof=1)\n    return (round(mean, 4), round(std, 4))",
@@ -51,7 +51,7 @@
         ],
         "expected": [
           5.0,
-          2.0
+          2.1381
         ],
         "tolerance": 0.001
       },
@@ -147,8 +147,8 @@
           200
         ],
         "expected": [
-          0.1913,
-          0.3087
+          0.19,
+          0.31
         ],
         "tolerance": 0.001
       },
@@ -241,7 +241,7 @@
           0.5,
           100
         ],
-        "expected": 0.6946,
+        "expected": 0.9424,
         "tolerance": 0.01
       },
       {
@@ -250,7 +250,7 @@
           0.5,
           100
         ],
-        "expected": 0.2831,
+        "expected": 0.7668,
         "tolerance": 0.01
       }
     ],

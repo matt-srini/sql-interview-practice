@@ -42,6 +42,9 @@ DATASETS = BACKEND / "datasets"
 DIFFS = ("easy", "medium", "hard")
 
 
+SAMPLE_DIR = BACKEND / "content" / "sample_questions"
+
+
 def _load(directory: Path) -> list[dict]:
     out: list[dict] = []
     for diff in DIFFS:
@@ -54,12 +57,34 @@ def _load(directory: Path) -> list[dict]:
     return out
 
 
-SQL_Q = _load(SQL_DIR)
-PANDAS_Q = _load(PANDAS_DIR)
+def _load_sample(track_file: str) -> list[dict]:
+    """Sample questions live one-file-per-track (mixed difficulties) outside the
+    practice dirs, but carry the same expected_query/solution_query (SQL) and
+    expected_code/solution_code + schema/dataframes (pandas) contract — so the same
+    reference-execution guard applies verbatim. Wired in after the 2026-07 sample-fixture
+    audit, which found neither this guard nor validate_content.py had ever covered the
+    sample pool (backend/content/sample_questions) — /sample is the product's shop
+    window, so an unguarded reference there ships broken to the first-touch user."""
+    fp = SAMPLE_DIR / track_file
+    if not fp.exists():
+        return []
+    out: list[dict] = []
+    for q in json.loads(fp.read_text(encoding="utf-8")):
+        q["_difficulty"] = q.get("difficulty", "sample")
+        q["_sample"] = True
+        out.append(q)
+    return out
+
+
+SQL_Q = _load(SQL_DIR) + _load_sample("sql.json")
+PANDAS_Q = _load(PANDAS_DIR) + _load_sample("pandas.json")
 
 
 def _qid(q: dict) -> str:
-    pool = "mock" if q.get("mock_only") else "practice"
+    if q.get("_sample"):
+        pool = "sample"
+    else:
+        pool = "mock" if q.get("mock_only") else "practice"
     return f"{q.get('id')}-{q.get('_difficulty')}-{pool}"
 
 

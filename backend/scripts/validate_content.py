@@ -192,11 +192,16 @@ def _validate_code_reference_reproduces_tests() -> None:
     is silently ungradeable — the platform graded the user against a number the
     reference itself misses (73047: stored 0.9809, reference yields 0.9805).
 
-    Scope is precisely the two tracks that ship *stored* expected values:
+    Scope is precisely the two tracks that ship *stored* expected values, across
+    BOTH the practice pool and the sample pool (backend/content/sample_questions):
       - python      (all questions: expected_code + test_cases)
       - statistics  (numerical subtype only; conceptual is MCQ)
-    SQL and pandas compute their expected output live from the reference at
-    grade time, so they cannot drift this way and are out of scope here.
+    Samples were added to scope after the 2026-07 audit found three sample-statistics
+    fixtures (712/722/732) and one sample-python fixture (233) drifting from their own
+    references — the exact bug class this guard exists to stop — while shipping green
+    because samples lived outside QUESTION_DIRS. SQL and pandas compute their expected
+    output live from the reference at grade time, so they cannot drift this way and are
+    guarded instead by tests/test_code_references.py (practice + sample).
 
     Only *literal* cases are checked. Generator-spec inputs / {"compute":
     "reference"} cases derive their expected from the reference at run time, so
@@ -223,61 +228,72 @@ def _validate_code_reference_reproduces_tests() -> None:
             return False
         return True
 
-    targets: list[tuple[str, Path]] = [("python", QUESTION_DIRS["python"])]
-    if "statistics" in QUESTION_DIRS:
-        targets.append(("statistics", QUESTION_DIRS["statistics"]))
+    # Files that ship stored `expected` fixtures: practice python (all questions) +
+    # statistics (numerical subtype only), PLUS their sample counterparts. Samples live
+    # outside QUESTION_DIRS, so this guard historically skipped them — the coverage hole
+    # that let sample-statistics 712/722/732 and sample-python 233 each ship a stored
+    # `expected` their own reference cannot reproduce (2026-07 sample-fixture audit).
+    # Samples carry the identical expected_code + test_cases shape, so the check applies
+    # verbatim; the statistics subtype filter below excludes conceptual (MCQ) samples.
+    target_files: list[tuple[str, Path]] = []
+    for track in ("python", "statistics"):
+        directory = QUESTION_DIRS.get(track)
+        if directory is not None:
+            for file_path in sorted(directory.glob("*.json")):
+                if file_path.stem != "schemas":
+                    target_files.append((track, file_path))
+        sample_file = _SAMPLE_DIR / f"{track}.json"
+        if sample_file.exists():
+            target_files.append((track, sample_file))
 
     errors: list[str] = []
     has_alarm = hasattr(_signal, "SIGALRM")
     if has_alarm:
         _prev = _signal.signal(_signal.SIGALRM, _alarm)
     try:
-        for track, directory in targets:
-            for file_path in sorted(directory.glob("*.json")):
-                if file_path.stem == "schemas":
+        for track, file_path in target_files:
+            with file_path.open("r", encoding="utf-8") as handle:
+                questions = json.load(handle)
+            for q in questions:
+                if track == "statistics" and q.get("subtype") != "numerical":
                     continue
-                with file_path.open("r", encoding="utf-8") as handle:
-                    questions = json.load(handle)
-                for q in questions:
-                    if track == "statistics" and q.get("subtype") != "numerical":
+                code = q.get("expected_code")
+                cases = q.get("test_cases")
+                if not code or not isinstance(cases, list) or not cases:
+                    continue
+                qid = q.get("id", "<unknown>")
+                title = q.get("title", "<untitled>")
+                if has_alarm:
+                    _signal.alarm(10)
+                try:
+                    ns: dict = {}
+                    exec(code, ns)  # noqa: S102 — vetted authored reference
+                    solve = ns.get("solve")
+                    if not callable(solve):
+                        errors.append(f"{track} {qid} {title}: expected_code defines no callable solve()")
                         continue
-                    code = q.get("expected_code")
-                    cases = q.get("test_cases")
-                    if not code or not isinstance(cases, list) or not cases:
-                        continue
-                    qid = q.get("id", "<unknown>")
-                    title = q.get("title", "<untitled>")
-                    if has_alarm:
-                        _signal.alarm(10)
-                    try:
-                        ns: dict = {}
-                        exec(code, ns)  # noqa: S102 — vetted authored reference
-                        solve = ns.get("solve")
-                        if not callable(solve):
-                            errors.append(f"{track} {qid} {title}: expected_code defines no callable solve()")
+                    for idx, tc in enumerate(cases):
+                        if not _is_literal_case(tc):
                             continue
-                        for idx, tc in enumerate(cases):
-                            if not _is_literal_case(tc):
-                                continue
-                            exp = tc.get("expected") if "expected" in tc else tc.get("expected_output")
-                            tol = tc.get("tolerance", 1e-6)
-                            try:
-                                actual = solve(*tc.get("input", []))
-                            except Exception as exc:
-                                errors.append(f"{track} {qid} {title}: reference raised on test_case[{idx}]: {exc!r}")
-                                continue
-                            if not _compare(actual, exp, tol):
-                                errors.append(
-                                    f"{track} {qid} {title}: reference does not reproduce test_case[{idx}] "
-                                    f"expected={exp!r} (got {actual!r}, tolerance={tol})"
-                                )
-                    except _RefTimeout:
-                        errors.append(f"{track} {qid} {title}: reference solution timed out (>10s) during validation")
-                    except Exception as exc:
-                        errors.append(f"{track} {qid} {title}: reference solution failed to execute: {exc!r}")
-                    finally:
-                        if has_alarm:
-                            _signal.alarm(0)
+                        exp = tc.get("expected") if "expected" in tc else tc.get("expected_output")
+                        tol = tc.get("tolerance", 1e-6)
+                        try:
+                            actual = solve(*tc.get("input", []))
+                        except Exception as exc:
+                            errors.append(f"{track} {qid} {title}: reference raised on test_case[{idx}]: {exc!r}")
+                            continue
+                        if not _compare(actual, exp, tol):
+                            errors.append(
+                                f"{track} {qid} {title}: reference does not reproduce test_case[{idx}] "
+                                f"expected={exp!r} (got {actual!r}, tolerance={tol})"
+                            )
+                except _RefTimeout:
+                    errors.append(f"{track} {qid} {title}: reference solution timed out (>10s) during validation")
+                except Exception as exc:
+                    errors.append(f"{track} {qid} {title}: reference solution failed to execute: {exc!r}")
+                finally:
+                    if has_alarm:
+                        _signal.alarm(0)
     finally:
         if has_alarm:
             _signal.signal(_signal.SIGALRM, _prev)

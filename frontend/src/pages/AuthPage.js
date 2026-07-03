@@ -16,6 +16,23 @@ function validatePassword(password) {
   return null;
 }
 
+// Pull a human-readable message from an API error. Our own endpoints return { error },
+// but pydantic request-body validation (e.g. the reserved-domain / name / email rules on
+// register) arrives as a 422 { detail: [{ msg, loc }] }. Reading only `.error` dropped
+// those to a generic "Something went wrong", hiding the specific, actionable reason.
+function apiErrorMessage(err) {
+  const data = err?.response?.data;
+  if (!data) return null;
+  if (typeof data.error === 'string') return data.error;
+  const { detail } = data;
+  if (typeof detail === 'string') return detail;
+  if (Array.isArray(detail) && typeof detail[0]?.msg === 'string') {
+    // pydantic v2 prefixes ValueError messages with "Value error, " — strip it for the UI.
+    return detail[0].msg.replace(/^Value error,\s*/i, '');
+  }
+  return null;
+}
+
 // ─── SVG icons ───────────────────────────────────────────────────────────────
 
 function GoogleIcon() {
@@ -236,8 +253,7 @@ export default function AuthPage() {
       }
     } catch (err) {
       setStatus('idle');
-      const msg = err?.response?.data?.error;
-      setError(msg || 'Something went wrong. Please try again.');
+      setError(apiErrorMessage(err) || 'Something went wrong. Please try again.');
     }
   }
 

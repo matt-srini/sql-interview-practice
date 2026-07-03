@@ -279,7 +279,16 @@ export default function SampleQuestionPage() {
       setSubmitResult(normalizeRunResult(res.data));
       track('sample_submitted', { track: topic, difficulty, question_id: Number(question?.id), correct: res.data.correct });
     } catch (err) {
-      setSubmitError(err.response?.data?.error ?? err.response?.data?.detail ?? 'Submission failed.');
+      const data = err.response?.data;
+      const detailMsg = typeof data?.detail === 'string'
+        ? data.detail
+        : (Array.isArray(data?.detail) ? data.detail[0]?.msg : null);
+      // A transient network drop or 5xx from the grader has no structured body — give the
+      // user something actionable instead of a bare "Submission failed." with no next step.
+      const fallback = (!err.response || err.response.status >= 500)
+        ? "We couldn't reach the grader — check your connection and try again in a moment."
+        : 'Submission failed.';
+      setSubmitError(data?.error ?? detailMsg ?? fallback);
     } finally {
       setSubmitting(false);
     }

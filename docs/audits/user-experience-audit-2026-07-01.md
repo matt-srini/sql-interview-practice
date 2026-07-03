@@ -272,3 +272,38 @@ Confirmed via code reading (`routers/auth.py`) that registering while an anonymo
 ---
 
 **Phase 1 is now complete (81/81 sample questions across 9 tracks). Awaiting explicit approval before starting Phase 2 (Practice: 10 easy + 10 medium + 10 hard questions × 9 tracks = 270 questions total), per the standing instruction to proceed phase-by-phase only after approval.**
+
+---
+
+# Verification & Remediation — 2026-07-03 (Opus pass)
+
+Independent verification of the Phase-1 findings (not a re-audit), followed by remediation of the confirmed defects. Every content claim below was reproduced by executing the shipped reference against the stored fixture.
+
+## Verification verdict
+- **All 3 "critical" Statistics fixtures confirmed exactly** — reference output vs stored `expected`: **712** `2.1381` vs `2.0` (test[0]); **722** `(0.19, 0.31)` vs `(0.1913, 0.3087)` (test[0]); **732** `0.9424`/`0.7668` vs `0.6946`/`0.2831` (both tests — question was unsolvable by its own solution).
+- **Python Hard "Maximum Impact Alerts" (233) upgraded 🔵→🔴.** Not a flaky hidden test: `test_case[2]` input `[[[]]]` fed a malformed empty task, violating the question's own "`[impact, deadline]` pairs" constraint and crashing the reference with `IndexError`. Same defect class as the three Statistics bugs (reference cannot reproduce its own fixture). This is why the auditor's valid-input fuzzing found nothing.
+- **Complete blast-radius scan** (all 81 samples, reference vs own fixtures): exactly **5 broken fixtures in 4 questions** (233, 712, 722, 732) — nothing else in `/sample`.
+- **Root cause = a guard-coverage hole, not a fixture-generation pipeline bug.** The guard built for exactly this class — `validate_content.py::_validate_code_reference_reproduces_tests` (+ its SQL/pandas sibling `tests/test_code_references.py`) — only ever scanned the practice/mock dirs, never `sample_questions/`. `validate_content.py` was green *with the 4 bugs live*. This **refines the audit's hypothesis**: the practice/mock numerical pool is guarded and clean; the defect was structurally confined to the unguarded sample surface.
+- SQL-medium (121 unstated sort; 123 unstated `%Y-%m` + status inconsistency), the Experimentation 912 typo, the masked-register-error and bodyless-5xx submit copy, and the "Welcome back" first-visit copy were all confirmed against the code.
+
+## Remediation applied (this session)
+| Finding | Fix | Status |
+|---|---|---|
+| Guard-coverage hole (root cause) | Extended both guards to the sample pool; verified they now fail on exactly 233/712/722/732 | ✅ |
+| Stats 712 / 722 / 732 fixtures | Reconciled each fixture to its reference output (+ the stem worked example in 712) | ✅ |
+| Python 233 fixture | `test_case[2]` input `[[[]]]`→`[[]]` (intended empty-backlog case) | ✅ |
+| SQL 121 unstated sort | Added "Sort by user_id ascending" to the stem (spec-it-in-the-stem; key unchanged) | ✅ |
+| SQL 123 unstated format + revenue/status | Full output contract in stem + made completed-only (`WHERE status='completed'`, 36 rows) to align with Easy Q3 | ✅ |
+| Experimentation 912 typo | "Option A and 3" → "Options A and C" | ✅ |
+| Masked register error (`/auth`) | AuthPage now surfaces pydantic 422 `detail[].msg` | ✅ |
+| Bodyless-5xx submit copy (`/sample`) | Actionable network/grader message instead of bare "Submission failed." | ✅ |
+| "Welcome back" to first-time users | LandingPage greets 0-solved identities with "Welcome" | ✅ |
+
+Full rationale + rejected alternatives: `docs/decisions/DECISIONS.md` (2026-07-03 entry). Guards, `validate_content.py`, and the SQL/pandas reference tests are all green post-fix.
+
+## Deferred (noted, not fixed this pass — each is polish/judgment, not a correctness bug)
+- **Float/rounding display** (SQL Easy Q3 `8146829.220000011`; SQL Medium Q2 `67` vs `67.0`). These are result-table *rendering* artifacts (FP-accumulation display + trailing-zero stripping), not grading bugs — both YOUR/EXPECTED sides match. A correct fix is consistent numeric formatting in the result renderer, which affects practice output too — its own scoped change, not a per-question ROUND patch.
+- **Difficulty-calibration flags** (Experimentation Easy Q1 reads Medium-ish). Re-tiering is a curriculum-arc decision, not a defect fix; deferred to a content-team call.
+- **Stem/schema column-undercount pattern** (Pandas Easy Q1 stem asserts 5 of 8 `orders` columns). A factual-accuracy nit best fixed as a bounded sweep across all `orders`-dataset questions that assert exhaustive column lists (reword to non-exhaustive), rather than one-off.
+- **MCQ first-click selection quirk.** Auditor flagged this as likely a UI-automation timing artifact, not reproduced by a human; needs a genuine repro before it's actionable.
+- **Phases 2–5** (Practice, Mock, Dashboard, consolidation) remain pending per the original audit plan.

@@ -65,7 +65,7 @@
     "topic": "sql",
     "difficulty": "medium",
     "title": "Users With No Orders",
-    "description": "Return user_id and name for users who have never placed an order.",
+    "description": "Return user_id and name for users who have never placed an order. Sort by user_id ascending.",
     "schema": {
       "users": ["user_id", "name", "signup_date", "country"],
       "orders": ["order_id", "user_id", "order_date", "status", "net_amount"]
@@ -107,14 +107,14 @@
     "topic": "sql",
     "difficulty": "medium",
     "title": "Monthly Revenue",
-    "description": "Return month and revenue, grouped by month from orders.",
+    "description": "Return monthly recognised revenue from completed orders only (`status = 'completed'`). Output columns: `month` (formatted as a `'YYYY-MM'` string) and `revenue` (SUM of `net_amount` for completed orders in that month). Group by month and sort by month ascending.",
     "schema": {
       "orders": ["order_id", "user_id", "order_date", "status", "net_amount"]
     },
     "dataset_files": ["orders.csv"],
-    "expected_query": "SELECT strftime(CAST(order_date AS DATE), '%Y-%m') AS month, SUM(net_amount) AS revenue FROM orders GROUP BY 1 ORDER BY 1",
-    "solution_query": "SELECT strftime(CAST(order_date AS DATE), '%Y-%m') AS month, SUM(net_amount) AS revenue\nFROM orders\nGROUP BY 1\nORDER BY 1;",
-    "explanation": "Bucket by month using strftime with format '%Y-%m', then aggregate net_amount per bucket.",
+    "expected_query": "SELECT strftime(CAST(order_date AS DATE), '%Y-%m') AS month, SUM(net_amount) AS revenue FROM orders WHERE status = 'completed' GROUP BY 1 ORDER BY 1",
+    "solution_query": "SELECT strftime(CAST(order_date AS DATE), '%Y-%m') AS month, SUM(net_amount) AS revenue\nFROM orders\nWHERE status = 'completed'\nGROUP BY 1\nORDER BY 1;",
+    "explanation": "The `WHERE status = 'completed'` filter runs before aggregation, excluding pending, cancelled, and refunded orders. Completed orders represent cash actually recognised — including non-completed statuses would silently inflate the total with amounts that were never collected, producing a figure that looks authoritative but means nothing financially. After filtering, `strftime(CAST(order_date AS DATE), '%Y-%m')` converts each order's date to a `'YYYY-MM'` string that acts as the monthly bucket key — `GROUP BY 1` then collapses all completed orders in the same calendar month into one revenue total. `ORDER BY 1` returns months in chronological order.",
     "hints": [
       "Revenue needs to be broken out by calendar month, but raw timestamps do not group into months automatically — the first step is converting each order's timestamp into its month.",
       "Use a date-conversion expression as the grouping key: it collapses all timestamps within the same calendar month into a shared bucket. Format the output as YYYY-MM strings."
