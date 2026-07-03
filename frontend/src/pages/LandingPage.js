@@ -361,8 +361,27 @@ function HeroIDE({ reduced }) {
 }
 
 // ── Section 01: Hero ────────────────────────────────────────────────────────
-function HeroSection({ user, dashData, paths = [], reduced }) {
+// Neutral hero placeholder shown while auth (and, for a logged-in user, the dashboard
+// data that drives the greeting) is still resolving — so the hero renders once, correct,
+// instead of flashing logged-out → "Welcome" → "Welcome back" on refresh.
+function HeroSkeleton() {
+  return (
+    <section className="lp-section lp-hero-loggedin" aria-hidden="true">
+      <div className="lp-inner">
+        <div className="skeleton-block skeleton-shimmer" style={{ width: 160, height: 15, marginBottom: 16 }} />
+        <div className="skeleton-block skeleton-shimmer" style={{ width: 280, height: 26, marginBottom: 22 }} />
+        <div className="skeleton-block skeleton-shimmer" style={{ width: 340, height: 44 }} />
+      </div>
+    </section>
+  );
+}
+
+function HeroSection({ user, dashData, dashLoaded, paths = [], reduced }) {
   if (user) {
+    // Hold the hero until the dashboard data behind the greeting/copy/stats has resolved,
+    // so those fields render once (correct) instead of visibly flipping from a transient
+    // 0-progress state (e.g. "Welcome" → "Welcome back") as the data lands.
+    if (!dashLoaded) return <HeroSkeleton />;
     const recent = dashData?.recent_activity?.[0];
     const topic = recent?.topic || 'sql';
     const meta = TRACK_META[topic] || TRACK_META.sql;
@@ -1282,16 +1301,23 @@ function CloserSection() {
 
 // ── Root export ─────────────────────────────────────────────────────────────
 export default function LandingPage() {
-  const { user, refreshUser } = useAuth();
+  const { user, loading: authLoading, refreshUser } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const userPlan = user?.plan ?? 'free';
   const currency = detectCurrency();
 
   const [dashData, setDashData] = useState(null);
+  const [dashLoaded, setDashLoaded] = useState(false);
   const [paths, setPaths] = useState([]);
   const [insights, setInsights] = useState(null);
   const [upgradeSuccess, setUpgradeSuccess] = useState(false);
+  // Persisted auth hint, read once synchronously so the first render can pick the right
+  // shell (see AuthContext.rememberAuth). A returning user gets the logged-in skeleton
+  // instead of the logged-out marketing flash while GET /auth/me is in flight.
+  const [wasAuthed] = useState(() => {
+    try { return localStorage.getItem('dt_authed') === '1'; } catch { return false; }
+  });
 
   const [reduced] = useState(() =>
     typeof window !== 'undefined' &&
@@ -1327,9 +1353,14 @@ export default function LandingPage() {
 
   useEffect(() => {
     if (user) {
-      api.get('/dashboard').then(r => setDashData(r.data)).catch(() => {});
+      setDashLoaded(false);
+      api.get('/dashboard')
+        .then(r => setDashData(r.data))
+        .catch(() => {})
+        .finally(() => setDashLoaded(true));
     } else {
       setDashData(null);
+      setDashLoaded(false);
     }
   }, [user]);
 
@@ -1346,6 +1377,21 @@ export default function LandingPage() {
   }, []);
 
   const showPricing = !['lifetime_elite'].includes(userPlan);
+
+  // Returning user, auth still resolving: paint a neutral hero skeleton instead of the
+  // logged-out marketing page (which would then swap to the logged-in view — the 3-phase
+  // refresh flash). Anonymous visitors (no hint) fall through and get the marketing page
+  // immediately; once auth resolves, the full layout renders below with a real `user`.
+  if (authLoading && wasAuthed) {
+    return (
+      <>
+        <Topbar />
+        <main className="lp-page" id="landing-top">
+          <HeroSkeleton />
+        </main>
+      </>
+    );
+  }
 
   return (
     <>
@@ -1369,7 +1415,7 @@ export default function LandingPage() {
         )}
 
         {/* 01 HERO */}
-        <HeroSection user={user} dashData={dashData} paths={paths} reduced={reduced} />
+        <HeroSection user={user} dashData={dashData} dashLoaded={dashLoaded} paths={paths} reduced={reduced} />
 
         {/* 02 + 03 + 03.5: THESIS + WRONG/RIGHT + HOW-IT-WORKS — logged-out only.
             "Why" (what data reasoning is) lands before the "how" (the journey ribbon),
