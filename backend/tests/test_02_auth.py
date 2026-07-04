@@ -636,6 +636,28 @@ def test_tc042_me_returns_streak_metadata():
     assert u["streak_at_risk"] is False
 
 
+def test_tc044_me_returns_is_new_true_for_fresh_account():
+    """TC-044: /me returns is_new=true for a just-created account (drives the landing greeting)."""
+    with TestClient(app) as client:
+        _make_user(client)
+        r = client.get("/api/auth/me")
+    assert r.status_code == 200
+    assert r.json()["user"]["is_new"] is True
+
+
+def test_is_new_account_helper():
+    """_is_new_account: fresh/within-window → True; past the window → False; missing/naive handled."""
+    from datetime import datetime, timedelta, timezone
+    from routers.auth import _NEW_ACCOUNT_WINDOW, _is_new_account
+    now = datetime.now(timezone.utc)
+    assert _is_new_account(now) is True
+    assert _is_new_account(now - (_NEW_ACCOUNT_WINDOW / 2)) is True
+    assert _is_new_account(now - (_NEW_ACCOUNT_WINDOW + timedelta(hours=1))) is False
+    assert _is_new_account(None) is False
+    # TIMESTAMPTZ is tz-aware in practice; the naive branch is defensive.
+    assert _is_new_account((now - timedelta(hours=1)).replace(tzinfo=None)) is True
+
+
 def test_tc043_streak_at_risk_when_yesterday_only():
     """TC-043: streak_at_risk=true when submission yesterday but none today."""
     import datetime

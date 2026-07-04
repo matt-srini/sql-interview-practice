@@ -64,7 +64,7 @@ Registered in `backend/main.py`:
 | POST | `/api/auth/register` | Create account; upgrades anonymous session in place |
 | POST | `/api/auth/login` | Authenticate; merges anonymous progress into existing account |
 | POST | `/api/auth/logout` | Deletes session |
-| GET | `/api/auth/me` | Returns current user identity + streak metadata (`streak_days`, `streak_at_risk`) |
+| GET | `/api/auth/me` | Returns current user identity + streak metadata (`streak_days`, `streak_at_risk`) + `is_new` (true within 24h of account creation — the authoritative signal for the landing "Welcome" vs "Welcome back" greeting; window = `_NEW_ACCOUNT_WINDOW` in `routers/auth.py`) |
 | POST | `/api/auth/forgot-password` | Send password reset email (always returns 200 to prevent email enumeration) |
 | POST | `/api/auth/reset-password` | Consume reset token, set new password (400 if token invalid/expired) |
 | POST | `/api/auth/magic-link` | Request one-time sign-in link (non-enumerating response) |

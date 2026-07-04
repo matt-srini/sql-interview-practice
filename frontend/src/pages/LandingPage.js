@@ -401,9 +401,12 @@ function HeroSection({ user, dashData, dashLoaded, paths = [], reduced }) {
     const heroCopy = totalSolved > 0
       ? 'Pick up where you left off.'
       : 'Ready when you are. Start anywhere below.';
-    // "Welcome back" is wrong for someone who just registered — reserve it for users with
-    // prior progress; greet first-time (0 solved) identities with a plain "Welcome".
-    const eyebrow = totalSolved > 0 ? `Welcome back, ${firstName}` : `Welcome, ${firstName}`;
+    // `is_new` (from /auth/me, computed off account age) is the authoritative
+    // new-vs-returning signal: greet a just-joined account with "Welcome", everyone
+    // else — including a returning user who hasn't solved anything yet — with "Welcome
+    // back". (heroCopy above still keys on totalSolved: that's about resumable progress,
+    // a different question from whether the visitor is new.)
+    const eyebrow = user?.is_new ? `Welcome, ${firstName}` : `Welcome back, ${firstName}`;
 
     return (
       <section className="lp-section lp-hero-loggedin">

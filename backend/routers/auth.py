@@ -4,7 +4,7 @@ import logging
 import re
 import secrets
 import hashlib
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 import urllib.parse
 
 import httpx
@@ -413,6 +413,22 @@ async def logout(request: Request, response: Response) -> Response:
     return payload
 
 
+# Window during which a freshly-created account is greeted with "Welcome" (vs
+# "Welcome back") on the landing hero. A grace period, not a session boundary: ~24h
+# covers slow email verification + first-day exploration, and the only cost of the
+# heuristic is that a same-day return also sees "Welcome". A precise first-session
+# signal would need a login-history column (see docs/decisions/DECISIONS.md).
+_NEW_ACCOUNT_WINDOW = timedelta(hours=24)
+
+
+def _is_new_account(created_at: datetime | None) -> bool:
+    if created_at is None:
+        return False
+    if created_at.tzinfo is None:  # defensive: TIMESTAMPTZ is tz-aware, but never subtract naive
+        created_at = created_at.replace(tzinfo=timezone.utc)
+    return datetime.now(timezone.utc) - created_at < _NEW_ACCOUNT_WINDOW
+
+
 @router.get("/me")
 async def me(session_user: dict[str, str | None] | None = Depends(get_optional_current_user)) -> JSONResponse:
     if session_user is None or session_user.get("email") is None:
@@ -428,6 +444,8 @@ async def me(session_user: dict[str, str | None] | None = Depends(get_optional_c
                 "email_verified": session_user.get("email_verified", False),
                 "streak_days": streak["streak_days"],
                 "streak_at_risk": streak["streak_at_risk"],
+                # Authoritative new-vs-returning signal for the landing greeting.
+                "is_new": _is_new_account(session_user.get("created_at")),
             }
         }
     )
