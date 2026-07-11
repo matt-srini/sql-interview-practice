@@ -791,3 +791,17 @@ Keep entries to 4–6 lines. Friction kills logs; if it's longer than the change
 **Decision:** `GET /auth/me` now returns `is_new`, computed server-side as `now − created_at < _NEW_ACCOUNT_WINDOW` (24h) — `created_at` already exists on `users`, so **no migration**. The landing eyebrow uses `user.is_new`; `heroCopy` stays on `totalSolved` (that's about *resumable progress*, a separate question). Chosen window is a grace period (24h covers slow email verification + first-day exploration); the only cost of the heuristic is a same-day return also seeing "Welcome". One knob (`_NEW_ACCOUNT_WINDOW` in `routers/auth.py`).
 **Rejected:** (a) First-session precision via a `login_count` / `last_login_at` column — more correct but needs a migration + increments at every auth entry point; deferred (the standing option if the OAuth/magic-link `account_created` analytics TODO is picked up, which needs the same plumbing). (b) One-shot cookie / `?welcome=1` redirect param — flips "Welcome"→"Welcome back" mid-first-session on refresh, the same jank the flash fix removed.
 **Affects:** backend/routers/auth.py, backend/tests/test_02_auth.py, frontend/src/pages/LandingPage.js, docs/backend.md, docs/frontend.md, docs/decisions/DECISIONS.md.
+
+## 2026-07-12 — Role interview-prep SEO copy rewritten around interview moments
+**Area:** growth · SEO · frontend · **Status:** accepted
+**Context:** The `/interview-prep` index and four role pages had correct product facts but read too much like generated positioning copy: abstract, slogan-heavy, and not close enough to the interview moments candidates land from search to solve.
+**Decision:** Rewrote the index hero, all role hero subcopy, `ip-body` sections, track blurbs, shared reasoning block, FAQs, and crawler-visible meta descriptions around concrete role failure modes: metric grain, pipeline retries, SCDs, leakage, SRM, shuffles, and production judgment. The role-to-track mapping stays exactly in `roleRegistry.js`.
+**Rejected:** Keyword-stuffed doorway copy, changing the role mapping, and adding public gap disclaimers. The pages remain SEO entry points, but the body now earns the keywords through role-specific reasoning rather than repeating them mechanically.
+**Affects:** frontend/src/pages/{InterviewPrepIndexPage,RoleInterviewPrepPage}.js, backend/routers/spa.py, docs/decisions/DECISIONS.md.
+
+## 2026-07-12 — Role interview-prep copy generalized into role overview + track weights
+**Area:** growth · SEO · frontend · **Status:** accepted
+**Context:** Owner review found the "interview moments" pass still sounded too observed and scenario-specific for SEO visitors. The desired page is a broad, clear picture of data interviews and the four role paths, so candidates can understand track weightage and then try a sample/register.
+**Decision:** Reframed `/interview-prep` and all four role pages around generic interview elements, role scope, and track priority labels (Primary / Important / Supporting), with CTAs toward samples, saved progress, and mocks. Server-rendered meta descriptions were synced again.
+**Rejected:** Keeping the more vivid failure-mode copy as-is. It had personality, but these SEO surfaces should first orient a broad search visitor before selling depth.
+**Affects:** frontend/src/pages/{InterviewPrepIndexPage,RoleInterviewPrepPage}.js, backend/routers/spa.py, docs/decisions/DECISIONS.md.

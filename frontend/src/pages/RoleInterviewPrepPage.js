@@ -38,26 +38,26 @@ const BREADCRUMB_LD = (label, slug) => ({
 
 // ── Shared reasoning section (platform-level, identical for every role) ──────
 const SHARED_REASONING = {
-  h2: 'Built for reasoning, not recall',
+  h2: 'From overview to practice',
   points: [
     {
-      heading: 'Real engines where it counts',
-      body: 'SQL runs on DuckDB and Python in a sandbox with instant feedback. The reasoning tracks test judgment with realistic scenarios, not rote recall.',
+      heading: 'Start with a sample',
+      body: 'Try role-filtered sample questions first, no account required, to get a feel for the track mix and difficulty.',
     },
     {
-      heading: 'Mock interviews',
-      body: 'Timed sessions that pressure-test the whole stack, with a post-mortem that names your weakest concepts.',
+      heading: 'Build by track',
+      body: 'Practice the important tracks one at a time, with real SQL, Python, and Pandas execution where the role calls for it.',
     },
     {
-      heading: 'A graded path',
-      body: 'Curated learning paths take you from foundational to advanced, concept by concept.',
+      heading: 'Register when you want progress',
+      body: 'A free account keeps your attempts, unlocked questions, learning paths, and mock history in one place.',
     },
   ],
 };
 
 const FREE_PRACTICE_FAQ = {
-  q: 'Can I practice for free?',
-  a: 'More than you might expect. Every easy question is free across all 9 tracks, and samples need no account at all. Pro and Elite add every medium and hard question, plus the mock-only question bank, mock interviews, and deep analytics.',
+  q: 'Can I start without paying?',
+  a: 'Yes. Samples are open without an account, and every easy question is free across all 9 tracks. Pro and Elite unlock medium and hard questions, mock-only inventory, mocks, and deeper analytics.',
   link: { label: 'More details →', to: '/pricing' },
 };
 
@@ -66,64 +66,64 @@ const ROLE_CONTENT = {
     helmet: {
       title: 'Data Engineer Interview Prep: SQL, Python, Spark & Pipelines | datathink',
       description:
-        'Data engineer interview prep on real execution engines: SQL, Python, PySpark and data pipeline design, plus mock interviews and reasoning-first questions.',
+        'Data engineer interview prep covering SQL, Python, PySpark, pipelines, and data modeling, with role-specific samples, practice, and mocks.',
     },
     hero: {
       eyebrow: 'Interview prep · Data Engineer',
       h1: 'Data Engineer Interview Prep',
-      sub: 'A pipeline that is correct on Monday can quietly double-count after a Tuesday retry. Data engineer interviews push on exactly that kind of judgment: idempotent loads, the Python that sessionizes an event stream without holding it all in memory, when a broadcast join beats a shuffle, and the fact-table grain that keeps analytics honest as volume grows. datathink builds it on the real engines, the way the job does.',
+      sub: 'Data engineer interviews usually focus on building reliable data systems. Expect a mix of SQL, Python, distributed processing, pipeline design, and data modeling. The emphasis is on whether you can move data correctly, reason about scale, and explain the design choices behind a warehouse, lakehouse, or production pipeline.',
       ctaPrimary: { label: 'Try a free sample →', to: '/sample?role=data-engineer' },
       ctaSecondary: { label: 'See the 5 tracks ↓', scrollTo: 'ip-tracks' },
     },
     whatSection: {
       h2: 'What data engineer interviews actually test',
-      body: 'Syntax recall is not the job. A data engineer is judged on whether the pipeline survives production: picking a fact-table grain that will not silently lie, making a backfill idempotent so an at-least-once source cannot double-fire, salting a hot key when a skew join stalls, and writing SQL that stays correct as tables outgrow memory. That judgment is what the five tracks build, each on the engine where the mistake actually shows up.',
+      body: 'A typical data engineer interview checks whether you can work across the data stack: write SQL, solve data-processing problems in Python, reason about Spark jobs, design ETL or ELT pipelines, and choose data models that support analytics. Some companies go deep on coding, others on system design, but the five tracks below cover the common interview surface for the role.',
     },
     tracks: [
       {
         slug: 'python',
-        desc: 'Data-processing algorithms: sessionization, dedup, streaming aggregation, and the logic behind pipeline transforms.',
-        emphasis: 'Core. Medium-to-hard data-processing logic, not LeetCode DSA.',
+        desc: 'Data-processing logic, algorithms, parsing, deduplication, sessionization, and memory-aware transforms.',
+        emphasis: 'Primary. Most DE loops include a coding screen; medium-to-hard depth is useful.',
       },
       {
         slug: 'sql',
-        desc: 'Window functions, aggregation, and the query depth that holds up as tables grow.',
-        emphasis: 'Core. Almost always screened; medium-to-hard depth that holds at scale.',
+        desc: 'Joins, aggregation, windows, CTEs, and queries used to validate or transform warehouse data.',
+        emphasis: 'Primary. Almost always tested; strong medium-to-hard SQL is expected.',
       },
       {
         slug: 'pyspark',
-        desc: 'Distributed processing: shuffles, joins, partitioning, and the trade-offs behind a tuned Spark job.',
-        emphasis: 'Heavily weighted at big-data shops. Conceptual to medium-hard: shuffles, joins, skew.',
+        desc: 'Distributed data processing, partitions, shuffles, joins, skew, and Spark performance concepts.',
+        emphasis: 'Important. Heavier at big-data and platform teams; medium depth covers many screens.',
       },
       {
         slug: 'data-engineering',
-        desc: 'Pipeline design: ETL vs ELT, idempotency, orchestration, CDC, and schema evolution.',
-        emphasis: 'Core. Pipeline scenario reasoning; medium-to-hard.',
+        desc: 'Pipeline design, ETL vs ELT, orchestration, CDC, idempotency, backfills, and schema evolution.',
+        emphasis: 'Primary. The higher the level, the more this becomes the main interview surface.',
       },
       {
         slug: 'data-modeling',
-        desc: 'Dimensional modeling, grain, normalization, and SCDs, so downstream analytics scale instead of breaking.',
-        emphasis: 'Frequently tested. Grain and SCDs; solid medium is enough.',
+        desc: 'Dimensional modeling, fact-table grain, SCDs, normalization, and schemas for analytics use cases.',
+        emphasis: 'Important. Usually medium depth; deeper for warehouse-heavy roles.',
       },
     ],
     reasoningSection: SHARED_REASONING,
     faq: [
       {
         q: 'What should a data engineer study for interviews?',
-        a: 'Focus on SQL depth, a data-processing language like Python, distributed processing with Spark, and pipeline and data-modeling reasoning such as idempotency, grain, and orchestration. datathink groups these into five tracks built around the data engineer interview.',
+        a: 'Study SQL, Python data-processing, Spark or distributed systems, pipeline design, and data modeling. The exact mix depends on the company, but these five areas cover most data engineer interview loops.',
       },
       {
         q: 'Do data engineer interviews include SQL?',
-        a: 'Almost always. SQL is the most common screen for data engineers: joins, window functions, and queries that stay correct and efficient as data scales. It is one of the five datathink tracks for the role.',
+        a: 'Almost always. SQL is commonly used to test joins, aggregation, windows, CTEs, and whether you can inspect and transform data correctly.',
       },
       {
         q: 'How is this different from LeetCode-style prep?',
-        a: 'datathink trains the reasoning a data engineer uses on the job, not pattern memorization. Code runs on real engines, and the reasoning tracks test judgment with realistic scenarios rather than multiple-choice trivia. Two-step hints build the mental model before the technique, and learning paths take you from foundational to advanced, concept by concept. Elite plans add per-track readiness scores and Interview Loops: chain-driven mock sessions where each follow-up pivots like a real interviewer, the way a real screen escalates.',
+        a: 'Data engineer interviews can include coding, but they also test data-system reasoning: pipelines, Spark, schemas, retries, and data quality. datathink keeps the practice tied to those role-specific topics.',
       },
       FREE_PRACTICE_FAQ,
       {
         q: 'How long does it take to prepare?',
-        a: 'It depends on your starting point. Most candidates work in focused sessions across the five tracks, and the dashboard surfaces your weakest concepts so you spend time where it moves the needle.',
+        a: 'It depends on your starting point and the interview loop. Start with a few samples, use the track weights to prioritize, then register if you want saved progress, full practice, and mocks.',
       },
     ],
   },
@@ -132,58 +132,58 @@ const ROLE_CONTENT = {
     helmet: {
       title: 'Data Analyst Interview Prep: SQL, Statistics & Python | datathink',
       description:
-        'Data analyst interview prep on real engines: SQL depth, statistical reasoning, Pandas and Python for data, plus mock interviews and reasoning-first questions.',
+        'Data analyst interview prep covering SQL, statistics, Pandas, and Python, with role-specific samples, practice, and mocks.',
     },
     hero: {
       eyebrow: 'Interview prep · Data Analyst',
       h1: 'Data Analyst Interview Prep',
-      sub: 'Anyone can pull a number; a data analyst is hired to pull the right one and know whether it means anything. Interviews test that whole arc: SQL that joins and aggregates to the grain the question actually asked, the statistics to separate a real lift from sampling noise, and the Pandas to answer what a dashboard cannot. Every track runs on a real engine, so you are judged on the answer, not your recall of the syntax.',
+      sub: 'Data analyst interviews usually test whether you can turn business questions into reliable analysis. SQL carries the most weight, followed by statistics, metrics, and practical data manipulation in Pandas or Python. The role is less about memorizing tools and more about producing numbers that can be explained clearly.',
       ctaPrimary: { label: 'Try a free sample →', to: '/sample?role=data-analyst' },
       ctaSecondary: { label: 'See the 4 tracks ↓', scrollTo: 'ip-tracks' },
     },
     whatSection: {
       h2: 'What data analyst interviews actually test',
-      body: 'The hard part of the analyst screen is not remembering a window function; it is defending the answer. You will be asked to choose the denominator that makes a metric honest, to say whether an 8% lift is signal or sampling noise, to catch the join fan-out that quietly double-counts revenue, and to reshape data in Pandas when the warehouse cannot. datathink drills each of those calls with reasoning questions and live execution, across the four tracks the role leans on.',
+      body: 'A typical data analyst interview includes SQL questions, metric interpretation, basic statistics, and sometimes a Python or Pandas exercise. You may be asked to write a query, explain a result, reason about uncertainty, or manipulate a small dataset. The four tracks below show the usual weighting for analyst roles.',
     },
     tracks: [
       {
         slug: 'sql',
-        desc: 'Joins, window functions, and the query patterns that turn raw tables into the metric a stakeholder asked for.',
-        emphasis: 'The core screen. Almost always tested; depth through hard matters most.',
+        desc: 'Joins, aggregation, windows, CTEs, cohort queries, and metric-building over relational data.',
+        emphasis: 'Primary. This is the core analyst screen; depth through hard matters most.',
       },
       {
         slug: 'statistics',
-        desc: 'Hypothesis testing, confidence intervals, and the judgment to tell a real effect from noise.',
-        emphasis: 'Often tested. Solid conceptual-to-medium is usually enough.',
+        desc: 'Descriptive statistics, probability, confidence intervals, hypothesis tests, and interpreting noisy results.',
+        emphasis: 'Important. Conceptual-to-medium strength is usually enough for analyst roles.',
       },
       {
         slug: 'pandas',
-        desc: 'Reshaping, grouping, and cleaning data in DataFrames when the question outgrows SQL.',
-        emphasis: 'Supporting. Medium fluency covers most screens.',
+        desc: 'DataFrame filtering, grouping, reshaping, cleaning, and quick analysis outside SQL.',
+        emphasis: 'Supporting. Medium fluency covers most screens that include it.',
       },
       {
         slug: 'python',
-        desc: 'The scripting and logic to automate analysis and handle data a query cannot.',
-        emphasis: 'Lighter weight. Easy-to-medium is usually enough.',
+        desc: 'Basic scripting, parsing, counting, and automation around analysis workflows.',
+        emphasis: 'Supporting. Easy-to-medium is usually enough unless the role is Python-heavy.',
       },
     ],
     reasoningSection: SHARED_REASONING,
     faq: [
       {
         q: 'What should a data analyst study for interviews?',
-        a: 'Prioritize SQL fluency, applied statistics, and a working command of Python or Pandas for analysis. datathink groups these into four tracks built around the data analyst interview, with reasoning questions, not trivia.',
+        a: 'Prioritize SQL first, then applied statistics, metrics, and practical Pandas or Python. Most analyst interviews are trying to see whether you can compute, explain, and trust a result.',
       },
       {
         q: 'How much SQL do data analyst interviews need?',
-        a: 'A lot. SQL is the core analyst screen: joins, aggregation, window functions, and getting the metric right as data scales. It is one of the four datathink tracks for the role.',
+        a: 'A lot. SQL is usually the highest-weight track for data analyst interviews because it tests joins, aggregation, windows, and metric construction.',
       },
       {
         q: 'Do analyst interviews include statistics?',
-        a: 'Often. Many ask you to judge whether a result is meaningful, design a simple test, or interpret a confidence interval. The Statistics track covers this with conceptual and numerical questions.',
+        a: 'Often. Statistics questions are usually applied: interpreting a confidence interval, understanding sampling noise, or deciding whether a result is meaningful.',
       },
       {
         q: 'How is this different from LeetCode-style prep?',
-        a: 'datathink trains the reasoning an analyst uses on the job, not pattern memorization. Code runs on real engines, two-step hints build the mental model before the technique, and learning paths take you from foundational to advanced. Elite plans add per-track readiness scores and Interview Loops, chain-driven mock sessions that pivot like a real interviewer.',
+        a: 'Most analyst rounds are not algorithm puzzles. datathink focuses on SQL, metrics, statistics, and data manipulation, which are the areas most analyst interviews actually cover.',
       },
       FREE_PRACTICE_FAQ,
     ],
@@ -193,38 +193,38 @@ const ROLE_CONTENT = {
     helmet: {
       title: 'Analytics Engineer Interview Prep: SQL, dbt & Data Modeling | datathink',
       description:
-        'Analytics engineer interview prep on real engines: SQL precision, dimensional data modeling, dbt patterns, Pandas and Python, plus mock interviews and reasoning-first questions.',
+        'Analytics engineer interview prep covering SQL, data modeling, dbt-style transformations, Pandas, and Python, with samples and mocks.',
     },
     hero: {
       eyebrow: 'Interview prep · Analytics Engineer',
       h1: 'Analytics Engineer Interview Prep',
-      sub: 'The analytics engineer owns the layer every dashboard inherits, so a wrong grain here becomes a hundred wrong numbers downstream. Interviews probe that responsibility: the fact-table grain and keys that stay correct under slowly-changing dimensions, when to normalize versus denormalize, and SQL clean enough to trust in production and still read six months later. datathink trains it on the engines and schema problems the job is actually made of.',
+      sub: 'Analytics engineer interviews sit between analysis and data engineering. They usually emphasize SQL, data modeling, transformation design, and dbt-style thinking. You are expected to understand how raw data becomes trusted tables, metrics, and semantic layers that analysts and stakeholders can use.',
       ctaPrimary: { label: 'Try a free sample →', to: '/sample?role=analytics-engineer' },
       ctaSecondary: { label: 'See the 4 tracks ↓', scrollTo: 'ip-tracks' },
     },
     whatSection: {
       h2: 'What analytics engineer interviews actually test',
-      body: 'Design is the whole game, and the interview rewards it over recall. The decisions compound: choosing a grain that will not need re-platforming later, picking an SCD Type 2 strategy when audit and reporting requirements disagree, conforming a dimension across two independently sourced systems, and writing transformation SQL a teammate can read and a model can depend on. Pandas and Python cover the steps that do not belong in a query. The four tracks rehearse each of those, the way a real design review would.',
+      body: 'A typical analytics engineer interview tests advanced SQL, dimensional modeling, transformation quality, and the ability to reason about data definitions. Some loops include dbt concepts directly; others test the same ideas through modeling and SQL design questions. Python and Pandas are useful supporting skills, but SQL and modeling carry the most weight.',
     },
     tracks: [
       {
         slug: 'sql',
-        desc: 'Window functions, CTEs, and the precise, maintainable SQL the transformation layer depends on.',
-        emphasis: 'The core skill. Maintainable transformation SQL; hard-level depth pays off.',
+        desc: 'Transformation SQL, windows, CTEs, incremental logic, tests, and metric definitions.',
+        emphasis: 'Primary. This is the main technical screen; hard-level depth pays off.',
       },
       {
         slug: 'data-modeling',
-        desc: 'Dimensional modeling, grain, normalization, and the dbt-style design that decides whether analytics scale.',
-        emphasis: 'Co-core. Dimensional design and grain; medium-to-hard.',
+        desc: 'Grain, star schemas, SCDs, normalization trade-offs, conformed dimensions, and semantic-layer design.',
+        emphasis: 'Primary. Medium-to-hard modeling is central to the role.',
       },
       {
         slug: 'pandas',
-        desc: 'DataFrame transformation and reshaping for the steps that do not belong in SQL.',
-        emphasis: 'Supporting. Easy-to-medium suffices.',
+        desc: 'DataFrame checks, reshaping, validation, and one-off transformations around the warehouse layer.',
+        emphasis: 'Supporting. Easy-to-medium is usually sufficient.',
       },
       {
         slug: 'python',
-        desc: 'The scripting and logic behind reliable, testable transformation code.',
+        desc: 'Scripting, data checks, parsing, lightweight automation, and transformation logic.',
         emphasis: 'Often a coding round. Medium is the realistic bar.',
       },
     ],
@@ -232,19 +232,19 @@ const ROLE_CONTENT = {
     faq: [
       {
         q: 'What should an analytics engineer study for interviews?',
-        a: 'Focus on advanced SQL, dimensional data modeling, and dbt-style transformation patterns, with Python or Pandas for the rest. datathink groups these into four tracks built around the analytics engineer interview.',
+        a: 'Focus on advanced SQL, data modeling, and transformation design. dbt-specific knowledge helps, but many interviews test the same ideas through SQL, model grain, tests, and metric definitions.',
       },
       {
         q: 'Do analytics engineer interviews include data modeling?',
-        a: 'Yes, heavily. Grain, keys, normalization, slowly changing dimensions, and star schemas are core. The Data Modeling track covers them with scenario and design questions.',
+        a: 'Yes. Data modeling is usually a high-weight area: grain, keys, SCDs, star schemas, denormalization, and semantic-layer decisions.',
       },
       {
         q: 'How is SQL tested for analytics engineers?',
-        a: 'Beyond getting the answer, you are judged on SQL that is correct, efficient, and maintainable as a model grows. The SQL track drills exactly that.',
+        a: 'SQL is tested as transformation work, not just answer retrieval. Interviewers look for correctness, maintainability, readable CTEs, window functions, and metric logic.',
       },
       {
         q: 'How is this different from LeetCode-style prep?',
-        a: 'datathink trains the reasoning an analytics engineer uses on the job, not pattern memorization. Code runs on real engines, two-step hints build the mental model first, and learning paths take you from foundational to advanced. Elite plans add per-track readiness scores and Interview Loops, chain-driven mock sessions that pivot like a real interviewer.',
+        a: 'Analytics engineering interviews are closer to SQL and modeling design than algorithm puzzles. datathink focuses on the transformation and data-modeling skills the role actually uses.',
       },
       FREE_PRACTICE_FAQ,
     ],
@@ -254,48 +254,48 @@ const ROLE_CONTENT = {
     helmet: {
       title: 'Data Scientist Interview Prep: ML, Statistics & Experimentation | datathink',
       description:
-        'Data scientist interview prep on real engines: ML fundamentals, statistical inference, experimentation, plus Python and SQL, with mock interviews and reasoning-first questions.',
+        'Data scientist interview prep covering ML fundamentals, statistics, experimentation, Python, Pandas, and SQL, with samples and mocks.',
     },
     hero: {
       eyebrow: 'Interview prep · Data Scientist',
       h1: 'Data Scientist Interview Prep',
-      sub: 'A data scientist has to get from raw data to a claim that survives scrutiny, and interviews test every step of that path. Expect to diagnose why a model that scored 0.95 offline drops to 0.70 in production, to say when a result is statistically real instead of underpowered noise, to design an experiment that isolates cause, and to do the Pandas, Python, and SQL the work actually runs on. datathink drills that reasoning on engines that execute, not flashcards.',
+      sub: 'Data scientist interviews usually combine quantitative reasoning, machine learning, experimentation, and hands-on data work. The exact loop varies by company, but most roles expect ML fundamentals, statistics, Python or Pandas, SQL, and the ability to explain how a model or experiment supports a decision.',
       ctaPrimary: { label: 'Try a free sample →', to: '/sample?role=data-scientist' },
       ctaSecondary: { label: 'See the 6 tracks ↓', scrollTo: 'ip-tracks' },
     },
     whatSection: {
       h2: 'What data scientist interviews actually test',
-      body: 'Memorized formulas do not get you through a data science loop; judgment does. You will be asked to read a learning curve and name bias versus variance, to spot the leakage hiding behind a too-good AUC, to choose a correction when a PM ran eight tests and one came back significant, to defend an experiment against sample-ratio mismatch, and to wrangle the data in Pandas and SQL before any of it. These are the calls the six tracks drill, with a timed mock and a post-mortem that names the ones you missed.',
+      body: 'A typical data scientist interview can include ML concepts, statistical inference, A/B testing, SQL, Python, and Pandas. Product-focused roles often give more weight to experimentation and metrics; applied ML roles usually go deeper on model evaluation, leakage, and production trade-offs. The six tracks below cover the common technical surface.',
     },
     tracks: [
       {
         slug: 'ml-fundamentals',
-        desc: 'Model selection, bias-variance, evaluation metrics, and the production trade-offs interviewers probe.',
-        emphasis: 'Core. Medium-to-hard conceptual depth: bias-variance, evaluation, leakage.',
+        desc: 'Bias-variance, model selection, evaluation metrics, leakage, class imbalance, calibration, and drift.',
+        emphasis: 'Primary. Medium-to-hard conceptual depth matters more than algorithm-name recall.',
       },
       {
         slug: 'statistics',
-        desc: 'Probability, inference, and hypothesis testing, the quantitative backbone of a defensible claim.',
-        emphasis: 'Core. Inference and probability, deep through hard.',
+        desc: 'Probability, inference, confidence intervals, hypothesis testing, regression interpretation, and uncertainty.',
+        emphasis: 'Primary. Strong statistics is expected across most DS loops.',
       },
       {
         slug: 'experimentation',
-        desc: 'A/B design, power, and causal inference, so your conclusions hold up.',
-        emphasis: 'Core for product DS. A/B design and power; medium-to-hard.',
+        desc: 'A/B testing, power, sample-ratio mismatch, multiple testing, causal reasoning, and experiment interpretation.',
+        emphasis: 'Primary for product DS. Important for many generalist DS roles too.',
       },
       {
         slug: 'python',
-        desc: 'The data-processing and modeling code a data scientist writes every day.',
-        emphasis: 'Supporting. Medium mastery is sufficient, not heavy DSA.',
+        desc: 'Coding for data processing, algorithms, parsing, counting, and modeling-adjacent workflows.',
+        emphasis: 'Important. Medium mastery is usually enough unless the role is coding-heavy.',
       },
       {
         slug: 'pandas',
-        desc: 'DataFrame wrangling for exploratory analysis and feature prep, the hands-on step before a model.',
-        emphasis: 'Supporting. Medium fluency for EDA and feature prep.',
+        desc: 'EDA, grouping, reshaping, cleaning, datetime operations, and feature-prep style transformations.',
+        emphasis: 'Important. Medium fluency covers most hands-on DS screens.',
       },
       {
         slug: 'sql',
-        desc: 'Pulling and shaping the data a model needs, correctly and at scale.',
+        desc: 'Querying, joining, cohort selection, metric definitions, and pulling data for analysis or modeling.',
         emphasis: 'Expected almost everywhere. Easy-to-medium, deeper at SQL-heavy shops.',
       },
     ],
@@ -303,19 +303,19 @@ const ROLE_CONTENT = {
     faq: [
       {
         q: 'What should a data scientist study for interviews?',
-        a: 'Prioritize ML fundamentals, applied statistics, and experimentation, with Python, Pandas, and SQL underneath. datathink groups these into six tracks built around the data scientist interview, with reasoning questions, not trivia.',
+        a: 'Study ML fundamentals, statistics, experimentation, Python, Pandas, and SQL. The weight varies by role type: product DS leans more on experiments and metrics, while applied ML leans more on modeling and evaluation.',
       },
       {
         q: 'Do data scientist interviews include statistics and experimentation?',
-        a: 'Almost always. Expect questions on inference, A/B test design, power, and reading a result honestly. The Statistics and Experimentation tracks cover both.',
+        a: 'Often, especially for product and decision-science roles. Expect inference, A/B test design, power, multiple testing, and interpretation of results.',
       },
       {
         q: 'Is machine learning enough on its own?',
-        a: 'No. Interviews probe whether you understand why a model behaves as it does, plus the statistics and experiment design around it. datathink covers the full reasoning surface, not just model recall.',
+        a: 'Usually not. Data scientist interviews also test statistics, SQL, data manipulation, experimentation, and whether you can explain the reasoning behind a model or result.',
       },
       {
         q: 'How is this different from LeetCode-style prep?',
-        a: 'datathink trains the reasoning a data scientist uses on the job, not pattern memorization. Code runs on real engines, two-step hints build the mental model first, and learning paths take you from foundational to advanced. Elite plans add per-track readiness scores and Interview Loops, chain-driven mock sessions that pivot like a real interviewer.',
+        a: 'Some DS interviews include coding, but the role also requires ML, statistics, experimentation, SQL, and Pandas. datathink weights practice around that broader data-science interview mix.',
       },
       FREE_PRACTICE_FAQ,
     ],
@@ -457,7 +457,7 @@ export default function RoleInterviewPrepPage() {
             <Reveal>
               <h2 className="lp-section-h2">{tracksHeading(roleData.label, tracks.length)}</h2>
               <p className="ip-body ip-tracks-intro">
-                Each maps to a real slice of the {roleData.label.toLowerCase()} interview. Practice on real engines, or pull any one into a timed mock.
+                The track weights below show what to prioritize first for a {roleData.label.toLowerCase()} interview. Try a free sample, then register when you want saved progress, full practice, and mocks.
               </p>
             </Reveal>
             <div className="ip-track-grid">

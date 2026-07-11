@@ -7,7 +7,7 @@ import { TRACK_META } from '../contexts/TopicContext';
 
 const PAGE_TITLE = 'Data Interview Prep by Role: Analyst, Engineer & Scientist | datathink';
 const PAGE_DESC =
-  'Role-specific data interview prep. Pick your path: Data Analyst, Data Engineer, Analytics Engineer, or Data Scientist, each with the tracks, mock interviews, and reasoning that role demands.';
+  'Compare data interview prep by role: Data Analyst, Data Engineer, Analytics Engineer, and Data Scientist, with role-specific tracks, samples, and mocks.';
 const PAGE_URL = 'https://datathink.co/interview-prep';
 
 const breadcrumbLd = {
@@ -73,7 +73,7 @@ export default function InterviewPrepIndexPage() {
             <p className="lp-eyebrow">Interview prep</p>
             <h1 className="ip-h1">Data interview prep, by role</h1>
             <p className="ip-hero-sub">
-              Pick the role you are interviewing for. Each path bundles the tracks that role is tested on, on real execution engines, with mock interviews and reasoning-first questions.
+              Data interviews usually test a mix of SQL, data manipulation, statistics, systems, modeling, experimentation, and machine learning. The mix changes by role. Use these pages to see what each role tends to emphasize, how the tracks are weighted, and where to start with a free sample.
             </p>
           </div>
           <button

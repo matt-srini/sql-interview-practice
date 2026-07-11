@@ -131,27 +131,27 @@ def _build_seo_meta() -> dict:
 
     meta["/interview-prep"] = {
         "title": "Data Interview Prep by Role: Analyst, Engineer & Scientist | datathink",
-        "description": "Role-specific data interview prep. Pick your path: Data Analyst, Data Engineer, Analytics Engineer, or Data Scientist, each with the tracks, mock interviews, and reasoning that role demands.",
+        "description": "Compare data interview prep by role: Data Analyst, Data Engineer, Analytics Engineer, and Data Scientist, with role-specific tracks, samples, and mocks.",
     }
 
     meta["/interview-prep/data-engineer"] = {
         "title": "Data Engineer Interview Prep: SQL, Python, Spark & Pipelines | datathink",
-        "description": "Data engineer interview prep on real execution engines: SQL, Python, PySpark and data pipeline design, plus mock interviews and reasoning-first questions.",
+        "description": "Data engineer interview prep covering SQL, Python, PySpark, pipelines, and data modeling, with role-specific samples, practice, and mocks.",
     }
 
     meta["/interview-prep/data-analyst"] = {
         "title": "Data Analyst Interview Prep: SQL, Statistics & Python | datathink",
-        "description": "Data analyst interview prep on real engines: SQL depth, statistical reasoning, Pandas and Python for data, plus mock interviews and reasoning-first questions.",
+        "description": "Data analyst interview prep covering SQL, statistics, Pandas, and Python, with role-specific samples, practice, and mocks.",
     }
 
     meta["/interview-prep/analytics-engineer"] = {
         "title": "Analytics Engineer Interview Prep: SQL, dbt & Data Modeling | datathink",
-        "description": "Analytics engineer interview prep on real engines: SQL precision, dimensional data modeling, dbt patterns, Pandas and Python, plus mock interviews and reasoning-first questions.",
+        "description": "Analytics engineer interview prep covering SQL, data modeling, dbt-style transformations, Pandas, and Python, with samples and mocks.",
     }
 
     meta["/interview-prep/data-scientist"] = {
         "title": "Data Scientist Interview Prep: ML, Statistics & Experimentation | datathink",
-        "description": "Data scientist interview prep on real engines: ML fundamentals, statistical inference, experimentation, plus Python and SQL, with mock interviews and reasoning-first questions.",
+        "description": "Data scientist interview prep covering ML fundamentals, statistics, experimentation, Python, Pandas, and SQL, with samples and mocks.",
     }
 
     # Pages crawlers should not index
