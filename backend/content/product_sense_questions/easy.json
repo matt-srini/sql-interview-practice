@@ -1,1 +1,748 @@
-[]
+[
+  {
+    "id": 101001,
+    "order": 1,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "easy",
+    "title": "Spotify's Daily Mix rebuild — choosing the launch's success metric",
+    "scenario_context": "Spotify rebuilds the recommendation model behind Daily Mix and rolls the new version out to a 20% holdout of Free and Premium users, keeping the old algorithm for everyone else. The team needs one primary metric to judge whether the new Daily Mix is actually better before a full rollout.",
+    "description": "Which is the best primary success metric for this launch?",
+    "options": [
+      "The share of tracks in a Daily Mix session that get played past the 30-second mark, new algorithm compared to old, this week.",
+      "The total number of Daily Mix playlists generated that week across all users, since more playlists means the feature is being used.",
+      "Total monthly active users across all of Spotify, since a better recommendation engine should grow the overall user base.",
+      "Total minutes streamed across the entire Spotify app that week, since better recommendations should mean more listening overall."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A is correct: the share of tracks played past 30 seconds inside the Daily Mix session is the one metric here that's directly attributable to the new algorithm's recommendation quality and cleanly comparable between the holdout groups. Option B mistakes an auto-generated count for a quality signal — Daily Mix playlists are created on a fixed schedule for every user regardless of whether the recommendations are good, so the count tracks user base and refresh cadence, not quality. Option C is a company-wide, lagging metric; a single playlist algorithm is far too small a lever to reliably move total MAU, and dozens of unrelated product and marketing changes would swamp any real signal. Option D aggregates listening across the whole app, so both the treatment and control groups' unrelated listening gets folded in — it can't isolate whether the new Daily Mix algorithm itself is better.",
+    "hints": [
+      "Ask which of these four numbers would only move if the new algorithm itself changed what users experienced inside Daily Mix, not something that moves for unrelated reasons.",
+      "Look for the option scoped tightly to the feature being tested (the playlist session itself), not the whole app or the whole user base."
+    ],
+    "concepts": [
+      "METRIC SELECTION & GOAL TRANSLATION"
+    ]
+  },
+  {
+    "id": 101002,
+    "order": 2,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "easy",
+    "title": "Duolingo's streak-reminder push — what should count as success?",
+    "scenario_context": "Duolingo tests a new push notification that reminds users at risk of losing their streak to open the app before midnight. The launch brief states the goal as 'help more users keep learning consistently,' explicitly not just 'get them to open the app.'",
+    "description": "Which metric best captures whether this notification achieved its stated goal?",
+    "options": [
+      "The click-through rate on the notification itself, since a higher click rate means the message is compelling.",
+      "The total number of push notifications delivered that week, since more reminders sent means more chances to save a streak.",
+      "The share of at-risk users who complete a lesson that same day, compared against a matched group who weren't notified.",
+      "The percentage of notified users who open the app within one hour of receiving it, regardless of what they do once inside."
+    ],
+    "correct_option": 2,
+    "explanation": "Option C is correct: it directly operationalizes 'keep learning consistently' as same-day lesson completion, and comparing notified users against a matched group who weren't notified isolates the notification's effect. Option A grades the notification's copywriting (did people click) rather than the outcome the brief cares about. Option B counts how many reminders went out, an operational send volume that says nothing about whether anyone actually learned. Option D stops at 'opened the app within an hour,' which the brief explicitly distinguishes from the real goal — plenty of users could open and close the app without practicing at all.",
+    "hints": [
+      "The launch brief explicitly separates 'opened the app' from the real goal — look for the option that describes the actual desired behavior, not a step toward it.",
+      "Compare notified users to a similar group who weren't notified. Which option builds that comparison in?"
+    ],
+    "concepts": [
+      "METRIC SELECTION & GOAL TRANSLATION"
+    ]
+  },
+  {
+    "id": 101003,
+    "order": 3,
+    "topic": "product-sense",
+    "type": "conceptual",
+    "difficulty": "easy",
+    "title": "Notion's AI assistant — is 'suggestions shown' a good success metric?",
+    "scenario_context": "A PM proposes tracking 'total number of AI writing suggestions shown to users' as the primary success metric for Notion's new AI assistant, arguing that a bigger number proves people are using the feature.",
+    "description": "What's the strongest critique of using this as the primary success metric?",
+    "options": [
+      "It's a poor metric because Notion doesn't primarily make money from the AI assistant, so any usage metric is disconnected from revenue.",
+      "It's a poor metric because 'shown' simply counts every impression the system generates, whether or not the user found it useful.",
+      "It's a poor metric because the client-side event that fires when a suggestion appears is unreliable and undercounts real usage.",
+      "It's a poor metric because different users write in very different styles, so the number won't be comparable across the user base."
+    ],
+    "correct_option": 1,
+    "explanation": "Option B is correct: 'shown' counts impressions the system itself generates, so Notion can raise the number simply by displaying suggestions more often, with no requirement that any suggestion was useful or accepted — a number moving without the underlying goal moving. Option A misdiagnoses the flaw as a revenue problem; a feature can have a perfectly good success metric that has nothing to do with revenue (like an acceptance rate), so 'not tied to revenue' isn't why this specific metric fails. Option C raises a measurement-reliability concern that isn't the issue here — the proposal is conceptually flawed even if every impression is logged with perfect accuracy. Option D's point about style variability is a real analysis nuance, not a reason to reject the metric outright; metrics that vary by segment can still be meaningful in aggregate or when segmented.",
+    "hints": [
+      "Ask who controls whether this number goes up: the user, or the system itself.",
+      "A metric that rises just because the system displays something more often, without requiring any user action or judgment, is a common trap. Which option describes that?"
+    ],
+    "concepts": [
+      "METRIC SELECTION & GOAL TRANSLATION"
+    ]
+  },
+  {
+    "id": 101004,
+    "order": 4,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "easy",
+    "title": "Airbnb's Verified ID badge — picking the metric that proves it worked",
+    "scenario_context": "Airbnb adds a 'Verified ID' badge that hosts can earn by confirming a government ID. The stated goal is to increase guest trust enough that verified listings convert better, not just to get hosts to complete verification.",
+    "description": "Which metric is the best primary success metric for this launch?",
+    "options": [
+      "The number of hosts who complete ID verification within 30 days of the badge launching.",
+      "The total number of guest messages sent to verified hosts, since more messages suggest guests feel comfortable reaching out.",
+      "Average host response time on listings with the Verified ID badge.",
+      "Booking conversion rate (search-to-book) on verified listings compared to otherwise-similar unverified listings."
+    ],
+    "correct_option": 3,
+    "explanation": "Option D is correct: it directly operationalizes 'guest trust enough that verified listings convert better' as a search-to-book comparison between similar verified and unverified listings. Option A measures host adoption of the badge program, a step toward the goal, not the stated outcome itself. Option B, message volume, is a plausible-sounding proxy, but messages can rise for reasons unrelated to trust (verified hosts might simply have more listings) and it doesn't capture conversion. Option C, host response time, measures host behavior on a completely different axis and has no direct link to the guest-trust-to-conversion goal stated in the brief.",
+    "hints": [
+      "The brief separates 'hosts complete verification' from the real goal — find the option that measures the stated outcome, not the step that enables it.",
+      "Look for the option that compares similar listings with and without the badge on the exact behavior the goal describes: booking."
+    ],
+    "concepts": [
+      "METRIC SELECTION & GOAL TRANSLATION"
+    ]
+  },
+  {
+    "id": 101005,
+    "order": 5,
+    "topic": "product-sense",
+    "type": "predict_output",
+    "difficulty": "easy",
+    "title": "DoorDash's Group Cart — which metric moves if it's working?",
+    "scenario_context": "DoorDash launches 'Group Cart,' letting multiple coworkers add items to one shared order before a single checkout and delivery. The team's stated goal is to make office and group ordering easier.",
+    "description": "If Group Cart is working as intended, which metric should move, and in which direction?",
+    "options": [
+      "Total number of registered DoorDash accounts should rise, since every participant in a group order needs their own separate account to add items.",
+      "Customer support ticket volume should rise, since a new multi-person checkout flow will confuse first-time users.",
+      "Average order value (basket size) per checkout should rise, since more people now add items to the same shared cart before checkout.",
+      "Average delivery time per order should fall, since combining several people's items into one order means fewer separate deliveries are dispatched."
+    ],
+    "correct_option": 2,
+    "explanation": "Option C is correct: when several people load items into one shared cart before a single checkout, the direct and immediate consequence is a larger basket per checkout — that's the feature's core mechanic, not a downstream effect. Option A assumes every participant must create a brand-new account just to add items, which isn't how these shared-cart flows typically work, and even where a new account is involved, that's a side effect at best, not the metric that reflects the feature's core mechanic. Option B, support tickets, is a risk signal worth watching as a guardrail, but it isn't what success looks like for this feature. Option D confuses a possible system-wide operational effect (fewer total deliveries dispatched) with a per-order timing metric that the feature's stated goal doesn't actually predict.",
+    "hints": [
+      "Think about the mechanic of the feature itself — more people adding items to one cart — before reaching for downstream effects like support or delivery logistics.",
+      "The option that follows directly and immediately from 'several people load one cart' is the one to pick."
+    ],
+    "concepts": [
+      "METRIC SELECTION & GOAL TRANSLATION"
+    ]
+  },
+  {
+    "id": 101006,
+    "order": 6,
+    "topic": "product-sense",
+    "type": "conceptual",
+    "difficulty": "easy",
+    "title": "Is 'total signups' an actionable metric for a referral launch?",
+    "scenario_context": "A growth team launches a referral program and reports 'total signups this quarter' as proof the program is working, without breaking out how many of those signups came through a referral.",
+    "description": "What's the best characterization of this reporting choice?",
+    "options": [
+      "It's a poor read for this launch: signups blend every channel together, so referred users' behavior is never actually isolated.",
+      "It's fine, since signups are the ultimate goal of any growth initiative and any signup counts toward that goal regardless of channel.",
+      "It's fine as long as the number is trending upward quarter over quarter, since a consistent upward trend rules out other explanations.",
+      "It's a poor metric only because quarterly reporting is too infrequent to catch problems with the referral program early."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A is correct: total signups blend every acquisition channel together, so the number can rise or fall for reasons that have nothing to do with the referral program, and it never separates 'came through a referral' from 'came through anything,' so it can't show whether referred users even behave any differently. Option B assumes any signup counts toward the program's goal regardless of channel, which ignores attribution entirely. Option C assumes a rising trend rules out other explanations, but an unrelated channel — a marketing campaign, seasonality — could be driving that exact same upward trend on its own. Option D misdiagnoses the flaw as a reporting-frequency problem; reporting the same unattributed total-signup number weekly instead of quarterly wouldn't fix the underlying issue.",
+    "hints": [
+      "Ask whether this number can move for reasons that have nothing to do with the referral program at all.",
+      "A metric that doesn't separate 'came through this specific initiative' from 'came through anything' can't credit or blame the initiative for a change."
+    ],
+    "concepts": [
+      "METRIC SELECTION & GOAL TRANSLATION"
+    ]
+  },
+  {
+    "id": 101007,
+    "order": 7,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "easy",
+    "title": "LinkedIn's 'Open to Work' banner — what proves it's helping job seekers?",
+    "scenario_context": "LinkedIn adds an 'Open to Work' profile banner that job seekers can turn on to signal availability to recruiters. The stated goal is to help job seekers get more real recruiter interest, not just to get people to turn the banner on.",
+    "description": "Which is the best primary success metric for this feature?",
+    "options": [
+      "The number of users who turn on the 'Open to Work' banner within the first month after the feature launches broadly.",
+      "The total number of profile views recorded on banner-enabled profiles during that same calendar month.",
+      "The average number of new professional connections added by users after they enable the banner.",
+      "The rate at which banner-enabled profiles get a recruiter InMail, versus similar profiles without the banner."
+    ],
+    "correct_option": 3,
+    "explanation": "Option D is correct: it directly operationalizes 'real recruiter interest' as a recruiter-initiated action (an InMail) compared between similar profiles with and without the banner. Option A measures adoption of the setting, a step toward the goal, not the outcome itself. Option B, profile views, is a plausible proxy, but a view isn't interest — a recruiter can look at a profile and move on without ever reaching out. Option C, connections added, measures a different behavior (the job seeker's own networking activity), not recruiter-initiated interest at all.",
+    "hints": [
+      "Separate 'turned the banner on' from what the banner is supposed to cause a recruiter to do.",
+      "Look for the option describing an action that a recruiter, not the job seeker, takes."
+    ],
+    "concepts": [
+      "METRIC SELECTION & GOAL TRANSLATION"
+    ]
+  },
+  {
+    "id": 101008,
+    "order": 8,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "easy",
+    "title": "Instagram's autoplay Reels — what's the guardrail, not the success metric?",
+    "scenario_context": "Instagram tests autoplay for Reels in the main feed, hoping to increase watch time. The team sets 'average Reels watch time per session' as the primary success metric and wants a second metric to watch as a guardrail — something that would flag a real problem even if watch time goes up.",
+    "description": "Which of these is the best guardrail metric for this launch, distinct from the success metric itself?",
+    "options": [
+      "Average Reels watch time per session for a second cohort, measured one week later, to confirm the first week's result replicates.",
+      "The rate at which users manually skip or scroll past an autoplaying Reel within the first second.",
+      "Total number of Reels uploaded by creators that week.",
+      "Average Reels watch time per session, broken out by iOS versus Android."
+    ],
+    "correct_option": 1,
+    "explanation": "Option B is correct: an immediate skip or scroll-past rate is a genuinely different behavior from watch time and can rise even while total watch time climbs — exactly the disqualifying pattern (autoplay forcing starts nobody wanted) a guardrail should catch. Option A re-measures the same success metric on a delayed cohort to check replication; that's a validity check, not an independent guardrail. Option C tracks content supply, which has no direct bearing on whether autoplay itself is a good or bad viewing experience. Option D slices the same success metric by platform; useful for diagnosis, but it isn't a distinct signal that could catch a failure mode the success metric hides.",
+    "hints": [
+      "A guardrail should be able to move in a bad direction even while the success metric looks great. Which option describes a genuinely different user behavior?",
+      "Autoplay can inflate 'watch time' by starting videos users didn't choose to watch. Which metric would catch that specifically?"
+    ],
+    "concepts": [
+      "GUARDRAIL & COUNTER-METRIC REASONING"
+    ]
+  },
+  {
+    "id": 101009,
+    "order": 9,
+    "topic": "product-sense",
+    "type": "conceptual",
+    "difficulty": "easy",
+    "title": "Success metric vs. guardrail — what's the actual difference?",
+    "scenario_context": "A junior analyst asks: 'I don't understand why we need both a success metric and a guardrail metric — if the guardrail also looks fine, why not just make it the success metric instead?'",
+    "description": "What's the best response to this question?",
+    "options": [
+      "A success metric measures whether the change achieved its goal; a guardrail measures a different, undesired side effect it wouldn't catch on its own.",
+      "There's no real difference — both are just metrics you track during a launch, and calling one a 'guardrail' is only a labeling convention for the dashboard.",
+      "A guardrail is simply a metric held to a stricter statistical significance threshold than the success metric, so it's harder to move.",
+      "A guardrail is any metric that's measured before the launch ships, while the success metric is measured after."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A is correct: a success metric asks 'did the change work,' a guardrail asks 'did it break something else,' and a launch can score well on one while failing the other — that's exactly why teams track both rather than folding one into the other. Option B treats the distinction as pure labeling, but the two metrics are chosen to answer different questions and can genuinely diverge, which is the whole reason a guardrail is useful. Option C imports a statistical-significance framing that isn't what makes something a guardrail; a guardrail is defined by what it measures, not by how strict its significance bar is. Option D confuses the leading-vs-lagging distinction (a real, separate concept about when a metric is observable) with the success-vs-guardrail distinction (about what a metric is checking for); a guardrail can be measured at exactly the same time as the success metric.",
+    "hints": [
+      "Think about what would happen if the two metrics moved in opposite directions. Why would you need to know that?",
+      "One metric answers 'did we achieve the goal' and the other answers 'did we break something else along the way.' Which option captures that?"
+    ],
+    "concepts": [
+      "GUARDRAIL & COUNTER-METRIC REASONING"
+    ]
+  },
+  {
+    "id": 101010,
+    "order": 10,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "easy",
+    "title": "Peloton's auto-scheduling nudge — the leading-indicator guardrail",
+    "scenario_context": "Peloton tests a feature that automatically adds a workout to a user's calendar based on their usual schedule. The team wants an early guardrail signal within the first 3 days of exposure, well before the metric they actually care about — 30-day subscription renewal — is even measurable.",
+    "description": "Which of these is the best leading-indicator guardrail for this launch?",
+    "options": [
+      "30-day subscription renewal rate for the exposed group versus a holdout, measured after the first billing cycle closes.",
+      "Total revenue from all Peloton subscriptions that quarter.",
+      "The rate at which users manually delete or disable the auto-scheduled workout within 3 days of it appearing.",
+      "Number of customer support articles published about the new scheduling feature."
+    ],
+    "correct_option": 2,
+    "explanation": "Option C is correct: whether a user deletes or disables the auto-scheduled workout is observable within days and directly signals dislike of the feature itself, exactly the fast guardrail the team needs before 30-day renewal data exists. Option A is the outcome metric the scenario says is too slow to serve this purpose. Option B is both far too aggregated (company-wide, not feature-specific) and far too slow. Option D counts an internal support-content deliverable, not a user reaction, and tells the team nothing about whether users like or dislike the feature.",
+    "hints": [
+      "The team needs a signal available within days, not weeks. Rule out anything that takes a full billing cycle or a full quarter to observe.",
+      "Look for a user action that would show real-time dislike of the auto-scheduling itself."
+    ],
+    "concepts": [
+      "GUARDRAIL & COUNTER-METRIC REASONING"
+    ]
+  },
+  {
+    "id": 101011,
+    "order": 11,
+    "topic": "product-sense",
+    "type": "predict_output",
+    "difficulty": "easy",
+    "title": "Strava's auto-follow suggestion — predicting the guardrail's move",
+    "scenario_context": "Strava starts auto-suggesting popular local athletes to follow immediately after signup, aiming to raise new-user engagement. The team sets a guardrail: the rate at which users unfollow one of these auto-suggested athletes within 7 days.",
+    "description": "If the auto-suggested follows are actually low-quality matches for new users, what should happen to the guardrail metric, and why?",
+    "options": [
+      "The guardrail should fall, because users who dislike an auto-added follow usually just ignore it rather than actively going in to unfollow someone.",
+      "The guardrail is unrelated to match quality, since unfollowing is driven mostly by how often the followed athlete posts, not by how the follow was added.",
+      "The guardrail should stay flat, since new users rarely revisit their follow list in the first week regardless of who they're following.",
+      "The guardrail should rise, because users who dislike a suggested athlete have a fast, low-friction way to correct it — they can simply unfollow."
+    ],
+    "correct_option": 3,
+    "explanation": "Option D is correct: unfollowing is a fast, low-friction correction available to any user who doesn't want a suggested athlete's content, so low-quality matches make that corrective action more likely, and the guardrail should rise. Option A assumes users passively tolerate a bad match rather than correcting it, which is the opposite of why this metric was chosen as a guardrail in the first place. Option B dismisses the premise the guardrail was designed to catch; the posting frequency of the suggested athlete is a real factor but doesn't make the unfollow-after-auto-suggestion signal irrelevant to match quality. Option C contradicts why the team picked this metric as a fast-responding guardrail — if new users never touched their follow list in week one, the signal would be useless for that purpose.",
+    "hints": [
+      "Think about whether users tend to actively remove things they dislike, or just quietly tolerate them.",
+      "The guardrail was chosen specifically because it reacts fast to bad matches. What direction does 'reacts fast to a bad match' imply?"
+    ],
+    "concepts": [
+      "GUARDRAIL & COUNTER-METRIC REASONING"
+    ]
+  },
+  {
+    "id": 101012,
+    "order": 12,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "easy",
+    "title": "Slack's always-on status nudge — what's the right counter-metric?",
+    "scenario_context": "Slack tests a nudge that encourages users to keep their status set to 'Active' more often, aiming to increase visible teammate availability. The team's success metric is the share of work hours a user's status shows as 'Active.' They want a counter-metric that would catch the nudge backfiring.",
+    "description": "Which of these is the best counter-metric to watch alongside the success metric?",
+    "options": [
+      "The number of workspaces that have opted into receiving the always-on status nudge program.",
+      "The rate at which users switch to 'Do Not Disturb' shortly after being nudged to stay active.",
+      "The average number of messages sent per active user across the whole workspace each business day.",
+      "The total number of always-on status nudges delivered across the workspace that calendar month."
+    ],
+    "correct_option": 1,
+    "explanation": "Option B is correct: if the nudge is backfiring, the natural reaction is to opt into more privacy, not less, so a rise in manually switching to Do Not Disturb shortly after being nudged is a direct behavioral signal of pushback against the pressure to look always-on. Option A counts workspace-level adoption of the nudge program, not how the people who see it react to it. Option C tracks overall message volume, which isn't specific to the status-visibility pressure the nudge creates. Option D counts how many nudges were sent, a delivery metric, not a response from the people who received them.",
+    "hints": [
+      "A counter-metric should catch people reacting against the nudge, not just receiving it. Which option describes a user pushing back?",
+      "If a nudge to look more available backfires, what's the opposite behavior a user might adopt?"
+    ],
+    "concepts": [
+      "GUARDRAIL & COUNTER-METRIC REASONING"
+    ]
+  },
+  {
+    "id": 101013,
+    "order": 13,
+    "topic": "product-sense",
+    "type": "conceptual",
+    "difficulty": "easy",
+    "title": "Etsy's marketplace health — which number signals liquidity?",
+    "scenario_context": "Etsy's marketplace team wants a single number that represents whether buyers can reliably find and complete a purchase for what they're searching for — the core signal of a healthy two-sided marketplace, distinct from how much money changes hands.",
+    "description": "Which metric is the best fit for what the team is describing?",
+    "options": [
+      "The share of buyer searches that convert into a completed purchase within the same session.",
+      "Total gross merchandise value transacted across the entire platform that calendar month.",
+      "The percentage of each transaction's value that Etsy keeps after seller payouts, its take rate.",
+      "The number of new seller shops that opened their first listing on Etsy that quarter."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A is correct: the share of buyer searches that convert into a completed purchase is the direct definition of marketplace liquidity — can demand actually find and transact with the available supply. Option B, gross merchandise value, measures the dollar scale of transactions; a marketplace can grow that number through existing buyers spending more or through price increases while its underlying search-to-purchase match rate quietly gets worse, so it doesn't answer the team's question. Option C, the take rate, is a monetization concept — how much of each transaction Etsy keeps — a different business-model question entirely from whether supply and demand are matching well. Option D, new seller count, is a supply-growth number that says nothing about whether that supply is actually satisfying the searches buyers are running.",
+    "hints": [
+      "The team cares about whether searches convert into purchases, not how big the transactions are in dollar terms.",
+      "Distinguish 'how much money moved' from 'how well did search results turn into a completed match.'"
+    ],
+    "concepts": [
+      "BUSINESS-MODEL METRIC FLUENCY",
+      "METRIC SELECTION & GOAL TRANSLATION"
+    ]
+  },
+  {
+    "id": 101014,
+    "order": 14,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "easy",
+    "title": "Notion's paid-plan push — which SaaS metric proves expansion?",
+    "scenario_context": "Notion's growth team ships a feature that nudges teams on the free plan to invite more teammates, hoping existing paying workspaces also expand their seats. Leadership wants a single metric that would show existing customers are spending more over time, separate from whether they simply keep paying the same amount.",
+    "description": "Which SaaS metric best fits what leadership is asking for?",
+    "options": [
+      "Monthly recurring revenue summed across the entire paying customer base this quarter.",
+      "Gross churn rate among paying workspaces, measured over the same reporting period.",
+      "Customer acquisition cost calculated per newly signed paying workspace this quarter.",
+      "Net revenue retention among existing paying workspaces, isolating upsell from churn."
+    ],
+    "correct_option": 3,
+    "explanation": "Option D is correct: net revenue retention is defined specifically to isolate expansion within the existing paying base, separating it from new-customer revenue and from simple flat renewal — exactly the 'existing customers spending more over time' signal leadership wants. Option A, aggregate monthly recurring revenue, blends new customers, expansions, and churn into one number, so it can't isolate what's happening within the existing base alone. Option B, gross churn, measures customers leaving, the opposite phenomenon from customers expanding their spend. Option C, customer acquisition cost, is about the efficiency of acquiring new customers, unrelated to how existing customers' spend is changing.",
+    "hints": [
+      "Leadership wants a number about existing customers only, not new customers and not churn on its own.",
+      "Look for the metric whose entire definition is built around isolating expansion within the base that's already paying."
+    ],
+    "concepts": [
+      "BUSINESS-MODEL METRIC FLUENCY",
+      "METRIC SELECTION & GOAL TRANSLATION"
+    ]
+  },
+  {
+    "id": 101015,
+    "order": 15,
+    "topic": "product-sense",
+    "type": "conceptual",
+    "difficulty": "easy",
+    "title": "YouTube's ad inventory — which number signals scarcity to sales?",
+    "scenario_context": "A YouTube ad-sales lead wants a single metric that tells the sales team when ad inventory is running short relative to advertiser demand — a signal to raise prices or throttle new ad commitments — distinct from how much advertisers are already paying per impression.",
+    "description": "Which metric best fits what the ad-sales lead is describing?",
+    "options": [
+      "CPM (cost per thousand impressions) currently being charged to advertisers this week.",
+      "Total number of new video uploads recorded across the entire platform this week.",
+      "Fill rate — the share of available ad slots actually served an ad, not left unsold.",
+      "Total watch time accumulated across all videos on the platform during this week."
+    ],
+    "correct_option": 2,
+    "explanation": "Option C is correct: fill rate — the share of available ad slots actually served an ad — is the standard measure of inventory scarcity; a fill rate near 100% signals little room left, a low fill rate signals plenty of unsold inventory. Option A, CPM, is the price advertisers are currently paying, which can be high or low independent of how much unsold inventory remains. Option B, video uploads, is a content-supply count with no direct link to ad-slot availability specifically. Option D, total watch time, is a broad consumption metric that can move for reasons unrelated to how much of the ad inventory specifically is selling through.",
+    "hints": [
+      "The lead cares about how much unsold inventory is left, not about how much advertisers are currently paying.",
+      "Look for the option phrased as a ratio of ad slots actually sold to ad slots available."
+    ],
+    "concepts": [
+      "BUSINESS-MODEL METRIC FLUENCY",
+      "METRIC SELECTION & GOAL TRANSLATION"
+    ]
+  },
+  {
+    "id": 101016,
+    "order": 16,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "easy",
+    "title": "Duolingo's Daily Streak Loop — Which Engagement Window Fits?",
+    "scenario_context": "Duolingo's product is built around a daily streak: users are nudged to practice at least one lesson every day, and the app prominently displays a running streak counter. The growth team wants a single top-line engagement number to report to leadership each week.",
+    "description": "Which metric window is the most appropriate primary engagement number for this product?",
+    "options": [
+      "Monthly Active Users, because it captures the largest possible number of people who touched the app and looks best on a leadership slide.",
+      "Daily Active Users, because the core loop is a daily habit, and DAU is the window that reflects whether it's holding.",
+      "Weekly Active Users, because it smooths out day-to-day noise and is less volatile to report on than a daily figure.",
+      "Monthly Active Users, because most subscription businesses standardize on a 30-day active window regardless of product cadence."
+    ],
+    "correct_option": 1,
+    "explanation": "B is correct: Duolingo's product is explicitly built around a daily streak, so the metric that tells you whether the core habit is holding is the one measured on that same daily cadence — DAU. A window looser than the product's own cadence would blur exactly the signal leadership needs. Option A picks Monthly Active Users for the wrong reason: choosing a metric because it produces the largest, most flattering number is optimizing for how a slide looks, not for what the number tells you about the habit the product is trying to build. Option C's argument for Weekly Active Users — that it's 'less volatile to report' — trades away the very sensitivity that makes a daily-habit product's core metric useful; smoothing out day-to-day noise also smooths out the signal of whether the streak habit is actually forming. Option D justifies Monthly Active Users by appeal to a generic subscription-business convention, but the right window follows the product's actual usage cadence, not an industry default that ignores it.",
+    "hints": [
+      "Ask what question leadership actually needs answered: is the daily habit holding, not just how many people touched the app this month.",
+      "Match the window's granularity to the product's own usage cadence rather than to which number looks biggest or steadiest."
+    ],
+    "concepts": [
+      "ENGAGEMENT & STICKINESS REASONING"
+    ]
+  },
+  {
+    "id": 101017,
+    "order": 17,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "easy",
+    "title": "Slack Usage Dips on Weekends — Which Reporting Window Handles That?",
+    "scenario_context": "Slack usage for a typical account is heavily concentrated on Monday through Friday, with a sharp, predictable dip every Saturday and Sunday as people log off for the weekend. A workspace admin wants one engagement number to track week over week without weekend noise making the trend look choppy.",
+    "description": "Which reporting window is the most appropriate choice here?",
+    "options": [
+      "Monthly Active Users, because it is the broadest window and therefore the safest, least ambiguous number to report.",
+      "Daily Active Users, because a daily figure is the most precise engagement number a team can report.",
+      "The three windows are interchangeable for a tool used this often, so it doesn't materially matter which one is reported.",
+      "Weekly Active Users, because it smooths the weekday-to-weekend cycle while still reflecting real usage that week."
+    ],
+    "correct_option": 3,
+    "explanation": "D is correct: Slack usage is naturally concentrated on workdays, so a daily figure will show a sawtooth pattern — dropping every Saturday and Sunday — that looks like mass churn but is just the normal weekly rhythm of a workplace tool. A weekly window absorbs that rhythm while still telling you whether someone engaged with the tool at all that week. Option A's case for Monthly Active Users mistakes 'broadest' for 'safest' — a window that broad can stay flat even while real week-to-week engagement erodes, hiding exactly the signal a team needs. Option B's case for Daily Active Users treats more granularity as automatically better, but here that granularity mostly captures a weekend dip that isn't meaningful churn, adding noise rather than insight. Option C's claim that the three windows are interchangeable is the core error this question is testing — the windows measure genuinely different things and will diverge sharply for a workday-concentrated product, so the choice is far from arbitrary.",
+    "hints": [
+      "Picture the shape of usage over a full week, not just a single day, before picking the window.",
+      "Look for a window wide enough to absorb a predictable day-of-week dip without that dip reading as churn."
+    ],
+    "concepts": [
+      "ENGAGEMENT & STICKINESS REASONING"
+    ]
+  },
+  {
+    "id": 101018,
+    "order": 18,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "easy",
+    "title": "Peloton Sessions vs. Minutes — Which Metric Is Breadth, Which Is Depth?",
+    "scenario_context": "Peloton's product team is comparing two candidate engagement metrics for the same group of members: (1) how many separate workout sessions a member starts per week, and (2) how many total minutes a member spends per individual workout. One member takes five short 15-minute rides a week; another takes two long 45-minute rides a week — the two members log roughly the same total weekly minutes but look very different on these two metrics.",
+    "description": "Which of these two metrics is the breadth metric, and which is the depth metric?",
+    "options": [
+      "Sessions per member per week is breadth (how often they show up); minutes per session is depth (how much they do once they're there).",
+      "Sessions per member per week is depth, since it accumulates their total commitment over time; minutes per session is breadth, since it varies workout to workout.",
+      "Both metrics measure the same underlying behavior, so labeling one breadth and the other depth is just a naming preference.",
+      "Minutes per session is breadth because it is a larger number in aggregate over a month, and sessions per week is depth because it is a smaller number."
+    ],
+    "correct_option": 0,
+    "explanation": "A is correct: breadth describes how often someone shows up — how many separate sessions they start — while depth describes how much they do inside any one visit, here measured by minutes per session. The member taking five short rides and the member taking two long rides can log similar total minutes while looking completely different on these two dimensions, which is exactly why product teams track both rather than one. Option B swaps the two definitions: session count is a frequency-of-showing-up measure (breadth), not an accumulation of commitment, and minutes-per-session is the within-visit measure (depth), not something that 'varies' its way out of being a stable dimension. Option C's claim that the two metrics measure the same behavior is the error the question is built to catch — a member can move on one dimension without moving on the other, which is precisely why they're tracked as separate metrics. Option D confuses breadth and depth with 'bigger number vs. smaller number' — the labels describe what dimension of behavior a metric captures, not the raw magnitude it happens to produce over some aggregation window.",
+    "hints": [
+      "Ask what each metric is actually counting: how often someone shows up, versus how much they do once they're there.",
+      "'How often' and 'how much per visit' are two different dimensions of behavior — they don't automatically move together or mean the same thing."
+    ],
+    "concepts": [
+      "ENGAGEMENT & STICKINESS REASONING"
+    ]
+  },
+  {
+    "id": 101019,
+    "order": 19,
+    "topic": "product-sense",
+    "type": "conceptual",
+    "difficulty": "easy",
+    "title": "Five Short Spotify Sessions a Day — What Does That Number Describe?",
+    "description": "A Spotify user opens the app 5 separate times on a typical day, but each individual session lasts only about 3 minutes before they close it. On its own, which single dimension of engagement does 'session count per day' describe?",
+    "options": [
+      "Depth, because five sessions in one day is a large cumulative number of touchpoints within that day.",
+      "Retention, because repeated same-day opens show the user is coming back to the product each time.",
+      "Breadth, because it counts how often the user shows up, not how much happens inside any one visit.",
+      "Stickiness, because opening the app many times in a single day is itself the stickiness ratio."
+    ],
+    "correct_option": 2,
+    "explanation": "C is correct: counting separate app opens in a day measures how often the user shows up — that's breadth — and says nothing on its own about what happens once they're in a session, which is what the 3-minute duration would speak to instead. Option A mislabels a high session count as depth; depth refers to how much happens within a single visit, not how many visits there are. Option B reaches for retention, but retention describes whether a user comes back across separate days or weeks, not how many times they open the app within the same day — a same-day reopen pattern is a within-day frequency signal, not a return-over-time signal. Option D calls the raw session count itself 'the stickiness ratio,' but stickiness is a specific ratio of active-user windows (such as daily actives over monthly actives), not a count of one user's same-day opens — the two are different constructs entirely.",
+    "hints": [
+      "Separate 'how often someone opens the app' from 'how long they stay once they're in.'",
+      "A count of separate visits in a day is a frequency-of-showing-up signal, not a measure of what happens inside any one visit."
+    ],
+    "concepts": [
+      "ENGAGEMENT & STICKINESS REASONING"
+    ]
+  },
+  {
+    "id": 101020,
+    "order": 20,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "easy",
+    "title": "Notion's 15% Stickiness Ratio — Alarming or Expected?",
+    "scenario_context": "Notion reports 900,000 daily active users and 6,000,000 monthly active users for its personal-productivity product. A new analyst on the team computes the DAU/MAU stickiness ratio and is alarmed that it's only 15%, well below the 50%+ ratios often cited for daily social apps.",
+    "description": "What is the most defensible read of this 15% figure?",
+    "options": [
+      "The 15% figure confirms the product is failing to build a daily habit and needs an urgent re-engagement campaign.",
+      "15% is unsurprising here, since the stickiness benchmark is category-dependent, not a universal fixed target.",
+      "The ratio must be miscalculated, since a product with 6 million monthly users should have a daily figure closer to the monthly one.",
+      "15% is a meaningless number because DAU and MAU are measuring completely unrelated user populations."
+    ],
+    "correct_option": 1,
+    "explanation": "B is correct: the DAU/MAU stickiness ratio has no universal healthy value — the right benchmark depends on how often the product is naturally used. A personal-productivity tool people open a few times a week when they need it will structurally post a lower ratio than a daily social-scrolling app, without that being a sign of failure. Option A jumps straight to a remediation plan based on comparing this product to a daily-habit benchmark it was never trying to hit, which is the exact category-blindness this question is testing. Option C assumes DAU should converge toward MAU regardless of product type, but that would only be true for a product genuinely used every single day by nearly everyone — assuming it here ignores what kind of tool Notion is. Option D is definitionally wrong: daily active users in a given month are a subset of that month's monthly active users, not an unrelated population, which is exactly why the ratio between them is a meaningful, if category-dependent, number.",
+    "hints": [
+      "Before judging a ratio as 'too low,' ask what ratio you'd expect from a tool with this kind of usage cadence in the first place.",
+      "A benchmark built from daily-habit social apps may simply not apply to a tool people use a few times a week by design."
+    ],
+    "concepts": [
+      "ENGAGEMENT & STICKINESS REASONING"
+    ]
+  },
+  {
+    "id": 101021,
+    "order": 21,
+    "topic": "product-sense",
+    "type": "debug",
+    "difficulty": "easy",
+    "title": "Strava's DAU Grew 40% — Did Stickiness Really Improve?",
+    "description": "A Strava product manager reviews this quarter's numbers: DAU grew from 2 million to 2.8 million, and in the same period MAU grew from 8 million to 14 million. The PM concludes: 'DAU grew 40%, so the app is clearly getting stickier.' What is the flaw in this reasoning?",
+    "options": [
+      "The PM is right — since DAU is the numerator of the stickiness ratio, any DAU increase mechanically raises stickiness.",
+      "The PM is measuring the wrong metric entirely; raw DAU growth has no relationship to how sticky a product is.",
+      "The reasoning is fine as a rough approximation, since DAU and MAU almost always grow at the same rate in practice.",
+      "DAU rose 40%, but MAU rose 75%, so the ratio actually fell from 25% to 20% — a ratio drop, not a rise."
+    ],
+    "correct_option": 3,
+    "explanation": "D is correct: stickiness is a ratio, not a raw count, so it can move opposite to its own numerator if the denominator moves more. Here DAU grew from 2 million to 2.8 million (a 40% increase) but MAU grew from 8 million to 14 million (a 75% increase), which takes the ratio from 2/8 = 25% down to 2.8/14 = 20% — the app actually got less sticky even as its daily-active count rose. Option A's claim that any DAU increase mechanically raises stickiness ignores the denominator entirely; the ratio only rises if DAU grows faster than MAU, which didn't happen here. Option B overcorrects into saying DAU growth has 'no relationship' to stickiness — DAU is literally the ratio's numerator, so it isn't irrelevant, it's just not sufficient on its own. Option C's assumption that DAU and MAU 'almost always grow at the same rate' is precisely the unexamined assumption that let the PM's error through — here they grew at meaningfully different rates, and that gap is the whole story.",
+    "hints": [
+      "Stickiness is a ratio of two numbers, not just a trend in one of them — check what happened to both.",
+      "Compare the percentage growth of the numerator to the percentage growth of the denominator before concluding which way the ratio moved."
+    ],
+    "concepts": [
+      "ENGAGEMENT & STICKINESS REASONING"
+    ]
+  },
+  {
+    "id": 101022,
+    "order": 22,
+    "topic": "product-sense",
+    "type": "predict_output",
+    "difficulty": "easy",
+    "title": "One-Tap Story Browsing on Instagram — Which Metric Moves First?",
+    "description": "Instagram ships a change that lets users tap through a friend's full Story sequence with one tap instead of tapping once per individual Story card, reducing friction to see more Stories in a single visit. The change does not touch how often users are notified or how often they open the app. Which engagement metric would you expect this change to move first, and in which direction?",
+    "options": [
+      "Actions per session (depth) rises, since the change makes it easier to consume more content per visit; sessions per user (breadth) stays untouched.",
+      "Sessions per user (breadth) rises, because a smoother Stories experience gives people more reasons to open the app throughout the day.",
+      "Both breadth and depth rise by roughly the same amount, since any improvement to the core experience lifts all engagement metrics together.",
+      "Monthly Active Users rises first, since a better in-app experience always shows up in the top-line active-user count before it shows up in session-level behavior."
+    ],
+    "correct_option": 0,
+    "explanation": "A is correct: the change only touches what happens once a user is already inside a session — how much Stories content they get through — so the metric it directly affects is depth. Nothing about the change gives someone a new reason to open the app that they didn't already have, so breadth has no direct mechanism to move. Option B asserts that easier in-session browsing 'gives people more reasons to open the app,' but the change doesn't touch notifications, push cadence, or anything else that would prompt a new app open — it only reduces friction inside a visit that's already happening. Option C's 'everything moves together' framing skips over the actual mechanism of the change, which is scoped tightly to in-session friction, not to open frequency. Option D has the causal direction backwards for this kind of change: an in-session UX tweak would show up in session-level behavior first, if it shows up anywhere at all in the top-line active-user count, not the other way around.",
+    "hints": [
+      "Ask which specific part of the user's behavior this change touches directly, and which part it leaves untouched.",
+      "Trace exactly where in the flow this change acts: before someone opens the app, or after they're already inside a session?"
+    ],
+    "concepts": [
+      "ENGAGEMENT & STICKINESS REASONING"
+    ]
+  },
+  {
+    "id": 101023,
+    "order": 23,
+    "topic": "product-sense",
+    "type": "conceptual",
+    "difficulty": "easy",
+    "title": "Defining Weekly Active Users for DoorDash",
+    "description": "A DoorDash analyst is asked to compute Weekly Active Users (WAU) for the app. Which of the following correctly describes what WAU should measure?",
+    "options": [
+      "The sum of each day's individual DAU figure, added together across all seven days of that week.",
+      "The average of the seven individual daily DAU figures recorded across that week.",
+      "The count of distinct users active at least once that week, counted only a single time each.",
+      "The number of users who were active on every single day within that week."
+    ],
+    "correct_option": 2,
+    "explanation": "C is correct: WAU counts distinct users over the week — someone who orders on Monday, Wednesday, and Friday is still one person in that week's WAU, not three. Option A's 'sum of daily DAU figures' double- and triple-counts every repeat user across the week, which can make WAU look larger than the number of people who actually exist in the user base. Option B's average of daily figures has the same underlying flaw as the sum — it's built from repeated same-user counts across days rather than a distinct-user count over the full window, so it doesn't answer 'how many different people were active this week.' Option D describes a much narrower population — users active on all seven days — which is closer to a most-engaged-users or every-day-user count than to WAU; WAU only requires at least one qualifying action in the window, not activity on every day of it.",
+    "hints": [
+      "Think about whether a weekly figure should be built by combining daily snapshots, or by counting people directly over the full week.",
+      "Ask what happens to a repeat user under each option's method — does counting them more than once change how many distinct people the figure claims to represent?"
+    ],
+    "concepts": [
+      "ENGAGEMENT & STICKINESS REASONING"
+    ]
+  },
+  {
+    "id": 101024,
+    "order": 24,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "easy",
+    "title": "Airbnb's Booking Funnel — Which Step Loses the Most Users?",
+    "scenario_context": "In one week, Airbnb's search-to-booking funnel for a given market shows: 500,000 searches to 300,000 listing detail views to 60,000 booking requests started to 48,000 confirmed bookings.",
+    "description": "Which step of this funnel loses the largest share of the users who entered it?",
+    "options": [
+      "Booking request to confirmed booking, since this is usually the step users abandon due to payment friction.",
+      "Search to listing view, since it has the largest raw drop in absolute user count (200,000 users).",
+      "The overall search-to-confirmed-booking conversion rate is 9.6%, so that is the step with the biggest drop-off.",
+      "Listing view to booking request, converting only 20% — the largest percentage loss of any step."
+    ],
+    "correct_option": 3,
+    "explanation": "D is correct: of the three step-to-step transitions, listing view to booking request converts only 20% (60,000 of 300,000), a bigger percentage loss than search to listing view (60% convert, 40% lost) or booking request to confirmed booking (80% convert, 20% lost). Option A guesses that the payment step is the weakest based on a general assumption about where users usually abandon, but the actual numbers here show that step converting at 80% — the strongest of the three, not the weakest. Option B picks the step with the largest raw headcount drop (200,000 users lost between search and listing view), but a step's weakness is about what share of its entrants it loses, and that step actually keeps 60% of the people who entered it — better than the 20% kept at the listing-view-to-request step. Option C conflates the overall end-to-end conversion rate with a single step's rate; 9.6% describes the whole funnel from search to confirmed booking, not any one transition, and doesn't by itself identify which individual step is weakest.",
+    "hints": [
+      "Convert each stage-to-stage move into a percentage of the people who entered it, not just the raw number who fell away.",
+      "Compare the three step-level percentages directly against each other — the biggest percentage loss, not the biggest headcount loss, identifies the weakest step."
+    ],
+    "concepts": [
+      "FUNNEL & CONVERSION REASONING"
+    ]
+  },
+  {
+    "id": 101025,
+    "order": 25,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "easy",
+    "title": "Computing a Single Step's Conversion Rate in Uber's Rider Funnel",
+    "scenario_context": "Uber's new-rider funnel over one month in a launch city: 80,000 app downloads to 50,000 completed signups to 30,000 users who requested a first ride to 27,000 completed first rides.",
+    "description": "What is the conversion rate specifically for the 'requested a first ride to completed first ride' step?",
+    "options": [
+      "60%, calculated as 30,000 ride requesters divided by 50,000 signups.",
+      "90% — 27,000 completed rides divided by the 30,000 who requested a first ride.",
+      "33.75%, calculated as 27,000 completed first rides divided by the 80,000 total downloads.",
+      "54%, calculated as 27,000 completed first rides divided by the 50,000 completed signups."
+    ],
+    "correct_option": 1,
+    "explanation": "B is correct: the step being asked about is 'requested a first ride to completed first ride,' so the denominator is the population that entered that step — the 30,000 users who requested a first ride — and 27,000 of them completed one, giving 90%. Option A's 60% is a real number in this funnel, but it's the conversion rate for the previous step (signups to ride requests), not the step the question asked about. Option C divides completed rides by total downloads, using the top-of-funnel population instead of the immediately preceding stage — that mixes an end-to-end style rate into a question that asked for one specific step. Option D divides completed rides by completed signups, skipping over the ride-request stage entirely and using a population two steps upstream of the one the question specifies.",
+    "hints": [
+      "A step's conversion rate is always relative to the people who entered that specific step, not to any other stage.",
+      "Find the two adjacent numbers — the population arriving at the named step and the population completing it — and divide the second by the first."
+    ],
+    "concepts": [
+      "FUNNEL & CONVERSION REASONING"
+    ]
+  },
+  {
+    "id": 101026,
+    "order": 26,
+    "topic": "product-sense",
+    "type": "conceptual",
+    "difficulty": "easy",
+    "title": "One Step or the Whole Journey? Reading a Netflix Funnel Question",
+    "description": "A Netflix growth analyst is looking at the trial funnel: homepage visit to free trial signup to first episode watched to converts to paid subscription. She wants to know, of the users who already started a free trial, what fraction went on to watch a first episode. Which of the following is she asking for?",
+    "options": [
+      "The overall funnel conversion rate, since it reflects how many people converted through the whole journey.",
+      "The paid-conversion rate, since watching a first episode is closely tied to eventually paying.",
+      "The single-step conversion rate from trial signup to first episode watched, not any broader measure.",
+      "The homepage bounce rate, since it is the mirror image of any downstream conversion step."
+    ],
+    "correct_option": 2,
+    "explanation": "C is correct: she specifically asked about the fraction of people who 'already started a free trial' who then went on to 'watch a first episode' — that's the single step between exactly those two adjacent stages, not any broader or narrower measure. Option A's overall funnel conversion rate would describe the fraction of homepage visitors who make it all the way to paid subscription, which answers a different, much broader question than the one she asked. Option B's paid-conversion rate skips past the stage she's actually asking about; it would tell her about trial-to-paid conversion, not trial-to-first-episode. Option D's homepage bounce rate is a different metric altogether, describing what happens at the very top of the funnel, and being a 'mirror image' of a downstream step isn't a real relationship — the two are computed from entirely different populations.",
+    "hints": [
+      "Decide whether she's asking about the full journey end-to-end, or about just one specific hop between two adjacent stages.",
+      "Match her question to exactly the two stages she named — nothing further upstream or downstream."
+    ],
+    "concepts": [
+      "FUNNEL & CONVERSION REASONING"
+    ]
+  },
+  {
+    "id": 101027,
+    "order": 27,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "easy",
+    "title": "LinkedIn Premium Funnel — How Many Users Were Lost at One Step?",
+    "scenario_context": "LinkedIn's Premium upsell funnel for one cohort: 200,000 profile views of the upgrade banner to 100,000 upgrade page visits to 90,000 free-trial starts to 9,000 paid conversions after the trial ends.",
+    "description": "How many users were lost specifically between the 'upgrade page visit' stage and the 'free-trial start' stage?",
+    "options": [
+      "10,000, calculated as the 100,000 who visited the upgrade page minus the 90,000 who started a free trial.",
+      "110,000, calculated as the 200,000 who saw the original banner minus the 90,000 who started a free trial.",
+      "100,000, since that's the total number of people who visited the upgrade page before the trial-start stage.",
+      "191,000, calculated as the 200,000 who saw the banner minus the 9,000 who ultimately paid."
+    ],
+    "correct_option": 0,
+    "explanation": "A is correct: the question asks for the loss specifically between the upgrade page visit stage and the free-trial start stage, so the right subtraction is 100,000 minus 90,000, giving 10,000 users lost at that one step. Option B subtracts using the banner-view population (200,000) instead of the immediately preceding stage (the 100,000 upgrade page visits), which folds in the loss from an earlier step that wasn't asked about. Option C reports the entire population that entered the upgrade-page stage rather than the number who failed to make it to the next stage — that's the stage's size, not its loss. Option D computes the loss across the entire funnel, from the very first banner view to the final paid conversion, which answers a much broader question than the one specific step named here.",
+    "hints": [
+      "Identify exactly which two adjacent stages the question is asking about before doing any subtraction.",
+      "The population lost at a step is the count entering that step minus the count entering the next one — not a count from any other pair of stages."
+    ],
+    "concepts": [
+      "FUNNEL & CONVERSION REASONING"
+    ]
+  },
+  {
+    "id": 101028,
+    "order": 28,
+    "topic": "product-sense",
+    "type": "predict_output",
+    "difficulty": "easy",
+    "title": "Robinhood Simplifies ID Verification — What Happens to That Step's Conversion?",
+    "description": "Robinhood's signup funnel currently requires users to manually type their full legal name, address, and SSN across three separate screens before identity verification can begin, and many users abandon partway through. The team replaces this with a single screen that auto-fills the same information from a driver's license photo scan. No other part of the funnel changes. What is the most likely effect on the signup-to-identity-verification-started conversion rate?",
+    "options": [
+      "It stays the same, because reducing friction on data entry doesn't change whether someone intends to open an account.",
+      "It rises, because removing the three-screen manual entry removes a concrete source of abandonment at that stage.",
+      "It falls, because users are less comfortable scanning a driver's license than typing their information manually.",
+      "It's impossible to predict without running an A/B test, so no directional call can be made here."
+    ],
+    "correct_option": 1,
+    "explanation": "B is correct: the change removes a specific, named source of friction — three manual entry screens — at exactly the stage being measured, and reducing a concrete cause of abandonment at a step is expected to raise that step's own conversion rate. Option A assumes conversion only tracks intent and never friction, but plenty of users who genuinely intend to sign up still abandon partway through a tedious multi-screen form — removing that tedium is expected to recover some of them. Option C's concern about scan discomfort is a real consideration in the abstract, but it isn't the more likely effect here: auto-filling three screens' worth of manual entry from one scan is a substantial friction reduction that would need a fairly large offsetting discomfort effect to net negative, which the scenario gives no reason to expect. Option D over-hedges — this is exactly the kind of directional call a candidate should be willing to make from the mechanism described: a concrete friction removal at a specific step points toward that step's conversion rising, even before any test confirms the exact size.",
+    "hints": [
+      "Ask what specifically was removed, and whether that removed thing was a real source of drop-off at that exact step.",
+      "Anchor the prediction to the exact step where friction was removed, not to stages before or after it."
+    ],
+    "concepts": [
+      "FUNNEL & CONVERSION REASONING"
+    ]
+  },
+  {
+    "id": 101029,
+    "order": 29,
+    "topic": "product-sense",
+    "type": "conceptual",
+    "difficulty": "easy",
+    "title": "Calm's 65% Step Conversion — Relative to Which Population?",
+    "description": "In Calm's onboarding funnel — app open to goal selection screen to first guided session started to first guided session completed — the team reports a 65% conversion rate for the 'first guided session started to first guided session completed' step. What population is the correct denominator for that 65% figure?",
+    "options": [
+      "Everyone who ever opened the Calm app at all, regardless of what happened afterward in the funnel.",
+      "Everyone who selected a goal on the app's goal selection screen earlier in the funnel.",
+      "Everyone who has ever completed a guided session in Calm's full history, including outside this funnel.",
+      "Everyone in this cohort who started a first guided session — the population that entered this step."
+    ],
+    "correct_option": 3,
+    "explanation": "D is correct: a step's conversion rate is defined relative to the population that entered that exact step — here, the users who started a first guided session — because that's the group whose fate the rate is describing. Option A uses everyone who ever opened the app, which is the population for the very first stage of the funnel, several steps upstream of the one this rate describes. Option B uses the goal-selection population, one step too early — that's the group entering the previous stage, not the stage named in this specific rate. Option C reaches outside this funnel entirely to a lifetime historical population, which isn't tied to this cohort or this funnel at all and would produce a number that doesn't correspond to any single step here.",
+    "hints": [
+      "A step's conversion percentage is always computed relative to one specific population — find out which one entered that step.",
+      "Match the denominator to the population that entered the step named first in that specific rate, not a step before or after it."
+    ],
+    "concepts": [
+      "FUNNEL & CONVERSION REASONING"
+    ]
+  },
+  {
+    "id": 101030,
+    "order": 30,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "easy",
+    "title": "Zoom's Self-Serve Funnel — Locating the Biggest Drop-Off",
+    "scenario_context": "Zoom's self-serve upgrade funnel for one week: 120,000 visits to the pricing page to 18,000 free-trial starts to 16,200 trial users who attended at least one meeting during the trial to 4,050 who converted to a paid plan.",
+    "description": "Which step of this funnel loses the largest share of the people who entered it?",
+    "options": [
+      "Trial start to attended at least one meeting, since this step separates people who were serious about trying Zoom from those who weren't.",
+      "Attended a meeting to converted to paid, since payment is always the hardest step in any funnel.",
+      "Pricing page visit to free-trial start, where 85% of visitors left without starting a trial — the largest share lost of any step.",
+      "All three steps lose a similar share of users, so no one step stands out as the weakest."
+    ],
+    "correct_option": 2,
+    "explanation": "C is correct: pricing page visit to free-trial start keeps only 15% of visitors (18,000 of 120,000), losing 85% — a much steeper drop than trial start to attended a meeting (90% kept) or attended a meeting to converted to paid (25% kept). Option A's story about this step 'separating serious users' doesn't match the numbers — it's actually the best-converting step in the funnel at 90% kept, not a major source of loss. Option B assumes payment is always the hardest step as a general rule, but that assumption doesn't hold here: this step converts at 25%, losing real volume, but not nearly as much as the top-of-funnel step. Option D's claim that all three steps lose a similar share doesn't survive contact with the actual rates — 85%, 10%, and 75% lost are meaningfully different, and the pricing-page step stands out clearly as the largest loss.",
+    "hints": [
+      "Turn each stage-to-stage change into a percentage of entrants before deciding which step is weakest.",
+      "The step that keeps the fewest of its entrants, by percentage, is the one losing the largest share, regardless of which step 'feels' hardest."
+    ],
+    "concepts": [
+      "FUNNEL & CONVERSION REASONING"
+    ]
+  }
+]

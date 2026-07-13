@@ -30,6 +30,7 @@ _LOADERS = {
     "ml-fundamentals": "ml_fundamentals_questions",
     "experimentation": "experimentation_questions",
     "statistics": "statistics_questions",
+    "product-sense": "product_sense_questions",
 }
 
 

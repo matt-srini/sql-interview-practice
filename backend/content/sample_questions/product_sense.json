@@ -1,0 +1,77 @@
+[
+  {
+    "id": 1011,
+    "order": 1,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "easy",
+    "title": "Pinterest's Idea Pins — Picking the Feature's Success Metric",
+    "scenario_context": "Pinterest ships Idea Pins, a short-video format for step-by-step ideas like recipes and DIY projects. The team's stated goal is to help users discover ideas they actually intend to come back to and try, not simply to get people watching more video.",
+    "description": "Which is the best primary success metric for this launch?",
+    "options": [
+      "Average watch time per Idea Pin view, since a longer watch means the content held their attention.",
+      "The share of Idea Pin views that end with the viewer saving the Pin to one of their boards.",
+      "Total number of Idea Pins published by creators on the platform that month.",
+      "The number of new boards created platform-wide that month, since boards are where saved ideas live."
+    ],
+    "correct_option": 1,
+    "explanation": "Option B is correct: saving a Pin is the concrete, trackable action that maps directly to 'intend to come back to this and try it' — it's scoped to the exact viewer behavior the goal describes. Option A mistakes attention for intent; a viewer can watch an entire Idea Pin passively, hooked by the video, without ever planning to act on what they saw. Option C measures the creator side of the platform, not whether viewers found anything worth acting on — supply volume can rise with no change in viewer value at all. Option D is too indirect: a new board can be created for any reason unrelated to this feature, and a saved idea doesn't require a new board at all — most saves land in a board the viewer already has.",
+    "hints": [
+      "Ask which of these four options describes something the viewer actively decides to do, rather than something that happens passively while a video plays, or something creators are doing on the other side of the platform.",
+      "The stated goal is about intending to come back to an idea later — look for the option that maps to the one action already built for storing something to revisit."
+    ],
+    "concepts": [
+      "METRIC SELECTION & GOAL TRANSLATION"
+    ]
+  },
+  {
+    "id": 1012,
+    "order": 2,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "easy",
+    "title": "Snapchat's Notification-Triggered Opens — What Does DAU Miss?",
+    "scenario_context": "A Snapchat user gets a push notification with a red badge count whenever a friend sends a new Snap. Most days, the user taps the notification, the Snap plays for under a second, and they back out without opening anything else in the app.",
+    "description": "Under a standard 'opened the app that day' DAU definition, what does this pattern reveal?",
+    "options": [
+      "It shows nothing unusual — any registered app open is a meaningful signal of product value by definition, regardless of session length.",
+      "It shows the notification system itself is broken, since a well-designed badge should never be dismissed without the user reading the content.",
+      "It shows DAU should be replaced entirely by session length, since duration alone determines whether engagement is genuine.",
+      "It shows DAU can rise from a reflexive notification-clear, not real engagement — the definition doesn't distinguish the two."
+    ],
+    "correct_option": 3,
+    "explanation": "Option D is correct: a standard DAU definition only requires that the app was opened that day — it doesn't ask why. A notification-triggered, sub-one-second open counts exactly the same as a genuine session, so DAU can rise purely from badge-clearing behavior with no real engagement behind it. Option A denies the premise outright, treating every registered open as automatically meaningful, which is the exact assumption this pattern breaks. Option B misdiagnoses the issue as a notification-system defect; nothing is malfunctioning here — the badge worked as designed, it's the metric that's failing to distinguish reflex from intent. Option C overcorrects into replacing DAU with session length alone, but duration has its own blind spots (an idle backgrounded app can log long 'session' time with zero engagement), so it isn't a clean substitute either.",
+    "hints": [
+      "Ask what the standard 'opened the app' DAU definition actually requires the user to have done — and what it does NOT require.",
+      "The trigger for this open was a badge count, not the user seeking out content on their own — think about what that means for what DAU is actually measuring here."
+    ],
+    "concepts": [
+      "ENGAGEMENT & STICKINESS REASONING"
+    ]
+  },
+  {
+    "id": 1013,
+    "order": 3,
+    "topic": "product-sense",
+    "type": "debug",
+    "difficulty": "easy",
+    "title": "Grubhub's Cart-to-Order Rate — Catching the Analyst's Wrong Denominator",
+    "scenario_context": "Grubhub's restaurant-search funnel this week: 250,000 restaurant searches, 90,000 restaurant page views, 36,000 carts with at least one item added, and 25,200 orders placed. A junior analyst is asked to report the conversion rate specifically for the 'added an item to cart' to 'order placed' step, and writes: '28%, calculated as 25,200 orders divided by 90,000 restaurant page views.'",
+    "description": "What's the flaw in the analyst's calculation?",
+    "options": [
+      "The analyst used total page views (90,000) as the denominator, instead of the 36,000 carts that actually entered this step.",
+      "The calculation is correct — 90,000 is the right denominator, since it represents everyone who could have gone on to order.",
+      "The flaw is the numerator, not the denominator — total searches (250,000) should replace orders placed in the calculation.",
+      "The math has no flaw, but 28% is too low to be believable for this step, so the event-tracking data must be broken."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A is correct: the step being asked about starts at 'added an item to cart,' so the denominator must be the population that entered that exact step — the 36,000 carts — not the 90,000 page views from one stage earlier. Using the right denominator: 25,200 / 36,000 = 70%, a very different picture from the reported 28%. Option B defends the wrong denominator; 90,000 is the population for an earlier step (page view to cart), and plenty of those viewers never added anything to a cart, so they were never part of this step's population. Option C misdiagnoses where the error is — the numerator (25,200 orders placed) is exactly right for this step; only the denominator was wrong. Option D assumes the number itself is too implausible to trust and blames the data, but nothing here points to broken tracking — the arithmetic fully explains the low figure as a straightforward denominator mistake.",
+    "hints": [
+      "Before judging the percentage itself, check which population actually entered the step being asked about — is it the same population the analyst used in the calculation?",
+      "A step's conversion rate denominator should always be the group that entered THAT step, not a stage further upstream in the funnel."
+    ],
+    "concepts": [
+      "FUNNEL & CONVERSION REASONING"
+    ]
+  }
+]
