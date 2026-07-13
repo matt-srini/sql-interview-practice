@@ -205,7 +205,7 @@ Required:
 | Mock / practice ratio | **~1.15×** (mid-band) |
 | Sample questions | **9** (3/3/3) |
 | Concept families | **18** |
-| Learning paths | **~6–7** |
+| Learning paths | **7** (3 foundational / 1 intermediate / 3 advanced) |
 | `eval_kind` | `mcq` |
 | `unlock_profile` | `mcq` |
 | `in_mixed_mock` | `false` |
@@ -287,34 +287,23 @@ Full chain designs (8 illustrative + 2 more toward the ~10 target): [`docs/resea
 
 ## Learning paths
 
-Full paths contract: [`docs/content-authoring.md` §Learning paths](../content-authoring.md#learning-paths-curated-sequences). Paths are **not** concept-family lists — they are curated 5–9 question walks through a *pattern* (practitioner skill). `questions[]` is derived once the bank exists; these designs are the *target structure* the bank is authored toward.
+Full paths contract: [`docs/content-authoring.md` §Learning paths](../content-authoring.md#learning-paths-curated-sequences). Paths are **not** concept-family lists — they are curated question walks through a *pattern* (practitioner skill). A path declares one or more `patterns[]` (registered in `backend/path_patterns.py`), a `level`, and `focus_concepts[]`; `questions[]` is derived once the bank exists. **Size: sweet spot 5–9, default cap 15** (16–20 by explicit per-path approval; absolute floor 3). **A path's `level` is its position in the prerequisite arc, not the difficulty of its questions** — a foundational path routinely spans easy→medium→hard (see [`DECISIONS.md`](../decisions/DECISIONS.md) 2026-06-08 "Path levels are content-driven" + 2026-07-14).
 
-**~6–7 paths total; 2–3 foundational** (the validator enforces ≥1; most tracks run 2–3). **Levels are content-driven and finalized in Phase 5** once the easy bank exists — the table below is the target design. Two foundational on-ramps are planned: `metric-design-fundamentals` (what a good metric *is*) and `reading-product-metrics` (reading/interpreting basic metrics at easy tier); a third may be promoted from the easy bank. Pattern slugs are registered in `backend/path_patterns.py` (the `product-sense` block). *(This extends research 05's single-foundational sketch to two on-ramps — the deliberate 2–3 foundational decision.)*
+**7 paths — 3 foundational / 1 intermediate / 3 advanced** (the validator enforces ≥1 foundational; all levels uncapped). The count follows where the 87 practice questions land, not one-path-per-pattern: five patterns are individually rich enough for their own path, while `growth-reasoning`, `product-cases`, and `opportunity-sizing` are intentionally light (curriculum weight follows reasoning surface, per CLAUDE.md) and **bundle** rather than distort the count allocation. A structural consequence of the narrow easy tier — only `metric-design`, `engagement-and-retention`, and `funnel-analysis` carry easy questions — is that **the three foundational paths are exactly the three easy-bearing patterns**: the entry points hold the easy on-ramps, and every intermediate/advanced path is legitimately medium/hard. `questions[]` and any size-driven split are finalized in Phase 5.
 
-| Path slug | Level | Patterns | Focus concepts | Note |
+| Path slug | Level | Patterns | Focus concepts | Note (span · ~target size) |
 |---|---|---|---|---|
-| `metric-design-fundamentals` | **foundational** | `metric-design` | METRIC SELECTION & GOAL TRANSLATION · GUARDRAIL & COUNTER-METRIC REASONING · METRIC DEFINITION INTEGRITY · BUSINESS-MODEL METRIC FLUENCY | The obvious entry point — every other path assumes you can pick and define a metric. |
-| `reading-product-metrics` | **foundational** | `engagement-and-retention`, `funnel-analysis` | ENGAGEMENT & STICKINESS REASONING · FUNNEL & CONVERSION REASONING · BUSINESS-MODEL METRIC FLUENCY | The second on-ramp — reading and interpreting a single metric movement, a funnel stage, stickiness, and business-model vocabulary at easy tier. No prerequisite. |
-| `diagnosing-a-metric-move` | intermediate | `metric-diagnosis` | METRIC MOVEMENT DIAGNOSIS · SEGMENTATION & DECOMPOSITION REASONING · REAL-CHANGE VS ARTIFACT | Requires `metric-design-fundamentals` — you must know what the metric is to diagnose it. |
-| `engagement-retention-and-funnels` | intermediate | `engagement-and-retention`, `funnel-analysis` | ENGAGEMENT & STICKINESS REASONING · RETENTION & COHORT REASONING · FUNNEL & CONVERSION REASONING · GROWTH & ACQUISITION REASONING | Spans two patterns legitimately — funnels and retention are one practitioner cluster in practice. |
-| `trade-offs-and-the-ship-decision` | advanced | `trade-offs-and-ship-decisions` | CONFLICTING-METRIC & TRADE-OFF JUDGMENT · SHIP / NO-SHIP DECISION · CAUSAL VS CORRELATIONAL JUDGMENT | Requires `metric-design-fundamentals` + `diagnosing-a-metric-move`. |
-| `metric-gaming-and-product-health` | advanced | `metric-gaming` | METRIC GAMING & ROBUSTNESS · PRODUCT HEALTH & STRATEGIC TRADE-OFFS | The signature-hard cluster — IC5/IC6-altitude reasoning. Requires `metric-design-fundamentals`. |
-| `product-cases-and-opportunity-sizing` | advanced | `product-cases`, `opportunity-sizing` | PRODUCT CASE STRUCTURING · OPPORTUNITY SIZING & ESTIMATION · BUSINESS-MODEL METRIC FLUENCY | The synthesis path — `PRODUCT CASE STRUCTURING` composes the families the earlier paths drilled. Requires `metric-design-fundamentals` + `engagement-retention-and-funnels`. |
+| `metric-design-fundamentals` | **foundational** | `metric-design` | METRIC SELECTION & GOAL TRANSLATION · GUARDRAIL & COUNTER-METRIC REASONING · METRIC DEFINITION INTEGRITY · BUSINESS-MODEL METRIC FLUENCY | Primary entry point — every other path assumes you can pick and define a metric. Easy (pick / guardrail) → hard (definition integrity). ~12. |
+| `engagement-and-retention` | **foundational** | `engagement-and-retention` | ENGAGEMENT & STICKINESS REASONING · RETENTION & COHORT REASONING · BUSINESS-MODEL METRIC FLUENCY | Reading engagement (DAU / stickiness) and retention / cohort curves. Easy (define engagement) → hard (interpret a divergence, read a cohort curve). No prerequisite. ~13. |
+| `funnels-and-growth-loops` | **foundational** | `funnel-analysis`, `growth-reasoning` | FUNNEL & CONVERSION REASONING · GROWTH & ACQUISITION REASONING · BUSINESS-MODEL METRIC FLUENCY | Reading a funnel plus the acquisition / growth-loop layer. Easy (read one stage) → hard (prioritise interventions, growth accounting). `growth-reasoning` bundles here rather than starving as a thin standalone. ~13. |
+| `diagnosing-a-metric-move` | intermediate | `metric-diagnosis` | METRIC MOVEMENT DIAGNOSIS · SEGMENTATION & DECOMPOSITION REASONING · REAL-CHANGE VS ARTIFACT · CAUSAL VS CORRELATIONAL JUDGMENT | The "number moved — why?" investigation. Builds on a foundational metric grounding. Medium → hard. ~11. |
+| `trade-offs-and-the-ship-decision` | advanced | `trade-offs-and-ship-decisions` | CONFLICTING-METRIC & TRADE-OFF JUDGMENT · SHIP / NO-SHIP DECISION · CAUSAL VS CORRELATIONAL JUDGMENT | Weigh competing goods; decide ship / no-ship. Builds on design + diagnosis. Medium → hard. ~10. |
+| `metric-gaming-and-product-health` | advanced | `metric-gaming` | METRIC GAMING & ROBUSTNESS · PRODUCT HEALTH & STRATEGIC TRADE-OFFS | The signature-hard cluster — IC5/IC6-altitude reasoning. Medium → hard. ~6. |
+| `product-cases-and-opportunity-sizing` | advanced | `product-cases`, `opportunity-sizing` | PRODUCT CASE STRUCTURING · OPPORTUNITY SIZING & ESTIMATION · BUSINESS-MODEL METRIC FLUENCY | Synthesis path — case structuring composes the earlier families; `opportunity-sizing` bundles here (both light patterns). Medium → hard. ~6. |
 
-**Acyclic prereq graph (target — final levels content-driven in Phase 5).** The two no-prerequisite foundational on-ramps are `metric-design-fundamentals` and `reading-product-metrics`; the deeper paths build on them (illustrative sketch below):
+**Acyclic prereq graph** (final `questions[]` and `recommended_after` edges are content-driven, finalized in Phase 5). The three foundational paths — `metric-design-fundamentals`, `engagement-and-retention`, `funnels-and-growth-loops` — are the no-prerequisite entry points (each a "Start here"). `diagnosing-a-metric-move` (intermediate) builds on that metric grounding; the three advanced paths — `trade-offs-and-the-ship-decision`, `metric-gaming-and-product-health`, `product-cases-and-opportunity-sizing` — build on diagnosis (and, for trade-offs, on design). Acyclic by construction.
 
-```
-metric-design-fundamentals  (foundational · Start here)
-     /           |          \
-diagnosing-  engagement-   metric-gaming-and-
-a-metric-    retention-    product-health
-move         and-funnels
-      \           /    \
-trade-offs-and-   product-cases-and-
-the-ship-decision  opportunity-sizing
-```
-
-Note: the `growth-reasoning` pattern slug is registered in `backend/path_patterns.py` and covers `GROWTH & ACQUISITION REASONING` questions. In v1 it is folded into `engagement-retention-and-funnels` (where growth signals naturally co-occur with engagement and retention). Once the bank is large enough to support a standalone 5–9 question walk on growth loops and the growth-accounting identity, it can become its own path without altering the registry.
+**Size-driven flex (finalized in Phase 5).** If a foundational cluster overflows the 15-question cap once authored, it splits — e.g. `engagement-and-retention` → `engagement-and-stickiness` + `retention-and-cohorts` (→ 8 paths). The design never drops below the floor of 3: the three light patterns (`growth-reasoning`, `product-cases`, `opportunity-sizing`) are bundled precisely so no path starves. `growth-reasoning` (registered in `backend/path_patterns.py`) rides inside `funnels-and-growth-loops` for v1 and can be promoted to its own walk once the bank supports 5+ growth questions.
 
 Mock-only questions never appear in a path. A path unlocks nothing — question access follows the plan policy (free = easy; Pro/Elite = all difficulties).
 
