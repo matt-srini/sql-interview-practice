@@ -316,7 +316,7 @@ the-ship-decision  opportunity-sizing
 
 Note: the `growth-reasoning` pattern slug is registered in `backend/path_patterns.py` and covers `GROWTH & ACQUISITION REASONING` questions. In v1 it is folded into `engagement-retention-and-funnels` (where growth signals naturally co-occur with engagement and retention). Once the bank is large enough to support a standalone 5–9 question walk on growth loops and the growth-accounting identity, it can become its own path without altering the registry.
 
-Mock-only questions never appear in a path. A path unlocks nothing — unlocks are threshold-only.
+Mock-only questions never appear in a path. A path unlocks nothing — question access follows the plan policy (free = easy; Pro/Elite = all difficulties).
 
 ## Boundary co-tags
 

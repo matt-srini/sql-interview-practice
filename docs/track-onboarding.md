@@ -250,13 +250,15 @@ Add an entry to `TRACK_META`:
 
 Everything else — routing, catalog path, sidebar, TrackHub — derives from this single entry. No other frontend file needs editing for registration.
 
-### 3.2 Add to the role selector in `frontend/src/pages/LandingPage.js`
+### 3.2 Add to the role selector in `frontend/src/roleRegistry.js`
 
-Add the track slug to the relevant `tracks: []` arrays in the `ROLES` constant. Consider:
+The canonical role→track mapping is `frontend/src/roleRegistry.js` (the `ROLES` SoT that LandingPage role tabs, MockHub `MOCK_ROLES`, the dashboard `ROLE_TRACK_FILTERS`, and the `mockModeConfig` Mixed-benchmark question count all derive from). For a **live** track, add its slug to the relevant role `tracks: []` arrays. Consider:
 - Which roles genuinely benefit from this track?
 - What order (most relevant to that role first)?
 - Does it replace or supplement an existing track in that role's list?
-- If `comingSoon: true`, it will render with a "Coming soon" badge and no CTA — this is intentional; include coming-soon tracks so users know what's being built.
+- If you change a role's track count, bump the length assertion in `frontend/src/roleRegistry.test.js`.
+
+**Coming-soon tracks do NOT join the role registry until launch.** A `comingSoon` track is left out of `roleRegistry.js` (and the backend `_ROLE_TRACKS`, the `RoleInterviewPrepPage` editorial lists, and the `spa.py` `/interview-prep` copy) until launch. It still surfaces as a "Coming soon" card on the landing **Tracks Index** (section 06) via `trackRegistry.js`, so discovery is preserved without role membership. Reason: `roleRegistry` is not display-only — `mockModeConfig` derives each role's Mixed-benchmark question count from the raw `role.tracks` (one slot per track, no `comingSoon`/`TRACK_SLUGS` filter), so a zero-question track inflates the count and desyncs from the backend's hardcoded per-role benchmark slots; `_ROLE_TRACKS` would likewise leak it into Mixed-custom draws and fail the pooled-track-validity guard (`tests/test_11_mock.py`). Wire all role→track membership (frontend + backend + SEO + the `roleRegistry.test.js` assertion) together in the launch commit, when `comingSoon` is removed. Rationale: [`DECISIONS.md`](./decisions/DECISIONS.md) 2026-07-13.
 
 ### 3.3 Add a demo frame to `IDE_TRACKS` in `frontend/src/pages/LandingPage.js`
 
