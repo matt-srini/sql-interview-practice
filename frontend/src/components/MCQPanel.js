@@ -39,7 +39,7 @@ export default function MCQPanel({
           let cls = 'mcq-option';
           if (selectedOption === i) cls += ' mcq-option--selected';
           if (submitted && !canReselect && correctIndex !== null && correctIndex === i) cls += ' mcq-option--correct';
-          if (submitted && !canReselect && selectedOption === i && !correct) cls += ' mcq-option--wrong';
+          if (submitted && !canReselect && selectedOption === i && correct === false) cls += ' mcq-option--wrong';
 
           return (
             <button
@@ -54,7 +54,7 @@ export default function MCQPanel({
               {submitted && !canReselect && correctIndex !== null && correctIndex === i && (
                 <span className="mcq-option-icon mcq-option-icon--correct" aria-label="Correct">✓</span>
               )}
-              {submitted && !canReselect && selectedOption === i && !correct && (
+              {submitted && !canReselect && selectedOption === i && correct === false && (
                 <span className="mcq-option-icon mcq-option-icon--wrong" aria-label="Wrong">✗</span>
               )}
             </button>

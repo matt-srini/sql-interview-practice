@@ -77,7 +77,6 @@ export default function MockSession() {
   const [questions, setQuestions] = useState([]);
   const [activeQ, setActiveQ] = useState(0);
   const [codes, setCodes] = useState({});
-  const [results, setResults] = useState({});       // {qId: verdict}
   const [solved, setSolved] = useState({});         // {qId: bool}
   const [flagged, setFlagged] = useState({});       // {qId: bool}
   const [mcqSelections, setMcqSelections] = useState({}); // {qId: int}
@@ -395,7 +394,7 @@ export default function MockSession() {
 
   // Early-exit discard helpers
   const elapsedS = session ? (session.time_limit_s - (remainingS ?? session.time_limit_s)) : 0;
-  const hasNoActivity = Object.keys(results).length === 0 && Object.keys(runResults).length === 0 && !Object.values(submitted).some(Boolean);
+  const hasNoActivity = Object.keys(runResults).length === 0 && !Object.values(submitted).some(Boolean);
   const isEarlyExit = status === 'active' && elapsedS < 60 && hasNoActivity;
 
   function handleExitClick() {
@@ -868,7 +867,6 @@ export default function MockSession() {
   const meta = q ? TRACK_META[q.track] : null;
   // Benchmark and Interview Loop suppress mid-session correctness reveal (spec invariant)
   const isBenchmarkMode = session?.mode === 'benchmark' || session?.mode === 'interview_loop';
-  const currentResult = q ? results[q.id] : null;
   const currentRunResult = q ? runResults[q.id] : null;
   const allSubmitted = questions.length > 0 && questions.every(qx => submitted[qx.id]);
 
@@ -1271,8 +1269,8 @@ export default function MockSession() {
                 options={q.options || []}
                 selectedOption={mcqSelections[q.id] !== undefined ? mcqSelections[q.id] : null}
                 onSelect={idx => setMcqSelections(prev => ({ ...prev, [q.id]: idx }))}
-                submitted={!!currentResult}
-                correct={currentResult?.correct ?? null}
+                submitted={!!submitted[q.id]}
+                correct={null}  // benchmark + custom drill never reveal per-option verdict mid-session
                 correctIndex={null}  // not revealed mid-session
                 explanation=""
               />
