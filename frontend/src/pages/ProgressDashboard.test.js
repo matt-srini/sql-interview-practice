@@ -126,6 +126,15 @@ function makeDashboardPayload(overrides = {}) {
           hard:   { solved: 0, total: 20 },
         },
       },
+      'product-sense': {
+        solved: 0,
+        total: 87,
+        by_difficulty: {
+          easy:   { solved: 0, total: 30 },
+          medium: { solved: 0, total: 33 },
+          hard:   { solved: 0, total: 24 },
+        },
+      },
     },
     concepts_by_track: {},
     recent_activity: [],
@@ -145,6 +154,7 @@ function makeInsightsPayload(overrides = {}) {
       statistics: { solve_count: 0, accuracy_pct: null, attempts: 0, practice_attempts: 0, mock_attempts: 0, first_try_accuracy_pct: null, first_try_correct: 0, first_try_attempted: 0 },
       'ml-fundamentals': { solve_count: 0, accuracy_pct: null, attempts: 0, practice_attempts: 0, mock_attempts: 0, first_try_accuracy_pct: null, first_try_correct: 0, first_try_attempted: 0 },
       experimentation: { solve_count: 0, accuracy_pct: null, attempts: 0, practice_attempts: 0, mock_attempts: 0, first_try_accuracy_pct: null, first_try_correct: 0, first_try_attempted: 0 },
+      'product-sense': { solve_count: 0, accuracy_pct: null, attempts: 0, practice_attempts: 0, mock_attempts: 0, first_try_accuracy_pct: null, first_try_correct: 0, first_try_attempted: 0 },
     },
     weakest_concepts: [],
     streak_days: 0,
@@ -187,7 +197,7 @@ describe('ProgressDashboard', () => {
     });
   });
 
-  it('renders all nine track rows', async () => {
+  it('renders all ten track rows', async () => {
     renderDashboard();
 
     await waitFor(() => {
@@ -200,6 +210,7 @@ describe('ProgressDashboard', () => {
       expect(screen.getAllByText('Statistics').length).toBeGreaterThan(0);
       expect(screen.getAllByText('ML Fundamentals').length).toBeGreaterThan(0);
       expect(screen.getAllByText('Experimentation').length).toBeGreaterThan(0);
+      expect(screen.getAllByText('Product Sense').length).toBeGreaterThan(0);
     });
   });
 

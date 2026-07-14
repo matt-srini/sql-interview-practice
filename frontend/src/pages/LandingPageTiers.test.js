@@ -24,7 +24,7 @@ vi.mock('../App', () => ({
   useTheme: () => ({ theme: 'light', setTheme: () => {} }),
 }));
 
-// TRACK_META mock — includes the full 9-track catalog
+// TRACK_META mock — includes the full 10-track catalog
 vi.mock('../contexts/TopicContext', () => ({
   TRACK_META: {
     sql:                { label: 'SQL',              description: 'SQL queries',                color: '#5B6AF0', totalQuestions: 112, tagline: 'SQL · DuckDB' },
@@ -36,6 +36,7 @@ vi.mock('../contexts/TopicContext', () => ({
     statistics:         { label: 'Statistics',       description: 'Probability and inference',   color: '#7A5AF0', totalQuestions: 97,  tagline: 'conceptual + numerical' },
     'ml-fundamentals':  { label: 'ML Fundamentals',  description: 'ML interview reasoning',      color: '#E0456A', totalQuestions: 90,  tagline: 'model reasoning · scenario · debug' },
     experimentation:    { label: 'Experimentation',  description: 'A/B testing and inference',   color: '#0EA5E9', totalQuestions: 80,  tagline: 'experiment reasoning · scenario · predict output' },
+    'product-sense':    { label: 'Product Sense',    description: 'Metric design and judgment',  color: '#8E3B6E', totalQuestions: 87,  tagline: 'product judgment · scenario · diagnosis' },
   },
   TopicProvider: ({ children }) => children,
   useTopic: () => ({ topic: 'sql', meta: { label: 'SQL' } }),
@@ -43,8 +44,8 @@ vi.mock('../contexts/TopicContext', () => ({
 
 // trackRegistry mock — must match TRACK_META above
 vi.mock('../trackRegistry', () => ({
-  TRACK_SLUGS:     ['sql', 'python', 'pandas', 'pyspark', 'data-engineering', 'data-modeling', 'statistics', 'ml-fundamentals', 'experimentation'],
-  ALL_TRACK_SLUGS: ['sql', 'python', 'pandas', 'pyspark', 'data-engineering', 'data-modeling', 'statistics', 'ml-fundamentals', 'experimentation'],
+  TRACK_SLUGS:     ['sql', 'python', 'pandas', 'pyspark', 'data-engineering', 'data-modeling', 'statistics', 'ml-fundamentals', 'experimentation', 'product-sense'],
+  ALL_TRACK_SLUGS: ['sql', 'python', 'pandas', 'pyspark', 'data-engineering', 'data-modeling', 'statistics', 'ml-fundamentals', 'experimentation', 'product-sense'],
   TRACK_META: {
     sql:                { label: 'SQL',              description: 'SQL queries',              color: '#5B6AF0', totalQuestions: 112, tagline: 'SQL · DuckDB' },
     python:             { label: 'Python',           description: 'Python algorithms',         color: '#2D9E6B', totalQuestions: 95,  tagline: 'Python · sandbox' },
@@ -55,11 +56,12 @@ vi.mock('../trackRegistry', () => ({
     statistics:         { label: 'Statistics',       description: 'Probability and inference', color: '#7A5AF0', totalQuestions: 97,  tagline: 'conceptual + numerical' },
     'ml-fundamentals':  { label: 'ML Fundamentals',  description: 'ML interview reasoning',    color: '#E0456A', totalQuestions: 90,  tagline: 'model reasoning · scenario · debug' },
     experimentation:    { label: 'Experimentation',  description: 'A/B testing and inference', color: '#0EA5E9', totalQuestions: 80,  tagline: 'experiment reasoning · scenario · predict output' },
+    'product-sense':    { label: 'Product Sense',    description: 'Metric design and judgment', color: '#8E3B6E', totalQuestions: 87,  tagline: 'product judgment · scenario · diagnosis' },
   },
   TRACK_LABELS: {
     sql: 'SQL', python: 'Python', 'pandas': 'Pandas', pyspark: 'PySpark',
     'data-engineering': 'Data Engineering', 'data-modeling': 'Data Modeling',
-    statistics: 'Statistics', 'ml-fundamentals': 'ML Fundamentals', experimentation: 'Experimentation', mixed: 'Mixed',
+    statistics: 'Statistics', 'ml-fundamentals': 'ML Fundamentals', experimentation: 'Experimentation', 'product-sense': 'Product Sense', mixed: 'Mixed',
   },
 }));
 
@@ -127,6 +129,7 @@ const MOCK_DASHBOARD_DATA = {
     statistics:         { solved: 0, total: 31, by_difficulty: {} },
     'ml-fundamentals':  { solved: 0, total: 30, by_difficulty: {} },
     experimentation:    { solved: 0, total: 30, by_difficulty: {} },
+    'product-sense':    { solved: 0, total: 87, by_difficulty: {} },
   },
   recent_activity: [{ topic: 'sql', question_id: 1 }],
 };
@@ -287,9 +290,9 @@ describe('LandingPage', () => {
   // ── Tracks index ──────────────────────────────────────────────────────────
 
   describe('Tracks index', () => {
-    it('shows all 9 tracks', async () => {
+    it('shows all 10 tracks', async () => {
       renderWithPlan(null);
-      const trackNames = ['SQL', 'Python', 'Pandas', 'PySpark', 'Data Engineering', 'Data Modeling', 'Statistics', 'ML Fundamentals', 'Experimentation'];
+      const trackNames = ['SQL', 'Python', 'Pandas', 'PySpark', 'Data Engineering', 'Data Modeling', 'Statistics', 'ML Fundamentals', 'Experimentation', 'Product Sense'];
       // Use the tracks section specifically
       for (const name of trackNames) {
         await waitFor(() => {
@@ -299,7 +302,7 @@ describe('LandingPage', () => {
       }
     });
 
-    it('shows no "Coming soon" badges for the canonical 9-track catalog', async () => {
+    it('shows no "Coming soon" badges for the canonical 10-track catalog', async () => {
       renderWithPlan(null);
       await waitFor(() => {
         expect(screen.queryByText('Coming soon')).not.toBeInTheDocument();
@@ -542,11 +545,11 @@ describe('LandingPage', () => {
       expect(link).toHaveAttribute('href', '/learn');
     });
 
-    it('YourTracksSection defaults to All — shows all 9 tracks', async () => {
+    it('YourTracksSection defaults to All — shows all 10 tracks', async () => {
       const { container } = renderWithPlan('free');
       await waitFor(() => screen.getByText('Jump back in.'));
       const section = container.querySelector('.lp-your-tracks');
-      expect(section.querySelectorAll('.lp-your-track-card')).toHaveLength(9);
+      expect(section.querySelectorAll('.lp-your-track-card')).toHaveLength(10);
       const allBtn = within(section).getByRole('button', { name: 'All' });
       expect(allBtn).toHaveAttribute('aria-pressed', 'true');
     });
