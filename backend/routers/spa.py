@@ -112,7 +112,7 @@ def _build_seo_meta() -> dict:
 
     meta["/interview-prep"] = {
         "title": "Data Interview Prep by Role: Analyst, Engineer & Scientist | datathink",
-        "description": "Compare data interview prep by role: Data Analyst, Data Engineer, Analytics Engineer, and Data Scientist, with SQL, product sense, ML, systems, samples, and mocks.",
+        "description": "Compare data interview prep by role: Data Analyst, Data Engineer, Analytics Engineer, and Data Scientist, with SQL, Product Sense, ML, systems, samples, and mocks.",
     }
 
     meta["/interview-prep/data-engineer"] = {
@@ -122,7 +122,7 @@ def _build_seo_meta() -> dict:
 
     meta["/interview-prep/data-analyst"] = {
         "title": "Data Analyst Interview Prep: SQL, Product Sense & Stats | datathink",
-        "description": "Data analyst interview prep covering SQL, product sense, statistics, Pandas, and Python, with role-specific samples, practice, and mocks.",
+        "description": "Data analyst interview prep covering SQL, Product Sense, statistics, Pandas, and Python, with role-specific samples, practice, and mocks.",
     }
 
     meta["/interview-prep/analytics-engineer"] = {
@@ -132,7 +132,7 @@ def _build_seo_meta() -> dict:
 
     meta["/interview-prep/data-scientist"] = {
         "title": "Data Scientist Interview Prep: ML, Product Sense & Stats | datathink",
-        "description": "Data scientist interview prep covering ML fundamentals, statistics, experimentation, product sense, Python, Pandas, and SQL, with samples and mocks.",
+        "description": "Data scientist interview prep covering ML fundamentals, statistics, experimentation, Product Sense, Python, Pandas, and SQL, with samples and mocks.",
     }
 
     # Pages crawlers should not index

@@ -35,6 +35,12 @@ Keep entries to 4–6 lines. Friction kills logs; if it's longer than the change
 
 ## Entries
 
+## 2026-07-14 — Product Sense made explicit in DA/DS interview prep
+**Area:** growth · SEO · frontend · mock · **Status:** accepted
+**Decision:** Refreshed `/interview-prep`, `/interview-prep/data-analyst`, and `/interview-prep/data-scientist` copy so Product Sense is visible in the page body, track weights, and FAQs for Data Analyst and Data Scientist prep. Synced the mock blueprint doc mirror to include Product Sense in DA/DS mixed pools and times.
+**Rejected:** Leaving Product Sense only in metadata or role chips; candidates landing from SEO need the page body to explain why metric judgment matters for the role.
+**Affects:** frontend/src/pages/{InterviewPrepIndexPage,RoleInterviewPrepPage}.js, backend/routers/spa.py, docs/features/mock.md.
+
 ## 2026-07-14 — Product Sense role-page copy aligned to DA/DS launch
 **Area:** growth · SEO · frontend · **Status:** accepted
 **Decision:** Updated `/interview-prep`, `/interview-prep/data-analyst`, and `/interview-prep/data-scientist` copy so Product Sense is framed as product analytics judgment for analysts and as the metric/decision layer for data scientists. Helmet and crawler-visible spa.py meta were synced with the new role-track promise.

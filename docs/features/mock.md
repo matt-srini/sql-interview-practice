@@ -35,10 +35,11 @@ Benchmark blueprints:
 | Data Modeling | 5 constructed reasoning prompts | 40 min |
 | ML Fundamentals | 6 constructed reasoning prompts | 40 min |
 | Experimentation | 6 constructed reasoning prompts | 40 min |
-| **Mixed — Data Analyst** | SQL (1) + Statistics (1) + Pandas (1) + Python (1) | 55 min |
+| Product Sense | 6 constructed reasoning prompts | 40 min |
+| **Mixed — Data Analyst** | SQL (1) + Statistics (1) + Product Sense (1) + Pandas (1) + Python (1) | 69 min |
 | **Mixed — Data Engineer** | Python (1) + SQL (1) + PySpark (1) + Data Engineering (1) + Data Modeling (1) | 70 min |
 | **Mixed — Analytics Engineer** | SQL (1) + Data Modeling (1) + Pandas (1) + Python (1) | 55 min |
-| **Mixed — Data Scientist** | ML Fundamentals (1) + Statistics (1) + Experimentation (1) + Python (1) + Pandas (1) + SQL (1) | 80 min |
+| **Mixed — Data Scientist** | ML Fundamentals (1) + Statistics (1) + Experimentation (1) + Product Sense (1) + Python (1) + Pandas (1) + SQL (1) | 93 min |
 
 Benchmark composition follows track-specific type targets where the bank supports them. **The per-track per-difficulty blueprint must match the actual on-disk bank shape at that difficulty** — bank shape governs blueprint, not the other way around (see [`mock-benchmark-spec.md` § Blueprint feasibility](../specs/mock-benchmark-spec.md)). Runtime source of truth is `backend/routers/mock.py` (`_benchmark_type_targets`, `_pyspark_format_targets`, `difficulty_overrides`); the table below is the doc-side canonical render of that source. Any change to either the bank's per-difficulty type distribution or to a blueprint below must update both in the same commit and re-verify feasibility.
 
@@ -49,6 +50,7 @@ Benchmark composition follows track-specific type targets where the bank support
 | Data Modeling | `scenario × 1 + conceptual × 4` (difficulty override) | `scenario × 3 + conceptual × 2` | `scenario × 3 + conceptual × 2` |
 | ML Fundamentals | `scenario × 2 + conceptual × 2 + predict_output × 1 + debug × 1` | same | same |
 | Experimentation | `scenario × 2 + conceptual × 2 + predict_output × 1 + debug × 1` | `scenario × 4 + predict_output × 1 + debug × 1` (override) | `scenario × 3 + debug × 2 + predict_output × 1` (override) |
+| Product Sense | `scenario × 4 + debug × 1 + predict_output × 1` | same | same |
 | Statistics | `numerical × 1 + conceptual × 2` (subtype, not type) | same | same |
 
 DM easy override is the canonical example of "bank shape governs blueprint": at easy difficulty the DM bank holds only 1 `scenario` question by design, so the blueprint declares the intended steady-state shape directly via `difficulty_overrides`. PySpark uses its own difficulty-aware sequencer (`_pyspark_format_targets`); the four other MCQ tracks use `_benchmark_type_targets` with optional `difficulty_overrides`. SQL / Python / Pandas benchmarks are executable and bypass type-targeting entirely.
@@ -78,10 +80,10 @@ Mixed track always requires the user to select a **role** before starting any mo
 
 | Role | Tracks in pool |
 |---|---|
-| Data Analyst | SQL, Statistics, Pandas, Python |
+| Data Analyst | SQL, Statistics, Product Sense, Pandas, Python |
 | Data Engineer | Python, SQL, PySpark, Data Engineering, Data Modeling |
 | Analytics Engineer | SQL, Data Modeling, Pandas, Python |
-| Data Scientist | ML Fundamentals, Statistics, Experimentation, Python, Pandas, SQL |
+| Data Scientist | ML Fundamentals, Statistics, Experimentation, Product Sense, Python, Pandas, SQL |
 
 For **benchmark**, the role maps to a fixed blueprint (see table above).
 
