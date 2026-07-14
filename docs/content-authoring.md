@@ -307,6 +307,7 @@ The 4-step verbatim lookup procedure lives in [`.github/agents/question-authorin
 | Statistics | ✅ | clean (234 q, 0 orphans) | Phase 2 closed 2026-05-26; 13 families, no realism families by design; 100 practice + 134 mock-only |
 | ML Fundamentals | ✅ | clean (243 q, 0 orphans) | Phase 2 closed 2026-05-26; BIAS/FAIRNESS Phase 2.5 closed 2026-05-26; 30 families, no realism families by design; 100 practice + 143 mock-only (8 chains) |
 | Experimentation | ✅ | clean | Phase 2 closed 2026-05-26; 24 families, no realism families by design; 87 practice + 104 mock-only (10 chains) |
+| Product Sense | ✅ | clean | Launch 2026-07-14; 18 families; 87 practice + 100 mock-only; no realism families by design; added to _TAXONOMY_VALIDATED_TRACKS |
 
 **Per-ITEM authoring discipline.** When the target track is NOT in `_TAXONOMY_VALIDATED_TRACKS`, Sonnet (or any executor) must run an explicit orphan-resolver one-liner after every ITEM (chunk of 8–12 questions) — `validate_content.py` is not sufficient. The one-liner appears in the Stage A handoff template; if orphans return, fix in that ITEM before authoring the next. Do not accumulate drift across multiple ITEMs.
 
@@ -497,6 +498,7 @@ Mock-only inventory must support a power user who completes most of practice and
 | Statistics | 100 | 134‡ | **1.34×** | hybrid (conceptual MCQ + numerical Python); ‡18 hard Interview Loop chain questions added 2026-06-19 lift the ratio above the original 1.15–1.25× band — a deliberate **chain-only exception** (chains appear only in Elite Interview Loop, never in benchmarks/drills); standalone budget unchanged at ~1.16×. See [`docs/tracks/statistics.md`](./tracks/statistics.md) § Coverage + [`DECISIONS.md`](./decisions/DECISIONS.md) 2026-06-19 |
 | ML Fundamentals | 100 | 143† | **1.43×** | constructed reasoning (MCQ); †includes 16 chain children from 8 chains; ALGORITHMIC FAIRNESS family added Phase 2.5 (2026-05-26), registry now 30 families |
 | Experimentation | 87 | 104 | **1.20×** | constructed reasoning (MCQ); 10 chains (20 chain children); 24-family registry; path (ii) no realism families |
+| Product Sense | 87 | 100 | **1.15×** | constructed reasoning (MCQ); 18-family registry; no realism families by design |
 
 A track audit proposing **< 1.0×** must record the track-specific reason in the brief and the decision log (e.g. interview-frequency data showing low demand, a finite pattern-space argument that more mock would only produce clones, etc.) — and the reason must survive critical pushback. *"Lean"* in this contract applies to **practice** (don't pad the curriculum with puzzles or low-value variants); **mock** sizes to the runway. A small mock pool is a power-user runway failure, not a virtue.
 
@@ -509,7 +511,7 @@ A track audit proposing **< 1.0×** must record the track-specific reason in the
 - **Operational ceiling:** `target + ~5pp`. Exceeding the band also requires escalation (prevents over-authoring into near-clone territory under the anti-duplication rule).
 - **Quality > integer.** If the anti-duplication rule binds before the band's lower bound, stop authoring, record the binding reason in the closeout commit, and hand back for re-audit. Do not pad with near-clones to hit a number.
 
-**Closed tracks (SQL, Python, PySpark, Pandas, Data Engineering, Data Modeling, Statistics, ML Fundamentals, Experimentation) keep their locked targets** — all active tracks have now closed Phase 2. The precedent table above records LANDED ratios (history), not retro-fitted targets.
+**Closed tracks (SQL, Python, PySpark, Pandas, Data Engineering, Data Modeling, Statistics, ML Fundamentals, Experimentation, Product Sense) keep their locked targets** — the first nine closed Phase 2; Product Sense closed at launch (2026-07-14) via the track-onboarding flow, not Phase 2. The precedent table above records LANDED ratios (history), not retro-fitted targets.
 
 ---
 

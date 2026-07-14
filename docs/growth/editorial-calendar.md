@@ -36,7 +36,7 @@ day is mechanical. Reuse the pillar — never create per-channel from scratch.
 
 ### Pillar rotation (cycle through these so content stays varied)
 
-1. Reasoning vs. recall · 2. The 9 tracks (one reasoning skill each) · 3. Role-true prep
+1. Reasoning vs. recall · 2. The 10 tracks (one reasoning skill each) · 3. Role-true prep
 · 4. Sample questions as hooks · 5. Mock-interview narratives · 6. Dashboard / readiness insights.
 (Definitions: [`gtm-strategy.md`](gtm-strategy.md) § 4.)
 
@@ -66,7 +66,7 @@ Phases map to the launch sequence ([`gtm-strategy.md`](gtm-strategy.md) § 4): *
 
 | Wk | Pillar | LinkedIn anchor (company page) | X | Reddit (disclosed human) | Newsletter | Ops |
 |---|---|---|---|---|---|---|
-| 3 | The 9 tracks | Carousel: "Why pandas tests something SQL never will"; founder reshares | Reply-guy week: 15 substantive replies to data accounts + 1 thread | Keep building karma; answer career Qs with real reasoning | Weekly send | Publish SEO pillar #2 to `/guides` (role+intent), internal-link role + sample |
+| 3 | The 10 tracks | Carousel: "Why pandas tests something SQL never will"; founder reshares | Reply-guy week: 15 substantive replies to data accounts + 1 thread | Keep building karma; answer career Qs with real reasoning | Weekly send | Publish SEO pillar #2 to `/guides` (role+intent), internal-link role + sample |
 | 4 | Sample-as-hook | Carousel: "3 sample questions, 3 reasoning traps"; founder reshares | "Can you solve this?" thread #2 | **First earned resource mention** — disclosed, only where rules allow (e.g. a direct "what tool" Q or r/developersIndia Monthly Showcase) | Weekly send | SEO pillar #3 to `/guides`; consider running paid-search thermometer (§ 3.9) if organic baseline is visible |
 | 5 | Mock narratives | Story post: "Our readiness benchmark showed exactly where candidates' gaps are"; founder reshares | Build-in-public progress thread (real numbers) | r/cscareerquestions: help job-seekers, no commercial angle | Weekly send | Begin PH/Show HN prep (assets, maker profile, HN karma) |
 | 6 | Dashboard/readiness | Carousel: "Your solve count is lying; first-try accuracy isn't"; founder reshares | Thread on the metric + sample | r/BusinessIntelligence Monday "Entering & Transitioning" thread (clean resource fit) | Weekly send | Finalize launch kit (M7); test funnel under load |
@@ -82,7 +82,7 @@ Phases map to the launch sequence ([`gtm-strategy.md`](gtm-strategy.md) § 4): *
 
 | Wk | Pillar | Focus |
 |---|---|---|
-| 9 | The 9 tracks | Steady weekly rhythm; double down on the best-performing LinkedIn format; **kick off Track-mastery SEO Wave 2** (SQL pillar first — see below) |
+| 9 | The 10 tracks | Steady weekly rhythm; double down on the best-performing LinkedIn format; **kick off Track-mastery SEO Wave 2** (SQL pillar first — see below) |
 | 10 | Sample-as-hook | Begin India bootcamp-partnership outreach (operator grants for a cohort) |
 | 11 | Mock narratives | SEO pillar #3–4; first role+intent query should be approaching page 1 |
 | 12 | Dashboard/readiness | Quarter review: WAL trend, sample→activation, activation→paid; prune what didn't work |
@@ -103,7 +103,7 @@ A/B-test design, pandas vs SQL.
 
 **Wave 2 — Track-mastery pillars (next, after Wave 1 indexes).** One pillar per track answering "what
 does mastering `<track>` actually take, and how do you go from foundational to advanced." Maps directly
-to pillar-rotation theme **#2 (The 9 tracks)**; begins in Phase 4 (the "The 9 tracks" slot, wk 9+).
+to pillar-rotation theme **#2 (The 10 tracks)**; begins in Phase 4 (the "The 10 tracks" slot, wk 9+).
 
 - **Write the durable arc, not the volatile path list.** Each pillar narrates the track's concept arc
   and load-bearing pattern families, sourced from that track's authoritative framing in
@@ -111,7 +111,7 @@ to pillar-rotation theme **#2 (The 9 tracks)**; begins in Phase 4 (the "The 9 tr
   **Link** to `/learn/<topic>` (the live paths surface) rather than enumerating path slugs — paths get
   re-leveled, and a slug list would go stale (no-stale-docs trap).
 - **Differentiate genuinely per track.** SQL's grain/fan-out arc reads nothing like PySpark's
-  shuffle/skew arc or Experimentation's power/SRM arc. Nine templated twins is a doorway-page pattern
+  shuffle/skew arc or Experimentation's power/SRM arc. Ten templated twins is a doorway-page pattern
   and breaks the useful + original bar (never volume-as-value). If a track can't sustain a distinct,
   substantive pillar yet, skip it rather than pad it.
 - **Order:** start with the three highest-intent tracks (**SQL → Python → Pandas**) to prove the

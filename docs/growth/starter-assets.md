@@ -138,7 +138,7 @@ build, one decision per slide. 10) The principle + soft CTA ("Train the reasonin
 > **Body:** I got tired of interview-prep sites that check your SQL against a string and call it
 > "correct." datathink runs your query on a real DuckDB engine and your Python in a real sandbox, and
 > the questions are built around the *reasoning* a data professional actually uses — not volume or
-> streaks. 9 tracks (SQL, Python, pandas, PySpark, stats, ML, and more), with a free no-login sample
+> streaks. 10 tracks (SQL, Python, pandas, PySpark, stats, ML, and more), with a free no-login sample
 > set so you can judge it without an account: [/sample]. It's a bootstrapped solo project; happy to go
 > deep on the sandbox hardening, the grading determinism, or the curriculum design in the comments.
 

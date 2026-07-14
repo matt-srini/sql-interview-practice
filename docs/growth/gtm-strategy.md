@@ -413,7 +413,7 @@ Each pillar is a renewable well that maps to a § 1 messaging pillar and to a re
 | Pillar | Source surface | Messaging tie | Example angle |
 |---|---|---|---|
 | **Reasoning vs. recall** | The whole thesis | Pillar 1 | "Why the memorized window-function template fails when the question is rephrased" |
-| **The 9 tracks, one reasoning skill each** | The track catalog | Pillar 2/3 | "What pandas actually tests that SQL doesn't — and why both matter" |
+| **The 10 tracks, one reasoning skill each** | The track catalog | Pillar 2/3 | "What pandas actually tests that SQL doesn't — and why both matter" |
 | **Role-true prep** | `/interview-prep/<role>` pages | Pillar 4 | "The 5 tracks a Data Engineer interview really spans" |
 | **Sample questions as bite-size hooks** | `/sample` (no login) | Pillar 2 | "Can you solve this in 3 lines? (no login needed)" |
 | **Mock-interview narratives** | Mock / Interview Loop | Pillar 3 | "What a readiness benchmark told me I was actually weak at" |
@@ -470,7 +470,7 @@ This is **one piece of work per week**, not seven. The calendar in
 
 ## 5. The free-sample growth loop
 
-The **Sample Hub (`/sample`, no login, 81 sample questions)** is the shareable wedge — the entire
+The **Sample Hub (`/sample`, no login, 90 sample questions)** is the shareable wedge — the entire
 top-of-funnel is built to put a free sample in front of the right person and let the product earn the
 next step. No signup wall to resent, nothing to lose by clicking.
 
@@ -495,7 +495,7 @@ The measurement substrate is fully wired — these events fire today (see `CLAUD
         │  ── account created ──▶  PostHog: account_created   ◀── "made an account" signal
         │  ── first real solve ──▶  PostHog: question_submitted → question_solved
         ▼
-   FREE TIER  (all easy questions, all 9 tracks — no ladder, no thresholds)
+   FREE TIER  (all easy questions, all 10 tracks — no ladder, no thresholds)
         │  [the medium / hard wall prompts an upgrade — the clean, honest conversion moment]
         │  ── tries a benchmark ──▶  PostHog: mock_started → mock_completed
         ▼
@@ -504,7 +504,7 @@ The measurement substrate is fully wired — these events fire today (see `CLAUD
            ── payment verified ─────▶  PostHog: plan_upgraded
 ```
 
-**On the free-tier model:** Free = all easy across 9 tracks, ungated. The unlock ladder (batch
+**On the free-tier model:** Free = all easy across 10 tracks, ungated. The unlock ladder (batch
 thresholds, per-track caps) was removed (2026-06-29). Medium and hard questions require Pro/Elite —
 a clear, honest wall. The conversion moment is "you've worked through the easy questions, now go
 deeper" — not a gamified drip. No founding-member pricing, no grandfathering cohorts, no scarcity
