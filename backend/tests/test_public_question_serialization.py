@@ -25,11 +25,12 @@ import data_modeling_questions
 import statistics_questions
 import ml_fundamentals_questions
 import experimentation_questions
+import product_sense_questions
 
 BACKEND = Path(__file__).resolve().parent.parent
 DIFFS = ("easy", "medium", "hard")
 
-# (content dir under backend/content, module exposing get_public_question) — all 9 tracks
+# (content dir under backend/content, module exposing get_public_question) — all 10 tracks
 TRACKS = [
     ("questions", sql_questions),  # SQL
     ("python_questions", python_questions),
@@ -40,6 +41,7 @@ TRACKS = [
     ("statistics_questions", statistics_questions),
     ("ml_fundamentals_questions", ml_fundamentals_questions),
     ("experimentation_questions", experimentation_questions),
+    ("product_sense_questions", product_sense_questions),
 ]
 
 

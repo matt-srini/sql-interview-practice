@@ -17,7 +17,7 @@ _path_question_ids = _agg_path["questions"]
 
 
 def test_tc119_get_paths_returns_all_paths():
-    """TC-119: GET /api/paths → 200; paths array covers all 9 tracks.
+    """TC-119: GET /api/paths → 200; paths array covers all 10 tracks.
 
     Tests the *property* that all paths are returned and shaped correctly,
     not a hardcoded total — total grows as new paths are added. Verifies
@@ -29,9 +29,9 @@ def test_tc119_get_paths_returns_all_paths():
     assert r.status_code == 200
     body = r.json()
     paths = body.get("paths", body) if isinstance(body, dict) else body
-    # Sanity floor: at least 2 paths per track × 9 tracks = 18 minimum.
-    # Current bank holds ~42 paths; this check trips only if the loader breaks.
-    assert len(paths) >= 18, f"Suspiciously few paths returned: {len(paths)}"
+    # Sanity floor: at least 2 paths per track × 10 tracks = 20 minimum.
+    # Current bank holds ~103 paths; this check trips only if the loader breaks.
+    assert len(paths) >= 20, f"Suspiciously few paths returned: {len(paths)}"
     # Each path has slug, title, topic, solved_count
     for p in paths:
         assert "slug" in p

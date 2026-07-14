@@ -84,7 +84,7 @@ def test_sitemap_xml_includes_and_excludes(client):
     # Must include homepage and a practice page
     assert "<loc>https://datathink.co/</loc>" in body
     assert "<loc>https://datathink.co/practice/sql</loc>" in body
-    # Must include all 9 tracks — previously-missing pages
+    # Must include all 10 tracks — previously-missing pages
     assert "/practice/statistics" in body
     assert "/practice/data-engineering" in body
     assert "/sample/statistics/medium" in body
