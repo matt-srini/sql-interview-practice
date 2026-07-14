@@ -3,16 +3,7 @@ from typing import Any
 
 from fastapi import APIRouter, Depends
 
-import data_engineering_questions
-import data_modeling_questions
-import experimentation_questions
-import ml_fundamentals_questions
-import pandas_questions
-import product_sense_questions
-import python_questions
-import pyspark_questions
-import questions as sql_questions
-import statistics_questions
+from tracks import TRACKS
 from db import get_recent_activity, get_solved_ids
 from deps import get_current_user, require_authenticated_user
 from middleware.request_context import get_request_id
@@ -21,18 +12,9 @@ router = APIRouter(prefix="/api")
 
 logger = logging.getLogger(__name__)
 
-_TOPIC_MODULES = {
-    "sql": sql_questions,
-    "python": python_questions,
-    "pandas": pandas_questions,
-    "pyspark": pyspark_questions,
-    "data-engineering": data_engineering_questions,
-    "data-modeling": data_modeling_questions,
-    "statistics": statistics_questions,
-    "ml-fundamentals": ml_fundamentals_questions,
-    "experimentation": experimentation_questions,
-    "product-sense": product_sense_questions,
-}
+# Derived from the TRACKS registry — the single SoT for the track list. A new track
+# appears here automatically; no per-router edit needed.
+_TOPIC_MODULES = {t.slug: t.catalog_module for t in TRACKS}
 
 
 def _build_index(module: Any) -> dict[int, dict[str, Any]]:

@@ -6,17 +6,14 @@ from fastapi import APIRouter, HTTPException, Request, Response
 from fastapi.responses import FileResponse, HTMLResponse
 
 from config import CANONICAL_BASE_URL, FRONTEND_BASE_URL, FRONTEND_DIST_DIR, VITE_BACKEND_URL, VITE_POSTHOG_HOST, VITE_POSTHOG_KEY, VITE_SENTRY_DSN
+from tracks import TRACKS
 
 router = APIRouter()
 
 BASE_URL = CANONICAL_BASE_URL
 
-_TRACK_LABELS = {
-    "sql": "SQL", "python": "Python", "pandas": "Pandas", "pyspark": "PySpark",
-    "data-engineering": "Data Engineering", "data-modeling": "Data Modeling",
-    "statistics": "Statistics", "ml-fundamentals": "ML Fundamentals", "experimentation": "Experimentation",
-    "product-sense": "Product Sense",
-}
+# Derived from the TRACKS registry (single SoT for the track list + display labels).
+_TRACK_LABELS = {t.slug: t.label for t in TRACKS}
 
 # Cached at first use — filesystem reads only, no DB
 _INDEX_HTML_CACHE: str | None = None
@@ -34,35 +31,16 @@ def _get_index_html() -> str:
 
 
 def _get_track_counts() -> dict:
-    """Returns {slug: total_practice_count} computed from loaded catalogs."""
-    import importlib
-    _CFG = [
-        ("sql",              "questions",                  "get_questions_by_difficulty"),
-        ("python",           "python_questions",           "get_all_questions"),
-        ("pandas",           "pandas_questions",           "get_all_questions"),
-        ("pyspark",          "pyspark_questions",          "get_all_questions"),
-        ("data-engineering", "data_engineering_questions", "get_all_questions"),
-        ("data-modeling",    "data_modeling_questions",    "get_all_questions"),
-        ("statistics",       "statistics_questions",       "get_all_questions"),
-        ("ml-fundamentals",  "ml_fundamentals_questions",  "get_all_questions"),
-        ("experimentation",  "experimentation_questions",  "get_all_questions"),
-        ("product-sense",    "product_sense_questions",    "get_all_questions"),
-    ]
+    """Returns {slug: total_practice_count} — derived from the TRACKS registry (single SoT)."""
     counts: dict = {}
-    for slug, mod_name, fn_name in _CFG:
+    for t in TRACKS:
         try:
-            mod = importlib.import_module(mod_name)
-            fn = getattr(mod, fn_name)
-            if fn_name == "get_questions_by_difficulty":
-                grouped = fn()
-                counts[slug] = sum(
-                    len([q for q in qs if not q.get("mock_only")])
-                    for qs in grouped.values()
-                )
-            else:
-                counts[slug] = len([q for q in fn() if not q.get("mock_only")])
+            grouped = t.catalog_module.get_questions_by_difficulty()
+            counts[t.slug] = sum(
+                len([q for q in qs if not q.get("mock_only")]) for qs in grouped.values()
+            )
         except Exception:
-            counts[slug] = 0
+            counts[t.slug] = 0
     return counts
 
 
@@ -134,7 +112,7 @@ def _build_seo_meta() -> dict:
 
     meta["/interview-prep"] = {
         "title": "Data Interview Prep by Role: Analyst, Engineer & Scientist | datathink",
-        "description": "Compare data interview prep by role: Data Analyst, Data Engineer, Analytics Engineer, and Data Scientist, with role-specific tracks, samples, and mocks.",
+        "description": "Compare data interview prep by role: Data Analyst, Data Engineer, Analytics Engineer, and Data Scientist, with SQL, product sense, ML, systems, samples, and mocks.",
     }
 
     meta["/interview-prep/data-engineer"] = {
@@ -143,8 +121,8 @@ def _build_seo_meta() -> dict:
     }
 
     meta["/interview-prep/data-analyst"] = {
-        "title": "Data Analyst Interview Prep: SQL, Statistics & Python | datathink",
-        "description": "Data analyst interview prep covering SQL, statistics, product sense, Pandas, and Python, with role-specific samples, practice, and mocks.",
+        "title": "Data Analyst Interview Prep: SQL, Product Sense & Stats | datathink",
+        "description": "Data analyst interview prep covering SQL, product sense, statistics, Pandas, and Python, with role-specific samples, practice, and mocks.",
     }
 
     meta["/interview-prep/analytics-engineer"] = {
@@ -153,7 +131,7 @@ def _build_seo_meta() -> dict:
     }
 
     meta["/interview-prep/data-scientist"] = {
-        "title": "Data Scientist Interview Prep: ML, Statistics & Experimentation | datathink",
+        "title": "Data Scientist Interview Prep: ML, Product Sense & Stats | datathink",
         "description": "Data scientist interview prep covering ML fundamentals, statistics, experimentation, product sense, Python, Pandas, and SQL, with samples and mocks.",
     }
 

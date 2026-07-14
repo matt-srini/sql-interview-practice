@@ -4,16 +4,7 @@ from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException
 
-import data_engineering_questions as de_mod
-import data_modeling_questions as dm_mod
-import experimentation_questions as exp_mod
-import ml_fundamentals_questions as ml_mod
-import pandas_questions as pandas_mod
-import python_questions as python_mod
-import product_sense_questions as ps_mod
-import pyspark_questions as pyspark_mod
-import questions as sql_mod
-import statistics_questions as stats_mod
+from tracks import TRACKS
 from db import get_solved_ids
 from deps import get_current_user
 from path_loader import get_all_paths, get_path
@@ -22,32 +13,11 @@ from unlock import compute_unlock_state
 router = APIRouter()
 
 # Map topic slug → question module
-_TOPIC_MOD = {
-    "sql": sql_mod,
-    "python": python_mod,
-    "pandas": pandas_mod,
-    "pyspark": pyspark_mod,
-    "data-engineering": de_mod,
-    "data-modeling": dm_mod,
-    "statistics": stats_mod,
-    "ml-fundamentals": ml_mod,
-    "experimentation": exp_mod,
-    "product-sense": ps_mod,
-}
-
-# Map topic slug → db topic string used in user_progress
-_TOPIC_DB = {
-    "sql": "sql",
-    "python": "python",
-    "pandas": "pandas",
-    "pyspark": "pyspark",
-    "data-engineering": "data-engineering",
-    "data-modeling": "data-modeling",
-    "statistics": "statistics",
-    "ml-fundamentals": "ml-fundamentals",
-    "experimentation": "experimentation",
-    "product-sense": "product-sense",
-}
+# Both derived from the TRACKS registry (single SoT for the track list). A new track
+# resolves here automatically — no per-router edit (this is what previously 500'd a
+# new track's path detail when the maps were hand-maintained).
+_TOPIC_MOD = {t.slug: t.catalog_module for t in TRACKS}
+_TOPIC_DB = {t.slug: t.db_topic for t in TRACKS}
 
 
 async def _solved_for_topic(user_id: str, topic: str) -> set[int]:

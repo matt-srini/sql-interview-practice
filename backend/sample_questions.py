@@ -13,15 +13,7 @@ from tracks import TRACKS
 # execution tracks with no MCQ evidence-stack UI, so interaction_mode is
 # meaningless for them and resolve_interaction_mode() would raise for an
 # unrecognized track name.
-_INTERACTION_MODE_TRACKS = {
-    "pyspark",
-    "data-engineering",
-    "data-modeling",
-    "statistics",
-    "ml-fundamentals",
-    "experimentation",
-    "product-sense",
-}
+_INTERACTION_MODE_TRACKS = {t.slug for t in TRACKS if t.eval_kind in ("mcq", "mixed")}
 
 
 _DATASETS_DIR = Path(__file__).resolve().parent / "datasets"
@@ -147,17 +139,9 @@ _SAMPLE_POOL_SIZE = 3
 # integrity) via _validate_sample_questions below. Other tracks rely on
 # track-level catalog validators run by scripts/validate_content.py.
 _SAMPLE_DIR = Path(__file__).resolve().parent / "content" / "sample_questions"
+# Derived from the TRACKS registry: sample file = "<db_topic, - as _>.json". Single SoT.
 _TRACK_SAMPLE_FILES: dict[str, str] = {
-    "sql": "sql.json",
-    "python": "python.json",
-    "pandas": "pandas.json",
-    "pyspark": "pyspark.json",
-    "data-engineering": "data_engineering.json",
-    "data-modeling": "data_modeling.json",
-    "statistics": "statistics.json",
-    "ml-fundamentals": "ml_fundamentals.json",
-    "experimentation": "experimentation.json",
-    "product-sense": "product_sense.json",
+    t.slug: f"{t.db_topic.replace('-', '_')}.json" for t in TRACKS
 }
 
 

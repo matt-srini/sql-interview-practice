@@ -678,9 +678,10 @@ def build_study_plan(
 # Track-family classifier for modality-aware debrief language
 # ---------------------------------------------------------------------------
 
-_REASONING_TRACKS = frozenset({
-    "pyspark", "data-engineering", "data-modeling", "ml-fundamentals", "experimentation", "product-sense"
-})
+# Derived from the TRACKS registry: reasoning tracks are the pure-MCQ tracks (statistics
+# is mixed and resolved from its subtype mix below). Single SoT — a new MCQ track joins
+# automatically.
+_REASONING_TRACKS = frozenset(t.slug for t in TRACKS if t.eval_kind == "mcq")
 
 
 def _track_family(track: str, questions: list[dict[str, Any]]) -> str:
