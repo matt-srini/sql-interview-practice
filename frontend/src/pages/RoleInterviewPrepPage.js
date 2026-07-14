@@ -130,20 +130,20 @@ const ROLE_CONTENT = {
 
   'data-analyst': {
     helmet: {
-      title: 'Data Analyst Interview Prep: SQL, Statistics & Python | datathink',
+      title: 'Data Analyst Interview Prep: SQL, Product Sense & Stats | datathink',
       description:
-        'Data analyst interview prep covering SQL, statistics, Pandas, and Python, with role-specific samples, practice, and mocks.',
+        'Data analyst interview prep covering SQL, product sense, statistics, Pandas, and Python, with role-specific samples, practice, and mocks.',
     },
     hero: {
       eyebrow: 'Interview prep · Data Analyst',
       h1: 'Data Analyst Interview Prep',
-      sub: 'Data analyst interviews usually test whether you can turn business questions into reliable analysis. SQL carries the most weight, followed by statistics, metrics, and practical data manipulation in Pandas or Python. The role is less about memorizing tools and more about producing numbers that can be explained clearly.',
+      sub: 'Data analyst interviews usually test whether you can turn business and product questions into reliable analysis. SQL carries the most weight, but product sense matters too: defining a useful metric, reading funnels or cohorts, and explaining why a number moved. Statistics, Pandas, and Python support that work when the question needs uncertainty, cleanup, or quick analysis outside SQL.',
       ctaPrimary: { label: 'Try a free sample →', to: '/sample?role=data-analyst' },
       ctaSecondary: { label: 'See the 5 tracks ↓', scrollTo: 'ip-tracks' },
     },
     whatSection: {
       h2: 'What data analyst interviews actually test',
-      body: 'A typical data analyst interview includes SQL questions, metric interpretation, basic statistics, and sometimes a Python or Pandas exercise. You may be asked to write a query, explain a result, reason about uncertainty, or manipulate a small dataset. The five tracks below show the usual weighting for analyst roles.',
+      body: 'A typical data analyst interview includes SQL questions, product metric reasoning, basic statistics, and sometimes a Python or Pandas exercise. You may be asked to write a query, choose a success metric, interpret a funnel or cohort, diagnose a metric change, or manipulate a small dataset. The five tracks below show the usual weighting for analyst roles.',
     },
     tracks: [
       {
@@ -158,8 +158,8 @@ const ROLE_CONTENT = {
       },
       {
         slug: 'product-sense',
-        desc: 'Turning a business question into the right metric, diagnosing why a number moved, reading a funnel, and judging whether a result is worth acting on.',
-        emphasis: 'Important. Metrics and product-judgment questions increasingly appear in analyst screens.',
+        desc: 'Metric design, funnel and cohort reads, retention or conversion diagnosis, guardrails, and deciding whether a result is actionable.',
+        emphasis: 'Important. Product analytics and growth-facing analyst roles can treat this as near-primary; medium depth covers most screens.',
       },
       {
         slug: 'pandas',
@@ -176,11 +176,15 @@ const ROLE_CONTENT = {
     faq: [
       {
         q: 'What should a data analyst study for interviews?',
-        a: 'Prioritize SQL first, then applied statistics, metrics, and practical Pandas or Python. Most analyst interviews are trying to see whether you can compute, explain, and trust a result.',
+        a: 'Prioritize SQL first, then product sense for metrics and diagnosis, applied statistics, and practical Pandas or Python. Most analyst interviews are trying to see whether you can compute, explain, and trust a result.',
       },
       {
         q: 'How much SQL do data analyst interviews need?',
         a: 'A lot. SQL is usually the highest-weight track for data analyst interviews because it tests joins, aggregation, windows, and metric construction.',
+      },
+      {
+        q: 'Do data analyst interviews include product sense?',
+        a: 'Often, especially for product analyst, growth analyst, and business analyst roles. These questions usually cover metric choice, funnels, cohorts, retention, and what action a product team should take from the analysis.',
       },
       {
         q: 'Do analyst interviews include statistics?',
@@ -257,20 +261,20 @@ const ROLE_CONTENT = {
 
   'data-scientist': {
     helmet: {
-      title: 'Data Scientist Interview Prep: ML, Statistics & Experimentation | datathink',
+      title: 'Data Scientist Interview Prep: ML, Product Sense & Stats | datathink',
       description:
         'Data scientist interview prep covering ML fundamentals, statistics, experimentation, Python, Pandas, and SQL, with samples and mocks.',
     },
     hero: {
       eyebrow: 'Interview prep · Data Scientist',
       h1: 'Data Scientist Interview Prep',
-      sub: 'Data scientist interviews usually combine quantitative reasoning, machine learning, experimentation, and hands-on data work. The exact loop varies by company, but most roles expect ML fundamentals, statistics, Python or Pandas, SQL, and the ability to explain how a model or experiment supports a decision.',
+      sub: 'Data scientist interviews usually combine quantitative reasoning, machine learning, experimentation, product sense, and hands-on data work. The exact loop varies by company, but most roles expect ML fundamentals, statistics, Python or Pandas, SQL, and the ability to explain how a model, metric, or experiment supports a product or business decision.',
       ctaPrimary: { label: 'Try a free sample →', to: '/sample?role=data-scientist' },
       ctaSecondary: { label: 'See the 7 tracks ↓', scrollTo: 'ip-tracks' },
     },
     whatSection: {
       h2: 'What data scientist interviews actually test',
-      body: 'A typical data scientist interview can include ML concepts, statistical inference, A/B testing, SQL, Python, and Pandas. Product-focused roles often give more weight to experimentation and metrics; applied ML roles usually go deeper on model evaluation, leakage, and production trade-offs. The seven tracks below cover the common technical surface.',
+      body: 'A typical data scientist interview can include ML concepts, statistical inference, A/B testing, product metric judgment, SQL, Python, and Pandas. Product DS roles give more weight to metric design, diagnosis, guardrails, and ship/no-ship decisions; applied ML roles usually go deeper on model evaluation, leakage, and production trade-offs. The seven tracks below cover the common technical surface.',
     },
     tracks: [
       {
@@ -290,8 +294,8 @@ const ROLE_CONTENT = {
       },
       {
         slug: 'product-sense',
-        desc: 'Metric selection, diagnosing why a number moved, conflicting-metric trade-offs, gaming-robustness, and ship / no-ship judgment under stakeholder pressure.',
-        emphasis: 'Primary for product DS. A near-universal round for product-focused data scientists.',
+        desc: 'Metric selection, metric movement diagnosis, guardrails, conflicting-metric trade-offs, gaming risk, and ship / no-ship judgment.',
+        emphasis: 'Primary for product DS. Important for generalist DS roles where model or experiment results must translate into a product decision.',
       },
       {
         slug: 'python',
@@ -313,11 +317,15 @@ const ROLE_CONTENT = {
     faq: [
       {
         q: 'What should a data scientist study for interviews?',
-        a: 'Study ML fundamentals, statistics, experimentation, Python, Pandas, and SQL. The weight varies by role type: product DS leans more on experiments and metrics, while applied ML leans more on modeling and evaluation.',
+        a: 'Study ML fundamentals, statistics, experimentation, product sense, Python, Pandas, and SQL. The weight varies by role type: product DS leans more on experiments and metrics, while applied ML leans more on modeling and evaluation.',
       },
       {
         q: 'Do data scientist interviews include statistics and experimentation?',
         a: 'Often, especially for product and decision-science roles. Expect inference, A/B test design, power, multiple testing, and interpretation of results.',
+      },
+      {
+        q: 'Where does product sense fit in data scientist interviews?',
+        a: 'It is the product-judgment layer: choosing metrics, diagnosing why they moved, weighing guardrails, and deciding whether an experiment or model result should change the product. It matters most for product DS, analytics DS, growth, marketplace, and consumer-product roles.',
       },
       {
         q: 'Is machine learning enough on its own?',

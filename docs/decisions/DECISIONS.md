@@ -35,6 +35,12 @@ Keep entries to 4–6 lines. Friction kills logs; if it's longer than the change
 
 ## Entries
 
+## 2026-07-14 — Product Sense role-page copy aligned to DA/DS launch
+**Area:** growth · SEO · frontend · **Status:** accepted
+**Decision:** Updated `/interview-prep`, `/interview-prep/data-analyst`, and `/interview-prep/data-scientist` copy so Product Sense is framed as product analytics judgment for analysts and as the metric/decision layer for data scientists. Helmet and crawler-visible spa.py meta were synced with the new role-track promise.
+**Rejected:** Treating Product Sense as a PM-style feature-design round, or leaving the old titles/copy to imply DA and DS were still mainly SQL/stats/Python or ML/stats/experimentation pages.
+**Affects:** frontend/src/pages/{InterviewPrepIndexPage,RoleInterviewPrepPage}.js, frontend/src/roleRegistry.js, backend/routers/spa.py, docs/decisions/DECISIONS.md.
+
 ## 2026-07-14 — Product Sense easy/medium audit: content fixes + mock over-tag sweep + tagging discipline
 **Area:** content · **Status:** accepted
 **Decision:** Applied an easy/medium audit. Content fixes: `101001` ("holdout"→"treatment group" in stem + explanation — a holdout is withheld from the change, not receiving it); `102013` (MECE bucket mislabel — a broken upload flow is "product/flow", not "demand"); `102075` `follow_up_dimension` `data_quality_pivot`→`edge_case_pivot` (a confounding-segment discovery, not a logging issue); `102077` `data_quality`... `business_rule_pivot`→`abstraction_pivot` (a benchmark/reference-class reframe, not a rule change). Replaced 2 arithmetic-heavy easy funnel questions (`101025`, `101027`) with read-one-stage funnel *judgment* to de-clump the easy arc. Ran a mock-only over-tag sweep across all 45 mock questions and **trimmed 13** (incl. `102065`) to the single family their key actually tests, removing forced second tags that only flavoured a distractor or restated the scenario topic. **Root cause:** the mock authoring instruction "concepts carries 2+ tags (multi-concept is the point)" pressured a forced second tag; corrected rule is **tag what the key tests** — recombine 2+ *in the scenario*, never force a tag. Over-tag patterns + experiment-terminology precision + follow-up-dimension-choice guidance recorded in `docs/tracks/product-sense.md` §Anti-patterns and §chains.

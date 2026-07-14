@@ -25,7 +25,7 @@ export const ROLES = [
     slug: 'data-analyst',
     label: 'Data Analyst',
     hasPage: true,
-    tagline: 'SQL depth · statistical reasoning · Python for data',
+    tagline: 'SQL depth · product metrics · statistical reasoning',
     tracks: ['sql', 'statistics', 'product-sense', 'pandas', 'python'],
   },
   {
@@ -41,7 +41,7 @@ export const ROLES = [
     slug: 'data-scientist',
     label: 'Data Scientist',
     hasPage: true,
-    tagline: 'ML · statistical inference · Python & Pandas for modelling',
+    tagline: 'ML · experiments · product metrics · Python & Pandas',
     tracks: ['ml-fundamentals', 'statistics', 'experimentation', 'product-sense', 'python', 'pandas', 'sql'],
   },
 ];
