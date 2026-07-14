@@ -33,6 +33,7 @@ SAMPLE_FILES: dict[str, Path] = {
     "statistics": _SAMPLE_DIR / "statistics.json",
     "ml-fundamentals": _SAMPLE_DIR / "ml_fundamentals.json",
     "experimentation": _SAMPLE_DIR / "experimentation.json",
+    "product-sense": _SAMPLE_DIR / "product_sense.json",
 }
 
 _RAW_CONCEPTS_BY_TRACK: dict[str, set[str]] = {t.slug: t.concept_blocklist for t in TRACKS}
@@ -518,6 +519,7 @@ _TAXONOMY_VALIDATED_TRACKS: frozenset[str] = frozenset({
     "statistics",         # Statistics Phase 2: registry complete (13 families), 0e/66m/50h mock-only validated; lowercase tag convention; dual-subtype (conceptual + numerical)
     "ml-fundamentals",    # ML Fundamentals Phase 2: registry complete (29 families), 0e/66m/57h standalone mock-only + 8 chains (16 children) validated; MCQ-only, no realism families
     "experimentation",    # Experimentation Phase 2: registry complete (24 families), 0e/45m/59h mock-only validated; 10 chains (20 children); no realism families by design (MCQ-only)
+    "product-sense",      # Product Sense: registry complete (18 families), 0e/45m/55h mock-only validated; 10 chains (20 children); no realism families by design (MCQ-only)
     # Add a track here once its concept_families.py registry is fully populated.
 })
 

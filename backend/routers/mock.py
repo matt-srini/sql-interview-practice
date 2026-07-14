@@ -88,6 +88,7 @@ BENCHMARK_CONFIGS: dict[str, dict[str, int]] = {
     "data-modeling": {"num_questions": 5, "time_limit_s": 2400},
     "ml-fundamentals": {"num_questions": 6, "time_limit_s": 2400},
     "experimentation": {"num_questions": 6, "time_limit_s": 2400},
+    "product-sense": {"num_questions": 6, "time_limit_s": 2400},
 }
 
 # Mixed benchmark blueprints: role → {track: slot_count, ...} + time_limit_s
@@ -98,8 +99,8 @@ BENCHMARK_CONFIGS: dict[str, dict[str, int]] = {
 # tracks.py _ROLE_TRACKS for the role. See DECISIONS.md 2026-06-26.
 MIXED_BENCHMARK_CONFIGS: dict[str, dict] = {
     "data_analyst": {
-        "slots": {"sql": 1, "statistics": 1, "pandas": 1, "python": 1},
-        "time_limit_s": 3300,  # 55 min, 4 slots
+        "slots": {"sql": 1, "statistics": 1, "product-sense": 1, "pandas": 1, "python": 1},
+        "time_limit_s": 4125,  # 69 min, 5 slots
     },
     "data_engineer": {
         "slots": {"python": 1, "sql": 1, "pyspark": 1, "data-engineering": 1, "data-modeling": 1},
@@ -110,8 +111,8 @@ MIXED_BENCHMARK_CONFIGS: dict[str, dict] = {
         "time_limit_s": 3300,  # 55 min, 4 slots
     },
     "data_scientist": {
-        "slots": {"ml-fundamentals": 1, "statistics": 1, "experimentation": 1, "python": 1, "pandas": 1, "sql": 1},
-        "time_limit_s": 4800,  # 80 min, 6 slots
+        "slots": {"ml-fundamentals": 1, "statistics": 1, "experimentation": 1, "product-sense": 1, "python": 1, "pandas": 1, "sql": 1},
+        "time_limit_s": 5600,  # 93 min, 7 slots
     },
 }
 
@@ -406,6 +407,9 @@ def _benchmark_type_targets(track: str, difficulty: str, num_questions: int) -> 
         "data-modeling": ["scenario", "conceptual", "scenario", "conceptual", "scenario"],
         "ml-fundamentals": ["scenario", "conceptual", "predict_output", "debug", "scenario", "conceptual"],
         "experimentation": ["scenario", "conceptual", "predict_output", "debug", "scenario", "conceptual"],
+        # Product Sense is scenario-heavy (no conceptual type); mirrors the on-disk bank
+        # (hard standalone ~26 scenario / 8 debug / 3 predict_output). See docs/tracks/product-sense.md.
+        "product-sense": ["scenario", "scenario", "debug", "scenario", "predict_output", "scenario"],
     }
     base = targets.get(track, ["conceptual"] * num_questions)
     if len(base) >= num_questions:

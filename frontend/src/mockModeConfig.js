@@ -106,6 +106,12 @@ export const BENCHMARK_BLUEPRINTS = {
     summary: '6 constructed reasoning prompts',
     description: 'Experiment design and causal-inference benchmark under product decision pressure.',
   },
+  'product-sense': {
+    numQuestions: 6,
+    timeMinutes: 40,
+    summary: '6 constructed reasoning prompts',
+    description: 'Product-reasoning benchmark across metric design, diagnosis, trade-offs, and ship decisions.',
+  },
 };
 
 // Mixed-track benchmark config per role: ONLY the values that are NOT derivable from the
@@ -114,10 +120,10 @@ export const BENCHMARK_BLUEPRINTS = {
 // shown in the summary are DERIVED from the role's canonical tracks (roleRegistry, the SoT)
 // in getBenchmarkBlueprint / getSessionQuestionCount — never restated here.
 export const MIXED_BENCHMARK_BLUEPRINTS = {
-  data_analyst:       { timeMinutes: 55, description: 'Role-based benchmark calibrated for analytical workflows.' },
+  data_analyst:       { timeMinutes: 69, description: 'Role-based benchmark calibrated for analytical workflows.' },
   data_engineer:      { timeMinutes: 70, description: 'Role-based benchmark covering the full data-engineering tool stack.' },
   analytics_engineer: { timeMinutes: 55, description: 'Role-based benchmark for modeling, transformation, and analytical SQL.' },
-  data_scientist:     { timeMinutes: 80, description: 'Role-based benchmark spanning modeling, statistics, experimentation, and the code underneath.' },
+  data_scientist:     { timeMinutes: 93, description: 'Role-based benchmark spanning modeling, statistics, experimentation, product sense, and the code underneath.' },
 };
 
 export function supportsBenchmarkMode(track) {

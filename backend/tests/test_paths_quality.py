@@ -22,7 +22,7 @@ from path_patterns import PATH_PATTERNS
 from tracks import TRACKS
 
 
-_TAXONOMY_VALIDATED_TRACKS = frozenset({"sql", "python"})
+_TAXONOMY_VALIDATED_TRACKS = frozenset({"sql", "python", "product-sense"})
 
 
 @pytest.fixture(scope="module")

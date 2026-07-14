@@ -139,11 +139,11 @@ const ROLE_CONTENT = {
       h1: 'Data Analyst Interview Prep',
       sub: 'Data analyst interviews usually test whether you can turn business questions into reliable analysis. SQL carries the most weight, followed by statistics, metrics, and practical data manipulation in Pandas or Python. The role is less about memorizing tools and more about producing numbers that can be explained clearly.',
       ctaPrimary: { label: 'Try a free sample →', to: '/sample?role=data-analyst' },
-      ctaSecondary: { label: 'See the 4 tracks ↓', scrollTo: 'ip-tracks' },
+      ctaSecondary: { label: 'See the 5 tracks ↓', scrollTo: 'ip-tracks' },
     },
     whatSection: {
       h2: 'What data analyst interviews actually test',
-      body: 'A typical data analyst interview includes SQL questions, metric interpretation, basic statistics, and sometimes a Python or Pandas exercise. You may be asked to write a query, explain a result, reason about uncertainty, or manipulate a small dataset. The four tracks below show the usual weighting for analyst roles.',
+      body: 'A typical data analyst interview includes SQL questions, metric interpretation, basic statistics, and sometimes a Python or Pandas exercise. You may be asked to write a query, explain a result, reason about uncertainty, or manipulate a small dataset. The five tracks below show the usual weighting for analyst roles.',
     },
     tracks: [
       {
@@ -155,6 +155,11 @@ const ROLE_CONTENT = {
         slug: 'statistics',
         desc: 'Descriptive statistics, probability, confidence intervals, hypothesis tests, and interpreting noisy results.',
         emphasis: 'Important. Conceptual-to-medium strength is usually enough for analyst roles.',
+      },
+      {
+        slug: 'product-sense',
+        desc: 'Turning a business question into the right metric, diagnosing why a number moved, reading a funnel, and judging whether a result is worth acting on.',
+        emphasis: 'Important. Metrics and product-judgment questions increasingly appear in analyst screens.',
       },
       {
         slug: 'pandas',
@@ -261,11 +266,11 @@ const ROLE_CONTENT = {
       h1: 'Data Scientist Interview Prep',
       sub: 'Data scientist interviews usually combine quantitative reasoning, machine learning, experimentation, and hands-on data work. The exact loop varies by company, but most roles expect ML fundamentals, statistics, Python or Pandas, SQL, and the ability to explain how a model or experiment supports a decision.',
       ctaPrimary: { label: 'Try a free sample →', to: '/sample?role=data-scientist' },
-      ctaSecondary: { label: 'See the 6 tracks ↓', scrollTo: 'ip-tracks' },
+      ctaSecondary: { label: 'See the 7 tracks ↓', scrollTo: 'ip-tracks' },
     },
     whatSection: {
       h2: 'What data scientist interviews actually test',
-      body: 'A typical data scientist interview can include ML concepts, statistical inference, A/B testing, SQL, Python, and Pandas. Product-focused roles often give more weight to experimentation and metrics; applied ML roles usually go deeper on model evaluation, leakage, and production trade-offs. The six tracks below cover the common technical surface.',
+      body: 'A typical data scientist interview can include ML concepts, statistical inference, A/B testing, SQL, Python, and Pandas. Product-focused roles often give more weight to experimentation and metrics; applied ML roles usually go deeper on model evaluation, leakage, and production trade-offs. The seven tracks below cover the common technical surface.',
     },
     tracks: [
       {
@@ -282,6 +287,11 @@ const ROLE_CONTENT = {
         slug: 'experimentation',
         desc: 'A/B testing, power, sample-ratio mismatch, multiple testing, causal reasoning, and experiment interpretation.',
         emphasis: 'Primary for product DS. Important for many generalist DS roles too.',
+      },
+      {
+        slug: 'product-sense',
+        desc: 'Metric selection, diagnosing why a number moved, conflicting-metric trade-offs, gaming-robustness, and ship / no-ship judgment under stakeholder pressure.',
+        emphasis: 'Primary for product DS. A near-universal round for product-focused data scientists.',
       },
       {
         slug: 'python',

@@ -26,7 +26,7 @@ export const ROLES = [
     label: 'Data Analyst',
     hasPage: true,
     tagline: 'SQL depth · statistical reasoning · Python for data',
-    tracks: ['sql', 'statistics', 'pandas', 'python'],
+    tracks: ['sql', 'statistics', 'product-sense', 'pandas', 'python'],
   },
   {
     id: 'analytics_engineer',
@@ -42,7 +42,7 @@ export const ROLES = [
     label: 'Data Scientist',
     hasPage: true,
     tagline: 'ML · statistical inference · Python & Pandas for modelling',
-    tracks: ['ml-fundamentals', 'statistics', 'experimentation', 'python', 'pandas', 'sql'],
+    tracks: ['ml-fundamentals', 'statistics', 'experimentation', 'product-sense', 'python', 'pandas', 'sql'],
   },
 ];
 

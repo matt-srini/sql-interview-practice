@@ -574,10 +574,10 @@ def mixed_mock_slugs() -> list[str]:
 # docs/specs/platform-north-star.md § Role-to-track framing. See DECISIONS.md
 # 2026-06-26 (one-mapping reconciliation).
 _ROLE_TRACKS: dict[str, list[str]] = {
-    "data_analyst":        ["sql", "statistics", "pandas", "python"],
+    "data_analyst":        ["sql", "statistics", "product-sense", "pandas", "python"],
     "data_engineer":       ["python", "sql", "pyspark", "data-engineering", "data-modeling"],
     "analytics_engineer":  ["sql", "data-modeling", "pandas", "python"],
-    "data_scientist":      ["ml-fundamentals", "statistics", "experimentation", "python", "pandas", "sql"],
+    "data_scientist":      ["ml-fundamentals", "statistics", "experimentation", "product-sense", "python", "pandas", "sql"],
 }
 
 VALID_MOCK_ROLES = set(_ROLE_TRACKS)

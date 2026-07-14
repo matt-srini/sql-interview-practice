@@ -121,7 +121,6 @@ export const TRACK_META = {
     hasMCQ: true,
     mixedSubtype: false,
     tagline: 'product judgment · scenario · diagnosis',
-    comingSoon: true,
   },
 };
 

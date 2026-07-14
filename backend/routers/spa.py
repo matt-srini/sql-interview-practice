@@ -15,6 +15,7 @@ _TRACK_LABELS = {
     "sql": "SQL", "python": "Python", "pandas": "Pandas", "pyspark": "PySpark",
     "data-engineering": "Data Engineering", "data-modeling": "Data Modeling",
     "statistics": "Statistics", "ml-fundamentals": "ML Fundamentals", "experimentation": "Experimentation",
+    "product-sense": "Product Sense",
 }
 
 # Cached at first use — filesystem reads only, no DB
@@ -45,6 +46,7 @@ def _get_track_counts() -> dict:
         ("statistics",       "statistics_questions",       "get_all_questions"),
         ("ml-fundamentals",  "ml_fundamentals_questions",  "get_all_questions"),
         ("experimentation",  "experimentation_questions",  "get_all_questions"),
+        ("product-sense",    "product_sense_questions",    "get_all_questions"),
     ]
     counts: dict = {}
     for slug, mod_name, fn_name in _CFG:
@@ -78,6 +80,7 @@ def _build_seo_meta() -> dict:
         "statistics":       f"Your Statistics practice workspace. {tc.get('statistics', 0)} conceptual and numerical questions covering probability, inference, and A/B testing.",
         "ml-fundamentals":  f"Your ML Fundamentals practice workspace. {tc.get('ml-fundamentals', 0)} MCQ and scenario questions covering bias-variance, evaluation, and production ML.",
         "experimentation":  f"Your Experimentation practice workspace. {tc.get('experimentation', 0)} MCQ and scenario questions covering A/B testing, power analysis, and causal inference.",
+        "product-sense":    f"Your Product Sense practice workspace. {tc.get('product-sense', 0)} scenario and judgment questions covering metric design, diagnosis, trade-offs, and ship decisions.",
     }
 
     meta: dict = {
@@ -141,7 +144,7 @@ def _build_seo_meta() -> dict:
 
     meta["/interview-prep/data-analyst"] = {
         "title": "Data Analyst Interview Prep: SQL, Statistics & Python | datathink",
-        "description": "Data analyst interview prep covering SQL, statistics, Pandas, and Python, with role-specific samples, practice, and mocks.",
+        "description": "Data analyst interview prep covering SQL, statistics, product sense, Pandas, and Python, with role-specific samples, practice, and mocks.",
     }
 
     meta["/interview-prep/analytics-engineer"] = {
@@ -151,7 +154,7 @@ def _build_seo_meta() -> dict:
 
     meta["/interview-prep/data-scientist"] = {
         "title": "Data Scientist Interview Prep: ML, Statistics & Experimentation | datathink",
-        "description": "Data scientist interview prep covering ML fundamentals, statistics, experimentation, Python, Pandas, and SQL, with samples and mocks.",
+        "description": "Data scientist interview prep covering ML fundamentals, statistics, experimentation, product sense, Python, Pandas, and SQL, with samples and mocks.",
     }
 
     # Pages crawlers should not index

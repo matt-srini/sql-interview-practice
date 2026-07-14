@@ -22,9 +22,10 @@ describe('role→track mapping parity', () => {
     expect(trackSets(ROLE_TRACK_FILTERS)).toEqual(trackSets(ROLES));
   });
 
-  it('Data Scientist covers six tracks including pandas (2026-06-26 addition)', () => {
+  it('Data Scientist covers seven tracks including pandas and product-sense (2026-07-14 launch)', () => {
     const ds = ROLES.find((r) => r.slug === 'data-scientist');
     expect(ds.tracks).toContain('pandas');
-    expect(ds.tracks).toHaveLength(6);
+    expect(ds.tracks).toContain('product-sense');
+    expect(ds.tracks).toHaveLength(7);
   });
 });

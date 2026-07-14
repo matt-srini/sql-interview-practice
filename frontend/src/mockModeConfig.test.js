@@ -207,8 +207,8 @@ describe('Mixed benchmark count + summary derive from roleRegistry (no hardcode)
     });
   });
 
-  it('Data Scientist Mixed benchmark is 6 questions (regression: was hardcoded 4)', () => {
-    expect(getSessionQuestionCount('benchmark', 'mixed', null, 'data_scientist')).toBe(6);
-    expect(getBenchmarkBlueprint('mixed', 'data_scientist').numQuestions).toBe(6);
+  it('Data Scientist Mixed benchmark is 7 questions (product-sense added at 2026-07-14 launch)', () => {
+    expect(getSessionQuestionCount('benchmark', 'mixed', null, 'data_scientist')).toBe(7);
+    expect(getBenchmarkBlueprint('mixed', 'data_scientist').numQuestions).toBe(7);
   });
 });

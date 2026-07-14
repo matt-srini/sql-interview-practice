@@ -156,6 +156,7 @@ _TRACK_SAMPLE_FILES: dict[str, str] = {
     "statistics": "statistics.json",
     "ml-fundamentals": "ml_fundamentals.json",
     "experimentation": "experimentation.json",
+    "product-sense": "product_sense.json",
 }
 
 
