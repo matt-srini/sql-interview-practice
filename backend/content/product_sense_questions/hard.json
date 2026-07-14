@@ -171,8 +171,7 @@
       "A lift that's already shrinking fast, paired with a cost that's still rising, is a specific pattern. What does that combination usually mean about where both numbers are headed next?"
     ],
     "concepts": [
-      "SHIP / NO-SHIP DECISION",
-      "GUARDRAIL & COUNTER-METRIC REASONING"
+      "SHIP / NO-SHIP DECISION"
     ]
   },
   {
@@ -223,8 +222,7 @@
       "One of these signals is a guardrail sitting inside the exact content category where it matters most. Weigh what a rising version of that signal means in that specific category, not in the abstract."
     ],
     "concepts": [
-      "SHIP / NO-SHIP DECISION",
-      "GUARDRAIL & COUNTER-METRIC REASONING"
+      "SHIP / NO-SHIP DECISION"
     ]
   },
   {
@@ -652,8 +650,7 @@
       "The conversion lift and the rising wrong-call rate may not be two separate costs to weigh — check whether they're coming from the same underlying mechanism."
     ],
     "concepts": [
-      "SHIP / NO-SHIP DECISION",
-      "GUARDRAIL & COUNTER-METRIC REASONING"
+      "SHIP / NO-SHIP DECISION"
     ]
   },
   {
@@ -838,8 +835,7 @@
       "Who bears the cost of a booked slot that goes unused, and does an easier way to book impulsively change how likely someone is to actually show up?"
     ],
     "concepts": [
-      "SHIP / NO-SHIP DECISION",
-      "GUARDRAIL & COUNTER-METRIC REASONING"
+      "SHIP / NO-SHIP DECISION"
     ]
   },
   {
@@ -865,7 +861,6 @@
       "A blended rate can rise even when every group inside it stays exactly the same, if the mix shifts toward a group that structurally performs better. What changed about the mix this quarter?"
     ],
     "concepts": [
-      "METRIC DEFINITION INTEGRITY",
       "SEGMENTATION & DECOMPOSITION REASONING"
     ]
   },
@@ -1023,8 +1018,7 @@
       "A guardrail moving in the favorable direction is different from a guardrail that simply didn't move. What does that difference tell you about whether to look for more caution?"
     ],
     "concepts": [
-      "SHIP / NO-SHIP DECISION",
-      "GUARDRAIL & COUNTER-METRIC REASONING"
+      "SHIP / NO-SHIP DECISION"
     ]
   },
   {
@@ -1130,7 +1124,6 @@
       "A rate that looks small in isolation can still be a specific, identified compliance gap. Compare it to the same countries' baseline under the other flow, not just to the global average."
     ],
     "concepts": [
-      "CONFLICTING-METRIC & TRADE-OFF JUDGMENT",
       "SEGMENTATION & DECOMPOSITION REASONING"
     ]
   },
@@ -1394,8 +1387,7 @@
       "The guardrail here isn't just a number — the qualitative reason attached to it may be telling you directly what's causing the primary metric to move. Weigh that connection."
     ],
     "concepts": [
-      "SHIP / NO-SHIP DECISION",
-      "GUARDRAIL & COUNTER-METRIC REASONING"
+      "SHIP / NO-SHIP DECISION"
     ]
   },
   {
@@ -1447,7 +1439,6 @@
       "A fall-through during financing is a harder outcome than a survey score. Check which segment it's concentrated in before deciding how much weight the aggregate close-rate gain deserves."
     ],
     "concepts": [
-      "CONFLICTING-METRIC & TRADE-OFF JUDGMENT",
       "SEGMENTATION & DECOMPOSITION REASONING"
     ]
   },
@@ -1609,8 +1600,7 @@
       "Two things may be connected here rather than separate: what made checkout easier, and what's driving up default risk. Check whether they share a mechanism."
     ],
     "concepts": [
-      "SHIP / NO-SHIP DECISION",
-      "GUARDRAIL & COUNTER-METRIC REASONING"
+      "SHIP / NO-SHIP DECISION"
     ]
   },
   {
@@ -1638,8 +1628,7 @@
       "A stakeholder pushing hard for their side's number doesn't mean the other side's concern is invalid. Look for a response that addresses the actual mechanism both sides are reacting to."
     ],
     "concepts": [
-      "CONFLICTING-METRIC & TRADE-OFF JUDGMENT",
-      "GUARDRAIL & COUNTER-METRIC REASONING"
+      "CONFLICTING-METRIC & TRADE-OFF JUDGMENT"
     ]
   },
   {
@@ -1725,7 +1714,6 @@
       "The vulnerability lives in how an aggregate treats timing and volume, not in what kind of signal, review, rating, behavior, is being aggregated. Which option names that general structural property?"
     ],
     "concepts": [
-      "PRODUCT HEALTH & STRATEGIC TRADE-OFFS",
       "METRIC GAMING & ROBUSTNESS"
     ]
   },
@@ -1754,7 +1742,6 @@
       "A fix that reopens the exact vulnerability the redesign was built to close isn't a real fix — check whether any proposed accommodation could be exploited the same way as the original gaming pattern."
     ],
     "concepts": [
-      "CONFLICTING-METRIC & TRADE-OFF JUDGMENT",
       "METRIC GAMING & ROBUSTNESS"
     ]
   },
@@ -1813,7 +1800,7 @@
       "A good operational definition should move independently of signup volume and independently of a creator's pre-existing following. Check which candidates would rise for reasons that have nothing to do with an individual project actually being found."
     ],
     "concepts": [
-      "METRIC SELECTION & GOAL TRANSLATION"
+      "METRIC DEFINITION INTEGRITY"
     ]
   },
   {
