@@ -602,5 +602,1507 @@
     "concepts": [
       "FUNNEL & CONVERSION REASONING"
     ]
+  },
+  {
+    "id": 103025,
+    "order": 25,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Whatnot's Trending Sellers carousel — the viewer count a seller can buy",
+    "scenario_context": "Whatnot ranks its 'Trending Sellers' carousel by concurrent viewer count during a live show, and the ranking materially drives new-buyer discovery. Trust & safety has traced a cluster of sellers paying third-party view-farms for bot viewers who join a show, never chat, and never buy, inflating concurrent count by 3-5x with no real audience behind it. The team wants a ranking signal a seller can't simply purchase.",
+    "description": "Which candidate ranking signal is most resistant to being bought rather than earned?",
+    "options": [
+      "Concurrent viewer count, but only counting viewers who've made at least one prior purchase anywhere on Whatnot.",
+      "Concurrent viewer count weighted by the number of unique viewers who complete a purchase during that same show.",
+      "Total viewer-minutes accumulated across the whole show, since a bigger cumulative number is harder to fake than a single concurrent snapshot.",
+      "Concurrent viewer count, but require the show run at least 25 minutes before it's eligible for the carousel."
+    ],
+    "correct_option": 1,
+    "explanation": "Option B is correct: pairing viewer count with same-show purchases ties the ranking to an action a view-farm's bot accounts don't take — a bot joins to be counted, it doesn't spend money, so a seller can no longer buy their way onto the carousel without also converting real buyers, which is the actual signal the carousel is supposed to surface. Option A sounds like it filters for real engagement, but a gaming ring can trivially qualify its bot accounts by having them make a single cheap purchase once, after which those same accounts count as 'prior purchasers' forever — the fix adds a one-time cost, not an ongoing one, and doesn't stop the same bots from being reused indefinitely. Option C just changes concurrent viewers to viewer-minutes, but a view-farm's bots are already designed to stay connected for the show's duration; extending the account of how long they were fake-watching doesn't require anything a bot can't already do cheaply. Option D's minimum-duration bar filters out short low-effort streams, but the gaming vector here isn't short shows, it's real shows padded with bought viewers, so a duration minimum doesn't touch the actual manipulation at all.",
+    "hints": [
+      "Ask what a view-farm's bot accounts are actually capable of doing, and what they structurally can't do without real money behind them.",
+      "A signal resists being bought when moving it requires an action that costs the seller real converted customers, not just more bot traffic."
+    ],
+    "concepts": [
+      "METRIC GAMING & ROBUSTNESS"
+    ]
+  },
+  {
+    "id": 103026,
+    "order": 26,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Hopper's recalibrated 'Book Now' bias — a conversion lift with a rising wrong-call rate",
+    "scenario_context": "Hopper tests a recalibrated price-prediction model that recommends 'Book Now' more often and 'Wait' less often. Two-week result: booking conversion after a recommendation is shown rises 9%, the stated success metric. But the guardrail, the share of 'Book Now' calls where the price actually fell within 7 days, rises from 11% to 19% — nearly double the historical wrong-call rate.",
+    "description": "What's the most defensible call?",
+    "options": [
+      "Ship to 100% — a 9% booking conversion lift is a clear win, and a prediction tool is never expected to be perfect.",
+      "Hold the rollout — the 'Book Now' wrong-call rate has nearly doubled, and that's the exact call driving the conversion lift.",
+      "Ship only the recalibration's underlying model changes, but keep the more conservative 'Wait' threshold, isolating which part of the change is actually driving the lift.",
+      "Extend the test for another two weeks — a 7-day price window is too short to know whether the wrong-call rate is a real, lasting shift."
+    ],
+    "correct_option": 1,
+    "explanation": "Option B is correct: Hopper's entire product promise is that its recommendation is worth trusting over just booking whenever, and a near-doubling of the rate at which its top recommendation, 'Book Now', turns out to be wrong is a direct hit to that promise, not a side cost to weigh against a conversion number. The conversion lift is coming substantially from the same mechanism that's producing more wrong calls: recommending 'Book Now' more often mechanically increases both bookings and the odds any given one was premature. A tool users increasingly can't trust to call this right is a worse product even with more bookings in the short window. Option A treats the conversion lift as sufficient on its own and waves off the guardrail with 'never perfect,' but there's a difference between an already-accepted baseline error rate and one that's nearly doubled during the exact test being evaluated — that shift is the guardrail doing its job, not something to explain away. Option C's isolation idea is reasonable in spirit but describes work that would require a new test, not a decision on the test already run; 'ship part of it' isn't an available option against data that only exists for the bundled change. Option D's timing objection doesn't hold up — the wrong-call rate is already measured on the same 7-day window Hopper uses to grade every recommendation, both before and during the test, so the comparison is apples-to-apples and doesn't need a longer look to be trusted.",
+    "hints": [
+      "Ask what Hopper is actually selling its users, and what happens to that promise if the tool's top call is wrong much more often.",
+      "The conversion lift and the rising wrong-call rate may not be two separate costs to weigh — check whether they're coming from the same underlying mechanism."
+    ],
+    "concepts": [
+      "SHIP / NO-SHIP DECISION",
+      "GUARDRAIL & COUNTER-METRIC REASONING"
+    ]
+  },
+  {
+    "id": 103027,
+    "order": 27,
+    "topic": "product-sense",
+    "type": "debug",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Poshmark's listing-share drop — the analyst's two-hour verdict",
+    "scenario_context": "Poshmark's daily listing-share count, users resharing another seller's listing to their own followers, fell 22% over one week. An analyst investigates for two hours and reports: 'Instagram just changed its API rate limits, which broke our one-tap cross-post-to-Instagram button — that's obviously why shares are down, since cross-posting is the most popular way people share.' The share-drop ticket is closed with this explanation.",
+    "description": "What's the flaw in the analyst's conclusion?",
+    "options": [
+      "The analyst never checked whether the drop is concentrated among users who cross-post, versus everyone else on the platform.",
+      "There's no flaw — a broken cross-post button is a well-known cause of share drops, and the timing makes the explanation obviously correct.",
+      "The flaw is the metric itself; Poshmark should track closet views instead of shares, since shares are a noisier signal of real interest.",
+      "Two hours isn't enough investigation time; the analyst should have spent at least a full day before reaching any conclusion."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A is correct: the analyst has one plausible-sounding hypothesis, a broken integration, and never ran the one check that would confirm or kill it — splitting the 22% drop by whether the affected users actually rely on cross-posting to Instagram at all. If the API break is really the cause, the drop should concentrate almost entirely among users who habitually cross-post, and in-app-only sharers should show no change; if the drop is roughly uniform across both groups, something else, unrelated to the Instagram integration, is happening platform-wide. A timing coincidence and a plausible mechanism aren't the same as a validated diagnosis. Option B accepts the story on plausibility and timing alone, exactly the shortcut a structured investigation exists to catch — a well-known failure mode being possible doesn't mean it's confirmed here. Option C sidesteps the actual question, whether the stated cause explains the observed drop, by proposing a different metric to track instead; changing what's measured next quarter doesn't validate or invalidate this week's explanation. Option D's fix is just 'spend more time,' but the issue isn't investigation duration, it's that the one hypothesis formed was never actually tested against a segment cut — a longer clock without that check wouldn't have caught the gap either.",
+    "hints": [
+      "The analyst found one plausible story and stopped. What single split of the data would actually confirm whether that specific story is true?",
+      "If a broken integration is really the cause, only a specific group of users should be affected. Has anyone checked who that group is versus who else dropped?"
+    ],
+    "concepts": [
+      "METRIC MOVEMENT DIAGNOSIS"
+    ]
+  },
+  {
+    "id": 103028,
+    "order": 28,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Gusto's Auto-File feature — a rare tax error with a real penalty behind it",
+    "scenario_context": "Gusto ships an 'Auto-File' feature that automatically files state payroll taxes on a small business's behalf, removing a manual step. Adoption is strong: 68% of eligible accounts turn it on within a month, and support-ticket volume for tax filing drops sharply. A quality audit finds Auto-File incorrectly applies a rarely-used multi-state tax rule for about 0.3% of filings, a rate the compliance team calls low but that has already caused two customers to receive state penalty notices.",
+    "description": "What's the most defensible strategic call?",
+    "options": [
+      "Keep Auto-File live as-is — a 0.3% error rate is low by any reasonable statistical standard, and two isolated penalty notices don't establish a pattern.",
+      "Disable Auto-File entirely until the multi-state rule is fixed, even though the vast majority of filings are unaffected and reverting removes a strongly-adopted feature.",
+      "Keep Auto-File live for single-state filers, where the error doesn't apply, and pause it specifically for the multi-state filing population until the rule is fixed.",
+      "Keep Auto-File live, but add a disclaimer at filing time stating Gusto isn't liable for state tax errors, shifting the exposure back to the customer."
+    ],
+    "correct_option": 2,
+    "explanation": "Option C is correct: the failure is precisely scoped, a specific multi-state rule, not a general reliability problem, so the defensible move is a scoped one — keep the feature live where it works correctly and pause exactly the population where it doesn't, rather than an all-or-nothing call. This protects the adoption and support-load wins for the large majority of unaffected customers while stopping new penalty exposure for the specific segment at risk, and it's the option that actually matches the shape of what the audit found. Option A treats a low error rate as automatically acceptable, but the discriminating fact here isn't the rate, it's what the error causes: a payroll product's core promise is compliance, and this feature is actively generating real state penalty notices for customers who trusted it to handle exactly this. A statistically small rate of a trust-breaking outcome isn't the same as a statistically small rate of a minor inconvenience. Option B swings to the opposite extreme, reverting a strongly-adopted feature entirely, discarding a real win for the large majority of customers where the rule in question never even applies — a broader response than the scoped failure calls for. Option D tries to solve the problem with a disclaimer rather than a fix, but shifting liability language doesn't stop Gusto's system from filing incorrectly; small businesses are exactly the customer base least equipped to catch a payroll tax error themselves, and a disclaimer doesn't restore the trust the feature is meant to provide.",
+    "hints": [
+      "The audit found a failure scoped to one specific condition, not a general reliability problem. Ask whether the response needs to be all-or-nothing or can be scoped the same way.",
+      "A payroll product's core promise is different from a typical feature's — weigh what a low-probability error actually causes here, not just how low the probability is."
+    ],
+    "concepts": [
+      "PRODUCT HEALTH & STRATEGIC TRADE-OFFS",
+      "SEGMENTATION & DECOMPOSITION REASONING"
+    ]
+  },
+  {
+    "id": 103029,
+    "order": 29,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Hinge's match rate drops three points — concentrated in three campaign-heavy markets",
+    "scenario_context": "Hinge's platform-wide match rate, the share of likes that result in a mutual match, fell from 8.2% to 6.9% over three weeks, with no app release in that window. A regional breakdown shows the drop is concentrated entirely in three large metro markets that recently had a surge of new sign-ups from a single paid-acquisition campaign; every other market's match rate is flat versus three weeks ago.",
+    "description": "What's the most defensible next step?",
+    "options": [
+      "Report the platform-wide 6.9% as the current match rate and move on, since the number is already correctly computed.",
+      "Check whether this campaign's sign-ups differ in profile-completion or usage pattern from typical organic users in those markets.",
+      "Pause the paid-acquisition campaign immediately in all three markets, since it's clearly the cause of a declining core metric.",
+      "Extend the observation window to six weeks before drawing any conclusion, since three weeks may not be enough time for new users to become active daters."
+    ],
+    "correct_option": 1,
+    "explanation": "Option B is correct: the segmentation has already done real work, isolating the drop to three markets that share one recent change, a surge of sign-ups from a specific paid campaign, while every other market stayed flat. The next step is testing the specific mechanism that would explain it: if this campaign's sign-ups have thinner profiles, different photo quality, or lower early engagement than typical organic users in the same markets, that population entering the like-and-match pool would mechanically drag down the aggregate match rate in exactly those three markets without anything changing about the product or about existing users. Option A stops at the number the segmentation just explained — moving on without checking the mechanism throws away the exact lead the breakdown surfaced; reporting a rate without understanding why it moved is the failure mode a structured diagnosis exists to avoid. Option C reaches for an operational decision, killing the campaign, before confirming the mechanism at all; if it turns out to be a fixable profile-completion nudge rather than an inherent flaw in the acquisition source, pausing the campaign is a bigger and more costly move than the evidence yet supports. Option D's longer window doesn't test the specific, already-narrowed hypothesis in hand, it just delays looking at the one lead the segment cut already handed the team.",
+    "hints": [
+      "The segment cut already pointed at one specific, recent change. What would confirm whether that change is actually the mechanism, not just correlated with it?",
+      "A new population entering a rate's denominator can drag the aggregate down even if nothing about the existing product or existing users changed. What would you check about that new population specifically?"
+    ],
+    "concepts": [
+      "SEGMENTATION & DECOMPOSITION REASONING",
+      "METRIC MOVEMENT DIAGNOSIS"
+    ]
+  },
+  {
+    "id": 103030,
+    "order": 30,
+    "topic": "product-sense",
+    "type": "predict_output",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Oura's morning Readiness push — predicting the opens-versus-depth split",
+    "scenario_context": "Oura adds a daily morning push notification showing a user's Readiness Score the moment they wake, replacing the previous behavior where users had to open the app to see it. The team's hypothesis is that this makes checking the score more convenient, but doesn't by itself make users engage more deeply with the app's other features (trends, workout recommendations, guided sessions).",
+    "description": "If this hypothesis is correct, what should happen to (1) daily app opens, and (2) average session length, and why?",
+    "options": [
+      "Daily app opens should rise from the notification itself, while average session length falls as more opens become quick score-checks.",
+      "Both daily app opens and average session length should rise together, since any new touchpoint that gets users into the app tends to expose them to more features while they're there.",
+      "Daily app opens should stay flat, since a notification only changes how the score is delivered, not whether users were already going to check it.",
+      "Average session length should rise while daily app opens stays flat, since the same users are opening the app but now spending more time acting on the score."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A is correct: a notification that surfaces the score directly creates a new, low-effort reason to open the app that didn't require deliberately navigating there before, which should mechanically raise the count of opens. But the hypothesis is explicit that this convenience doesn't by itself deepen engagement with anything else, so the natural signature is more opens that are each shorter on average — quick glance-and-close visits diluting a mix that used to be dominated by more deliberate, feature-browsing sessions. The two metrics should move in opposite directions because they're capturing different things: one counts a new low-effort entry point, the other reflects what happens once someone's actually in the app. Option B predicts both rising together, but that requires the deeper-engagement effect the hypothesis explicitly rules out — a quick notification-driven glance has no particular reason to convert into browsing trends or starting a guided session. Option C misses the direct, mechanical effect of adding a new, lower-effort trigger to open the app at all; a notification that removes a navigation step should increase how often the action happens, that's the most basic consequence of reducing friction to a common check-in. Option D gets the session-length direction backwards, and offers no mechanism for why sessions would lengthen when the changed behavior is specifically a faster, more convenient way to see one number.",
+    "hints": [
+      "Separate what the change makes easier from what it doesn't touch — a faster way to check one number isn't the same as a reason to browse the rest of the app.",
+      "One of these two metrics should move for a simple, mechanical reason: a new low-effort trigger increasing how often an action happens. Ask what that does to the mix of session types."
+    ],
+    "concepts": [
+      "ENGAGEMENT & STICKINESS REASONING"
+    ]
+  },
+  {
+    "id": 103031,
+    "order": 31,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Faire's low-MOQ ranking boost — buyer completion up, GMV down",
+    "scenario_context": "Faire changes its wholesale search ranking to favor brands with lower minimum order quantities (MOQs), reasoning that small independent retailers are more likely to complete an order when the upfront commitment is smaller. Four weeks in: buyer-side order completion rate is up 13%, but average order value is down 21%, and total GMV, orders completed times order value, is down 4% overall. Brand-side, retention of larger, established brands with higher MOQs is down slightly as their search visibility drops.",
+    "description": "What's the most defensible way to frame this trade-off?",
+    "options": [
+      "This is a clear win — order completion rate is the metric the ranking change targeted, and it improved exactly as intended.",
+      "This is a clear loss — GMV, the business's core revenue driver, is down, so the ranking change should revert immediately.",
+      "Name the two-sided trade-off — buyer-side completion improved, but GMV fell as higher-value brands lost visibility and retention risk grew.",
+      "Reframe entirely around a new metric, number of unique brands purchased from per buyer, since that better reflects marketplace health than either completion or GMV."
+    ],
+    "correct_option": 2,
+    "explanation": "Option C is correct: this result isn't a single number to read in isolation, it's a marketplace-liquidity trade-off with real costs showing up on both sides of the two-sided market. The buyer-side win, easier completion for small retailers, is genuinely real, but it's being funded by de-prioritizing exactly the higher-value, established brands whose order sizes drive GMV, and those same brands are starting to disengage as their visibility drops, which would compound the revenue loss further if it continues. Naming both halves of that trade-off, rather than picking a side, is what a defensible read of a two-sided marketplace result actually requires. Option A isolates the metric the change directly targeted and declares victory, but a ranking change that hits its own target metric while dragging down total GMV and provoking a retention risk among supply-side brands isn't unambiguously working, it's trading one thing for another. Option B swings to the opposite extreme and calls for an immediate revert based on GMV alone, discarding a real and meaningful buyer-side completion gain without weighing whether a smaller, targeted fix, rather than a full reversion, could address the brand-retention risk while keeping the buyer-side win intact. Option D introduces an entirely new metric not evidenced anywhere in the data given, and swapping the yardstick doesn't resolve the actual trade-off already visible in the four weeks of results, it just changes what's being measured instead of confronting what happened.",
+    "hints": [
+      "This is a two-sided marketplace — a change that helps one side's conversion can cost something on the other side. Look for the option that names both halves.",
+      "Three numbers moved here, and they didn't all move for the same reason. Check whether one side's gain is structurally connected to the other side's loss before picking a single winner or loser."
+    ],
+    "concepts": [
+      "CONFLICTING-METRIC & TRADE-OFF JUDGMENT",
+      "BUSINESS-MODEL METRIC FLUENCY"
+    ]
+  },
+  {
+    "id": 103032,
+    "order": 32,
+    "topic": "product-sense",
+    "type": "debug",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Credit Karma's approval-likelihood score — does restricting the audience close the gaming hole?",
+    "scenario_context": "Credit Karma ranks credit card offers partly by a blended 'approval likelihood' score, estimated from how often past users with similar profiles were approved for that card. An analyst notices issuers have begun submitting cards with narrower, hand-picked target segments (e.g., 'excellent credit only, income above $150K') specifically to inflate their approval-likelihood score and climb the ranking, even when the card isn't a strong fit for most Credit Karma users who'd see it. A PM proposes: 'Fix this by only showing a card to users who fall inside the issuer's declared target segment — the score will only ever be computed on people who were likely to be approved anyway.'",
+    "description": "What's the flaw in the PM's proposed fix?",
+    "options": [
+      "There's no flaw — restricting the audience to the declared segment guarantees the approval-likelihood score reflects only genuinely qualified users, closing the gaming hole.",
+      "The issuer still defines their own target segment, so the same narrowing move now also decides who sees the card, leaving the underlying incentive untouched.",
+      "The flaw is unrelated to gaming; restricting the audience will simply reduce impressions and hurt Credit Karma's ad revenue from this issuer.",
+      "The fix should instead lower the weight of approval-likelihood in the ranking formula entirely, since any weighted score can eventually be gamed."
+    ],
+    "correct_option": 1,
+    "explanation": "Option B is correct: the fix changes who the score gets shown to, but the issuer still controls the very definition being used to narrow that audience — exactly the lever they were already gaming. An issuer that wants to keep climbing the ranking can simply declare an even narrower, more hand-picked segment, both inflating the approval-likelihood score and ensuring the card is now literally only shown to that self-selected slice, which does nothing to fix the ranking for the broader population the recommendation is meant to serve; it just legitimizes the same gaming move as a targeting decision. Option A accepts the PM's framing that restricting the audience solves the problem, but the entire vulnerability was the issuer's control over the segment definition — restricting exposure to that same self-chosen segment doesn't remove issuer control, it formalizes it. Option C raises a real business consideration, but it isn't the question being asked, and it doesn't identify why the fix fails to close the gaming hole itself. Option D proposes a different, more drastic fix without diagnosing what's actually wrong with the proposed one; a lower weight would reduce the impact of the gaming, but the question is specifically whether the audience-restriction fix works, and it doesn't, because the same controllable lever remains in play.",
+    "hints": [
+      "Ask who still controls the exact input the fix relies on to narrow the audience — is it something Credit Karma sets independently, or something the issuer still declares?",
+      "A fix that changes who sees a score doesn't close a gaming hole if the same party still controls the definition that determines who that is."
+    ],
+    "concepts": [
+      "METRIC GAMING & ROBUSTNESS"
+    ]
+  },
+  {
+    "id": 103033,
+    "order": 33,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Zocdoc's same-day boost — bookings up, no-shows concentrated in the new segment",
+    "scenario_context": "Zocdoc tests boosting same-day-available appointments higher in search results. Two-week result: completed bookings are up 14%, the stated success metric. The guardrail, the no-show rate for booked appointments, rises from 9% to 15% specifically among same-day bookings, while bookings made more than 2 days in advance show no change in no-show rate.",
+    "description": "What's the most defensible call?",
+    "options": [
+      "Ship to 100% — a 14% booking lift is substantial, and some rise in no-shows is an expected trade-off of making booking easier.",
+      "Hold the rollout — no-shows are climbing specifically among the new same-day bookings, a cost providers bear directly.",
+      "Ship only to returning patients who've completed a prior appointment, since new patients are more likely to be the source of the no-show increase.",
+      "Extend the test two more weeks to see whether providers adjust their same-day availability in response, before making a final call."
+    ],
+    "correct_option": 1,
+    "explanation": "Option B is correct: the guardrail isn't moving generally, it's moving specifically among the exact population the boost created, same-day bookings, while advance bookings stay flat, which points directly at the boost itself as the mechanism. A same-day slot is easier to book impulsively and easier to blow off than one planned days ahead, so filling more of them is plausibly manufacturing lower-commitment bookings rather than capturing demand that was always going to show up. Providers bear the cost of a reserved slot going empty directly, in lost revenue and schedule disruption, so a guardrail moving this specifically in the newly-boosted segment isn't a cost to shrug off as generically expected. Option A treats the no-show increase as an undifferentiated, expected cost without engaging with the fact that it's concentrated exactly where the boost acted — that concentration is the signal the guardrail exists to catch, not background noise. Option C guesses at a specific cause, new patients, with no evidence given to support it, and doesn't address the actual, already-observed split, by booking lead time, that the data already shows. Option D delays the decision without a clear hypothesis for what two more weeks would reveal that the current same-day-versus-advance split hasn't already shown.",
+    "hints": [
+      "The guardrail didn't move everywhere — it moved in one specific, newly-created segment. Ask what that concentration tells you about the mechanism.",
+      "Who bears the cost of a booked slot that goes unused, and does an easier way to book impulsively change how likely someone is to actually show up?"
+    ],
+    "concepts": [
+      "SHIP / NO-SHIP DECISION",
+      "GUARDRAIL & COUNTER-METRIC REASONING"
+    ]
+  },
+  {
+    "id": 103034,
+    "order": 34,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Stitch Fix's keep rate rose 6 points — but neither shipment type actually improved",
+    "scenario_context": "Stitch Fix reports its platform-wide item keep rate, the share of shipped items a client purchases rather than returns, rose from 38% to 44% this quarter. Segmenting by shipment type: 'Fix Preview' shipments, where the client hand-picks some items themselves before a stylist fills the rest, held flat at 52% keep rate; traditional stylist-only 'Fix' shipments held flat at 34%. Fix Preview grew from 25% to 45% of all shipments this quarter after a deliberate push to launch it in more regions.",
+    "description": "What's the most defensible read of the 44% platform-wide keep rate?",
+    "options": [
+      "It's a mix-shift result, not a within-type improvement — both types held their own rate steady; Fix Preview is simply a bigger share of shipments now.",
+      "It's a genuine stylist-quality improvement — stylists are clearly getting better at picking items clients want to keep, reflected in the 6-point platform-wide rise.",
+      "The 44% figure is unreliable and shouldn't be reported at all, since blending two structurally different shipment types into one rate is never meaningful.",
+      "It's a partial improvement — the rise should be attributed half to the mix shift and half to genuine quality gains in both shipment types."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A is correct: this is a clean mix-shift read — both shipment types report the exact same keep rate this quarter as before, so none of the 6-point platform rise can be coming from either type getting better at picking items clients want. What changed is the blend: Fix Preview, which structurally keeps more because the client already chose some of the items themselves, nearly doubled its share of total shipments after a deliberate regional expansion. A blended average shifting toward a higher-performing type can rise even while every type's own rate is completely unchanged, and that's exactly what the segment cut shows here. Option B credits stylist quality with an improvement that the segment data explicitly rules out — stylist-only Fix shipments kept the identical 34% rate both quarters, so there's no quality signal to attribute anywhere in this result. Option C overcorrects; a blended rate isn't inherently meaningless, it's meaningful as a description of overall shipped-item outcomes, the issue is only in misattributing why it moved, not in reporting it at all. Option D splits the credit as though some real quality gain must be mixed in with the mix shift, but the segment data shows zero movement in either type's own rate — there's no quality-gain component to credit here, the entire 6 points is mix.",
+    "hints": [
+      "Check whether each shipment type's own rate actually moved, or whether only the mix between the two types changed.",
+      "A blended rate can rise even when every group inside it stays exactly the same, if the mix shifts toward a group that structurally performs better. What changed about the mix this quarter?"
+    ],
+    "concepts": [
+      "METRIC DEFINITION INTEGRITY",
+      "SEGMENTATION & DECOMPOSITION REASONING"
+    ]
+  },
+  {
+    "id": 103035,
+    "order": 35,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Getaround's optional inspection — faster onboarding, a rising incident rate",
+    "scenario_context": "Getaround tests relaxing its host vehicle-verification requirements (in-person inspection becomes optional for hosts with a clean 90-day rental history) to reduce onboarding friction for repeat hosts. Four weeks in: new host activations are up 22%, and time-to-first-booking for new hosts drops significantly. Safety incident reports, previously rare, involving cars with mechanical issues or undisclosed damage tick up specifically among hosts who skipped the now-optional inspection.",
+    "description": "What's the most defensible strategic call?",
+    "options": [
+      "Keep the relaxed policy — a 22% activation lift is a strong growth signal, and incident reports remain a small fraction of total rentals.",
+      "Revert to mandatory inspection for all hosts — the inspection was the safety backstop, and the risk isn't confined to any specific vehicle attribute.",
+      "Keep the optional-inspection path, but require it specifically for hosts whose listed vehicle is above a certain age or mileage threshold, where mechanical risk is highest.",
+      "Keep the relaxed policy, but add a mandatory post-rental damage-report survey to guests, treating detection after the fact as sufficient risk management."
+    ],
+    "correct_option": 1,
+    "explanation": "Option B is correct: unlike a compliance or satisfaction metric where a narrow error can be scoped and contained, the in-person inspection here is the safety mechanism itself, and it was made optional broadly, not degraded in some narrow way — removing it is what's producing the incident increase, and nothing in the data ties the risk to a single identifiable vehicle attribute (age or mileage) rather than simply to skipped inspection in general. Getaround's entire trust claim rests on a guest being able to assume a listed vehicle isn't hiding a mechanical or damage problem, and reverting the inspection requirement is what restores the actual safety backstop, rather than a scoped compromise that leaves the mechanism gone for everyone else. Option A treats a physical-safety incident rate as background noise purely because of its current small share of total rentals, but the entire reason the inspection existed was to catch exactly this category of undisclosed problem before a guest ever drives the car — waving it off by its current size ignores that a mechanical or damage incident is a categorically different kind of cost than most guardrails this track evaluates. Option C sounds like a targeted, data-driven compromise, but nothing in the incident data ties the risk specifically to vehicle age or mileage rather than simply to skipping inspection itself — a newer, low-mileage car can just as easily hide undisclosed collision damage, so this scoping doesn't actually address the mechanism the audit flagged. Option D substitutes detection for prevention; a guest who already drove an unsafe or undisclosed-damage vehicle has already been exposed to the exact risk the inspection was meant to catch before the rental started.",
+    "hints": [
+      "Ask whether the rising risk is genuinely tied to one identifiable vehicle attribute, or simply to whether inspection happened at all.",
+      "A physical-safety incident is a categorically different kind of cost than most guardrails — weigh what the inspection step was actually preventing, not just how small the incident count currently is."
+    ],
+    "concepts": [
+      "PRODUCT HEALTH & STRATEGIC TRADE-OFFS"
+    ]
+  },
+  {
+    "id": 103036,
+    "order": 36,
+    "topic": "product-sense",
+    "type": "debug",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Swiggy's Bangalore order drop — the analyst's same-day competitor verdict",
+    "scenario_context": "Swiggy's order volume in Bangalore fell 11% over one week. An analyst reports: 'A competitor launched an aggressive discount campaign in Bangalore this week — that's obviously pulling our order share, we should respond with matching discounts immediately.' The recommendation is escalated to the city ops lead the same day.",
+    "description": "What's the flaw in the analyst's conclusion?",
+    "options": [
+      "The analyst identified a real competitive threat but proposed the wrong response; Swiggy should improve delivery speed instead of matching discounts.",
+      "The analyst didn't rule out simpler internal explanations, restaurant outages, delivery-partner shortages, app issues, before blaming a competitor.",
+      "There's no flaw — a competitor's aggressive discount campaign is a well-documented cause of order-volume drops, and the response is appropriately fast.",
+      "The flaw is comparing week-over-week instead of year-over-year, since Bangalore likely has strong seasonal order patterns."
+    ],
+    "correct_option": 1,
+    "explanation": "Option B is correct: a MECE investigation checks the cheaper, internally-verifiable explanations before reaching for an external one that's harder to confirm and invites a costly response. Whether restaurant partners had unusual outages, whether delivery-partner supply was short in Bangalore that week, or whether the app itself had a local issue are all things Swiggy's own data can confirm or rule out quickly, and none of them were checked before the analyst jumped to a competitor's campaign — a real possibility, but not the only one, and not yet distinguished from the others. Committing to a discount-matching response before ruling out an internal, fixable cause risks spending real margin fighting a threat that may not even be the actual driver. Option A accepts the analyst's unverified external attribution and only critiques the proposed fix, but the deeper problem is that the cause itself was never actually confirmed — a different response to an unconfirmed cause is still built on the same unvalidated foundation. Option C takes a plausible external story at face value without requiring it be checked against simpler, internal explanations first, exactly the shortcut a structured diagnosis is built to catch. Option D raises a real general good practice, but it doesn't identify what's specifically wrong with the analyst's investigation here — the issue isn't the comparison window, it's that no MECE set of hypotheses was actually formed or tested before committing to a specific, costly response.",
+    "hints": [
+      "The analyst reached for an external cause first. What simpler, internally-checkable explanations should typically be ruled out before that?",
+      "A real possibility isn't the same as a confirmed cause — what would distinguish this specific hypothesis from the other explanations that were never checked?"
+    ],
+    "concepts": [
+      "METRIC MOVEMENT DIAGNOSIS"
+    ]
+  },
+  {
+    "id": 103037,
+    "order": 37,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Handshake's fast-hire ranking boost — students convert more, small employers lose applicants",
+    "scenario_context": "Handshake changes its job-recommendation ranking to prioritize postings from employers with a historically fast time-to-hire, reasoning that students are more likely to actually land a role from these postings. Four weeks in: student application-to-offer conversion is up 16% for postings shown, but the number of distinct employers a student sees in top recommendations drops from an average of 9 to 4, concentrated among large, fast-hiring employers; small and early-stage employers report a 30% drop in applicant volume.",
+    "description": "What's the most defensible way to frame this trade-off?",
+    "options": [
+      "This is a clear win for students — a 16% jump in conversion means students are getting hired more often, which is the platform's core value proposition.",
+      "This is a clear loss for the platform — small employers are a core part of Handshake's supply side, so the ranking change should revert immediately.",
+      "Name the two-sided trade-off — students landing roles faster is real, but it risks starving the smaller-employer supply Handshake also needs.",
+      "Reframe success around total postings viewed platform-wide, since that better reflects marketplace activity than either conversion or employer diversity."
+    ],
+    "correct_option": 2,
+    "explanation": "Option C is correct: Handshake's value to students depends on a healthy, varied employer base actually posting and hiring, not just on students who land roles at whichever employers already hire fastest. The conversion lift for students who see these postings is a real win, but it's coming at a structural cost to the marketplace's other side: a 30% drop in applicant volume for small and early-stage employers threatens their reason to keep posting at all, and a platform that loses that supply narrows what students who don't fit the fast-hiring-employer mold can even find. Naming both halves, the real student-side win and the real supply-side risk, is what a two-sided marketplace result actually calls for. Option A isolates the metric the change targeted and calls it an unqualified win, but a recommendation system that boosts conversion by concentrating outcomes among a shrinking set of employers is trading breadth for a narrower kind of success, not simply succeeding. Option B swings to an immediate full reversal based on the supply-side cost alone, discarding a real, meaningful improvement in how well students who see these postings are converting, without weighing whether a blended or capped ranking approach could address the supply concern while keeping some of the win. Option D introduces a metric, postings viewed, that isn't evidenced as connected to either side's actual outcome in the scenario, and swapping the yardstick sidesteps the trade-off already visible in the four weeks of results rather than confronting it.",
+    "hints": [
+      "This is a two-sided marketplace — a ranking change that helps one side's outcome can threaten the other side's willingness to participate at all. Look for the option naming both.",
+      "One number moved because of what the ranking rewards directly; another moved because of who got squeezed out. Check whether they're connected before picking a single winner."
+    ],
+    "concepts": [
+      "CONFLICTING-METRIC & TRADE-OFF JUDGMENT",
+      "BUSINESS-MODEL METRIC FLUENCY"
+    ]
+  },
+  {
+    "id": 103038,
+    "order": 38,
+    "topic": "product-sense",
+    "type": "predict_output",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Loom's auto-copy link — predicting which funnel step actually moves",
+    "scenario_context": "Loom changes its recording flow so that finishing a recording automatically copies the shareable link to the clipboard, removing the separate step where users previously had to click a 'Copy Link' button after recording. The team's hypothesis is that this specifically removes friction from the moment right after recording ends, without changing anything about how viewers who receive a link behave once they click it.",
+    "description": "If this hypothesis is correct, which funnel step should show the biggest immediate change, and which should stay essentially unaffected?",
+    "options": [
+      "The share-rate from 'recording completed' to 'link sent' should rise the most; the view-rate to 'video watched' should stay flat.",
+      "The view-rate from 'link received' to 'video watched' should rise the most, since a link that's easier to send is also a link people are more motivated to watch.",
+      "Both the share rate and the view rate should rise by comparable amounts, since removing any friction earlier in the flow tends to lift every step downstream proportionally.",
+      "Recording completion rate itself should rise, since users are more likely to finish recording when they know sharing afterward will be effortless."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A is correct: the change acts on exactly one moment, the instant after recording ends, by removing a manual copy step, so the step immediately downstream of that moment, whether a completed recording actually gets shared with someone, is where the direct, mechanical effect should show up first and most. The hypothesis explicitly states nothing changes about viewer behavior once a link is received, so the view-rate step, which depends entirely on the recipient's own decision to click and watch, has no mechanism in this change to move at all. Option B predicts the change ripples forward into recipient behavior, but nothing about how a link was copied should affect a viewer's motivation to click it, that step is downstream of a moment the change never touches. Option C assumes friction removed at one step automatically lifts every later step proportionally, but that's not how a funnel works when the friction removed is specific to one exact action, a viewer receiving a link has no visibility into how easy or hard it was for the sender to copy it, so there's no reason their click-through behavior would shift at all. Option D reaches upstream of the change entirely, recording completion happens before the copy-link moment even occurs, so a change to what happens after recording ends has no plausible mechanism to affect whether someone finishes recording in the first place.",
+    "hints": [
+      "The change acts on one specific moment in the flow. Ask which funnel step sits immediately downstream of that exact moment, and which steps sit before or two steps removed from it.",
+      "A viewer who receives a link has no way of knowing how that link was copied. Would anything about their own decision to click actually change?"
+    ],
+    "concepts": [
+      "FUNNEL & CONVERSION REASONING"
+    ]
+  },
+  {
+    "id": 103039,
+    "order": 39,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Wag!'s on-time arrival tap — a self-report walkers can submit early",
+    "scenario_context": "Wag! ranks dog walkers in search results partly by on-time arrival rate, self-reported via an 'I've arrived' button the walker taps on their phone. Trust & safety finds a cluster of walkers tapping 'arrived' while still blocks away, sometimes minutes before actually reaching the client's door, then walking the dog for a shorter time than booked. The team wants an arrival signal that isn't just a self-report.",
+    "description": "Which candidate signal is most resistant to being reported early rather than actually true?",
+    "options": [
+      "Keep the self-reported arrival tap, but require walkers to also submit a photo of the client's front door at arrival.",
+      "Replace on-time arrival rate with average client star rating, since dissatisfied clients will naturally rate late walkers lower.",
+      "Keep the self-reported tap, but add a warning that falsifying arrival time is against Wag!'s terms of service.",
+      "Use the phone's GPS at the moment of the tap to confirm the walker is actually near the client's address before it counts as on-time."
+    ],
+    "correct_option": 3,
+    "explanation": "Option D is correct: cross-checking the self-report against an independent, harder-to-fake signal, the phone's actual GPS position at the moment of the tap, closes the specific gap being exploited. A walker can still tap the button whenever they want, but the tap only counts as a valid on-time arrival if the device's location data agrees they were actually near the client's address, which a walker blocks away can't manufacture without also being physically closer. Option A's photo idea sounds like independent verification, but a photo can be taken from a distance with a zoom, taken early and held, or even reused from a prior visit to the same address, it doesn't actually confirm the walker was there at the reported time. Option B swaps in a different metric that's driven by many factors beyond punctuality, a walker could arrive on time but still get a low rating for something unrelated, or arrive late but get a good rating anyway if the client didn't notice, so it doesn't isolate the specific behavior, false arrival reporting, the team is trying to catch. Option C adds a policy warning with no technical verification behind it at all; a warning doesn't change whether the walker's tap is actually true, it only threatens a consequence that requires already knowing it's false to enforce.",
+    "hints": [
+      "Ask what a walker who wants to report early would need to fake, and whether each candidate actually requires something they can't fake.",
+      "A self-report resists gaming only when it's checked against a second, independent signal the person making the report doesn't fully control."
+    ],
+    "concepts": [
+      "METRIC GAMING & ROBUSTNESS"
+    ]
+  },
+  {
+    "id": 103040,
+    "order": 40,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Warby Parker's virtual try-on — conversion up, and the guardrail moved the right way too",
+    "scenario_context": "Warby Parker ships a virtual try-on AR feature letting shoppers preview glasses on their own face via phone camera before buying. Four-week test: purchase conversion is up 12% among shoppers who use the feature. The guardrail the team pre-registered, return rate for 'doesn't suit my face' reasons, is actually lower for AR-try-on purchasers (8%) than for shoppers who bought without using it (14%), and no other guardrail moved.",
+    "description": "What's the most defensible call?",
+    "options": [
+      "Ship to 100% — conversion is up and the pre-registered guardrail moved in the favorable direction, suggesting the feature is helping people pick frames that actually suit them.",
+      "Hold the rollout — a 12% conversion lift this large this early is almost always a novelty effect that will fade within a few weeks.",
+      "Ship only to first-time Warby Parker shoppers, since returning customers already know what suits them and don't need the feature.",
+      "Extend the test — an 8% versus 14% return-rate gap needs a larger sample before it can be trusted as a real difference."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A is correct: this is the case where the guardrail the team specifically pre-registered to catch a plausible downside, more returns from people who bought based on an inaccurate virtual preview, moved in the favorable direction instead; purchasers who used the feature return for fit-related reasons less often than purchasers who didn't. That's consistent with the feature doing exactly what it's meant to do, helping shoppers make a more informed choice before buying, rather than trading conversion for a hidden cost. With the primary metric up and the one guardrail that mattered here moving the right way, there's no signal left in the data pointing toward caution. Option B asserts a novelty-effect concern with nothing in the scenario supporting it; conversion features rooted in giving people better information before a purchase decision, rather than in a shiny new interaction, aren't the class of change where novelty decay is the default assumption, and no week-over-week decay is mentioned here at all. Option C proposes scoping the launch to a segment for a plausible-sounding but unstated reason, but there's no evidence given that returning customers behave any differently, restricting the launch this way discards value for a population the data hasn't shown any problem with. Option D calls for a bigger sample on the guardrail specifically, but the return-rate gap is a large, directionally favorable difference, not a marginal or concerning one, asking to wait longer with no stated concern about the sample's reliability treats caution as free when the data in hand already tells a coherent, positive story.",
+    "hints": [
+      "Check what direction the team's own pre-registered guardrail actually moved, not just whether the primary metric looks good.",
+      "A guardrail moving in the favorable direction is different from a guardrail that simply didn't move. What does that difference tell you about whether to look for more caution?"
+    ],
+    "concepts": [
+      "SHIP / NO-SHIP DECISION",
+      "GUARDRAIL & COUNTER-METRIC REASONING"
+    ]
+  },
+  {
+    "id": 103041,
+    "order": 41,
+    "topic": "product-sense",
+    "type": "debug",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Redfin's page-view spike — the analyst's early-spring verdict",
+    "scenario_context": "Redfin's daily listing-page view count jumped 35% starting on a Tuesday, with no marketing change or new listings driving it. An analyst reports: 'This is a genuine surge in buyer interest, probably seasonal — spring house-hunting is starting early this year. No further investigation needed.'",
+    "description": "What's the flaw in the analyst's conclusion?",
+    "options": [
+      "There's no flaw — a sudden 35% jump with a plausible seasonal story is sufficient grounds to close the investigation.",
+      "The flaw is that seasonal patterns should be measured year-over-year, not compared to the analyst's general impression of when spring house-hunting starts.",
+      "The analyst should have consulted the marketing team before writing any conclusion, since marketing owns all traffic-driving initiatives.",
+      "The analyst never checked whether the traffic increase is real, unique visitors or a spike in automated bot traffic, a distinct, checkable explanation."
+    ],
+    "correct_option": 3,
+    "explanation": "Option D is correct: a sudden, single-day step-change in page views, with no marketing change and no new listings to explain it, is exactly the shape that should prompt a bot-traffic or scraping check before any behavioral story is accepted — real seasonal shifts in buyer interest typically build gradually over days or weeks, they don't usually appear as a sharp jump starting on one specific day. Checking whether the increase is concentrated in unique authenticated sessions versus anonymous, high-frequency requests hitting the same listings repeatedly is a fast, checkable step the analyst skipped entirely in favor of a plausible-sounding narrative. Option A accepts a plausible story with no verification at all, exactly the shortcut a structured investigation is meant to catch, a jump this sudden deserves at least one basic check before being called genuine. Option B raises a reasonable general point about seasonal comparisons, but it doesn't identify the more fundamental gap, whether the traffic is even real visitors at all, a better seasonal comparison wouldn't resolve that question. Option C reaches for a process fix, consulting another team, that doesn't itself investigate anything; the analyst can and should check the traffic composition directly before looping anyone else in.",
+    "hints": [
+      "A sudden, single-day jump with no known cause has more than one explanation. What distinguishes real visitor interest from something else generating the same page-view count?",
+      "Real behavioral shifts tend to build gradually. What does a sharp, single-day step change usually suggest is worth checking first?"
+    ],
+    "concepts": [
+      "REAL-CHANGE VS ARTIFACT"
+    ]
+  },
+  {
+    "id": 103042,
+    "order": 42,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Talkspace's Quick Match — faster sessions, weaker fit",
+    "scenario_context": "Talkspace tests a 'Quick Match' flow that auto-assigns a new user to any available therapist within 2 hours, replacing a preference-based matching questionnaire that took an average of 3 days. Sign-up-to-first-session completion rises from 61% to 79%. But among Quick Match users, self-reported therapist fit ('I feel understood by my therapist') after session 1 is 11 points lower than among questionnaire-matched users, and therapist-switch requests within the first month are roughly double.",
+    "description": "What's the most defensible strategic call?",
+    "options": [
+      "Ship Quick Match to 100% — the completion-rate gain is large and getting more people into any session at all is the primary goal of a mental-health product.",
+      "Revert to the questionnaire-only flow entirely — a therapy product's core promise is fit and trust, and Quick Match is measurably degrading both.",
+      "Keep Quick Match as the default for speed, but run the same brief preference questionnaire in parallel and use it to assign within the pool of therapists available in that 2-hour window.",
+      "Ship Quick Match only to users who've never used therapy before, since new-to-therapy users are less likely to have strong preferences about fit anyway."
+    ],
+    "correct_option": 2,
+    "explanation": "Option C is correct: the two things Talkspace is actually trading against each other, speed to a first session and the fit that makes a session valuable, aren't fundamentally incompatible, they were just bundled as an either/or in the original test design. Running the brief preference signal in parallel and matching within whichever therapists are available in the fast window keeps almost all of the completion-rate gain, since it doesn't reintroduce the 3-day wait, while directly addressing the mechanism behind the fit drop, assignment that ignores preference entirely. This is the option that treats the trade-off as a design problem to solve rather than a side to pick. Option A treats getting into any session as sufficient, but a therapy product's actual value depends on the therapeutic relationship working, and a near-doubling of first-month switch requests is direct evidence that a meaningful share of Quick Match users aren't getting a session that's actually working for them, a session happening isn't the same as the product delivering its value. Option B swings to a full reversion, discarding a large, genuine access improvement, getting people into care in hours instead of days plausibly matters most for someone in acute distress, without first checking whether a hybrid design could preserve that access gain. Option D's new-user-only scoping rests on an unsupported assumption, that people new to therapy don't have preferences that matter to fit, nothing in the scenario suggests fit matters less for first-time therapy users, if anything a bad first experience could be more consequential for someone deciding whether therapy works for them at all.",
+    "hints": [
+      "The two things trading off here aren't necessarily mutually exclusive. Ask whether a design exists that keeps most of one gain while addressing the mechanism behind the other's loss.",
+      "One guardrail here isn't just a number, it's a proxy for whether the product's core promise, a relationship that actually helps, is being delivered. Weigh what a rising switch-request rate is telling you."
+    ],
+    "concepts": [
+      "PRODUCT HEALTH & STRATEGIC TRADE-OFFS",
+      "CONFLICTING-METRIC & TRADE-OFF JUDGMENT"
+    ]
+  },
+  {
+    "id": 103043,
+    "order": 43,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Steam's refund rate rose 3 points — concentrated where volume also grew",
+    "scenario_context": "Steam's platform-wide refund rate (refund requests within the 2-hour/14-day policy window, as a share of purchases) rose from 6% to 9% over the past month. A breakdown by game genre shows the increase concentrated almost entirely in early-access titles, where refund rate jumped from 11% to 22%; refund rates for fully-released titles are flat at 4%. Early-access titles also grew from 9% to 16% of total purchases this month after a platform-wide 'Early Access Spotlight' merchandising push.",
+    "description": "What's the most defensible next step?",
+    "options": [
+      "Report the platform-wide 9% refund rate as a meaningful decline in purchase quality and investigate the checkout flow for bugs.",
+      "Ignore the genre breakdown, since a refund is a refund regardless of what kind of game it came from, and the aggregate number is what matters to finance.",
+      "Focus on early access titles, where both the rate and volume increases concentrate, and check why the spotlighted titles are refunding more.",
+      "Recommend removing early-access titles from the Spotlight program entirely, since the refund-rate math clearly shows they're a worse purchase for consumers."
+    ],
+    "correct_option": 2,
+    "explanation": "Option C is correct: the segment cut has already done the diagnostic work — both the rate itself (11% to 22%) and the volume of purchases in that category (9% to 16% of all purchases) moved specifically in early access, while fully-released titles stayed completely flat. That double-movement in the same segment is a strong, specific lead: something about the spotlighted early-access titles, whether they're less complete than typical early-access norms, more aggressively marketed, or simply getting more first-time-genre buyers who don't know what to expect, is worth checking directly, rather than treating the platform number as one undifferentiated signal. Option A treats the 9% platform-wide number as the object of investigation and points at checkout, but nothing in the segment data suggests a checkout problem; the entire movement is explained by one specific, identifiable category behaving differently, chasing a generic technical cause ignores the lead already in hand. Option B refuses to use the one piece of information that actually explains the movement, a refund's business impact may be uniform, but understanding why refunds rose specifically requires looking at where they're concentrated, dismissing that as irrelevant throws away the diagnosis. Option D jumps to a specific operational recommendation, pulling early access from the merchandising program entirely, before actually confirming what about this batch of spotlighted titles is driving the elevated rate, a much bigger swing than the data yet supports without first checking the mechanism.",
+    "hints": [
+      "Two things moved together in the same specific category. Check what that category is before deciding whether the platform-wide number itself is the thing to investigate.",
+      "A segment where both the volume and the rate increased at once is a stronger lead than a platform-wide average. What would you check about that specific segment before recommending any operational change?"
+    ],
+    "concepts": [
+      "SEGMENTATION & DECOMPOSITION REASONING",
+      "METRIC MOVEMENT DIAGNOSIS"
+    ]
+  },
+  {
+    "id": 103044,
+    "order": 44,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Deel's self-serve onboarding — faster payments, a compliance gap in three countries",
+    "scenario_context": "Deel tests a self-serve compliance flow that lets new customers onboard contractors in a new country without a compliance specialist reviewing the paperwork first, cutting time-to-first-payment from 6 days to 1 day. Onboarding completion rises 24%. Compliance audits of the self-serve flow find a 4% rate of misclassified worker status (contractor vs. employee) in three specific countries with unusually complex labor rules, versus under 0.5% in the specialist-reviewed flow across the same three countries.",
+    "description": "What's the most defensible way to frame this trade-off?",
+    "options": [
+      "Name the trade-off by jurisdiction — keep self-serve for most countries where misclassification risk is low, and require specialist review specifically for the three complex-rule countries.",
+      "This is a clear win — a 24% onboarding lift and faster payments are the core value proposition, and a 4% misclassification rate is a small fraction of all onboarded contractors.",
+      "This is a clear loss — worker misclassification carries real legal and financial exposure, so self-serve onboarding should be reverted entirely across all countries.",
+      "Keep self-serve everywhere, but add a disclaimer that customers are solely responsible for correct worker classification, shifting legal exposure to them."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A is correct: the risk isn't spread evenly, it's concentrated in three specific countries with unusually complex labor rules, while the self-serve flow works fine, at under 0.5% misclassification just like the specialist flow, everywhere else. Scoping the fix to exactly where the risk lives keeps the real onboarding-speed win for the large majority of countries while closing the specific gap the audit found, rather than treating the whole global flow as one indivisible decision. Option B treats a 4% misclassification rate as small in isolation, but worker misclassification is a compliance and legal exposure issue, for both Deel and its customers, not a minor quality blemish, and a rate 8x higher than the specialist-reviewed baseline in the exact same countries is a specific, identified gap, not background noise to average away. Option C swings to a full global reversion, discarding a real and substantial onboarding win in the large majority of countries where the self-serve flow is performing just as well as specialist review, a broader response than the country-specific pattern in the audit actually supports. Option D tries to solve a compliance accuracy problem with a liability disclaimer, but shifting who's legally responsible doesn't reduce the actual rate of misclassification happening, or the underlying legal risk in jurisdictions with genuinely complex rules, a customer accepting liability doesn't make the classification correct.",
+    "hints": [
+      "The risk isn't the same everywhere — check where the audit actually found the gap before deciding whether the whole global flow needs to change.",
+      "A rate that looks small in isolation can still be a specific, identified compliance gap. Compare it to the same countries' baseline under the other flow, not just to the global average."
+    ],
+    "concepts": [
+      "CONFLICTING-METRIC & TRADE-OFF JUDGMENT",
+      "SEGMENTATION & DECOMPOSITION REASONING"
+    ]
+  },
+  {
+    "id": 103045,
+    "order": 45,
+    "topic": "product-sense",
+    "type": "debug",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Sephora's Beauty Insider spend gap — the auto-enroll proposal",
+    "scenario_context": "Sephora's data team finds that Beauty Insider loyalty members spend 3.2x more per year than non-members. A marketing lead proposes: 'Let's auto-enroll every new customer into the loyalty program at checkout instead of requiring opt-in, since loyalty membership clearly drives higher spend, and this should lift average customer spend across the board.'",
+    "description": "What's the flaw in the marketing lead's reasoning?",
+    "options": [
+      "There's no flaw — a 3.2x spend difference is a large, statistically meaningful gap, and auto-enrollment is a low-cost way to capture that lift.",
+      "The flaw is measurement, not causation; Sephora should verify the 3.2x figure using a different attribution window before acting on it.",
+      "Auto-enrollment will work, but only after Sephora also improves the loyalty program's point-redemption options to give new members a reason to spend more.",
+      "Customers who opted into loyalty are plausibly already more engaged, higher-spend shoppers — membership may reflect that pattern, not cause it."
+    ],
+    "correct_option": 3,
+    "explanation": "Option D is correct: this is the classic self-selection trap — people who actively seek out and opt into a loyalty program are plausibly the customers who already shop at Sephora frequently and spend more, being the kind of shopper who signs up for a rewards program and being a high-spend shopper likely share a common cause, rather than one causing the other. Auto-enrolling every customer, including plenty who were never going to be high-spend shoppers regardless of membership status, gives no reason to expect the same 3.2x gap to appear for that much broader, unselected population. Option A treats the size and statistical strength of the observed gap as proof of causation, but a large, robust correlation is still a correlation, the self-selection explanation is fully consistent with an even bigger, more reliably-measured 3.2x gap. Option B redirects to a measurement concern, a different attribution window, that doesn't address the actual flaw in the reasoning, whether membership causes spend or merely correlates with a pre-existing spending pattern, a cleaner measurement of the same observational comparison wouldn't resolve that. Option C accepts the causal claim and proposes an enhancement on top of it, skipping past the core issue entirely, that the original 3.2x figure was never established as caused by membership in the first place, so building further plans on it doesn't fix the flaw.",
+    "hints": [
+      "The people already in the loyalty program got there by choosing to join. Ask what kind of shopper tends to make that choice in the first place.",
+      "A trait and an outcome can share a common cause without either one causing the other. What might make someone both more likely to opt in and more likely to already spend more?"
+    ],
+    "concepts": [
+      "CAUSAL VS CORRELATIONAL JUDGMENT"
+    ]
+  },
+  {
+    "id": 103046,
+    "order": 46,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Opendoor's offer-accuracy metric — the lowball that would look like a win",
+    "scenario_context": "Opendoor's algorithmic home-offer team is evaluated partly on 'offer accuracy,' how close the initial cash offer is to the eventual resale price. A regional lead proposes rewarding offer teams for improving this metric. An analyst flags that a team can trivially improve offer accuracy by systematically lowballing every offer by 8-10%, since a consistently low offer is easy to land close to on the resale side — this would look like an accuracy win while actually making Opendoor's offers less competitive and hurting seller acceptance rates.",
+    "description": "Which candidate metric change would make offer accuracy resistant to being gamed by systematic lowballing?",
+    "options": [
+      "Keep offer accuracy as the sole metric, but require regional leads to sign off on any offer more than 10% below the algorithm's raw estimate.",
+      "Replace offer accuracy with seller acceptance rate alone, since a metric sellers actually respond to can't be gamed by an internal pricing choice.",
+      "Pair offer accuracy with seller acceptance rate, so a team can only improve one by sacrificing the other, closing off lowballing as a free win.",
+      "Keep offer accuracy, but only measure it on homes that eventually sell within 60 days, filtering out slower, harder-to-price properties."
+    ],
+    "correct_option": 2,
+    "explanation": "Option C is correct: pairing the two metrics makes the gaming move self-defeating. Systematic lowballing can still push offer accuracy up, but sellers who receive a worse offer than they'd get from a competing cash buyer are less likely to accept it, so seller acceptance rate falls in direct response — a team chasing better accuracy through lowballing pays for it immediately on the other number, and the two together only both rise if offers are genuinely getting more accurate at a price sellers still find competitive. Option A adds a review step but leaves the accuracy metric itself untouched and gameable, a team can still lowball within whatever threshold triggers sign-off, and sign-off itself doesn't verify why the offer was set low, just that someone approved it. Option B swaps to a single different metric, but a metric evaluated alone is still vulnerable to its own gaming vector, a team could chase acceptance rate by simply overpaying on every offer, trading the original gaming risk for a new, opposite one rather than closing the hole. Option D's filtering idea addresses which homes count, not the actual lowballing incentive, a team could still lowball freely on the homes that do qualify within 60 days, the fix doesn't touch the mechanism the analyst flagged at all.",
+    "hints": [
+      "Ask what a team could do for free, without any real pricing skill, to move the metric, and whether each candidate still rewards that move.",
+      "A metric resists gaming when the same tactic that inflates it also costs something on a second, connected number."
+    ],
+    "concepts": [
+      "METRIC GAMING & ROBUSTNESS"
+    ]
+  },
+  {
+    "id": 103047,
+    "order": 47,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Indeed's new ranking algo — more applications, weaker matches",
+    "scenario_context": "Indeed tests a new job-ranking algorithm that prioritizes postings likely to get a fast application after viewing. Two-week result: applications submitted per job view rise 19%. But employer-reported application quality ('candidates who meet the basic listed requirements') drops from 71% to 54%, and employer subscription-renewal intent, surveyed at contract end, falls 8 points specifically among employers who received the new ranking.",
+    "description": "What's the most defensible call?",
+    "options": [
+      "Ship to 100% — a 19% rise in applications per view is a strong top-line win for the marketplace's core action.",
+      "Ship, but only measure success by applications per view going forward, since that's the metric the algorithm change directly targeted.",
+      "Extend the test — an 8-point renewal-intent drop is a survey measure, not actual churn, and needs to be validated against real renewal data before it means anything.",
+      "Hold the rollout — more unqualified applications are eroding what employers actually pay Indeed for, and it's already showing in their stated intent to leave."
+    ],
+    "correct_option": 3,
+    "explanation": "Option D is correct: Indeed's employer customers pay for qualified applicants, not raw application volume, so a change that drives more applications while cutting the share who meet basic requirements nearly in half is degrading the actual product employers are buying, and that degradation is already visible in the employers' own stated intent to not renew. A rising top-line action metric that's directly connected to a falling customer-value signal on the paying side of the marketplace is a compound result pointing the same direction, not two separate things to weigh against each other. Option A treats the application-volume metric as the win condition on its own, but volume was never actually the thing Indeed's employer customers pay for, it's a proxy that this test result shows can rise while the underlying value falls. Option B commits to permanently tracking only the metric the algorithm was built to move, locking in exactly the blind spot this test just exposed, once a metric known to trade off against employer value becomes the only thing measured, that trade-off becomes invisible going forward. Option C is right that a survey signal is softer than realized churn, but dismissing it as unreliable ignores that it's directly consistent with a large, hard, already-measured quality drop, the survey isn't the only evidence here, it's corroborating evidence for a mechanism already visible in the requirements-met rate.",
+    "hints": [
+      "Ask who actually pays Indeed and what they're paying for — is it application volume, or something volume alone doesn't guarantee?",
+      "Two of these signals may be telling the same story rather than two separate ones. Check whether the quality drop and the renewal-intent drop are connected."
+    ],
+    "concepts": [
+      "SHIP / NO-SHIP DECISION",
+      "BUSINESS-MODEL METRIC FLUENCY"
+    ]
+  },
+  {
+    "id": 103048,
+    "order": 48,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Vrbo's late-shown fees — clicks up, checkout abandonment up too",
+    "scenario_context": "Vrbo tests displaying only the nightly base rate in search results, moving cleaning fees and the guest service fee to appear for the first time at checkout, instead of showing an all-in estimated total upfront. Search-result click-through rises 15%. But checkout-page abandonment, once the full price including fees is shown, rises from 22% to 34%, and post-stay reviews mentioning 'hidden fees' or 'surprise costs' roughly triple.",
+    "description": "What's the most defensible way to frame this result?",
+    "options": [
+      "Name the trade-off — clicks are up, but so are abandonment and fee complaints; completed, trusted bookings aren't clear from click-through alone.",
+      "This is a clear win — a 15% click-through lift is a strong top-of-funnel signal, and checkout abandonment is a normal part of any booking flow.",
+      "This is a clear loss — hidden fees are always a bad practice, so Vrbo should immediately revert to showing all-in pricing in search results.",
+      "Ship the change, but add a small 'fees may apply' disclaimer text under the search-result price, treating disclosure as sufficient without changing what's shown."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A is correct: the three numbers that moved here aren't telling one simple story, they're describing a shift in where the same friction shows up and what it costs. More people click in because the sticker-shock moment moved later, but a meaningfully larger share now bounce at checkout once they see the real price, and the guests who push through anyway are leaving a lot more complaints about being surprised, a trust cost that a review-reading future guest will also see. Whether completed, trusted bookings, the thing that actually matters, went up or down isn't answerable from the click-through number in isolation, that's exactly why naming the shape of the trade-off, rather than picking a side from one metric, is the defensible move. Option B isolates the metric the change was designed to move and calls it a win, but a rising top-of-funnel number funded by a bigger drop-off later in the same funnel plus a tripling of complaints isn't obviously a win, it's a redistribution of the same friction with an added trust cost. Option C treats the practice as categorically disqualifying and calls for an immediate full reversion without weighing what was actually gained, three numbers moved, not one, and a reversion decision should engage with all three rather than the fee-disclosure question alone. Option D tries to solve a substantive pricing-transparency problem with a small disclaimer, but the abandonment and complaint data are about guests encountering the real price late, not about whether they were warned fees might exist, a vague disclaimer doesn't change when the actual number appears.",
+    "hints": [
+      "Three numbers moved here, and they may not all be pointing toward one clean verdict. Ask what happened to the friction, not just where it now shows up in the funnel.",
+      "A rising top-of-funnel metric funded by a much larger drop-off later, plus a trust cost showing up in reviews, isn't automatically a win. What would you need to know before calling it one?"
+    ],
+    "concepts": [
+      "CONFLICTING-METRIC & TRADE-OFF JUDGMENT",
+      "FUNNEL & CONVERSION REASONING"
+    ]
+  },
+  {
+    "id": 103049,
+    "order": 49,
+    "topic": "product-sense",
+    "type": "debug",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Zwift's ride-completion drop — the analyst blames the new climb",
+    "scenario_context": "Zwift's average ride-completion rate (share of started rides finished without early exit) fell from 88% to 79% over two weeks, right after a new route, 'Alpe du Zwift,' a notoriously long, difficult climb, was added to the featured rotation. An analyst reports: 'Riders are quitting because the new featured route is too hard — we should remove it from the featured rotation immediately.'",
+    "description": "What's the flaw in the analyst's conclusion?",
+    "options": [
+      "The flaw is that difficulty is subjective; Zwift should survey riders directly about whether they found the route too hard instead of inferring it from completion rate.",
+      "There's no flaw — a route this difficult being added right before the drop is decisive evidence, and pulling it is the obviously correct response.",
+      "The analyst should first consult the route-design team before making any recommendation, since they own decisions about the featured rotation.",
+      "The analyst never checked whether the drop concentrates among riders who chose the new route, versus a platform-wide drop unrelated to it."
+    ],
+    "correct_option": 3,
+    "explanation": "Option D is correct: 'featured' doesn't mean every rider who started a ride that week rode this specific route, some meaningful share chose other routes entirely, so the first, cheap check is whether the completion-rate drop is concentrated among riders who actually selected Alpe du Zwift, versus spread evenly across riders regardless of which route they picked. If the drop is isolated to that route's own completion rate while other routes are unaffected, the difficulty hypothesis holds up; if completion fell platform-wide including on easy, unrelated routes, something else, unrelated to this one route, is going on, and pulling the featured route wouldn't fix it. Option A raises a real alternative measurement, but it doesn't identify the actual gap in the analyst's reasoning, which is a missing segmentation check, not a preference for survey data over completion-rate data. Option B accepts a timing coincidence and a plausible mechanism as decisive, exactly the shortcut a structured diagnosis exists to catch, especially before recommending an operational change. Option C proposes a process step, looping in another team, that doesn't itself investigate anything, the segmentation check is something the analyst can and should run directly before recommending any change to the rotation.",
+    "hints": [
+      "'Featured' doesn't mean everyone rode it. What's the first, cheap check that would confirm whether the drop is actually tied to this specific route?",
+      "If the difficulty hypothesis is right, the drop should look very different for riders who picked the new route versus riders who picked something else. Has that split been checked?"
+    ],
+    "concepts": [
+      "METRIC MOVEMENT DIAGNOSIS"
+    ]
+  },
+  {
+    "id": 103050,
+    "order": 50,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "GoodRx's auto-recommended pharmacy — priced by cash, ranked partly by revenue share",
+    "scenario_context": "GoodRx tests an 'auto-recommended pharmacy' badge shown by default on drug search results, chosen by a blended score that weighs both the cash price at that pharmacy and the revenue-share GoodRx earns from that pharmacy partner. In 18% of searches, the auto-recommended pharmacy is not the single lowest cash price available, though it's within a few dollars. Click-through to the recommended pharmacy rises sharply versus the old plain price-sorted list.",
+    "description": "What's the most defensible strategic call?",
+    "options": [
+      "Keep the blended score — GoodRx is a business, and factoring in partner revenue share alongside price is a reasonable way to run a marketplace.",
+      "Keep the blended score, but only show it for searches where the recommended pharmacy is within $5 of the lowest price, on the reasoning that small differences don't matter to consumers.",
+      "Drop revenue-share from the ranking and sort strictly by lowest cash price; let partner terms show up in placement, not in what's labeled 'recommended.'",
+      "Keep the current design, but add a small text label disclosing that the recommendation considers partner terms, treating disclosure as sufficient without changing the ranking itself."
+    ],
+    "correct_option": 2,
+    "explanation": "Option C is correct: GoodRx's entire reason to exist for a user is trust that the price it surfaces is genuinely the best one findable, once the ranking itself is shaped by what GoodRx earns rather than purely by what the user pays, the core promise is compromised regardless of how small the gap looks in any single search. Separating the two, rank strictly on price, and let partner economics show up in layout or promotion rather than in which pharmacy gets called out as 'recommended', keeps the one signal users actually rely on honest while still leaving room for GoodRx's business relationships to exist elsewhere on the page. Option A accepts a revenue-influenced ranking as an ordinary business trade-off, but a price-comparison tool's entire value proposition is that its top recommendation is the best deal, not the best deal after also serving GoodRx's own economics, that's a different and more corrosive kind of trade-off than a typical marketplace ranking choice. Option B tries to bound the harm with a dollar threshold, but it doesn't remove the conflict of interest, it just decides how much of a user's money GoodRx is willing to quietly cost them before the practice becomes unacceptable, an arbitrary line rather than a principled fix. Option D treats disclosure as equivalent to fixing the ranking, but a small label doesn't change that most users, especially anyone in a time-pressured moment like filling a prescription, will trust the default 'recommended' badge rather than independently re-checking every price on the page.",
+    "hints": [
+      "Ask what GoodRx's core promise to a user actually is, and whether a ranking shaped partly by what GoodRx earns is compatible with that promise, however small the price gap looks in any one case.",
+      "A dollar threshold and a disclosure label both leave the underlying conflict of interest in place. Is there a version of this that keeps the business relationship without touching what gets called 'recommended'?"
+    ],
+    "concepts": [
+      "PRODUCT HEALTH & STRATEGIC TRADE-OFFS"
+    ]
+  },
+  {
+    "id": 103051,
+    "order": 51,
+    "topic": "product-sense",
+    "type": "predict_output",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Toptal's stricter vetting bar — predicting the retention curve's shape",
+    "scenario_context": "Toptal tightens its freelancer vetting process, raising the bar so only the top 3% of applicants pass, down from roughly 8% previously. The team's hypothesis is that this raises the average quality of freelancers clients are matched with, which should improve client retention specifically by reducing the 'bad match, client churns after one project' failure mode, without necessarily changing how many total freelancers are available to match against.",
+    "description": "If this hypothesis is correct, what should happen to the shape of the client Day-30-through-Day-180 retention curve for post-change client cohorts compared to pre-change cohorts?",
+    "options": [
+      "The whole curve should shift higher only in the very first 30 days, since a better first match mainly affects a client's very first impression.",
+      "The curve should be unaffected in shape, but clients should complete projects faster, since higher-quality freelancers work more efficiently.",
+      "The curve should dip lower initially, since a smaller pool of vetted freelancers means noticeably longer wait times to get matched, which could hurt early retention.",
+      "The early drop-off after a client's first project should shrink, raising the curve's later plateau, since fewer clients churn from a bad first match."
+    ],
+    "correct_option": 3,
+    "explanation": "Option D is correct: the hypothesis specifically targets one failure mode, clients churning after a single bad-match project, so the expected signature is a smaller early drop-off, the exact place that failure mode shows up in a retention curve, which mechanically raises where the curve settles later on, since fewer clients are being lost to that specific cause before they'd otherwise have stuck around. This isn't a general uplift to the whole curve or a single-point change, it's a change to the shape of the early decline specifically. Option A predicts a Day-30-only shift, but retaining a client for the first month doesn't guarantee they stay through Day-180, if the mechanism is genuinely fewer bad-match churns, that effect should persist in a higher plateau rather than being confined to the very first window. Option B predicts faster project completion instead of a retention effect, but the hypothesis is specifically about match quality reducing churn, not about freelancer working speed, nothing in the premise supports a completion-time claim at all. Option C introduces a new negative effect, longer wait times from a smaller vetted pool, that isn't part of the stated hypothesis and isn't supported by anything given, if wait times did lengthen that would be a separate, competing effect to consider, but it's not what this specific hypothesis predicts.",
+    "hints": [
+      "The hypothesis names one specific failure mode being reduced. Ask where in a retention curve that particular failure mode would normally show up.",
+      "A change to one specific cause of early churn should show up as a change in the curve's shape in that exact window, not as a uniform lift everywhere or a change to an unrelated metric."
+    ],
+    "concepts": [
+      "RETENTION & COHORT REASONING"
+    ]
+  },
+  {
+    "id": 103052,
+    "order": 52,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Lime's ride-completion drop — two cities, one firmware update, one ticket pattern",
+    "scenario_context": "Lime's platform-wide ride-completion rate (rides ended normally vs. ended by a support ticket or app error) fell from 96% to 91% over 10 days. A city-by-city breakdown shows the drop concentrated entirely in two cities that received a firmware update to scooter GPS units on the same day the metric started falling; every other city's completion rate is unchanged. The two affected cities' support tickets show a spike specifically in 'ride wouldn't end / GPS stuck' complaints.",
+    "description": "What's the most defensible read?",
+    "options": [
+      "The drop is likely a real, narrow artifact of the firmware update — it matches the two affected cities, the exact ship day, and a GPS-stuck ticket pattern.",
+      "The drop reflects a genuine behavior change among riders in those two cities, and the firmware timing is a coincidence worth noting but not confirming.",
+      "The drop should be treated as platform-wide until proven otherwise, since a 5-point completion-rate decline is too large to attribute to just two cities.",
+      "The support-ticket spike is unrelated noise; completion rate and support tickets measure different things and shouldn't be reasoned about together."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A is correct: three separate pieces of evidence line up on the same explanation — the geographic concentration matches exactly the two cities that got the update, the timing matches the exact day it shipped, and the support-ticket content, GPS stuck, rides not ending, directly describes the mechanism by which a GPS or connectivity issue would prevent a ride from ending normally and instead route it to a support ticket or error state. This isn't a single coincidental data point, it's a converging pattern across location, timing, and complaint content all pointing at the same technical cause. Option B calls the firmware timing a coincidence 'worth noting but not confirming,' but dismissing this much converging evidence, exact cities, exact day, and a mechanism-matching complaint pattern, understates what's already been established here, this is closer to confirmed than merely suggestive. Option C insists on treating the drop as platform-wide despite direct evidence it's isolated to two cities, the concentration is the finding, not something to override by defaulting to the platform-wide number because the overall decline sounds large. Option D artificially separates two signals that are describing the same underlying event, a GPS malfunction would mechanically both prevent normal ride-ending and generate exactly the support tickets observed, treating them as unrelated ignores the shared mechanism connecting them.",
+    "hints": [
+      "Three different kinds of evidence point at the same explanation here — geography, timing, and complaint content. Check whether they're converging or actually independent.",
+      "A support ticket describing the exact mechanism that would explain a metric's drop is stronger evidence than a coincidence. Weigh what the ticket content is actually telling you."
+    ],
+    "concepts": [
+      "SEGMENTATION & DECOMPOSITION REASONING",
+      "REAL-CHANGE VS ARTIFACT"
+    ]
+  },
+  {
+    "id": 103053,
+    "order": 53,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Brex's 'active customer' growth — the mid-quarter definition change",
+    "scenario_context": "Brex reports 'active customers' grew 34% this quarter, a number highlighted in its board deck as evidence of accelerating adoption. A finance analyst discovers the definition of 'active' changed mid-quarter from 'completed at least one transaction in the last 30 days' to 'has at least one card issued to an employee,' a much lower bar that doesn't require any actual spending activity.",
+    "description": "What's the most defensible way to characterize the 34% growth figure?",
+    "options": [
+      "It's a legitimate growth number — more issued cards is still evidence Brex is being adopted by more companies, regardless of transaction activity.",
+      "It's understated, if anything — companies with issued but unused cards are very likely to start transacting soon, so the true adoption number is probably higher.",
+      "It should be reported net of the definition change, subtracting exactly the accounts that would have failed the old bar, to isolate the real number.",
+      "It's not comparable to prior quarters at all — the new, looser definition mixes real growth with a denominator that just got easier to qualify for."
+    ],
+    "correct_option": 3,
+    "explanation": "Option D is correct: 'active customers' is used as a growth metric specifically because it's supposed to signal companies actually using the product, and changing the qualifying bar mid-quarter from real transaction activity to a much lower one, simply having a card issued, means this quarter's count and every prior quarter's count are answering two different questions. Some real share of the 34% may reflect genuine new adoption, but an unknown share is just accounts that would have failed the old, stricter bar now clearing the new, looser one, and there's no way to separate the two from the headline number alone. Reporting it as straightforward growth compares two differently-defined populations as if they were the same metric. Option A accepts issued-but-unused cards as meaningful adoption evidence, but the entire reason 'active' historically required a transaction was to distinguish companies actually using Brex from companies that merely signed up, dropping that bar erases the distinction the metric was built to make. Option B assumes unused cards will convert to real usage soon, an assumption stated with no supporting evidence in the scenario, and even if some do convert, that's a claim about the future, not a defense of counting them as already active today. Option C proposes a real fix in spirit, but doing it requires actually recomputing this quarter's count under the old, stricter definition, not just reporting the current number 'net of' an unspecified adjustment, the fix has to be a recalculation, not a caveat.",
+    "hints": [
+      "Check whether this quarter's number and last quarter's number are actually answering the same question about what 'active' requires.",
+      "A metric's growth is only meaningful if the bar for qualifying stayed the same. What would you need to do to make the two quarters genuinely comparable?"
+    ],
+    "concepts": [
+      "METRIC DEFINITION INTEGRITY"
+    ]
+  },
+  {
+    "id": 103054,
+    "order": 54,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "MasterClass's auto-play — completion up, cancellations naming the reason why",
+    "scenario_context": "MasterClass tests auto-playing the next lesson in a course five seconds after the current one ends, replacing a screen that required a manual 'Next Lesson' click. Course completion rate rises 21%. But subscription cancellation rate, measured within 30 days of a completed course, rises from 6% to 11%, and cancellation survey responses increasingly cite 'felt like I was being pushed through content' as a reason.",
+    "description": "What's the most defensible call?",
+    "options": [
+      "Ship to 100% — a 21% completion-rate lift is a strong engagement signal, and a modest cancellation increase is a normal cost of a more engaging product.",
+      "Extend the test — 30 days isn't long enough to know whether the cancellation increase is a lasting pattern or a short-term artifact of the new flow.",
+      "Hold the rollout — the completion lift may be manufactured by removing a choice point rather than reflecting genuine interest, and the guardrail names the mechanism as the cause directly.",
+      "Ship, but only for courses under 6 lessons, since auto-play is more likely to feel forced across a longer course than a short one."
+    ],
+    "correct_option": 2,
+    "explanation": "Option C is correct: completion rate rising because a screen that used to require an active choice to continue now continues by default isn't necessarily evidence people wanted to keep watching, it's at least partly evidence the path of least resistance changed, and the cancellation data is telling that same story directly rather than as background noise, subscribers are explicitly citing the exact mechanism, feeling pushed through content, as their reason for leaving. When the guardrail's own qualitative signal names the mechanism behind the primary metric's rise as the reason for churn, that's a stronger, more specific warning than a typical guardrail regression, and it should be resolved before rolling out further, not shipped past. Option A treats the cancellation increase as an expected, minor cost, but the survey responses aren't ambiguous background noise, they specifically implicate the change being tested as the reason subscribers are leaving, a much more direct signal than a generic trade-off. Option B's request for more time doesn't address what's already specific and interpretable in the data, the survey text is already explaining the mechanism, waiting longer doesn't change what subscribers are already saying about why they're canceling. Option D's course-length scoping is a plausible-sounding guess with no evidence behind it in the scenario, nothing given here breaks out the cancellation increase by course length, so this fix targets a hypothesis that hasn't actually been tested.",
+    "hints": [
+      "Ask whether the completion metric moving is proof people wanted to keep watching, or whether it could just as easily reflect that continuing became the default rather than a choice.",
+      "The guardrail here isn't just a number — the qualitative reason attached to it may be telling you directly what's causing the primary metric to move. Weigh that connection."
+    ],
+    "concepts": [
+      "SHIP / NO-SHIP DECISION",
+      "GUARDRAIL & COUNTER-METRIC REASONING"
+    ]
+  },
+  {
+    "id": 103055,
+    "order": 55,
+    "topic": "product-sense",
+    "type": "debug",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Depop's response-rate ranking — does a length minimum stop the bots?",
+    "scenario_context": "Depop ranks sellers partly by message response rate, the share of buyer messages a seller replies to within 24 hours, intended to reward responsive, trustworthy sellers. An analyst notices a cluster of sellers using third-party auto-reply bots that instantly send a generic 'Thanks, I'll get back to you soon!' to every message, counting as a reply for ranking purposes even when the seller never actually follows up with real information. A PM proposes: 'Fix this by requiring replies to be at least 20 characters long, since a real, thoughtful reply is longer than a one-line bot message.'",
+    "description": "What's the flaw in the PM's proposed fix?",
+    "options": [
+      "There's no flaw — a character-count minimum filters out the exact one-line message the bots are currently sending, closing the gaming hole.",
+      "A bot can trivially send a longer canned message that clears any character threshold, since the length requirement doesn't verify the reply is genuinely responsive.",
+      "The flaw is unrelated to gaming; a character minimum will simply frustrate sellers who prefer to communicate briefly and accurately.",
+      "The fix should instead remove response rate from the ranking entirely, since any behavioral metric based on messaging can eventually be automated."
+    ],
+    "correct_option": 1,
+    "explanation": "Option B is correct: the fix targets the specific length of the current bot message, not the underlying capability being exploited, which is that a bot can send any text automatically regardless of content. A bot operator who wants to keep gaming the metric simply reconfigures the canned message to be longer, 'Thanks for reaching out! I'll review your question and get back to you with details as soon as I can' clears a 20-character bar easily while still being just as automated and just as devoid of real information as the original one-liner. The fix raises the cost of gaming by roughly nothing, changing a bot's template string is trivial. Option A assumes the current bot message's length is a fixed, meaningful signal rather than an arbitrary detail of how sellers happened to configure it today, but nothing about a longer automated message requires any more genuine responsiveness than a shorter one. Option C raises a real UX trade-off, but it doesn't identify why the fix fails at its stated goal, closing the gaming hole, it's a cost of the fix, not the flaw in its logic. Option D reaches for a more drastic response, dropping the metric, without first establishing that a better-designed version, checking for genuinely new information in a reply, say, couldn't work, abandoning the whole signal is a bigger move than the specific, fixable flaw in this fix calls for.",
+    "hints": [
+      "Ask what a bot operator would actually have to change about their setup to get past this specific new rule, and whether that change requires anything genuinely different.",
+      "A fix that filters on a surface property of a message, like its length, doesn't close a gaming hole if that surface property is trivial for an automated system to fake."
+    ],
+    "concepts": [
+      "METRIC GAMING & ROBUSTNESS"
+    ]
+  },
+  {
+    "id": 103056,
+    "order": 56,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Compass's close-rate matching — a faster deal, a harder landing for first-time buyers",
+    "scenario_context": "Compass changes its buyer-agent matching algorithm to prioritize agents with the highest historical close-rate, reasoning that pairing buyers with agents who reliably get deals done should improve outcomes broadly. Deal close-rate for matched buyers rises 9%. But among first-time homebuyers specifically, a segment agents describe as needing more hand-holding, post-close satisfaction survey scores fall 15 points, and the same first-time-buyer segment shows a higher rate of deals falling through during financing, closer to the point of sale, than before the change.",
+    "description": "What's the most defensible way to frame this result?",
+    "options": [
+      "This is a clear win — a 9% close-rate lift is a strong commission-efficiency signal, and satisfaction surveys are a soft, secondary metric.",
+      "This is a clear loss — first-time buyers are a large, important segment, so the matching change should revert entirely regardless of the aggregate lift.",
+      "Name the trade-off by segment — high-close-rate agents may be optimizing for speed in a way that underserves first-time buyers, and the aggregate gain may be masking a real problem there.",
+      "Reframe entirely around total commission revenue, since that's the metric that most directly reflects whether the matching change is working for the business."
+    ],
+    "correct_option": 2,
+    "explanation": "Option C is correct: the aggregate close-rate lift and the first-time-buyer-specific problems aren't necessarily in tension at the platform level, they may be two sides of the same mechanism, agents who close deals fastest may do so partly by moving buyers through quickly, which plausibly serves an experienced repeat buyer well but underserves a first-time buyer who needs more explanation and support, and the financing fall-through and satisfaction data are both concentrated in exactly that segment. Naming that segment-specific mechanism, rather than treating the aggregate number as the full story, is what the data actually supports. Option A treats the satisfaction drop as a soft, secondary signal to discount, but a financing fall-through is not soft, it's a deal that didn't close, in the exact segment the survey also flags, that's a hard outcome pointing the same direction as the qualitative concern. Option B jumps to a full reversion based on one segment's problems, discarding whatever real close-rate improvement is happening for buyers the new matching does serve well, without first checking whether a segment-aware matching rule, rather than an all-or-nothing revert, could address the first-time-buyer problem specifically. Option D swaps to a revenue metric not evidenced in the scenario at all, and sidesteps the actual, segment-specific pattern already visible in the data instead of engaging with it.",
+    "hints": [
+      "The aggregate number and the segment-specific problems may not be two separate stories — ask whether the same agent behavior could explain both.",
+      "A fall-through during financing is a harder outcome than a survey score. Check which segment it's concentrated in before deciding how much weight the aggregate close-rate gain deserves."
+    ],
+    "concepts": [
+      "CONFLICTING-METRIC & TRADE-OFF JUDGMENT",
+      "SEGMENTATION & DECOMPOSITION REASONING"
+    ]
+  },
+  {
+    "id": 103057,
+    "order": 57,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Pokemon GO's referral loop — a Community Day spike versus the steady-state rate",
+    "scenario_context": "Pokemon GO launches a referral feature: inviting a friend who reaches level 5 grants both players an exclusive item. During the feature's first week, which coincides with a globally-promoted in-game Community Day event, signups from referral links spike sharply, average invites sent per existing player briefly exceeds 1.3. Three weeks after Community Day ends, referral-driven signups fall to a steady rate of about 0.2 invites-that-convert per existing player per week.",
+    "description": "What's the most defensible read of the referral loop's growth potential?",
+    "options": [
+      "The loop is clearly viral and self-sustaining — the first week's k-factor above 1.3 proves that invited users are inviting more users in a compounding cycle.",
+      "The loop has failed and should be shut down — a drop from 1.3 to 0.2 invites-that-convert per player represents a near-total collapse in referral value.",
+      "The Community Day spike and the steady-state rate are the same underlying signal, just measured at different volumes, so the loop's true strength is best estimated by averaging the two.",
+      "The first week reflects burst virality tied to a promoted event, not the loop's sustained rate; 0.2 is the more representative number for judging whether the loop compounds on its own."
+    ],
+    "correct_option": 3,
+    "explanation": "Option D is correct: a k-factor spiking during a globally-promoted event is exactly the shape of burst virality, a temporary surge driven by an external promotional push, not evidence of a self-sustaining loop, the number that actually answers whether this referral mechanic compounds on its own is the rate once the promotional tailwind is gone. At 0.2 converting invites per existing player per week, well under the k=1 threshold where a loop would be self-sustaining, the honest read is that this feature drives a real but modest, promotion-dependent boost rather than a compounding growth engine, and judging it by its steady-state number, not its event-week peak, is what determines whether it's a durable channel. Option A cites the event-week number as proof of a compounding cycle, but a k-factor measured during a period with an unusual external promotional driver doesn't isolate whether the mechanic itself, independent of that promotion, would sustain a cycle, the two are confounded. Option B treats the entire feature as a failure using the peak number as the baseline for comparison, but the peak was never a realistic steady-state expectation to hold the feature to, judging it against an inflated, event-driven number misreads what actually failed. Option C's averaging approach treats two structurally different measurements, one confounded by an external promotional event, one not, as interchangeable samples of the same thing, when they're actually answering different questions about the loop's behavior under different conditions.",
+    "hints": [
+      "One of these two numbers was measured during an unusual promotional event, and one wasn't. Ask which one actually isolates the loop's own behavior.",
+      "A referral loop compounds on its own only above a specific threshold. Check which of the two numbers should be compared to that threshold to judge sustainability."
+    ],
+    "concepts": [
+      "GROWTH & ACQUISITION REASONING"
+    ]
+  },
+  {
+    "id": 103058,
+    "order": 58,
+    "topic": "product-sense",
+    "type": "debug",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Angi's lead-volume drop — the seasonal verdict, and the bug found two weeks later",
+    "scenario_context": "Angi's daily lead volume, homeowner requests submitted to contractors, fell 18% over 10 days. An analyst reports: 'This is just seasonal, home-service requests always dip this time of year, no action needed,' and closes the review. Two weeks later, engineering discovers a form-validation change shipped the same week the drop began, which silently rejected submissions where a homeowner's phone number included a country code prefix, common among a growing share of Angi's users.",
+    "description": "What was the flaw in the analyst's original conclusion, given what engineering later found?",
+    "options": [
+      "There was no flaw at the time; the analyst couldn't have known about a bug engineering hadn't yet found, so the seasonal explanation was reasonable given the information available.",
+      "The analyst treated a plausible seasonal story as sufficient without checking for a coincident technical change, exactly the kind of internally-verifiable cause a structured investigation checks before accepting an environmental explanation.",
+      "The flaw is that seasonal comparisons should always use a 4-week trailing average instead of a 10-day window, which would have revealed the bug faster.",
+      "The analyst should have escalated to engineering immediately regardless of the cause, since any metric drop warrants an engineering review as a first step."
+    ],
+    "correct_option": 1,
+    "explanation": "Option B is correct: a seasonal explanation is a real, valid category of cause, but it's also the kind of story that's easy to accept without checking, and a disciplined investigation looks for recent, internally-verifiable changes, a deploy, a form update, a schema change, before settling on an environmental cause that's harder to falsify. The form-validation change shipped in the exact same window the drop began, and checking recent deploys against the metric's timeline is a fast, standard step that would have surfaced it, or at least flagged it as a hypothesis worth testing, well before engineering stumbled onto it two weeks later. Option A is sympathetic to the analyst but sidesteps the actual investigative gap, the point isn't that the analyst should have magically known about a bug nobody had found yet, it's that checking recent deploys against the timeline is a standard, doable step that wasn't taken, regardless of what it would have found. Option C proposes a specific technical fix to the comparison window that has nothing to do with the actual gap, a longer trailing average doesn't surface a form-validation bug any better than a 10-day window does. Option D overcorrects into a blanket rule, not every metric drop needs an engineering escalation as a first step, but checking the deploy log against the timeline, a much lighter first move, would have been the right early step here.",
+    "hints": [
+      "A seasonal story is a real category of cause, but it's also the easiest one to accept without checking anything. What's a fast, standard check that should happen before settling on it?",
+      "The bug shipped in the exact same window the metric moved. What's the habit of checking recent changes against a metric's timeline meant to catch?"
+    ],
+    "concepts": [
+      "REAL-CHANGE VS ARTIFACT"
+    ]
+  },
+  {
+    "id": 103059,
+    "order": 59,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "WeWork's overbooked hot desks — the airline analogy's limit",
+    "scenario_context": "WeWork tests overbooking hot-desk memberships in high-demand locations, selling desk capacity at 115% of physical seats based on the historical no-show rate, similar to airline seat overbooking. Reported occupancy utilization and revenue-per-desk both rise meaningfully. In about 6% of measured days at overbooked locations, actual attendance exceeds physical capacity, and member complaints about 'couldn't find a place to work' rise sharply on exactly those days.",
+    "description": "What's the most defensible strategic call?",
+    "options": [
+      "Keep the overbooking rate as-is — the revenue and utilization gains are real and substantial, and complaints occur on a small minority of days.",
+      "Increase the overbooking rate further, since the current 115% level is clearly tolerable and a higher rate would capture even more revenue upside.",
+      "Revert to no overbooking at any location, since a coworking membership's core promise is guaranteed workspace access, and any risk of that failing is unacceptable.",
+      "Lower the overbooking rate specifically at locations with the highest no-show variability, since a member unable to find a desk is a direct breach of what a membership promises, in a way a full flight isn't for most travelers."
+    ],
+    "correct_option": 3,
+    "explanation": "Option D is correct: the airline analogy the overbooking strategy borrows from actually breaks down on the exact point that matters here, a bumped airline passenger gets rebooked and compensated within a system built to absorb that outcome, but a member who shows up to a workspace and can't find a desk has nowhere else to go in that moment, their workday is just disrupted, which makes a coworking membership's capacity promise a harder line than a flight's. The fix that respects this is scoping the overbooking rate down specifically where no-show behavior is least predictable, the locations generating the capacity breaches, rather than treating the strategy as uniformly safe or uniformly unacceptable. Option A treats a 6%-of-days failure rate as an acceptable minority cost, but that framing undercounts what member trust in a workspace membership actually depends on, a member who hits full capacity even occasionally may stop trusting the membership at all. Option B extends a strategy already producing real capacity breaches without addressing why they're happening, chasing more revenue upside from the same mechanism that's already causing member-facing failures. Option C swings to eliminating overbooking everywhere, discarding a real revenue and utilization gain at the many locations where no-show rates are stable and predictable enough that capacity was never actually breached, a broader response than the uneven, location-specific failure pattern supports.",
+    "hints": [
+      "The airline-overbooking analogy has a limit. Ask what actually happens to a bumped airline passenger, and whether a member who can't find a desk has anything comparable available to them.",
+      "The capacity breaches aren't happening everywhere equally. Check what's different about the locations where they occur before deciding whether the whole strategy needs to change."
+    ],
+    "concepts": [
+      "PRODUCT HEALTH & STRATEGIC TRADE-OFFS"
+    ]
+  },
+  {
+    "id": 103060,
+    "order": 60,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Rippling's expense-management sizing — a $45M ceiling, not a forecast",
+    "scenario_context": "Rippling is sizing a new expense-management add-on for its existing HR/IT platform customers. An analyst's estimate: Rippling has 20,000 business customers; industry data says the average company spends $50/employee/year on expense-management software; Rippling's customers average 45 employees; therefore the total addressable spend is 20,000 x 45 x $50 = $45M/year, presented to leadership as the opportunity size for this add-on.",
+    "description": "What's the strongest reason to be skeptical of treating the full $45M as the add-on's realistic opportunity?",
+    "options": [
+      "The estimate assumes every customer would switch its entire expense-management spend to Rippling's add-on, but converting existing customers from an installed competitor typically captures only a fraction of that population, not all of it.",
+      "The $50/employee/year industry average is likely outdated and should be re-sourced from a more recent industry report before the estimate is trusted.",
+      "The estimate should be adjusted for Rippling's historical customer churn rate, since some of the 20,000 customers will churn before the add-on even launches.",
+      "45 employees is an average, not a median, so the estimate should be recomputed using the median company size to avoid distortion from a few very large customers."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A is correct: the calculation sizes the total expense-management spend across Rippling's entire customer base as if the add-on would capture all of it, but most of those customers already have some expense-management solution in place, a spreadsheet, a competitor's tool, an internal process, and converting an existing customer away from whatever they currently use, to a brand-new, unproven add-on from their HR platform, realistically captures some meaningful fraction of that population and their spend, not the entire base at full value. The $45M figure is better read as a ceiling that bounds the true opportunity from above, not as the opportunity itself. Option B raises a fair data-freshness question, but even a perfectly current, well-sourced industry average wouldn't fix the deeper issue, the estimate still assumes total conversion of every customer's existing spend, which is the larger source of overstatement here. Option C's churn adjustment is a real, generally reasonable correction, but it's a comparatively minor one next to the core problem, assuming 100% of the customer base adopts and fully switches spend is a much bigger overstatement than losing a modest share to churn before launch. Option D's mean-versus-median point is a legitimate general estimation habit, but nothing in the scenario suggests Rippling's customer-size distribution is skewed enough to meaningfully distort this specific number, and it doesn't address the much larger conversion-rate assumption baked into the calculation.",
+    "hints": [
+      "Ask where the money for this add-on's revenue is actually supposed to come from — is it money customers aren't already spending elsewhere, or spend that has to be won away from something else?",
+      "A top-down calculation that multiplies a whole population by a spend average is answering 'how big is the total pie,' not 'how much of it would actually convert.' What's missing between those two numbers?"
+    ],
+    "concepts": [
+      "OPPORTUNITY SIZING & ESTIMATION"
+    ]
+  },
+  {
+    "id": 103061,
+    "order": 61,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Waymo's downtown expansion — strong demand, one intersection cluster",
+    "scenario_context": "Waymo is deciding whether to expand robotaxi service from its current geofenced zone into a new, denser downtown district. A 6-week pilot with a small supervised fleet in the new district shows strong ride demand, projected utilization well above the current zone's average. But the pilot also logs a higher rate of 'unexpected maneuver' safety interventions per mile, mostly at a specific cluster of complex, unprotected-left-turn intersections, than Waymo's current zone has ever recorded.",
+    "description": "What's the most defensible call?",
+    "options": [
+      "Expand to the full new district immediately — strong ride demand is the clearest signal that this market is ready, and safety systems exist precisely to catch these interventions before harm occurs.",
+      "Expand, but only during daytime hours, since visibility-related factors are the most common cause of autonomous-vehicle safety interventions generally.",
+      "Do not expand at all, and do not retest — a rise in intervention rate at any location is disqualifying for a physical-safety-critical product, regardless of magnitude or cause.",
+      "Expand to the new district except the specific intersection cluster driving the elevated rate, while engineering addresses that maneuver type, and revisit the excluded area once resolved."
+    ],
+    "correct_option": 3,
+    "explanation": "Option D is correct: the elevated intervention rate isn't spread evenly across the new district, it's concentrated at an identifiable, specific class of intersection, unprotected left turns, in one cluster, which means the risk is scoped and addressable rather than a general sign the whole district is unsafe for the current system. Launching everywhere except the specific geography driving the signal captures the real, strong demand across the rest of the district while withholding service exactly where the safety system is already telling the team it needs more work, and revisiting that area once the maneuver is addressed is a defensible, evidence-based path back to full coverage. Option A treats demand as the deciding factor and treats the safety system catching interventions as proof the risk is already handled, but a rising intervention rate at a specific, identifiable location is a signal to investigate and address, not evidence the system has already solved the problem, that's precisely backwards from how a safety-critical product should read its own guardrail. Option B guesses at a specific mechanism, visibility, not evidenced anywhere in the scenario, the intervention cluster is described as being about a maneuver type, unprotected left turns, not about lighting or time of day, so a daytime-only restriction doesn't address the actual pattern found. Option C treats any intervention-rate increase anywhere as fully disqualifying regardless of how scoped or addressable it is, and refuses even a future retest, a response more drastic than a specific, geographically-isolated, engineering-addressable finding calls for.",
+    "hints": [
+      "The elevated rate isn't happening everywhere in the new district — check what's specific about where it's concentrated before deciding whether the whole expansion is the thing in question.",
+      "A safety guardrail catching more interventions in one specific spot is a signal to investigate that spot, not proof the system has already absorbed the risk. What's the difference between those two readings?"
+    ],
+    "concepts": [
+      "SHIP / NO-SHIP DECISION",
+      "CONFLICTING-METRIC & TRADE-OFF JUDGMENT"
+    ]
+  },
+  {
+    "id": 103062,
+    "order": 62,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "follow_ups": [
+      103063,
+      103064
+    ],
+    "title": "PayPal's default Pay-in-4 — checkout completion up, plan-stacking defaults rising",
+    "scenario_context": "PayPal tests showing its 'Pay in 4' installment option more prominently at checkout, defaulting it as the pre-selected payment method for eligible purchases instead of requiring an extra tap to find it. Two-week result: checkout completion rises 8%, the stated primary metric. The guardrail, 90-day default rate on Pay-in-4 plans, rises from 3% to 7%, and the increase is concentrated almost entirely among users who now hold 3 or more concurrent Pay-in-4 plans at once, a pattern uncommon before this test.",
+    "description": "What's the most defensible call?",
+    "options": [
+      "Ship to 100% — an 8% checkout-completion lift is a strong primary-metric result, and a 4-point default-rate rise is a modest cost for a payments feature.",
+      "Hold the rollout — the default-rate increase is concentrated in users stacking multiple concurrent plans, a cost to both users and PayPal's credit exposure.",
+      "Ship, but only measure success by checkout completion going forward, since that's the metric the placement change directly targeted.",
+      "Extend the test — a 90-day default window means the results aren't even fully observed yet for the most recent cohorts in the test."
+    ],
+    "correct_option": 1,
+    "explanation": "Option B is correct: the guardrail isn't just moving, it's moving in a way that traces to a specific, plausible mechanism — making Pay-in-4 the default, easier-to-reach option increases how often it gets chosen without a deliberate decision, and a share of users are stacking several concurrent plans as a result, a pattern that raises real default risk for those users and real credit exposure for PayPal. This is a case where the checkout lift and the guardrail regression may be two faces of the same behavior, more defaulting-in to a credit product without fully weighing whether taking on another one is wise, so shipping broadly risks locking in a costly pattern before understanding it. Option A treats the default-rate increase as a generic, minor cost without engaging with the specific mechanism, plan-stacking, that the concentration points to, a guardrail this specifically traceable to the change itself isn't background noise. Option C commits to tracking only the metric the change was built to move, exactly the blind spot that lets a real cost go unmonitored once the guardrail stops being checked. Option D's timing objection has some truth to it, but the concentration in stacked-plan users is already a strong, interpretable signal on its own, without needing every last cohort's 90-day window to close before it's worth acting on.",
+    "hints": [
+      "The guardrail's increase isn't spread evenly — it's concentrated in a specific behavioral pattern. Ask what the placement change might be encouraging that pattern to happen.",
+      "Two things may be connected here rather than separate: what made checkout easier, and what's driving up default risk. Check whether they share a mechanism."
+    ],
+    "concepts": [
+      "SHIP / NO-SHIP DECISION",
+      "GUARDRAIL & COUNTER-METRIC REASONING"
+    ]
+  },
+  {
+    "id": 103063,
+    "order": 63,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "parent_id": 103062,
+    "follow_up_dimension": "stakeholder_pivot",
+    "title": "Merchant partnerships push back — 'this is unambiguous upside, don't slow it down'",
+    "scenario_context": "PayPal's merchant partnerships team pushes back on any rollback of the Pay-in-4 default placement: merchants pay PayPal a per-transaction fee and have seen real checkout-completion gains, and the partnerships lead argues 'this is unambiguously good for merchants, don't let a credit-risk concern that's internal to PayPal's own balance sheet slow down a feature merchants are asking to keep.' The credit-risk team maintains its position that plan-stacking is a real, growing exposure.",
+    "description": "What's the most defensible way to frame this disagreement?",
+    "options": [
+      "Defer entirely to the merchant partnerships team — they represent the revenue-generating side of the business, and completion gains are concrete and already realized.",
+      "Defer entirely to the credit-risk team — default risk is a financial liability, and any pushback from a revenue-facing team should be treated as a conflict of interest.",
+      "Name the trade-off — merchant gains are real, but partly funded by user over-extension; a scoped fix, like capping concurrent plans, may serve both sides better.",
+      "Ask the merchant partnerships team to survey merchants directly on whether they'd accept a stricter Pay-in-4 eligibility rule, and let that survey decide the outcome."
+    ],
+    "correct_option": 2,
+    "explanation": "Option C is correct: the partnerships lead's framing treats this as merchant upside with no downside, but the default rate is rising because of the same placement change driving the completion gain, the two aren't separable, one team's win is partly funded by the exposure the other team is flagging. Rather than treating this as a contest between two teams' priorities, a cap on concurrent Pay-in-4 plans targets the exact mechanism, stacking, driving the default-rate increase without necessarily removing the more prominent placement that's helping merchant completion broadly, which is a design response to the actual trade-off rather than a verdict on which internal team should win. Option A accepts the partnerships team's one-sided framing and defers to the loudest, most immediate voice, ignoring that the credit exposure is a real cost with its own claim on the decision, not a lesser, purely internal concern. Option B swings to the opposite one-sided deferral, dismissing merchant completion gains as unimportant and treating the revenue-facing team's input as inherently suspect, when their observation about merchant value is also factually accurate. Option D outsources the decision to a survey of merchants, who aren't positioned to weigh PayPal's own credit-risk exposure, a question about PayPal's balance-sheet risk isn't one merchants have the visibility or incentive to answer well.",
+    "hints": [
+      "One team is describing a real gain and the other a real cost, and they may both be right at the same time — check whether the two are actually connected rather than being an either-or.",
+      "A stakeholder pushing hard for their side's number doesn't mean the other side's concern is invalid. Look for a response that addresses the actual mechanism both sides are reacting to."
+    ],
+    "concepts": [
+      "CONFLICTING-METRIC & TRADE-OFF JUDGMENT",
+      "GUARDRAIL & COUNTER-METRIC REASONING"
+    ]
+  },
+  {
+    "id": 103064,
+    "order": 64,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "parent_id": 103062,
+    "follow_up_dimension": "abstraction_pivot",
+    "title": "Generalizing beyond this one feature — the principle for any future credit product",
+    "scenario_context": "Stepping back from the Pay-in-4 placement decision specifically, PayPal's leadership asks the team to propose a general principle for how any future BNPL or credit-adjacent feature should be evaluated before launch, not just this one case.",
+    "description": "Which principle best generalizes the lesson from the Pay-in-4 result to PayPal's credit products as a strategic class?",
+    "options": [
+      "Any feature that increases short-term completion or revenue should launch by default, and credit-risk review should only apply after a feature has already shown a problem in production.",
+      "Any credit feature that can change how much total obligation a user takes on, not just whether one transaction completes, needs a concurrent-exposure guardrail defined before launch.",
+      "PayPal should stop testing default-placement changes for any credit product entirely, since this result shows defaults are inherently manipulative for financial features.",
+      "Every future credit-adjacent feature should be tested only on existing Pay-in-4 users, since that population's behavior is already understood from this test."
+    ],
+    "correct_option": 1,
+    "explanation": "Option B is correct: the generalizable lesson from Pay-in-4 isn't about this one placement choice, it's that a credit product's real risk lives in a dimension a single-transaction completion metric doesn't see at all, how much total obligation a user is accumulating across products, and that dimension needs to be instrumented and gated before launch, not discovered after default rates already climbed. That's the class of feature, and the class of guardrail, this result actually points to as a durable rule. Option A takes the opposite lesson from what happened, this specific case is a direct demonstration of why waiting for a production problem to trigger risk review is exactly the failure mode that let plan-stacking grow unnoticed until the guardrail caught it. Option C overgeneralizes from one result to a blanket rule against an entire design pattern, default placement, when the actual fix that emerged, a concurrent-exposure guardrail, addresses the underlying risk without requiring PayPal to abandon default-placement design for every credit feature going forward. Option D narrows future testing to a population already exposed to this specific product, which doesn't generalize the lesson to new credit-adjacent features at all, a genuinely new feature would have its own new population and its own new exposure dynamics to instrument for, not just this one's existing users.",
+    "hints": [
+      "The lesson isn't really about default placement specifically. Ask what dimension of risk this result revealed that a single-transaction metric structurally can't see.",
+      "A durable principle should apply to a feature PayPal hasn't built yet. Which option describes a rule for a whole class of future features, not just a fix for this one?"
+    ],
+    "concepts": [
+      "PRODUCT HEALTH & STRATEGIC TRADE-OFFS"
+    ]
+  },
+  {
+    "id": 103065,
+    "order": 65,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "follow_ups": [
+      103066,
+      103067
+    ],
+    "title": "Glassdoor's Employer Trust Score — designing against a coordinated review burst",
+    "scenario_context": "Glassdoor is designing an 'Employer Trust Score' shown prominently on company profile pages, and wants it resistant to a known gaming pattern: some HR teams organize internal campaigns urging employees to post positive reviews all at once, right before a scheduled score recalculation, temporarily inflating the average rating with a burst of solicited, less-candid reviews.",
+    "description": "Which candidate scoring design is most resistant to this kind of coordinated, solicited review burst?",
+    "options": [
+      "Score based on average rating alone, recalculated weekly, so any coordinated burst is quickly incorporated and reflected transparently.",
+      "Score based on average rating from reviews spread across a rolling 12-month window, weighted so no single week can contribute more than a small, capped share of the total.",
+      "Score based on total review count alone, since a company that solicits more reviews is at least generating more employee engagement with the platform.",
+      "Score based on average rating, but exclude reviews submitted during any week where review volume spikes more than 3x the company's typical weekly rate."
+    ],
+    "correct_option": 1,
+    "explanation": "Option B is correct: capping how much any single week can contribute to a rolling average directly neutralizes the exact mechanic being exploited, a coordinated burst timed right before a recalculation. Even if HR successfully organizes a large wave of reviews in one week, that wave's weight in the score is bounded, so its influence on the trust score is limited regardless of how big the burst gets, while genuine, steadily-arriving reviews across the year continue to carry their normal weight. Option A's weekly recalculation on a simple average does the opposite of resisting the gaming pattern, a well-timed burst has maximum, undiluted influence on a metric recalculated right after it lands, which is precisely the vulnerability described. Option C rewards review volume directly, which is exactly what a solicitation campaign is designed to produce, more reviews, regardless of whether they're candid or coordinated, so it doesn't resist the gaming pattern, it directly rewards it. Option D's spike-detection threshold sounds targeted, but a coordinated campaign can be timed and paced to stay under a 3x threshold, spreading solicited reviews across two or three weeks instead of one, defeating a single-week volume trigger while still achieving the same inflated result.",
+    "hints": [
+      "Ask what a coordinated review campaign is actually capable of controlling, timing and volume, and whether each design still lets that control translate into an outsized score effect.",
+      "A score resists a timed burst when no single short window, however large, can dominate the number on its own."
+    ],
+    "concepts": [
+      "METRIC GAMING & ROBUSTNESS"
+    ]
+  },
+  {
+    "id": 103066,
+    "order": 66,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "parent_id": 103065,
+    "follow_up_dimension": "abstraction_pivot",
+    "title": "Generalizing the vulnerability beyond Glassdoor, and beyond employer reviews",
+    "scenario_context": "Having designed a burst-resistant version of the Employer Trust Score, Glassdoor's leadership asks the team to generalize the finding: across any platform that publishes a trust or reputation score built from user-submitted signals, not just Glassdoor, what class of design is inherently vulnerable to the same coordinated-burst attack?",
+    "description": "Which generalization correctly identifies the vulnerable class?",
+    "options": [
+      "Any score built from a time-unweighted aggregate of user-submitted signals is vulnerable, since a large, well-timed burst can dominate a total that treats every contribution equally.",
+      "Only scores specifically about employer reputation are vulnerable, since employees are the only population with enough shared incentive to coordinate a submission burst.",
+      "Any score that updates in real time is inherently ungameable, since real-time updates make coordinated timing pointless.",
+      "The vulnerability is specific to review-based platforms; scores built from behavioral data, like purchase history, don't share this risk."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A is correct: the actual mechanism exposed by the Glassdoor case is structural, not employer-specific, any reputation score that aggregates submitted signals without bounding how much a short, concentrated window can contribute treats a coordinated burst the same as organic, spread-out contributions, and organic contributions have no coordination advantage while a motivated party's burst does. That structural gap, not anything unique to employee reviews, is what makes a design vulnerable, and it would apply identically to product reviews, ratings platforms, or any other submitted-signal reputation system built the same way. Option B narrows the vulnerability to employer reputation specifically, but nothing about the mechanism, a large coordinated submission wave dominating an unweighted aggregate, is unique to employees, any population with a shared incentive to coordinate, sellers on a marketplace, app developers, could exploit the identical structural gap. Option C gets the direction backwards, real-time updating is what makes a burst's timing most effective, not least, since the burst gets reflected in the score before it can be diluted by the normal, steady flow of unrelated future signals. Option D assumes behavioral data is immune, but coordinated behavior, a group deliberately manufacturing a batch of purchases or actions at a chosen moment, can dominate a behavioral aggregate through the same unweighted-time-window gap, the underlying vulnerability is about how the aggregate treats time and volume, not about what kind of signal is being aggregated.",
+    "hints": [
+      "Ask what specifically made the Glassdoor coordinated-burst exploit work, and whether that mechanism depends on anything unique to employee reviews specifically.",
+      "The vulnerability lives in how an aggregate treats timing and volume, not in what kind of signal, review, rating, behavior, is being aggregated. Which option names that general structural property?"
+    ],
+    "concepts": [
+      "PRODUCT HEALTH & STRATEGIC TRADE-OFFS",
+      "METRIC GAMING & ROBUSTNESS"
+    ]
+  },
+  {
+    "id": 103067,
+    "order": 67,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "parent_id": 103065,
+    "follow_up_dimension": "stakeholder_pivot",
+    "title": "Sales objects — new customers can't move the score fast enough anymore",
+    "scenario_context": "Glassdoor's sales team objects to the burst-resistant design: they routinely encourage newly-onboarded employer customers to run a legitimate, above-board campaign asking real employees for honest reviews in their first month, and the capped rolling-window design means even a genuine, well-intentioned early push from a new customer won't move their score quickly, which the sales team says makes the product a harder sell to onboard.",
+    "description": "What's the most defensible response to the sales team's concern?",
+    "options": [
+      "Remove the rolling-window cap for the first 90 days of any new employer's account, since new customers haven't had time to accumulate an organic review history yet.",
+      "Reject the sales team's concern entirely — a review score that moves quickly for anyone is definitionally gameable, and no exception should exist.",
+      "Keep the general design uncapped-for-everyone, since a slower-moving score for new customers is an acceptable cost of closing the coordinated-burst hole for the whole platform.",
+      "Give sales team members visibility into projected score movement so they can set new-customer expectations accurately, without changing the underlying scoring mechanics themselves."
+    ],
+    "correct_option": 3,
+    "explanation": "Option D is correct: the sales team's actual problem is an expectations and communication gap, not a flaw in the scoring design itself, a new customer's genuine early review push still counts and still moves the score, it just moves it at the same bounded rate the design intentionally applies to everyone, and giving sales a clear, honest way to set that expectation solves their onboarding-pitch problem without reopening the exact vulnerability the redesign closed. Option A creates a new-customer exception that recreates precisely the hole just fixed, a coordinated burst timed within a new account's first 90 days would be just as effective as the original gaming pattern, an adversarial party only needs to time their account's life stage to exploit it. Option B dismisses a real, legitimate business concern, sales does have an actual onboarding friction point worth addressing, without offering any path to address it, treating every accommodation as automatically illegitimate isn't itself a principled distinction from the coordinated-burst case. Option C accepts the trade-off exists but proposes no actual resolution for the sales team's stated problem, leaving the friction unaddressed when a lower-cost fix, better expectation-setting, is available.",
+    "hints": [
+      "Ask whether the sales team's actual problem is that the scoring design is wrong, or that nobody's told them clearly how it behaves for a new customer.",
+      "A fix that reopens the exact vulnerability the redesign was built to close isn't a real fix — check whether any proposed accommodation could be exploited the same way as the original gaming pattern."
+    ],
+    "concepts": [
+      "CONFLICTING-METRIC & TRADE-OFF JUDGMENT",
+      "METRIC GAMING & ROBUSTNESS"
+    ]
+  },
+  {
+    "id": 103068,
+    "order": 68,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "follow_ups": [
+      103069,
+      103070
+    ],
+    "title": "Behance's Discover feed rebuild — engagement is up, exposure is collapsing onto a shrinking pool of creators",
+    "scenario_context": "Adobe's Behance rebuilds its Discover feed ranking to optimize directly for session dwell time and Appreciates (its like mechanic) instead of recency. Post-launch, aggregate dwell time per session is up 14% and Appreciates per session are up 9%, but a portfolio-level breakdown shows the top 1% most-followed creators now capture 58% of all Discover impressions, up from 35% before the change, while creators who joined in the past six months see Discover-driven profile views fall by more than 80%, even for portfolios matching the historical quality bar for featured work. Leadership, pointing to the aggregate engagement numbers, wants to call the redesign a clear win and ship to 100%.",
+    "description": "At the strategic, portfolio level, what's the most defensible way to evaluate whether this redesign is actually a win?",
+    "options": [
+      "Revert Discover to a strictly chronological feed with no engagement-based ranking at all, since any signal built from follows or past Appreciates will eventually reproduce this same concentration.",
+      "Reframe success around the number of distinct creators who receive at least one Appreciate that week, since a wider spread of appreciation reflects a healthier community than raw dwell time alone.",
+      "Ship as planned — a ranking model that surfaces already-popular work more often is simply reflecting quality signal accumulated through follows and past Appreciates, not a flaw to second-guess.",
+      "Pair the engagement gain with a guardrail on emerging-creator reach — aggregate dwell time and Appreciates rising isn't success on its own if new work is getting harder to find on merit."
+    ],
+    "correct_option": 3,
+    "explanation": "Option D is correct: the aggregate numbers describe what happened to the average session, not to the platform's supply side, and Behance's actual differentiator, the reason a creator posts here instead of just building a following on a general social feed, is the promise that quality work can still get discovered on its own merit. A redesign that lifts dwell time and Appreciates while collapsing exposure for quality-matched new creators by more than 80% is trading away exactly that promise, so declaring the launch a win on the aggregate numbers alone treats a structural supply-side cost as if it doesn't exist. The defensible read pairs the engagement gain with an explicit guardrail on emerging-creator reach before calling this a strategic success, not after the concentration has already hollowed out the pipeline of new creators the platform depends on long-term. Option A swings to the opposite extreme: removing engagement-based ranking entirely would also remove the one thing that makes Discover useful as a discovery tool in the first place, a purely chronological feed drowns quality-matched new work in the full, undifferentiated volume of everything else newly posted, which doesn't actually help the emerging creators it's meant to protect. Option B sounds like it addresses the equity concern but sets a bar so low, one single Appreciate in a week, that it could be satisfied by a stray, incidental like while a creator's real Discover exposure stays collapsed; it doesn't measure or gate the actual concentration mechanism the scenario describes. Option C takes the model's own output as self-justifying, but the scenario already rules out the 'it's just quality winning' explanation: creators posting work that matches the historical bar for featured placement are still nearly disappearing from Discover, which means the concentration is coming from an accumulated-following advantage the ranking amplifies, not from a fresh read of each post's quality.",
+    "hints": [
+      "Two different things moved here: what happened to the average session, and what happened to the distribution of exposure across creators. Check whether the first can look great while the second quietly breaks something the platform depends on.",
+      "One option treats 'popularity concentrated because of the ranking' and 'popularity concentrated because of quality' as the same explanation. The scenario already gives you evidence to tell those two apart, look for it."
+    ],
+    "concepts": [
+      "PRODUCT HEALTH & STRATEGIC TRADE-OFFS"
+    ]
+  },
+  {
+    "id": 103069,
+    "order": 69,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "parent_id": 103068,
+    "follow_up_dimension": "ambiguity_pivot",
+    "title": "Define 'findable on merit' — leadership isn't giving you one",
+    "scenario_context": "The team adopts the paired-guardrail approach, but leadership pushes back in the design review: 'You keep saying new work should stay findable on merit. Define exactly what that means as something we can track. I'm not giving you a definition, that's your job to propose and defend.'",
+    "description": "Which proposed operational definition of 'findable on merit' best translates the strategic goal into something the team can actually measure?",
+    "options": [
+      "Median Discover impressions per quality-score unit for new creators, controlling for the poster's existing follower count.",
+      "Average number of Appreciates a new creator's most recent project receives within its first 24 hours after posting.",
+      "Total Discover impressions delivered to every account created in the past six months, summed across the entire cohort.",
+      "Number of new creators who land a recruiter or brand inquiry through their Behance profile within their first month of joining."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A is correct: 'findable on merit' only means something measurable if the definition explicitly separates the two things currently tangled together, how good a project is and how many followers its creator already has, and this is the only option built to do that. Normalizing a new creator's impressions by an independent quality score while controlling for follower count directly tests whether a quality-matched newcomer is actually getting seen, which is exactly the question the redesign's own data left open. It's also something the team can log today: an independent quality score, a curator or peer-review rating, already exists or is buildable, follower count is already tracked, and Discover impressions are already logged per project. Option B measures Appreciates, but Appreciates are themselves downstream of exposure, and exposure is downstream of follower count under the current ranking, so a creator who already has an established following will out-score a quality-matched newcomer on this metric for the same reason they out-score them on raw impressions, it inherits the exact contamination the definition is supposed to isolate. Option C sums impressions across an entire cohort of new accounts, which rises automatically as more people sign up and post more, whether or not any individual quality-matched newcomer's odds of being seen have improved at all, a metric that moves with signup volume isn't measuring findability. Option D points at a real, desirable outcome, but a recruiter or brand inquiry is rare, slow to arrive, and shaped by hiring demand and channels far outside Discover's ranking, too lagging and confounded to function as a trackable operational metric for a specific feed redesign.",
+    "hints": [
+      "The term needs to separate two things that are currently tangled together in the data you already have, how good a piece of work is, and how many followers its creator already has. Which candidate actually isolates one from the other?",
+      "A good operational definition should move independently of signup volume and independently of a creator's pre-existing following. Check which candidates would rise for reasons that have nothing to do with an individual project actually being found."
+    ],
+    "concepts": [
+      "METRIC SELECTION & GOAL TRANSLATION"
+    ]
+  },
+  {
+    "id": 103070,
+    "order": 70,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "parent_id": 103068,
+    "follow_up_dimension": "stakeholder_pivot",
+    "title": "Partnerships team's top-creator exposure falls as designed — defend the trade-off",
+    "scenario_context": "Behance's Creative Partnerships team, which manages brand-sponsorship deals built around the platform's most-followed creators, reports that Discover impressions for their top-tier partner creators have fallen roughly 15% since the reach guardrail shipped, exactly the reallocation the guardrail was designed to produce, and the partnerships lead is asking leadership to roll it back given the sponsorship revenue tied to those creators' visibility.",
+    "description": "What's the most defensible way to frame this trade-off for leadership?",
+    "options": [
+      "Roll back the guardrail — sponsorship revenue tied to top-tier creator visibility is Behance's most direct monetization lever, and a strategic guardrail shouldn't threaten it.",
+      "Name the trade-off directly — the reallocation was the guardrail's intended mechanism, and rising quality-normalized newcomer reach shows it's working as designed.",
+      "Reject the partnerships team's concern outright — once a strategic guardrail is adopted, revenue impact on any single stakeholder team shouldn't factor into the conversation at all.",
+      "Redefine success around top-tier partner-creator impressions going forward, since that's a more concrete, revenue-relevant number than an abstract reach guardrail."
+    ],
+    "correct_option": 1,
+    "explanation": "Option B is correct: this isn't a surprising cost that appeared after the fact, it's the direct, mechanical result of the exact reallocation the guardrail was built to produce, so the conversation with the partnerships team should start by naming that this trade-off was already implicit in adopting the guardrail in the first place. The fact that quality-normalized reach for newcomers is rising is the evidence that matters here: it shows the guardrail is doing precisely what it was designed to do, and citing that alongside the partnerships team's number keeps the decision grounded in the trade-off leadership already chose, rather than re-litigating it every time one side of it becomes visible to a stakeholder. Option A treats the partnerships team's revenue concern as automatically decisive and rolls back a guardrail that was adopted deliberately, without weighing that the guardrail's entire purpose was to accept exactly this kind of reallocation. Option C swings to the opposite extreme, refusing to weigh a real, legitimate business concern at all once a guardrail exists, which isn't more rigorous than deferring to it, it's just as one-sided in the other direction. Option D proposes replacing the very signal the guardrail was designed to move, quality-normalized newcomer reach, with the number the reallocation was intentionally designed to reduce, which would quietly undo the strategic decision under stakeholder pressure rather than defend it.",
+    "hints": [
+      "Ask whether the partnerships team's number falling is a surprising side effect, or something that was always the direct, mechanical consequence of the guardrail leadership already chose to adopt.",
+      "One metric falling while another rises might be exactly the evidence the trade-off is working as intended, not a sign that something has gone wrong. Which metric is that here, and what does its movement actually tell you?"
+    ],
+    "concepts": [
+      "CONFLICTING-METRIC & TRADE-OFF JUDGMENT",
+      "PRODUCT HEALTH & STRATEGIC TRADE-OFFS"
+    ]
+  },
+  {
+    "id": 103071,
+    "order": 71,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "follow_ups": [
+      103072,
+      103073
+    ],
+    "title": "Walmart's grocery pickup on-time rate drops during a holiday, a pilot app rolls out the same week",
+    "scenario_context": "Walmart's grocery pickup on-time rate (orders ready within the promised window) fell from 93% to 86% over the past three weeks, during the week of a major holiday. Two candidate explanations are already on the table: last year showed a comparable seasonal dip during the same holiday week, 93% to 87%, consistent with higher order volume straining staffing. Separately, a subset of stores began piloting a new in-store picking app three weeks ago, and for privacy reasons tied to a new data-handling agreement with the app vendor, individual store-level pilot participation isn't visible in the standard company-wide dashboard the team is using.",
+    "description": "Given a recurring seasonal pattern, a plausible new-tool cause, and a constraint on what the data can currently show, what's the most defensible first move?",
+    "options": [
+      "Request store-level pilot-participation data through an approved channel, so the picking-app hypothesis can actually be tested against the seasonal one.",
+      "Accept the seasonal explanation as sufficient, since a comparable dip happened last year during the same holiday week, and move on without further investigation.",
+      "Recommend pausing the picking-app pilot immediately as a precaution, since a new tool coinciding with a metric drop is reason enough to halt it pending investigation.",
+      "Wait until next month's dashboard refresh, when the data-handling agreement's initial restriction period is expected to lift, before doing anything further."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A is correct: two real, plausible explanations are on the table, and the standard dashboard's current blind spot, not seeing which stores are piloting the new app, is exactly what's preventing the team from testing one of them, so the defensible move is getting that specific, narrowly-scoped data through a channel that still respects the agreement, rather than either accepting the untested seasonal story or guessing. Once pilot-store participation is visible, the team can directly compare pilot-store on-time rates against non-pilot stores' rates this same holiday week, which would cleanly separate a tool-driven effect from a seasonal one that should hit every store regardless of pilot status. Option B accepts a real, plausible pattern as sufficient without ruling out the second real, plausible cause sitting right alongside it, especially when a specific, checkable comparison, pilot versus non-pilot stores, is available if the data constraint is worked around properly. Option C jumps to an operational action, pausing the pilot, before confirming whether the pilot is actually connected to the drop at all, a bigger and more disruptive move than the evidence yet supports, and one that a proper comparison could avoid making unnecessarily. Option D treats the data constraint as fixed and waits passively for it to lift on its own timeline, when the more defensible path is actively requesting the specific data through an approved channel now, rather than letting an investigation stall on an assumed timeline.",
+    "hints": [
+      "Two real explanations are on the table, and one of them can't currently be tested because of a specific data visibility gap. Ask whether that gap can be worked around properly rather than accepted as a dead end.",
+      "The comparison that would actually separate a seasonal cause from a tool-driven one is available if the right data becomes visible. What's the responsible way to get access to it?"
+    ],
+    "concepts": [
+      "METRIC MOVEMENT DIAGNOSIS"
+    ]
+  },
+  {
+    "id": 103072,
+    "order": 72,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "parent_id": 103071,
+    "follow_up_dimension": "edge_case_pivot",
+    "title": "The pilot effect traces to employees on the app for under two weeks",
+    "scenario_context": "The requested pilot data comes back: on-time rate at pilot stores is only lower specifically on shifts staffed by employees with less than two weeks of tenure using the new picking app; pilot-store shifts staffed by employees with more tenure on the app show on-time rates matching non-pilot stores. Fewer than 15% of pilot-store shifts fall into this new-employee category.",
+    "description": "Does this finding change the read on the picking-app hypothesis, and how?",
+    "options": [
+      "No — the pilot app is still implicated in the drop regardless of which employees are using it, since the app was the change introduced at pilot stores.",
+      "No — a sub-population under 15% of shifts is too small to be meaningful, and the seasonal explanation should be treated as the primary cause instead.",
+      "Yes — this narrows the cause to a specific, small sub-population, new employees still learning the app, pointing toward a training gap, not a flaw in the tool.",
+      "Yes — this proves the app itself is fine, and the entire on-time rate drop, including at non-pilot stores, should now be attributed to the holiday season alone."
+    ],
+    "correct_option": 2,
+    "explanation": "Option C is correct: the finding doesn't clear the app of involvement, it sharpens exactly what about the app rollout is responsible, tenured users of the same app perform identically to non-pilot stores, so the tool itself isn't structurally slower or worse, the drop is concentrated in a specific, small, identifiable transitional population still climbing the learning curve. That's a materially different, more actionable finding than 'the app caused a drop,' it points at a training or ramp-up gap to fix, not a reason to reconsider the tool's design. Option A treats the app as implicated in some undifferentiated way, ignoring that the data just showed a clean split, tenured-user shifts are unaffected, which is exactly the kind of segment-level finding that should update the read rather than being waved off as irrelevant. Option B dismisses a clean, mechanistically-sensible segment finding because the affected population's share is small, but a small population can still be the entire explanation for a metric movement when its own internal rate is meaningfully different, and here it explains the tool-related portion precisely. Option D draws a conclusion the finding doesn't support at all, showing that new-app-users specifically underperform says nothing about whether the holiday's seasonal effect on non-pilot stores was real or not, those are separate populations experiencing separate causes.",
+    "hints": [
+      "The affected population is both small and specific. Ask what that combination, a clean split between new and tenured users of the same tool, actually tells you about where the problem lives.",
+      "A finding this precisely scoped, unaffected for one group, affected for a narrow, identifiable other group, usually points toward a specific fix rather than toward abandoning the broader conclusion."
+    ],
+    "concepts": [
+      "SEGMENTATION & DECOMPOSITION REASONING"
+    ]
+  },
+  {
+    "id": 103073,
+    "order": 73,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "parent_id": 103071,
+    "follow_up_dimension": "data_quality_pivot",
+    "title": "A logging bug hits exactly the new-employee segment already flagged",
+    "scenario_context": "The picking-app engineering team reports a separate finding: for the exact three-week window in question, a bug caused the app to mis-log shift-start times specifically for employees on their first two weeks of app access, some of their early shift time was recorded as starting later than it actually did, which would make their on-time performance look worse than it actually was, independent of any real training-related slowness.",
+    "description": "Given this new information, what's the most defensible next step before concluding the training-gap explanation is correct?",
+    "options": [
+      "Conclude the training-gap explanation was wrong all along, and that the entire new-employee effect is fully explained by the logging bug instead.",
+      "Since both a training gap and a logging bug are now plausible, average the two effects together to produce a single, blended corrected estimate.",
+      "Disregard the new-employee segment finding entirely now that a data quality issue has been found in it, and revert to treating the seasonal explanation as primary.",
+      "Recompute new-employee on-time performance using an independent timestamp source unaffected by the bug, to see how much of the gap remains once the logging error is corrected for."
+    ],
+    "correct_option": 3,
+    "explanation": "Option D is correct: a confirmed logging bug affecting exactly the population already flagged as low-performing means that population's numbers can no longer be trusted at face value, but it doesn't mean the underlying training-gap explanation is wrong, it means the two explanations, real slowness and measurement error, need to be separated using a source the bug doesn't touch. Recomputing the affected shifts' actual performance from an independent timestamp source is the direct way to find out how much of the observed gap survives correction, which is the only way to know whether a real training issue remains once the bug's contribution is removed. Option A jumps to the opposite extreme, declaring the bug fully explains the effect with no verification that it does, exactly the kind of unearned confidence a single plausible new explanation shouldn't get without checking the corrected numbers. Option B's averaging approach treats two explanations of unknown relative size as if splitting the difference were itself a form of rigor, but nothing supports a 50/50 split specifically, the actual answer requires recomputing the real numbers, not blending unverified estimates. Option C discards a segment finding that's still real, new employees experiencing a logging bug doesn't mean new employees aren't also slower on a new tool, it discards a legitimate lead because part of its measurement turned out to be compromised, rather than fixing the measurement and checking what remains.",
+    "hints": [
+      "A logging bug affecting the exact population already flagged doesn't mean that population's underlying story is now fully explained, it means the measurement needs to be redone with a source the bug doesn't touch.",
+      "Ask what would be left of the new-employee effect if the specific measurement error were corrected for, rather than assuming the bug either fully explains it or doesn't matter at all."
+    ],
+    "concepts": [
+      "REAL-CHANGE VS ARTIFACT",
+      "METRIC MOVEMENT DIAGNOSIS"
+    ]
+  },
+  {
+    "id": 103074,
+    "order": 74,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "follow_ups": [
+      103075,
+      103076
+    ],
+    "title": "TaskRabbit's IKEA routing — faster arrival, lower ratings, unhappy top Taskers",
+    "scenario_context": "TaskRabbit partners with IKEA to offer furniture-assembly Taskers bookable directly from IKEA's checkout flow. A change routes IKEA-sourced assembly bookings to whichever Tasker can arrive soonest, rather than the Tasker with the highest customer rating in the area. IKEA reports faster average booking-to-arrival time and higher attach-rate of assembly service at checkout. TaskRabbit's own marketplace data shows post-assembly customer ratings for IKEA-sourced jobs are meaningfully lower than for jobs booked directly through the TaskRabbit app, and top-rated Taskers report getting fewer IKEA-sourced jobs than before.",
+    "description": "What's the most defensible way to frame this three-way result?",
+    "options": [
+      "This is a clear win for the partnership — IKEA's attach-rate and arrival-speed metrics improved, and that's the commercial relationship TaskRabbit needs to protect.",
+      "This is a clear loss — customer ratings fell, so the fastest-arrival routing should revert to rating-based routing for all IKEA bookings immediately.",
+      "Name the three-way trade-off — IKEA's checkout metrics improved, but likely at the cost of job quality and top-rated Tasker satisfaction.",
+      "Reframe success around total IKEA-sourced booking volume, since that most directly reflects whether the partnership itself is working."
+    ],
+    "correct_option": 2,
+    "explanation": "Option C is correct: three different parties are experiencing three different effects here, and they're plausibly connected rather than independent, routing for speed over rating systematically deprioritizes top-rated Taskers who may not be the fastest available, which would explain both the lower post-assembly ratings and those Taskers reporting fewer IKEA jobs, at the same time it's genuinely improving the checkout-facing metrics IKEA cares about. TaskRabbit's marketplace depends on both a happy commercial partner and a trustworthy pool of highly-rated Taskers willing to keep taking jobs, so naming the trade-off between the funnel-facing win and the marketplace-quality cost is more defensible than declaring either side the full story. Option A isolates IKEA's metrics and calls the result an unqualified win, but a routing change that's measurably lowering job quality and pushing away the marketplace's best-rated supply is trading against assets, customer trust and Tasker quality, that the partnership itself ultimately depends on. Option B swings to a full reversion based on ratings alone, discarding IKEA's real, measurable gains without first checking whether a blended routing rule, weighing both speed and rating, could address the quality concern while keeping most of the speed win. Option D reframes success around booking volume, a metric not shown to be at risk in the scenario, and sidesteps the actual, already-visible tension between checkout speed and marketplace quality instead of confronting it.",
+    "hints": [
+      "Three different populations are experiencing three different things here. Ask whether they might be connected through the same routing mechanism rather than being separate stories.",
+      "IKEA's win and the marketplace's quality concern may not be independent — check whether the same choice, prioritizing speed over rating, plausibly explains both."
+    ],
+    "concepts": [
+      "CONFLICTING-METRIC & TRADE-OFF JUDGMENT",
+      "BUSINESS-MODEL METRIC FLUENCY"
+    ]
+  },
+  {
+    "id": 103075,
+    "order": 75,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "parent_id": 103074,
+    "follow_up_dimension": "business_rule_pivot",
+    "title": "IKEA is now the largest revenue partner — leadership wants the routing made permanent",
+    "scenario_context": "Leadership informs the team that IKEA has just become TaskRabbit's single largest revenue source this quarter, and given that, wants the fastest-arrival IKEA routing rule made permanent policy immediately, without further testing of a blended approach, prioritizing the newly-dominant revenue relationship over the marketplace-quality concerns raised earlier.",
+    "description": "What's the most defensible response to this instruction?",
+    "options": [
+      "Comply immediately and make fastest-arrival routing permanent, since a company should defer to its largest revenue relationship's priorities without exception.",
+      "Refuse the instruction outright, since marketplace quality should never be subordinated to a single commercial partner's metrics regardless of revenue share.",
+      "Implement the change, but present leadership with the ratings and retention data alongside the revenue context, and the risk to the IKEA relationship itself.",
+      "Delay the decision entirely and commission a six-month study before making any change to the routing rule, given how consequential the revenue relationship now is."
+    ],
+    "correct_option": 2,
+    "explanation": "Option C is correct: leadership's priority shift is a legitimate business input, IKEA's revenue importance is real and worth weighing, but the marketplace-quality risk identified earlier doesn't disappear just because a priority was reassigned, and a team's job here is making sure that risk is visible in the same conversation as the revenue rationale, not silently dropped because a decision was made above them. Surfacing that a declining pool of top-rated Taskers could eventually undermine the exact IKEA relationship being prioritized keeps the full trade-off in front of the actual decision-maker, rather than either blocking the decision or executing it blind to a risk the team already knows about. Option A complies without surfacing information leadership needs to make this call responsibly, treating deference as sufficient when the team holds specific, relevant data leadership may not have fully weighed. Option B refuses outright, but leadership does have the authority to set this priority, and outright refusal isn't a defensible move when the more useful contribution is making sure the decision-maker has the complete picture, not overriding their call unilaterally. Option D stalls a now-time-sensitive business decision with a lengthy study, when a faster path, surfacing the existing data alongside the new priority, gives leadership what they need without an unnecessary and costly delay.",
+    "hints": [
+      "Leadership has the authority to make this call, but that doesn't mean the earlier quality concern should just disappear from the conversation. Ask what the team's actual job is here.",
+      "A response that neither blocks the decision nor executes it blindly is available. What would that look like?"
+    ],
+    "concepts": [
+      "SHIP / NO-SHIP DECISION"
+    ]
+  },
+  {
+    "id": 103076,
+    "order": 76,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "parent_id": 103074,
+    "follow_up_dimension": "scale_pivot",
+    "title": "Now roll fastest-arrival routing out to 20 retail partners at once",
+    "scenario_context": "TaskRabbit is now considering rolling the fastest-arrival routing model out to 20 different retail partnerships simultaneously, not just IKEA, spanning categories from furniture to appliance installation to TV mounting, each with different typical job complexity and different customer expectations.",
+    "description": "What's the most defensible way to approach this expansion?",
+    "options": [
+      "Check whether the quality-versus-speed trade-off from IKEA holds across partner categories — a complex install may be far more sensitive to a rushed Tasker than a simple task.",
+      "Apply the same fastest-arrival routing rule uniformly across all 20 partners, since the IKEA result already validated the approach and consistency simplifies operations.",
+      "Apply fastest-arrival routing only to the 5 largest partners by revenue, and leave the remaining 15 on rating-based routing, using partner size alone as the deciding factor.",
+      "Delay the multi-partner rollout entirely until the IKEA routing question itself is fully resolved, since expanding before that decision is finalized would compound an unresolved risk."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A is correct: the IKEA finding was specific to one category of job, furniture assembly, and scaling to 20 categorically different partner types means the same trade-off, speed versus quality, could have very different magnitudes depending on how much a task's difficulty amplifies the cost of routing to a less experienced or lower-rated Tasker. A single uniform rule assumes the IKEA trade-off generalizes evenly across job types with very different complexity and error tolerance, which is exactly the assumption that needs checking before scaling a routing model 20x, rather than after. Option B extrapolates one category's result to nineteen others with different job characteristics, on the assumption that validation in one context transfers cleanly to every other, which is the exact leap a scale-up decision shouldn't make without checking. Option C uses partner revenue size as the sole basis for which routing rule applies, a factor that has no stated connection to which categories are actually more sensitive to the speed-versus-quality trade-off, a smaller partner in a complex, error-prone category could be more at risk than a larger one in a simple category. Option D stalls the entire expansion on resolving a single-partner decision, when the more useful move is actually running the category-sensitivity check this option describes, which can proceed in parallel with, and inform, the IKEA-specific decision rather than blocking on it.",
+    "hints": [
+      "The original trade-off was observed in one specific job category. Ask whether the same trade-off would look identical in a categorically different, more complex kind of task.",
+      "Scaling a rule to many new contexts at once is different from scaling the same context to more volume. What would you want to check before assuming one category's result transfers to nineteen others?"
+    ],
+    "concepts": [
+      "SEGMENTATION & DECOMPOSITION REASONING"
+    ]
+  },
+  {
+    "id": 103077,
+    "order": 77,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "follow_ups": [
+      103078,
+      103079
+    ],
+    "title": "G2's Satisfaction Score — designing against a fake-account review campaign",
+    "scenario_context": "G2 ranks B2B software vendors on category pages partly by a 'Satisfaction Score' built from review star ratings. A vendor's competitor discovers that G2 lets any verified user submit a review, and starts a coordinated campaign where its own sales team creates numerous fake small-business accounts to submit glowing reviews of their own product and middling reviews of the rival vendor's product, timed right before the quarterly category-page refresh.",
+    "description": "Which candidate change to G2's review system would make the Satisfaction Score most resistant to this kind of coordinated fake-account campaign?",
+    "options": [
+      "Require reviews to disclose the reviewer's job title and company name, displayed publicly on the review, to discourage obviously fake submissions.",
+      "Increase the minimum review length requirement to 150 words, reasoning that fake reviews are typically short and low-effort.",
+      "Allow vendors to publicly flag and dispute any review they believe is fake, removing disputed reviews from the score pending investigation.",
+      "Weight reviews by an account-trust signal, verified email domain and account age, so a freshly-created account contributes little at first."
+    ],
+    "correct_option": 3,
+    "explanation": "Option D is correct: the campaign's core capability is creating accounts on demand, so the fix that actually resists it is making a fresh account's influence depend on independently-verifiable signals that accumulate over time and can't be manufactured at the moment of review submission, a domain-verified email, account age, and unrelated prior activity are all things a same-day fake account can't fake into existing history. This forces the attacker to either wait out a long accumulation period, defeating the point of a timed campaign, or accept that their freshly-made accounts barely move the score at all. Option A's disclosure requirement is easily satisfied by a sales team fabricating job titles and company names for accounts they already control, disclosure without independent verification doesn't cost the attacker anything real. Option B's length minimum can be cleared by a coordinated team simply writing longer scripted reviews, a sales team running an organized campaign has every incentive and capability to hit a word count, length alone doesn't require any of the independent history the account-trust approach demands. Option C's dispute mechanism only works after fake reviews are already live and influencing the score during the dispute window, and it puts the burden on vendors to catch and flag each fake review individually rather than making the scoring system itself resistant to the campaign in the first place.",
+    "hints": [
+      "Ask what a coordinated fake-account campaign can create on demand versus what it structurally can't fake in the moment, an account's own history.",
+      "A scoring system resists a coordinated account campaign when a fresh account's influence depends on something that takes real time or independent verification to accumulate, not something that can be typed in at signup."
+    ],
+    "concepts": [
+      "METRIC GAMING & ROBUSTNESS"
+    ]
+  },
+  {
+    "id": 103078,
+    "order": 78,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "parent_id": 103077,
+    "follow_up_dimension": "business_rule_pivot",
+    "title": "Legal mandates a stricter 'verified reviewer' bar for compliance",
+    "scenario_context": "G2's legal team, responding to a regulatory inquiry about review authenticity in software rating platforms, mandates a stricter definition of a 'verified reviewer': going forward, verification requires proof of an active paid software license for the product being reviewed, not just a verified company email and account history. This new bar is significantly harder to meet than the account-trust signal the team had designed.",
+    "description": "Given this new, stricter compliance requirement, what's the most defensible way to preserve what the Satisfaction Score is meant to represent?",
+    "options": [
+      "Recompute the Satisfaction Score using only reviews meeting the new, stricter bar, and clearly disclose that the counted population, and the score's meaning, has changed.",
+      "Keep computing the score from all reviews as before, and simply add a separate 'compliance-verified' badge next to reviews that also meet the new, stricter license-proof bar.",
+      "Apply the new bar going forward only, while continuing to display historical scores computed under the old bar without any note that the underlying population changed.",
+      "Ask legal to loosen the new requirement back to the original account-trust signal, since the stricter bar would shrink the reviewable population too much to be practical."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A is correct: if the definition of who counts as a legitimately verified reviewer just became meaningfully stricter, the score's population changed, and a score computed under a new, narrower population isn't directly comparable to the same-named score from before, unless that discontinuity is made explicit. Recomputing under the new bar and disclosing the change keeps the Satisfaction Score meaning what G2 claims it means, reviews from people demonstrably using the product, rather than quietly blending two different populations under one continuous-looking number. Option B keeps computing the headline score from the old, looser population and treats the new, stricter verification as a cosmetic add-on, which means the number G2 actually publishes as the Satisfaction Score still doesn't reflect the compliance bar legal just mandated, defeating the purpose of the new requirement. Option C is the clearest failure here, continuing to display old-population scores without any disclosure that the definition changed creates exactly the kind of silent, undisclosed discontinuity that makes a metric's history misleading to compare across periods. Option D treats the compliance requirement as a negotiable inconvenience rather than a mandate to satisfy, pushing back to preserve the original design doesn't engage with the actual constraint that's now in place for a real regulatory reason.",
+    "hints": [
+      "A verification bar becoming stricter changes which reviews get counted at all. Ask whether the score computed under the new population means the same thing as the score computed under the old one.",
+      "Silently keeping a metric's name the same while its underlying population changes is a specific kind of integrity problem. What would need to be disclosed to avoid it?"
+    ],
+    "concepts": [
+      "METRIC DEFINITION INTEGRITY"
+    ]
+  },
+  {
+    "id": 103079,
+    "order": 79,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "parent_id": 103077,
+    "follow_up_dimension": "edge_case_pivot",
+    "title": "For small vendors, the verified population is just a handful of reviews",
+    "scenario_context": "After implementing the license-verified scoring, G2 finds that for small and early-stage software vendors, as opposed to large, established ones, the license-verified reviewer population is often fewer than 5 reviews total, since these vendors have far fewer paying customers overall, making their Satisfaction Scores statistically noisy and prone to swinging heavily based on just one or two reviews.",
+    "description": "What's the most defensible strategic response to this finding?",
+    "options": [
+      "Apply the same license-verified scoring uniformly to every vendor regardless of review count, since consistency in methodology matters more than any single vendor's score volatility.",
+      "Remove Satisfaction Scores for any vendor below a minimum review-count threshold, and label those pages as having insufficient data for a reliable score.",
+      "Exclude small and early-stage vendors from G2's category pages entirely, since a platform's credibility depends on only showing reliably-measured vendors.",
+      "Lower the verification bar specifically for small vendors, allowing account-trust-based reviews for that population while keeping the stricter license-verified bar for large vendors."
+    ],
+    "correct_option": 1,
+    "explanation": "Option B is correct: a single-digit review count producing a headline score creates a specific, portfolio-level integrity problem, that score isn't statistically meaningful, and displaying it with the same visual confidence as a large vendor's score built from hundreds of reviews misrepresents what's actually known about the small vendor. Explicitly labeling a page as having insufficient data for a reliable score is honest about the limitation while still keeping the vendor visible and discoverable on the platform, which is a defensible way to handle a real measurement constraint without either hiding it or pretending it doesn't exist. Option A treats methodological consistency as the only value at stake, but a scoring approach that's technically uniform while producing wildly different reliability across vendors isn't actually serving users consistently, a 4.8 built from 2 reviews and a 4.8 built from 400 aren't conveying the same thing even though the formula is identical. Option C solves the reliability problem by removing small and early-stage vendors from the platform entirely, a much larger and more punitive response than the actual problem, unreliable scoring, calls for, and it cuts off exactly the vendors who most need early discovery and legitimate reviews to grow. Option D reopens the exact compliance gap legal's stricter bar was designed to close, but only for one population, creating an inconsistent standard where the vendors least able to withstand a gaming attempt, the smallest ones with the fewest reviews to dilute a fake one, get the weaker verification bar.",
+    "hints": [
+      "A score built from a very small number of reviews carries a different kind of risk than a low score itself, ask what that specific risk is and whether displaying the number the same way as a well-supported score is honest.",
+      "The problem here isn't that small vendors are performing badly, it's that the score itself may not be a reliable signal at all for them. What response addresses that specific gap without over-correcting?"
+    ],
+    "concepts": [
+      "PRODUCT HEALTH & STRATEGIC TRADE-OFFS"
+    ]
   }
 ]
