@@ -11280,7 +11280,7 @@ select {
   font: inherit;
   cursor: pointer;
   color: var(--accent);
-  font-weight: 600;
+  font-weight: 400;
   text-decoration: underline;
   white-space: nowrap;
 }
@@ -11304,7 +11304,7 @@ select {
   font: inherit;
   cursor: pointer;
   color: var(--accent);
-  font-weight: 600;
+  font-weight: 400;
   text-decoration: underline;
   white-space: nowrap;
 }
