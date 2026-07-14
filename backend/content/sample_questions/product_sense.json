@@ -148,5 +148,81 @@
     "concepts": [
       "METRIC DEFINITION INTEGRITY"
     ]
+  },
+  {
+    "id": 1031,
+    "order": 1,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "hard",
+    "title": "Poshmark's Posh Ambassador badge — designing a threshold a share-bot can't clear",
+    "scenario_context": "Poshmark's 'Posh Ambassador' badge grants a search-visibility boost to sellers who meet daily activity thresholds. The current qualifying metric is items shared per day — sellers can share their own or others' listings to their followers, Poshmark's core social mechanic. Growth has found sellers running third-party bot tools that auto-share hundreds of stale, unsold listings a day purely to keep the badge, with no real shop activity behind it. The team is redesigning the formula to survive a seller actively trying to keep the badge without running a healthy shop.",
+    "description": "Which candidate qualifying formula is most robust against that kind of gaming?",
+    "options": [
+      "Total items shared per day, unchanged, since sharing is Poshmark's core community mechanic and reflects genuine engagement.",
+      "Total items shared per day, but require shares to spread across at least 20 distinct minutes, filtering out mass-sharing sessions.",
+      "A blend of items sold per month, average days-to-sale, and shares capped at a modest daily ceiling so volume stops adding value.",
+      "Total number of Poshmark followers, since more followers reflects a larger, more engaged community built over time."
+    ],
+    "correct_option": 2,
+    "explanation": "Option C is correct: it ties the badge to outcomes a bot campaign cannot manufacture, items actually sold and how quickly a seller's own inventory moves, while capping the one lever a script can pull for free, share volume, so pushing shares past the ceiling stops helping at all. A seller who wants the badge now has to run a shop that actually sells and stays fresh, not just fire off shares all day. Option A leaves the exact vulnerability untouched: share count is entirely within a seller's control, including via automation, so nothing about the gaming strategy changes. Option B's minute-spacing rule sounds like a real technical countermeasure, but it only raises the bar for how a bot is configured, spacing automated shares across the day is a trivial adjustment for anyone already running a share bot, not a genuine behavioral requirement. Option D rewards accumulated follower count, a number that only grows and is itself purchasable or gameable through follow-for-follow schemes, and it says nothing about whether a seller is currently running a healthy, active shop.",
+    "hints": [
+      "Ask what a seller could script or automate for free, at scale, purely to hit the threshold — and whether each candidate still rewards that.",
+      "A qualifying metric resists gaming when it requires something a bot can't fake: an independent buyer actually completing a purchase."
+    ],
+    "concepts": [
+      "METRIC GAMING & ROBUSTNESS"
+    ]
+  },
+  {
+    "id": 1032,
+    "order": 2,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "hard",
+    "title": "YouTube Kids' high-energy recommendation lift — is more watch time actually the win?",
+    "scenario_context": "YouTube Kids tests a recommendation change that raises average watch time per session by 20% by surfacing more 'high-energy' content — bright colors, fast cuts, unpredictable rewards — a format style correlated with longer sessions industry-wide. The company's own child-development advisors flag that this content pattern is associated in published research with attention and self-regulation difficulties in young children, though no causal study has been run on YouTube Kids' own users specifically. Leadership must decide whether to ship the change broadly.",
+    "description": "Given the tension between a strong engagement number and what's driving it, what's the most defensible strategic call?",
+    "options": [
+      "Ship broadly — a 20% watch-time lift is a meaningful win, and advisor concern without a product-specific study isn't reason enough to withhold it.",
+      "Redefine success before shipping broadly — pair the watch-time metric with a guardrail capping high-energy content's share of what gets surfaced.",
+      "Commission a full causal study on YouTube Kids' own users first, and treat the watch-time lift as inconclusive until it reports back.",
+      "Ship broadly, but add a parental control letting parents cap daily watch time, treating that as sufficient mitigation on its own."
+    ],
+    "correct_option": 1,
+    "explanation": "Option B is correct: in a children's product, 'more watch time' isn't automatically success — the goal-metric tension here is that the specific mechanism driving the lift, more high-energy, unpredictable-reward content, is the exact content pattern the company's own child-development advisors associate with attention and self-regulation risk in this audience. That doesn't require a completed causal study on YouTube Kids specifically to act on responsibly; it requires redefining what this launch's success means so that watch time is paired with a guardrail on content composition, not treated as a stand-alone win. That's the strategic, portfolio-health-level judgment: protect the thing the product actually owes its youngest users before crediting a raw engagement number. Option A treats a 20% lift as sufficient justification on its own and demands a completed, product-specific causal study as the only bar for caution, but waiting for perfect, product-specific proof before acting on a well-supported directional concern from the company's own advisors is exactly the failure mode a strategic health lens exists to catch. Option C swings to full paralysis, a year-plus wait with no interim constraint, which both delays legitimate product improvement and does nothing to limit exposure to the flagged content pattern in the meantime; a defensible interim guardrail doesn't require the study to already be finished. Option D adds a real feature, but a parental time cap is opt-in and reactive, most parents never discover or configure it, and it doesn't address the underlying question of whether the algorithm itself should be surfacing more of this specific content pattern, a structural question a settings toggle can't answer for a family that never touches it.",
+    "hints": [
+      "Ask what specifically is driving the watch-time increase, not just whether the number itself went up — the mechanism matters as much as the metric here.",
+      "The question isn't whether to prove harm before ever acting — it's what a responsible interim definition of success looks like while evidence is still incomplete."
+    ],
+    "concepts": [
+      "PRODUCT HEALTH & STRATEGIC TRADE-OFFS"
+    ]
+  },
+  {
+    "id": 1033,
+    "order": 3,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "hard",
+    "title": "Carvana's Instant Approval flow — three signals, one verdict",
+    "scenario_context": "Carvana tests an 'Instant Approval' financing flow that shows a provisional loan approval and payment estimate right after basic info entry, before the hard credit pull, aiming to raise checkout starts. Three-week test: checkout starts are up 26% in week 1 but down to 11% by week 3. The guardrail, the rate of users shown an instant approval who are then denied after the real credit pull, is up from 4% to 13% specifically on Instant-Approval checkouts. A segment cut shows the checkout-start lift is concentrated entirely among new customers with no prior credit history in Carvana's system; returning customers with an existing approved-financing history show no meaningful change.",
+    "description": "Given all three signals together, what's the most defensible call?",
+    "options": [
+      "Ship to 100% — even an 11% week-3 lift is real, and a rising denial-after-approval rate is a normal part of any pre-qualification flow.",
+      "Kill the feature outright and never retest in any form — a rising denial-after-approval rate is disqualifying on principle in a financial product.",
+      "Ship only to new customers with no prior credit history, and address the denial-rate guardrail later once there's more usage data to tune against.",
+      "Hold the rollout and don't extend as-is — tighten the pre-qualification model before testing again, given all three signals together."
+    ],
+    "correct_option": 3,
+    "explanation": "Option D is correct: three signals are compounding, and their combination is what makes this a hold, not a ship. The checkout-start lift is fading fast, a classic novelty signature, the benefit that remains is concentrated in one segment, new customers, not a broad win across the base, and the guardrail moving the wrong way is measuring the exact promise this feature makes, an instant approval that then gets reversed after the real credit check. In a financial product, telling a customer they're approved and then denying them at the final step isn't a side cost to weigh against conversion, it's evidence the pre-qualification model isn't accurate enough yet, and every reversal is a trust hit precisely to the new-customer segment the feature is supposed to be winning over. The defensible next step is tightening the pre-qualification logic so 'instant approval' means something closer to what it promises, then testing again, not extending or shipping this version. Option A treats the rising denial-after-approval rate as an unremarkable part of any pre-qualification flow, but this isn't a soft, private pre-qualification, it's a customer-facing promise that gets broken at checkout, a materially different and more damaging pattern than a typical soft-check false positive. Option B jumps to a permanent, no-retest kill, foreclosing the possibility that a more accurate pre-qualification model could deliver the same checkout-start benefit without the broken-promise pattern, a bigger commitment than the evidence calls for. Option C reapplies a segmentation-only fix, but it explicitly defers the guardrail 'until more usage data,' which means knowingly continuing to tell new customers, exactly the segment both driving the lift and bearing the rising denial rate, that they're approved when a meaningful and growing share of them aren't.",
+    "hints": [
+      "Three different signals moved here. Before treating any one of them as decisive on its own, ask what story they tell together.",
+      "One of these signals is measuring whether the feature's core promise to the customer actually holds up. Weigh what a rising version of that signal means for trust, not just for the funnel."
+    ],
+    "concepts": [
+      "SHIP / NO-SHIP DECISION",
+      "GUARDRAIL & COUNTER-METRIC REASONING"
+    ]
   }
 ]

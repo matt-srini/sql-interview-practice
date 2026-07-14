@@ -1,1 +1,606 @@
-[]
+[
+  {
+    "id": 103001,
+    "order": 1,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "hard",
+    "title": "TikTok's Creator Fund payout — designing a metric a spam team can't inflate",
+    "scenario_context": "TikTok's Creator Fund currently pays creators a share of the monthly pool based on total watch-minutes their videos generate. Growth has noticed a cluster of creators gaming this: posting dozens of near-zero-effort videos a day (reposted memes, single-frame slideshows) that autoplay generates real but shallow watch-minutes on, with no evidence viewers return for more. The team is redesigning the payout formula and wants it to survive a creator group that is actively trying to maximize payout without producing anything viewers actually value.",
+    "description": "Which candidate payout formula is most robust against that kind of adversarial optimization?",
+    "options": [
+      "Total watch-minutes generated that month, unchanged from today, since watched volume is what actually earns the ad revenue funding the pool.",
+      "Total watch-minutes divided by videos posted that month, rewarding average watch-minutes per video instead of raw volume.",
+      "Total watch-minutes weighted by 7-day return-viewer rate, plus a per-video cap so no single clip can dominate a creator's payout.",
+      "Total watch-minutes, but counting only videos at least 60 seconds long, to filter out single-frame and meme-repost formats."
+    ],
+    "correct_option": 2,
+    "explanation": "Option C is correct: pairing watch-minutes with a return-viewer requirement forces the number to depend on an action a creator cannot manufacture just by producing more or longer content — a viewer choosing to come back to that creator's profile within a week is a costlier, independent signal that spam and autoplay-driven views don't reliably produce. The per-video cap closes the other half of the gaming vector: even if one clip gets inflated through repeated posting, no single video can dominate the payout, so volume-spamming stops being a winning strategy either way. Option A leaves the exact vulnerability the team is trying to close untouched — raw watch-minutes is entirely within a creator's control through posting volume and format tricks, so nothing about a gaming team's strategy changes. Option B's per-video average sounds like it discourages spam, but autoplay means even a low-effort single-frame slideshow can accumulate a few seconds of counted watch time across a huge audience, so a determined creator can keep the average roughly flat while still multiplying total payout through sheer volume — the average doesn't require any harder-to-fake signal. Option D targets one specific format rather than the underlying incentive; a creator can trivially stretch content to clear the 60-second bar with looped or filler footage, so the fix treats the current gaming vector's symptom, not the structural fact that raw watch-minutes alone rewards volume over value.",
+    "hints": [
+      "Ask what a creator could produce for free, at scale, purely to inflate the number — and whether each candidate still rewards that.",
+      "A metric resists gaming when moving it requires an action the gaming team can't manufacture cheaply — look for the candidate that requires something from an independent party, the viewer, not just the creator."
+    ],
+    "concepts": [
+      "METRIC GAMING & ROBUSTNESS"
+    ]
+  },
+  {
+    "id": 103002,
+    "order": 2,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "hard",
+    "title": "Patreon's Creator Health Score — the composite an agency can't reverse-engineer",
+    "scenario_context": "Patreon wants a single 'Creator Health Score' to decide which creators get featured on its discovery page — meant to reflect creators genuinely building a sustainable, engaged patron base, not just creators who post the most. The team expects that whichever formula they pick, ambitious creators (or the agencies managing them) will reverse-engineer it and optimize directly for the number rather than for real patron relationships.",
+    "description": "Which candidate score is most resistant to a creator or agency optimizing directly against it, rather than genuinely building a sustainable page?",
+    "options": [
+      "A blend of patron retention over the past 3 months, average pledge amount per patron, and posts per month capped at a modest ceiling.",
+      "Total number of new patrons gained that month, since more patrons joining signals genuine interest in the creator's page.",
+      "Total posts published that month combined with total comments received across all of them that month.",
+      "Total patron count combined with total lifetime pledges received, reflecting a durable, long-running relationship with patrons."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A is correct: it forces gaming to fight itself. Inflating patron count with cheap, low-tier pledge pushes doesn't move retention if those patrons churn within weeks, and posting past the ceiling stops adding to the score entirely, so volume-spamming has no payoff once the cap is hit. To move all three inputs together, a creator has to actually retain patrons and get them to pledge at a real level — the thing the score is meant to detect. Option B rewards new patron count alone, which a low-tier pledge promotion or a one-time giveaway can inflate quickly without any requirement that those patrons stick around or pledge meaningfully. Option C rewards posting and comment volume directly, and both are entirely within a creator's control — more posts create more chances for comments, and creators can explicitly solicit low-effort comments, so a spam strategy moves this score with no genuine engagement behind it. Option D rewards accumulated patron count and lifetime pledges, a total that only grows and never reflects current disengagement — a creator who built a large base years ago and has since gone quiet would still score well, exactly the kind of stale, ungated number an adversarial optimizer would prefer to lean on rather than actually earn.",
+    "hints": [
+      "For each candidate, imagine a creator who wants to look good on paper without doing the underlying work — ask what the cheapest way to move that number would be.",
+      "A composite resists gaming when the inputs pull against each other — inflating one without the real underlying behavior should cost you on another."
+    ],
+    "concepts": [
+      "METRIC GAMING & ROBUSTNESS"
+    ]
+  },
+  {
+    "id": 103003,
+    "order": 3,
+    "topic": "product-sense",
+    "type": "debug",
+    "difficulty": "hard",
+    "title": "DoorDash's Top Dasher fix — did averaging over 'eligible hours' actually close the hole?",
+    "scenario_context": "DoorDash's ops team is redesigning the 'Top Dasher' qualification, which grants priority access to the best-paying orders. The current formula uses acceptance rate — the share of offered orders a dasher accepts — which dashers have learned to game by only going online during guaranteed-good-order windows. A PM proposes a fix: 'Top Dasher status = acceptance rate, but now averaged across all hours the dasher is eligible to work that week, not just the hours they chose to go online, so cherry-picking good windows can't inflate it anymore.' The PM believes this fully closes the gaming hole.",
+    "description": "What's the flaw in the PM's proposed fix?",
+    "options": [
+      "There's no flaw — averaging across all eligible hours removes the ability to cherry-pick good windows, closing the gaming vector completely.",
+      "The flaw is that acceptance rate is the wrong signal for quality dashing; DoorDash should measure on-time delivery rate instead.",
+      "The flaw is that a full week smooths out too much day-to-day variation; the fix should use a daily rolling average instead.",
+      "Eligible hours are still the dasher's own declared availability — narrowing it to the same good windows keeps the old gaming vector alive."
+    ],
+    "correct_option": 3,
+    "explanation": "Option D is correct: the fix changes the denominator from 'hours the dasher chose to go online' to 'hours the dasher is eligible,' but eligibility itself is set by the dasher's own declared availability schedule — nothing about the redesign takes that control away. A dasher who wants to keep cherry-picking can simply set their available hours to match the same high-quality windows they used to selectively log into, and the averaging formula will compute the same inflated rate over that narrower, still self-chosen set of hours. The fix moved which lever the dasher pulls, not whether they can pull one. Option A takes the PM's reasoning at face value and misses that eligibility is dasher-controlled, not fixed — the averaging denominator only closes the gaming hole if that denominator is genuinely outside the dasher's control, which it isn't here. Option B raises a legitimate point about whether acceptance rate is the right underlying signal at all, but that's a different critique from what's being asked — the question is specifically about whether this fix closes acceptance rate's own gaming vector, not whether a different metric would be better. Option C's daily-versus-weekly averaging window is a real design choice, but changing the window length doesn't touch the actual hole: a dasher gaming their declared availability would be gaming a daily average just as easily as a weekly one.",
+    "hints": [
+      "Ask exactly who controls the new denominator the PM introduced — is it something DoorDash sets independently, or something the dasher still gets to declare?",
+      "A fix that changes which number you divide by doesn't close a gaming hole if the person being measured still controls that number."
+    ],
+    "concepts": [
+      "METRIC GAMING & ROBUSTNESS"
+    ]
+  },
+  {
+    "id": 103004,
+    "order": 4,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "hard",
+    "title": "Facebook's 'reduce time spent' mandate — what does success actually mean?",
+    "scenario_context": "Facebook leadership sets an explicit company-level goal — 'reduce average daily time spent in the app' — in response to well-being research and regulatory pressure, while keeping the platform valuable enough that people don't just leave entirely. A product team preparing a launch proposes their success be measured purely by how much average daily minutes-per-user falls.",
+    "description": "At the portfolio/strategic level, what's the most defensible way to define success for a launch under this goal?",
+    "options": [
+      "The largest possible drop in average daily minutes spent — the goal explicitly says reduce time spent, so the biggest drop wins.",
+      "Time spent should fall from reduced passive scrolling specifically, while a meaningful-engagement signal holds steady or improves.",
+      "Daily active users staying flat or growing, since a shrinking user base is a bigger business risk than slightly-too-high time spent.",
+      "A small executive panel reviewing qualitative user feedback each quarter, since well-being shouldn't reduce to one quantitative number."
+    ],
+    "correct_option": 1,
+    "explanation": "Option B is correct: it takes the stated goal literally rather than degenerately. 'Reduce time spent' isn't actually asking for less total value delivered — that framing could be 'won' by making the product worse and driving people away entirely. The goal only means what leadership intends if the drop is scoped to the specific pattern it's targeting, low-intent, passive scrolling, while a paired signal for meaningful use holds up. Pairing the primary metric this way is exactly the discipline that keeps a well-being goal from silently becoming a churn goal. Option A takes leadership's stated goal at face value with no guardrail at all, which means a launch that simply makes the app worse enough to drive people away would 'succeed' by this definition — the largest-possible-drop framing rewards exactly the failure mode a thoughtful team should be worried about. Option C swaps in a different metric, DAU, that the goal never mentioned, and flat DAU doesn't actually tell you whether the time people do spend is any healthier — a user could keep opening the app daily while doing the same amount of passive scrolling as before, satisfying option C's bar without addressing the goal at all. Option D avoids the measurement problem altogether; a strategic goal like this does need qualitative judgment folded in, but refusing to define any quantitative pairing leaves the team with no way to track progress between quarterly reviews or catch a launch quietly failing the goal in the interim.",
+    "hints": [
+      "Ask what a team could do to 'win' under the literal goal as stated, even if it made the product worse — that's the failure mode a good definition has to close off.",
+      "The goal is really about one specific kind of time, not all of it. Look for the option that separates the pattern leadership actually wants less of from the pattern that shouldn't shrink."
+    ],
+    "concepts": [
+      "PRODUCT HEALTH & STRATEGIC TRADE-OFFS"
+    ]
+  },
+  {
+    "id": 103005,
+    "order": 5,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "hard",
+    "title": "Roblox's friend-suggestion algorithm — engagement is up, the safety signal isn't built yet",
+    "scenario_context": "Roblox is evaluating a new friend-suggestion algorithm that meaningfully increases minutes played and messages sent among users under 16 by suggesting more accounts to connect with based on shared game activity. Early results show engagement up meaningfully, but the trust & safety team flags that the algorithm has no signal yet for detecting adult accounts disproportionately messaging much younger accounts — building that signal properly would take another quarter. Leadership must decide whether to ship now on the engagement data alone or wait.",
+    "description": "What's the most defensible strategic call?",
+    "options": [
+      "Hold the launch until the safety signal ships — an engagement gain that can't rule out adult-minor contact risks the platform's core trust claim.",
+      "Ship now only to accounts verified as under 13, where COPPA protections already restrict adult contact, and build the broader signal in parallel.",
+      "Ship now to all users — engagement is already positive, and safety concerns without confirmed incidents are too speculative to block a launch.",
+      "Ship now, but add a manual reporting button so users can flag suspicious contact themselves as the interim safety guardrail."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A is correct: Roblox's value proposition to its actual decision-makers, parents, rests on a trust claim that the platform is safe for kids, and a change that measurably increases connections between adult and much younger accounts with no way yet to detect or limit that pattern is exactly the kind of guardrail this track calls out at the strategic level — a positive engagement number doesn't override a brand-safety risk this central, even before any specific harm is confirmed, because by the time harm is confirmed the damage to trust is already done. Holding the launch until the safety signal exists is the defensible call, even at the cost of a quarter's engagement gain. Option B sounds like a scoped compromise, but it leans on a factual overreach — COPPA governs data collection and parental consent for the under-13 population specifically, it doesn't function as a messaging-safety filter that prevents adult accounts from contacting minors, so restricting the launch to under-13 accounts doesn't actually close the gap the safety team flagged. Option C treats the absence of confirmed incidents as equivalent to the absence of risk, but the safety team's concern is precisely that the platform currently has no way to detect the pattern at all — 'no incidents yet' is what you'd also see right before the first one, not evidence the risk is low. Option D adds a real mitigation, but user-reporting is reactive: it only helps after a suspicious contact has already been made and a user notices and acts, while the actual concern is an algorithm proactively suggesting those connections in the first place — a report button doesn't prevent the suggestion from happening.",
+    "hints": [
+      "Ask who Roblox's trust claim actually has to hold up for, and what a single breach of that trust would cost, even without measurable harm yet.",
+      "One option leans on a real-sounding legal protection — check what that protection actually covers before trusting that it closes this specific gap."
+    ],
+    "concepts": [
+      "PRODUCT HEALTH & STRATEGIC TRADE-OFFS"
+    ]
+  },
+  {
+    "id": 103006,
+    "order": 6,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "hard",
+    "title": "Ring's board deck — the right metric isn't the question the board is actually asking",
+    "scenario_context": "Ring is preparing a strategic portfolio review for its board. The data science team's technically correct answer to 'which metric best predicts revenue growth next year' is device-attach-rate per household. But the board has been asking specifically about recent 'neighbor surveillance' media criticism of Ring's Neighbors app and wants the deck to address whether it's a reputational liability. The DS lead has to decide what to present.",
+    "description": "What's the most defensible way to handle the divergence between the technically-optimal metric and what the deliverable actually needs to address?",
+    "options": [
+      "Present device-attach-rate per household as planned — it's the analytically correct predictor, and the board should trust that technical judgment.",
+      "Drop the attach-rate analysis and build the deck solely around a qualitative response to the media criticism, since that's what the board wants.",
+      "Present the attach-rate analysis in an appendix and open with positive press about crime deterrence, without directly addressing the criticism.",
+      "Lead with a data-grounded read of the trust risk, then the attach-rate analysis, framed as two connected parts of the same portfolio story."
+    ],
+    "correct_option": 3,
+    "explanation": "Option D is correct: the deliverable problem isn't solved by picking one side — the technically-optimal metric or the stakeholder's actual question — it's solved by recognizing they're both legitimate parts of the same portfolio-health story and sequencing them so neither gets buried. Leading with a direct, evidence-based read of the trust question the board is actually worried about earns the room's attention and credibility, and following with the growth-predictive metric shows that revenue potential and reputational risk aren't separate conversations — a home-security company's growth is only durable if the trust that sells the product holds up. Option A treats 'technically correct' as sufficient on its own and asks the board to simply defer to it, but a board that came in with a specific, pressing concern and gets a deck that never addresses it will read the presentation as unresponsive, regardless of how sound the underlying analysis is — the deliverable failed even if the analysis didn't. Option B swings to the opposite extreme, dropping real analytical substance for a purely narrative response, which sacrifices the actual strategic value the DS lead was asked to bring and leaves the board without the growth analysis it also needs. Option C nominally acknowledges the media topic but structurally buries the real analysis in an appendix and opens with deflection instead of engagement, a move a board this focused on the surveillance criticism is likely to see through, damaging credibility rather than protecting it.",
+    "hints": [
+      "The board's actual question and the technically-correct metric aren't in conflict, they're both real. Ask what deck structure could hold both without sacrificing either.",
+      "One option answers the question nobody asked; another dodges the question everybody's thinking about. Look for the option that engages the real concern head-on and still delivers the substance."
+    ],
+    "concepts": [
+      "PRODUCT HEALTH & STRATEGIC TRADE-OFFS"
+    ]
+  },
+  {
+    "id": 103007,
+    "order": 7,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "hard",
+    "title": "WHOOP's Recovery Streak badge — a fading lift and a rising opt-out rate",
+    "scenario_context": "WHOOP tests a 'Recovery Streak' gamification feature that shows a badge and animation when a user logs 7 consecutive days of good recovery scores. Two-week test: daily app opens per user are up 11% overall, the stated success metric, but the guardrail — the rate of users manually disabling notifications entirely — is up from 2% to 6% specifically among users who received the feature. The lift is concentrated in week 1: week 2's daily-open lift has already fallen to 4% from a 15% week-1 peak.",
+    "description": "What's the most defensible call?",
+    "options": [
+      "Ship to 100% — the week-2 lift is still positive, and rising notification opt-outs are a minor cost for a habit-forming feature.",
+      "Hold the rollout — the lift is decaying sharply week over week while notification opt-outs climb among exposed users; both point the same way.",
+      "Extend the test, but ignore notification opt-outs entirely, since app opens is the official metric and opt-outs were never a designated guardrail.",
+      "Ship to 100%, but only to users who haven't yet disabled notifications, since that group has already shown tolerance for the feature."
+    ],
+    "correct_option": 1,
+    "explanation": "Option B is correct: this is a genuine compound signal, not two separate concerns to weigh in isolation. The week-1-to-week-2 decay, a lift that's already fallen by more than half in two weeks, is the classic shape of a novelty effect wearing off, while the notification opt-out rate climbing specifically among exposed users is a guardrail reacting in exactly the direction it exists to catch. Both point toward the same read: the feature's apparent win is inflated by initial novelty and is costing real engagement infrastructure, working notifications, on the way down. Shipping broadly on a decaying, guardrail-costly signal risks locking in the cost after the benefit has faded. Option A accepts a diminishing lift and a rising guardrail as an acceptable trade without weighing whether the lift will still be positive once novelty fully wears off, which the week-2 data already suggests it might not be. Option C draws an artificial line around what counts as a guardrail based on whether it was named before the test started, but a real behavioral cost surfacing during a test doesn't stop being relevant just because it wasn't pre-registered, that's a bureaucratic technicality standing in for actual judgment. Option D's scoping idea doesn't address the mechanism: users in the still-notifications-on population are the same ones whose opt-out rate is actively climbing during the test, so shipping to them just continues generating the same rising cost, on a delay.",
+    "hints": [
+      "Two things are moving here — a lift and a guardrail. Before treating them as separate questions, check whether their shapes over time are telling the same story.",
+      "A lift that's already shrinking fast, paired with a cost that's still rising, is a specific pattern. What does that combination usually mean about where both numbers are headed next?"
+    ],
+    "concepts": [
+      "SHIP / NO-SHIP DECISION",
+      "GUARDRAIL & COUNTER-METRIC REASONING"
+    ]
+  },
+  {
+    "id": 103008,
+    "order": 8,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "hard",
+    "title": "Codecademy's forced Career Path — a flat topline hiding two opposite stories",
+    "scenario_context": "Codecademy tests a redesigned onboarding that pushes new users toward a longer, structured curriculum track instead of letting them jump to any lesson. Two weeks in, the aggregate result looks roughly neutral: 7-day completion of the first module is flat, +1%, not significant. A segment cut by prior experience tells a different story: self-reported beginners, 60% of signups, show a 19% lift in 7-day module completion, while self-reported experienced coders, 40% of signups, show a 14% drop — large enough that the two roughly cancel out in the blended topline.",
+    "description": "What's the most defensible call?",
+    "options": [
+      "Ship to 100% — the aggregate result is flat and roughly neutral, which typically means it's safe to ship with no net harm.",
+      "Kill the test and revert everyone to the old flow — any test with a double-digit drop in one segment should never ship to anyone.",
+      "Ship the new onboarding only to self-reported beginners, where the lift is real, and keep experienced users on the original flow.",
+      "Ship to 100%, but add a 'skip to any lesson' escape hatch for users who mark themselves as experienced, otherwise unchanged."
+    ],
+    "correct_option": 2,
+    "explanation": "Option C is correct: this is a textbook case of a flat aggregate hiding two real, opposite-direction effects that the topline number was never going to reveal on its own. Beginners are converting meaningfully better on the structured path; experienced users are converting meaningfully worse, likely because a forced curriculum feels like busywork to someone who already knows some of it. Once the segments are this different and this large, the right unit of decision isn't 'ship or don't ship to everyone,' it's 'ship to the segment where it works, keep the segment where it doesn't on what already works for them.' Option A treats the flat aggregate as itself the answer, exactly the trap a segment cut is meant to catch, a neutral-looking topline is fully consistent with, and here actually is, two real and sizable effects nearly canceling out, not an indication that nothing meaningful happened. Option B swings to a blanket kill based on the worse-performing segment alone, discarding a substantial, real win for the 60% majority segment where the new flow is clearly better, an all-or-nothing rule that ignores the fact that a segmented decision is directly supported by the data. Option D proposes a fix that was never tested: adding a new escape hatch changes what experienced users actually experience, so shipping it broadly would be launching an unvalidated third variant, not acting on the result the test actually produced.",
+    "hints": [
+      "A flat, roughly-neutral topline number is consistent with more than one underlying story. Check whether two different segments are pulling in opposite directions before deciding what 'flat' means.",
+      "Once a segment split shows two real, opposite effects, ask whether the decision has to be the same for both segments, or whether it can be scoped differently for each."
+    ],
+    "concepts": [
+      "SHIP / NO-SHIP DECISION",
+      "SEGMENTATION & DECOMPOSITION REASONING"
+    ]
+  },
+  {
+    "id": 103009,
+    "order": 9,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "hard",
+    "title": "Nextdoor's AI-drafted Crime & Safety posts — three signals, one verdict",
+    "scenario_context": "Nextdoor tests an AI-drafted post assistant that suggests a full draft when a user starts typing in the Crime & Safety category. Three-week test: posts completed in that category are up 24% in week 1 but down to 9% by week 3. The guardrail, posts flagged by other users as 'unverified rumor,' is up 15% specifically on AI-drafted posts. A segment cut shows the lift is concentrated entirely in neighborhoods with historically low posting activity (+31% throughout), while historically high-activity neighborhoods show no meaningful change at any point.",
+    "description": "Given all three signals together, what's the most defensible call?",
+    "options": [
+      "Ship to 100% — even a 9% week-3 lift is real, and the unverified-rumor flag rate remains a small share of total posts.",
+      "Kill the feature outright and never retest in any form — a rise in unverified-rumor flags in this category is disqualifying on principle.",
+      "Ship only to the low-activity neighborhoods where the lift concentrated, and address the guardrail concern later once volume grows there.",
+      "Hold the rollout and don't extend as-is — redesign the assistant's rumor-safeguards before testing again, given all three signals together."
+    ],
+    "correct_option": 3,
+    "explanation": "Option D is correct: three separate signals are compounding here, and none individually decisive, taken together, describe a feature that hasn't earned the right to ship in its current form. The lift is fading fast, novelty, what benefit remains is concentrated in a narrow segment rather than a broad win, and the one guardrail that matters most for this exact content category, whether posts are trustworthy, is moving in the wrong direction on the AI-assisted posts specifically. In a category literally named Crime & Safety, a rising unverified-rumor rate isn't a side cost to weigh against engagement, it's evidence the assistant may be drafting plausible-sounding but unverified content. The defensible next step is redesigning the draft assistant's safeguards against generating unverifiable claims before running another test, not shipping or extending this version. Option A treats the rumor-flag increase as an acceptable trade for engagement, but in a safety-critical category the currency of the entire feature is trustworthiness, a rising misinformation-adjacent signal isn't a minor cost here, it's a direct hit to the thing the category exists to provide. Option B jumps to a permanent, no-retest kill, foreclosing the possibility that a redesigned version, with better safeguards against generating unverified claims, could resolve the actual problem, a bigger commitment than the evidence calls for. Option C reapplies a segmentation-only fix from a simpler case, but it explicitly defers the guardrail concern 'until volume grows,' which means knowingly shipping a rising misinformation-adjacent signal into the exact content category where getting facts right matters most, on the promise of fixing it later.",
+    "hints": [
+      "Three different signals moved here. Before treating any one of them as decisive on its own, ask what story they tell together.",
+      "One of these signals is a guardrail sitting inside the exact content category where it matters most. Weigh what a rising version of that signal means in that specific category, not in the abstract."
+    ],
+    "concepts": [
+      "SHIP / NO-SHIP DECISION",
+      "GUARDRAIL & COUNTER-METRIC REASONING"
+    ]
+  },
+  {
+    "id": 103010,
+    "order": 10,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "hard",
+    "title": "Chewy's Autoship completion drop — seasonal, a sync gap, or both?",
+    "scenario_context": "Chewy's Autoship completion rate fell from 91% to 84% over the past month, during December. Two candidate causes are on the table: last December showed a comparable seasonal dip, 91% to 85%, consistent with holiday travel disrupting delivery windows. Separately, the carrier-integration team confirms that for about 10 days this month, 'delivered' scan events from one shipping partner failed to sync back to Chewy's system, so some genuinely-delivered Autoship orders are being counted as incomplete.",
+    "description": "Given both a recurring seasonal pattern and a known logging gap this month, what's the most defensible read?",
+    "options": [
+      "Both are plausibly real — recompute completion excluding the 10-day sync-gap window, then compare that corrected figure to last December's same period.",
+      "The seasonal explanation fully accounts for the drop, since the same decline happened last December; the sync issue is a coincidence.",
+      "The sync issue fully accounts for the drop, since it's a confirmed engineering problem; a real bug always outweighs a seasonal pattern.",
+      "Neither cause needs isolating — launch a retention win-back campaign for the affected users immediately, regardless of the cause."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A is correct: neither explanation should be accepted or dismissed outright when there's concrete evidence for both — last year's comparable seasonal dip establishes that some holiday-driven decline is normal and expected, while the confirmed 10-day sync gap means a portion of this month's 'failed' orders were actually delivered fine and simply mislabeled. The disciplined move is separating the two: recompute completion rate excluding the 10-day window with the known sync problem, then compare that corrected figure to last December's same-period rate. Whatever gap remains after both corrections is the part actually worth investigating further; the pattern doesn't have to be pinned entirely on one cause when the evidence points to both being partially real. Option B accepts the seasonal explanation as sufficient and waves off a confirmed, specific measurement problem as coincidence with no basis for that dismissal, a known sync gap during the exact window in question isn't something to explain away, it's something to correct for before trusting the raw number. Option C makes the opposite error, assuming a confirmed technical bug must fully explain the drop and discarding the seasonal pattern despite last year's data showing a comparable, independent decline in the same calendar window, a real bug being confirmed doesn't mean it's the only thing happening. Option D skips diagnosis in favor of immediate action, but proceeding to a retention win-back campaign for users who may have been miscounted, not actually failed, risks reaching out to customers who never had a real delivery problem at all, wasting the campaign and potentially confusing customers who received their order on time.",
+    "hints": [
+      "Two separate explanations both have real evidence behind them here. Before picking one, ask whether the drop could be partly explained by each.",
+      "The sync gap only affects a specific 10-day window. What would the number look like if you set that window aside and compared what's left to the same period last year?"
+    ],
+    "concepts": [
+      "METRIC MOVEMENT DIAGNOSIS",
+      "REAL-CHANGE VS ARTIFACT"
+    ]
+  },
+  {
+    "id": 103011,
+    "order": 11,
+    "topic": "product-sense",
+    "type": "debug",
+    "difficulty": "hard",
+    "title": "Cash App's Boost redemption drop — is the iOS explanation actually validated?",
+    "scenario_context": "Cash App's Boost redemption rate, the share of eligible purchases where a user's active discount actually applies, dropped from 68% to 54% over two weeks, right after a new iOS privacy update limited background app refresh unless a user grants a new permission, which can also affect real-time Boost eligibility syncing at checkout. An analyst investigates for one day and reports: 'Boost redemption dropped 14 points because Apple's OS change broke background sync — this is a platform-level bug on Apple's side, not something we can meaningfully fix.' No other hypotheses were tested.",
+    "description": "What's the flaw in the analyst's conclusion?",
+    "options": [
+      "The analyst is wrong that this is unfixable — Cash App should immediately appeal to Apple's App Store team to reverse the OS behavior.",
+      "The analyst tested only one hypothesis and never checked whether the drop concentrates in affected segments or is closer to uniform.",
+      "The flaw is the metric itself; Cash App should measure total Boost dollars redeemed instead, which would look less alarming.",
+      "There's no flaw — a 14-point drop timed exactly with a known OS change is decisive evidence, and one day is enough to confirm it."
+    ],
+    "correct_option": 1,
+    "explanation": "Option B is correct: the analyst formed one hypothesis, that the OS change broke background sync, and treated its plausibility as if it were confirmation, without running the one check that would actually validate it, comparing redemption rates between users who did versus didn't update to the new iOS version, or between users who did versus didn't grant the new permission. If the OS change is truly the cause, the drop should concentrate almost entirely among affected users and stay flat for everyone else; if the drop is closer to uniform across both groups, something else is going on. A single day and a plausible story isn't the same as a validated diagnosis, especially before recommending the company treat the problem as unfixable. Option A accepts the analyst's unvalidated conclusion and jumps straight to an unlikely remedy, appealing to Apple to reverse platform-level privacy behavior, without questioning whether the diagnosis itself was ever confirmed. Option C sidesteps the actual flaw, how the cause was investigated, by proposing a different metric instead; switching from redemption rate to dollars redeemed doesn't address whether the OS explanation was ever tested against the data. Option D accepts timing correlation as sufficient proof, but a plausible-sounding, well-timed story is exactly the kind of hypothesis a MECE investigation is built to catch out, timing alone doesn't rule out a coincident cause, like a Boost-eligibility rule change or a merchant-side sync bug shipped in the same window.",
+    "hints": [
+      "The analyst found one plausible cause and stopped. What single comparison would actually confirm whether that specific cause is responsible?",
+      "If the OS change really is the cause, the drop should look very different for affected users than for everyone else. Has anyone checked that split?"
+    ],
+    "concepts": [
+      "METRIC MOVEMENT DIAGNOSIS"
+    ]
+  },
+  {
+    "id": 103012,
+    "order": 12,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "hard",
+    "title": "Target's same-day CSAT rose 4 points — but every order-size segment fell",
+    "scenario_context": "Target's same-day delivery satisfaction score (CSAT) rose from 78% to 82% this quarter, a result leadership wants to credit to a new driver-routing algorithm. A breakdown by order size tells a different story: small orders (1-3 items) fell from 85% to 80%, and large orders (10+ items) fell from 74% to 69% — every order-size segment declined. Order mix also shifted heavily toward small orders this quarter after Target promoted a new 'quick trip' 1-3 item delivery option, and small orders have always run structurally higher satisfaction than large ones.",
+    "description": "What's the most defensible read?",
+    "options": [
+      "The 82% is a genuine platform-wide win — the new routing algorithm improved a metric spanning every order type, well-supported by the aggregate.",
+      "Directionally accurate but overstated — the true improvement is smaller than 4 points, so the update should cite a more conservative +1 instead.",
+      "A pure mix-shift artifact — every segment's own score fell, and the blend rose only because higher-satisfaction small orders are now a bigger share.",
+      "It can't be interpreted without knowing whether the algorithm applied differently to small versus large orders — that's equally likely until checked."
+    ],
+    "correct_option": 2,
+    "explanation": "Option C is correct: this is a full Simpson's-paradox reversal, not a partial one — every order-size segment's own satisfaction score declined, small orders and large orders alike, so the aggregate rise cannot reflect any within-segment improvement at all. What moved is the mix: small orders, which run structurally higher satisfaction than large ones even after both declined, now make up a larger share of total orders because of the new quick-trip promotion. A blended average shifting toward a higher-satisfaction segment can rise even while that segment, and every other segment, is getting worse on its own terms. Crediting the routing algorithm for the aggregate number would be attributing a real business change, the order-mix shift, to a technical change that, by the segment data already in hand, made every kind of order less satisfying. Option A takes the aggregate at face value, exactly the read a full segment reversal is meant to catch, the topline direction and every segment's own direction are pointing opposite ways here, stronger evidence than a typical partial mix-shift case. Option B softens the claim to 'a smaller real improvement,' but that's not what a full reversal implies; there's no positive underlying improvement to understate here, the actual direction inside every segment is negative, so a smaller positive number is still the wrong sign. Option D asks for a check that isn't actually necessary given what's already been found, once every individual segment shows a decline, whether the algorithm was applied uniformly or differently by order size doesn't change the conclusion that the aggregate rise isn't reflecting a genuine within-segment improvement; the segment breakdown has already answered the question the option is still asking.",
+    "hints": [
+      "Check whether every individual segment moved the same direction as the aggregate, or whether the aggregate and the segments are actually telling opposite stories.",
+      "A blended average can rise even while every group inside it falls, if the mix shifts toward a group that was always relatively higher. Ask what changed about the mix this quarter."
+    ],
+    "concepts": [
+      "SEGMENTATION & DECOMPOSITION REASONING"
+    ]
+  },
+  {
+    "id": 103013,
+    "order": 13,
+    "topic": "product-sense",
+    "type": "debug",
+    "difficulty": "hard",
+    "title": "eBay's shipping satisfaction rose 5 points — is that 'misleading,' or is it the point?",
+    "scenario_context": "eBay's platform-wide buyer satisfaction with shipping speed rose from 71% to 76% this quarter. An analyst breaks it down by seller type: satisfaction with eBay-fulfilled listings, using eBay's own logistics network, held flat at 88%, while satisfaction with seller-fulfilled listings fell from 68% to 63%. eBay-fulfilled listings grew from 30% to 48% of transactions this quarter after a deliberate push to onboard more sellers into the program. The analyst concludes: 'This is a fake win — satisfaction with seller-fulfilled listings actually got worse, so the platform-wide rise is misleading and shouldn't be reported as a win at all.'",
+    "description": "What's the flaw in the analyst's conclusion?",
+    "options": [
+      "The analyst is right the rise isn't within-segment, but wrong to call it misleading — the shift was a deliberate strategic push, not an accident.",
+      "There's no flaw — the analyst's read is fully correct, and the platform-wide number should be dropped from all reporting entirely.",
+      "The flaw is comparing the wrong time periods; satisfaction should be measured year-over-year instead, to account for seasonal shipping delays.",
+      "Seller-fulfilled satisfaction dropping 5 points is a bigger problem than suggested, and eBay should suspend new seller-fulfilled listings entirely."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A is correct: the analyst correctly identifies that the aggregate rise isn't coming from within-segment improvement, that diagnostic step is sound. But calling the result 'misleading' misreads what actually happened: eBay deliberately grew the eBay-fulfilled program's share of transactions this quarter, so more of the platform's total volume landing in a segment that reliably delivers a better shipping experience is a real, intended consequence of a real strategic choice, not an artifact hiding a hollow win. The defensible read reports both pieces of the story together, the platform number rose because the mix shifted as planned, and the seller-fulfilled segment still needs attention on its own, rather than discarding the whole result as fake. Option B accepts the 'misleading, don't report it' framing and pushes it further, treating a deliberate, successful mix-shift strategy as if it deserves no visibility at all, which throws away a real signal that the fulfillment push is working exactly as intended. Option C redirects to a seasonal-comparison-window critique that has nothing to do with the actual issue in play, whether a deliberate mix shift should be called misleading, and doesn't engage with the segment data already provided. Option D reaches for a drastic operational response, suspending an entire program, that the segment data doesn't support on its own; a declining seller-fulfilled score is worth investigating, but the question at hand is specifically about how to characterize the aggregate number, not about what to do operationally about the seller-fulfilled segment.",
+    "hints": [
+      "The analyst correctly found that the mix shifted. Before deciding whether that mix shift is a problem, ask whether it happened by accident or on purpose.",
+      "A mix shift toward a better-performing segment isn't automatically 'misleading' if the business meant to grow that segment. What would make it a fair thing to report?"
+    ],
+    "concepts": [
+      "SEGMENTATION & DECOMPOSITION REASONING"
+    ]
+  },
+  {
+    "id": 103014,
+    "order": 14,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "hard",
+    "title": "Audible's Day-30 retention dips for two cohorts — the redesign, or who signed up?",
+    "scenario_context": "Audible's Day-30 retention by monthly signup cohort has held steady around 62% for six months. The two most recent cohorts come in meaningfully lower, at 51% and 49%. Two candidate causes are on the table: a core app redesign that changed how audiobooks are browsed and downloaded shipped 10 weeks ago and affects every user regardless of signup date, and marketing shifted budget toward a lower-cost ad network two months ago that tends to bring in lower-intent signups. The team wants to know which is more likely responsible before committing engineering time to revert the redesign.",
+    "description": "Which single check would best distinguish between these two hypotheses?",
+    "options": [
+      "Compare Day-30 retention for the two recent cohorts against the same two calendar months last year, to control for seasonality.",
+      "Survey a sample of users from the two affected cohorts about their experience with the new browse-and-download flow.",
+      "Extend the observation window to Day-60 for the two affected cohorts, to see whether the retention gap closes or persists.",
+      "Check whether longer-tenured cohorts' curves also shifted at week 10, and whether the two cohorts' acquisition mix shifted too."
+    ],
+    "correct_option": 3,
+    "explanation": "Option D is correct: the two hypotheses make different, checkable predictions about who should be affected. A core redesign changes the experience for every existing user starting the moment it ships, so if it's the cause, even long-tenured users' behavior, and any cohort's retention curve measured from that date forward, should show a shift at week 10, not just the newest cohorts. An acquisition-mix shift, by contrast, only changes who the new cohorts are, it has no mechanism to affect users who signed up months ago. Checking both, whether existing users' behavior shifted at the redesign date, and whether the affected cohorts' channel mix actually moved toward the cheaper network, is the one investigation that can attribute the drop to one cause or the other rather than assume it. Option A's year-over-year seasonal check is a reasonable general habit, but it doesn't discriminate between the two hypotheses actually on the table here, a seasonal effect would be a third explanation, not evidence for or against the redesign or the acquisition-mix story. Option B's survey approach is slow relative to the decision at hand and only investigates one of the two hypotheses, it can't speak to whether acquisition mix shifted at all, and self-reported reactions from a self-selected group don't cleanly establish which of two structurally different mechanisms is responsible. Option C's extended window would show whether the gap persists or narrows over time, useful for judging severity, but it doesn't tell you why the gap opened in the first place, which is what the team actually needs before committing engineering time to a specific fix.",
+    "hints": [
+      "Each hypothesis predicts a different population would be affected. Ask who a product-wide redesign should touch, versus who a channel-mix shift should touch.",
+      "One hypothesis should show up in long-tenured users' behavior too, not just new signups. Check whether it does."
+    ],
+    "concepts": [
+      "RETENTION & COHORT REASONING"
+    ]
+  },
+  {
+    "id": 103015,
+    "order": 15,
+    "topic": "product-sense",
+    "type": "predict_output",
+    "difficulty": "hard",
+    "title": "Trello's guided first-board flow — predicting the retention curve's shape, not just its level",
+    "scenario_context": "Trello ships a guided 'first board' template flow for brand-new users, replacing a blank board on signup. The team's hypothesis is that this raises the share of new users who form a lasting habit, not just that more people try the product on day one.",
+    "description": "If this hypothesis is correct, what should happen to the shape of the Day-1-through-Day-90 retention curve for post-launch cohorts compared to pre-launch cohorts?",
+    "options": [
+      "Day-1 retention should rise sharply from the more successful first session, but the rest of the curve's shape should be unaffected.",
+      "The whole curve should sit higher throughout, with the Day-30-to-90 plateau settling at a higher floor than before launch.",
+      "Only Day-1 through Day-7 should shift meaningfully; a 90-day habit effect would need an entirely different kind of intervention.",
+      "The curve should rise only for users who complete the guided template and stay flat for those who skip it — no single shape applies."
+    ],
+    "correct_option": 1,
+    "explanation": "Option B is correct: the hypothesis is specifically about a lasting habit forming, not just a better first session, so the signature to predict is a curve that sits higher across the board and, most importantly, settles at a higher floor once it plateaus well past the first week. A guided first experience that actually builds a habit should show up as more users still active at Day 30, 60, and 90, not just a friendlier Day-1 number that fades back to the old plateau. Option A predicts exactly the narrower effect this hypothesis explicitly isn't about, a Day-1 bump with everything else unchanged would mean the template made onboarding nicer without building any lasting habit, the opposite of what's being tested. Option C asserts, without support, that a 90-day habit effect could only come from 'a completely different kind of intervention,' but onboarding quality is a plausible and common driver of whether a habit forms at all, ruling that out by definition contradicts the very hypothesis the team is testing. Option D is a real methodological point in general, effects often do differ between template-completers and skippers, but it dodges the actual question asked, which is what the aggregate post-launch cohort curve should look like if the hypothesis holds; refusing to predict a shape isn't the same as correctly predicting one.",
+    "hints": [
+      "The hypothesis is about a habit lasting, not just a better first day. Ask what part of the curve, early or late, would actually show that.",
+      "A change that only affects the very first session would leave the curve's later shape untouched. Does 'lasting habit' predict that, or something different?"
+    ],
+    "concepts": [
+      "RETENTION & COHORT REASONING"
+    ]
+  },
+  {
+    "id": 103016,
+    "order": 16,
+    "topic": "product-sense",
+    "type": "debug",
+    "difficulty": "hard",
+    "title": "Klarna's one-day on-time-payment dip — the migration the analyst ruled out too fast",
+    "scenario_context": "Klarna's on-time payment rate for US users dropped from 94% to 87% for a single Sunday and returned to 94% the next day; no other day showed any change. The payments engineering team had migrated due-date computation from UTC timestamps to each user's local timezone, shipped the Saturday before the drop. An analyst declares: 'This is a real, one-day spike in missed payments, probably because it was a weekend and people forgot to pay — nothing to do with the migration since the migration was about calculating due dates, not about logging whether a payment happened.'",
+    "description": "What's the flaw in the analyst's reasoning?",
+    "options": [
+      "There's no flaw — weekends are a well-documented cause of missed payments industry-wide, and one anomalous Sunday fits that pattern.",
+      "The flaw is the time window; a single day's data is never enough to draw any conclusion about real payment behavior.",
+      "The migration can shift which calendar day a payment is evaluated on for users near a timezone boundary — the analyst dismissed it too fast.",
+      "The flaw is the metric itself; Klarna should look at total late fees collected instead, which reflects the real financial impact."
+    ],
+    "correct_option": 2,
+    "explanation": "Option C is correct: the analyst reasons that the migration 'was about calculating due dates, not about logging whether a payment happened,' but that's exactly backwards, a due-date computation change can absolutely shift which calendar day a given payment is evaluated against, especially for users near a timezone boundary, where a payment that used to be due, and counted, on one UTC day might now be due on a different local day. A single anomalous day landing right after that exact migration shipped is a strong, checkable lead: comparing the late-payment population that Sunday against users whose local timezone would have shifted their due-date boundary is the natural next step, not dismissing the migration because of what it was designed to do rather than what it could have inadvertently changed. Option A accepts a generic 'weekends cause missed payments' story without engaging with the specific, well-timed migration that shipped the day before, generic industry patterns don't explain why this is a one-day spike that reverted completely rather than an ongoing weekend effect. Option B's 'not enough data' objection doesn't identify what's actually wrong with the analyst's reasoning, the issue isn't the window length, it's that a specific, checkable technical cause was dismissed without being checked. Option D swaps in a different metric entirely, sidestepping whether the migration explains the specific one-day anomaly in the metric that was actually reported.",
+    "hints": [
+      "The analyst ruled out the migration based on what it was intended to do. Ask what it could have changed that nobody intended.",
+      "A due-date computation touches which calendar day a payment gets evaluated on. For users near a timezone boundary, could that shift a payment from 'on time' to 'late' with no change in actual behavior?"
+    ],
+    "concepts": [
+      "REAL-CHANGE VS ARTIFACT"
+    ]
+  },
+  {
+    "id": 103017,
+    "order": 17,
+    "topic": "product-sense",
+    "type": "predict_output",
+    "difficulty": "hard",
+    "title": "Goodreads' Quick Rate button — predicting the volume-versus-accuracy split",
+    "scenario_context": "Goodreads ships a 'Quick Rate' button directly in the main feed, letting users rate a book 1-5 stars without opening the book's page — previously, rating required navigating to the book's detail page first. The team's hypothesis is that this raises the volume of ratings submitted, but at a cost: removing the moment where a user re-reads the book's description or reviews before rating means more new ratings come from users recalling books from memory less carefully.",
+    "description": "If this hypothesis is correct, what should happen to (1) ratings submitted per active user per week, and (2) the correlation between a user's Quick-Rate ratings and that book's community average rating, and why?",
+    "options": [
+      "Ratings per user should rise and the correlation with community average should also rise, since removing friction lets savvy users rate more.",
+      "Ratings per user should stay flat, since the hypothesis is only about a new pathway, not existing raters rating more; only accuracy should fall.",
+      "Both metrics should fall together, since easier careless rating will discourage careful raters from participating at all.",
+      "Ratings per user should rise, the direct effect of removing friction, while the correlation with community average should fall."
+    ],
+    "correct_option": 3,
+    "explanation": "Option D is correct: removing friction from an already-common action, rating a book, has a direct, mechanical effect on volume: more ratings get submitted per user simply because the action got easier to take, this is the most immediate consequence of the change and doesn't depend on any assumption beyond friction removal raising the frequency of the action it applies to. The quality-cost side of the hypothesis works through a different, separate mechanism, skipping the re-consideration step, that specifically weakens how well an individual quick rating matches the book's actual community consensus. The two metrics diverge because they're driven by two different parts of the same change: the shortcut itself drives volume up, while what the shortcut removes, the moment of re-reading before rating, drives per-rating accuracy down. Option A gets the correlation direction backwards, treating removed friction as if it produces more careful ratings, but the entire premise of the hypothesis is that skipping the re-consideration step should weaken, not strengthen, how well quick ratings track the community consensus. Option B predicts flat volume, missing the most direct and immediate effect of the change, a genuinely new, lower-effort pathway to a common action should mechanically increase how often that action happens, that's the core mechanism of a friction-removal change, not something that only shows up as a secondary effect. Option C invents a displacement effect, careful raters disengaging entirely, that has no support in the stated hypothesis or scenario; the hypothesis is about a shift in who's rating and how carefully, not about existing careful raters being pushed away from rating altogether.",
+    "hints": [
+      "Separate the two things this change actually does: it adds a new, easier way to take an existing action, and it removes a specific step from that action. Trace each to a different metric.",
+      "One of these two metrics should move for a simple, mechanical reason — friction removal increasing the frequency of an action. The other moves for a different reason entirely — what the shortcut leaves out."
+    ],
+    "concepts": [
+      "ENGAGEMENT & STICKINESS REASONING"
+    ]
+  },
+  {
+    "id": 103018,
+    "order": 18,
+    "topic": "product-sense",
+    "type": "debug",
+    "difficulty": "hard",
+    "title": "Airtable's 'revenue per active seat' jumped 40% — from monetization, or from redefinition?",
+    "scenario_context": "Airtable reports 'revenue per active seat' as a core health metric: total monthly recurring revenue divided by the count of distinct users who logged in at least once that month. A finance analyst proposes redefining the denominator to count only users who created or edited at least one record that month, arguing this is 'more honest' about usage-based value. The VP approves the change without further review. Next month's report shows revenue per active seat jumping 40% quarter over quarter, presented as evidence monetization is improving rapidly.",
+    "description": "What's the flaw in presenting the 40% jump as monetization improvement?",
+    "options": [
+      "A pure denominator-definition change — a stricter activity bar shrinks the denominator, mechanically raising the ratio with no revenue change.",
+      "A real monetization improvement, since revenue itself didn't change in the redefinition, only the denominator's activity bar was tightened.",
+      "Partially real — users who only logged in are genuinely lower-value, so excluding them retroactively should cut the reported jump roughly in half.",
+      "Untrustworthy only because the VP approved the change without formal review; with proper review, the same 40% figure would be legitimate."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A is correct: 'revenue per active seat' is a ratio, and changing what counts as an active seat changes the denominator's population without touching the numerator at all — a user who used to count as an active seat by merely logging in and now doesn't because they didn't edit a record disappears from the denominator entirely, mechanically raising the ratio even if total revenue and total usage are completely unchanged. The two quarters are computed over two different populations, so a quarter-over-quarter comparison between them isn't measuring monetization improvement, it's measuring the effect of a stricter definition applied to one side of the comparison. A fair read requires recomputing last quarter's number under this quarter's stricter definition before crediting any change to monetization at all. Option B makes the classic error of treating an unaffected numerator as proof the rate is trustworthy, but a rate is defined by both its numerator and denominator together, the entire issue here is on the denominator side, which this option ignores completely. Option C proposes retroactively applying the new definition, a real fix in spirit, but invents a specific 'roughly half' correction with no basis in anything given, the actual corrected figure could be smaller, larger, or even flat, depending on how many previously-active-by-login-only users there actually were, and asserting a specific fraction without deriving it is its own error. Option D relocates the problem to process, whether the change was formally reviewed, but even a perfectly reviewed, deliberate redefinition still produces a mechanical jump that isn't monetization improvement; the issue is substantive, not procedural, and better governance wouldn't make the same before/after comparison valid.",
+    "hints": [
+      "A ratio has two moving parts. Check whether both sides of this quarter-over-quarter comparison are even built from the same population before trusting the percentage.",
+      "Ask what happens to the number if actual revenue and actual usage stay exactly the same, but the rule for who counts in the denominator gets stricter."
+    ],
+    "concepts": [
+      "METRIC DEFINITION INTEGRITY"
+    ]
+  },
+  {
+    "id": 103019,
+    "order": 19,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "hard",
+    "title": "Fitbit's Daily Readiness Score — a faster way to test the causal claim than a full rollout",
+    "scenario_context": "Fitbit's data team finds that users who enable the opt-in Daily Readiness Score feature have 45% higher 6-month retention than users who don't. A product lead wants to flip the feature to default-on for everyone to capture this lift broadly. A teammate raises the standard self-selection concern: users who opt into a wellness feature are probably already more engaged. The product lead responds: 'Fine, but Legal wants this shipped next quarter, and a full randomized rollout won't fit that timeline. What would actually tell us whether flipping the default helps, faster than that?'",
+    "description": "Which proposed approach would most directly address the self-selection confound within a faster timeline, without just re-asserting the original observational comparison?",
+    "options": [
+      "Look only at users who opted in within their first 3 days, reasoning that early opt-in happens before engagement levels can diverge.",
+      "Increase the sample size by pulling data from the last 24 months instead of 6, since a larger sample will resolve the causal question.",
+      "Find a past platform-level default change unrelated to individual choice, and compare retention shifts between the affected and unaffected platform.",
+      "Survey users on whether they believe the feature is why they've stayed engaged, and use the share who say yes as the effect-size estimate."
+    ],
+    "correct_option": 2,
+    "explanation": "Option C is correct: a natural experiment works by finding a moment where exposure to the feature changed for reasons that have nothing to do with an individual user's own engagement or health-consciousness, here, a platform-level default change driven by an app release, not by anyone choosing to opt in. Comparing retention shifts on the platform where the default flipped against the platform where it didn't isolates the effect of being exposed to the feature from the effect of being the kind of person who seeks it out, exactly the confound the original comparison couldn't rule out. It's slower than nothing but far faster than a full randomized rollout, and it directly attacks the selection problem rather than working around it. Option A shrinks the observation window but doesn't touch the actual mechanism: even among users three days old, whoever chooses to explore settings and opt into a wellness feature immediately is still a self-selected, plausibly more motivated group, narrowing the window narrows when the selection happens, not whether it happens. Option B is a straightforward instance of the classic error, more historical data makes a biased comparison more precisely measured, not less biased, the confound doesn't shrink with sample size. Option D substitutes users' own causal beliefs about their own behavior for actual evidence, self-reported attribution is notoriously unreliable, users are generally poor judges of what specifically kept them engaged, and 'the share who say yes' isn't a defensible effect-size estimate to bring to a decision this consequential.",
+    "hints": [
+      "A more motivated group might already be the one choosing to opt in, regardless of the feature itself. Look for an option where exposure to the feature changed for a reason that has nothing to do with any individual user's own choice.",
+      "A comparison that isolates cause needs some event that changed who was exposed for reasons unrelated to engagement. Has anything like that already happened in Fitbit's own history?"
+    ],
+    "concepts": [
+      "CAUSAL VS CORRELATIONAL JUDGMENT"
+    ]
+  },
+  {
+    "id": 103020,
+    "order": 20,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "hard",
+    "title": "YouTube's mid-roll ad test — viewers down, creators up, advertisers down: whose number wins?",
+    "scenario_context": "YouTube tests inserting more mid-roll ads into videos 8-20 minutes long. Results: viewer average watch-time per session is down 6% with rising session abandonment on ad-heavy videos; creator RPM (revenue per thousand views) is up 22% on affected videos; and advertiser ad completion rate is down 9%, since viewers increasingly skip ads the moment they're allowed to.",
+    "description": "Leadership wants a single recommendation. What's the most defensible way to frame it?",
+    "options": [
+      "Prioritize creators — RPM is up 22%, a substantial and measurable earnings win, and creator earnings is what keeps people making videos.",
+      "Name the three-way tension — RPM only compounds if watch-time and ad completion hold up, and both are moving the wrong way here.",
+      "Prioritize advertisers — a 9% drop in ad completion threatens YouTube's primary business model, so ad load should revert to pre-test levels.",
+      "Run the test longer — 6% and 9% could both resolve into noise with more data, while RPM is already big enough to be decisive."
+    ],
+    "correct_option": 1,
+    "explanation": "Option B is correct: this is a genuine three-way trade-off, and the sharpest insight is that the three sides aren't independent, creator RPM is only a durable win if viewers keep watching long enough to be shown ads and advertisers keep finding those impressions valuable enough to keep buying them at the same price. Both of the inputs that RPM depends on, watch-time and ad completion, are moving in the wrong direction in this exact test, which means the 22% RPM gain is likely borrowing against its own future rather than reflecting a stable new equilibrium. Naming that dependency, and recommending a lower ad-load version that protects the two inputs even at a smaller RPM gain, is the defensible frame, not picking whichever single side has the best number today. Option A treats creator RPM as the deciding metric in isolation, but a 22% earnings gain that comes from degrading the exact two things creator earnings structurally depends on, viewer attention and advertiser demand, is not obviously sustainable, and treating it as decisive skips that dependency entirely. Option C makes the same one-sided move in the opposite direction, elevating advertisers alone and ignoring that creator earnings is just as load-bearing, a platform that squeezes creator revenue back down loses the supply of content that gives its ad inventory any value in the first place. Option D applies an inconsistent bar, dismissing the viewer and advertiser signals as possibly-noise while treating the creator signal as already decisive, with no stated reason those three numbers should be held to different standards of confidence.",
+    "hints": [
+      "Ask whether these three metrics are actually independent of each other, or whether one of them structurally depends on the other two not breaking.",
+      "A gain on one side of a three-way trade-off that's coming at the expense of the two things it depends on isn't the same as a durable win. Look for the option that names that dependency."
+    ],
+    "concepts": [
+      "CONFLICTING-METRIC & TRADE-OFF JUDGMENT"
+    ]
+  },
+  {
+    "id": 103021,
+    "order": 21,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "hard",
+    "title": "StockX's fee rebalance — supply is up, but which buyers are being priced out?",
+    "scenario_context": "StockX lowers its seller fee from 9% to 6% to attract more listings, funded by raising the buyer processing fee from 3% to 6% to keep total take rate roughly flat. Four weeks in: total active listings are up 18%, but buyer search-to-purchase conversion is down 11%, concentrated specifically among buyers shopping in the sub-$150 category, where the extra buyer fee is a proportionally larger bite. Categories over $500 show no meaningful buyer conversion change.",
+    "description": "What's the most defensible way to frame this trade-off?",
+    "options": [
+      "This is a clear win — supply is up 18%, and StockX's core scarcity-driven categories over $500 show no buyer-side damage at all.",
+      "This is a clear loss — buyer conversion is down, directly threatening revenue, so the rebalance should be fully reverted immediately.",
+      "Reframe the pricing model around a flat fee regardless of price tier, since percentage-based fees are inherently unfair to everyone.",
+      "Name the trade-off by segment — a tiered buyer fee scaling down for lower-priced items protects that segment without losing the supply gain."
+    ],
+    "correct_option": 3,
+    "explanation": "Option D is correct: the segment cut already shows the trade-off isn't uniform, it's concentrated specifically where the added buyer fee is proportionally largest relative to item price. That's precise enough to act on without an all-or-nothing choice: a tiered buyer fee that scales down for lower-priced items directly targets the population actually being priced out, while leaving the fee structure that's working, more supply, no damage in higher-price categories, untouched. Naming the trade-off at the segment level, rather than the platform level, is what turns this from a binary keep-or-revert decision into an actionable design fix. Option A only looks at the segment where nothing went wrong and calls the whole test a clear win, ignoring that an entire price tier of buyers is measurably converting worse, a real cost the aggregate framing conveniently skips. Option B treats the buyer-side damage as decisive on its own and reverts the whole change, discarding a real, substantial supply gain and failing to notice that the damage is concentrated in one specific, addressable segment rather than spread evenly across the whole buyer base. Option C jumps to a sweeping structural redesign, flat fees platform-wide, that isn't actually supported by what the data shows; the problem is specific to price-sensitive buyers in one tier, not a general flaw in percentage-based pricing that would justify rebuilding the entire fee model.",
+    "hints": [
+      "The damage isn't spread evenly across all buyers. Check where it's concentrated and why, before deciding whether to keep, revert, or redesign the whole change.",
+      "A trade-off named at the segment level can sometimes be fixed with a segment-level solution, rather than forcing an all-or-nothing platform-wide choice."
+    ],
+    "concepts": [
+      "CONFLICTING-METRIC & TRADE-OFF JUDGMENT",
+      "SEGMENTATION & DECOMPOSITION REASONING"
+    ]
+  },
+  {
+    "id": 103022,
+    "order": 22,
+    "topic": "product-sense",
+    "type": "conceptual",
+    "difficulty": "hard",
+    "title": "Instacart's checkout case, mid-interview — the budget just got cut 60%",
+    "description": "In a product case interview on 'how would you improve checkout for first-time Instacart shoppers,' you've already clarified the user (first-time shoppers), defined success (a completed first order within one session), and decomposed three pain points: confusing substitution rules, tip confusion, and address/payment friction. The interviewer interrupts: 'Assume budget is cut 60% — you can only ship one of the three.' Which response best keeps the case's structure intact while incorporating the new constraint?",
+    "options": [
+      "Re-rank the three pain points against the success definition already established, and explicitly state why the other two are deprioritized.",
+      "Start over with a new decomposition scoped specifically to what's achievable with 40% of the original budget.",
+      "Pick whichever pain point is cheapest to build from an engineering perspective, since a budget cut is fundamentally a resourcing constraint.",
+      "Ask the interviewer to specify exactly which pain point they want prioritized, since that's a business call, not one for the candidate to guess."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A is correct: the interviewer's constraint doesn't invalidate the structure already built, it adds a new input to run back through it. The success definition and the three pain points are already on the table; the right move is re-ranking those same three pain points against that same success bar, now filtered through a tighter budget, and explicitly naming why the other two are deprioritized rather than silently dropped. That keeps the case legible and shows the candidate can extend their own structure under a new constraint instead of discarding it. Option B throws away the decomposition work already done and starts a second pass from scratch, which signals that the candidate's structure wasn't actually load-bearing, if a budget cut requires reopening pain-point discovery entirely, the first decomposition wasn't doing real work. Option C narrows the decision to pure build cost and drops the success criterion the candidate defined earlier entirely, this isn't a request to solve an engineering-resourcing puzzle, it's a request to prioritize within a structure that already has a stated definition of success, and ignoring that thread abandons the case's own logic. Option D punts the actual judgment call back to the interviewer, but a 60%-budget prioritization call is exactly the kind of trade-off the case is testing whether the candidate can make and defend, deferring it wholesale is a bigger retreat from structure than the ambiguity actually calls for.",
+    "hints": [
+      "The new constraint is an input to the structure you already built, not a reason to discard it. Ask what's already on the table that the constraint should run through.",
+      "A good response to a mid-case pivot re-uses the success definition and the options already named, rather than starting a fresh decomposition or handing the decision back to the interviewer."
+    ],
+    "concepts": [
+      "PRODUCT CASE STRUCTURING"
+    ]
+  },
+  {
+    "id": 103023,
+    "order": 23,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "hard",
+    "title": "Disney+'s $2.7B sports-tier estimate — how much of that is actually new money?",
+    "scenario_context": "Disney+ is sizing an ad-supported live-sports add-on priced at $9.99/month. An analyst's estimate: 150 million subscribers, assume 15% adoption, 150M x 15% x $9.99 x 12 months is approximately $2.7B/year in incremental revenue. Leadership wants to greenlight based on this number.",
+    "description": "What's the strongest reason to be skeptical of treating the full $2.7B as incremental?",
+    "options": [
+      "The 15% adoption assumption is too low; live sports add-ons elsewhere have converted well above 15%, so the true number is higher.",
+      "The estimate treats all $2.7B as new money, but some of that 15% already pays for sports elsewhere and would be substituting spend.",
+      "The $9.99 price point is unrealistic, since live sports rights cost far more to license than general content, invalidating the calculation.",
+      "The estimate should be discounted by Disney+'s historical churn rate, since some of the 150 million base will cancel before adding the tier."
+    ],
+    "correct_option": 1,
+    "explanation": "Option B is correct: the estimate's fundamental flaw is treating every dollar of the $9.99 tier as new money to Disney overall, but a meaningful share of the households who'd add a sports tier are households already paying for sports somewhere, cable, ESPN+, ESPN directly, and adding Disney+'s sports tier is plausibly substituting spend rather than creating new spend from nothing. Some of that substitution might even come from Disney's own other properties, ESPN+ specifically, which would mean the estimate is double-counting revenue Disney already earns rather than sizing a genuinely new opportunity. A defensible estimate needs a substitution or cannibalization discount before the top-line number means what leadership thinks it means. Option A challenges the 15% assumption's direction but leans on an unverified, unstated comparison to 'other streaming platforms' with no support given, and even if adoption were higher, that doesn't address the deeper issue, whether the revenue from whatever adoption rate is actually new money or substituted spend. Option C raises a real concern about whether $9.99 covers the cost of live sports rights, but that's a profitability and pricing question, a different critique from whether the estimate is correctly counting the revenue as incremental in the first place; the estimate could be exactly right about revenue and still be wrong about whether that revenue is new. Option D reaches for a churn adjustment, a real but comparatively minor correction, while missing the larger and more direct problem: the estimate's core assumption that adding this tier creates entirely new spending rather than reallocating spending that already exists elsewhere.",
+    "hints": [
+      "Ask where the money for this new tier is actually coming from — is it money that didn't exist before, or money a household was already spending on sports somewhere else?",
+      "A revenue estimate can be arithmetically correct and still overstate the real opportunity, if it doesn't account for spending simply moving from one place to another."
+    ],
+    "concepts": [
+      "OPPORTUNITY SIZING & ESTIMATION"
+    ]
+  },
+  {
+    "id": 103024,
+    "order": 24,
+    "topic": "product-sense",
+    "type": "predict_output",
+    "difficulty": "hard",
+    "title": "SoFi's loan funnel — where does the same percentage-point lift recover the most loans?",
+    "scenario_context": "SoFi's personal-loan funnel runs: pre-qualification (soft credit check) to full application (hard credit pull plus income verification) to loan offer shown to offer accepted. Paid-search traffic converts pre-qual-to-application at 60% but application-to-acceptance at only 15%, on 200,000 monthly pre-quals. Organic/referral traffic converts pre-qual-to-application at only 25% but application-to-acceptance at 55%, on 40,000 monthly pre-quals. SoFi can fund exactly one product investment this quarter, and a comparable 5-percentage-point lift is achievable at either step for either segment.",
+    "description": "Which single investment would recover the most additional completed loans?",
+    "options": [
+      "Improve application-to-acceptance for organic/referral users, since that segment already converts best at that step.",
+      "Improve pre-qual-to-application for organic/referral users, since that's their clearly weakest step in the funnel.",
+      "Improve application-to-acceptance for paid-search users — the gain there has no downstream step left to dilute it.",
+      "Improve pre-qual-to-application for paid-search users, since it compounds across the largest population in either funnel."
+    ],
+    "correct_option": 2,
+    "explanation": "Option C is correct: paid-search users who've already reached the application step are a large population, 120,000 people a month (200,000 x 60%), converting at only 15%, so a 5-point lift there adds 5% x 120,000 = 6,000 more accepted offers directly, with no further downstream step left to dilute the gain. The same 5-point lift applied upstream, at paid-search's pre-qual-to-application step, only adds 5% x 200,000 = 10,000 more applicants, and those additional applicants still have to clear the segment's weak 15% acceptance rate, yielding just 10,000 x 15% = 1,500 more completed loans, most of the upstream gain gets filtered back out by the same downstream weakness. A downstream fix on a large population converts far more directly into completed loans than an equally-sized upstream fix that still has to survive a low conversion rate further down the funnel. Option A improves organic/referral's already-strong acceptance step, but that segment's applicant pool is only 10,000 a month (40,000 x 25%), so even a full 5-point lift recovers just 500 additional loans, the smallest gain of the four options. Option B fixes organic/referral's genuinely weakest step, but the segment's small size, only 40,000 monthly pre-quals, caps the total opportunity at 1,100 additional loans even after the gain compounds through the segment's strong 55% downstream rate; 'fix the weakest link' is the right instinct applied to the wrong, much smaller population. Option D targets the right segment, paid-search, but the wrong step: a 5-point lift on the upstream pre-qual-to-application rate looks appealing because it acts on the largest raw population in either funnel, 200,000, but that gain still has to pass through the same 15% downstream acceptance rate before it becomes a completed loan, cutting the effective recovery down to 1,500, a quarter of what the same-sized lift recovers when applied directly to the downstream step instead.",
+    "hints": [
+      "A lift applied upstream still has to pass through every conversion step that comes after it before it becomes a completed loan. A lift applied at the last step doesn't.",
+      "Do the arithmetic for all four: population at that exact step, times the assumed lift, times whatever downstream rate still applies before the gain becomes a completed loan."
+    ],
+    "concepts": [
+      "FUNNEL & CONVERSION REASONING"
+    ]
+  }
+]
