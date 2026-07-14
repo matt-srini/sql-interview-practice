@@ -12046,11 +12046,13 @@ select {
 [data-theme="dark"] .landing-upgrade-banner { color: #C7E8D7; }
 
 .landing-upgrade-resume-banner {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-wrap: wrap;
   gap: 0.75rem;
+  padding-right: 2.75rem;
 }
 .landing-upgrade-resume-banner .upgrade-btn-error {
   flex-basis: 100%;
@@ -12058,6 +12060,21 @@ select {
   color: var(--danger);
   font-size: 0.82rem;
 }
+.landing-upgrade-resume-dismiss {
+  position: absolute;
+  top: 50%;
+  right: 1rem;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  padding: 0.15rem 0.4rem;
+  font-size: 1.15rem;
+  line-height: 1;
+  color: inherit;
+  opacity: 0.6;
+  cursor: pointer;
+}
+.landing-upgrade-resume-dismiss:hover { opacity: 1; }
 
 /* ── Landing footer ── */
 /* ── FAQ section ─────────────────────────────────────────────────────────── */

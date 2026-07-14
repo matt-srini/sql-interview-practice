@@ -562,6 +562,15 @@ describe('LandingPage', () => {
       });
       expect(screen.queryByText(/Continuing your upgrade/i)).not.toBeInTheDocument();
     });
+
+    it('hides the resume banner when its dismiss button is clicked, e.g. after cancelling checkout', async () => {
+      renderAtHomeWithUpgradeTier('free', 'pro');
+      await waitFor(() => {
+        expect(screen.getByText(/Continuing your upgrade to Pro/i)).toBeInTheDocument();
+      });
+      fireEvent.click(screen.getByRole('button', { name: 'Dismiss' }));
+      expect(screen.queryByText(/Continuing your upgrade/i)).not.toBeInTheDocument();
+    });
   });
 
   // ── Logged-in home: Topbar Paths link, All-paths link, role filter ────────

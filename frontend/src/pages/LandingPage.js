@@ -1321,6 +1321,9 @@ export default function LandingPage() {
   // /auth (and, for OAuth, sessionStorage) in router state. Captured once at mount so
   // it survives the history.replaceState clear below (see AuthPage.js, UpgradeButton.js).
   const [resumeUpgradeTier] = useState(() => location.state?.upgradeTier || null);
+  // Lets the user dismiss the resume banner after cancelling checkout (or if they
+  // just don't want it) instead of it sitting there until a refresh clears state.
+  const [resumeDismissed, setResumeDismissed] = useState(false);
   // Persisted auth hint, read once synchronously so the first render can pick the right
   // shell (see AuthContext.rememberAuth). A returning user gets the logged-in skeleton
   // instead of the logged-out marketing flash while GET /auth/me is in flight.
@@ -1434,7 +1437,7 @@ export default function LandingPage() {
             without this, a logged-out visitor who clicked "Upgrade to Pro" on this page,
             signed in, and landed back here would see the different logged-in home with
             no trace of what they were doing. */}
-        {resumeUpgradeTier && user && (
+        {resumeUpgradeTier && user && !resumeDismissed && (
           <div className="landing-upgrade-banner landing-upgrade-resume-banner">
             <span>Continuing your upgrade to {RESUME_TIER_LABEL[resumeUpgradeTier] ?? 'Pro'}…</span>
             <UpgradeButton
@@ -1445,6 +1448,14 @@ export default function LandingPage() {
               compact
               autoTrigger
             />
+            <button
+              type="button"
+              className="landing-upgrade-resume-dismiss"
+              aria-label="Dismiss"
+              onClick={() => setResumeDismissed(true)}
+            >
+              ×
+            </button>
           </div>
         )}
 
