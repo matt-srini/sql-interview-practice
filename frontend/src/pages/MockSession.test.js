@@ -41,9 +41,15 @@ vi.mock('../components/CodeEditor', () => ({
 }));
 
 vi.mock('../components/MCQPanel', () => ({
-  default: ({ onSelect }) => (
+  default: ({ onSelect, submitted, canReselect }) => (
     <div data-testid="mcq-panel">
-      <button type="button" onClick={() => onSelect?.(0)}>Select A</button>
+      <button
+        type="button"
+        onClick={() => onSelect?.(0)}
+        disabled={submitted && !canReselect}
+      >
+        Select A
+      </button>
     </div>
   ),
 }));
@@ -280,6 +286,31 @@ describe('MockSession submit lock', () => {
 });
 
 // (Next question → button tests consolidated in "MockSession next-question button after submit" below)
+
+// ── MCQ option lock after submit ────────────────────────────────────────────────
+// Regression: locking the Submit button must not leave the options independently
+// clickable — that gives the illusion the user can still change a locked-in answer.
+
+describe('MockSession MCQ option lock', () => {
+  it('disables the MCQPanel options once the question is submitted', async () => {
+    const sessionData = {
+      ...makeSessionData(1),
+      track: 'data-engineering',
+      questions: [makeTrackQuestion(1, { track: 'data-engineering', options: ['A', 'B'] })],
+    };
+    renderSession(sessionData);
+
+    const selectBtn = await screen.findByRole('button', { name: 'Select A' });
+    expect(selectBtn).not.toBeDisabled();
+
+    fireEvent.click(selectBtn);
+    await submitCurrentQuestion();
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'Select A' })).toBeDisabled();
+    });
+  });
+});
 
 // ── Flag button ────────────────────────────────────────────────────────────────
 
