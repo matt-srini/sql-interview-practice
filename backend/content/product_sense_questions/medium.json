@@ -830,5 +830,1250 @@
     "concepts": [
       "GROWTH & ACQUISITION REASONING"
     ]
+  },
+  {
+    "id": 102034,
+    "order": 34,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "medium",
+    "mock_only": true,
+    "title": "Grubhub's Reorder Bar — a lift, a refund spike, and a board deadline",
+    "scenario_context": "Grubhub adds a 'Reorder Bar' to the app home screen, one tap to reinstate a user's last order. After two weeks on 40% of traffic: orders per active user per week is up 6% (statistically significant at this sample size), the team's stated success metric. But the guardrail — refund requests citing 'wrong order' or 'didn't mean to order this' — is up 22% on Reorder Bar orders specifically. The VP of Product wants to ship to 100% of users before Friday's board meeting, arguing the order-frequency win is the number the board cares about.",
+    "description": "What's the most defensible call heading into Friday?",
+    "options": [
+      "Ship to 100% before Friday — a statistically significant lift in the board's stated metric is the bar that matters, and refund requests are a normal cost of a high-velocity ordering feature.",
+      "Hold the full rollout — the refund-rate guardrail is scoped to the feature's own orders and is rising for exactly the reason it exists to catch; diagnose the cause before scaling further.",
+      "Ship to 100% before Friday, but tell the board only about the order-frequency number, since the refund guardrail is a separate team's problem to manage.",
+      "Hold the rollout for one full quarter no matter what the diagnosis finds, since any guardrail regression at all should delay a launch by a fixed cooling-off period."
+    ],
+    "correct_option": 1,
+    "explanation": "Option B is correct: the refund guardrail is scoped exactly to Reorder Bar orders and is moving in precisely the direction the team set it up to catch — a one-tap flow letting people reinstate an order without meaning to. A guardrail regression that gates a positive primary is the textbook ship/no-ship signal: the order-frequency win doesn't get to overrule a disqualifying side effect it was never designed to detect, and shipping into a board deadline is exactly when that discipline matters most. Option A treats statistical significance on the north-star metric as the only bar, waving away the guardrail as a 'normal cost' with no evidence given for that claim — the deadline pressure is doing the reasoning, not the data. Option C proposes shipping while hiding the guardrail from the people making the call, which isn't a product decision at all, it's withholding the information the decision depends on. Option D swaps real diagnosis for an arbitrary fixed delay; a guardrail regression should be investigated and resolved on its own timeline, not deferred by a rule that ignores what the investigation might find.",
+    "hints": [
+      "A metric that's up doesn't automatically outrank a metric that's down — ask which one the launch's guardrail was actually built to catch.",
+      "Check whether the guardrail's numbers are scoped to the exact orders the new feature causes, or whether they're describing something the feature can't be blamed for."
+    ],
+    "concepts": [
+      "SHIP / NO-SHIP DECISION",
+      "GUARDRAIL & COUNTER-METRIC REASONING"
+    ]
+  },
+  {
+    "id": 102035,
+    "order": 35,
+    "topic": "product-sense",
+    "type": "debug",
+    "difficulty": "medium",
+    "mock_only": true,
+    "title": "Lyft's Surge Streak bonus — a correlation the ops lead wants to ship as policy",
+    "scenario_context": "Lyft's driver ops team finds that drivers who accept at least 3 surge-priced rides per week earn 35% more per hour on average than drivers who don't. With driver supply tight in several metro markets, the ops lead tells the team: 'This is the fix — build a Surge Streak bonus that pays drivers extra for hitting 3 surge rides a week, and ship it to all markets by Monday. The data already proves accepting surge rides raises earnings.'",
+    "description": "What's the flaw in the ops lead's reasoning for shipping the bonus program as stated?",
+    "options": [
+      "There's no flaw — a 35% earnings gap this large is decisive evidence on its own, and Monday's deadline is a reasonable window to act on a finding this clear.",
+      "The flaw is that per-hour earnings is the wrong metric; the ops lead should have compared total weekly earnings instead before drawing any conclusion.",
+      "Drivers who already chase surge rides may be more available or experienced — the habit could mark a driver type that earns more, not the cause of it.",
+      "The flaw is only that Monday is too soon; the same conclusion becomes valid once the team gathers one more month of the identical comparison."
+    ],
+    "correct_option": 2,
+    "explanation": "Option C is correct: this is a self-selection trap. Drivers who already choose to chase surge pricing are plausibly different from drivers who don't — more flexible schedules, more experience reading demand patterns, more willingness to work peak hours — and any of those traits could drive the earnings gap on its own, with or without a bonus program. Paying every driver to hit 3 surge rides doesn't hand them the flexibility, experience, or schedule that the original habit was standing in for, so the bonus may not reproduce the 35% gap at all. Option A treats the size of the gap as proof of causation, but a large correlation can be entirely explained by selection — magnitude doesn't settle the question the ops lead is trying to answer. Option B redirects to a metric-choice critique that isn't the actual flaw here; whether earnings are measured per-hour or per-week, the underlying comparison is still an observational one between two different kinds of drivers, so switching metrics doesn't fix the causal problem. Option D assumes more of the same observational data resolves the issue, but a longer window of the identical comparison would just produce a more precisely measured version of the same confounded gap, not a causal one.",
+    "hints": [
+      "Ask who chooses to chase surge-priced rides in the first place, and whether that choice already says something about the kind of driver they are.",
+      "A habit that correlates with higher earnings isn't automatically the thing producing those earnings — think about what else might explain both the habit and the outcome."
+    ],
+    "concepts": [
+      "SHIP / NO-SHIP DECISION",
+      "CAUSAL VS CORRELATIONAL JUDGMENT"
+    ]
+  },
+  {
+    "id": 102036,
+    "order": 36,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "medium",
+    "mock_only": true,
+    "title": "Figma's AI design suggestions panel — engagement up, completion down, CEO wants it broad",
+    "scenario_context": "Figma tests an AI panel that suggests layout and component variations inline while a user is designing. After 9 days: average time spent per editing session is up 14%, but the share of sessions that end in a file being marked 'ready to share' or exported is down 5%. The CEO, presenting at an upcoming investor update, wants to ship the panel to all users now, citing the time-in-editor number as proof of value. The design lead is uneasy but hasn't framed a clear pushback yet.",
+    "description": "What's the most defensible way to frame the decision here?",
+    "options": [
+      "Name the trade-off directly: more editor time isn't a win if fewer sessions finish as a shareable file — completion is the closer proxy for value.",
+      "Ship broadly as the CEO wants — investor updates need a clear growth story, and time-in-editor is a defensible enough proxy for engagement to lead with.",
+      "Don't ship at all — any drop in a completion metric, however small, means the feature is actively harming the product and should be scrapped.",
+      "Ship broadly, since the two metrics are measuring unrelated parts of the product and a change in one has no bearing on how to interpret the other."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A is correct: this is a genuine conflicting-metric trade-off and naming it is the point — a design tool's core job is helping people finish and ship designs, not simply hold their attention longer, so a rise in time spent that comes with fewer sessions reaching a finished, shareable state is not a clean win. The defensible move is surfacing that tension to the CEO before a broad launch, not picking whichever number supports the investor narrative. Option B lets the audience for the metric (investors) dictate which number counts as the 'real' signal, which is exactly the trap this family is built to catch — the story that plays best on a slide isn't automatically the story that reflects what's good for the product. Option C swings to the opposite extreme, treating any completion dip as an automatic kill signal without weighing it against the engagement gain or investigating why completion fell; a 5-point drop deserves a trade-off conversation, not an automatic veto. Option D denies the two metrics are related at all, but they're both drawn from the same editing sessions and plausibly reflect the same underlying shift — more time spent exploring AI suggestions instead of converging on a final design — so treating them as independent skips the exact tension the scenario describes.",
+    "hints": [
+      "Ask what a design tool is actually for, and whether the metric moving up is the one closer to that purpose, or a general engagement number that can rise for unrelated reasons.",
+      "When a stakeholder needs a specific story for an audience, check whether the metric selected to tell it is the one that best reflects the product's actual job, or just the one moving in the right direction."
+    ],
+    "concepts": [
+      "SHIP / NO-SHIP DECISION",
+      "CONFLICTING-METRIC & TRADE-OFF JUDGMENT"
+    ]
+  },
+  {
+    "id": 102037,
+    "order": 37,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "medium",
+    "mock_only": true,
+    "title": "Bumble's auto-icebreaker prompt — matches messaging more, but so are the reports",
+    "scenario_context": "Bumble tests an auto-suggested icebreaker prompt that appears the moment two users match, aimed at getting more matches to exchange a first message before the 24-hour window expires. After two weeks: the share of matches that get a first message within 24 hours is up 11%, the stated success metric. The block-or-report rate on first messages sent via the auto-prompt is also up, running noticeably higher than on messages users write themselves. Leadership wants to ship in time for the Valentine's Day traffic spike, five days out.",
+    "description": "What's the most defensible call given the five-day window?",
+    "options": [
+      "Ship now — Valentine's Day is Bumble's highest-traffic week, and missing it costs far more in lost first-message volume than any guardrail could offset.",
+      "Ship now, but only show the auto-prompt to new users who haven't sent a first message before, since existing users are less likely to need it.",
+      "Hold the full launch — a rising block/report rate on auto-prompted messages suggests unwanted messages the success metric can't see; understand why before the biggest week.",
+      "Hold the full launch for the same reason regardless of cause, and reassess again next Valentine's Day instead of investigating sooner."
+    ],
+    "correct_option": 2,
+    "explanation": "Option C is correct: the block/report rate is a guardrail scoped specifically to auto-prompted messages, and it moving up alongside the success metric is exactly the pattern a guardrail exists to catch — a metric that looks like a win (more first messages sent) can hide the fact that some of those messages are unwanted. Shipping into Bumble's highest-traffic week is precisely when a false read on this guardrail is most costly, since the effect compounds across the largest volume of the year; understanding the cause first is the defensible call even under the deadline. Option A treats the seasonal cost of waiting as automatically outweighing the guardrail without ever examining what's driving the report-rate rise — that's optimizing for the calendar, not the evidence. Option B proposes a segmentation workaround that doesn't address why the prompt produces more unwanted messages, and introduces its own new, unsupported assumption about why existing users would be exempt. Option D holds the launch, arguably the right instinct, but pairs it with a refusal to investigate at all — deferring a full year without running the diagnosis wastes the exact time available to fix a specific, potentially quick-to-diagnose problem before the next big traffic week, not just this one.",
+    "hints": [
+      "A success metric can rise for a reason the metric itself can't distinguish — more of the right kind of message, or more of a kind nobody asked for. What would tell those two apart?",
+      "Ask whether the guardrail here is measuring something structurally different from the success metric, or just restating the same win from another angle."
+    ],
+    "concepts": [
+      "SHIP / NO-SHIP DECISION",
+      "GUARDRAIL & COUNTER-METRIC REASONING"
+    ]
+  },
+  {
+    "id": 102038,
+    "order": 38,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "medium",
+    "mock_only": true,
+    "title": "Fiverr's Pro-first search ranking — order value up, marketplace liquidity down",
+    "scenario_context": "To close this quarter's revenue gap, Fiverr reranks search results so 'Fiverr Pro' (higher-priced, hand-vetted freelancers) appears above standard sellers whenever a Pro match exists. Two weeks in: average order value is up 18% and take-rate revenue per transaction is up to match, exactly what finance wanted before the quarter closes. But search-to-hire conversion across the full catalog — Fiverr's standard liquidity signal — is down 7%, concentrated among buyers who can't afford Pro rates and are abandoning search instead of reaching a standard-tier match they'd have seen before.",
+    "description": "What's the strongest basis for pushing back on presenting this quarter's order-value lift as an unqualified win?",
+    "options": [
+      "Name the trade-off: the order-value gain comes from suppressing the standard-tier matches that served lower-budget buyers, and falling liquidity threatens the broad matching that keeps the marketplace healthy.",
+      "There's no trade-off to name — order value and take-rate revenue are the metrics finance asked for, and liquidity is a lagging metric that will recover once buyers adjust.",
+      "The real issue is that search-to-hire conversion is the wrong liquidity metric; Fiverr should track total Pro bookings instead, since that's what's driving the revenue gap.",
+      "This isn't a trade-off, just noise — a 7% liquidity dip over two weeks is well within Fiverr's normal week-to-week search variance."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A is correct: the order-value and take-rate gains are coming directly from suppressing the standard-tier matches that used to serve lower-budget buyers — those buyers are now abandoning search rather than converting on a Pro-priced result they can't afford, which is exactly why search-to-hire conversion is falling in the same window. A metric that rises by narrowing who gets matched isn't a clean win if it comes at the cost of the broad buyer-seller matching that keeps a marketplace liquid over the long run. Option B accepts finance's requested metrics as the whole story and dismisses the liquidity drop as something that 'will recover,' but nothing in the scenario supports that expectation, and buyers being priced out isn't the kind of thing that self-corrects. Option C proposes swapping in a metric that's even closer to the thing already being credited (Pro bookings), which doesn't address whether the broader marketplace is still matching buyers and sellers well — it sidesteps the trade-off instead of resolving it. Option D dismisses a 7% liquidity move as ordinary variance with no evidence given for what normal variance looks like here, and a drop that lines up precisely with a ranking change that structurally reduces standard-tier visibility isn't the kind of thing to wave off as noise.",
+    "hints": [
+      "Ask what happened to the buyers who used to find a standard-tier match near the top of search results, and where they went instead.",
+      "A metric can rise because more value was created, or because a different, larger pool of value became harder to reach. Which one is happening here?"
+    ],
+    "concepts": [
+      "CONFLICTING-METRIC & TRADE-OFF JUDGMENT",
+      "BUSINESS-MODEL METRIC FLUENCY"
+    ]
+  },
+  {
+    "id": 102039,
+    "order": 39,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "medium",
+    "mock_only": true,
+    "title": "Zillow's Instant Tour Request button — a rise that hides an inversion",
+    "scenario_context": "Zillow adds an 'Instant Tour Request' button to listing pages, letting a visitor request a same-day home tour with one tap. Platform-wide, tour requests per listing view are up 10% two weeks after launch, and leadership wants to cite the win in next week's investor letter. A closer look by segment: requests from renters are up 34%, but requests from home-buyer accounts — the segment tied to the referral fees Zillow's revenue actually depends on — are down 6% over the same window.",
+    "description": "What's the most defensible read of this result before it goes in the investor letter?",
+    "options": [
+      "It's a clean win as reported — the platform-wide number is what matters for a launch decision, and segment-level noise is expected in any two-week window.",
+      "It's ambiguous only because two weeks is too short a window; the buyer-segment number will most likely converge upward once both segments behave the same over time.",
+      "The rise is driven entirely by the lower-value segment while the referral-fee segment moved the opposite way — the aggregate is masking a trade-off, not a win.",
+      "It's a clean win because renters and home buyers are both meaningful audiences, so a rise in either segment counts equally toward the stated success metric."
+    ],
+    "correct_option": 2,
+    "explanation": "Option C is correct: this is the classic case where an aggregate movement conceals two segments moving in opposite directions, and here the segment driving the entire platform-wide rise (renters) is not the one tied to Zillow's referral-fee revenue — meanwhile the buyer segment, tied to the fees the business actually runs on, quietly declined. Citing the aggregate in an investor letter skips exactly the decomposition that would reveal this is a trade-off between a lower-value and a higher-value segment, not a broad-based improvement. Option A treats the platform-wide number as sufficient on its own and dismisses the segment split as noise, but a 34% up / 6% down split in opposite directions on two large, meaningfully different segments isn't the kind of thing a two-week window's ordinary noise produces. Option B assumes the buyer-segment decline is a temporary artifact that will self-correct, but nothing in the scenario supports that expectation, and 'wait it out' skips investigating why buyers are requesting fewer tours right when renters are requesting far more. Option D treats the two segments as interchangeable for judging what the metric means, but they aren't interchangeable to the business — averaging them into a single 'up' verdict is exactly the move that hides the trade-off.",
+    "hints": [
+      "A rising platform-wide average is consistent with more than one underlying story — check what happened inside the segments that make it up before trusting the headline number.",
+      "Ask which of the two segments in this split actually funds the business, and whether that specific segment moved the same direction as the aggregate."
+    ],
+    "concepts": [
+      "CONFLICTING-METRIC & TRADE-OFF JUDGMENT",
+      "SEGMENTATION & DECOMPOSITION REASONING",
+      "BUSINESS-MODEL METRIC FLUENCY"
+    ]
+  },
+  {
+    "id": 102040,
+    "order": 40,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "medium",
+    "mock_only": true,
+    "title": "Turo's instant-book default — guests book faster, hosts push back at the town hall",
+    "scenario_context": "Turo, a peer-to-peer car-sharing marketplace, changes the default so every new listing requires 'Instant Book' (a guest can reserve without host approval) unless a host manually opts out. Guest-side search-to-booking conversion rises 13% in the first three weeks, since guests no longer wait on host approval. Host complaints to support about 'a booking I wasn't ready for' rise sharply over the same period, and a vocal group of hosts threatens to delist their cars during a livestreamed Turo community town hall the CEO is hosting next week.",
+    "description": "Heading into the town hall, what's the most defensible way to frame this trade-off?",
+    "options": [
+      "Frame it as resolved: guest-side conversion drives bookings and revenue, so the host complaints are a communication problem for the town hall, not a product problem.",
+      "Frame it honestly as a two-sided trade-off: faster booking costs host control, and losing hosts threatens the supply that makes guest bookings possible.",
+      "Frame it as a false alarm: complaint volume during a livestreamed town hall is always inflated by hosts who show up specifically to vent.",
+      "Avoid framing a trade-off at all — announce a full reversal to opt-in Instant Book before the town hall, since host backlash should always take priority."
+    ],
+    "correct_option": 1,
+    "explanation": "Option B is correct: this is a genuine two-sided marketplace tension — guests are converting faster because a friction point (waiting on host approval) was removed, but that same removal is the exact thing driving host discomfort and a threatened supply exodus. Turo's guest-side bookings only exist because hosts keep their cars listed, so naming this trade-off explicitly, rather than picking the side with the better-looking number, is the defensible frame for a town hall where the affected side is in the room. Option A treats the guest metric as automatically decisive and recasts a real host reaction as a messaging problem, which risks the town hall backfiring when hosts realize their concern is being managed rather than addressed. Option C dismisses the complaint signal by assuming the venue itself inflates it, an assumption the scenario gives no support for, and a convenient way to avoid engaging with a real supply-side risk right before facing that supply directly. Option D swings to the opposite extreme, reversing the entire default before even naming the trade-off or knowing whether a lighter fix, like an approval-window compromise, could keep most of the guest-side gain without losing hosts.",
+    "hints": [
+      "Think about which side of this marketplace generates the thing the other side is converting toward — what happens to guest bookings if that side leaves?",
+      "A metric moving up for one side of a marketplace and a complaint rising on the other side, at the same time, from the same change, is a trade-off to name, not a coincidence to explain away."
+    ],
+    "concepts": [
+      "CONFLICTING-METRIC & TRADE-OFF JUDGMENT",
+      "BUSINESS-MODEL METRIC FLUENCY"
+    ]
+  },
+  {
+    "id": 102041,
+    "order": 41,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "medium",
+    "mock_only": true,
+    "title": "Asana's Quick Add Task widget — the metric a stakeholder wants isn't the goal",
+    "scenario_context": "Asana ships a 'Quick Add Task' widget that lives on the phone's home screen, letting a user capture a task in one tap without opening the app. The stated goal, from the product brief, is 'help people actually get more of their real work organized in Asana,' not simply capture more tasks. Two weeks in, the head of growth is thrilled that tasks created via the widget are up sharply, and wants to declare victory in this week's leadership review using 'tasks created' as the headline number, with no guardrail proposed.",
+    "description": "What's the most defensible response before the leadership review?",
+    "options": [
+      "Push back: a quick-capture widget can inflate task creation without any of it being organized or completed — ask what guardrail would catch that.",
+      "Accept 'tasks created' as the headline number, since it's the most directly attributable metric to the widget, and close attribution automatically makes a metric fair.",
+      "Propose replacing 'tasks created' with 'app opens per week' instead, since opens are a broader signal that's harder for a single feature to inflate.",
+      "Agree to present 'tasks created' this week, but privately plan to revisit the metric choice next quarter once more data has accumulated."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A is correct: the brief's stated goal is about work actually getting organized, not tasks merely existing, and a one-tap capture widget is structurally the kind of feature that can raise a raw creation count without any of those tasks being triaged into a project, assigned, or completed — exactly the vanity-metric risk this family is built to catch. Pairing the pushback with a guardrail ask (something that would catch a pile of abandoned quick-add tasks) turns the objection into something the growth head can act on before the review, not just a critique. Option B accepts 'attributable to the feature' as the same thing as 'measures the goal,' but those are different questions — a metric can be perfectly attributable to a launch and still fail to capture whether the stated goal was met. Option C swaps in a different metric that's broader but not closer to the actual goal; app opens don't tell you whether a task was organized any more than task-creation count does. Option D concedes the flawed metric for this week's high-visibility review and defers the real fix to a later, lower-stakes moment, which is backwards — the review is exactly when a misleading headline number does the most damage.",
+    "hints": [
+      "Compare what the widget makes easy to do against what the product brief actually said the goal was — are they the same action?",
+      "A number that only requires one tap to move, with no check on what happens after, is a common trap. What follow-up signal would catch that gap?"
+    ],
+    "concepts": [
+      "METRIC SELECTION & GOAL TRANSLATION",
+      "GUARDRAIL & COUNTER-METRIC REASONING"
+    ]
+  },
+  {
+    "id": 102042,
+    "order": 42,
+    "topic": "product-sense",
+    "type": "debug",
+    "difficulty": "medium",
+    "mock_only": true,
+    "title": "Affirm's 'approval rate improved' claim — what changed under the hood",
+    "scenario_context": "Affirm's credit team reports that loan-application approval rate rose from 61% to 74% quarter over quarter, and a VP wants to cite it on Thursday's lender-partner call as proof the underwriting model improved. A risk analyst, prepping the VP's talking points, notices that mid-quarter, marketing also started pre-qualifying applicants with a soft credit check before they ever reach the formal application — filtering out an estimated 15,000 low-likelihood applicants per month who used to apply and get declined.",
+    "description": "What's the flaw in the VP's plan to cite the 61%-to-74% rise as proof the underwriting model improved?",
+    "options": [
+      "The rise is fully attributable to the underwriting model, since a soft credit check happens before the formal application and can't affect the model's own decisions.",
+      "The comparison isn't apples to apples: filtering out likely-decline applicants before they apply raises the rate mechanically, without any real model change.",
+      "The claim is fine to present as-is Thursday, but the VP should mention the soft-credit-check change afterward as an unrelated side note.",
+      "Approval rate is the wrong metric for a lender call altogether; the VP should present default rate instead, since that's what partners actually care about."
+    ],
+    "correct_option": 1,
+    "explanation": "Option B is correct: this is a denominator-definition change hiding inside a quarter-over-quarter comparison — removing an estimated 15,000 per month of applicants who were likely to be declined shrinks the pool the rate is computed over without necessarily reflecting any change in how the underwriting model itself evaluates an application; the rate can rise mechanically from pool composition alone. Before crediting the model, the two quarters need to be measured against the same applicant population. Option A asserts the soft check 'can't affect' the model's own decisions, which is true in isolation, but misses that the rate isn't just the model's decisions, it's the model's decisions divided by who applies — and that denominator changed. Option C treats the composition change as a footnote to mention after making the claim, but presenting an inflated, uncorrected number as proof of model improvement and only caveating it afterward still leaves lender partners with the wrong headline impression. Option D reaches for a different metric entirely rather than fixing the actual issue in this one — default rate is reasonable for other purposes, but it doesn't address whether this specific approval-rate claim is computed on a consistent population.",
+    "hints": [
+      "A rate has a population underneath it. Ask whether that population is the same in both quarters being compared, before trusting the percentage.",
+      "Something changed earlier in the funnel than the point this metric is measuring. Trace whether that earlier change could move the rate on its own, with no change to the thing the rate claims to measure."
+    ],
+    "concepts": [
+      "METRIC DEFINITION INTEGRITY",
+      "REAL-CHANGE VS ARTIFACT"
+    ]
+  },
+  {
+    "id": 102043,
+    "order": 43,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "medium",
+    "mock_only": true,
+    "title": "ClassPass's variety-retention link — which way does the arrow point?",
+    "scenario_context": "ClassPass data shows members who've booked classes across 4+ different studios have a 2x higher 12-month retention rate than members who've only ever booked one studio. The VP of Retention wants to greenlight a push-notification campaign nudging every member toward trying a new studio each month, arguing in this week's roadmap review: 'Variety drives retention — get everyone to 4+ studios and retention follows.'",
+    "description": "What's the strongest challenge to the VP's causal claim before the roadmap review approves the campaign?",
+    "options": [
+      "The arrow may run the other way: members who stuck around longer simply had more time to try different studios, so tenure could drive both numbers.",
+      "The claim can't be evaluated at all, since 12-month retention and studio count are measured over completely different time horizons and aren't comparable.",
+      "The push campaign should be approved as-is, since a 2x retention gap this large is well outside what chance alone could produce.",
+      "The real flaw is that retention should be reported as a rolling 12-month window instead of a fixed one, since rolling windows are always more defensible."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A is correct: a member who's already stayed for many months has simply had more opportunities to accumulate visits to different studios, so tenure is a plausible lurking variable that drives both sides of this correlation — longer-tenured members naturally rack up more studio variety and are, by construction, the ones who've already proven they retain. That reverses the VP's assumed arrow: it may not be that trying more studios causes people to stay, it may be that staying gives people time to try more studios. A campaign built on the wrong direction of causality could add notification fatigue without producing the retention gain the VP expects. Option B raises a comparability objection that doesn't hold — a 12-month retention rate and a studio count both describe the same 12-month member population, so they're perfectly comparable; the real problem is what's driving the relationship between them, not the units. Option C treats a large effect size as proof of causation, but a big gap is exactly as consistent with the tenure explanation as with the VP's causal story — size alone doesn't distinguish them. Option D redirects to a retention-window technicality that has nothing to do with whether the variety-retention link is causal; switching from a fixed to a rolling window wouldn't resolve the tenure confound at all.",
+    "hints": [
+      "Ask what else is true about a member who's been around long enough to accumulate 12 months of history and visits to 4+ studios, besides the fact that they explored.",
+      "Two things could both be caused by a member simply having stuck around a long time. Which of the four options considers that possibility?"
+    ],
+    "concepts": [
+      "CAUSAL VS CORRELATIONAL JUDGMENT",
+      "RETENTION & COHORT REASONING"
+    ]
+  },
+  {
+    "id": 102044,
+    "order": 44,
+    "topic": "product-sense",
+    "type": "predict_output",
+    "difficulty": "medium",
+    "mock_only": true,
+    "title": "Grammarly's inline upgrade prompt — predicting the trade-off before Friday's ship call",
+    "scenario_context": "Grammarly replaces a small, easy-to-ignore sidebar icon with an inline 'Upgrade to Premium' suggestion box that appears directly inside the document, in the middle of the sentence being written, whenever tone-detection flags an issue only Premium can fix. The team wants to ship to all free users by Friday, citing an early rise in premium upgrade clicks. Nothing else about the free tier changes.",
+    "description": "Before Friday, which second metric should the team expect to move, in which direction, and why does it matter to the ship decision?",
+    "options": [
+      "Average words written per session should rise, because seeing a concrete tone issue flagged mid-sentence gives users a clearer sense of direction and helps them write faster.",
+      "Daily active users should fall sharply within the first day, because most free users will immediately churn rather than tolerate any in-canvas prompt.",
+      "No second metric needs to move for the Friday decision — a rise in upgrade clicks is sufficient on its own to confirm the change is working.",
+      "Average words written per session should fall — an in-canvas interruption adds friction to the act of writing itself, a cost the upgrade-click number won't show."
+    ],
+    "correct_option": 3,
+    "explanation": "Option D is correct: moving the prompt from an easily ignored sidebar icon to an inline box inside the sentence being written places a genuine interruption directly in the writing flow, and the most direct, immediately measurable cost of that kind of interruption is less writing getting done per session — exactly the guardrail the upgrade-click win could be hiding. Predicting that tension before Friday, rather than discovering it after a full rollout, is the point: a good ship call needs both numbers, not just the one that looks like a win. Option A assumes the interruption is net-helpful to the writing itself, but an interruption placed mid-sentence is a friction cost by construction — it can occasionally orient a user, but the more direct and likely effect of breaking someone's writing flow is less output, not more. Option B overstates the likely reaction — a single inline prompt tied to an actual tone issue is a nudge, not the kind of change that would drive most free users to abandon the product outright within a day. Option C is the flaw this question is built to catch: a single metric moving in the intended direction is never sufficient to confirm a change is working cleanly, especially one that alters the core writing experience itself — the Friday decision needs the trade-off named, not just the headline number.",
+    "hints": [
+      "The prompt didn't just get more visible, it moved to a new location — inside the exact activity the product exists to support. What's the direct cost of interrupting that activity?",
+      "A metric tied to the feature's intended goal (upgrades) rising doesn't rule out a cost showing up somewhere else in the same session. Where would that cost be easiest to see first?"
+    ],
+    "concepts": [
+      "GUARDRAIL & COUNTER-METRIC REASONING",
+      "ENGAGEMENT & STICKINESS REASONING"
+    ]
+  },
+  {
+    "id": 102045,
+    "order": 45,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "medium",
+    "mock_only": true,
+    "title": "Spotify's Discover Weekly completion rate drops overnight — what's the first move?",
+    "scenario_context": "Discover Weekly's average track-completion rate fell from 41% to 34% between last Monday and this Monday, platform-wide, with no known campaign or seasonal event in that window. The Head of Product wants a one-line cause to bring into an all-hands starting in two hours, and no one has looked at the data beyond the topline number yet.",
+    "description": "With zero hypotheses tested yet and two hours on the clock, what's the single most defensible next step?",
+    "options": [
+      "Assume the personalization model update that shipped last week is responsible, since model changes are the most common cause of completion-rate swings, and start drafting a rollback plan.",
+      "Cut the drop by platform, market, and device before naming any cause — whether it's global or concentrated in one slice determines what kind of explanation is even worth chasing.",
+      "Pull a sample of user complaints and support tickets from the last week to see what listeners are saying about Discover Weekly right now.",
+      "Wait for next Monday's numbers to confirm the drop holds for a second week before spending any time on root-cause work."
+    ],
+    "correct_option": 1,
+    "explanation": "Option B is correct: with no hypotheses tested yet, the highest-value first move is the cheap diagnostic fork that tells you what kind of explanation to even chase — a drop concentrated in one platform or market points toward a specific technical or regional cause, while a genuinely global drop points toward something like the personalization model or a definition change. Skipping this step means guessing blind. Option A jumps straight to the single most-common-sounding cause and starts building a remediation plan around it before checking whether the data even supports that specific story — the classic guessed-cause trap, and premature given the two-hour window is better spent narrowing the search than reversing an unconfirmed suspect. Option C pulls a real but weak, unrepresentative signal — a handful of vocal complaints doesn't scale to explaining a platform-wide percentage-point move and doesn't tell you whether the drop is global or local either. Option D's instinct to confirm durability is reasonable in a vacuum, but the two-hour deadline explicitly rules out waiting a week, and the segment cut is available right now with the data already on hand.",
+    "hints": [
+      "Before picking a suspect, ask what single check would tell you the most about which kind of cause you're even looking for.",
+      "A platform-wide number can come from a genuinely global effect or from one slice of the data doing all the work — which check tells those two apart fastest?"
+    ],
+    "concepts": [
+      "METRIC MOVEMENT DIAGNOSIS",
+      "SEGMENTATION & DECOMPOSITION REASONING"
+    ]
+  },
+  {
+    "id": 102046,
+    "order": 46,
+    "topic": "product-sense",
+    "type": "debug",
+    "difficulty": "medium",
+    "mock_only": true,
+    "title": "Instacart's delivery-success rate falls — the analyst already booked emergency shopper incentives",
+    "scenario_context": "Instacart's same-day delivery success rate fell from 96% to 89% over the past three days. Without pulling any additional data, an ops analyst tells the VP: 'This is a shopper staffing shortage — I've already scheduled emergency shopper incentive pay for this weekend to fix it.' The incentive program costs roughly $180,000 to run.",
+    "description": "What's the strongest critique of how the analyst reached this decision?",
+    "options": [
+      "The critique is that shopper staffing shortages are never a real cause of delivery-success drops, so the analyst picked an implausible explanation from the start.",
+      "The critique is that three days of data is too short a window to justify spending $180,000 on any remediation program, regardless of the cause.",
+      "The analyst should have segmented the drop by region before proposing a fix, since a shortage in one metro doesn't justify a nationwide incentive spend.",
+      "The analyst committed real budget to a real-world cause before checking whether a recent change to how 'successful delivery' is logged could explain the drop."
+    ],
+    "correct_option": 3,
+    "explanation": "Option D is correct: the analyst moved straight from an unconfirmed hypothesis to committing $180,000, without first ruling out the cheaper explanation — that something in how deliveries are tagged or scored changed upstream (a partner logistics feed, a status-code mapping, a definition of what counts as 'on time' or 'successful'). That check costs nothing and should happen before any real-world remediation is funded, especially when the drop is a multi-day plateau rather than tied to any confirmed staffing signal. Option A overclaims — a staffing shortage is a perfectly plausible real-world cause in general; the flaw isn't that the hypothesis is impossible, it's that it was acted on unverified. Option B reaches for a generic 'not enough data' objection, but the real issue isn't the window length, it's that a cheap, disconfirming check was skipped entirely regardless of how many days of data exist. Option C's segmentation instinct is reasonable and would help scope a real staffing problem, but it isn't the sharpest critique here — even a perfectly regional staffing fix would still be premature before ruling out a measurement explanation for the whole pattern.",
+    "hints": [
+      "Ask what the analyst would need to have already ruled out before it's safe to spend real money on a real-world fix.",
+      "A multi-day plateau instead of a single dramatic day is still a shape worth questioning — what upstream system could produce that exact pattern without any change in actual shopper behavior?"
+    ],
+    "concepts": [
+      "REAL-CHANGE VS ARTIFACT",
+      "METRIC MOVEMENT DIAGNOSIS"
+    ]
+  },
+  {
+    "id": 102047,
+    "order": 47,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "medium",
+    "mock_only": true,
+    "title": "Wayfair's checkout conversion rose this month — but every channel individually fell",
+    "scenario_context": "Wayfair's site-wide checkout conversion rose from 3.2% to 3.6% this month, and leadership wants to cite it as a win in today's board deck, due in an hour. A quick channel cut shows paid-search conversion fell from 3.0% to 2.7%, organic fell from 4.5% to 4.1%, and email fell from 6.0% to 5.5% — every channel individually declined, while traffic mix shifted heavily toward email, which converts far better than the other two channels even at its lower rate.",
+    "description": "With the board deck due in an hour, what should the analyst report?",
+    "options": [
+      "Every channel's own rate fell this month; the blended number rose only because traffic mix shifted toward email, the higher-converting channel.",
+      "Confirm it as a genuine win for the board deck, since the blended, site-wide conversion number is what leadership actually tracks each month.",
+      "The channel-level numbers must contain a calculation error, since a blended rate can't rise while every individual channel feeding it falls.",
+      "Hold the slide until next month's numbers confirm the direction, since one month of channel-level data isn't enough to characterize a trend like this."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A is correct: this is a full mix-shift reversal — every channel's own rate declined, and the blended number rose purely because more of this month's traffic came from email, a channel that converts well even at its now-lower rate. Reporting the topline 3.2%-to-3.6% as an on-site win would credit the product or checkout experience for something entirely explained by which channels sent traffic, while masking that conversion quality fell everywhere it's actually measured. Option B takes the blended number at face value, exactly the trap this pattern is built to catch — the board tracks the topline, but that doesn't make the topline the right story to tell when the channel cut already contradicts it. Option C assumes the arithmetic must be wrong, but a rising aggregate built from falling parts is precisely what happens when the mix shifts toward a higher-baseline channel — no error is implied, and denying the pattern is possible means not understanding how blended rates work. Option D stalls for more data the analyst doesn't need — the channel cut already available this hour answers the question; waiting a month doesn't add anything the segmentation hasn't already shown.",
+    "hints": [
+      "A blended rate and every part it's built from can genuinely move in opposite directions — that's not a data error, it's arithmetic. Think about what would make that happen.",
+      "Ask what changed about which traffic arrived this month, not just how each channel performed once it arrived."
+    ],
+    "concepts": [
+      "SEGMENTATION & DECOMPOSITION REASONING",
+      "METRIC MOVEMENT DIAGNOSIS"
+    ]
+  },
+  {
+    "id": 102048,
+    "order": 48,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "medium",
+    "mock_only": true,
+    "title": "Reddit's platform-wide comment volume drops 5% — is it really platform-wide?",
+    "scenario_context": "Reddit's total daily comment volume fell 5% this week, and leadership wants a cause before Friday's exec review. A subreddit-level cut shows r/wallstreetbets alone fell 40% in comment volume, after a moderation-tooling change restricted rapid-fire comments during high-volatility trading hours; the other top 500 subreddits combined are flat to slightly up over the same week.",
+    "description": "What's the most defensible conclusion to bring to Friday's exec review?",
+    "options": [
+      "Keep investigating for a platform-wide cause, since a 5% drop across all of Reddit is too large to credibly come from a single community.",
+      "Recommend reverting the r/wallstreetbets moderation change platform-wide immediately, since it's clearly responsible for the entire drop and removing it should recover the volume.",
+      "This is a localized story, not a platform-health issue: one subreddit explains nearly all of the drop, and the rest of the platform is flat or growing.",
+      "Treat the 5% drop as a genuine engagement decline and prioritize a broad re-engagement push across the platform ahead of the exec review."
+    ],
+    "correct_option": 2,
+    "explanation": "Option C is correct: the segment cut already attributes almost the entire platform-wide move to one community's tooling change, with everything else flat to up — at that point, the segment is the diagnosis, and the honest, well-supported read for Friday is 'one community, one known change,' not an open platform-health question. Option A keeps searching for a broader cause the data has already ruled out — insisting a 5% aggregate move must have a platform-wide explanation ignores that the numbers already attribute nearly all of it to one place. Option B jumps from diagnosis to a specific remedy — reverting the moderation change platform-wide — without asking whether that tooling change was intentional or whether reverting is even the right call; a diagnosis for an exec review isn't the same as an unreviewed policy reversal. Option D misreads a supply-side, tooling-driven change in one community as a demand-side, platform-wide engagement problem, which would send the team chasing the wrong lever entirely.",
+    "hints": [
+      "Check whether the drop is spread across the platform or sitting almost entirely inside one place before deciding how big a problem this is.",
+      "Once a segment cut accounts for nearly all of an aggregate move, ask what's actually left to explain."
+    ],
+    "concepts": [
+      "SEGMENTATION & DECOMPOSITION REASONING",
+      "METRIC MOVEMENT DIAGNOSIS"
+    ]
+  },
+  {
+    "id": 102049,
+    "order": 49,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "medium",
+    "mock_only": true,
+    "title": "Chime's 24-hour funding rate drops for four straight days — behavior, or pipeline?",
+    "scenario_context": "Chime's 'account funded within 24 hours of signup' rate fell from 71% to 58% and has held flat at that lower level for four straight days. No pricing, onboarding-flow, or marketing changes are known in that window. The growth lead needs a cause for tomorrow morning's leadership sync.",
+    "description": "Given no other information yet, what's the single most defensible first move?",
+    "options": [
+      "Launch a user survey asking recent signups why they haven't funded their account yet, since hearing directly from users is the most reliable source of a cause.",
+      "Check whether the 'funded' event definition or the bank-partner funding integration changed in the last few days before forming any hypothesis about user behavior.",
+      "Assume a competitor promotion is pulling would-be users away, and spend the morning pulling competitive intelligence on recent neobank marketing campaigns instead.",
+      "Segment signups by acquisition channel first to see which specific channel's users are underperforming on the funding-completion rate."
+    ],
+    "correct_option": 1,
+    "explanation": "Option B is correct: a sudden drop that then holds flat at a new, lower level for four straight days is exactly the shape a broken or changed pipeline produces — a step down and plateau, not a gradual behavioral drift — and the funding event depends on a partner bank integration that's cheap and fast to check against a known timeline. That makes it the highest-value first move before spending time on any user-behavior story. Option A is slow — a survey takes days to field and return results, far too slow for tomorrow's sync, and it also skips the cheap internal check that's available right now. Option C reaches for an external, unverified cause with no supporting evidence in the scenario, and competitive intelligence takes time to gather credibly. Option D's segmentation instinct is a reasonable general habit and might eventually help, but it isn't the sharpest first move here — the plateau shape and the existence of a partner-dependent event definition point more directly at a pipeline or definition check than at a channel cut.",
+    "hints": [
+      "Look closely at the shape of the drop — it dropped once, then held flat. What kind of cause typically produces that exact shape?",
+      "The metric depends on an event that a partner system has to report correctly. What's the cheapest way to rule that system out first?"
+    ],
+    "concepts": [
+      "METRIC MOVEMENT DIAGNOSIS",
+      "REAL-CHANGE VS ARTIFACT"
+    ]
+  },
+  {
+    "id": 102050,
+    "order": 50,
+    "topic": "product-sense",
+    "type": "predict_output",
+    "difficulty": "medium",
+    "mock_only": true,
+    "title": "Twitch's 'watched a stream' count falls 15% overnight — the fix is already known",
+    "scenario_context": "Twitch's daily 'watched a live stream for 1+ minute' count dropped 15% overnight. The team traces it to a schema change that shipped that same night: a 'watch' now only counts starting after the video player fully loads, instead of from when the stream page opens, which previously included buffering time. No change touched recommendations, notifications, or actual stream content.",
+    "description": "If the team reverts the counting logic to the old definition tomorrow, what should they predict about the reported number, and what does that imply about real viewing behavior during the drop?",
+    "options": [
+      "The reported count should recover to close to its pre-drop level, since the underlying real behavior never changed — only the definition of when a 'watch' starts did.",
+      "The count should stay low even after reverting, since some viewers who saw longer load times likely abandoned the platform permanently during the affected window.",
+      "The count should only partially recover, since the schema change also happened to correct a separate, previously-existing overcounting issue that reverting won't restore.",
+      "The count should rise even higher than before the drop, since viewers will return in greater numbers once the stricter definition is removed."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A is correct: the drop is fully attributable to a stricter counting definition, not to any change in what viewers actually did — no recommendation, notification, or content system changed, so real viewing behavior during the window is best read as unchanged. Reverting the definition should restore the reported number to roughly its pre-drop level, because the metric was undercounting real watches, not measuring a real decline. Option B introduces a permanent-abandonment effect the scenario gives no evidence for; nothing suggests viewers experienced worse load times or churned during a measurement-only change. Option C invents an unrelated overcounting correction that the scenario never mentions — there's no basis for assuming the schema change did two things when only one is described. Option D predicts an above-baseline rebound driven by returning viewers 'making up' for lost watches, but there's no missed content or notification to prompt a surge — the metric undercounted, it didn't suppress actual viewing, so there's nothing to make up.",
+    "hints": [
+      "Ask whether anything about the actual viewer experience changed, or only how one specific action gets counted.",
+      "If a metric under-credits real behavior for a few hours, what should happen to the number once the under-crediting stops?"
+    ],
+    "concepts": [
+      "REAL-CHANGE VS ARTIFACT",
+      "METRIC MOVEMENT DIAGNOSIS"
+    ]
+  },
+  {
+    "id": 102051,
+    "order": 51,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "medium",
+    "mock_only": true,
+    "title": "Expedia's booking conversion drops 5% — three suspects, thirty minutes to check one",
+    "scenario_context": "Expedia's hotel-booking conversion rate is down 5% since Thursday. The VP wants a one-paragraph cause ahead of tomorrow's 9am leadership sync, and the analyst has about 30 minutes today to investigate. Three causes are on the table: a competitor's flash-sale campaign this week, a price-display redesign, which changed how taxes and fees are shown, that shipped Wednesday, and a handful of social-media posts mentioning payment failures on Thursday morning.",
+    "description": "With 30 minutes and three unverified suspects, which should the analyst check first, and why?",
+    "options": [
+      "The competitor flash-sale, since losing bookings to a rival is the most business-critical explanation and deserves priority no matter how long it takes to confirm.",
+      "The payment-failure reports, since anything touching checkout is the most severe possible cause and should always be ruled out before anything else first.",
+      "The price-display redesign — compare conversion before and after its exact release timestamp, the only internally logged candidate confirmable within 30 minutes.",
+      "Split the 30 minutes evenly across all three so the sync has at least partial evidence on each candidate rather than a full answer on just one."
+    ],
+    "correct_option": 2,
+    "explanation": "Option C is correct: of the three, the redesign is the only cause the analyst can actually verify in 30 minutes — it's internal, it has a precise release timestamp, and before/after conversion around that timestamp is data already sitting in the analyst's own systems. The other two require external, slower, or unverifiable evidence. Checking the highest information-per-minute candidate first is the defensible use of a tight window. Option A treats business severity as the tiebreaker, but severity doesn't make a hypothesis checkable in 30 minutes — confirming a competitor's campaign actually caused the drop would need external traffic or survey data the analyst doesn't have time to gather today. Option B applies the same severity-first logic to payment failures, but a handful of social-media mentions is weak, anecdotal evidence that can't be confirmed or ruled out quickly, and 'most severe if true' isn't the same as 'fastest to verify.' Option D spreads limited time so thin that none of the three gets a real answer, which produces a weaker paragraph for the sync than fully confirming or ruling out the one candidate that's actually checkable today.",
+    "hints": [
+      "Some of these three causes can be confirmed with data the analyst already has; others would need evidence from outside the company. Sort them by that first.",
+      "With a hard time limit, ask which single check gives the most confidence per minute spent, not which cause sounds the most alarming."
+    ],
+    "concepts": [
+      "METRIC MOVEMENT DIAGNOSIS",
+      "REAL-CHANGE VS ARTIFACT"
+    ]
+  },
+  {
+    "id": 102052,
+    "order": 52,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "medium",
+    "mock_only": true,
+    "title": "Grammarly's three metrics move at once — which gets the one hour before the board update?",
+    "scenario_context": "Grammarly's Monday numbers show three things moving together: daily active users down 4%, suggestions-accepted-per-user down 9%, and trial-to-paid conversion flat. The VP of Product has one hour before this afternoon's board update and can only deep-dive one metric. The team also knows a keyboard-extension update shipped last Friday, two days before these numbers were pulled.",
+    "description": "Which metric should the team prioritize investigating in the one hour available, and why?",
+    "options": [
+      "Daily active users, since it's the number that will actually appear on the board slide and is the one the VP will be asked about directly.",
+      "Trial-to-paid conversion, to confirm it's truly flat and not hiding an offsetting reversal underneath it, before ruling it out as a concern.",
+      "Suggestions-accepted-per-user: it moved the most, sits closest to whether the core product experience degraded, and has a checkable cause.",
+      "Split the hour evenly across all three metrics so the board update has at least some concrete evidence to show on each one of them."
+    ],
+    "correct_option": 2,
+    "explanation": "Option C is correct on two counts: it's the largest relative move of the three, making it the strongest signal that something real is happening, and it's the metric most directly tied to whether the core suggestion experience is working — daily active users could easily be a downstream, lagging symptom of exactly this kind of degradation, not an independent story. It also happens to have a concrete, cheaply-checkable candidate cause already in hand: Friday's keyboard-extension update could have changed how an 'accepted suggestion' gets logged, which is worth ruling out before concluding anything about user behavior. Option A picks the metric by visibility on the slide, not by which one carries the most diagnostic information — a classic 'chase the number leadership will ask about' trap rather than the number that actually explains the other two. Option B spends the scarce hour confirming a metric that shows no movement at all, when two other metrics are actively signaling a problem worth chasing. Option D spreads the hour so thin that no metric gets a real answer, a weaker outcome than fully resolving the one metric most likely to be both real and explainable within the time available.",
+    "hints": [
+      "When several metrics move together, ask which one is most likely the cause and which are most likely downstream symptoms of it.",
+      "One of these three metrics also happens to have a specific, recently-shipped change that could explain it directly — that combination of size and checkability matters."
+    ],
+    "concepts": [
+      "METRIC MOVEMENT DIAGNOSIS",
+      "REAL-CHANGE VS ARTIFACT"
+    ]
+  },
+  {
+    "id": 102053,
+    "order": 53,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "medium",
+    "mock_only": true,
+    "title": "Zillow's 'contact an agent' rate looks flat — until the region cut",
+    "scenario_context": "Zillow's site-wide 'contact an agent' rate looks nearly flat this week, down just 0.4%, and the head of growth is ready to tell leadership at today's 4pm review that nothing changed and no action is needed. Before the call, an analyst pulls a quick region cut: Sun Belt markets are up 11% after a new agent-response-time SLA rolled out there last week, while Rust Belt markets are down 13% the same week a competing listing site launched a new agent-messaging feature there — the two nearly offset in the blended number.",
+    "description": "What should the analyst tell the head of growth before the 4pm call?",
+    "options": [
+      "Agree the flat topline means no action is needed this week, since the two regional effects mathematically cancel out in the number leadership actually tracks.",
+      "Report the regional split: two real, opposite-direction stories sit inside the flat number, and the Rust Belt decline needs urgent attention on its own.",
+      "Recommend rolling the new SLA out to every region immediately, based on the strong Sun Belt result, without raising the Rust Belt numbers in the meeting.",
+      "Recommend waiting another week before saying anything, since a 0.4% move is within normal week-to-week noise for a metric this size."
+    ],
+    "correct_option": 1,
+    "explanation": "Option B is correct: the region cut already shows two real, meaningfully-sized, opposite-direction stories that happen to nearly cancel out in the blended number — reporting 'flat, no action needed' would bury a genuine regional problem (and a genuine regional win) behind an average that represents neither region's actual experience. The right move is surfacing both stories and treating the Rust Belt decline as its own action item, independent of what the national number shows. Option A accepts the average as the whole truth, exactly the trap this scenario is built to expose — a near-zero topline move is fully consistent with two real, offsetting stories, and 'no action needed' is the wrong read once you know that. Option C acts on only half of what the region cut shows, rolling out a change based on the positive result while staying silent on the negative one in the same meeting — an incomplete and arguably misleading read. Option D throws away information the analyst already has in hand; the region cut answers the question about whether something changed right now, so waiting adds nothing.",
+    "hints": [
+      "A topline number that barely moved can still be built from two real stories that are pulling in opposite directions and canceling out. Check for that before calling it flat.",
+      "Ask whether 'no action needed' is a fair thing to tell leadership if you already know two different regions are each telling you something different."
+    ],
+    "concepts": [
+      "SEGMENTATION & DECOMPOSITION REASONING",
+      "METRIC MOVEMENT DIAGNOSIS"
+    ]
+  },
+  {
+    "id": 102054,
+    "order": 54,
+    "topic": "product-sense",
+    "type": "debug",
+    "difficulty": "medium",
+    "mock_only": true,
+    "title": "Booking.com's review-submission rate drifts down for six weeks — the analyst blames tracking",
+    "scenario_context": "Booking.com's average review-submission rate per completed stay has declined slowly and steadily, about 0.3 percentage points per week, for six straight weeks — no sudden jumps, just a gradual drift. A data analyst tells the VP: 'This is almost certainly a tracking bug in the post-stay review-prompt email — let's get engineering to audit the send logic before we assume anything about guest behavior.'",
+    "description": "What's the flaw in the analyst's reasoning?",
+    "options": [
+      "There's no flaw — any unexplained metric decline should default to a tracking-bug hypothesis first, regardless of how the decline is shaped over time.",
+      "The flaw is that six weeks isn't a long enough window to trust any trend, so no explanation should be proposed yet either way.",
+      "The flaw is that the analyst should have segmented by guest type before proposing any explanation, since that's always the correct first step.",
+      "A slow, steady multi-week drift is the shape a real behavioral change tends to produce, not the sudden-step signature of a broken pipeline."
+    ],
+    "correct_option": 3,
+    "explanation": "Option D is correct: a persistent, steady decline of about the same size week after week is the shape associated with something genuinely changing in guest behavior or experience, not with a broken pipeline — a tracking or send-logic bug more typically produces a sudden step change (a version ships, a rate drops or jumps immediately) rather than a smooth, gradual multi-week drift. The analyst has the diagnostic tell backwards: reaching for 'audit the tracking' first fits a sudden break, not a slow trend. Option A defends exactly the error being tested — defaulting to instrumentation regardless of shape ignores the one piece of evidence (the gradual slope) that should inform which hypothesis to check first. Option B's 'not long enough' objection doesn't engage with the actual flaw; the shape of six weeks of consistent decline is itself informative, and length isn't the issue here. Option C's segmentation instinct is a reasonable general habit but isn't the specific error in play — segmenting by guest type doesn't address the fact that the analyst misapplied the sudden-vs-gradual heuristic in the first place.",
+    "hints": [
+      "Compare the shape of this decline — smooth and gradual over six weeks — to the shape a broken pipeline or bad release usually produces.",
+      "A tracking bug that ships once tends to change a metric right away, not erode it a little more each week for over a month."
+    ],
+    "concepts": [
+      "REAL-CHANGE VS ARTIFACT",
+      "METRIC MOVEMENT DIAGNOSIS"
+    ]
+  },
+  {
+    "id": 102055,
+    "order": 55,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "medium",
+    "mock_only": true,
+    "title": "OpenTable's booking completion drops 8% — which step, and does the timing point somewhere?",
+    "scenario_context": "OpenTable's overall reservation-booking completion is down 8% this week, and the restaurant-partnerships lead needs to know which step broke before tomorrow morning's call with a major restaurant group. Search-to-slot-selected conversion is flat at 62% both weeks. Slot-selected-to-confirmed conversion fell from 88% to 79%. Separately, the team recalls that a new 'confirm your phone number' verification step was inserted into the final confirmation screen four days ago.",
+    "description": "What's the most defensible read to bring into tomorrow's call?",
+    "options": [
+      "Report a platform-wide softening in diner demand, since total booking completions are down 8% overall, without narrowing to a specific step.",
+      "The drop is isolated to the slot-selected-to-confirmed step, and its timing matches the new phone-verification step added four days ago — added friction, not a demand problem.",
+      "Search-to-slot-selected conversion must also be quietly affected, since the two steps are always correlated in a healthy funnel and a drop this size rarely isolates to one place.",
+      "Recommend removing the phone-verification step immediately before the call, since its timing lines up closely enough with the drop to act on now."
+    ],
+    "correct_option": 1,
+    "explanation": "Option B is correct: the per-step breakdown already isolates the problem — search-to-slot-selected is unchanged, and the entire 8% drop shows up in the final confirmation step, exactly where a new verification requirement was added four days ago. That combination of an isolated step and a timing match is a well-supported, specific read: real friction from the new step, not a platform-wide demand softening. Option A reports the topline number without using the step breakdown that's already available and that points somewhere specific — a weaker, less useful read for a partner call than the one the data actually supports. Option C asserts a correlation between the two steps that the data directly contradicts; the upstream step is flat, so treating it as quietly affected ignores the evidence in hand. Option D jumps from a well-supported read to an unreviewed remedy — pulling a verification step, likely added for fraud or compliance reasons, needs more than a timing coincidence, and isn't what tomorrow's call is asking for; the call needs the diagnosis, not an already-decided fix.",
+    "hints": [
+      "Break the 8% drop down by funnel step before deciding whether this is a demand problem or something narrower.",
+      "Check whether the timing of any recent product change lines up with exactly the step where the drop is concentrated."
+    ],
+    "concepts": [
+      "FUNNEL & CONVERSION REASONING",
+      "REAL-CHANGE VS ARTIFACT"
+    ]
+  },
+  {
+    "id": 102056,
+    "order": 56,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "medium",
+    "mock_only": true,
+    "title": "Twitch's Discovery Row ranking — which signal invites gaming, and what catches it?",
+    "scenario_context": "Twitch is choosing the ranking signal for its homepage 'Discovery Row,' which drives real subscriber and ad-revenue upside to whichever channels appear. Two candidates are on the table: (1) total hours streamed per week, or (2) unique-viewer-weighted watch time, minutes watched weighted by distinct viewers rather than raw stream duration. Streamers will optimize hard for whichever signal wins.",
+    "description": "Which candidate signal is more vulnerable to gaming by a streamer chasing placement, and which guardrail would catch that specific gaming?",
+    "options": [
+      "Unique-viewer-weighted watch time is actually the more gameable signal, since a streamer can inflate it by muting chat and disabling on-screen viewer alerts mid-broadcast.",
+      "Hours streamed is the more gameable signal — a streamer alone controls it by leaving it running unattended; a guardrail on the viewer-to-hours ratio would catch the dead air.",
+      "Neither signal is meaningfully gameable, since Twitch's terms of service already prohibit any channel from streaming unattended without an active streamer present at all times.",
+      "Hours streamed is the more gameable signal, so the right fix is ranking purely on peak concurrent viewers, a number streamers supposedly can't influence without a real audience."
+    ],
+    "correct_option": 1,
+    "explanation": "Option B is correct: hours streamed is entirely within one person's control — a streamer can start a broadcast and walk away, racking up hours with zero audience and zero cost, which is exactly the gaming Discovery Row can't afford to reward. Unique-viewer-weighted watch time still requires distinct people to show up and stay, a materially higher bar even if not impossible to fake. Pairing hours streamed with a guardrail on the viewer-to-hours ratio catches the specific failure mode: hours accumulating with no one actually watching. Option A gets the comparison backwards — muting chat and alerts doesn't inflate a viewer-weighted metric, it just changes the viewer's experience; the metric still requires real distinct viewers to be present, which a self-directed streamer can't manufacture alone. Option C treats a policy prohibition as if it were a technical guardrail; a rule against a behavior doesn't stop the behavior from being economically attractive to try, and Twitch still needs a metric-level guardrail to detect it. Option D correctly flags hours streamed as gameable but proposes a flawed fix — peak concurrent viewers is also inflatable, through viewbotting, so swapping the ranking signal doesn't resist gaming any better, and it discards the useful volume signal in hours streamed rather than pairing it with a guardrail.",
+    "hints": [
+      "Ask which of the two candidate signals a streamer could move to zero cost and zero risk, entirely on their own, with no independent viewer required.",
+      "A guardrail should be scoped to the exact failure mode the primary signal invites — hours logged with nobody actually watching."
+    ],
+    "concepts": [
+      "METRIC GAMING & ROBUSTNESS",
+      "GUARDRAIL & COUNTER-METRIC REASONING"
+    ]
+  },
+  {
+    "id": 102057,
+    "order": 57,
+    "topic": "product-sense",
+    "type": "debug",
+    "difficulty": "medium",
+    "mock_only": true,
+    "title": "Thumbtack's 'Top Pro' signal — the ops lead's gaming argument, examined",
+    "scenario_context": "Thumbtack is deciding the signal for its 'Top Pro' badge, which routes real lead priority to whichever pros earn it. Two candidates are on the table: (1) lead-response rate within one hour, or (2) hired-to-lead ratio, the share of leads a pro actually gets hired for. An ops lead argues: 'Response rate is the safer choice — replying fast is objectively good for customers, so there's no way pros could game something that's inherently good behavior.'",
+    "description": "What's the flaw in the ops lead's argument?",
+    "options": [
+      "There's no flaw at all — a signal that rewards objectively good customer behavior can never realistically become a target pros learn to game, since gaming by definition requires the underlying behavior to be harmful to someone.",
+      "The flaw is that hired-to-lead ratio is the wrong candidate metric entirely, since it unfairly penalizes pros for leads that were never a realistic fit for their business to begin with, regardless of how quickly they responded.",
+      "The flaw is only the window length, not the logic — tightening the response requirement from one hour down to fifteen minutes would fully close the gap in the ops lead's reasoning here.",
+      "'Good for the customer' and 'hard to fake' are different claims — a pro can auto-reply to every lead within the hour with zero real intent, inflating the rate without resolving the underlying speed-versus-fit trade-off."
+    ],
+    "correct_option": 3,
+    "explanation": "Option D is correct: the ops lead conflates two different claims — that responding fast is a good outcome for customers, and that the metric measuring it can't be manipulated. Those are separate questions. A pro fully controls how fast they reply and can satisfy the one-hour window with a copy-pasted, no-intent auto-reply, which inflates response rate without ever engaging with whether that pro is actually a good match for the job — exactly the trade-off between response speed and genuine fit that hired-to-lead ratio would surface instead. Option A restates the ops lead's own flawed premise as if it settled the question; 'inherently good behavior' and 'ungameable metric' are independent properties, and treating them as equivalent is the error being tested. Option B redirects to critiquing the other candidate metric's fairness, a separate concern from whether the ops lead's argument about response rate holds up, and it doesn't identify the actual flaw in what was argued. Option C assumes the flaw is purely a matter of window size, but shortening the window doesn't stop a pro from sending the same generic auto-reply faster — the underlying gaming vector, effort-free replies with no real intent, survives any window length.",
+    "hints": [
+      "Separate two different claims buried in the ops lead's sentence: 'this behavior helps customers' and 'this number can't be faked.' Are those actually the same thing?",
+      "Think about the cheapest possible way a pro could satisfy a one-hour response requirement without doing any real work toward the job."
+    ],
+    "concepts": [
+      "METRIC GAMING & ROBUSTNESS",
+      "CONFLICTING-METRIC & TRADE-OFF JUDGMENT"
+    ]
+  },
+  {
+    "id": 102058,
+    "order": 58,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "medium",
+    "mock_only": true,
+    "title": "Noom's Day-30 retention dips for one cohort — where's the first check?",
+    "scenario_context": "Noom's Day-30 retention by monthly signup cohort has held steady around 19% for the past four months. The March cohort comes in at 14%, a real drop the team wants to explain before the quarterly review. Two hypotheses are on the table: (1) the core coaching-message algorithm changed for every user in March, or (2) March's paid-ad mix shifted toward a cheaper network that tends to convert lower-intent signups.",
+    "description": "Which first check best distinguishes between these two hypotheses using the retention data itself?",
+    "options": [
+      "Break March's retention out by acquisition channel and compare it to every other cohort's same breakdown — a drop concentrated in the new channel points to acquisition mix, not the algorithm.",
+      "Recompute March's Day-30 figure using a 7-day rolling window instead of the exact-day definition, since switching to a rolling window will settle which of the two competing hypotheses is actually correct.",
+      "Extend the observation window out to Day 60 for the March cohort specifically, since a longer observation window always reveals whether an algorithm change or a channel shift is the true responsible cause.",
+      "Compare the March cohort's own Day-1 retention figure to its Day-30 figure, since a widening gap between the two numbers always points specifically to a coaching-algorithm problem."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A is correct: the two hypotheses make different predictions about who is affected — a coaching-algorithm change should drag down every March signup roughly evenly, while an acquisition-mix shift should concentrate the drop in the new channel's signups specifically. Breaking the cohort down by channel and comparing it to prior cohorts' same breakdown is the one check that can tell those two stories apart using data the team already has. Option B swaps the retention definition, but changing from exact-day to rolling doesn't touch the actual question, which hypothesis explains the drop, so it doesn't distinguish anything. Option C assumes more time automatically resolves the cause, but an extended window would show whether the lower retention persists, not why it happened or which of the two hypotheses is responsible. Option D's Day-1-to-Day-30 gap is a real technique for something else, spotting early-vs-late attrition, but it doesn't discriminate between an algorithm-wide cause and a channel-specific one, and its claim that a widening gap 'always' points to the coaching algorithm is an unsupported leap.",
+    "hints": [
+      "Ask what each hypothesis would predict about who specifically is affected within the March cohort — everyone, or just part of it.",
+      "One hypothesis touches every March signup uniformly; the other touches only the signups from one channel. Which breakdown would tell those two stories apart?"
+    ],
+    "concepts": [
+      "RETENTION & COHORT REASONING",
+      "SEGMENTATION & DECOMPOSITION REASONING"
+    ]
+  },
+  {
+    "id": 102059,
+    "order": 59,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "medium",
+    "mock_only": true,
+    "title": "Blinkist's rolling-vs-exact retention gap — does it change the renewal-risk call?",
+    "scenario_context": "Blinkist's subscriber-health team is deciding whether to flag the February cohort as at-risk before its annual-renewal window opens. Day-30 retention under the strict exact-day definition, opened the app on exactly day 30, is 11%. Day-30 retention under a 7-day rolling window, opened the app on any of days 24 through 30, is 33%. A renewals PM wants to use whichever number best predicts who actually renews a year later.",
+    "description": "Given that Blinkist is a book-summary app typically used in short bursts rather than daily, which read is most defensible for predicting renewal risk?",
+    "options": [
+      "Neither number alone settles renewal risk — the rolling definition fits a bursty-use product better, but the team should validate which definition actually correlates with last year's renewals first.",
+      "The exact-day figure is the only defensible one to report, since 'retention' by strict definition means activity on that specific day, and any window that includes adjacent days is measuring something else entirely.",
+      "The rolling figure is the only defensible one to report, since a wider observation window always produces a more accurate retention estimate, regardless of how the underlying product is actually used day to day.",
+      "The two figures should simply be averaged to 22%, since neither definition is inherently more correct than the other, and an average conveniently balances out the measurement choice being debated."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A is correct: for a product used in bursts, exact-day retention is expected to structurally understate real engagement, while a rolling window is expected to structurally flatter it, so neither number is automatically 'the' answer to a renewal-risk question. The defensible move is checking which definition actually tracked last year's renewal outcomes before either number is used to flag risk this year. Option B insists on a single fixed definition of 'retention' by fiat, without asking whether that definition is the one that actually predicts the outcome the team cares about, renewal. Option C makes the opposite fixed claim, that wider is always better, which ignores that a window can be so wide it stops meaningfully distinguishing engaged users from disengaged ones. Option D's average manufactures a number that doesn't correspond to either definition's actual meaning; splitting the difference between two structurally different measurements doesn't produce a more valid one, it just produces a third undefined one.",
+    "hints": [
+      "Ask whether picking between these two numbers is really the right question, or whether something else needs checking first.",
+      "A book-summary app's natural rhythm is bursty, not daily. Which of the two definitions is built to tolerate a user who logs in, then goes quiet for a stretch, then comes back?"
+    ],
+    "concepts": [
+      "RETENTION & COHORT REASONING",
+      "METRIC MOVEMENT DIAGNOSIS"
+    ]
+  },
+  {
+    "id": 102060,
+    "order": 60,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "medium",
+    "mock_only": true,
+    "title": "ClassPass's board deck — the VP wants to drop the number that would flag a problem",
+    "scenario_context": "ClassPass is preparing board-meeting slides on member engagement. Two candidate definitions for 'monthly engagement rate' are on the table: (1) bookings divided by all members who held an active subscription at any point that month, including those who cancelled mid-month, or (2) bookings divided only by members who were still subscribed on the last day of the month. Definition 1 yields 61%; definition 2 yields 74%. A VP says: 'Let's report 74% and drop definition 1 from the deck entirely, it's not the story we want to tell the board.'",
+    "description": "What's the strongest critique of dropping definition 1 from the deck?",
+    "options": [
+      "There's no issue here — board decks should always report the single most favorable, most defensible number available, and definition 1 simply isn't needed once definition 2 is chosen as the primary figure.",
+      "Definition 1 isn't just a less-flattering alternative — it surfaces mid-month cancellations, the board's actual early-warning signal on member health; dropping it removes a guardrail, not a redundant metric.",
+      "The real fix is reporting both numbers side by side on the same slide without further comment, since presenting two competing definitions together always resolves a metric-definition disagreement on its own.",
+      "The issue is that 'bookings' should instead be redefined to only count classes actually attended, not merely reserved, which would make the entire definition choice irrelevant either way."
+    ],
+    "correct_option": 1,
+    "explanation": "Option B is correct: definition 1's denominator includes members who cancelled mid-month, exactly the population whose disengagement the board would want visibility into; a rate computed over that broader population is lower precisely because it doesn't hide the cancellers, which makes it function as an early-warning signal on member health rather than a mere alternate cut of the same story. Dropping it doesn't just simplify the deck, it removes the board's guardrail against a rosier picture than reality. Option A treats 'most favorable' as the right criterion for a board metric, when the board's job is to catch problems early, exactly what the dropped definition is built to do. Option C proposes showing both numbers 'without further comment,' but two unreconciled definitions on a slide don't resolve anything on their own, they just relocate the interpretation problem onto the board without the explanation it needs. Option D redirects to the numerator, attended versus reserved classes, a real but separate consideration that doesn't address the denominator issue actually driving the VP's request to drop definition 1.",
+    "hints": [
+      "Ask what happens to a member the moment they cancel mid-month under each of the two candidate populations, and whether that group is exactly who the board needs visibility into.",
+      "One of these two numbers would move first if member health started deteriorating. What happens to the board's early warning if that number gets dropped from the deck?"
+    ],
+    "concepts": [
+      "METRIC DEFINITION INTEGRITY",
+      "GUARDRAIL & COUNTER-METRIC REASONING"
+    ]
+  },
+  {
+    "id": 102061,
+    "order": 61,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "medium",
+    "mock_only": true,
+    "title": "Grammarly's 'active writer' number — the growth lead wants the bigger population",
+    "scenario_context": "Grammarly's growth lead is choosing how to define 'weekly active writer' for an investor update: (1) a distinct user who submitted at least one suggestion-accepted edit that week, or (2) a distinct browser or device session in which the extension was merely installed and enabled, whether or not the user wrote anything. Definition 2 produces a number nearly three times larger. The growth lead says: 'Let's lead with definition 2, bigger is better for this update.'",
+    "description": "What's the strongest critique of leading with definition 2?",
+    "options": [
+      "There's no critique needed here — investor updates should always report the single largest defensible number available, since investors primarily care about overall scale and growth trajectory.",
+      "The real issue is that 'suggestion-accepted edit' sets too strict a bar for activity, so the actual fix is loosening definition 1 to count any suggestion merely shown, not just ones accepted.",
+      "Session counts are always a structurally more reliable unit than user counts for any SaaS product, since sessions inherently avoid the risk of double-counting the same underlying person twice.",
+      "Definition 2 measures the extension merely being installed and enabled on a device, not a person actually writing — it would keep climbing even if nobody used Grammarly's core feature at all."
+    ],
+    "correct_option": 3,
+    "explanation": "Option D is correct: definition 2's population includes anyone with the extension enabled, whether or not they wrote a single word that week, so it can grow through installs alone while telling investors nothing about whether people are actually writing with Grammarly's help. The label 'active writer' promises a behavior the underlying number doesn't require. Option A accepts 'bigger is better' as the standard for an investor metric, but a bigger number that measures the wrong thing misleads rather than informs, the actual problem here. Option B redirects the fix toward loosening the more meaningful definition instead of examining why the flattering one is misleading, missing the actual critique the question is asking for. Option C makes a blanket claim that sessions are always more reliable than users for any SaaS product, which isn't true in general and specifically isn't true here, where the session-based definition is the one detached from the behavior being claimed.",
+    "hints": [
+      "Ask what specific action a person has to take for this number to increase, and whether that action has anything to do with writing.",
+      "A number that rises when a tool is merely present and enabled, without its core action ever happening, is measuring footprint, not usage."
+    ],
+    "concepts": [
+      "METRIC DEFINITION INTEGRITY",
+      "METRIC SELECTION & GOAL TRANSLATION"
+    ]
+  },
+  {
+    "id": 102062,
+    "order": 62,
+    "topic": "product-sense",
+    "type": "debug",
+    "difficulty": "medium",
+    "mock_only": true,
+    "title": "Chime's referral-driven signup surge — the growth lead's channel-quality claim",
+    "scenario_context": "Chime's growth lead reports: 'New account signups grew 40% this quarter after we launched a cash-referral bonus for both the referrer and the new signup, clearly our best acquisition channel yet.' A skeptical analyst pulls Day-90 retention by channel: referral-driven accounts retain at 22% by day 90, versus 51% for accounts from Chime's existing organic and search channels, and referral accounts now make up 35% of total signups, up from 8% last quarter.",
+    "description": "What's the flaw in the growth lead's 'best acquisition channel yet' claim?",
+    "options": [
+      "There's no flaw whatsoever — a 40% rise in new signups is a clear, unambiguous acquisition win regardless of what happens to any of those users afterward or how long they stick around.",
+      "The growth lead is judging the channel purely on volume; the bonus that drove that volume also seems to be pulling in bounty-motivated signups who don't stick, so channel quality needs the retention read too.",
+      "The flaw is that Day-90 retention is simply too long a window to judge a brand-new channel fairly; a Day-7 retention comparison would give the referral channel a noticeably fairer read.",
+      "The flaw is that the referral bonus should have been paid only to the person making the referral and never to the new signup, since paying both sides is specifically what attracted these low-quality, bounty-chasing signups."
+    ],
+    "correct_option": 1,
+    "explanation": "Option B is correct: 'best channel yet' is a claim about quality, but the growth lead only supports it with a volume number. The retention breakdown the analyst pulled shows the referral channel converting at less than half the rate of existing channels, consistent with a bonus attracting people chasing the payout rather than the product, exactly the kind of channel-quality read that has to sit alongside signup volume before calling a channel the best one. Option A denies there's any flaw at all, ignoring the retention data the analyst specifically surfaced to challenge the claim. Option C shifts the critique onto window length, but the underlying issue, judging a channel on volume while ignoring what happens to those users afterward, would persist at any window length; a shorter window doesn't resolve whether the users are bounty-motivated. Option D proposes a specific incentive redesign as if it were the flaw in the growth lead's reasoning, but the question is about what's wrong with calling this the best channel based on the evidence given, not about how to redesign the bonus structure.",
+    "hints": [
+      "Ask what the growth lead's claim is actually based on: the number of people who joined, or what those people went on to do.",
+      "A channel can post the biggest headline number and still be the weakest channel once you look past signup day."
+    ],
+    "concepts": [
+      "GROWTH & ACQUISITION REASONING",
+      "RETENTION & COHORT REASONING"
+    ]
+  },
+  {
+    "id": 102063,
+    "order": 63,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "medium",
+    "mock_only": true,
+    "title": "Todoist's flat MAU despite tripled signups — where's the most productive next look?",
+    "scenario_context": "Todoist's MAU has been flat at 2.4 million for three months despite the marketing team tripling paid signups: new users are now 90,000 per month, up from 30,000 per month three months ago. Resurrected users, lapsed users returning, have held steady at 15,000 per month throughout. Applying the growth-accounting identity, end equals start plus new plus resurrected minus churned, to the current flat MAU implies monthly churn has risen to roughly 105,000, nearly matching new plus resurrected combined.",
+    "description": "Given that new signups tripled but churn rose to nearly cancel them out, where's the most productive next place to look?",
+    "options": [
+      "Nowhere new is needed here — a flat MAU paired with rising churn is already fully and completely explained by the growth-accounting identity, so no further investigation genuinely adds any value.",
+      "Check whether resurrected users are being double-counted together with new users somewhere in the pipeline, since that's the only way the identity's four terms could be producing a misleading flat total.",
+      "Check the new-signup funnel for a quality drop, not just a volume rise — the extra acquisition volume may be filled with users who don't find enough value to stay; trace onboarding step by step.",
+      "Check whether the marketing team's paid channels are reporting their signup numbers accurately, since a discrepancy in reported signups is the most likely explanation for churn rising this quickly."
+    ],
+    "correct_option": 2,
+    "explanation": "Option C is correct: the growth-accounting identity localizes which lever moved, churn, but doesn't explain why it moved. Given that the churn rise tracks almost exactly with the tripled new-signup volume, the natural next step is tracing that larger, newer cohort through its own onboarding funnel to find where it's failing to find value, not stopping at the identity's arithmetic. Option A mistakes locating which term moved for understanding why it moved; the identity is a starting point for investigation, not a finished diagnosis. Option B raises a double-counting concern the scenario gives no basis for, resurrected and new users are separately and consistently defined here, and proposes a bookkeeping check instead of engaging with the behavioral story the numbers already suggest. Option D redirects to a data-integrity concern about paid-channel reporting accuracy, also unsupported by anything in the scenario, when the more directly indicated lead is the relationship between the new, larger acquisition cohort and the churn that's rising alongside it.",
+    "hints": [
+      "The identity tells you which of the four ingredients moved. It doesn't yet tell you why that ingredient moved. What's the next layer down?",
+      "A much larger new cohort arriving through the same channel, and a churn number rising at nearly the same pace, are worth tracing through the same onboarding journey, step by step."
+    ],
+    "concepts": [
+      "GROWTH & ACQUISITION REASONING",
+      "FUNNEL & CONVERSION REASONING"
+    ]
+  },
+  {
+    "id": 102064,
+    "order": 64,
+    "topic": "product-sense",
+    "type": "predict_output",
+    "difficulty": "medium",
+    "mock_only": true,
+    "title": "Letterboxd's post-9pm nudge to log a film — which metric moves first, and what should stay low?",
+    "scenario_context": "Letterboxd starts sending a push notification at 9pm to users who watched a film that day but haven't logged it yet, aiming to raise logging completion. The team sets DAU as the metric to watch, plus a guardrail: the rate at which users who open the app from this specific notification leave within 5 seconds without logging anything.",
+    "description": "If the notification works exactly as intended, what should happen to DAU and the guardrail, and in what order of confidence?",
+    "options": [
+      "DAU should stay completely flat while the guardrail rises instead, since a working reminder only targets a behavior these specific users would have completed anyway regardless of any notification.",
+      "Both DAU and the guardrail should rise together by roughly similar amounts, since any new notification path mechanically increases both genuine opens and rushed, low-intent opens at the same time.",
+      "DAU should rise first, since it's opened by users completing an action already started; the guardrail should stay low, since a relevant reminder gives a real reason to act, not to tap and leave.",
+      "Neither metric is a reliable signal in this case; only the guardrail should be trusted, since DAU on its own can't distinguish a notification-triggered open from any other ordinary kind of open."
+    ],
+    "correct_option": 2,
+    "explanation": "Option C is correct: this notification targets users mid-task, they already watched a film and just haven't logged it, so opening from the notification is completing something already in motion, not a cold, low-intent tap. That's the 'active because wanted' pattern, not the 'active because pushed' pattern, so DAU should move first and directly, while the guardrail, built specifically to catch tap-and-abandon behavior, should stay low precisely because the prompt matches a real, already-formed intent. Option A denies DAU would move at all, but a targeted reminder for an action a user already started is exactly the kind of prompt that should drive a real open, not merely an eventual one they'd have gotten to regardless. Option B assumes any new notification path proportionally inflates both a real metric and a guardrail together, treating this targeted reminder the same as a generic engagement-bait push, the distinction the question is built to test. Option D overcorrects into distrusting DAU entirely, but the reason DAU is sometimes unreliable, notification-triggered opens with no real intent behind them, is specifically what doesn't apply to a reminder aimed at finishing an action the user already started.",
+    "hints": [
+      "Ask what this specific notification is reminding someone to do, and whether that's a brand-new ask or the tail end of something they already started.",
+      "Compare this to a generic 'come back and check the app' push. Is the risk of a low-value tap-and-leave the same here?"
+    ],
+    "concepts": [
+      "ENGAGEMENT & STICKINESS REASONING",
+      "GUARDRAIL & COUNTER-METRIC REASONING"
+    ]
+  },
+  {
+    "id": 102065,
+    "order": 65,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "medium",
+    "mock_only": true,
+    "title": "Shopify's 'Store Health Score' widget — picking the metric that proves it moves merchants to act",
+    "scenario_context": "Shopify ships a 'Store Health Score' widget on every merchant's dashboard, combining page-load speed, checkout uptime, and abandoned-cart rate into one number. The stated goal is getting merchants to fix issues that are actually costing them sales, not just to get merchants to glance at a score. Shopify's core business model charges merchants a monthly subscription plus a percentage of each transaction processed.",
+    "description": "Which is the best primary success metric for this widget?",
+    "options": [
+      "The share of merchants who take at least one corrective action, like fixing a checkout error, within 7 days of their score flagging that specific issue.",
+      "The total number of times the Store Health Score widget is viewed on the merchant dashboard each week, since more views show the feature is getting attention.",
+      "Average Store Health Score across all merchants platform-wide, since a rising average would show the platform's overall technical quality is improving.",
+      "Total transaction volume processed platform-wide that month, since Shopify's take-rate business model means healthier stores should show up in overall transaction volume."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A is correct: it directly operationalizes 'gets merchants to fix issues' as a corrective action tied to the specific issue the score flagged, not a step toward that outcome or an unrelated company-wide number. Option B measures whether the widget gets glanced at, an impression the system itself can inflate through placement and visual prominence, with no requirement that any merchant did anything about what they saw. Option C is a composite of the same score being tracked; it can rise through causes that have nothing to do with merchant action, including Shopify's own infrastructure improving load times platform-wide, so it doesn't isolate whether merchants themselves are fixing things. Option D leans on Shopify's real business model, take rate on transaction volume, to sound relevant, but a single dashboard widget shown to individual merchants is far too small a lever to reliably move a platform-wide transaction number, driven by thousands of unrelated factors.",
+    "hints": [
+      "Separate 'merchants see the score' from what the stated goal actually asks them to do next.",
+      "One option leans on Shopify's transaction-based business model to sound relevant. Check whether a single dashboard widget could plausibly move a platform-wide number like that on its own."
+    ],
+    "concepts": [
+      "METRIC SELECTION & GOAL TRANSLATION",
+      "BUSINESS-MODEL METRIC FLUENCY"
+    ]
+  },
+  {
+    "id": 102066,
+    "order": 66,
+    "topic": "product-sense",
+    "type": "debug",
+    "difficulty": "medium",
+    "mock_only": true,
+    "title": "Dropbox's inviters convert 4x higher — does a universal invite nudge follow?",
+    "scenario_context": "Dropbox's data team finds that users who send at least one referral invite in their first month convert to a paid storage plan at 4 times the rate of users who never send an invite. A growth PM proposes: 'Let's push every new user to send at least one invite in week one, that behavior clearly drives paid conversion.'",
+    "description": "What's the flaw in the PM's proposed action?",
+    "options": [
+      "There's no flaw here at all — a 4x gap is large enough that, at that magnitude, correlation and causation can reasonably be treated as effectively the same thing for decision-making purposes.",
+      "The flaw is that referral invites are simply the wrong lever entirely; Dropbox should instead study why non-inviters fail to convert, since that's a more direct path to the exact same business goal.",
+      "It's a self-selection trap: users who voluntarily invite in month one are plausibly already more engaged and convinced of Dropbox's value, and that conviction, not the invite itself, likely drives both behaviors.",
+      "The flaw is that the 4x figure needs to be broken down further by exactly which channel each invite was originally sent through, since only channel-level data could ever reveal whether this relationship is truly causal."
+    ],
+    "correct_option": 2,
+    "explanation": "Option C is correct: choosing to send an invite in month one is a behavior the user opts into, and users who opt into it are plausibly already the more engaged, more convinced segment of new signups. That same underlying conviction is a very plausible driver of paid conversion too, independent of whether an invite was ever sent, which means pushing everyone to invite doesn't necessarily import the conviction that was actually doing the work. Option A treats the size of the gap as proof of causation, but a large correlation is just as consistent with a strong selection effect as a small one is, magnitude alone doesn't resolve the question. Option B sidesteps the causal question by proposing a different research direction entirely, without identifying what's actually wrong with the PM's specific proposed action. Option D proposes a channel breakdown, a real segmentation instinct, but it doesn't address the underlying issue: within any single channel, the users who choose to invite are still a self-selected, more-engaged group, so a finer breakdown wouldn't resolve the selection problem on its own.",
+    "hints": [
+      "Ask what kind of user chooses to send an invite in their first month, before Dropbox ever pushed them to.",
+      "A behavior that correlates with a good outcome isn't automatically the thing producing that outcome. Think about what trait might be driving both the inviting and the converting."
+    ],
+    "concepts": [
+      "CAUSAL VS CORRELATIONAL JUDGMENT",
+      "GROWTH & ACQUISITION REASONING"
+    ]
+  },
+  {
+    "id": 102067,
+    "order": 67,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "medium",
+    "mock_only": true,
+    "follow_ups": [
+      102068,
+      102069
+    ],
+    "title": "Venmo's P2P volume dropped 12% overnight — what's the first move?",
+    "scenario_context": "Venmo's daily peer-to-peer payment volume fell 12% between Tuesday and Wednesday, then held flat at the new, lower level for the rest of the week. No app release, marketing pause, or holiday is known to have occurred in that window. An analyst opens a ticket titled 'P2P volume is down 12%, find out why' and assigns it to the on-call data scientist.",
+    "description": "Before forming any hypothesis about a cause, what's the most defensible first step?",
+    "options": [
+      "Pull a region-by-region breakdown immediately — localizing the drop geographically is always the fastest path to a root cause.",
+      "Pin down what '12%' is measured against — the baseline, and whether it's a dollar total or a transaction count — before forming any hypothesis.",
+      "Assign three engineers to check payment infrastructure logs at once, since infrastructure issues are the most common cause of sudden volume drops.",
+      "Wait a full week to see if the number recovers on its own before spending any analyst time investigating it."
+    ],
+    "correct_option": 1,
+    "explanation": "Option B is correct: before any hypothesis can be evaluated, '12%' needs a defined baseline (versus last Tuesday? a trailing average?) and a defined unit (dollar volume or transaction count) — that's the same clarify-the-metric-and-window discipline every structured diagnosis starts from, and skipping it means every downstream hypothesis is being tested against an undefined target. Option A jumps straight to one specific hypothesis (a geographic cause) before the metric itself is even pinned down — segmentation is a reasonable later step, not a defensible first move. Option C jumps to a different specific hypothesis (infrastructure) and compounds the problem by throwing three engineers at it simultaneously, wasting effort before anyone has confirmed what's even being measured. Option D's wait-and-see approach risks losing a time-sensitive diagnostic trail — logs, deploy records, and user reports all get harder to reconstruct a week later — for no clear benefit over just clarifying the metric now.",
+    "hints": [
+      "A one-line claim like 'volume is down 12%' hides a lot of unstated assumptions. What has to be pinned down before that sentence even means something specific?",
+      "Jumping straight to a specific hypothesis — a region, an infrastructure cause — skips a cheaper, more foundational step. What is it?"
+    ],
+    "concepts": [
+      "METRIC MOVEMENT DIAGNOSIS"
+    ]
+  },
+  {
+    "id": 102068,
+    "order": 68,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "medium",
+    "mock_only": true,
+    "parent_id": 102067,
+    "follow_up_dimension": "edge_case_pivot",
+    "title": "The Venmo drop traces to under 1% of users — does that change the read?",
+    "scenario_context": "Segmenting the Venmo P2P volume drop by account type reveals the cause: accounts flagged for recurring 'roommate group' rent-splitting, well under 1% of active P2P users but historically responsible for a disproportionate share of total dollar volume (rent-sized transfers, monthly cadence), saw a sudden, sharp decline in transfers this week. Every other account segment — the overwhelming majority of users — is flat versus last week.",
+    "description": "What's the most defensible way to read this finding?",
+    "options": [
+      "Since the affected accounts are well under 1% of users, this is a low-priority finding — the platform-wide number should simply be reported net of this segment going forward.",
+      "A pattern this concentrated in such a small population is most likely coincidence, and should be set aside until a larger segment shows the same movement.",
+      "This is a strong, actionable localization — a high-volume segment took a sharp hit, which explains the drop and points the investigation at that segment.",
+      "The finding doesn't change anything — with volume down platform-wide, the investigation should stay focused on platform-wide causes, not on which accounts are driving it."
+    ],
+    "correct_option": 2,
+    "explanation": "Option C is correct: the point of segmentation is exactly this — a metric that looks like a broad platform problem can be, and often is, one specific and disproportionately weighted segment. Confirming the drop traces entirely to rent-splitting accounts converts a vague 'volume is down' investigation into a sharp, testable hypothesis about what changed for that account type specifically — a Simpson's-paradox-flavored insight where the tiny segment, not the aggregate, is the real story. Option A's 'report net of this segment' hides the very signal just found instead of acting on it — the goal of decomposition is to route the investigation, not sanitize the topline. Option B gets the logic backwards: a movement isolated almost entirely to one small, identifiable segment while everything else stays flat is a stronger causal tell than a scattered, diffuse pattern would be — concentration is evidence, not noise. Option D ignores what was just learned: broad platform causes (an outage, say) would show up everywhere, not isolated to one account type, so the finding should redirect the investigation, not leave it unchanged.",
+    "hints": [
+      "A tiny share of users and a small share of the metric itself aren't the same thing — ask what share of the metric this segment normally carries.",
+      "Once a movement traces cleanly to one segment while everything else stays flat, what does that concentration itself tell you about where to look next?"
+    ],
+    "concepts": [
+      "SEGMENTATION & DECOMPOSITION REASONING",
+      "METRIC MOVEMENT DIAGNOSIS"
+    ]
+  },
+  {
+    "id": 102069,
+    "order": 69,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "medium",
+    "mock_only": true,
+    "parent_id": 102067,
+    "follow_up_dimension": "data_quality_pivot",
+    "title": "A logging migration touched the exact tag, the exact night — now what?",
+    "scenario_context": "Following up on the rent-splitting segment, the team that owns that account-tagging system confirms a backend migration shipped Tuesday night — the same night the drop begins — that changed how 'roommate group' transfers get tagged. They aren't yet sure whether the tag is now attached to fewer real transfers, or whether the transfers are still happening but logged under a different, untagged category.",
+    "description": "Given this new information, what's the most defensible next step?",
+    "options": [
+      "Reconcile the tagged count against an independent total — dollar movement between the same accounts — to see if transfers reappear under a different label.",
+      "Conclude the drop was never real — it's fully explained by the migration, and no further work is needed, since the timing match alone is conclusive enough.",
+      "Revert the logging migration immediately, since any schema change that coincides with a metric drop should always be rolled back first and investigated only after that.",
+      "Since the cause is now confirmed to be a logging issue, not real user behavior, downgrade the priority of this investigation and simply close out the ticket."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A is correct: a suspicious, well-timed coincidence between a schema change and a metric drop is a strong lead, not proof — the disciplined move is reconciling the tagged-transfer signal against an independent, tag-agnostic count of the same underlying activity to see whether the transfers still happened, just mislabeled. Option B treats timing correlation as confirmation and stops there; declaring the drop 'not real' without checking whether the transfers actually still occurred skips the verification step and could hide a genuine problem if the transfers really did stop. Option C jumps to an immediate revert before confirming what actually broke, risking the loss of the exact diagnostic trail (the mistagging pattern) needed to fix the pipeline correctly — reflexively reverting on every coincidental timing match isn't a validated step. Option D treats 'it's a logging issue' as the end of the investigation, but the affected numbers likely still need correcting or backfilling, and whether rent-splitting payments are actually still happening at their normal rate still needs to be established one way or the other.",
+    "hints": [
+      "A suspicious timing match between a schema change and a metric drop is a strong lead, not proof by itself — what would actually confirm whether the transfers still happened?",
+      "Think about a way to count the same underlying activity that doesn't depend on the tag that just changed."
+    ],
+    "concepts": [
+      "REAL-CHANGE VS ARTIFACT",
+      "METRIC MOVEMENT DIAGNOSIS"
+    ]
+  },
+  {
+    "id": 102070,
+    "order": 70,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "medium",
+    "mock_only": true,
+    "follow_ups": [
+      102071,
+      102072
+    ],
+    "title": "Reddit's algorithmic comment sort — engagement up, moderators unhappy: launch?",
+    "scenario_context": "Reddit tests replacing the default 'Best' comment sort with a new ranking model on a subset of large subreddits. Two weeks in: comments read per session are up 9%, comments posted per session are up 5%, but subreddit moderators report a rise in reported and removed comments and describe the new top comments as 'more inflammatory, less substantive' in exit interviews with the product team.",
+    "description": "What's the most defensible read of this launch, before deciding whether to expand it?",
+    "options": [
+      "Ship broadly — both engagement metrics moved in the intended direction, and moderator sentiment is a subjective, anecdotal signal that shouldn't override two quantitative wins.",
+      "Don't ship — any negative moderator feedback on a community-facing ranking change is disqualifying on its own, regardless of the engagement numbers.",
+      "The two engagement metrics settle it — reading and posting both rose, so the model is working as intended, and the moderator complaints are a separate issue for trust-and-safety.",
+      "This is a genuine trade-off, not a settled win — the lift and the moderator complaint could be the same phenomenon, worth checking before expanding broadly."
+    ],
+    "correct_option": 3,
+    "explanation": "Option D is correct: it names the trade-off explicitly and raises the sharper possibility that the two signals aren't independent — a ranking model that promotes engagement-driving comments could be systematically favoring inflammatory ones, since outrage and disagreement often generate more replies, which would mean the 'engagement win' and the 'quality complaint' are the same underlying effect described two different ways. That needs checking before the numbers get treated as an unqualified success. Option A dismisses moderator reports as merely subjective without asking whether their qualitative read points at the same causal mechanism the quantitative lift does — a signal reported as sentiment isn't inherently lower-quality than a topline metric. Option B overcorrects into an absolute veto that would block essentially any change with mixed feedback, skipping the actual analysis of whether the concern is well-founded and how it weighs against the lift. Option C treats the two engagement metrics as fully resolving the question and waves the moderator complaint off as unrelated, when the scenario gives a plausible mechanism connecting them directly — the trap of picking the more flattering read without checking the connection.",
+    "hints": [
+      "Two things moved after this change: comments read and posted, and moderator-reported quality. Before treating them as two separate stories, ask whether they could be the same story told two ways.",
+      "Think about why a ranking model driven by engagement signals might systematically favor certain kinds of comments, and what that would mean for the numbers that look like a win."
+    ],
+    "concepts": [
+      "CONFLICTING-METRIC & TRADE-OFF JUDGMENT",
+      "GUARDRAIL & COUNTER-METRIC REASONING"
+    ]
+  },
+  {
+    "id": 102071,
+    "order": 71,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "medium",
+    "mock_only": true,
+    "parent_id": 102070,
+    "follow_up_dimension": "ambiguity_pivot",
+    "title": "Define 'inflammatory' as a measurable term — the interviewer won't.",
+    "scenario_context": "You propose checking whether Reddit's new ranking model systematically promotes inflammatory comments. The interviewer pushes back: 'Define \"inflammatory\" as something you could actually measure. I'm not giving you a definition.'",
+    "description": "Which proposed definition is the most defensible starting point for this investigation?",
+    "options": [
+      "Define it by comment length — shorter comments are more likely to be reactive and inflammatory, so flag any top comment under 15 words as such.",
+      "Define it operationally using data already generated — the rate a comment gets removed by moderators or reported by users, normalized by view count.",
+      "Ask a panel of employees to manually read and rate the top 100 test comments as inflammatory or not, and use their majority vote as the working definition.",
+      "Define it as any comment that replies to a comment expressing a different opinion, since disagreement is the single most common source of heated exchanges."
+    ],
+    "correct_option": 1,
+    "explanation": "Option B is correct: it grounds 'inflammatory' in a behavior the platform already captures at scale — moderator removals and user reports, normalized by exposure — rather than a subjective or unscalable judgment call, and it's directly the signal the moderators themselves raised, so it operationalizes their concern instead of substituting a proxy for it. Option A picks a surface-level, easily-measured trait with no established mechanism tying it to actual complaints — plenty of short comments are fine and plenty of long ones are inflammatory, so it swaps convenience for validity. Option C is a real technique but doesn't scale to a platform-wide evaluation and, more importantly, sidesteps rather than answers the definitional question — 'have humans decide' isn't itself a measurable definition, it's a workaround. Option D conflates disagreement itself with a quality problem — most healthy discourse involves replying to disagree, and treating all of it as inflammatory would flag enormous amounts of ordinary, constructive conversation.",
+    "hints": [
+      "The platform is already generating a behavioral signal close to what moderators are describing — look for a definition built from data that already exists, not a new judgment call.",
+      "A good operational definition should tie back to the actual concern moderators raised, not a proxy trait that only loosely correlates with it."
+    ],
+    "concepts": [
+      "METRIC DEFINITION INTEGRITY",
+      "GUARDRAIL & COUNTER-METRIC REASONING"
+    ]
+  },
+  {
+    "id": 102072,
+    "order": 72,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "medium",
+    "mock_only": true,
+    "parent_id": 102070,
+    "follow_up_dimension": "scale_pivot",
+    "title": "Now roll it out across 40 international communities — does the same read hold?",
+    "scenario_context": "Reddit wants to expand the ranking model from the English-language test subreddits to over 40 international-language communities at once, collectively 100 times the tested user base. The team assumes the same 9% engagement lift and moderator-flagged inflammatory-rate increase will hold everywhere, and plans a single global rollout decision.",
+    "description": "What's the most defensible response to the plan for a single global rollout decision?",
+    "options": [
+      "The plan is sound — a ranking model is language-agnostic math, so the same lift and flag-rate at 100x the scale is just a bigger version of the same result.",
+      "Reject the expansion outright — no model validated on English-language communities should ever be trusted internationally, no matter what a segmented analysis might show.",
+      "Don't treat this as one decision — moderation norms vary by community and language, so measure the effect per-market before committing to a single global call.",
+      "Run the exact same test for longer in the original English-language subreddits, since a longer window there will reveal whether the effect generalizes internationally."
+    ],
+    "correct_option": 2,
+    "explanation": "Option C is correct: what held as a single aggregate result in one relatively homogeneous test population doesn't automatically transfer to 40-plus communities with different languages, moderation norms, and definitions of acceptable discourse — a defensible rollout decision segments the read by market or community rather than extrapolating one global number, the same 'decompose before you trust the aggregate' discipline the earlier segmentation finding relied on, now applied prospectively at scale. Option A assumes the ranking mechanism is language-agnostic math and therefore its social effects must scale uniformly, but the concern was never about the math — it's about what kind of comments the model surfaces, and what counts as inflammatory is culturally and linguistically specific. Option B swings to a blanket rejection with no path forward, forfeiting the chance to actually learn how the model behaves in specific new markets — an absolute rule substituting for analysis. Option D proposes extending the test in markets already tested, which does nothing to answer the actual open question: how the model behaves in linguistic and cultural contexts it hasn't been tested in at all.",
+    "hints": [
+      "The test only ran in large, English-language communities. Ask what assumption has to hold for that result to transfer unchanged to 40 different communities and languages at once.",
+      "A single global percentage can flatten real differences across very different populations — think back to what a segmented read is for."
+    ],
+    "concepts": [
+      "SEGMENTATION & DECOMPOSITION REASONING",
+      "CONFLICTING-METRIC & TRADE-OFF JUDGMENT"
+    ]
+  },
+  {
+    "id": 102073,
+    "order": 73,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "medium",
+    "mock_only": true,
+    "follow_ups": [
+      102074,
+      102075
+    ],
+    "title": "Airbnb's fast-responding hosts book better — does ranking them higher cause more bookings?",
+    "scenario_context": "Airbnb's data team finds that hosts who reply to guest inquiries within 1 hour have a 25% higher inquiry-to-completed-stay rate than hosts who take longer to respond. A growth PM proposes giving fast-responding hosts a boost in search ranking, reasoning: 'Fast response clearly drives more completed bookings — if we rank these hosts higher, we'll convert even more searches into stays.'",
+    "description": "What's the strongest flaw in the PM's proposed reasoning?",
+    "options": [
+      "It's a self-selection trap — fast-replying hosts are plausibly more attentive and available, and that trait, not the reply speed, may drive completed stays.",
+      "The real problem is that inquiry-to-completed-stay is a vanity metric — Airbnb should measure total nights booked instead before evaluating any host-side proposal.",
+      "The comparison is invalid because it only covers one platform — the PM would need response-time data from a competitor like Vrbo before concluding anything.",
+      "There's no flaw here: a 25% gap this large is decisive, and ranking hosts by a behavior this strongly correlated with bookings is a reasonable move."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A is correct: hosts who habitually reply within an hour are plausibly systematically different in ways a ranking boost wouldn't replicate just by rewarding the timing — more available, more attentive to their listing generally, quicker to fix problems — and those underlying traits, not the raw speed number, likely drive the completed-stay rate. Boosting ranking based on response time alone assumes rewarding the behavior in isolation reproduces the outcome, without evidence the behavior itself, rather than the host type it marks, is what's doing the work. Option B reframes the issue as a metric-choice problem, but swapping to nights booked doesn't resolve whether response time is causal, it just changes what's being attributed to it. Option C is a real data-collection instinct but misdirected — the missing piece isn't a second platform, it's isolating response time from the other host traits it's bundled with. Option D is exactly the trap this family exists to catch: correlation size doesn't establish causation, and a 25% gap is fully explainable by selection on host quality and availability.",
+    "hints": [
+      "Ask what kind of host tends to reply within an hour in the first place, and whether that's already telling you something about the quality of their hosting overall.",
+      "A behavior that correlates with a good outcome isn't automatically the thing producing that outcome — think about what underlying trait might explain both the fast replies and the completed stays."
+    ],
+    "concepts": [
+      "CAUSAL VS CORRELATIONAL JUDGMENT"
+    ]
+  },
+  {
+    "id": 102074,
+    "order": 74,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "medium",
+    "mock_only": true,
+    "parent_id": 102073,
+    "follow_up_dimension": "business_rule_pivot",
+    "title": "Leadership wants it as a permanent policy — guaranteed top-3 placement, no other checks",
+    "scenario_context": "Despite the self-selection concern, leadership wants to move forward, but escalates the proposal: any host averaging under 1-hour response time gets a permanent 'Fast Responder' badge and a guaranteed top-3 search placement, regardless of review score, cancellation rate, or any other quality signal, effective immediately.",
+    "description": "What's the most defensible response to this specific version of the policy?",
+    "options": [
+      "Approve it as specified — since response time correlates with completed stays, guaranteed top-3 placement is a direct, low-risk way to capture that correlation at scale, immediately.",
+      "Reject it outright, and recommend no host-side ranking signal ever be based on response time at all, since the original data was never causal to begin with.",
+      "Approve it, but only after re-running the analysis on twice as much historical data, since a much larger sample would resolve the self-selection concern already raised.",
+      "Push back on the 'regardless of any other quality signal' design specifically — a guaranteed slot with no floor could rank a fast, weak host over a slower, excellent one."
+    ],
+    "correct_option": 3,
+    "explanation": "Option D is correct: this is a ship or no-ship judgment on a specific, more extreme policy design, not a re-litigation of the original correlational data. The proposal strips out every other quality signal, so it could rank a fast-but-mediocre host — poor reviews, high cancellations — above a slightly slower but excellent one, directly undermining the completed-stay outcome the policy claims to chase. That's a concrete, checkable flaw in this policy's design, worth raising regardless of whether response time is causal at all. Option A treats 'correlates with the outcome' as sufficient grounds for an unconditional, guaranteed-placement policy, ignoring that this version removes every other safeguard that might normally offset a weak host being boosted. Option B overcorrects into rejecting any use of the signal at all, going further than the actual concern warrants — the original flaw was about attributing causation to a specific incentive design, not that response time carries zero information. Option C treats more historical data as the fix, but a self-selection problem doesn't shrink with sample size — the same biased comparison, run on twice as many hosts, produces the same biased comparison at higher confidence, not a resolved one.",
+    "hints": [
+      "The new proposal removes every other quality check except response time. Ask what kind of host that specific design could accidentally reward.",
+      "Separate two different concerns: whether response time is causal at all, and whether this specific policy design — guaranteed placement, no other signal — is a good idea even if it partly is."
+    ],
+    "concepts": [
+      "SHIP / NO-SHIP DECISION",
+      "CAUSAL VS CORRELATIONAL JUDGMENT"
+    ]
+  },
+  {
+    "id": 102075,
+    "order": 75,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "medium",
+    "mock_only": true,
+    "parent_id": 102073,
+    "follow_up_dimension": "data_quality_pivot",
+    "title": "The 'fast responders' turn out to be property-management bots — does the segment change the read?",
+    "scenario_context": "Digging into the original response-time data, you find that a large share of hosts with sub-1-hour reply times aren't individuals replying by hand — they're professional property-management companies running dozens of listings each through automated instant-reply software. These management-company accounts are a small fraction of all host accounts, but a large fraction of total completed stays.",
+    "description": "What's the most defensible way this new information should change the analysis?",
+    "options": [
+      "It doesn't change anything material — automated or not, a fast reply is still a fast reply, and the original correlation holds exactly as measured before this.",
+      "It changes the analysis meaningfully — the correlation is likely driven by a professional segment, quite different from a typical host, so it shouldn't generalize.",
+      "This confirms automation is the answer — Airbnb should require every single host to use auto-reply software, since that's clearly what's driving the booking advantage.",
+      "The finding should be dropped from the analysis entirely, since a data-quality issue this significant means the original 25% gap can no longer be trusted at all."
+    ],
+    "correct_option": 1,
+    "explanation": "Option B is correct: this is a sharper version of the original self-selection concern. The 'fast response' population isn't a random cross-section of hosts who happen to reply quickly — it's disproportionately professional management operations that differ from an average individual host along many dimensions at once (pricing strategy, photo quality, portfolio scale, dedicated staff), and response time is riding along with all of that, not isolated from it. Whatever lift is attributable to 'fast response' specifically is smaller than the raw gap suggests, and an individual host who simply starts replying faster is unlikely to match it. Option A treats automated versus human as an irrelevant technicality, but the point isn't whether the reply is automated — it's that the accounts sending it are systematically different businesses, exactly the confound the original concern was about, now made concrete. Option C leaps to a prescriptive fix that assumes automation itself is causal, when the finding actually shows automation is a marker of a different, more complex segment — the same attribution error one layer deeper. Option D overreacts by discarding the finding entirely; a confound being identified doesn't make the original number worthless, it means the number needs to be interpreted correctly rather than thrown away.",
+    "hints": [
+      "Ask whether 'replies within an hour' is really one clean, comparable population, or whether it's quietly dominated by a very different kind of host.",
+      "A confound that concentrates in one identifiable, high-value segment doesn't just add noise — it can be most of what the original correlation was actually measuring."
+    ],
+    "concepts": [
+      "SEGMENTATION & DECOMPOSITION REASONING",
+      "CAUSAL VS CORRELATIONAL JUDGMENT"
+    ]
+  },
+  {
+    "id": 102076,
+    "order": 76,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "medium",
+    "mock_only": true,
+    "follow_ups": [
+      102077,
+      102078
+    ],
+    "title": "Discord's 61% DAU/MAU ratio — good, bad, or the wrong comparison?",
+    "scenario_context": "A Discord community-analytics lead reports 25 million daily active users against 41 million monthly active users, a DAU/MAU stickiness ratio of about 61%. A new team member, who previously worked on a to-do-list app, is stunned: 'That's incredible — we'd have killed for a number like that.'",
+    "description": "What's the most defensible read of the new team member's reaction?",
+    "options": [
+      "The reaction is right to be impressed, but for the wrong reason — 61% is only meaningful because Discord's monthly active base is so large in absolute terms.",
+      "The reaction is misplaced — DAU/MAU isn't comparable across any two products, since every app computes daily and monthly actives using slightly different definitions anyway.",
+      "The reaction reveals a category mismatch — a chat platform is naturally a daily habit in a way an occasional to-do app isn't, so a high ratio isn't surprising.",
+      "The reaction is overstated — 61% is actually a below-average stickiness ratio for messaging platforms specifically, once you account for servers sitting inactive most days of the week."
+    ],
+    "correct_option": 2,
+    "explanation": "Option C is correct: the new team member is implicitly comparing Discord's ratio to a mental benchmark shaped by a very different category — occasional-burst task management — and a chat and community platform used for ongoing conversations naturally sits much closer to a daily-habit cadence. A high ratio here isn't a remarkable outlier the way the same number might be for an occasional-use tool; the benchmark itself needs to match the category before a number can be read as impressive or not. Option A concedes the surprise is warranted but re-grounds it in absolute MAU size, which doesn't bear on the ratio at all — a large denominator doesn't make a given percentage more or less impressive. Option B overstates the point into 'never comparable across any two products,' when the real issue isn't that comparison is categorically meaningless, it's that this specific comparison crosses two very different usage categories. Option D introduces an unsupported claim with no basis in the scenario and shifts the critique to a benchmark comparison that was never actually made.",
+    "hints": [
+      "Before judging whether a ratio is impressive, ask what kind of usage cadence you'd expect from this specific category of product in the first place.",
+      "The surprise here says as much about the mental benchmark the new team member is carrying over from a different kind of product as it does about Discord's actual number."
+    ],
+    "concepts": [
+      "ENGAGEMENT & STICKINESS REASONING"
+    ]
+  },
+  {
+    "id": 102077,
+    "order": 77,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "medium",
+    "mock_only": true,
+    "parent_id": 102076,
+    "follow_up_dimension": "business_rule_pivot",
+    "title": "Now benchmark it against a daily-utility app instead — does the read change?",
+    "scenario_context": "The interviewer redirects: 'Drop the to-do-app comparison. Now benchmark Discord's 61% DAU/MAU against a genuinely daily-utility product — something like a weather app or a maps app that most people check every single day out of habit or necessity.'",
+    "description": "Under this new comparison, what's the most defensible read of Discord's 61%?",
+    "options": [
+      "Even against a daily-utility product, 61% is strong — utility apps earn high ratios through need, while Discord earns a similar number through chosen engagement instead.",
+      "The comparison is now unfavorable — since utility apps are used out of necessity daily, any non-essential app should post a meaningfully lower ratio than this, so 61% now looks weak.",
+      "The comparison is meaningless in the other direction — weather or maps apps have no comparable 'engagement' story at all worth discussing, so there's nothing to benchmark against.",
+      "This new benchmark actually proves the original to-do-app comparison was the fairer one all along, since both are tools people choose to use rather than are ever forced to use."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A is correct: this recombines business-model vocabulary with the earlier category-fit insight. A daily-utility product earns a high ratio through necessity-driven, often brief checks, while Discord earns a comparable ratio through sustained, voluntary social engagement that users choose repeatedly rather than something they're forced to check — recognizing that difference is the informative comparison, and it shows Discord's number is impressive on its own terms rather than merely borrowed from a favorable category. Option B assumes any non-necessity app should structurally post a lower ratio than a utility app, but that's exactly the assumption this pivot is testing — Discord's social pull can rival necessity-driven habit even without being a checked-out-of-need utility. Option C dismisses the new benchmark as inapplicable, but weather and maps apps have a perfectly well-defined DAU/MAU ratio; the comparison is entirely doable, it's just a different category with a different usage driver. Option D conflates non-essential with occasional-use, but Discord and a to-do app aren't equivalent just because both are optional — a to-do app is optional and typically low-frequency by design, while Discord is optional but naturally high-frequency, precisely the category distinction the original read depended on.",
+    "hints": [
+      "Weather and maps apps earn high engagement through necessity; Discord would have to earn a similar number a different way. Think about what that different way is.",
+      "Ask what's actually driving repeat use in each category — being needed, or being wanted — before deciding whether the comparison favors or disfavors Discord."
+    ],
+    "concepts": [
+      "BUSINESS-MODEL METRIC FLUENCY",
+      "ENGAGEMENT & STICKINESS REASONING"
+    ]
+  },
+  {
+    "id": 102078,
+    "order": 78,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "medium",
+    "mock_only": true,
+    "parent_id": 102076,
+    "follow_up_dimension": "edge_case_pivot",
+    "title": "A large share of daily actives are just notification taps — does 61% still mean the same thing?",
+    "scenario_context": "Digging deeper into the 61% DAU/MAU figure, the team finds that a large share of daily active sessions are triggered by push notifications for @mentions and DMs — users tap the notification, glance at the one message, and close the app within seconds, without opening any other server or channel.",
+    "description": "What's the most defensible read of this finding?",
+    "options": [
+      "It doesn't matter — DAU/MAU only measures whether someone opened the app that day, and a notification-triggered open satisfies that definition exactly as written, nothing more.",
+      "The fix is to stop sending @mention push notifications entirely, since any metric inflated by notifications should have the notifications removed, not the metric redefined.",
+      "This is unrelated to stickiness — @mention notifications are a core utility feature, not a growth tactic, so they can't be inflating an engagement number by definition.",
+      "The 61% is technically accurate but overstates voluntary pull — a notification glance counts the same as a proactive browse, so it should be read alongside a depth signal."
+    ],
+    "correct_option": 3,
+    "explanation": "Option D is correct: this is the introductory edge of metric-gaming awareness — the metric's own definition doesn't distinguish 'opened because pushed' from 'opened because wanted,' so a notification-heavy product can inflate DAU, and therefore the stickiness ratio, without a matching rise in genuine, self-directed engagement. The number is still computed correctly, but leaning on it alone risks overstating how much users actually want to be there, which is exactly why it should be paired with a depth-of-session signal rather than read in isolation. Option A is technically correct that the definition is satisfied, but that isn't the same as the number meaning what people assume it means — that gap is the finding's whole point. Option B jumps to a drastic operational fix without first establishing how much of the number is actually notification-driven, or whether the notifications serve a real, wanted purpose — the fix for a metric-reading problem isn't necessarily a product change. Option C asserts @mention notifications can't be a factor 'by definition,' but a feature can be a legitimate utility and still inflate a metric that was never designed to distinguish push-triggered opens from proactive ones.",
+    "hints": [
+      "Ask what specific action the metric's definition requires, and whether a notification tap and a proactive open satisfy that requirement identically.",
+      "A metric that can't tell apart 'wanted to check in' from 'reacted to a push' is vulnerable to a specific kind of inflation — what's a second signal that would separate the two?"
+    ],
+    "concepts": [
+      "METRIC GAMING & ROBUSTNESS",
+      "ENGAGEMENT & STICKINESS REASONING"
+    ]
   }
 ]
