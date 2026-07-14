@@ -2,7 +2,7 @@
 
 Status: canonical planning spec
 Owner: product + orchestration
-Last updated: 2026-05-21
+Last updated: 2026-07-14
 
 ## Purpose
 
@@ -49,20 +49,20 @@ Interview performance follows from reasoning quality. Build for the practitioner
 
 ## Canonical facts
 
-- Active tracks: SQL, Python, Pandas, PySpark, Data Engineering, Data Modeling, Statistics, ML Fundamentals, Experimentation
+- Active tracks: SQL, Python, Pandas, PySpark, Data Engineering, Data Modeling, Statistics, ML Fundamentals, Experimentation, Product Sense
 - Hiring roles surfaced on landing: Data Analyst, Data Engineer, Analytics Engineer, Data Scientist
-- Practice bank: 878 questions
-- Mock-only bank: 1,148 questions
+- Practice bank: 965 questions
+- Mock-only bank: 1,269 questions
 - Practice is the full curriculum; mock-only content is supplemental benchmark inventory
 
 ## Role-to-track framing
 
 | Role | Core tracks |
 |---|---|
-| Data Analyst | SQL, Statistics, Pandas, Python |
+| Data Analyst | SQL, Statistics, Product Sense, Pandas, Python |
 | Data Engineer | Python, SQL, PySpark, Data Engineering, Data Modeling |
 | Analytics Engineer | SQL, Data Modeling, Pandas, Python |
-| Data Scientist | ML Fundamentals, Statistics, Experimentation, Python, Pandas, SQL |
+| Data Scientist | ML Fundamentals, Statistics, Experimentation, Product Sense, Python, Pandas, SQL |
 
 This mapping is a product promise. Track quality and modality choices must strengthen, not weaken, the credibility of each role path.
 

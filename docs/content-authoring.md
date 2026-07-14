@@ -23,7 +23,7 @@ This doc is the **cross-track contract** for content authoring on datathink. It 
 |---|---|
 | `.github/agents/question-authoring.agent.md` | The mandatory authoring entry point. Procedure + cross-track quality bar. |
 | `docs/content-authoring.md` (this file) | Cross-track contract: philosophy, ID scheme, hint discipline, concept-tag rules, mock-only contract reference. |
-| `docs/tracks/<track>.md` × 9 | Per-track knowledge: philosophy applied per track, modality, datasets, ID range, difficulty vocabulary, concept arc, anti-patterns, full JSON schema, verification. |
+| `docs/tracks/<track>.md` × 10 | Per-track knowledge: philosophy applied per track, modality, datasets, ID range, difficulty vocabulary, concept arc, anti-patterns, full JSON schema, verification. |
 | `docs/concept-taxonomy.md` | Canonical concept-family registry per track + 7 universal follow-up dimensions. Validator-enforced. |
 | `docs/concept-hooks.md` | Socratic interview-hook inventory (seeding tool for concept coverage; informational, not enforced). |
 | `docs/features/mock.md` | Canonical plan-tier matrix + chain atomicity contract + Interview Loop spec. |
@@ -526,6 +526,7 @@ JSON schemas, datasets, ID ranges, concept arcs, and verification commands are *
 - [`docs/tracks/statistics.md`](./tracks/statistics.md)
 - [`docs/tracks/ml-fundamentals.md`](./tracks/ml-fundamentals.md)
 - [`docs/tracks/experimentation.md`](./tracks/experimentation.md)
+- [`docs/tracks/product-sense.md`](./tracks/product-sense.md)
 
 ---
 
@@ -584,9 +585,10 @@ Practice questions are the full curriculum. Mock-only questions live in the same
 | Statistics | 31 | 43 | 26 | **100** | Hybrid (conceptual MCQ + numerical Python) |
 | ML Fundamentals | 30 | 40 | 30 | **100** | Constructed reasoning (MCQ) |
 | Experimentation | 30 | 33 | 24 | **87** | Constructed reasoning (MCQ) |
-| **Total** | | | | **878** | |
+| Product Sense | 30 | 33 | 24 | **87** | Constructed reasoning (MCQ) |
+| **Total** | | | | **965** | |
 
-Mock-only add-on bank: **1,169 questions** (Pro/Elite only). Samples: **81 total** (9 per track × 9 tracks, dedicated content separate from practice and mock pools).
+Mock-only add-on bank: **1,269 questions** (Pro/Elite only). Samples: **90 total** (9 per track × 10 tracks, dedicated content separate from practice and mock pools).
 
 **These counts evolve.** They reflect the bank at the time of the 2026-05 refactor. CLAUDE.md mirrors them; both files update together.
 
@@ -594,7 +596,7 @@ Mock-only add-on bank: **1,169 questions** (Pro/Elite only). Samples: **81 total
 
 **This subsection is the canonical source of truth for learning-path semantics.** Other docs (`CLAUDE.md`, `docs/track-onboarding.md`, `docs/backend.md`, `docs/architecture.md`, `docs/frontend.md`) link here and must not restate the rules below.
 
-96 paths total across 9 tracks. Path files live in `backend/content/paths/`. Per-track pattern registry lives in `backend/path_patterns.py`.
+103 paths total across 10 tracks. Path files live in `backend/content/paths/`. Per-track pattern registry lives in `backend/path_patterns.py`.
 
 #### What a learning path is
 
@@ -706,7 +708,7 @@ Sample questions are governed by the same cross-track quality bar as practice an
 
 ### Purpose and scope
 
-Sample questions are a **first-impression discovery surface**: shown to anonymous visitors and logged-in users before they commit to any track. Each track has exactly 3 easy + 3 medium + 3 hard sample questions (9 per track, 81 total). Sample questions:
+Sample questions are a **first-impression discovery surface**: shown to anonymous visitors and logged-in users before they commit to any track. Each track has exactly 3 easy + 3 medium + 3 hard sample questions (9 per track, 90 total). Sample questions:
 
 - Must stand alone as an interesting, representative first touch — not as a warm-up for the practice arc.
 - Never appear in the practice or mock catalog; they are completely separate content.

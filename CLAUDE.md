@@ -11,7 +11,7 @@ Work simultaneously from five vantage points:
 - **Senior full-stack engineer** — know the full request lifecycle (auth → lock check → guard → execute → evaluate → progress), where state lives (Postgres vs. DuckDB vs. in-process), and the scaling bottlenecks.
 - **UI/UX designer** — professional productivity tool used in long sessions. Respect the design language: single `App.css` token system, two-tone editor (always dark), 900 px breakpoint, spacing/radius conventions.
 - **User-behaviour expert** — users are under interview pressure. Anonymous-first identity, in-place registration, and persistent progress are intentional product choices. Every friction point costs confidence.
-- **Curriculum designer** — 878 practice questions with intentional difficulty progressions, real-world datasets, and semantic concept tags. Changes to unlock rules or question ordering must preserve the learning arc.
+- **Curriculum designer** — 965 practice questions with intentional difficulty progressions, real-world datasets, and semantic concept tags. Changes to unlock rules or question ordering must preserve the learning arc.
 - **Product-minded operator** — three subscription tiers (Free / Pro / Elite) are the revenue model. The unlock gates, rate limiting, and error shapes (`{ error, request_id }`) exist for real operational reasons.
 
 ---
@@ -154,7 +154,7 @@ After every push to `origin/main`: `gh run list --commit "$(git rev-parse HEAD)"
 
 ## Content footprint
 
-**878 practice questions · 1,169 mock-only questions (Pro/Elite) · 81 sample questions (9 tracks × 9)**
+**965 practice questions · 1,269 mock-only questions (Pro/Elite) · 90 sample questions (10 tracks × 9)**
 
 | Track | Easy | Medium | Hard | Mock-only | Format | Location |
 |---|---|---|---|---|---|---|
@@ -167,16 +167,17 @@ After every push to `origin/main`: `gh run list --commit "$(git rev-parse HEAD)"
 | Statistics | 31 | 43 | 26 | 134 | MCQ + numerical Python | `backend/content/statistics_questions/` |
 | ML Fundamentals | 30 | 40 | 30 | 143 | MCQ (no execution) | `backend/content/ml_fundamentals_questions/` |
 | Experimentation | 30 | 33 | 24 | 104 | MCQ (no execution) | `backend/content/experimentation_questions/` |
+| Product Sense | 30 | 33 | 24 | 100 | MCQ (no execution) | `backend/content/product_sense_questions/` |
 
-**Learning paths:** 96 total (SQL 11 · Python 11 · Pandas 9 · PySpark 14 · DE 9 · DM 11 · Statistics 11 · ML 12 · Exp 8). Curated 5–9 question walks through a practitioner skill pattern. All paths accessible to all users; questions inside follow the standard plan policy (free = easy; Pro/Elite = all). Paths do not unlock questions. See [`docs/content-authoring.md`](docs/content-authoring.md) §Paths.
+**Learning paths:** 103 total (SQL 11 · Python 11 · Pandas 9 · PySpark 14 · DE 9 · DM 11 · Statistics 11 · ML 12 · Exp 8 · Product Sense 7). Curated 5–9 question walks through a practitioner skill pattern. All paths accessible to all users; questions inside follow the standard plan policy (free = easy; Pro/Elite = all). Paths do not unlock questions. See [`docs/content-authoring.md`](docs/content-authoring.md) §Paths.
 
-**Sample questions:** 9 tracks × 3 difficulties × 3 questions = 81 dedicated sample questions. IDs use the TXS format; files live in `backend/content/sample_questions/`. Never drawn from the practice or mock pools.
+**Sample questions:** 10 tracks × 3 difficulties × 3 questions = 90 dedicated sample questions. IDs use the TXS format; files live in `backend/content/sample_questions/`. Never drawn from the practice or mock pools.
 
 **Unlock model (flat, plan-based):**
 
 | Plan | Practice access | Mock access |
 |---|---|---|
-| Free | All easy (all 9 tracks) | 1 benchmark/rolling 7 days, easy only |
+| Free | All easy (all 10 tracks) | 1 benchmark/rolling 7 days, easy only |
 | Pro | All easy + medium + hard | 3 benchmark/day + 3 custom/day, any difficulty |
 | Elite | Full catalog | Unlimited + Interview Loop + focus_concepts |
 

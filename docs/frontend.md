@@ -11,7 +11,7 @@ React 18 + React Router + Vite. Monaco editor. Axios API client. Single global s
 Defined in `frontend/src/App.js`:
 
 ```
-/                                → LandingPage (editorial landing — hero IDE, role selector, 9-track index)
+/                                → LandingPage (editorial landing — hero IDE, role selector, 10-track index)
 /auth                            → AuthPage (register / sign in / forgot password / OAuth)
 /auth/reset-password             → ResetPasswordPage (consume reset token, set new password)
 /auth/verify-email               → VerifyEmailPage (consume email verification token)
@@ -24,7 +24,7 @@ Defined in `frontend/src/App.js`:
 /learn/:topic/:slug              → LearningPath (curated path — breadcrumb, progress bar, question list)
 /interview-prep                  → InterviewPrepIndexPage (roles index — 4 role cards, auth-agnostic)
 /interview-prep/:role            → RoleInterviewPrepPage (role SEO landing — data-engineer | data-analyst | analytics-engineer | data-scientist; others 404)
-/sample                          → SampleHubPage (discovery surface — 9-track × 3-difficulty grid; `?role=<slug>` filters to a role's tracks)
+/sample                          → SampleHubPage (discovery surface — 10-track × 3-difficulty grid; `?role=<slug>` filters to a role's tracks)
 /sample/:topic/:difficulty       → SampleQuestionPage (topic-aware sample mode)
 /sample/:difficulty              → redirect → /sample/sql/:difficulty (legacy)
                                    /sample/:track → /sample/:track/easy (URL-guess convenience)
@@ -43,9 +43,9 @@ Defined in `frontend/src/App.js`:
 *                                → NotFoundPage
 ```
 
-`:topic` values: `sql` | `python` | `pandas` | `pyspark` | `data-engineering` | `data-modeling` | `statistics` | `ml-fundamentals` | `experimentation`
+`:topic` values: `sql` | `python` | `pandas` | `pyspark` | `data-engineering` | `data-modeling` | `statistics` | `ml-fundamentals` | `experimentation` | `product-sense`
 
-Active tracks (`TRACK_SLUGS`): all 9 tracks above. `ALL_TRACK_SLUGS` is the same set (no more `comingSoon` tracks).
+Active tracks (`TRACK_SLUGS`): all 10 tracks above. `ALL_TRACK_SLUGS` is the same set (no more `comingSoon` tracks).
 
 App-level route changes now animate with a short fade-in wrapper (`.route-transition`) around the route tree.
 
@@ -66,7 +66,7 @@ Editorial 8-section layout (Phase E redesign). All sections use the `lp-*` CSS n
 3. **Wrong / Right** — 2-col diff table; right column rows stagger in on intersection.
 4. **Role Selector** — `role="tablist"` with 4 tabs (Data Analyst · Data Engineer · Analytics Engineer · Data Scientist). Each panel shows an ordered list of relevant tracks as cards (left 3px border in track color via inline style). Coming-soon tracks display a `lp-badge-soon` badge and no CTA link. Arrow-key keyboard navigation.
 5. **Proof Strip** — Stat row: N tracks · N+ questions. Question count uses `useCountUp(target, 900, inView)` rAF animation on scroll.
-6. **Tracks Index** — Dense list of all 9 tracks from `ALL_TRACK_SLUGS` (all live). Per-row: color dot, name, description, question count, format tagline, "Enter →" link. `.lp-track-enter` link colored with track's CSS color.
+6. **Tracks Index** — Dense list of all 10 tracks from `ALL_TRACK_SLUGS` (all live). Per-row: color dot, name, description, question count, format tagline, "Enter →" link. `.lp-track-enter` link colored with track's CSS color.
 7. **Guided Progressions** — Fetches `/api/paths`; renders `PathProgressCard` per path (same component used in TrackHub).
 8. **Pricing** — Free / Pro / Elite columns with monthly + lifetime CTAs. Hidden only for `lifetime_elite` users (pro users see it to discover Elite). Reuses existing `landing-tier-*` CSS classes.
 
@@ -198,13 +198,13 @@ Entry: every coaching *Drill* CTA (dashboard focus card + weak-areas rows, logge
 
 ### SampleHubPage (`/sample`)
 
-Discovery surface for the 81 sample questions — the entry point users hit from the landing hero CTA, the closer CTA, the Tracks Index "Try sample →" links, and the Topbar Practice dropdown "Try a sample" entry.
+Discovery surface for the 90 sample questions — the entry point users hit from the landing hero CTA, the closer CTA, the Tracks Index "Try sample →" links, and the Topbar Practice dropdown "Try a sample" entry.
 
 **Layout:**
 - Topbar (shared `Topbar` component, `variant='landing'`) so the user can still pivot to Mock, Dashboard, Practice ▾, or sign in
 - Hero block (`.sample-hub-header`) — eyebrow ("Free samples · no account required"), h1, sub-copy
 - **Role toggle bar** (`.sample-hub-rolebar`, always visible) — `All` + one pill per role in `ROLES`. `All` → `/sample`; each role → `/sample?role=<slug>`. The `?role=` param (read via `useSearchParams`, resolved against `roleRegistry`) filters the grid to that role's tracks (`visibleSlugs`); active pill from the param. This is what the role-page "Try a free sample" CTAs deep-link into.
-- track grid (`.sample-hub-grid`) — all 9 tracks, or the filtered subset when a role is active — 3 cols at ≥ 901 px, 2 cols 641–900 px, 1 col ≤ 640 px
+- track grid (`.sample-hub-grid`) — all 10 tracks, or the filtered subset when a role is active — 3 cols at ≥ 901 px, 2 cols 641–900 px, 1 col ≤ 640 px
 - Each card (`.sample-hub-card`) shows: track color dot + label, 3-line description, and a 3-column row of difficulty buttons. Card hover border-color uses the track color.
 - Each difficulty button (`.sample-hub-diff-btn`) links to `/sample/:topic/:difficulty`. Logged-in users see `tried/total` markers (`✓ all tried` when complete); logged-out users see a ghost `3 questions` label
 - Footer block — copy + "Create a free account →" CTA
@@ -242,7 +242,7 @@ Roles index — the auth-agnostic "all roles" destination (fixes the old "See al
 
 Cross-track progress overview. Fetches `GET /api/dashboard`, `GET /api/dashboard/insights`, and `GET /api/mock/history` on mount.
 
-- Renders one overview card per active track (all 9 tracks), not just the original executable slice.
+- Renders one overview card per active track (all 10 tracks), not just the original executable slice.
 - Returning **Pro/Elite** users see a **focus card** (hero CTA — *Drill {top weak concept} → Go*, the [concept drill](#concept-drill); falls back to a cross-track pace insight or continue-practice nudge) and a **"Where to focus"** panel of weak-concept rows, each with a primary *Drill this concept →* (`?drill=`) and an honest secondary *Or take the … path →* when a matching path exists. **Free** users see an upgrade teaser there. The solve streak shows on the dashboard hero stat (`.db-streak-at-risk`). Full coaching spec: [dashboard.md](features/dashboard.md). *(The previously-documented `InsightStrip` component was dead code — never mounted — and has been removed.)*
 - Track cards now include `median_solve_seconds` and `accuracy_pct` rows from `/api/dashboard/insights`.
 - **(Elite)** Each track card's readiness chip (`readiness_scores[track]`) carries a right-column nudge: a calm `Mock to level up` when `mock_limited`, or — taking precedence — a **"Ready for a Loop →"** accent CTA when `loop_ready` (score ≥ 65 + ≥1 direct benchmark on the track). The CTA deep-links `/mock` with an `interview_loop` preset + honest note; it's framing only, never a gate. Canonical: [dashboard.md](features/dashboard.md) § readiness + [mock.md](features/mock.md) § Interview Loop positioning.
@@ -254,7 +254,7 @@ Cross-track progress overview. Fetches `GET /api/dashboard`, `GET /api/dashboard
 
 Index of all learning paths. Grouped by track. Topic-filter pills narrow to a single track when `:topic` is present in the URL. Each path shown as a card with title, description, solved count, and a link to the path.
 
-Current catalog footprint shown on this page: **96 paths total** (SQL 11, Python 11, Pandas 9, PySpark 14, Data Engineering 9, Data Modeling 11, Statistics 11, ML Fundamentals 12, Experimentation 8).
+Current catalog footprint shown on this page: **103 paths total** (SQL 11, Python 11, Pandas 9, PySpark 14, Data Engineering 9, Data Modeling 11, Statistics 11, ML Fundamentals 12, Experimentation 8, Product Sense 7).
 
 - Empty state upgraded from plain text to CTA card (`/practice/sql`, `/dashboard`).
 - Header sub frames paths as routes through the practice catalog ("the same questions, in a deliberate order"), with a **"Browse the full catalog →"** back-pointer to `/practice/:topic` (or `/practice/sql` on top-level `/learn`).
@@ -379,7 +379,7 @@ Provides current topic and track metadata to the entire component tree.
 
 `TopicProvider` reads `:topic` from URL params via `useParams()`. `useTopic()` returns `{ topic, meta }`.
 
-**Track registry (`frontend/src/trackRegistry.js`):** Single source of truth for all track metadata (`TRACK_META`). Adding a track here is the only frontend change needed — catalog paths, sidebar, TrackHub, and SidebarNav all read from it. Current tracks: `sql`, `python`, `pandas`, `pyspark`, `data-engineering`, `data-modeling`, `statistics`, `ml-fundamentals`, `experimentation`.
+**Track registry (`frontend/src/trackRegistry.js`):** Single source of truth for all track metadata (`TRACK_META`). Adding a track here is the only frontend change needed — catalog paths, sidebar, TrackHub, and SidebarNav all read from it. Current tracks: `sql`, `python`, `pandas`, `pyspark`, `data-engineering`, `data-modeling`, `statistics`, `ml-fundamentals`, `experimentation`, `product-sense`.
 
 `data-engineering` entry: `color: '#B9762B'`, `hasMCQ: true`, `hasRunCode: false`, `apiPrefix: '/data-engineering'`.
 
@@ -399,6 +399,7 @@ Fetches catalog for the current topic on mount. URL determined by `useTopic()` u
 - `statistics` → `/statistics/catalog`
 - `ml-fundamentals` → `/ml-fundamentals/catalog`
 - `experimentation` → `/experimentation/catalog`
+- `product-sense` → `/product-sense/catalog`
 
 Exposes `{ catalog, loading, error, refresh }`. Resets when topic changes.
 
