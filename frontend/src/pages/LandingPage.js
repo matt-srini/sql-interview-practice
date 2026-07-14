@@ -632,7 +632,14 @@ function RoleSelectorSection({ dashData }) {
           aria-labelledby={`lp-role-tab-${role.id}`}
           className="lp-role-panel"
         >
-          <p className="lp-role-tagline">{role.tagline}</p>
+          <div className="lp-role-panel-head">
+            <p className="lp-role-tagline">{role.tagline}</p>
+            {role.hasPage && (
+              <Link to={`/interview-prep/${role.slug}`} className="lp-role-prep-link">
+                {role.label} interview prep →
+              </Link>
+            )}
+          </div>
           <div className="lp-role-tracks">
             {role.tracks.map((slug, i) => {
               const meta = TRACK_META[slug];
@@ -675,13 +682,6 @@ function RoleSelectorSection({ dashData }) {
               );
             })}
           </div>
-          {role.hasPage && (
-            <div className="lp-role-prep-cta">
-              <Link to={`/interview-prep/${role.slug}`} className="lp-role-prep-link">
-                {role.label} interview prep →
-              </Link>
-            </div>
-          )}
         </div>
       </div>
     </section>

@@ -13556,11 +13556,19 @@ button.mock-focus-locked:hover {
 .lp-role-tab:hover { color: var(--text-strong); }
 .lp-role-tab.is-active { color: var(--accent); border-bottom-color: var(--accent); }
 .lp-role-panel { margin-top: 2.5rem; }
+.lp-role-panel-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem 1.5rem;
+  margin: 0 0 2rem;
+}
 .lp-role-tagline {
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.75rem;
   color: var(--text-secondary);
-  margin: 0 0 2rem;
+  margin: 0;
   letter-spacing: 0.04em;
 }
 .lp-role-tracks {
@@ -15484,28 +15492,19 @@ button.mock-focus-locked:hover {
   text-decoration: underline;
 }
 
-/* ── Landing: role-prep CTA link ───────────────────────────── */
-.lp-role-prep-cta {
-  margin-top: 1.25rem;
-}
-
+/* ── Landing: role-prep link (inline, in the role-panel header row) ── */
 .lp-role-prep-link {
-  display: inline-block;
-  font-size: 0.9rem;
+  flex-shrink: 0;
+  font-size: 0.82rem;
   font-weight: 600;
   color: var(--accent);
   text-decoration: none;
-  padding: 0.5rem 1rem;
-  border: 1px solid var(--accent-soft-strong);
-  border-radius: var(--radius-sm);
-  background: var(--accent-soft);
-  transition: background 160ms, border-color 160ms;
+  white-space: nowrap;
+  transition: opacity 160ms;
 }
 
 .lp-role-prep-link:hover {
-  background: color-mix(in srgb, var(--accent-soft) 60%, var(--surface-card));
-  border-color: var(--accent);
-  text-decoration: none;
+  opacity: 0.75;
 }
 
 /* ── Mobile ────────────────────────────────────────────────── */
