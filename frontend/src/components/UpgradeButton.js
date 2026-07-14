@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import api from '../api';
 import { useAuth } from '../contexts/AuthContext';
@@ -18,6 +18,9 @@ import { detectCurrency, railForCurrency } from '../utils/currency';
  *   className  additional class names
  *   currency   'INR' | 'USD' — defaults to the stored/detected currency so every
  *              surface picks the right rail without each caller threading it.
+ *   autoTrigger  if true and `user` is already set, opens checkout for `tier` on
+ *                mount instead of waiting for a click — used to resume an upgrade
+ *                a logged-out visitor started before being sent to sign in.
  */
 
 const RAZORPAY_SCRIPT_SRC = 'https://checkout.razorpay.com/v1/checkout.js';
@@ -137,12 +140,13 @@ function isBlockedError(e) {
   );
 }
 
-export default function UpgradeButton({ tier = 'pro', label, source, compact = false, className = '', currency, successPath = '/practice?upgraded=true', variant = 'button' }) {
+export default function UpgradeButton({ tier = 'pro', label, source, compact = false, className = '', currency, successPath = '/practice?upgraded=true', variant = 'button', autoTrigger = false }) {
   const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [pending, setPending] = useState(false);
   const [error, setError] = useState(null);
+  const autoTriggeredRef = useRef(false);
 
   // Default to the detected currency so the rail is correct on every
   // surface; an explicit currency prop still wins.
@@ -245,11 +249,7 @@ export default function UpgradeButton({ tier = 'pro', label, source, compact = f
     rzp.open();
   }
 
-  async function handleClick() {
-    if (!user) {
-      navigate('/auth', { state: { from: location.pathname + location.search, upgradeTier: tier } });
-      return;
-    }
+  async function startCheckout() {
     setPending(true);
     setError(null);
     try {
@@ -272,6 +272,26 @@ export default function UpgradeButton({ tier = 'pro', label, source, compact = f
       }
     }
   }
+
+  async function handleClick() {
+    if (!user) {
+      navigate('/auth', { state: { from: location.pathname + location.search, upgradeTier: tier } });
+      return;
+    }
+    await startCheckout();
+  }
+
+  // Resume an upgrade the user started before signing in: the caller (e.g. LandingPage,
+  // returning from /auth with the tier carried in router state) renders this button with
+  // autoTrigger so checkout reopens itself instead of leaving the user to find and click
+  // it again. Guarded by a ref (not just `pending`) so React 18 StrictMode's double-invoke
+  // of effects in dev can't fire the paid checkout twice.
+  useEffect(() => {
+    if (!autoTrigger || !user || autoTriggeredRef.current) return;
+    autoTriggeredRef.current = true;
+    startCheckout();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoTrigger, user]);
 
   return (
     <>

@@ -517,6 +517,53 @@ describe('LandingPage', () => {
     });
   });
 
+  // ── Resume an upgrade started before sign-in (router state upgradeTier) ────
+  describe('Resume upgrade after sign-in', () => {
+    function renderAtHomeWithUpgradeTier(plan, upgradeTier) {
+      const user = plan === null ? null : { id: 1, email: 'user@example.com', plan, streak_days: 0 };
+      useAuth.mockReturnValue({ user, logout: vi.fn(), refreshUser: vi.fn() });
+      return render(
+        <MemoryRouter initialEntries={[{ pathname: '/', state: { upgradeTier } }]}>
+          <LandingPage />
+        </MemoryRouter>
+      );
+    }
+
+    it('shows a "continuing your upgrade" banner and auto-fires checkout for a logged-in user returning with upgradeTier', async () => {
+      renderAtHomeWithUpgradeTier('free', 'pro');
+      await waitFor(() => {
+        expect(screen.getByText(/Continuing your upgrade to Pro/i)).toBeInTheDocument();
+      });
+      await waitFor(() => {
+        expect(api.post).toHaveBeenCalledWith('/razorpay/create-order', { plan: 'pro', currency: 'INR' });
+      });
+    });
+
+    it('labels the elite tier correctly in the resume banner', async () => {
+      renderAtHomeWithUpgradeTier('free', 'elite');
+      await waitFor(() => {
+        expect(screen.getByText(/Continuing your upgrade to Elite/i)).toBeInTheDocument();
+      });
+    });
+
+    it('does not show the resume banner or fire checkout when logged out (upgradeTier alone is not enough)', async () => {
+      renderAtHomeWithUpgradeTier(null, 'pro');
+      await waitFor(() => {
+        expect(screen.getByText('A curriculum, not a question bank.')).toBeInTheDocument();
+      });
+      expect(screen.queryByText(/Continuing your upgrade/i)).not.toBeInTheDocument();
+      expect(api.post).not.toHaveBeenCalledWith('/razorpay/create-order', expect.anything());
+    });
+
+    it('does not show the resume banner when there is no upgradeTier in router state', async () => {
+      renderWithPlan('free');
+      await waitFor(() => {
+        expect(screen.getByText('Jump back in.')).toBeInTheDocument();
+      });
+      expect(screen.queryByText(/Continuing your upgrade/i)).not.toBeInTheDocument();
+    });
+  });
+
   // ── Logged-in home: Topbar Paths link, All-paths link, role filter ────────
   describe('Logged-in home — Paths reachability & role filter', () => {
     it('Topbar exposes a Paths link to /learn', async () => {

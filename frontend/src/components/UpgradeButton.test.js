@@ -334,6 +334,73 @@ describe('Paddle flow (USD / global rail)', () => {
 });
 
 // ---------------------------------------------------------------------------
+// autoTrigger — resuming an upgrade after sign-in (see LandingPage.js)
+// ---------------------------------------------------------------------------
+
+describe('autoTrigger', () => {
+  it('opens checkout on mount without a click when user is present', async () => {
+    mockApiPost.mockResolvedValueOnce({
+      data: {
+        subscription_id: 'sub_test_auto', order_id: null, amount: 0, currency: 'INR',
+        key_id: 'rzp_test_key', name: 'datathink', description: 'datathink Pro (monthly)',
+        prefill_email: 'u@example.com', prefill_name: 'u', is_subscription: true,
+      },
+    });
+
+    renderButton({ tier: 'pro', autoTrigger: true });
+
+    await waitFor(() => {
+      expect(mockApiPost).toHaveBeenCalledWith('/razorpay/create-order', { plan: 'pro', currency: 'INR' });
+      expect(window.Razorpay).toHaveBeenCalled();
+    });
+  });
+
+  it('does not navigate to /auth or call the API when autoTrigger is set but there is no user', async () => {
+    mockUseAuth.mockReturnValue({ user: null });
+
+    renderButton({ tier: 'pro', autoTrigger: true });
+
+    await new Promise((r) => setTimeout(r, 0));
+    expect(mockApiPost).not.toHaveBeenCalled();
+    expect(window.Razorpay).not.toHaveBeenCalled();
+  });
+
+  it('does not open checkout on mount when autoTrigger is false (default)', async () => {
+    renderButton({ tier: 'pro' });
+
+    await new Promise((r) => setTimeout(r, 0));
+    expect(mockApiPost).not.toHaveBeenCalled();
+  });
+
+  it('fires checkout only once even if the component re-renders', async () => {
+    mockApiPost.mockResolvedValueOnce({
+      data: {
+        subscription_id: 'sub_test_auto2', order_id: null, amount: 0, currency: 'INR',
+        key_id: 'rzp_test_key', name: 'datathink', description: 'datathink Pro (monthly)',
+        prefill_email: 'u@example.com', prefill_name: 'u', is_subscription: true,
+      },
+    });
+
+    const { rerender } = render(
+      <MemoryRouter>
+        <UpgradeButton currency="INR" tier="pro" autoTrigger />
+      </MemoryRouter>
+    );
+
+    await waitFor(() => expect(mockApiPost).toHaveBeenCalledTimes(1));
+
+    rerender(
+      <MemoryRouter>
+        <UpgradeButton currency="INR" tier="pro" autoTrigger />
+      </MemoryRouter>
+    );
+
+    await new Promise((r) => setTimeout(r, 0));
+    expect(mockApiPost).toHaveBeenCalledTimes(1);
+  });
+});
+
+// ---------------------------------------------------------------------------
 // CSS classes and attributes
 // ---------------------------------------------------------------------------
 

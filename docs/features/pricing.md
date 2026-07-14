@@ -81,8 +81,12 @@ normalize_plan("free")           # → "free"  (unchanged)
 
 1. User sees the pricing section with upgrade CTAs in the Pro and Elite columns.
 2. Clicking any `UpgradeButton` detects no authenticated user (`useAuth().user === null`).
-3. The button redirects to `/auth` with state `{ from: '/', upgradeTier: tier }` — no API call is made.
-4. After signup/login the user lands back on the site where they can click the upgrade button again.
+3. The button redirects to `/auth` with state `{ from: location.pathname, upgradeTier: tier }` — no API call is made. For OAuth (full-page redirect loses router state) the intent is persisted to `sessionStorage.pendingUpgrade` instead and consumed by `AppRoutes` once the user resolves.
+4. After signup/login the user returns to `from` (default `/`) with `upgradeTier` carried in router state.
+5. **On the landing page specifically** — the only upgrade-CTA surface whose content differs by auth state (`/` renders a different layout for `user` vs. anonymous) — this resumes automatically: `LandingPage` renders a "Continuing your upgrade to {tier}…" banner with an `UpgradeButton` in `autoTrigger` mode, which reopens checkout for that tier without a second click. Other CTA surfaces (track hub, sidebar, pricing page, question preview, learning paths) render identically logged-in or out, so simply returning to the same URL is already sufficient — no auto-trigger needed there.
+6. If checkout fails right after a fresh signup (email not yet verified — `require_authenticated_user` gates `/razorpay/create-order` and `/paddle/create-checkout` on `email_verified`), the auto-triggered `UpgradeButton` surfaces the backend's "Please verify your email address before upgrading." error inline, same as a manual click would.
+
+**Known gap:** the magic-link sign-in path is a full-page redirect handled entirely server-side (`GET /auth/magic-link/callback` → 302 to `/`), so there is no client-side moment to persist `upgradeTier` into `sessionStorage` before the user leaves for their email client — and the link is often opened in a new tab/window, where `sessionStorage` isn't visible anyway. A user who starts an upgrade, then chooses "send me a magic link" to sign in, lands on `/` with no resumed upgrade. Fixing this needs the tier threaded through the magic-link token payload and callback redirect (backend + frontend change) — not done as part of the 2026-07-14 fix below.
 
 ### Starting state: Free user
 
