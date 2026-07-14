@@ -227,7 +227,7 @@ def _inject_seo(html: str, url_path: str) -> str:
     title = html_escape(m["title"])
     desc = html_escape(m["description"])
     canonical = f"{BASE_URL}{url_path}"
-    og_image = f"{BASE_URL}/og-image.png?v=4"
+    og_image = f"{BASE_URL}/og-image.png?v=5"
 
     html = re.sub(r"<title>[^<]*</title>", f"<title>{title}</title>", html, count=1)
     html = re.sub(

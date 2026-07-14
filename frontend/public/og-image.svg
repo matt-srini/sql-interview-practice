@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- datathink Open Graph cover — Forest & Ink (1200×630).
      Canonical two-diagonal-squares mark + data/think wordmark on the
-     deep forest-ink ground. Durable copy: "9 tracks · 850+ curated
+     deep forest-ink ground. Durable copy: "10 tracks · 850+ curated
      questions · 1,000+ mock-exclusive" — round counts that signal
      curation + the premium bank without the per-release drift that
      staled the previous "350+ / 22".
@@ -32,5 +32,5 @@
   <rect x="101" y="400" width="360" height="1" fill="#E8F5E9" fill-opacity="0.14"/>
 
   <!-- Stat row — durable counts; signals curation + the mock-exclusive bank -->
-  <text x="101" y="440" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-weight="500" font-size="22" fill="#87B09A">9 tracks&#160;&#160;·&#160;&#160;850+ curated questions&#160;&#160;·&#160;&#160;1,000+ mock-exclusive</text>
+  <text x="101" y="440" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-weight="500" font-size="22" fill="#87B09A">10 tracks&#160;&#160;·&#160;&#160;850+ curated questions&#160;&#160;·&#160;&#160;1,000+ mock-exclusive</text>
 </svg>
