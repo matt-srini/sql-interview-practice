@@ -679,7 +679,7 @@ def build_study_plan(
 # ---------------------------------------------------------------------------
 
 _REASONING_TRACKS = frozenset({
-    "pyspark", "data-engineering", "data-modeling", "ml-fundamentals", "experimentation"
+    "pyspark", "data-engineering", "data-modeling", "ml-fundamentals", "experimentation", "product-sense"
 })
 
 

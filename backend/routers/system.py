@@ -65,6 +65,7 @@ async def catalog_counts() -> dict:
         ("statistics",       "statistics_questions",       "get_all_questions"),
         ("ml-fundamentals",  "ml_fundamentals_questions",  "get_all_questions"),
         ("experimentation",  "experimentation_questions",  "get_all_questions"),
+        ("product-sense",    "product_sense_questions",    "get_all_questions"),
     ]
 
     result = {}

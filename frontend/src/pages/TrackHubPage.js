@@ -24,6 +24,7 @@ const HUB_DESC_TEMPLATES = {
   statistics:       n => `Your Statistics practice workspace. ${n} conceptual and numerical questions covering probability, inference, and A/B testing.`,
   'ml-fundamentals': n => `Your ML Fundamentals practice workspace. ${n} questions covering bias-variance, evaluation metrics, and production ML.`,
   experimentation:  n => `Your Experimentation practice workspace. ${n} questions covering A/B testing, power analysis, and causal inference.`,
+  'product-sense':  n => `Your Product Sense practice workspace. ${n} questions covering metric design, diagnosis, trade-offs, and ship decisions.`,
 };
 
 export default function TrackHubPage() {

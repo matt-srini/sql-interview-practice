@@ -8,6 +8,7 @@ import data_modeling_questions
 import experimentation_questions
 import ml_fundamentals_questions
 import pandas_questions
+import product_sense_questions
 import python_questions
 import pyspark_questions
 import questions as sql_questions
@@ -30,6 +31,7 @@ _TOPIC_MODULES = {
     "statistics": statistics_questions,
     "ml-fundamentals": ml_fundamentals_questions,
     "experimentation": experimentation_questions,
+    "product-sense": product_sense_questions,
 }
 
 

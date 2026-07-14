@@ -20,6 +20,7 @@ _INTERACTION_MODE_TRACKS = {
     "statistics",
     "ml-fundamentals",
     "experimentation",
+    "product-sense",
 }
 
 

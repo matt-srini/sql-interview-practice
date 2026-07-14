@@ -10,6 +10,7 @@ import experimentation_questions as exp_mod
 import ml_fundamentals_questions as ml_mod
 import pandas_questions as pandas_mod
 import python_questions as python_mod
+import product_sense_questions as ps_mod
 import pyspark_questions as pyspark_mod
 import questions as sql_mod
 import statistics_questions as stats_mod
@@ -31,6 +32,7 @@ _TOPIC_MOD = {
     "statistics": stats_mod,
     "ml-fundamentals": ml_mod,
     "experimentation": exp_mod,
+    "product-sense": ps_mod,
 }
 
 # Map topic slug → db topic string used in user_progress
@@ -44,6 +46,7 @@ _TOPIC_DB = {
     "statistics": "statistics",
     "ml-fundamentals": "ml-fundamentals",
     "experimentation": "experimentation",
+    "product-sense": "product-sense",
 }
 
 
