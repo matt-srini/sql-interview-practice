@@ -10,7 +10,7 @@ A data interview practice platform covering ten tracks. Users write SQL or Pytho
 - Challenge mode with persistent progress, bookmarks, draft autosave, hints, concept tags, and unlock logic
 - Sample mode that is anonymous-friendly (no login required)
 - Mock interviews: `benchmark` (fixed-shape track readiness signal, or role-based Mixed benchmark), `custom` (1–5 questions, 10–90 min), and `interview_loop` (Elite-only chain-driven dialogue) with plan-based limits and post-session analysis. Legacy `30min`/`60min` sessions are read-only history.
-- Learning paths: 103 curated, track-specific walks through the practice catalog (they guide; they do not gate — unlocks follow the standard practice thresholds)
+- Learning paths: 103 curated, track-specific walks through the practice catalog (they guide; they do not gate — access follows the standard plan policy: free = easy, Pro/Elite = all)
 - Semantic concept tags, progressive hints, and company tags (SQL) surfaced in the practice UI
 - Dashboard with coaching insights, streak tracking, weakest-concept signals, and (Elite) readiness scores + study plan
 - Three subscription tiers (Free / Pro / Elite), billed via Razorpay (INR / India) or Paddle (USD / international, Merchant of Record)
@@ -72,7 +72,7 @@ sql-interview-practice/
 │   ├── db.py                           # PostgreSQL persistence layer
 │   ├── evaluator.py                    # SQL evaluation pipeline
 │   ├── python_evaluator.py             # Python/Pandas execution pipeline
-│   ├── unlock.py                       # Pure plan + solve-history → unlock policy
+│   ├── unlock.py                       # Pure plan → access policy
 │   └── sql_guard.py / python_guard.py  # Read-only SQL + AST-based Python validation
 ├── frontend/
 │   ├── src/
@@ -108,23 +108,17 @@ sql-interview-practice/
 
 | Plan | Access |
 |---|---|
-| Free | All easy questions, batch-gated medium and hard (thresholds below), 1 `benchmark` per rolling 7 days (easy only, practice-pool questions), free learning paths |
+| Free | All easy questions (medium and hard require Pro/Elite), 1 `benchmark` per rolling 7 days (easy only, practice-pool questions), free learning paths |
 | Pro | Full practice catalog, all learning paths, 3 `benchmark`/day + 3 `custom`/day (independent counters, any difficulty), mock-only content pool unlocked |
 | Elite | Full catalog, unlimited mocks (soft abuse cap), `focus_concepts` filter, `interview_loop` mode, deep mock analytics, readiness scores, study plan, session debrief |
 
 `lifetime_pro` and `lifetime_elite` normalize to their base plans for access checks.
 
-### Unlock thresholds (Free tier)
+### Free-tier access (flat, plan-based)
 
-**Code tracks (SQL, Python, Pandas):**
-- Medium: 8 easy → 3 medium · 15 easy → 8 medium · 25 easy → all medium
-- Hard: 8 medium → 3 hard · 15 medium → 8 hard · 22 medium → 15 hard *(cap: 8)*
+Free unlocks **all easy questions across every track**; medium and hard require Pro or Elite. Access is a pure function of plan — no solve thresholds, no batch unlocks, no per-track caps (the progressive unlock ladder was removed 2026-06-29). Canonical policy: `backend/unlock.py`.
 
-**MCQ tracks (PySpark, Data Engineering):**
-- Medium: 10 easy → 3 medium · 17 easy → 8 medium · 25 easy → all medium
-- Hard: 12 medium → 5 hard *(cap: 5)*
-
-**Learning paths do not unlock anything** — they are curated walks through the catalog; solving a path question advances the same difficulty thresholds as solving from practice directly.
+**Learning paths do not unlock anything** — they are curated walks through the catalog; a path question follows the same plan-based access as practicing it directly.
 
 ### Mock modes (post-Phase-3)
 
