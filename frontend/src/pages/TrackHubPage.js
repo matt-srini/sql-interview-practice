@@ -162,7 +162,7 @@ export default function TrackHubPage() {
         })}</script>
       </Helmet>
       <div className="track-hub-inner">
-        <TierBanner plan={user?.plan ?? 'free'} />
+        <TierBanner plan={user?.plan ?? 'free'} returnTo={{ path: `/practice/${topic}`, label: `${meta.label} Practice` }} />
         <div className="track-hub-header">
           <div className="track-hub-title-row">
             <h2 className="track-hub-title">{meta.label} Practice</h2>
@@ -316,7 +316,7 @@ export default function TrackHubPage() {
                 You've mastered all {mediumTotal} medium questions!
               </p>
               <p className="track-hub-milestone-desc">
-                Hard questions require a Pro or Elite plan. <Link to="/#landing-pricing" className="track-hub-inline-link">See pricing →</Link>
+                Hard questions require a Pro or Elite plan. <Link to="/pricing" state={{ returnTo: { path: `/practice/${topic}`, label: `${meta.label} Practice` } }} className="track-hub-inline-link">See pricing →</Link>
               </p>
               <div className="track-hub-milestone-actions">
                 <UpgradeButton tier="pro" label="Unlock all hard questions" compact source="hub_milestone_medium_complete" />

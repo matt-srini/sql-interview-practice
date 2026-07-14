@@ -1,48 +1,77 @@
 ---
 title: "A/B Test Interview Questions: What a Good Answer Looks Like"
-description: "A/B test interview questions probe experiment design judgment: choosing the metric, powering the test, and trusting the result, not reciting p-values."
+description: "A/B test interview questions test experiment design: metrics, guardrails, power, sample ratio checks, and whether to trust the result."
 slug: "ab-test-design-interview-questions"
 date: 2026-06-30
-updated: 2026-06-30
+updated: 2026-07-14
 draft: false
 ---
 
-A/B test questions look, on the surface, like they want a definition of a p-value. They almost never do. What the interviewer is really after is whether you can design an experiment that answers the question being asked, and whether you can tell when an experiment is quietly broken. Those are the skills that decide whether an experimentation program produces real decisions or a steady stream of confident, wrong ones.
+A/B test interview questions can sound like statistics questions, but they usually test the full experiment decision. The interviewer wants to know whether you can turn a product question into a clean test, choose a metric that matches the decision, and notice when the result should not be trusted.
 
-I have asked some version of "how would you test this" many times, and the answers split fast. Some people reach immediately for the statistics, compute a sample size, and never stop to ask what they are actually trying to measure. Others start where the job starts, with the metric and the decision, and the statistics fall into place behind it. The second group is who you want running your experiments, and the interview is built to tell them apart.
+You do need the statistics. But a good answer does not start and end with a p-value. It starts with what the team is trying to learn.
 
-## Pick the metric before you touch the statistics
+## Start With The Decision
 
-"We changed the checkout button. Did it work?" Work how? More clicks on the button is trivial to move and almost meaningless. Completed purchases is better. Revenue per visitor is better still, but now you have variance to worry about. And whatever you pick as the success metric, you need guardrail metrics next to it, because a change that lifts conversion while quietly tanking refund rate or load time is not a win.
+Before designing the test, say what decision the experiment is meant to support. Are we deciding whether to ship a checkout change? Whether a recommendation module improves engagement? Whether a new onboarding flow helps users reach activation?
 
-A strong answer defines the primary metric, names a guardrail or two, and explains why, before any mention of significance. Interviewers hand you a vague goal on purpose and watch whether you turn it into a measurable, sensible outcome or just start computing. The choice of metric is the part most likely to make the whole experiment pointless, so it is the part they probe hardest.
+That decision shapes the metric. Button clicks might be useful as a diagnostic, but completed purchases or activated users may be closer to the real goal. Revenue per visitor may be better than conversion rate if order size changes. Retention may matter more than day-one engagement if the product is trying to build a long-term habit.
 
-## "How long do we run it" is really a question about power
+A strong answer usually names:
 
-Once the metric is set, the natural question is how long the test needs to run, and that is where power, sample size, and minimum detectable effect come in. The reasoning they want is roughly: how big an effect would actually matter to the business, how much traffic do we get, how much variance is in the metric, and therefore how long until we could detect an effect that size with reasonable confidence. You do not usually need to derive the formula in the room. You need to show you understand that a test too small to detect the effect you care about is a waste of time, and that the run length is a decision you make before you start, not after you peek.
+- The primary success metric.
+- One or two guardrail metrics.
+- The user population included in the test.
+- The time window for reading the result.
 
-And you do not peek. The follow-up here is often about stopping early. If you check the results every day and stop the moment you see significance, you will "find" effects that are not real, because you gave yourself many chances to cross the line by luck. Knowing why that is a problem, and that the run length should be fixed up front or analyzed with a method built for sequential looks, is a real signal of experience.
+This keeps the test tied to the product question instead of becoming a generic statistics exercise.
 
-## The result you should not trust: sample ratio mismatch
+## Power Is About Detecting A Useful Effect
 
-Here is the check most candidates never mention, which is exactly why it impresses interviewers when you do. You split traffic 50/50, and the results come back with 48% in one arm and 52% in the other on a large sample. That imbalance should not happen by chance, and when it does, something is wrong with the assignment or the logging, which means the comparison itself is suspect no matter how pretty the lift looks. A good experimenter validates that the split came out as designed before they believe a single downstream number. Mentioning sample ratio mismatch unprompted tells the interviewer you have actually shipped experiments, not just read about them.
+"How long should the test run?" is really a question about power. A test needs enough traffic to detect an effect size that would matter. If the team only cares about a 5 percent lift, the design should not be built around chasing a tiny movement that would not change the decision.
 
-## "A PM ran eight tests and one came back significant"
+You do not usually need to derive the sample size formula in an interview. You should be able to explain the inputs: baseline rate, expected variance, minimum detectable effect, traffic, desired power, and significance level. You should also mention that the run length should be planned before the test starts.
 
-This one is about multiple comparisons, and it is a favorite because it is so common in real life. Run enough tests, or slice one test enough ways, and something will cross the significance threshold by chance alone. The candidate who treats that one winning result as a discovery has failed the question. The one who says "with eight tests, I'd expect a false positive or two, so I'd want a correction, or a holdout to confirm it before we act" has passed it. The deeper point they are testing is whether you understand that significance is not truth, especially once you have gone looking in many places.
+Peeking every day and stopping when the result first becomes significant is a common trap. It increases the chance of finding a false positive. If the team needs continuous monitoring, the analysis method should account for sequential looks rather than pretending every daily check is independent.
 
-## Knowing when not to run a test at all
+## Check The Assignment Before Believing The Lift
 
-The most senior answer sometimes is "I would not A/B test this." Not enough traffic to ever reach power. A change you cannot cleanly randomize. Something irreversible or ethically fraught where a controlled rollout or a different method fits better. Recognizing the limits of the tool is itself part of the judgment, and interviewers will sometimes hand you a scenario specifically to see whether you reach for an experiment reflexively or think about whether it is the right instrument.
+One of the most useful experiment sanity checks is sample ratio mismatch. If traffic is supposed to split 50/50 but the final assignment is 48/52 on a large sample, something may be wrong with randomization, eligibility, or logging.
 
-## How to actually prepare for it
+That matters because a broken split can make every downstream metric suspicious. A polished answer that jumps straight to the lift but never checks whether the experiment was assigned correctly is missing an important step.
 
-The preparation follows the test. You are being asked to design and defend, so practice designing and defending, end to end.
+Other basic trust checks include:
 
-Take a vague product goal and walk the whole path out loud: the metric, the guardrails, the hypothesis, the traffic and power, the run length, the checks you would run before trusting the result. Saying it out loud matters, because the gaps in your reasoning are obvious the moment you have to narrate them and invisible when you only nod along.
+- Did both variants run for the same calendar period?
+- Were users assigned once and kept in the same group?
+- Did logging change during the test?
+- Were there major outages, launches, or campaigns during the window?
 
-Then attack your own design the way the follow-ups will. Why that metric? What if the split is off? What if it is significant on day two? What would make you not trust the result? Reasoning from the mechanism means the follow-ups are just the same understanding viewed from another angle. Reciting definitions means the first real twist ends the conversation.
+These checks do not make the answer complicated. They make it believable.
 
-If you want to test that reasoning against real questions, try a free experimentation sample, no account required, at [/sample/experimentation](/sample/experimentation). And if you are preparing for the full data science loop, the [data scientist interview prep guide](/interview-prep/data-scientist) covers the six tracks the role spans and where experimentation sits among them.
+## Multiple Comparisons Need Care
 
-The p-value definition you can look up. The judgment about what to measure, how long to run it, and whether to believe the answer is what the interview is built to find, and it is the same judgment that keeps an experimentation program honest long after the interview is over.
+If a team runs many tests, or slices one test into many subgroups, some results will look significant by chance. Interviewers often ask about this because it comes up constantly in product analytics.
+
+A reasonable answer might use a correction, pre-register a small number of primary metrics, treat subgroup reads as exploratory, or run a follow-up test. The exact choice depends on the context. The key is showing that "one significant result" is not automatically the same as "one true result."
+
+## Sometimes The Right Answer Is Not To A/B Test
+
+Not every product question is a good A/B test. Maybe the traffic is too low. Maybe the change cannot be randomized cleanly. Maybe the risk is too high for a broad experiment. Maybe the outcome takes months to observe. In those cases, a holdout, phased rollout, observational analysis, user research, or a smaller instrumentation pass may be more useful.
+
+This is not a trick answer. It is part of experiment design judgment. The goal is to choose a method that answers the question responsibly.
+
+## How To Prepare
+
+Practice walking through the full test, not just the statistical definition:
+
+1. State the product decision.
+2. Choose the primary metric and guardrails.
+3. Define the population and randomization unit.
+4. Discuss power, run length, and minimum detectable effect.
+5. List the checks you would run before trusting the result.
+6. Explain the decision you would make from different possible outcomes.
+
+If you want to try this style of question, start with the free Experimentation sample at [/sample/experimentation](/sample/experimentation). If you are preparing for the broader data scientist loop, the [data scientist interview prep page](/interview-prep/data-scientist) shows where experimentation sits among ML, statistics, Product Sense, Python, Pandas, and SQL.
+
+The short version: an A/B test interview is asking whether you can design an experiment that leads to a decision. The math supports that decision, but the design is what makes the math worth trusting.

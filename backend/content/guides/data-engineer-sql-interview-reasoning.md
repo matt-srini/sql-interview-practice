@@ -1,52 +1,77 @@
 ---
-title: "The Data Engineer SQL Interview: What It Really Tests"
-description: "Data engineer SQL interviews test judgment, not syntax: grain, fan-out, idempotency, and queries that stay correct as tables outgrow memory."
+title: "The Data Engineer SQL Interview: What It Tests"
+description: "Data engineer SQL interviews test grain, joins, idempotency, and scale: the reasoning behind queries that stay correct in production."
 slug: "data-engineer-sql-interview-reasoning"
 date: 2026-06-29
-updated: 2026-06-29
+updated: 2026-07-14
 draft: false
 ---
 
-Search "data engineer SQL interview" and you get a stack of articles that all reduce to the same checklist: learn window functions, learn CTEs, memorize the join types, grind fifty problems. None of it is bad advice. It is just pointed at the wrong target. I have interviewed people who could recite all of that and still wrote a query that would have double-billed customers in production, and I have passed people who stopped, asked what the grain of the table was, and worked the rest out slowly. The second kind tends to get the offer.
+SQL shows up in data engineer interviews because it is the language of the warehouse, but the interview is rarely about syntax alone. Most candidates can write a join, a CTE, and a window function. The stronger question is whether the query would still be correct when the source data is duplicated, the job reruns, the table grows, or the business definition changes.
 
-Here is what the checklist misses. When an analyst gets a SQL question, the unspoken version is usually "given this data, give me this number." When a data engineer gets one, the unspoken version is closer to "this query is going to run every night for two years, against tables that keep growing and a source that occasionally lies, so is it still correct on night six hundred?" Same SELECT statement, very different question. A lot of interview prompts are quietly built to find out which of those two you actually hear.
+That is the frame worth using while you prepare. A data engineer SQL round is usually testing how you reason about data movement and correctness. The query matters, of course, but the reasoning around the query is what separates a solid answer from a fragile one.
 
-Four situations come up again and again, and each one is really probing the same thing: does this person reason about the data, or just about the syntax.
+## Start With The Grain
 
-## The double-count nobody catches until finance does
+Before writing SQL, ask what one row represents in every table you are touching. One row per order is different from one row per order item. One row per user is different from one row per session. A lot of wrong answers in SQL interviews come from skipping this step.
 
-Give a candidate an `orders` table and an `order_items` table and ask for revenue per customer. A lot of them will join orders to items and sum the order total. The trouble is that the order total now appears once per line item, so a three-item order counts its revenue three times. The query runs clean, the dashboard renders, everyone moves on. Then three weeks later someone in finance pings you asking why the numbers do not tie out, and you spend a Friday afternoon reverse-engineering your own join.
+A common version is revenue by customer from an `orders` table and an `order_items` table. If you join the two and sum the order total, each order total repeats once for every item. The query runs, but the result is inflated. The fix is not just "use the right join." The fix is understanding that the result grain changed after the join.
 
-The habit that prevents this is not a rule you memorize, it is a question you ask before you type the join: what is one row in each table, and what is one row in the result? Orders joined to items gives you one row per item, not per order. If your SUM is written as though there is one row per order, the answer is already wrong and nothing about the query will tell you so. In the interview, the candidates who say "wait, what is the grain here" out loud before touching the keyboard are usually the ones who have been burned by exactly this, and it shows.
+In an interview, it is completely fine to say this out loud: "Before I aggregate, I want to confirm the grain after this join." That sounds simple, but it shows the interviewer that you are checking meaning, not just assembling clauses.
 
-## "Latest status per user", and the reflex to reach for DISTINCT
+## Joins Are About Cardinality, Not Just Matching Keys
 
-This one looks trivial and is not. Ask for the most recent status per user and watch where people go first. DISTINCT dedupes whole rows, which is not what was asked. GROUP BY user_id collapses the rows, sure, but now which status survives? You wanted the latest one, and GROUP BY has no concept of latest.
+Data engineer SQL questions often hide a fan-out problem. A one-to-many join can be correct for one question and wrong for another. Joining customer records to orders is useful if you want order-level output. It is dangerous if you still think you have one row per customer.
 
-The shape the interviewer is hoping to see is `ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY updated_at DESC)`, filtered to the first row. Honestly though, the syntax matters less than whether you can say why it works: a window function ranks within a group while holding on to the detail row, where an aggregate would throw that detail away. Explain that and you have demonstrated the exact thing the question is there to find. Pattern-match the template without it and the follow-up will catch you, because there is always a follow-up. "What if two rows share the same timestamp?" is the usual one, and it is not a gotcha. It is a real problem you will hit the first week you run this against live data.
+When you join, think through three things:
 
-## Idempotency, or what happens when the job runs twice
+- What key am I joining on?
+- Can either side have duplicates on that key?
+- What should one row in the final result mean?
 
-If I had to name the single question that separates a data engineer from a strong SQL writer, it is this one, and it almost always shows up as an operational story rather than a query. "Your nightly job loads yesterday's events into a fact table. It dies halfway through. You rerun it. Now what?" If the load is a plain INSERT, the rerun writes everything it already wrote a second time. And it gets worse before it gets better, because an at-least-once source can hand you the same event twice with no failure at all. That is just what at-least-once delivery means.
+This is also where deduplication comes in. `DISTINCT` can remove repeated rows, but it does not explain why the repeats exist, and it can hide a modeling problem. A cleaner answer usually names the intended grain, dedupes at the right level if needed, and then aggregates.
 
-The word the interviewer is fishing for is idempotency: running the load twice should leave you in the same state as running it once. In SQL that usually means a MERGE keyed on a business key, or deleting the target partition before you insert, or deduping on a stable event id before the write. Nobody is grading your MERGE syntax. They want to know whether the word "rerun" makes you slightly tense, and whether your first instinct is to reach for a key. If you have ever been on call when a backfill double-fired at 2am, you already have that instinct. If you have not, this is the concept worth internalizing before the screen, because it surfaces constantly once you are in the room.
+## Latest Row Questions Test Row Selection
 
-## When the table outgrows the laptop
+"Get the latest status per user" is a small prompt with a lot inside it. `GROUP BY user_id` gets you one row per user, but it does not preserve the status attached to the latest timestamp. `DISTINCT` does not solve it either, because the issue is not duplicate rows. The issue is choosing the correct row inside each user group.
 
-The last cluster is about scale, and it is where memorized vocabulary comes apart fastest. A self-join to compute a running total is O(n squared) and will cheerfully fall over on a real table, while the `SUM(...) OVER (ORDER BY ...)` version is linear and happens to read better too. Wrap a function around an indexed column in your WHERE clause and you have quietly switched the index off. Reach for SELECT DISTINCT to paper over a fan-out and now you are sorting a heap of rows that should never have existed in the first place.
+That is why a window function is usually the right tool:
 
-Interviewers poke at this with "okay, now make it faster," and what they are listening for is whether you can say why one form is cheaper, not whether you happened to stumble onto a quicker query. The reasoning is the part being graded.
+```sql
+ROW_NUMBER() OVER (
+  PARTITION BY user_id
+  ORDER BY updated_at DESC
+)
+```
 
-## So how do you actually prepare
+The important part is not memorizing that exact shape. It is understanding what it does: partition the table into user groups, rank rows inside each group, then keep the top-ranked row. A good follow-up is what happens when two rows have the same timestamp. A careful answer adds a deterministic tie-breaker, such as an ingestion time or status id, instead of assuming timestamps are always unique.
 
-The way you study should follow from what is being tested, and what is being tested is judgment that survives the data getting awkward. Grinding problems where you reproduce a template you already know does not build that, because the template is precisely the thing the real interview takes away from you. A few things help more than sheer volume.
+## Reruns And Idempotency Matter
 
-Run your SQL against ugly data. Reading a query and nodding is a different activity from feeding it a three-item order, a duplicated event, and a tie in the sort column, and watching it hand back a number you know is wrong. The fan-out you debugged yourself sticks with you. The one you read a warning about does not.
+Data engineering work is not only about writing a query once. It is about running transformations repeatedly without corrupting the target table. That is why interviewers often ask about failed jobs, backfills, or duplicate events.
 
-Practice saying the why out loud, even on your own. Every situation above has a follow-up waiting behind it, and the follow-ups are where offers are actually decided. If you are reasoning from the mechanism, why the fan-out happens, why the window beats the self-join, why this load is not safe to rerun, then the next twist is just another version of something you already understand. If you are reciting shapes, the first twist that does not fit the shape tends to end the conversation.
+If a daily load inserts yesterday's events and the job fails halfway through, a plain rerun can write the same rows twice. The same issue appears when an upstream system sends duplicate events. A production-safe answer talks about idempotency: running the job twice should leave the table in the same state as running it once.
 
-And work with scenarios that feel like the job rather than a pile of disconnected puzzles. A data engineer SQL screen is really a small set of recurring judgments wearing different business clothes. Train the judgment and the clothes stop throwing you.
+In SQL, that might mean using a `MERGE` on a stable business key, deleting and rebuilding a partition, or deduping on an event id before writing. The exact implementation depends on the system. The interview signal is that you recognize reruns as a correctness problem, not just an operational inconvenience.
 
-If you want an honest read on where your SQL reasoning stands right now, try a free SQL sample, no account required, at [/sample/sql](/sample/sql). And if you are prepping for the full loop and not just the SQL round, the [data engineer interview prep guide](/interview-prep/data-engineer) walks through the five tracks the role leans on and how they fit together.
+## Scale Changes The Shape Of The Answer
 
-You can always look the functions up mid-thought. The judgment about grain, duplication, replays, and scale is the part the interview is built to find, and it is the part that keeps paying you back long after the offer is signed.
+Some SQL answers are fine on a small table and painful on a large one. A self-join for a running total may be easy to write, but a windowed sum is usually cleaner and cheaper. Wrapping a function around a filtered column can prevent an index or partition prune from helping. Using `SELECT DISTINCT` after a bad join may force the engine to sort a much larger dataset than necessary.
+
+You do not need to turn every SQL interview into a database internals lecture. But if the prompt asks how to make something faster, explain the mechanism: fewer rows scanned, less fan-out, a better partition filter, or a window function instead of an expensive join. That is more useful than saying "add an index" without tying it to the query.
+
+## How To Prepare
+
+Prepare by practicing the habits that make queries reliable:
+
+- Write down the grain before joining.
+- Check whether a join can multiply rows.
+- Use window functions when you need to keep row detail while ranking or selecting.
+- Think through reruns, duplicate events, and backfills.
+- Explain why one query shape is safer or cheaper than another.
+
+It also helps to test your own queries with awkward rows: duplicate keys, tied timestamps, missing values, late-arriving events, and many-to-one joins. Clean examples are useful for learning syntax. Messy examples build the reasoning that survives the interview.
+
+If you want a quick read on the SQL side, try a free SQL sample at [/sample/sql](/sample/sql). For the broader role picture, the [data engineer interview prep page](/interview-prep/data-engineer) shows how SQL fits with Python, PySpark, data engineering, and data modeling.
+
+The main idea is friendly enough: learn the syntax, but do not stop there. Data engineer SQL interviews are looking for someone who can keep the data correct after the happy path ends.

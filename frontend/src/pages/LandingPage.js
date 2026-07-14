@@ -17,6 +17,8 @@ import { detectCurrency, PRICES } from '../utils/currency';
 
 // ROLES is imported from roleRegistry.js (slug + hasPage added there)
 
+const RESUME_TIER_LABEL = { pro: 'Pro', elite: 'Elite', lifetime_pro: 'Pro (lifetime)', lifetime_elite: 'Elite (lifetime)' };
+
 // ── Hero IDE content ────────────────────────────────────────────────────────
 const IDE_TRACKS = [
   {
@@ -1331,6 +1333,13 @@ export default function LandingPage() {
   const [paths, setPaths] = useState([]);
   const [insights, setInsights] = useState(null);
   const [upgradeSuccess, setUpgradeSuccess] = useState(false);
+  // An upgrade a logged-out visitor started from the pricing section, carried through
+  // /auth (and, for OAuth, sessionStorage) in router state. Captured once at mount so
+  // it survives the history.replaceState clear below (see AuthPage.js, UpgradeButton.js).
+  const [resumeUpgradeTier] = useState(() => location.state?.upgradeTier || null);
+  // Lets the user dismiss the resume banner after cancelling checkout (or if they
+  // just don't want it) instead of it sitting there until a refresh clears state.
+  const [resumeDismissed, setResumeDismissed] = useState(false);
   // Persisted auth hint, read once synchronously so the first render can pick the right
   // shell (see AuthContext.rememberAuth). A returning user gets the logged-in skeleton
   // instead of the logged-out marketing flash while GET /auth/me is in flight.
@@ -1368,6 +1377,13 @@ export default function LandingPage() {
     const t2 = setTimeout(scroll, 500);
     const t3 = setTimeout(scroll, 1200);
     return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Clear the resumed-upgrade router state the same way scrollTo does above, so a
+  // refresh or a browser-back to this history entry doesn't reopen checkout a second time.
+  useEffect(() => {
+    if (!resumeUpgradeTier) return;
+    try { window.history.replaceState({ ...window.history.state, usr: null }, ''); } catch {}
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
@@ -1430,6 +1446,32 @@ export default function LandingPage() {
         {upgradeSuccess && (
           <div className="landing-upgrade-banner">
             Upgrade confirmed. Your access has been updated.
+          </div>
+        )}
+
+        {/* Resume an upgrade started before sign-in (see UpgradeButton's `autoTrigger`) —
+            without this, a logged-out visitor who clicked "Upgrade to Pro" on this page,
+            signed in, and landed back here would see the different logged-in home with
+            no trace of what they were doing. */}
+        {resumeUpgradeTier && user && !resumeDismissed && (
+          <div className="landing-upgrade-banner landing-upgrade-resume-banner">
+            <span>Continuing your upgrade to {RESUME_TIER_LABEL[resumeUpgradeTier] ?? 'Pro'}…</span>
+            <UpgradeButton
+              tier={resumeUpgradeTier}
+              source="landing_resume_upgrade"
+              currency={currency}
+              successPath="/?upgraded=true"
+              compact
+              autoTrigger
+            />
+            <button
+              type="button"
+              className="landing-upgrade-resume-dismiss"
+              aria-label="Dismiss"
+              onClick={() => setResumeDismissed(true)}
+            >
+              ×
+            </button>
           </div>
         )}
 

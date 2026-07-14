@@ -513,6 +513,7 @@ export default function AppShell() {
 // ── Path sidebar panel ────────────────────────────────────────────────────────
 function PathSidebar({ pathData, pathSlug, topic, meta, currentId, onNavigate, plan }) {
   const navigate = useNavigate();
+  const location = useLocation();
   if (!pathData) {
     return (
       <div className="path-sidebar-loading">
@@ -577,8 +578,8 @@ function PathSidebar({ pathData, pathSlug, topic, meta, currentId, onNavigate, p
             <p className="path-sidebar-hint-text">Some questions are locked — the free tier covers easy. Medium and hard are part of Pro.</p>
           </div>
           <div className="path-sidebar-hint-actions">
-            <button type="button" className="path-sidebar-hint-link path-sidebar-hint-link--pro" onClick={() => navigate('/', { state: { scrollTo: 'landing-pricing' } })}>Pro — all difficulties ↗</button>
-            <button type="button" className="path-sidebar-hint-link path-sidebar-hint-link--elite" onClick={() => navigate('/', { state: { scrollTo: 'landing-pricing' } })}>Elite — all difficulties ↗</button>
+            <button type="button" className="path-sidebar-hint-link path-sidebar-hint-link--pro" onClick={() => navigate('/pricing', { state: { returnTo: { path: `${location.pathname}${location.search}` } } })}>Pro — all difficulties ↗</button>
+            <button type="button" className="path-sidebar-hint-link path-sidebar-hint-link--elite" onClick={() => navigate('/pricing', { state: { returnTo: { path: `${location.pathname}${location.search}` } } })}>Elite — all difficulties ↗</button>
           </div>
         </div>
       )}

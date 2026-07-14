@@ -1,5 +1,5 @@
 import { Fragment, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import Topbar from '../components/Topbar';
 import UpgradeButton from '../components/UpgradeButton';
@@ -29,6 +29,13 @@ export default function PricingPage() {
   const userPlan = user?.plan ?? 'free';
   const isPaid = PAID_PLANS.includes(userPlan);
   const currency = detectCurrency();
+  const location = useLocation();
+  const returnTo = location.state?.returnTo;
+  // Only honour internal paths delivered via router state (guards open-redirect).
+  const backPath =
+    typeof returnTo?.path === 'string' && returnTo.path.startsWith('/') && !returnTo.path.startsWith('//')
+      ? returnTo.path
+      : null;
 
   useEffect(() => { window.scrollTo(0, 0); }, []);
 
@@ -51,6 +58,16 @@ export default function PricingPage() {
       <Topbar />
 
       <main className="pricing-main">
+        {backPath && (
+          <div className="pricing-back-row">
+            <div className="pricing-inner">
+              <Link to={backPath} className="pricing-back-link">
+                ← Back{returnTo.label ? ` to ${returnTo.label}` : ''}
+              </Link>
+            </div>
+          </div>
+        )}
+
         {/* ── Header ───────────────────────────────────────────── */}
         <header className="pricing-header">
           <div className="pricing-inner">

@@ -5,16 +5,17 @@ guide = dropping a markdown file into `backend/content/guides/`. This doc govern
 Referenced from [`editorial-calendar.md`](editorial-calendar.md) § SEO pillar waves; the rendering
 contract lives in `backend/routers/guides.py`; the broader brand voice lives in
 [`starter-assets.md`](starter-assets.md) § Voice and [`gtm-strategy.md`](gtm-strategy.md) (pro-reasoning,
-never anti-competitor). Reference article (voice-approved): `data-engineer-sql-interview-reasoning.md`.
+never anti-competitor). Current guide voice reference: the 2026-07-14 guide batch in
+`backend/content/guides/`, which keeps the tone natural, friendly, and broadly applicable.
 
 ---
 
 ## 1. Voice: write as a senior practitioner
 
 **Every article is written in the voice of a senior data professional in the discipline the article is
-about** — someone who has done the job for years *and* sat on both sides of the interview table. Not a
-content marketer, not a bootcamp instructor, not a brand. A senior practitioner explaining how the work
-actually goes, to a smart peer.
+about** — someone who has done the job for years and understands what interviews usually check, while
+still writing for a broad search visitor. Not a content marketer, not a bootcamp instructor, not a
+brand. A senior practitioner explaining the role clearly to a smart peer.
 
 Match the persona to the article's primary discipline:
 
@@ -26,9 +27,9 @@ Match the persona to the article's primary discipline:
 | Dimensional modeling, grain, dbt, the transformation layer | **Senior analytics engineer** |
 | Tooling / cross-cutting (e.g. pandas vs SQL) | The persona whose **day-to-day the article most reflects** — pick one, do not hedge between them |
 
-The persona shows up as *judgment and lived experience*, not as a costume. It means the article knows
-what actually breaks in production, what an interviewer is really probing, and where beginners
-predictably go wrong — because the writer has watched it happen.
+The persona shows up as *judgment*, not as a costume. It means the article knows what actually breaks
+in production, what an interview is usually checking, and where candidates predictably go wrong. Keep
+the examples general enough that a reader from any company can recognize the pattern.
 
 ## 2. The brand bar (non-negotiable)
 
@@ -53,11 +54,12 @@ the tells deliberately:
   signature when stacked. One or two in a whole article, maximum.
 - **Don't land every paragraph on a tidy aphorism.** The mic-drop closer, paragraph after paragraph, is
   a tell. Let most paragraphs end on a working observation instead.
-- **Use lived-in specifics.** A concrete moment beats a clean abstraction: the backfill that double-fired
-  at 2am, the finance Slack three weeks later, the candidate who froze on the follow-up. Specifics are
-  what a real practitioner reaches for and a model usually sands off.
-- **Restrained first person, earned.** A few "I've interviewed people who…", "I've watched…" touches
-  give the piece a real point of view. Keep it sparse; it is a senior peer talking, not a memoir.
+- **Use practical specifics, not interview-room anecdotes.** A concrete pattern beats a clean abstraction:
+  a join that changes grain, a sample-ratio mismatch, a tied timestamp, a leaking feature. Do not write
+  as if the author watched a particular interview. Keep it generic and reusable.
+- **Keep first person rare.** The default guide voice should be direct and friendly, not memoir-like.
+  Avoid "I watched candidates..." and "I have interviewed people..." unless there is a specific signed
+  reason to use it.
 - **Allow texture.** Mild hedges and dry asides ("honestly," "cheerfully falls over," "wearing different
   business clothes") are human. Models sanitize these out; put some back.
 - **Stay concrete with domain nouns.** `ROW_NUMBER`, sample ratio mismatch, a learning curve, MERGE.

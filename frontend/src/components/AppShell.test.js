@@ -271,3 +271,55 @@ describe('AppShell path data refresh', () => {
     });
   });
 });
+
+/**
+ * PathSidebar free-tier upgrade hint (2026-07-13).
+ *
+ * Regression guard: the hint's "Pro/Elite — all difficulties" buttons must route
+ * to /pricing carrying returnTo = the current location. This caught a real bug —
+ * PathSidebar had no `location` in scope, so the onClick threw "location is not
+ * defined" and the button silently did nothing.
+ */
+describe('AppShell PathSidebar upgrade hint (free plan)', () => {
+  const LOCKED_PATH = {
+    title: 'Window Functions Mastery',
+    topic: 'sql',
+    questions: [
+      { id: 1, title: 'Q1', order: 1, state: 'unlocked' },
+      { id: 2, title: 'Q2', order: 2, state: 'locked' },
+    ],
+    unlock_hint: null,
+  };
+
+  function PricingProbe() {
+    const loc = useLocation();
+    return <div data-testid="pricing-probe">{JSON.stringify(loc.state)}</div>;
+  }
+
+  it('free user: the Pro hint button routes to /pricing with the current path as returnTo', async () => {
+    mockUseAuth.mockReturnValue({ user: { plan: 'free', streak_days: 0 }, loading: false, refreshUser: vi.fn() });
+    mockUseCatalog.mockReturnValue({ catalog: { groups: [] }, loading: false, error: null, refresh: vi.fn() });
+    mockApiGet.mockImplementation((url) => {
+      if (url === '/paths/window-functions-mastery') return Promise.resolve({ data: LOCKED_PATH });
+      return Promise.resolve({ data: {} });
+    });
+
+    render(
+      <MemoryRouter initialEntries={['/practice/sql/questions/1?path=window-functions-mastery']}>
+        <Routes>
+          <Route path="/practice/:topic" element={<AppShell />}>
+            <Route path="questions/:id" element={<div>question</div>} />
+          </Route>
+          <Route path="/pricing" element={<PricingProbe />} />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    const proBtn = await screen.findByRole('button', { name: /Pro.*all difficulties/i });
+    fireEvent.click(proBtn);
+
+    const probe = await screen.findByTestId('pricing-probe');
+    expect(probe).toHaveTextContent('/practice/sql/questions/1');
+    expect(probe).toHaveTextContent('window-functions-mastery');
+  });
+});
