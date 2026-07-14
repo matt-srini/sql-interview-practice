@@ -282,7 +282,7 @@ All brand icons derive from the canonical two-diagonal-squares mark on the Fores
 **Source SVGs** (do not modify — these are the design source of truth):
 - `frontend/public/favicon.svg` — 64×64 rounded chip; **theme-adaptive** via an internal `@media (prefers-color-scheme)` block: dark scheme = forest-ink chip (`#0D1A10`) + bright mark; light scheme = white chip + hairline border + deep-green mark (`#166534`/`#4B6858`). Source for both dark and light favicon PNGs.
 - `frontend/public/icon-maskable.svg` — 512×512 full-bleed (no corner rounding; platforms apply their own mask); source for `apple-touch-icon.png`, `icon-192.png`, `icon-512.png`
-- `frontend/public/og-image.svg` — 1200×630 social card with wordmark, tagline, and durable stat copy ("9 tracks · 850+ curated questions · 1,000+ mock-exclusive"); source for `og-image.png` (dark, the canonical share card)
+- `frontend/public/og-image.svg` — 1200×630 social card with wordmark, tagline, and durable stat copy ("10 tracks · 950+ curated questions · 1,200+ mock-exclusive"); source for `og-image.png` (dark, the canonical share card)
 - `frontend/public/og-image-light.svg` — 1200×630 light-ground alternate of the OG card (same copy/layout, light palette); source for `og-image-light.png`. This is a standalone asset for light-background placements (emails, docs) — it is NOT wired into `og:image`/`twitter:image` (share platforms cannot switch by viewer theme; the dark card remains canonical).
 
 **Rasterized PNGs** (generated; do not hand-edit — re-run the script instead):
@@ -386,7 +386,7 @@ Provides current topic and track metadata to the entire component tree.
 
 `statistics` entry: `color: '#7A5AF0'`, `hasMCQ: true`, `hasRunCode: true`, `mixedSubtype: true`, `apiPrefix: '/statistics'`, `language: 'python'`. The `mixedSubtype: true` flag tells both `QuestionPage.js` and `SampleQuestionPage.js` to derive `renderMode` from `question.subtype` at runtime rather than using the static `hasMCQ` flag — enabling a single page to render both conceptual (MCQ) and executable numerical questions. Both pages compute `renderMode` via the same useMemo pattern: `mixedSubtype ? (question?.subtype === 'numerical' ? 'code' : 'mcq') : (hasMCQ ? 'mcq' : 'code')`.
 
-Reasoning-first practice now reads additive `interaction_mode` metadata across PySpark, Data Engineering, Data Modeling, ML Fundamentals, Experimentation, and Statistics. `QuestionPage` keeps `question.type` / `question_type` separate so headings, header guidance, and submit labels can still distinguish predict-output, debug, optimization, and scenario variants even when multiple question forms share the same modality family.
+Reasoning-first practice now reads additive `interaction_mode` metadata across PySpark, Data Engineering, Data Modeling, ML Fundamentals, Experimentation, Product Sense, and Statistics. `QuestionPage` keeps `question.type` / `question_type` separate so headings, header guidance, and submit labels can still distinguish predict-output, debug, optimization, and scenario variants even when multiple question forms share the same modality family.
 
 ### `catalogContext.js`
 
@@ -452,7 +452,7 @@ All requests use `withCredentials: true` so the `session_token` cookie is sent d
 5. No Run button, no code editor
 
 ### Reasoning-first tracks
-1. `/practice/:topic/questions/:id` → fetch topic-specific question detail for Data Engineering, Data Modeling, ML Fundamentals, Experimentation, or conceptual Statistics
+1. `/practice/:topic/questions/:id` → fetch topic-specific question detail for Data Engineering, Data Modeling, ML Fundamentals, Experimentation, Product Sense, or conceptual Statistics
 2. Prompt renders the stem, supporting context, and option or scenario UI without pretending the task is executable
 3. Submit → topic-specific submit endpoint returns verdict + explanation
 4. No `Run` affordance unless the question's modality is executable

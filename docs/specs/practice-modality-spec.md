@@ -43,6 +43,7 @@ This section is the **canonical citation for terminology pushback**. When a doc 
 | Data Modeling | Constructed reasoning | No execution | Focus on design quality and tradeoffs |
 | ML Fundamentals | Constructed reasoning with selected code-adjacent cases | No execution today | Prioritize diagnosis over recall |
 | Experimentation | Constructed reasoning | No execution | Prioritize interpretation and decision quality |
+| Product Sense | Constructed reasoning | No execution | Prioritize metric design, diagnosis, and ship judgment over framework recall |
 
 ## Practice UX rules
 
@@ -82,7 +83,7 @@ PySpark is the first priority for uplift. It already contains stronger question 
 
 Statistics must remain explicitly hybrid. Conceptual questions and numerical Python questions should not be blurred into one undifferentiated experience.
 
-### Data Engineering / Data Modeling / ML Fundamentals / Experimentation
+### Data Engineering / Data Modeling / ML Fundamentals / Experimentation / Product Sense
 
 These tracks should earn depth through scenario quality, diagnosis, tradeoffs, and explanation quality, not through forced execution.
 

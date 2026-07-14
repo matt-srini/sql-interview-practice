@@ -36,9 +36,9 @@ Before writing any code or content, answer every question below in a short spec 
 | **Eval kind** | `sql` · `python` · `pandas` · `mcq` · `mixed` — drives submission dispatch |
 | **Unlock profile** | `code` or `mcq` — metadata field in `TrackConfig`; retained for schema compatibility. Not consumed by unlock logic (the flat access model uses plan only). |
 | **In mixed mock?** | Should this track appear in the `"mixed"` mock pool? |
-| **Track color** | Unique hex, consistent with the existing palette. Current palette: SQL `#5B6AF0` · Python `#2D9E6B` · Pandas `#C47F17` · PySpark `#D94F3D` · DE `#B9762B` · Data Modeling `#3F8E8C` · Statistics `#7A5AF0` · ML Fundamentals `#E0456A` · Experimentation `#0EA5E9` |
+| **Track color** | Unique hex, consistent with the existing palette. Current palette: SQL `#5B6AF0` · Python `#2D9E6B` · Pandas `#C47F17` · PySpark `#D94F3D` · DE `#B9762B` · Data Modeling `#3F8E8C` · Statistics `#7A5AF0` · ML Fundamentals `#E0456A` · Experimentation `#0EA5E9` · Product Sense `#8E3B6E` |
 | **Track slug** | URL-safe, hyphenated, unique. Becomes the `:topic` route param. |
-| **T digit** | Next free from `backend/tracks.py` reserved list (currently 8–9). |
+| **T digit / prefix** | Single digits 1–9 are all assigned; track 10 (Product Sense) uses the two-digit `10` prefix, so the 11th track takes `11` and beyond continues the two-digit pattern — see [`content-authoring.md`](content-authoring.md) §ID scheme. |
 
 ---
 
@@ -74,7 +74,7 @@ Decide counts before authoring. Once set, do not increase counts arbitrarily —
 
 ### 1.3 Question formats
 
-**For MCQ tracks** (`mcq` eval_kind — PySpark, DE, DM, ML Fundamentals, Experimentation):
+**For MCQ tracks** (`mcq` eval_kind — PySpark, DE, DM, ML Fundamentals, Experimentation, Product Sense):
 
 Define the format mix and target percentages. Reference PySpark/DE as examples. Recommended format types:
 
@@ -152,7 +152,7 @@ Paths do not unlock anything — question access follows the plan policy (free =
 
 ### 2.1 Assign track digit T
 
-Pick the next free T from `backend/tracks.py` (currently 8–9 are reserved). Update the ID allocation table in `docs/content-authoring.md`.
+Single digits 1–9 are all assigned; track 10 (Product Sense) uses the two-digit `10` prefix, so the next track takes the two-digit `11` prefix (`11XNNN` practice/mock, `11XS` samples) — see `backend/tracks.py` and [`content-authoring.md`](content-authoring.md) §ID scheme. Update the ID allocation table in `docs/content-authoring.md`.
 
 ### 2.2 Create `schemas.json`
 

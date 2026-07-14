@@ -124,7 +124,7 @@ Also available without `/api` prefix.
 
 ### Sample — `/api/sample`
 
-The Sample Hub at `/sample` is the discovery surface for the 81 sample questions; its attempted/total markers are powered by `GET /api/sample/summary`. SampleQuestionPage at `/sample/:topic/:difficulty` carries an in-page track + difficulty switcher so users can pivot without returning to the Hub.
+The Sample Hub at `/sample` is the discovery surface for the 90 sample questions; its attempted/total markers are powered by `GET /api/sample/summary`. SampleQuestionPage at `/sample/:topic/:difficulty` carries an in-page track + difficulty switcher so users can pivot without returning to the Hub.
 
 **Resume model.** Sample progression follows a commit-not-glance contract: viewing a sample question (GET) is read-only and idempotent. Marking a question as attempted happens only on **submit** (the user committed an answer) or on the explicit **skip** endpoint (the user chose to move on). This means refreshing the page, closing/reopening the tab, or navigating away and back never advances the user past a question they didn't engage with. Anonymous-first identity ensures every visitor (even pre-signup) has a real user row, so the resume state persists across sessions for the same browser.
 
@@ -266,7 +266,7 @@ This track uses `eval_kind="mixed"` with `mixed_subtype=True`. Each question has
 | GET | `/api/dashboard/insights` | Coaching metrics derived from submissions (per-track solve speed + accuracy, weakest concepts, streak, cross-track insight) |
 | GET | `/api/submissions` | Submission history for a question (`track`, `question_id`, `limit` query params; max 20) including optional `duration_ms` when provided by clients |
 
-Response shape includes every active track: `{ tracks: { sql, python, pandas, pyspark, data-engineering, data-modeling, statistics, ml-fundamentals, experimentation }, concepts_by_track, recent_activity }`. Each track includes `by_difficulty: { easy: { solved, total }, medium: { solved, total }, hard: { solved, total } }` — note both `solved` and `total` are included in each difficulty object, not bare integers.
+Response shape includes every active track: `{ tracks: { sql, python, pandas, pyspark, data-engineering, data-modeling, statistics, ml-fundamentals, experimentation, product-sense }, concepts_by_track, recent_activity }`. Each track includes `by_difficulty: { easy: { solved, total }, medium: { solved, total }, hard: { solved, total } }` — note both `solved` and `total` are included in each difficulty object, not bare integers.
 
 `recent_activity` is **practice-only** (intersected with the practice catalog, mock-only solves excluded), like the solve-count and readiness reads on the same endpoint. `user_progress` holds mock-only solves too — mock submit calls `mark_solved()` for every accepted answer — but both consumers (the landing "Resume" card and the dashboard activity feed) deep-link each row into `/practice/<topic>/questions/<id>`, where mock-only questions are rejected ("Question not available in practice mode"). The filter lives in `routers/dashboard.py` (`q is None or q.get("mock_only")` → skip), which over-fetches from `get_recent_activity` and caps the result at 10 so a recent run of mock solves can't starve the feed. See [docs/decisions/DECISIONS.md](decisions/DECISIONS.md) (recent_activity ∩ catalog).
 
@@ -288,7 +288,7 @@ Response shape includes every active track: `{ tracks: { sql, python, pandas, py
 }
 ```
 
-Example is abbreviated for readability; the real payload includes all 9 active tracks.
+Example is abbreviated for readability; the real payload includes all 10 active tracks.
 
 Notes:
 - `median_solve_seconds` is computed from first-attempt to first-correct duration per solved question, then medianed per track.
@@ -329,7 +329,7 @@ Questions are ordered **unsolved-first → easy→hard → order asc** (a drill 
 
 Paths are defined as JSON files in `backend/content/paths/`. The `path_loader.py` module reads them at startup. Each path record has `slug`, `title`, `description`, `topic`, and `questions[]` (ordered list of question IDs). The `/api/paths/{slug}` response enriches each question entry with its catalog metadata and the user's current state.
 
-Current footprint: **96 paths total** (SQL 11, Python 11, Pandas 9, PySpark 14, Data Engineering 9, Data Modeling 11, Statistics 11, ML Fundamentals 12, Experimentation 8). Path records also include `tier` (`free`/`pro` — **semantically inert; retained for schema backward compatibility**), `level` (`foundational`/`intermediate`/`advanced` — UX badge, see canonical definition in [`docs/content-authoring.md`](./content-authoring.md) §Paths), `patterns[]` (practitioner-skill slugs from `backend/path_patterns.py`), `focus_concepts[]` (concept-family tags used by insights), `outcomes`, and `recommended_after[]` (prerequisite path slugs forming a DAG).
+Current footprint: **103 paths total** (SQL 11, Python 11, Pandas 9, PySpark 14, Data Engineering 9, Data Modeling 11, Statistics 11, ML Fundamentals 12, Experimentation 8, Product Sense 7). Path records also include `tier` (`free`/`pro` — **semantically inert; retained for schema backward compatibility**), `level` (`foundational`/`intermediate`/`advanced` — UX badge, see canonical definition in [`docs/content-authoring.md`](./content-authoring.md) §Paths), `patterns[]` (practitioner-skill slugs from `backend/path_patterns.py`), `focus_concepts[]` (concept-family tags used by insights), `outcomes`, and `recommended_after[]` (prerequisite path slugs forming a DAG).
 
 The `GET /api/dashboard/insights` endpoint uses `focus_concepts` to attach `recommended_path_slug` and `recommended_path_title` to each entry in `weakest_concepts`. Matching is **family-aware**: both the weak concept and the path's `focus_concepts` are resolved to their canonical concept family before comparison (same resolver Mock's `focus_concepts` filter uses). Foundational paths take priority over intermediate, which take priority over advanced. **Routing note:** the coaching UI (dashboard focus card + weak-areas panel, logged-in landing weak-spots, mock post-mortem) now leads with the [concept drill](#concept-drill--apipractice) (`/practice/{track}?drill={concept}`) as the primary "Drill" action and offers `recommended_path_slug` only as an honest secondary (*Or take the … path →*). The Elite `study_plan` remains a curated mixed planner where a `learning_path` step is still legitimate (labelled *Start path →*).
 
@@ -525,13 +525,13 @@ Prefix: `/api/mock`
 
 > **Analytics separation:** `GET /api/mock/analytics` now returns additive `benchmark_summary`, `drill_summary`, and `mode_breakdown` fields so benchmark performance can be compared like-with-like while flexible drill sessions remain visible without contaminating comparable benchmark stats.
 
-> **Benchmark composition:** benchmark sessions now use track-specific composition targets for reasoning tracks instead of reusing PySpark's format sampler globally. PySpark retains its own format template; Statistics retains its `1 numerical + 2 conceptual` split; Data Engineering, Data Modeling, ML Fundamentals, and Experimentation now use track-specific `type` targets so benchmark coverage reflects the actual modality of each track.
+> **Benchmark composition:** benchmark sessions now use track-specific composition targets for reasoning tracks instead of reusing PySpark's format sampler globally. PySpark retains its own format template; Statistics retains its `1 numerical + 2 conceptual` split; Data Engineering, Data Modeling, ML Fundamentals, Experimentation, and Product Sense now use track-specific `type` targets so benchmark coverage reflects the actual modality of each track.
 
 ### Request bodies
 
 **`POST /start`**
 ```json
-{ "mode": "benchmark|custom|interview_loop", "track": "sql|python|pandas|pyspark|data-engineering|data-modeling|statistics|ml-fundamentals|experimentation|mixed",
+{ "mode": "benchmark|custom|interview_loop", "track": "sql|python|pandas|pyspark|data-engineering|data-modeling|statistics|ml-fundamentals|experimentation|product-sense|mixed",
   "difficulty": "easy|medium|hard|mixed",
   "role": "data_analyst|data_engineer|analytics_engineer|data_scientist",  // required when track="mixed", else null
   "num_questions": 2,   // custom only, 1-5

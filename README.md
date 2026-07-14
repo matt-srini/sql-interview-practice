@@ -1,16 +1,16 @@
 # datathink — Data Interview Practice Platform
 
-A data interview practice platform covering nine tracks. Users write SQL or Python, answer conceptual questions, get instant feedback, and work through plan-gated challenge banks. The product pairs a React frontend with a FastAPI backend, PostgreSQL-backed app state, DuckDB-backed SQL evaluation, a Python subprocess sandbox, learning paths, mock interviews, and plan-aware progression.
+A data interview practice platform covering ten tracks. Users write SQL or Python, answer conceptual questions, get instant feedback, and work through plan-gated challenge banks. The product pairs a React frontend with a FastAPI backend, PostgreSQL-backed app state, DuckDB-backed SQL evaluation, a Python subprocess sandbox, learning paths, mock interviews, and plan-aware progression.
 
 ## Current State
 
-- **878 practice questions** across 9 tracks with plan-gated unlock rules and persistent progress
-- **1,148 mock-only questions** (Pro/Elite) across all tracks, never shown in the practice catalog
-- **81 dedicated sample questions** (all 9 tracks × 3 difficulties × 3 questions each) — no login required, no impact on practice progress, and completely separate from the practice and mock banks.
+- **965 practice questions** across 10 tracks with plan-gated unlock rules and persistent progress
+- **1,269 mock-only questions** (Pro/Elite) across all tracks, never shown in the practice catalog
+- **90 dedicated sample questions** (all 10 tracks × 3 difficulties × 3 questions each) — no login required, no impact on practice progress, and completely separate from the practice and mock banks.
 - Challenge mode with persistent progress, bookmarks, draft autosave, hints, concept tags, and unlock logic
 - Sample mode that is anonymous-friendly (no login required)
 - Mock interviews: `benchmark` (fixed-shape track readiness signal, or role-based Mixed benchmark), `custom` (1–5 questions, 10–90 min), and `interview_loop` (Elite-only chain-driven dialogue) with plan-based limits and post-session analysis. Legacy `30min`/`60min` sessions are read-only history.
-- Learning paths: 96 curated, track-specific walks through the practice catalog (they guide; they do not gate — unlocks follow the standard practice thresholds)
+- Learning paths: 103 curated, track-specific walks through the practice catalog (they guide; they do not gate — unlocks follow the standard practice thresholds)
 - Semantic concept tags, progressive hints, and company tags (SQL) surfaced in the practice UI
 - Dashboard with coaching insights, streak tracking, weakest-concept signals, and (Elite) readiness scores + study plan
 - Three subscription tiers (Free / Pro / Elite), billed via Razorpay (INR / India) or Paddle (USD / international, Merchant of Record)
@@ -19,16 +19,17 @@ A data interview practice platform covering nine tracks. Users write SQL or Pyth
 
 | Track | Easy | Medium | Hard | Practice total | Mock-only (Pro/Elite) |
 |---|---|---|---|---|---|
-| SQL | 37 | 50 | 31 | **118** | 193 (0 easy, 67 med, 126 hard) |
+| SQL | 37 | 50 | 31 | **118** | 196 (0 easy, 67 med, 129 hard) |
 | Python | 33 | 30 | 18 | **81** | 103 (0 easy, 50 med, 53 hard) |
-| Pandas | 28 | 40 | 25 | **93** | 114 (0 easy, 51 med, 63 hard) |
+| Pandas | 28 | 40 | 25 | **93** | 132 (0 easy, 69 med, 63 hard) |
 | PySpark | 40 | 45 | 42 | **127** | 150 (0 easy, 75 med, 75 hard) |
 | Data Engineering | 30 | 35 | 26 | **91** | 110 (0 easy, 34 med, 76 hard) |
 | Data Modeling | 25 | 31 | 25 | **81** | 97 (0 easy, 46 med, 51 hard) |
 | Statistics | 31 | 43 | 26 | **100** | 134 (0 easy, 66 med, 68 hard) |
 | ML Fundamentals | 30 | 40 | 30 | **100** | 143 (0 easy, 59 med, 84 hard) |
 | Experimentation | 30 | 33 | 24 | **87** | 104 (0 easy, 45 med, 59 hard) |
-| **Total** | **284** | **347** | **247** | **878** | **1,148** |
+| Product Sense | 30 | 33 | 24 | **87** | 100 (0 easy, 45 med, 55 hard) |
+| **Total** | **314** | **380** | **271** | **965** | **1,269** |
 
 Mock-only questions share the same TXNNN ID scheme, allocated at the top of each difficulty range. They never appear in the practice catalog.
 
@@ -61,6 +62,7 @@ sql-interview-practice/
 │   │   ├── statistics_questions/       # Statistics dual-subtype (conceptual MCQ + numerical Python)
 │   │   ├── ml_fundamentals_questions/  # ML Fundamentals MCQ / scenario / predict-output / debug
 │   │   ├── experimentation_questions/  # Experimentation MCQ / scenario / predict-output / debug
+│   │   ├── product_sense_questions/    # Product Sense MCQ / scenario / debug / predict-output
 │   │   └── paths/                      # Learning path configs
 │   ├── datasets/                       # Committed CSVs + metadata JSON
 │   ├── routers/                        # auth, catalog, questions, sample, mock, paths, dashboard, razorpay, paddle, spa, …
@@ -100,6 +102,7 @@ sql-interview-practice/
 | Statistics | Dual-subtype: conceptual (MCQ) or numerical (Python) | Only for numerical subtype |
 | ML Fundamentals | MCQ / scenario / predict-output / debug | No |
 | Experimentation | MCQ / scenario / predict-output / debug | No |
+| Product Sense | MCQ / scenario / debug / predict-output | No |
 
 ### Plan model
 

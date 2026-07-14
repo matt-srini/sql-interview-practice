@@ -333,7 +333,7 @@ const ROLE_CONTENT = {
       },
       {
         q: 'How is this different from LeetCode-style prep?',
-        a: 'Some DS interviews include coding, but the role also requires ML, statistics, experimentation, SQL, and Pandas. datathink weights practice around that broader data-science interview mix.',
+        a: 'Some DS interviews include coding, but the role also requires ML, statistics, experimentation, Product Sense, SQL, and Pandas. datathink weights practice around that broader data-science interview mix.',
       },
       FREE_PRACTICE_FAQ,
     ],

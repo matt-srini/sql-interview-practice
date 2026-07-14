@@ -38,7 +38,7 @@ the examples general enough that a reader from any company can recognize the pat
 - **Confident, calm, specific.** The existing datathink voice ([`starter-assets.md`](starter-assets.md)).
 - **Pro-reasoning, never anti-competitor.** "LeetCode has X" is not an argument and never appears. We
   make our case on depth, not on someone else's shortcomings.
-- **No hype, no volume-as-value.** No superlatives about datathink, no "878 questions" as a flex, no
+- **No hype, no volume-as-value.** No superlatives about datathink, no "965 questions" as a flex, no
   growth-hack energy. The product is mentioned once or twice, softly, near the end.
 - **Show the why.** Mechanism over assertion. If you claim a query double-counts, show *how* the
   fan-out happens.
