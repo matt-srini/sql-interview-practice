@@ -2,6 +2,7 @@
 import hashlib
 import hmac as _hmac
 import json
+import os
 import uuid
 
 import pytest
@@ -120,6 +121,132 @@ def test_tc212_unauthenticated_create_order_returns_401():
     with TestClient(app) as client:
         r = client.post("/api/razorpay/create-order", json={"plan": "pro"})
     assert r.status_code == 401
+
+
+def test_create_order_razorpay_failure_returns_clean_502():
+    """A Razorpay SDK failure (e.g. subscriptions not enabled → 'Authentication
+    failed') must surface as a clean 502 with a user-facing message, not a bare
+    unhandled 500 (which the browser hides cross-origin as a 'Network Error')."""
+    with TestClient(app) as client:
+        user = _verified_user(client, plan="free")
+    mock_client = _make_razorpay_mock()
+    mock_client.subscription.create.side_effect = Exception("Authentication failed")
+    with patch("routers.razorpay.RAZORPAY_KEY_ID", "rzp_key_123"), \
+         patch("routers.razorpay.RAZORPAY_KEY_SECRET", "rzp_secret_123"), \
+         patch("routers.razorpay.RAZORPAY_PLAN_PRO", "plan_pro_123"), \
+         patch("routers.razorpay.razorpay") as mock_razorpay_module:
+        mock_razorpay_module.Client.return_value = mock_client
+        with TestClient(app) as client:
+            _make_user(client, plan="free", existing_user=user)
+            r = client.post("/api/razorpay/create-order", json={"plan": "pro"})
+    assert r.status_code == 502, r.text
+    assert "checkout" in r.json()["error"].lower()
+
+
+# ---------------------------------------------------------------------------
+# Payment payload contract — the guardrail against the da772b5 regression.
+#
+# WHY THIS EXISTS: these tests mock the Razorpay client, and a mock accepts ANY
+# payload. da772b5 shipped a broken `customer_id` field precisely because the
+# mocked tests couldn't see that the REAL Razorpay API rejects it (400
+# "Authentication failed"), which broke every monthly upgrade in production.
+# So we pin the EXACT payload here (forbid stray fields), and add a real-API
+# smoke test at the bottom as the backstop mocks structurally cannot provide.
+# ---------------------------------------------------------------------------
+
+def _capture_create_order(existing_user, plan: str, currency: str = "INR"):
+    """Drive create-order with a mocked Razorpay client; return (response, mock_client)
+    so callers can assert exactly what payload reached Razorpay."""
+    mock_client = _make_razorpay_mock()
+    with patch("routers.razorpay.RAZORPAY_KEY_ID", "rzp_key_123"), \
+         patch("routers.razorpay.RAZORPAY_KEY_SECRET", "rzp_secret_123"), \
+         patch("routers.razorpay.RAZORPAY_PLAN_PRO", "plan_pro_123"), \
+         patch("routers.razorpay.RAZORPAY_PLAN_ELITE", "plan_elite_123"), \
+         patch("routers.razorpay.razorpay") as mod:
+        mod.Client.return_value = mock_client
+        with TestClient(app) as client:
+            _make_user(client, plan="free", existing_user=existing_user)
+            r = client.post("/api/razorpay/create-order", json={"plan": plan, "currency": currency})
+    return r, mock_client
+
+
+@pytest.mark.parametrize("plan,expected_plan_id,target", [
+    ("pro", "plan_pro_123", "pro"),
+    ("elite", "plan_elite_123", "elite"),
+])
+def test_subscription_payload_contract(plan, expected_plan_id, target):
+    """Monthly (pro/elite): subscription.create must receive EXACTLY the allowed
+    keys — and NEVER customer_id (da772b5 → Razorpay 400 'Authentication failed').
+    The strict key-set assertion forces any payload change through review."""
+    with TestClient(app) as client:
+        user = _verified_user(client, plan="free")
+    r, mock_client = _capture_create_order(user, plan)
+    assert r.status_code == 200, r.text
+    assert mock_client.subscription.create.called
+    assert not mock_client.order.create.called
+    payload = mock_client.subscription.create.call_args[0][0]
+    assert set(payload) == {"plan_id", "customer_notify", "total_count", "notes"}, (
+        f"subscription payload keys changed to {sorted(payload)} — a stray field "
+        "(e.g. customer_id) makes Razorpay reject the call. Change deliberately."
+    )
+    assert "customer_id" not in payload
+    assert payload["plan_id"] == expected_plan_id
+    assert payload["total_count"] == 24
+    assert payload["customer_notify"] == 1
+    assert payload["notes"] == {"user_id": str(user["id"]), "target_plan": target}
+    # the customer pre-warm was removed — no customer is created during checkout
+    assert not mock_client.customer.create.called
+
+
+@pytest.mark.parametrize("plan,expected_amount,target", [
+    ("lifetime_pro", 1199900, "lifetime_pro"),
+    ("lifetime_elite", 1999900, "lifetime_elite"),
+])
+def test_lifetime_order_payload_contract(plan, expected_amount, target):
+    """Lifetime (one-time): order.create must receive EXACTLY the allowed keys."""
+    with TestClient(app) as client:
+        user = _verified_user(client, plan="free")
+    r, mock_client = _capture_create_order(user, plan)
+    assert r.status_code == 200, r.text
+    assert mock_client.order.create.called
+    assert not mock_client.subscription.create.called
+    payload = mock_client.order.create.call_args[0][0]
+    assert set(payload) == {"amount", "currency", "payment_capture", "notes"}
+    assert "customer_id" not in payload
+    assert payload["amount"] == expected_amount
+    assert payload["currency"] == "INR"
+    assert payload["payment_capture"] == 1
+    assert payload["notes"] == {"user_id": str(user["id"]), "target_plan": target}
+    assert not mock_client.customer.create.called
+
+
+@pytest.mark.skipif(
+    not (os.environ.get("RUN_RAZORPAY_LIVE") == "1" and os.environ.get("RAZORPAY_KEY_ID")),
+    reason="live Razorpay smoke test — set RUN_RAZORPAY_LIVE=1 with real test keys to run",
+)
+def test_live_create_order_pro_accepted_by_razorpay():
+    """END-TO-END against the REAL Razorpay test API — the backstop mocks can't give.
+    Mocked tests couldn't catch da772b5 because a mock accepts any payload; only the
+    real API rejects a bad one. Drives the real create-order endpoint, asserts Razorpay
+    accepts the subscription, then cancels it so nothing is left behind. Skipped in CI
+    (no keys); run manually before shipping any Razorpay payment change."""
+    import razorpay
+    from config import RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET
+    with TestClient(app) as client:
+        user = _verified_user(client, plan="free")
+        _make_user(client, plan="free", existing_user=user)
+        r = client.post("/api/razorpay/create-order", json={"plan": "pro", "currency": "INR"})
+    assert r.status_code == 200, f"Razorpay rejected our subscription payload: {r.text}"
+    body = r.json()
+    assert body["is_subscription"] is True
+    assert body["subscription_id"]
+    # cleanup — cancel the test-mode subscription we just created (best effort)
+    try:
+        razorpay.Client(auth=(RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET)).subscription.cancel(
+            body["subscription_id"], {"cancel_at_cycle_end": 0}
+        )
+    except Exception:
+        pass
 
 
 # ---------------------------------------------------------------------------

@@ -416,15 +416,18 @@ Every in-app surface that prompts an upgrade, what it shows, when it appears, an
 
 ### Navigation convention
 
-All "see plans" links that land on the pricing section use router-state navigation — no hash or query param in the URL:
+All in-app "see plans" CTAs route to the dedicated `/pricing` comparison page (both Pro **and** Elite, full feature matrix), carrying a `returnTo` via router state so the page can offer a contextual way back:
 
 ```js
-navigate('/', { state: { scrollTo: 'landing-pricing' } })
+navigate('/pricing', { state: { returnTo: { path, label } } })
+// or, for a React Router <Link>:  <Link to="/pricing" state={{ returnTo: { path, label } }}>
 ```
 
-`LandingPage` reads `location.state?.scrollTo` on mount, scrolls to the element with that id (`landing-pricing`), then clears the state from browser history so back-navigation doesn't re-trigger the scroll. The scroll fires at 220 ms, 500 ms, and 1200 ms to survive async render delays.
+`PricingPage` reads `location.state?.returnTo` and — when `path` is an internal route (starts with `/`, open-redirect guard) — renders a "← Back to {label}" link at the top (plain "← Back" when no `label`), returning the user to exactly where they came from (`path` may include a query string, e.g. `?path=` to preserve path-mode context). `returnTo` is absent on cold marketing / SEO / direct-URL landings, so no back link shows there — `/pricing` is a legitimate top-level page in that case. The `label` is always derived from context (track `meta.label`, "your account", …), never hardcoded.
 
-Direct upgrade buttons (all `UpgradeButton` instances) skip the landing page entirely and open the Razorpay Checkout modal immediately.
+Direct upgrade buttons (all `UpgradeButton` instances) skip everything and open the Razorpay / Paddle checkout immediately.
+
+> **Superseded 2026-07-13.** These CTAs previously did `navigate('/', { state: { scrollTo: 'landing-pricing' } })` to scroll the landing pricing grid. That grid (`PricingSection`, `#landing-pricing`) only renders for logged-out users, so for a logged-in free user the scroll silently no-oped and dumped them at the top of their landing view — no plans in sight. The `scrollTo` handler in `LandingPage` remains only for the logged-out marketing flow. See [`DECISIONS.md`](../decisions/DECISIONS.md).
 
 ### CTA map
 
@@ -432,15 +435,15 @@ Direct upgrade buttons (all `UpgradeButton` instances) skip the landing page ent
 |---|---|---|---|---|
 | **Landing — pricing section** | `UpgradeButton` | "Upgrade to Pro / Elite" + "Lifetime access — ₹X" | Plan allows the upgrade (see table below) | Opens Razorpay directly |
 | **Practice sidebar — bottom panel** | `UpgradeButton` | "Unlock Pro" / "Unlock Elite" | `free` or `pro` plan | Opens Razorpay; `successPath` preserves `?path=` if in path mode |
-| **Practice sidebar — path hint** | `<button>` | "Pro — unlock all ↗" / "Elite — unlock all ↗" | `free` plan + path mode + locked questions exist | Navigates to `/ + state.scrollTo` |
+| **Practice sidebar — path hint** | `<button>` | "Pro — all difficulties ↗" / "Elite — all difficulties ↗" | `free` plan + path mode + locked questions exist | Navigates to `/pricing` (`returnTo` = current path, incl. `?path=`) |
 | **Question page — locked callout** | `UpgradeButton` | "Unlock now with Pro" | `free` plan, medium or hard question (Pro/Elite only) | Opens Razorpay |
 | **Question page — hard gate** | `UpgradeButton` | "Upgrade to Pro" | `free` plan, hard question (Pro/Elite only) | Opens Razorpay |
-| **Track hub — TierBanner** | `<button>` | "See plans →" | `free` plan | Navigates to `/ + state.scrollTo` |
+| **Track hub — TierBanner** | `UpgradeButton variant="link"` + `<button>` (both subtle links) | "Upgrade to Pro" + "See plans →" | `free` plan | "Upgrade to Pro" opens checkout in place (contextual unlock for medium/hard; → `/auth` if logged out); "See plans →" navigates to `/pricing` (`returnTo` = track). Rendered as text links so the banner doesn't compete with the primary "Continue" button. |
 | **Dashboard — weak-areas gate** | `UpgradeButton` | "Upgrade to Pro" | `free` plan, "Where to focus" panel | Opens Razorpay |
 | **Landing — weak-spots gate** | `UpgradeButton` | "Upgrade to Pro" | `free` logged-in user with weak data | Opens Razorpay |
 | **Mock hub — difficulty button** | `UpgradeButton` | "Pro unlocks this" / "Elite unlocks this" | Plan blocked for that difficulty | Opens Razorpay |
 | **Mock hub — notice strip** | `UpgradeButton` | "Unlock more with Pro" | `free` hard or mixed blocked | Opens Razorpay |
-| **Account page** | `<button>` | "Upgrade to Pro or Elite" | `free` plan | Navigates to `/ + state.scrollTo` |
+| **Account page** | `<Link>` | "Upgrade to Pro or Elite" | `free` plan | Navigates to `/pricing` (`returnTo` = `/account`) |
 
 ### Pricing section CTA state by plan
 

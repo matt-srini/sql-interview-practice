@@ -137,7 +137,7 @@ function isBlockedError(e) {
   );
 }
 
-export default function UpgradeButton({ tier = 'pro', label, source, compact = false, className = '', currency, successPath = '/practice?upgraded=true' }) {
+export default function UpgradeButton({ tier = 'pro', label, source, compact = false, className = '', currency, successPath = '/practice?upgraded=true', variant = 'button' }) {
   const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -151,18 +151,16 @@ export default function UpgradeButton({ tier = 'pro', label, source, compact = f
 
   const buttonLabel = label ?? `Upgrade to ${tierLabel(tier)}`;
 
-  // Preload the right checkout script (and, for Razorpay, pre-warm the customer
-  // record) as soon as the button appears so the click has less to wait on.
+  // Preload the right checkout script as soon as the button appears so the click
+  // has less to wait on. (No Razorpay customer pre-warm — passing a customer_id
+  // to subscription.create is rejected by Razorpay; see routers/razorpay.py.)
   useEffect(() => {
     if (rail === 'paddle') {
       loadPaddleScript().catch(() => {});
     } else {
       loadRazorpayScript().catch(() => {});
-      if (user?.email) {
-        api.post('/razorpay/ensure-customer').catch(() => {});
-      }
     }
-  }, [user?.email, rail]);
+  }, [rail]);
 
   async function startPaddleCheckout() {
     const [checkoutRes] = await Promise.all([
@@ -278,7 +276,11 @@ export default function UpgradeButton({ tier = 'pro', label, source, compact = f
   return (
     <>
       <button
-        className={`btn btn-primary${compact ? ' btn-compact' : ''} upgrade-btn upgrade-btn-${tier} ${className}`.trim()}
+        className={
+          variant === 'link'
+            ? `upgrade-link upgrade-btn-${tier} ${className}`.trim()
+            : `btn btn-primary${compact ? ' btn-compact' : ''} upgrade-btn upgrade-btn-${tier} ${className}`.trim()
+        }
         onClick={handleClick}
         disabled={pending}
         title={source ? `upgrade-source:${source}` : undefined}

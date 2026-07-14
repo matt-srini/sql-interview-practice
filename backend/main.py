@@ -121,6 +121,25 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title="SQL Interview Practice API", lifespan=lifespan)
 
 
+def _error_cors_headers(request: Request) -> dict[str, str]:
+    """CORS headers for hand-built error responses that don't flow back through
+    CORSMiddleware. The generic Exception (500) handler runs inside Starlette's
+    ServerErrorMiddleware — outermost, *above* CORSMiddleware — so a 500 would
+    otherwise ship with no Access-Control-Allow-Origin, and the browser reports
+    the request cross-origin as an opaque 'Network Error', hiding the real
+    failure. Mirror what CORSMiddleware would have added. (AppError/HTTPException
+    responses flow through the middleware normally, so they must NOT call this —
+    doing so would emit a duplicate header.)"""
+    origin = request.headers.get("origin")
+    if origin and (origin in ALLOWED_ORIGINS or "*" in ALLOWED_ORIGINS):
+        return {
+            "Access-Control-Allow-Origin": origin,
+            "Access-Control-Allow-Credentials": "true",
+            "Vary": "Origin",
+        }
+    return {}
+
+
 @app.exception_handler(AppError)
 async def app_error_handler(request: Request, exc: AppError):
     request_id = get_request_id()
@@ -158,7 +177,7 @@ async def global_exception_handler(request: Request, exc: Exception):
             "error": "Internal server error",
             "request_id": request_id,
         },
-        headers={"X-Request-ID": request_id},
+        headers={"X-Request-ID": request_id, **_error_cors_headers(request)},
     )
 
 

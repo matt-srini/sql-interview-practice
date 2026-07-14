@@ -159,6 +159,8 @@ The Sample Hub at `/sample` is the discovery surface for the 81 sample questions
 | POST | `/api/razorpay/verify-payment` | Verifies HMAC signature on the client-side Razorpay checkout callback and applies the plan change immediately. Idempotent via synthetic event id `verify:<payment_id>` shared with the webhook path |
 | POST | `/api/razorpay/webhook` | Verifies `X-Razorpay-Signature` against the raw body, dispatches `payment.captured` / `subscription.activated` / `subscription.charged` / `subscription.cancelled` / `subscription.halted` / `payment.failed`; authoritative source of truth. Lifetime plans are protected against stray subscription-cancel events |
 
+`create-order` builds a subscription (pro/elite monthly) or a one-time order (lifetime). **It must NOT pass `customer_id` to `subscription.create`** — Razorpay rejects a subscription carrying a customer_id on this account with a 400 `Authentication failed`, which broke *every* monthly upgrade (regression from `da772b5`'s customer pre-warm; reverted 2026-07-14 — `_ensure_customer_id`, the `/ensure-customer` endpoint, and the frontend preload were removed). The webhook resolves the user from `notes.user_id`, so no customer is attached. Error shaping: missing keys → **503** (`_require_razorpay_client`); any Razorpay SDK/transport failure → a clean **502** (`We couldn't start checkout…`, via `_razorpay_call`) rather than a bare unhandled 500 that the browser would hide cross-origin as a "Network Error" (see § Request context and error handling → CORS on errors). Guarded by `tests/test_14_payments.py`.
+
 Signature formulas:
 - One-time order callback: HMAC-SHA256 of `"{order_id}|{payment_id}"` with `RAZORPAY_KEY_SECRET`
 - Subscription callback: HMAC-SHA256 of `"{payment_id}|{subscription_id}"` with `RAZORPAY_KEY_SECRET`
@@ -465,6 +467,8 @@ Solved questions remain solved permanently regardless of plan changes.
 **Request ID** — `middleware/request_context.py` assigns a UUID per request, attaches it to `request.state`, stores it in a contextvar, and returns it as `X-Request-ID`. Structured logs use `[request_id=<id>]` prefix.
 
 **Error payloads** — All user-facing errors follow: `{ error, request_id }`
+
+**CORS on errors** — `AppError`/`HTTPException` responses flow back through `CORSMiddleware` and keep their `Access-Control-Allow-Origin` header. The generic `@app.exception_handler(Exception)` (500) does **not** — it runs in Starlette's `ServerErrorMiddleware`, *above* `CORSMiddleware` — so `main._error_cors_headers(request)` re-attaches the header for an allowed `Origin`. Without it a cross-origin 500 reaches the browser as an opaque **"Network Error"** with the real status/body hidden. Guarded by `tests/test_error_cors_headers.py`.
 
 **Rate limiting** — Applied as middleware to all routes except `/health`. Keyed on `request.client.host`.
 - Default: 60 requests per 60-second window per IP

@@ -85,3 +85,39 @@ describe('PricingPage', () => {
     expect(upgradeButtons.length).toBeGreaterThanOrEqual(2);
   });
 });
+
+// ── Contextual back link (returnTo router state) ─────────────────────────────
+
+function renderPricingPageAt(state) {
+  return render(
+    <MemoryRouter initialEntries={[{ pathname: '/pricing', state }]}>
+      <HelmetProvider>
+        <PricingPage />
+      </HelmetProvider>
+    </MemoryRouter>
+  );
+}
+
+describe('PricingPage — contextual back link', () => {
+  it('renders a labelled back link when arrived from an in-app surface', () => {
+    renderPricingPageAt({ returnTo: { path: '/practice/sql', label: 'SQL Practice' } });
+    const back = screen.getByRole('link', { name: /back to SQL Practice/i });
+    expect(back).toHaveAttribute('href', '/practice/sql');
+  });
+
+  it('renders a plain "Back" link when no label is supplied', () => {
+    renderPricingPageAt({ returnTo: { path: '/learn/window-functions' } });
+    const back = screen.getByRole('link', { name: /^←?\s*Back$/i });
+    expect(back).toHaveAttribute('href', '/learn/window-functions');
+  });
+
+  it('renders no back link on a cold landing (no returnTo)', () => {
+    renderPricingPage();
+    expect(screen.queryByRole('link', { name: /back/i })).not.toBeInTheDocument();
+  });
+
+  it('ignores a non-internal return path (open-redirect guard)', () => {
+    renderPricingPageAt({ returnTo: { path: 'https://evil.example/phish' } });
+    expect(screen.queryByRole('link', { name: /back/i })).not.toBeInTheDocument();
+  });
+});

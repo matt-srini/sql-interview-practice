@@ -11253,6 +11253,7 @@ select {
   display: flex;
   align-items: center;
   gap: 12px;
+  flex-wrap: wrap;
   padding: 10px 16px;
   border-radius: var(--radius-sm);
   font-size: 0.82rem;
@@ -11280,10 +11281,35 @@ select {
   cursor: pointer;
   color: var(--accent);
   font-weight: 600;
-  text-decoration: none;
+  text-decoration: underline;
   white-space: nowrap;
 }
-.tier-banner-cta:hover { text-decoration: underline; }
+.tier-banner-cta:hover { text-decoration: none; }
+
+/* Free-banner action cluster: "Upgrade to Pro" + "See plans →", both subtle links
+   so the banner stays quiet and doesn't compete with the primary "Continue" CTA. */
+.tier-banner-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-shrink: 0;
+}
+
+/* Link-styled upgrade CTA (UpgradeButton variant="link") — a text link instead of
+   a filled button, for surfaces where a button would steal focus from the primary action. */
+.upgrade-link {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
+  color: var(--accent);
+  font-weight: 600;
+  text-decoration: underline;
+  white-space: nowrap;
+}
+.upgrade-link:hover { text-decoration: none; }
+.upgrade-link:disabled { opacity: 0.6; cursor: default; text-decoration: none; }
 
 .tier-banner-celebrate {
   background: rgba(45, 158, 107, 0.07);
@@ -14696,6 +14722,23 @@ button.mock-focus-locked:hover {
 
 .pricing-main {
   padding-bottom: 4rem;
+}
+
+/* Contextual "← Back" shown only when /pricing is reached from an in-app surface
+   (returnTo router state). Absent on cold/marketing/SEO landings. */
+.pricing-back-row {
+  padding-top: 1.5rem;
+}
+.pricing-back-link {
+  display: inline-block;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  font-weight: 500;
+  text-decoration: none;
+}
+.pricing-back-link:hover {
+  color: var(--accent);
+  text-decoration: underline;
 }
 
 .pricing-inner {

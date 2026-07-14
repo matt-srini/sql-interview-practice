@@ -30,7 +30,6 @@ from db import (
     record_payment_event,
     record_plan_change,
     set_user_plan,
-    set_user_razorpay_customer_id,
     set_user_subscription_id,
     clear_user_subscription_id,
 )
@@ -108,6 +107,24 @@ def _require_razorpay_client() -> Any:
     return razorpay.Client(auth=(RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET))
 
 
+_CHECKOUT_UNAVAILABLE = "We couldn't start checkout right now. Please try again in a moment."
+
+
+async def _razorpay_call(fn, *, action: str) -> Any:
+    """Run a Razorpay SDK call in the threadpool, converting any SDK/transport
+    failure into a clean 502 instead of letting it escape as an unhandled 500.
+    A bare 500 reaches the browser cross-origin as an opaque "Network Error"
+    (see ``main._error_cors_headers``); a 502 with this message is actionable.
+    Intentional HTTPExceptions raised upstream pass through unchanged."""
+    try:
+        return await run_in_threadpool(fn)
+    except HTTPException:
+        raise
+    except Exception:
+        logger.exception("[razorpay] %s failed", action)
+        raise HTTPException(status_code=502, detail=_CHECKOUT_UNAVAILABLE)
+
+
 def _normalized_uuid_or_none(value: Any) -> str | None:
     if value is None:
         return None
@@ -115,34 +132,6 @@ def _normalized_uuid_or_none(value: Any) -> str | None:
         return str(uuid.UUID(str(value)))
     except (TypeError, ValueError, AttributeError):
         return None
-
-
-async def _ensure_customer_id(user: dict[str, Any], client: Any) -> str:
-    existing = user.get("razorpay_customer_id")
-    if existing:
-        return str(existing)
-
-    # Razorpay rejects duplicate customers on the same email with an error —
-    # we catch it and fall back to finding the existing one via their list API.
-    def _create() -> Any:
-        try:
-            return client.customer.create({
-                "email": user["email"],
-                "name": user.get("name") or user["email"],
-                "fail_existing": "0",
-                "notes": {"user_id": str(user["id"])},
-            })
-        except Exception:
-            logger.exception("[razorpay] customer create failed")
-            raise
-
-    created = await run_in_threadpool(_create)
-    customer_id = str(created["id"])
-
-    updated_user = await set_user_razorpay_customer_id(user["id"], customer_id)
-    if updated_user is None or not updated_user.get("razorpay_customer_id"):
-        raise HTTPException(status_code=500, detail="Unable to persist Razorpay customer.")
-    return str(updated_user["razorpay_customer_id"])
 
 
 async def _apply_plan_change(
@@ -209,27 +198,6 @@ def _verify_webhook_signature(raw_body: bytes, signature: str) -> bool:
 
 
 # ---------------------------------------------------------------------------
-# Endpoint 0: ensure-customer  (pre-warm — call in background when pricing renders)
-# ---------------------------------------------------------------------------
-
-@router.post("/ensure-customer")
-async def ensure_customer(
-    current_user: dict[str, Any] = Depends(get_current_user),
-) -> dict[str, bool]:
-    """Pre-create the Razorpay customer so create-order only needs one API call."""
-    if not current_user.get("email"):
-        return {"ok": False}
-    if current_user.get("razorpay_customer_id"):
-        return {"ok": True}
-    try:
-        client = _require_razorpay_client()
-        await _ensure_customer_id(current_user, client)
-    except HTTPException:
-        pass
-    return {"ok": True}
-
-
-# ---------------------------------------------------------------------------
 # Endpoint 1: create-order
 # ---------------------------------------------------------------------------
 
@@ -283,7 +251,7 @@ async def create_order(
                 },
             })
 
-        order = await run_in_threadpool(_create_order)
+        order = await _razorpay_call(_create_order, action="order.create")
         return CreateOrderResponse(
             order_id=str(order["id"]),
             subscription_id=None,
@@ -312,11 +280,12 @@ async def create_order(
         if not plan_id:
             raise HTTPException(status_code=503, detail="Razorpay plan is not configured for this tier.")
 
-    # Keep a customer object so we can look up the user from the webhook payload
-    customer_id = await _ensure_customer_id(current_user, client)
-
     description = "datathink Pro (monthly)" if body.plan == "pro" else "datathink Elite (monthly)"
 
+    # Do NOT pass `customer_id` here. Razorpay rejects a subscription carrying a
+    # customer_id on this account with a 400 "Authentication failed", which broke
+    # every monthly upgrade (regression from da772b5's customer pre-warm). The
+    # webhook resolves the user from notes.user_id, so no customer is needed.
     def _create_subscription() -> Any:
         return client.subscription.create({
             "plan_id": plan_id,
@@ -325,14 +294,13 @@ async def create_order(
             # Users can cancel any time; subscription.completed webhook handles
             # natural expiry and downgrades the account to free.
             "total_count": 24,
-            "customer_id": customer_id,
             "notes": {
                 "user_id": str(current_user["id"]),
                 "target_plan": body.plan,
             },
         })
 
-    subscription = await run_in_threadpool(_create_subscription)
+    subscription = await _razorpay_call(_create_subscription, action="subscription.create")
 
     # Subscription amount comes from the Plan in the Razorpay dashboard — we
     # don't know it here, but the checkout modal auto-resolves it from plan_id.
