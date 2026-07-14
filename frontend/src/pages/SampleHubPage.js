@@ -11,7 +11,7 @@ import { captureSampleLanded } from '../analytics';
 const DIFFICULTIES = ['easy', 'medium', 'hard'];
 
 /**
- * Sample Hub — discovery surface for all 81 sample questions.
+ * Sample Hub — discovery surface for all 90 sample questions.
  *
  * Logged-in users see tried/total markers per (track, difficulty) tile.
  * Logged-out users see plain difficulty pills (no login required to try a sample).
@@ -50,9 +50,9 @@ export default function SampleHubPage() {
     <>
       <Helmet>
         <title>Free interview practice samples — datathink</title>
-        <meta name="description" content="Try free interview practice questions across SQL, Python, Pandas, PySpark, statistics, ML fundamentals, experimentation, data engineering, and data modeling. No account required." />
+        <meta name="description" content="Try free interview practice questions across SQL, Python, Pandas, PySpark, statistics, ML fundamentals, experimentation, product sense, data engineering, and data modeling. No account required." />
         <meta property="og:title" content="Free interview practice samples — datathink" />
-        <meta property="og:description" content="Try free interview practice questions across nine data tracks. No account required." />
+        <meta property="og:description" content="Try free interview practice questions across ten data tracks. No account required." />
         <meta property="og:url" content="https://datathink.co/sample" />
         <link rel="canonical" href="https://datathink.co/sample" />
       </Helmet>
@@ -64,7 +64,7 @@ export default function SampleHubPage() {
           <p className="lp-eyebrow">Free samples · no account required</p>
           <h1 className="sample-hub-title">Try any track. Pick a difficulty.</h1>
           <p className="sample-hub-sub">
-            Nine tracks · three difficulties · three questions per cell — 81 free samples in total. Real execution where it applies. Reasoning questions where it matters.
+            Ten tracks · three difficulties · three questions per cell — 90 free samples in total. Real execution where it applies. Reasoning questions where it matters.
           </p>
           <div className="sample-hub-rolebar" role="group" aria-label="Filter by role">
             <Link

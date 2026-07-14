@@ -14088,7 +14088,7 @@ button.mock-focus-locked:hover {
 }
 
 /* ─── Sample Hub (/sample) ──────────────────────────────────────────
- * Discovery surface for the 81 sample questions. Reuses landing tokens
+ * Discovery surface for the 90 sample questions. Reuses landing tokens
  * (.lp-track-dot, .lp-eyebrow, .container). Logged-in users see tried/total
  * markers on each (track, difficulty) tile; logged-out users see ghost
  * counts to match the no-friction promise.

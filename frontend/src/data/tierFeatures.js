@@ -45,7 +45,7 @@ export const COMPARISON_GROUPS = [
     rows: [
       {
         feature: 'Easy questions',
-        blurb: 'Every easy question across all nine tracks.',
+        blurb: 'Every easy question across all ten tracks.',
         free: 'All', pro: 'All', elite: 'All',
       },
       {

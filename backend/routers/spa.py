@@ -116,7 +116,7 @@ def _build_seo_meta() -> dict:
             "description": desc,
         }
 
-    # Sample pages: 9 tracks × 3 difficulties
+    # Sample pages: 10 tracks × 3 difficulties
     for topic, label in _TRACK_LABELS.items():
         for diff, diff_label in [("easy", "Easy"), ("medium", "Medium"), ("hard", "Hard")]:
             meta[f"/sample/{topic}/{diff}"] = {

@@ -10,7 +10,7 @@ const FAQ_JSON_LD = [
   {
     "@type": "Question",
     "name": "Is datathink free to use?",
-    "acceptedAnswer": { "@type": "Answer", "text": "Yes. All easy questions across all nine tracks are free, including for visitors without an account. Medium and hard questions are part of Pro and Elite. No credit card required." }
+    "acceptedAnswer": { "@type": "Answer", "text": "Yes. All easy questions across all ten tracks are free, including for visitors without an account. Medium and hard questions are part of Pro and Elite. No credit card required." }
   },
   {
     "@type": "Question",
@@ -25,7 +25,7 @@ const FAQ_JSON_LD = [
   {
     "@type": "Question",
     "name": "What tracks are available?",
-    "acceptedAnswer": { "@type": "Answer", "text": "Nine tracks: SQL, Python algorithms, Pandas, PySpark, Data Engineering, Data Modeling, Statistics, ML Fundamentals, and Experimentation. Each has easy, medium, and hard tiers. Code tracks (SQL, Python, Pandas) use a live execution environment; the remaining tracks use conceptual, scenario, predict-output, and debug formats. Beyond the free practice catalog, every track also has a deep pool of mock-exclusive questions — over 1,000 across the nine tracks, available only on Pro and Elite — reserved for mock interviews and never shown in the practice bank." }
+    "acceptedAnswer": { "@type": "Answer", "text": "Ten tracks: SQL, Python algorithms, Pandas, PySpark, Data Engineering, Data Modeling, Statistics, ML Fundamentals, Experimentation, and Product Sense. Each has easy, medium, and hard tiers. Code tracks (SQL, Python, Pandas) use a live execution environment; the remaining tracks use conceptual, scenario, predict-output, and debug formats. Beyond the free practice catalog, every track also has a deep pool of mock-exclusive questions — over 1,000 across the ten tracks, available only on Pro and Elite — reserved for mock interviews and never shown in the practice bank." }
   },
   {
     "@type": "Question",
@@ -45,7 +45,7 @@ const FAQ_JSON_LD = [
   {
     "@type": "Question",
     "name": "What is the difference between Free, Pro, and Elite?",
-    "acceptedAnswer": { "@type": "Answer", "text": "Free gives access to all easy questions across all nine tracks and one easy benchmark per rolling 7 days. Pro includes every medium and hard question, the mock-only question pool, and provides 3 benchmarks plus 3 custom drills per day, detailed history, and weakest-concept drill recommendations. Elite includes everything in Pro plus Interview Loop mode, focus-mode targeting, per-dimension weak-spot detection, readiness scoring, study plans, coaching debriefs, and unlimited sessions. Visit datathink.co for the full pricing comparison." }
+    "acceptedAnswer": { "@type": "Answer", "text": "Free gives access to all easy questions across all ten tracks and one easy benchmark per rolling 7 days. Pro includes every medium and hard question, the mock-only question pool, and provides 3 benchmarks plus 3 custom drills per day, detailed history, and weakest-concept drill recommendations. Elite includes everything in Pro plus Interview Loop mode, focus-mode targeting, per-dimension weak-spot detection, readiness scoring, study plans, coaching debriefs, and unlimited sessions. Visit datathink.co for the full pricing comparison." }
   }
 ];
 
@@ -81,7 +81,7 @@ export default function FAQPage({ isModal = false }) {
         <dl className="faq-list">
           <div className="faq-item">
             <dt className="faq-q">Is datathink free to use?</dt>
-            <dd className="faq-a">Yes. All easy questions across all nine tracks are free, including for visitors without an account. Medium and hard questions are part of Pro and Elite. No credit card required.</dd>
+            <dd className="faq-a">Yes. All easy questions across all ten tracks are free, including for visitors without an account. Medium and hard questions are part of Pro and Elite. No credit card required.</dd>
           </div>
           <div className="faq-item">
             <dt className="faq-q">Can I practice without creating an account?</dt>
@@ -93,7 +93,7 @@ export default function FAQPage({ isModal = false }) {
           </div>
           <div className="faq-item">
             <dt className="faq-q">What tracks are available?</dt>
-            <dd className="faq-a">Nine tracks: SQL, Python algorithms, Pandas, PySpark, Data Engineering, Data Modeling, Statistics, ML Fundamentals, and Experimentation. Each has easy, medium, and hard tiers. Code tracks (SQL, Python, Pandas) use a live execution environment; the remaining tracks use conceptual, scenario, predict-output, and debug formats. Beyond the free practice catalog, every track also has a deep pool of <strong>mock-exclusive questions — over 1,000 across the nine tracks</strong>, available only on Pro and Elite, reserved for mock interviews and never shown in the practice bank.</dd>
+            <dd className="faq-a">Ten tracks: SQL, Python algorithms, Pandas, PySpark, Data Engineering, Data Modeling, Statistics, ML Fundamentals, Experimentation, and Product Sense. Each has easy, medium, and hard tiers. Code tracks (SQL, Python, Pandas) use a live execution environment; the remaining tracks use conceptual, scenario, predict-output, and debug formats. Beyond the free practice catalog, every track also has a deep pool of <strong>mock-exclusive questions — over 1,000 across the ten tracks</strong>, available only on Pro and Elite, reserved for mock interviews and never shown in the practice bank.</dd>
           </div>
           <div className="faq-item">
             <dt className="faq-q">Which companies' interview questions are covered?</dt>
@@ -110,7 +110,7 @@ export default function FAQPage({ isModal = false }) {
           <div className="faq-item">
             <dt className="faq-q">What is the difference between Free, Pro, and Elite?</dt>
             <dd className="faq-a">
-              Free gives access to all easy questions across all nine tracks and one easy benchmark per rolling 7 days. Pro includes every medium and hard question, the mock-only question pool, and provides 3 benchmarks plus 3 custom drills per day, detailed history, and weakest-concept drill recommendations. Elite includes everything in Pro plus Interview Loop mode, focus-mode targeting, per-dimension weak-spot detection, readiness scoring, study plans, coaching debriefs, and unlimited sessions.{' '}
+              Free gives access to all easy questions across all ten tracks and one easy benchmark per rolling 7 days. Pro includes every medium and hard question, the mock-only question pool, and provides 3 benchmarks plus 3 custom drills per day, detailed history, and weakest-concept drill recommendations. Elite includes everything in Pro plus Interview Loop mode, focus-mode targeting, per-dimension weak-spot detection, readiness scoring, study plans, coaching debriefs, and unlimited sessions.{' '}
               {pricingLink}
             </dd>
           </div>

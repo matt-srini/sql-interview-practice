@@ -470,7 +470,7 @@ function HeroSection({ user, dashData, dashLoaded, paths = [], reduced }) {
             Develop the reasoning that makes you effective with data.
           </h1>
           <p className="lp-hero-sub">
-            Nine tracks on real engines: SQL, Python, ML, statistics, data engineering, and more. The kind of thinking that holds up years into the job. If it also makes you exceptional in interviews, that's a consequence, not the goal.
+            Ten tracks on real engines: SQL, Python, ML, statistics, data engineering, and more. The kind of thinking that holds up years into the job. If it also makes you exceptional in interviews, that's a consequence, not the goal.
           </p>
           <div className="lp-hero-actions">
             <Link className="btn btn-primary" to="/sample">Try a free sample →</Link>

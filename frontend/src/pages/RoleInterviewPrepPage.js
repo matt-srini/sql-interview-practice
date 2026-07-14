@@ -57,7 +57,7 @@ const SHARED_REASONING = {
 
 const FREE_PRACTICE_FAQ = {
   q: 'Can I start without paying?',
-  a: 'Yes. Samples are open without an account, and every easy question is free across all 9 tracks. Pro and Elite unlock medium and hard questions, mock-only inventory, mocks, and deeper analytics.',
+  a: 'Yes. Samples are open without an account, and every easy question is free across all 10 tracks. Pro and Elite unlock medium and hard questions, mock-only inventory, mocks, and deeper analytics.',
   link: { label: 'More details →', to: '/pricing' },
 };
 
