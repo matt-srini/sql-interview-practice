@@ -6,6 +6,8 @@ This is the authoritative checklist for launching a new question track on datath
 
 **AI onboarding agent:** [`.github/agents/track-onboarding.agent.md`](../.github/agents/track-onboarding.agent.md) — use this prompt when driving the implementation with Claude.
 
+**Exhaustive surface inventory:** [`track-integration-surfaces.md`](./track-integration-surfaces.md) — **read this too.** It lists *every* place a track's identity/counts/copy appears, split into what now auto-derives from the `TRACKS` registry vs. what still needs a manual per-track entry (and which completeness test guards it). Written after track 10 shipped with `0/0` counts and a 500ing path detail because the track list was hardcoded in ~12 places; it exists so track 11 doesn't repeat that.
+
 ---
 
 ## Overview of phases

@@ -75,6 +75,7 @@ Every change to code, strategy, or product behaviour MUST update the relevant So
 | **Go-to-market, distribution strategy** | `docs/growth/gtm-strategy.md` + `docs/growth/editorial-calendar.md` + `docs/growth/starter-assets.md` |
 | **`/guides` article voice, persona, rules** | `docs/growth/guides-style-guide.md` (senior-practitioner persona, anti-AI-tells, frontmatter + SEO mechanics) |
 | New track onboarding process | `docs/track-onboarding.md` |
+| **New-track integration surfaces** (every place a track appears; what auto-derives vs. needs a manual entry) | `docs/track-integration-surfaces.md` |
 | **Why a decision was made + rejected alternatives** | `docs/decisions/DECISIONS.md` |
 
 ### Single-SoT rule
