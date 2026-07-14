@@ -6,7 +6,7 @@
     "type": "scenario",
     "difficulty": "easy",
     "title": "Spotify's Daily Mix rebuild — choosing the launch's success metric",
-    "scenario_context": "Spotify rebuilds the recommendation model behind Daily Mix and rolls the new version out to a 20% holdout of Free and Premium users, keeping the old algorithm for everyone else. The team needs one primary metric to judge whether the new Daily Mix is actually better before a full rollout.",
+    "scenario_context": "Spotify rebuilds the recommendation model behind Daily Mix and rolls the new version out to a 20% treatment group of Free and Premium users, keeping the old algorithm for everyone else. The team needs one primary metric to judge whether the new Daily Mix is actually better before a full rollout.",
     "description": "Which is the best primary success metric for this launch?",
     "options": [
       "The share of tracks in a Daily Mix session that get played past the 30-second mark, new algorithm compared to old, this week.",
@@ -15,7 +15,7 @@
       "Total minutes streamed across the entire Spotify app that week, since better recommendations should mean more listening overall."
     ],
     "correct_option": 0,
-    "explanation": "Option A is correct: the share of tracks played past 30 seconds inside the Daily Mix session is the one metric here that's directly attributable to the new algorithm's recommendation quality and cleanly comparable between the holdout groups. Option B mistakes an auto-generated count for a quality signal — Daily Mix playlists are created on a fixed schedule for every user regardless of whether the recommendations are good, so the count tracks user base and refresh cadence, not quality. Option C is a company-wide, lagging metric; a single playlist algorithm is far too small a lever to reliably move total MAU, and dozens of unrelated product and marketing changes would swamp any real signal. Option D aggregates listening across the whole app, so both the treatment and control groups' unrelated listening gets folded in — it can't isolate whether the new Daily Mix algorithm itself is better.",
+    "explanation": "Option A is correct: the share of tracks played past 30 seconds inside the Daily Mix session is the one metric here that's directly attributable to the new algorithm's recommendation quality and cleanly comparable between the treatment and control groups. Option B mistakes an auto-generated count for a quality signal — Daily Mix playlists are created on a fixed schedule for every user regardless of whether the recommendations are good, so the count tracks user base and refresh cadence, not quality. Option C is a company-wide, lagging metric; a single playlist algorithm is far too small a lever to reliably move total MAU, and dozens of unrelated product and marketing changes would swamp any real signal. Option D aggregates listening across the whole app, so both the treatment and control groups' unrelated listening gets folded in — it can't isolate whether the new Daily Mix algorithm itself is better.",
     "hints": [
       "Ask which of these four numbers would only move if the new algorithm itself changed what users experienced inside Daily Mix, not something that moves for unrelated reasons.",
       "Look for the option scoped tightly to the feature being tested (the playlist session itself), not the whole app or the whole user base."
@@ -604,20 +604,20 @@
     "topic": "product-sense",
     "type": "scenario",
     "difficulty": "easy",
-    "title": "Computing a Single Step's Conversion Rate in Uber's Rider Funnel",
-    "scenario_context": "Uber's new-rider funnel over one month in a launch city: 80,000 app downloads to 50,000 completed signups to 30,000 users who requested a first ride to 27,000 completed first rides.",
-    "description": "What is the conversion rate specifically for the 'requested a first ride to completed first ride' step?",
+    "title": "Blue Apron's Meal-Kit Signup — Which Funnel Stage Is This Complaint About?",
+    "scenario_context": "Blue Apron's new-subscriber signup funnel runs in order: browse weekly plans, select this week's meals, enter payment details, confirm subscription. A cluster of new-user support tickets all describe the same issue: 'I finished picking my meals for the week, but the very next screen kept saying my zip code was invalid even though I typed it correctly. I gave up after a few tries.'",
+    "description": "Which single stage of the funnel is this complaint about?",
     "options": [
-      "60%, calculated as 30,000 ride requesters divided by 50,000 signups.",
-      "90% — 27,000 completed rides divided by the 30,000 who requested a first ride.",
-      "33.75%, calculated as 27,000 completed first rides divided by the 80,000 total downloads.",
-      "54%, calculated as 27,000 completed first rides divided by the 50,000 completed signups."
+      "Browse weekly plans, since the zip code is what determines which meal plans are available to a given user in the first place.",
+      "Enter payment details, since a zip code field is a standard part of the billing form a user fills in at that stage.",
+      "Select this week's meals, since the ticket says the problem started right after users finished picking their meals for the week.",
+      "Confirm subscription, since a rejected zip code is exactly the kind of error a final confirmation screen exists to catch."
     ],
     "correct_option": 1,
-    "explanation": "B is correct: the step being asked about is 'requested a first ride to completed first ride,' so the denominator is the population that entered that step — the 30,000 users who requested a first ride — and 27,000 of them completed one, giving 90%. Option A's 60% is a real number in this funnel, but it's the conversion rate for the previous step (signups to ride requests), not the step the question asked about. Option C divides completed rides by total downloads, using the top-of-funnel population instead of the immediately preceding stage — that mixes an end-to-end style rate into a question that asked for one specific step. Option D divides completed rides by completed signups, skipping over the ride-request stage entirely and using a population two steps upstream of the one the question specifies.",
+    "explanation": "Option B is correct: a zip code field paired with repeated validation errors is a hallmark of a billing form, and 'enter payment details' is the stage in this funnel where a user would be asked for that information — the ticket is describing a problem with the payment step, not the step mentioned earlier in the sentence. Option A assumes the zip code is used to filter which plans are shown during browsing, but nothing in the ticket describes a problem at that early stage, and the complaint explicitly starts after meal selection is already finished. Option C is the tempting misread: the ticket does say the problem started 'right after' picking meals, but that phrase describes *when* the error appeared, not *which* stage the zip code field itself belongs to — the field described is a billing detail, not a meal-selection detail. Option D reaches for the last stage in the funnel, but a final confirmation screen isn't where a user would be asked to type a zip code for the first time; that's a billing-form field, which belongs earlier, at payment.",
     "hints": [
-      "A step's conversion rate is always relative to the people who entered that specific step, not to any other stage.",
-      "Find the two adjacent numbers — the population arriving at the named step and the population completing it — and divide the second by the first."
+      "Notice that the ticket names a specific form field, not just a general step — ask what kind of information that specific field usually belongs to.",
+      "A phrase like 'right after' tells you when something happened, not necessarily which stage owns the field being described. Match the field itself to the stage that collects it."
     ],
     "concepts": [
       "FUNNEL & CONVERSION REASONING"
@@ -653,20 +653,20 @@
     "topic": "product-sense",
     "type": "scenario",
     "difficulty": "easy",
-    "title": "LinkedIn Premium Funnel — How Many Users Were Lost at One Step?",
-    "scenario_context": "LinkedIn's Premium upsell funnel for one cohort: 200,000 profile views of the upgrade banner to 100,000 upgrade page visits to 90,000 free-trial starts to 9,000 paid conversions after the trial ends.",
-    "description": "How many users were lost specifically between the 'upgrade page visit' stage and the 'free-trial start' stage?",
+    "title": "Coursera's Optional Profile Survey — Expected Attrition, or a Problem to Chase?",
+    "scenario_context": "Coursera's post-enrollment flow runs: enroll in a course, complete a profile survey (job title, company, learning goals) marked 'optional — skip for now,' then start the first lesson. Skipping the survey has no effect on whether a learner can reach the course content. The team notices that a large share of newly enrolled learners never fill it out.",
+    "description": "What's the most defensible read of this pattern at the survey stage?",
     "options": [
-      "10,000, calculated as the 100,000 who visited the upgrade page minus the 90,000 who started a free trial.",
-      "110,000, calculated as the 200,000 who saw the original banner minus the 90,000 who started a free trial.",
-      "100,000, since that's the total number of people who visited the upgrade page before the trial-start stage.",
-      "191,000, calculated as the 200,000 who saw the banner minus the 9,000 who ultimately paid."
+      "This is expected: the survey is optional and skippable, and skipping it doesn't block anyone from reaching the actual course content.",
+      "This is worth investigating: any single stage where most people don't complete the intended action signals a design problem with that stage, optional or not.",
+      "This is worth investigating: a skipped survey means Coursera loses data it needs, which threatens the platform's ability to personalize recommendations.",
+      "This is expected: learners skip the survey because typing a job title and company name always takes too long to bother with on a phone."
     ],
     "correct_option": 0,
-    "explanation": "A is correct: the question asks for the loss specifically between the upgrade page visit stage and the free-trial start stage, so the right subtraction is 100,000 minus 90,000, giving 10,000 users lost at that one step. Option B subtracts using the banner-view population (200,000) instead of the immediately preceding stage (the 100,000 upgrade page visits), which folds in the loss from an earlier step that wasn't asked about. Option C reports the entire population that entered the upgrade-page stage rather than the number who failed to make it to the next stage — that's the stage's size, not its loss. Option D computes the loss across the entire funnel, from the very first banner view to the final paid conversion, which answers a much broader question than the one specific step named here.",
+    "explanation": "Option A is correct: the survey is optional and skippable, and skipping it doesn't block anyone from reaching the actual course content — the stage never stands between a learner and the thing they enrolled for, so a large share of learners bypassing a consequence-free, non-gating step is the expected shape for that kind of stage, not a sign that something broke. Option B applies a blanket rule that any low completion rate is a design problem, but that rule ignores the one fact that actually determines whether a drop should worry you: whether the stage stands between the user and their actual goal. Option C raises a real business concern — Coursera does lose a data-collection opportunity — but that's a separate question from whether this funnel pattern indicates a *broken* signup flow, which is what the team is actually asking about. Option D invents a specific, unstated cause (mobile typing friction) with no support in the scenario, and it doesn't change the underlying reasoning anyway: the survey being optional and non-gating is sufficient on its own to explain a low completion share.",
     "hints": [
-      "Identify exactly which two adjacent stages the question is asking about before doing any subtraction.",
-      "The population lost at a step is the count entering that step minus the count entering the next one — not a count from any other pair of stages."
+      "Before treating a big drop as a problem, check whether the stage actually stands between the user and the thing they came for.",
+      "A stage marked optional and disconnected from unlocking the core content behaves differently from a required, gating stage — think about what that implies for how many people would predictably skip it."
     ],
     "concepts": [
       "FUNNEL & CONVERSION REASONING"

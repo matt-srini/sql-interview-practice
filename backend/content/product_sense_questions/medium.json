@@ -312,11 +312,11 @@
     "options": [
       "(1) creators are burned out, (2) creators are demotivated, (3) creators are posting on other platforms instead.",
       "(1) a problem with iOS creators, (2) a problem with Android creators, (3) a problem with international creators.",
-      "(1) a measurement problem, (2) a supply problem (creators posting less), (3) a demand problem (the flow broke).",
+      "(1) a measurement problem, (2) a supply problem (creators posting less), (3) a product/flow problem (the upload flow broke).",
       "(1) something is wrong, (2) nothing is wrong and it's just noise, (3) we need more data before we can say anything."
     ],
     "correct_option": 2,
-    "explanation": "Option C is correct: measurement, creator behavior (supply-side), and the product or upload mechanism itself (demand-side) are three genuinely distinct places a logged 'uploads' number can break, and together they cover the plausible origins of the drop without overlapping — a clean MECE first pass. Option A is a real category of explanation, but all three sub-buckets actually restate one hypothesis — creators choosing not to post — in different vocabulary; they aren't mutually exclusive, and the set never considers a measurement or product-side cause at all. Option B's buckets overlap by construction (platform and geography are independent dimensions — an international creator can also be on iOS), and none of them covers a cause that isn't platform- or geography-specific, like a broken upload button. Option D isn't a hypothesis set at all — none of its three buckets is specific or testable enough to guide an actual investigation.",
+    "explanation": "Option C is correct: measurement, creator behavior (supply-side), and the product or upload mechanism itself (product/flow-side) are three genuinely distinct places a logged 'uploads' number can break, and together they cover the plausible origins of the drop without overlapping — a clean MECE first pass. Option A is a real category of explanation, but all three sub-buckets actually restate one hypothesis — creators choosing not to post — in different vocabulary; they aren't mutually exclusive, and the set never considers a measurement or product-side cause at all. Option B's buckets overlap by construction (platform and geography are independent dimensions — an international creator can also be on iOS), and none of them covers a cause that isn't platform- or geography-specific, like a broken upload button. Option D isn't a hypothesis set at all — none of its three buckets is specific or testable enough to guide an actual investigation.",
     "hints": [
       "A good hypothesis set should cover the space of possible causes without any two buckets describing the same underlying thing in different words.",
       "Check each option for two failure modes: buckets that secretly overlap, and buckets that are really the same hypothesis restated three times.",
@@ -881,7 +881,6 @@
       "A habit that correlates with higher earnings isn't automatically the thing producing those earnings — think about what else might explain both the habit and the outcome."
     ],
     "concepts": [
-      "SHIP / NO-SHIP DECISION",
       "CAUSAL VS CORRELATIONAL JUDGMENT"
     ]
   },
@@ -989,7 +988,6 @@
       "Ask which of the two segments in this split actually funds the business, and whether that specific segment moved the same direction as the aggregate."
     ],
     "concepts": [
-      "CONFLICTING-METRIC & TRADE-OFF JUDGMENT",
       "SEGMENTATION & DECOMPOSITION REASONING",
       "BUSINESS-MODEL METRIC FLUENCY"
     ]
@@ -1125,8 +1123,7 @@
       "A metric tied to the feature's intended goal (upgrades) rising doesn't rule out a cost showing up somewhere else in the same session. Where would that cost be easiest to see first?"
     ],
     "concepts": [
-      "GUARDRAIL & COUNTER-METRIC REASONING",
-      "ENGAGEMENT & STICKINESS REASONING"
+      "GUARDRAIL & COUNTER-METRIC REASONING"
     ]
   },
   {
@@ -1287,8 +1284,7 @@
       "If a metric under-credits real behavior for a few hours, what should happen to the number once the under-crediting stops?"
     ],
     "concepts": [
-      "REAL-CHANGE VS ARTIFACT",
-      "METRIC MOVEMENT DIAGNOSIS"
+      "REAL-CHANGE VS ARTIFACT"
     ]
   },
   {
@@ -1314,8 +1310,7 @@
       "With a hard time limit, ask which single check gives the most confidence per minute spent, not which cause sounds the most alarming."
     ],
     "concepts": [
-      "METRIC MOVEMENT DIAGNOSIS",
-      "REAL-CHANGE VS ARTIFACT"
+      "METRIC MOVEMENT DIAGNOSIS"
     ]
   },
   {
@@ -1395,8 +1390,7 @@
       "A tracking bug that ships once tends to change a metric right away, not erode it a little more each week for over a month."
     ],
     "concepts": [
-      "REAL-CHANGE VS ARTIFACT",
-      "METRIC MOVEMENT DIAGNOSIS"
+      "REAL-CHANGE VS ARTIFACT"
     ]
   },
   {
@@ -1476,8 +1470,7 @@
       "Think about the cheapest possible way a pro could satisfy a one-hour response requirement without doing any real work toward the job."
     ],
     "concepts": [
-      "METRIC GAMING & ROBUSTNESS",
-      "CONFLICTING-METRIC & TRADE-OFF JUDGMENT"
+      "METRIC GAMING & ROBUSTNESS"
     ]
   },
   {
@@ -1530,8 +1523,7 @@
       "A book-summary app's natural rhythm is bursty, not daily. Which of the two definitions is built to tolerate a user who logs in, then goes quiet for a stretch, then comes back?"
     ],
     "concepts": [
-      "RETENTION & COHORT REASONING",
-      "METRIC MOVEMENT DIAGNOSIS"
+      "RETENTION & COHORT REASONING"
     ]
   },
   {
@@ -1692,8 +1684,7 @@
       "One option leans on Shopify's transaction-based business model to sound relevant. Check whether a single dashboard widget could plausibly move a platform-wide number like that on its own."
     ],
     "concepts": [
-      "METRIC SELECTION & GOAL TRANSLATION",
-      "BUSINESS-MODEL METRIC FLUENCY"
+      "METRIC SELECTION & GOAL TRANSLATION"
     ]
   },
   {
@@ -1719,8 +1710,7 @@
       "A behavior that correlates with a good outcome isn't automatically the thing producing that outcome. Think about what trait might be driving both the inviting and the converting."
     ],
     "concepts": [
-      "CAUSAL VS CORRELATIONAL JUDGMENT",
-      "GROWTH & ACQUISITION REASONING"
+      "CAUSAL VS CORRELATIONAL JUDGMENT"
     ]
   },
   {
@@ -1896,8 +1886,7 @@
       "A single global percentage can flatten real differences across very different populations — think back to what a segmented read is for."
     ],
     "concepts": [
-      "SEGMENTATION & DECOMPOSITION REASONING",
-      "CONFLICTING-METRIC & TRADE-OFF JUDGMENT"
+      "SEGMENTATION & DECOMPOSITION REASONING"
     ]
   },
   {
@@ -1955,8 +1944,7 @@
       "Separate two different concerns: whether response time is causal at all, and whether this specific policy design — guaranteed placement, no other signal — is a good idea even if it partly is."
     ],
     "concepts": [
-      "SHIP / NO-SHIP DECISION",
-      "CAUSAL VS CORRELATIONAL JUDGMENT"
+      "SHIP / NO-SHIP DECISION"
     ]
   },
   {
@@ -1967,7 +1955,7 @@
     "difficulty": "medium",
     "mock_only": true,
     "parent_id": 102073,
-    "follow_up_dimension": "data_quality_pivot",
+    "follow_up_dimension": "edge_case_pivot",
     "title": "The 'fast responders' turn out to be property-management bots — does the segment change the read?",
     "scenario_context": "Digging into the original response-time data, you find that a large share of hosts with sub-1-hour reply times aren't individuals replying by hand — they're professional property-management companies running dozens of listings each through automated instant-reply software. These management-company accounts are a small fraction of all host accounts, but a large fraction of total completed stays.",
     "description": "What's the most defensible way this new information should change the analysis?",
@@ -2026,7 +2014,7 @@
     "difficulty": "medium",
     "mock_only": true,
     "parent_id": 102076,
-    "follow_up_dimension": "business_rule_pivot",
+    "follow_up_dimension": "abstraction_pivot",
     "title": "Now benchmark it against a daily-utility app instead — does the read change?",
     "scenario_context": "The interviewer redirects: 'Drop the to-do-app comparison. Now benchmark Discord's 61% DAU/MAU against a genuinely daily-utility product — something like a weather app or a maps app that most people check every single day out of habit or necessity.'",
     "description": "Under this new comparison, what's the most defensible read of Discord's 61%?",
@@ -2043,7 +2031,6 @@
       "Ask what's actually driving repeat use in each category — being needed, or being wanted — before deciding whether the comparison favors or disfavors Discord."
     ],
     "concepts": [
-      "BUSINESS-MODEL METRIC FLUENCY",
       "ENGAGEMENT & STICKINESS REASONING"
     ]
   },
