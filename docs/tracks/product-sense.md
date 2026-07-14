@@ -236,10 +236,10 @@ Required:
 | PRODUCT CASE STRUCTURING | | ● | ● |
 | CAUSAL VS CORRELATIONAL JUDGMENT | | ● | ● |
 | SHIP / NO-SHIP DECISION | | ● | ● |
-| METRIC GAMING & ROBUSTNESS | | | ● |
+| METRIC GAMING & ROBUSTNESS | | ● (intro) | ● |
 | PRODUCT HEALTH & STRATEGIC TRADE-OFFS | | | ● |
 
-Easy is deliberately narrow — only the four "what is a good metric" families + the read-one-funnel / define-engagement / business-vocabulary entries. Everything that requires a *tree* (diagnosis), a *trade-off* (competing goods), or *adversarial* thinking (gaming) starts at medium. The two signature-hard families (`METRIC GAMING & ROBUSTNESS`, `PRODUCT HEALTH & STRATEGIC TRADE-OFFS`) are hard-only.
+Easy is deliberately narrow — only the four "what is a good metric" families + the read-one-funnel / define-engagement / business-vocabulary entries. Everything that requires a *tree* (diagnosis), a *trade-off* (competing goods), or *adversarial* thinking (gaming) starts at medium. `METRIC GAMING & ROBUSTNESS` enters at medium in **introductory** form (which of two candidate metrics is more gameable, and why — recognition, not design) and reaches its signature depth (adversarial / composite metric design) at hard. `PRODUCT HEALTH & STRATEGIC TRADE-OFFS` is the one hard-only signature family.
 
 ## Benchmark shape per difficulty
 

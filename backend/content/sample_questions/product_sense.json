@@ -73,5 +73,80 @@
     "concepts": [
       "FUNNEL & CONVERSION REASONING"
     ]
+  },
+  {
+    "id": 1021,
+    "order": 1,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "medium",
+    "title": "Reddit's 'Flat' Comment Rate — One Number, Two Opposite Stories?",
+    "scenario_context": "Reddit's platform-wide average comments-per-post has held roughly flat, 8.3 this month versus 8.4 last month. A PM tells leadership: 'engagement is stable, nothing to investigate.' A data scientist breaks the same metric down by community age and finds a different story underneath: on subreddits created in the last 6 months, comments-per-post rose from 3.0 to 5.5; on subreddits older than 6 months, comments-per-post fell from 9.6 to 8.7. Posting volume has also been shifting toward the newer subreddits over the same period.",
+    "description": "What's the most defensible read of this pattern?",
+    "options": [
+      "The roughly-flat aggregate is coincidental — comments-per-post genuinely rose in newer subreddits and genuinely fell in older ones, and 8.3 is just what a rising number and a falling number look like averaged together; both trends deserve their own investigation.",
+      "The pattern is fully explained by posting volume shifting toward newer subreddits — since that segment naturally has fewer comments per post, the mix change alone would produce a roughly flat headline number with no real change in either community's own behavior.",
+      "The declining older-subreddit number (9.6 to 8.7) is the one signal worth acting on, since established communities still carry most of the platform's comment volume and the newer-subreddit segment is too small today to prioritize.",
+      "This is most likely ordinary month-to-month noise in both segments; with only one month of data, the roughly-flat platform-wide number is the more stable read to trust until a longer trend confirms otherwise."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A is correct: a platform-wide number that barely moves can still be the product of two real, opposite-direction movements happening underneath it — comments-per-post rose about 83% in newer subreddits (3.0 to 5.5) and fell about 9% in older ones (9.6 to 8.7), and a roughly-flat 8.3 is consistent with those two genuine trends landing close to each other in the aggregate, not with 'nothing happening.' Both movements are large enough, and specific enough, to warrant their own investigation rather than being waved away by the flat topline. Option B assumes the mix-shift alone explains the pattern, but that would only be true if neither segment's own number had actually moved — here both segments moved substantially on their own, so 'it's just a reweighting of the same two numbers' doesn't hold; something real changed inside each segment. Option C prioritizes the older-subreddit decline purely because that segment is larger today, but it dismisses a newer-subreddit segment that is both improving and growing its share of posts — exactly the kind of leading indicator worth tracking in its own right, not a rounding error. Option D's 'probably noise' framing doesn't fit the specificity of the pattern: two segments moving by double-digit percentages in opposite directions in the same month, alongside a real shift in posting mix, is a coherent story, not the kind of thing a single month of randomness typically produces.",
+    "hints": [
+      "Before accepting 'roughly flat means stable,' ask whether the same near-flat number could be produced by two different things happening underneath it at once.",
+      "Compare how much each community-age segment's own number moved on its own, not just how the mix between segments is shifting, before deciding what the flat aggregate is telling you."
+    ],
+    "concepts": [
+      "SEGMENTATION & DECOMPOSITION REASONING"
+    ]
+  },
+  {
+    "id": 1022,
+    "order": 2,
+    "topic": "product-sense",
+    "type": "scenario",
+    "difficulty": "medium",
+    "title": "Twitch's Big-Streamer Feed — Session Lift, Retention Down: Which Read Wins?",
+    "scenario_context": "Twitch tests a change to its 'Recommended for you' row that shows only currently-live channels with 10,000+ concurrent viewers, replacing a mix that also surfaced smaller live streamers. The test runs for a full quarter. Looking only at viewers who first joined Twitch during the test's opening week — old enough by quarter's end to have a full 90-day retention read — average watch-time per session over the quarter is up 14% in the treatment group versus control, but 90-day retention for that same cohort is down 5 percentage points versus control.",
+    "description": "What's the most defensible read of this result?",
+    "options": [
+      "Ship it — watch-time per session is the more statistically robust number, since it's measured across every session in the quarter, not just one cohort's 90-day read.",
+      "Treat this as a wash: the session-level lift and the retention drop are roughly comparable in size, so the result nets out to neutral — test a different idea instead.",
+      "This is a genuine trade-off: retention is the load-bearing signal, since large-streamer picks can lift a session's watch-time without building the loyalty that brings a viewer back.",
+      "Revert this immediately: any test where a retention metric moves the wrong way should be killed regardless of what else moved, since retention is Twitch's single most important number."
+    ],
+    "correct_option": 2,
+    "explanation": "Option C is correct: this is a genuine short-term-lift-versus-long-term-retention trade-off, and retention is the metric that should carry more weight here, not because it's labeled more important but because of the mechanism behind each number. A large, currently-live streamer is inherently easy to enjoy for a single session — production value, a big moment — without a new viewer ever forming the channel loyalty that usually brings someone back to Twitch specifically over the following months. A session-level lift that comes from removing exactly that discovery pathway looks like borrowing future engagement, not creating it. Option A treats 'measured across more sessions' as equivalent to 'matters more for this decision' — a larger sample makes a number more precise, but precision doesn't make session-level watch-time a better proxy for durable platform health than a cohort's actual 90-day return behavior. Option B treats a percentage change in one metric and a percentage-point change in a different metric as comparable, offsetting quantities, but they're different units measuring different things; one can't be netted against the other to call the result neutral. Option D elevates retention to an automatic veto without weighing why it moved or by how much relative to the session gain — treating any retention dip as instantly disqualifying would block nearly every discovery-surface experiment, since some near-term-versus-long-term tension is common. The defensible move is weighing the trade-off, which is what Option C does and Option D skips.",
+    "hints": [
+      "Ask what would make a viewer stick around for months, versus what would just make one session more watchable in the moment — are those driven by the same thing here?",
+      "A percentage change in one metric and a percentage-point change in a different metric aren't automatically comparable just because both moved — think about what each one actually measures before weighing them against each other."
+    ],
+    "concepts": [
+      "CONFLICTING-METRIC & TRADE-OFF JUDGMENT"
+    ]
+  },
+  {
+    "id": 1023,
+    "order": 3,
+    "topic": "product-sense",
+    "type": "debug",
+    "difficulty": "medium",
+    "title": "Figma's Weekly Actives — Editors Only, or Everyone Who Opened a File?",
+    "scenario_context": "Figma currently defines Weekly Active Users as anyone who edited a design file that week: 1.2 million by that definition. A PM proposes broadening the definition to anyone who opened OR commented on a file that week, even without editing, arguing viewers and commenters are 'still using the product.' Under the broader definition, WAU is 3.8 million. The PM wants to switch to reporting 3.8 million to the board starting this quarter, without restating prior quarters under the new definition.",
+    "description": "What's the strongest critique of the PM's proposal?",
+    "options": [
+      "None — view-only and comment-only users are still real usage of the product, and a broader definition that captures more of Figma's actual audience is a more complete picture of engagement.",
+      "The two figures measure different populations, creators versus passive viewers, and switching this quarter without restating prior quarters breaks every trend comparison the board has seen.",
+      "The real issue is reporting cadence, not definition — Figma should switch from Weekly Active Users to Daily Active Users, since a daily figure would resolve the editor-versus-viewer ambiguity.",
+      "Both figures are equally legitimate ways to measure activity, so the choice should come down to whichever number the board responds to better this quarter."
+    ],
+    "correct_option": 1,
+    "explanation": "Option B is correct: 'edited a file' and 'opened or commented on a file' aren't the same behavior measured at two thresholds, they're two different populations — one is people actively creating design work, the other includes people who never touched a canvas. Reporting 3.8 million this quarter without restating prior quarters under the same broader definition means the board can no longer compare this number to anything they've seen before; the next quarter-over-quarter read would be measuring a definition change, not a business change. Option A treats 'more inclusive' as automatically better, but the question isn't whether viewer activity has any value at all — it's whether folding a fundamentally different behavior into the same number as design creation, mid-stream and without restating history, still lets the metric mean what the board thinks it means. Option C reaches for a different axis of the metric, the reporting window, that has nothing to do with the actual problem — swapping WAU for DAU would still face the identical editor-versus-viewer ambiguity, just measured daily instead of weekly. Option D treats this as a matter of which number lands better with the board, sidestepping that the two definitions measure genuinely different things and that switching without restating history breaks every trend comparison going forward, regardless of which number is preferred.",
+    "hints": [
+      "Ask whether 'edited a file' and 'opened or commented on a file' are really the same behavior measured at two thresholds, or two different things entirely.",
+      "Think about what happens to every quarter-over-quarter comparison the board has ever seen if the definition changes starting this quarter without restating the earlier numbers."
+    ],
+    "concepts": [
+      "METRIC DEFINITION INTEGRITY"
+    ]
   }
 ]
