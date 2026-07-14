@@ -1321,6 +1321,10 @@ export default function LandingPage() {
   const location = useLocation();
   const userPlan = user?.plan ?? 'free';
   const currency = detectCurrency();
+  // Total practice count derives from /api/catalog/counts (single SoT) — used in the SEO meta below.
+  const catalogCounts = useCatalogCounts();
+  const totalPractice =
+    Object.values(catalogCounts).reduce((sum, c) => sum + (c?.total || 0), 0) || 950;
 
   const [dashData, setDashData] = useState(null);
   const [dashLoaded, setDashLoaded] = useState(false);
@@ -1412,9 +1416,9 @@ export default function LandingPage() {
     <>
       <Helmet>
         <title>Data Engineer, Analyst &amp; Scientist Interview Prep | datathink</title>
-        <meta name="description" content="Premium data interview practice on real execution engines: SQL, Python, ML, statistics and more. 870+ questions with instant feedback and curated learning paths." />
+        <meta name="description" content={`Premium data interview practice on real execution engines: SQL, Python, ML, statistics and more. ${totalPractice}+ questions with instant feedback and curated learning paths.`} />
         <meta property="og:title" content="Data Engineer, Analyst &amp; Scientist Interview Prep | datathink" />
-        <meta property="og:description" content="Premium data interview practice on real execution engines: SQL, Python, ML, statistics and more. 870+ questions with instant feedback and curated learning paths." />
+        <meta property="og:description" content={`Premium data interview practice on real execution engines: SQL, Python, ML, statistics and more. ${totalPractice}+ questions with instant feedback and curated learning paths.`} />
         <meta property="og:url" content="https://datathink.co/" />
         <meta property="og:image" content="https://datathink.co/og-image.png?v=4" />
         <link rel="canonical" href="https://datathink.co/" />

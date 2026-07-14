@@ -6,6 +6,7 @@ import Topbar from '../components/Topbar';
 import { useAuth } from '../contexts/AuthContext';
 import { TRACK_SLUGS, TRACK_META } from '../trackRegistry';
 import { ROLES } from '../roleRegistry';
+import { useCatalogCounts } from '../contexts/CatalogCountsContext';
 import { captureSampleLanded } from '../analytics';
 
 const DIFFICULTIES = ['easy', 'medium', 'hard'];
@@ -29,6 +30,10 @@ export default function SampleHubPage() {
   const roleParam = searchParams.get('role');
   const roleEntry = ROLES.find((r) => r.slug === roleParam) ?? null;
   const visibleSlugs = roleEntry ? roleEntry.tracks : TRACK_SLUGS;
+  // Total practice count derives from /api/catalog/counts (single SoT) — never hardcoded.
+  const catalogCounts = useCatalogCounts();
+  const totalPractice =
+    Object.values(catalogCounts).reduce((sum, c) => sum + (c?.total || 0), 0) || 950;
 
   // Fire sample_landed once per session — captures UTM/referrer for attribution.
   useEffect(() => { captureSampleLanded(); }, []);
@@ -138,7 +143,7 @@ export default function SampleHubPage() {
         <div className="sample-hub-footer">
           <p className="sample-hub-foot-copy">
             Samples don't unlock anything — they're a no-commitment way to see how each track thinks. Ready for the full {' '}
-            <Link to="/" className="sample-hub-foot-link">876-question practice catalog</Link>?
+            <Link to="/" className="sample-hub-foot-link">{totalPractice}-question practice catalog</Link>?
           </p>
           <div className="sample-hub-foot-actions">
             <Link to="/auth" className="btn btn-primary">Create a free account →</Link>
