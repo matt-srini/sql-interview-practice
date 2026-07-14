@@ -1,0 +1,37 @@
+{
+  "slug": "diagnosing-a-metric-move",
+  "title": "Diagnosing a Metric Move",
+  "description": "The number moved, now what? Structure a diagnosis, decompose by segment to find where the change lives, rule out a measurement artifact, and separate a causal driver from a coincident correlation before you act.",
+  "topic": "product-sense",
+  "tier": "free",
+  "level": "intermediate",
+  "display_order": 4,
+  "patterns": [
+    "metric-diagnosis"
+  ],
+  "focus_concepts": [
+    "METRIC MOVEMENT DIAGNOSIS",
+    "SEGMENTATION & DECOMPOSITION REASONING",
+    "REAL-CHANGE VS ARTIFACT",
+    "CAUSAL VS CORRELATIONAL JUDGMENT"
+  ],
+  "questions": [
+    102012,
+    102013,
+    102015,
+    102016,
+    102017,
+    102018,
+    102027,
+    102028,
+    103010,
+    103011,
+    103012,
+    103013,
+    103016
+  ],
+  "outcomes": "You'll structure a metric-movement investigation, use segmentation to localize a change, tell a real move from an instrumentation artifact, and resist a correlational trap in the explanation.",
+  "recommended_after": [
+    "metric-design-fundamentals"
+  ]
+}

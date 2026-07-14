@@ -1,0 +1,30 @@
+{
+  "slug": "metric-gaming-and-product-health",
+  "title": "Metric Gaming & Product Health",
+  "description": "The senior-altitude cluster: spot how a metric will be gamed before you ship it, design for robustness against coordinated or adversarial behavior, and reason about product health as a portfolio rather than a single number.",
+  "topic": "product-sense",
+  "tier": "free",
+  "level": "advanced",
+  "display_order": 6,
+  "patterns": [
+    "metric-gaming"
+  ],
+  "focus_concepts": [
+    "METRIC GAMING & ROBUSTNESS",
+    "PRODUCT HEALTH & STRATEGIC TRADE-OFFS"
+  ],
+  "questions": [
+    102029,
+    102030,
+    103001,
+    103002,
+    103003,
+    103004,
+    103005,
+    103006
+  ],
+  "outcomes": "You'll anticipate how a metric gets gamed, design a more robust or counter-metric-guarded version, and weigh a strategic product-health trade-off that no single metric captures.",
+  "recommended_after": [
+    "diagnosing-a-metric-move"
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "slug": "funnels-and-growth-loops",
+  "title": "Funnels & Growth Loops",
+  "description": "Follow a user from first touch to conversion and beyond: find the funnel step that actually costs you, decide which drop-off is worth fixing, and reason about the acquisition and growth loops that refill the top.",
+  "topic": "product-sense",
+  "tier": "free",
+  "level": "foundational",
+  "display_order": 3,
+  "patterns": [
+    "funnel-analysis",
+    "growth-reasoning"
+  ],
+  "focus_concepts": [
+    "FUNNEL & CONVERSION REASONING",
+    "GROWTH & ACQUISITION REASONING",
+    "BUSINESS-MODEL METRIC FLUENCY"
+  ],
+  "questions": [
+    101024,
+    101025,
+    101026,
+    101027,
+    101028,
+    101029,
+    101030,
+    102019,
+    102020,
+    102021,
+    102022,
+    102033,
+    103024
+  ],
+  "outcomes": "You'll locate the highest-leverage funnel step to attack, judge which conversion drop is worth an intervention, and reason about acquisition and growth-loop mechanics rather than raw signup counts.",
+  "recommended_after": []
+}

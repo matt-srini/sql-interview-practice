@@ -1,18 +1,35 @@
 {
   "slug": "metric-design-fundamentals",
   "title": "Metric Design Fundamentals",
-  "description": "Turn a product goal into a defensible measurement system: choose the primary success metric, separate it from guardrails and vanity metrics, and speak the metric vocabulary a business model lives by.",
+  "description": "Turn a product goal into a defensible measurement system: choose the primary success metric, separate it from guardrails and vanity metrics, pin down a definition that means what you claim, and speak the metric vocabulary a business model runs on.",
   "topic": "product-sense",
   "tier": "free",
   "level": "foundational",
   "display_order": 1,
-  "patterns": ["metric-design"],
+  "patterns": [
+    "metric-design"
+  ],
   "focus_concepts": [
     "METRIC SELECTION & GOAL TRANSLATION",
     "GUARDRAIL & COUNTER-METRIC REASONING",
+    "METRIC DEFINITION INTEGRITY",
     "BUSINESS-MODEL METRIC FLUENCY"
   ],
-  "questions": [101001, 101004, 101006, 101008, 101011, 101013, 101015],
-  "outcomes": "You'll be able to choose a defensible success metric for a launch, tell it apart from a guardrail or a vanity metric, and recognize the metric a given business model actually runs on.",
+  "questions": [
+    101001,
+    101004,
+    101006,
+    101008,
+    101010,
+    101011,
+    101013,
+    101015,
+    102001,
+    102003,
+    102009,
+    102010,
+    103018
+  ],
+  "outcomes": "You'll choose a defensible success metric for a launch, tell it apart from a guardrail or a vanity metric, catch a definition that lets a metric drift from what it claims to measure, and recognize the metric a given business model actually runs on.",
   "recommended_after": []
 }

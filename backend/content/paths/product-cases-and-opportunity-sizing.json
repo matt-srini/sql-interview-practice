@@ -1,0 +1,29 @@
+{
+  "slug": "product-cases-and-opportunity-sizing",
+  "title": "Product Cases & Opportunity Sizing",
+  "description": "Synthesis: structure an open-ended product case from scratch and size an opportunity from first principles, composing the metric, funnel, and business-model reasoning the earlier paths built.",
+  "topic": "product-sense",
+  "tier": "free",
+  "level": "advanced",
+  "display_order": 7,
+  "patterns": [
+    "product-cases",
+    "opportunity-sizing"
+  ],
+  "focus_concepts": [
+    "PRODUCT CASE STRUCTURING",
+    "OPPORTUNITY SIZING & ESTIMATION",
+    "BUSINESS-MODEL METRIC FLUENCY"
+  ],
+  "questions": [
+    102011,
+    102031,
+    102032,
+    103022,
+    103023
+  ],
+  "outcomes": "You'll structure an ambiguous product case into a defensible framework and size a market or opportunity with explicit, defensible assumptions.",
+  "recommended_after": [
+    "diagnosing-a-metric-move"
+  ]
+}

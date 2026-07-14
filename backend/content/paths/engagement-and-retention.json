@@ -1,0 +1,33 @@
+{
+  "slug": "engagement-and-retention",
+  "title": "Engagement & Retention",
+  "description": "Read the two signals every product lives or dies by: how engaged users are right now (DAU, stickiness, power-user curves) and whether they come back (retention and cohort curves). Tell a healthy curve from a decaying one, and a real retention gain from a flattering average.",
+  "topic": "product-sense",
+  "tier": "free",
+  "level": "foundational",
+  "display_order": 2,
+  "patterns": [
+    "engagement-and-retention"
+  ],
+  "focus_concepts": [
+    "ENGAGEMENT & STICKINESS REASONING",
+    "RETENTION & COHORT REASONING",
+    "BUSINESS-MODEL METRIC FLUENCY"
+  ],
+  "questions": [
+    101016,
+    101018,
+    101020,
+    101022,
+    102004,
+    102005,
+    102006,
+    102007,
+    102008,
+    103014,
+    103015,
+    103017
+  ],
+  "outcomes": "You'll interpret stickiness and engagement-depth signals, read a cohort-retention curve for what it says about product-market fit, and separate a genuine retention improvement from a mix effect.",
+  "recommended_after": []
+}

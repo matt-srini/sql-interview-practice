@@ -1,0 +1,34 @@
+{
+  "slug": "trade-offs-and-the-ship-decision",
+  "title": "Trade-offs & the Ship Decision",
+  "description": "When metrics conflict and a decision is due: weigh competing goods against each other, decide ship or no-ship on a mixed read, and make sure the call isn't resting on a correlation that won't hold.",
+  "topic": "product-sense",
+  "tier": "free",
+  "level": "advanced",
+  "display_order": 5,
+  "patterns": [
+    "trade-offs-and-ship-decisions"
+  ],
+  "focus_concepts": [
+    "CONFLICTING-METRIC & TRADE-OFF JUDGMENT",
+    "SHIP / NO-SHIP DECISION",
+    "CAUSAL VS CORRELATIONAL JUDGMENT"
+  ],
+  "questions": [
+    102023,
+    102024,
+    102025,
+    102026,
+    103007,
+    103008,
+    103009,
+    103019,
+    103020,
+    103021
+  ],
+  "outcomes": "You'll adjudicate a conflicting-metric trade-off, make a defensible ship / no-ship call under a mixed or time-pressured read, and check whether the decision rests on a causal claim or just a correlation.",
+  "recommended_after": [
+    "metric-design-fundamentals",
+    "diagnosing-a-metric-move"
+  ]
+}
