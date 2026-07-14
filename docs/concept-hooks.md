@@ -902,6 +902,89 @@ Goal: full concept coverage, not tricky framing.
 
 ---
 
+## Product Sense
+
+> **Audit status:** Bank authored and launched 2026-07-14: 87 practice + 100 mock-only questions across all 18 concept families. Hooks below track the registry 1:1 and are weighted toward the track's signature hard-tier core: metric gaming and robustness, conflicting-metric trade-off judgment, and the ship/no-ship decision.
+>
+> **Defining constraint:** Product Sense trains the judgment layer — reasoning a practitioner uses years into a data role, not interview trivia. Every hook below must be answerable by product judgment alone; the moment one could be answered by computing a value, deriving a statistic, or writing a query, it belongs to SQL, Statistics, or Experimentation instead.
+
+### Metric Design & Definition
+
+1. Vague goal to primary metric — given a goal stated in prose ("make onboarding better"), what makes one candidate metric genuinely representative of that goal and another merely correlated with it?
+2. Vanity vs. actionable metric — what test separates a number that looks good on a dashboard from one a team can actually move and would change a decision?
+3. Metric vs. proxy — when the true outcome (long-term value, satisfaction) can't be measured directly, what makes a short-term proxy defensible instead of just convenient?
+4. Guardrail vs. success metric — what's the structural difference in the role each plays, and why can't a single number do both jobs?
+5. Choosing the guardrail — given a launch's most plausible failure mode, what makes one candidate guardrail actually catch it while another would stay flat even if the launch quietly broke something?
+6. Leading vs. lagging indicators — why would you watch a leading indicator during a launch window even though the lagging metric is the one that ultimately matters?
+7. Unit of analysis — why can switching from per-user to per-session (or per-impression) change which option looks like the winner, even with the same underlying data?
+8. Denominator choice — how can a ratio metric "improve" purely because its population changed, with no real change in the numerator behavior?
+9. Composite metric ambiguity — when a rate like CTR moves, what determines whether the story is a numerator story or a denominator story, and why does that change what you do next?
+10. Marketplace liquidity — what does it mean for a two-sided marketplace to be "liquid," and why can GMV grow while liquidity quietly deteriorates?
+11. SaaS expansion vs. new-logo growth — why can a SaaS business grow revenue while its net-new-customer count stalls, and which metric would expose that?
+12. Ad-supported trade-off vocabulary — why do CPM, fill rate, and user-experience metrics pull against each other, and what's the tell that a platform is over-monetizing inventory?
+
+### Reading Engagement, Retention & Funnels
+
+13. DAU/MAU stickiness ratio — why is there no universal "good" benchmark for this ratio, and what has to be true about the product category before you can judge a given value?
+14. Breadth vs. depth divergence — sessions-per-user rising while actions-per-session falls: what two different underlying user behaviors could produce that same pair of numbers?
+15. Engagement inflated by notifications — what's the diagnostic difference between a user who's active because they were pushed and one who's active because they wanted to be, and why does conflating them overstate product health?
+16. N-day vs. rolling retention — when does each definition flatter a product and when does each penalize one, and why might a team land on the flattering definition without realizing it?
+17. Reading a cohort curve's shape — what's the difference between a curve that plateaus into a "smile" and one that keeps decaying, and why does the shape matter more than any single day's number?
+18. Localizing a retention drop — if only the newest cohorts show weaker retention while older cohorts hold steady, what does that rule in, and what does it rule out?
+19. Bottleneck vs. biggest opportunity — why can a 50% drop-off at a low-volume funnel step matter less than a 5% drop-off at a high-volume step, and what determines which one you'd fix first?
+20. Reading one funnel stage vs. the whole journey — what changes about your read of a single step's conversion rate once you know what happens at the step before and after it?
+21. A step's conversion rate improves — what has to be true about who reaches that step for the improvement to represent real progress rather than a change in who's being measured?
+22. Growth loop vs. linear funnel — what does it mean for growth to compound, and why can a channel that performs well in a linear funnel view look completely different once modeled as a loop?
+23. K-factor above and below 1 — why doesn't a single viral spike with k briefly above 1 imply sustained viral growth, and what would you need to see instead?
+24. Growth-accounting decomposition — new users are up but total active users are flat: what does that combination tell you about churn, and why is "acquisition worked" the wrong conclusion on its own?
+
+### Diagnosis & Decomposition
+
+25. The clarify step — before forming a single hypothesis about why a metric moved, what has to be pinned down about the metric itself (its exact definition, magnitude, and window), and why does skipping this waste the rest of the investigation?
+26. Building a complete hypothesis set — what makes a list of candidate explanations for a metric drop mutually exclusive and collectively exhaustive (MECE), and why is anchoring on the first plausible explanation a bigger risk than taking longer to conclude?
+27. What to check first — given several equally plausible causes for a metric move, what property of a hypothesis (cost to test, prior likelihood, blast radius) determines which one you investigate before the others?
+28. Global vs. concentrated movement — why does breaking a metric down by segment come before forming a causal story about why it moved, rather than after?
+29. Simpson's paradox in a product metric — how can every individual segment improve while the blended, company-wide metric gets worse, and what would make you look for this?
+30. When the segment is the diagnosis — once you've found the slice of users driving a company-wide movement, what has to be true about that slice for it to actually explain the aggregate, rather than just correlate with it?
+31. The measurement gate — why does ruling out instrumentation come before any behavioral explanation for a metric move, even when the behavioral story feels more interesting?
+32. Sudden vs. gradual as a tell — why does a metric that shifts in a single step function point toward a release or a logging change, while a slow drift points toward user behavior?
+33. Internal vs. external causes — what's the difference between checking "did we change something" and "did the world around the product change," and why do both have to be ruled out before trusting an internal narrative?
+34. The incentivize-the-correlate trap — a segment that already does well on some behavior also has a better outcome: what has to be true about why they do that behavior for rewarding it to actually work?
+35. Self-selection vs. treatment effect — what's the practical difference between "sellers who list on weekends earn more" and "listing on weekends causes sellers to earn more," and what would distinguish them without a full causal study?
+36. Second-order effects — why can a change that looks purely additive from where you're standing quietly shift the composition of who's using the product, undermining the argument that supported the change in the first place?
+
+### Trade-offs & the Ship Decision
+
+37. Naming the trade-off — when two metrics move in opposite directions, why is "which one is bigger" the wrong first question, and what should replace it?
+38. Two-sided marketplace trade-offs — a change that clearly benefits one side (hosts, drivers, creators) has an unclear or negative effect on the other — what determines which side's outcome should dominate the decision for this product, at this stage?
+39. Short-term lift vs. long-term retention — why might a change that wins on a two-week engagement metric still be the wrong call once weighed against long-term value, and what would justify shipping it anyway?
+40. Choosing a defensible hierarchy — when two competing goods are both legitimate, what makes ranking them "engagement over revenue, for this launch, because X" different from just picking the number that looks better?
+41. Practical vs. statistical significance — a result is statistically significant on a huge sample: what has to be true about its size and its implementation cost for that significance to translate into a ship decision?
+42. Novelty-effect suspicion — why would you distrust a strong first-week result more than an equally strong fourth-week result, and what pattern in the data would confirm the suspicion?
+43. A guardrail regression gating a positive primary — when the metric you set out to move improved but a guardrail you promised to protect got worse, what does the guardrail's existence commit you to, regardless of how good the primary result looks?
+44. Reversibility and blast radius — why might the same magnitude of uncertain result justify shipping to 5% of users but not to 100%, and what does that imply about treating "ship" as binary?
+
+### Metric Gaming & Product Health
+
+45. Goodhart's law in practice — once a metric becomes the target a team is evaluated on, what specifically breaks about its relationship to the outcome it was designed to represent?
+46. The adversarial-team test — for a proposed success metric, what does it mean to ask "how would a team hit this number without the product actually getting better," and why is that more useful than asking whether the metric is a good idea?
+47. Counter-metric pairing — why does pairing a gameable metric with a second metric that would catch the gaming often work better than trying to design one ungameable metric from scratch?
+48. Composite metric gaming — when a single "health score" blends several inputs, what determines whether an adversarial team can inflate the composite while degrading the thing it was meant to protect?
+49. No single metric for product health — why does "product health" resist being reduced to one number, and what's lost when a team tries to force it into one anyway?
+50. The goal-metric tension — if a feature's stated goal is to "reduce" a usage metric (time spent, notification volume), what does success have to be redefined as, and why can't the old growth-style metrics answer it?
+51. When the technically-right answer and the deliverable diverge — what do you do when the analysis clearly supports one call but the audience receiving it needs a different framing to act on it, and where's the line before that becomes spin?
+
+### Product Cases & Opportunity Sizing
+
+52. The first move on an ambiguous prompt — given a data-free, open-ended product question, what does clarifying the goal before proposing a solution protect you from?
+53. Keeping structure stable under added constraints — when an interviewer adds a new constraint mid-case ("now assume a 60% smaller budget"), what should change in your analysis and what should stay fixed?
+54. Structure vs. straight-to-solution — why does a candidate who visibly decomposes the problem before recommending typically score better than one who jumps straight to a recommendation, even landing on the same answer?
+55. Top-down vs. bottom-up estimation — when do the two approaches tend to diverge the most, and why does that divergence itself carry information?
+56. Defending an assumption — what makes one sizing assumption ("10% of eligible users would adopt this") defensible in an interview and another merely asserted?
+57. Sanity-checking an estimate — what order-of-magnitude checks would tell you an opportunity-sizing estimate is off by 10x, before you've even finished the calculation?
+
+---
+
 ## Mock-Only Advanced Topics
 
 > These hooks cover the mock-only question bank being built for Data Modeling, Data Engineering, and Statistics. All are Pro/Elite gated. Each hook is written as a stand-alone interview prompt suitable for social media posts, ad copy, and email sequences.
