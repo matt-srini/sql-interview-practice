@@ -67,6 +67,21 @@ def test_homepage_title_and_jsonld(client):
     assert "https://www.instagram.com/datathinkhq" in body
 
 
+def test_homepage_og_description_carries_brand_pitch(client):
+    """The social card (og/twitter description) carries the M4 brand pitch, while
+    the SEO meta description stays the length/keyword-tuned SERP snippet. The two
+    are intentionally decoupled — see spa.py og_description."""
+    body = client.get("/").text
+    pitch = "Interview success follows real mastery. It&#x27;s the consequence, not the goal."
+    # og + twitter descriptions carry the pitch
+    assert re.search(r'<meta property="og:description" content="[^"]*' + re.escape(pitch), body)
+    assert re.search(r'<meta name="twitter:description" content="[^"]*' + re.escape(pitch), body)
+    # the SEO meta description stays the keyword snippet, NOT the pitch
+    seo_desc = re.search(r'<meta name="description" content="([^"]*)"', body).group(1)
+    assert "questions with instant feedback" in seo_desc
+    assert "Interview success follows real mastery" not in seo_desc
+
+
 def test_robots_txt(client):
     resp = client.get("/robots.txt")
     assert resp.status_code == 200

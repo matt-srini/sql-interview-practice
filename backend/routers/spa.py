@@ -65,6 +65,9 @@ def _build_seo_meta() -> dict:
         "/": {
             "title": "Data Engineer, Analyst & Scientist Interview Prep | datathink",
             "description": f"Premium data interview practice on real execution engines: SQL, Python, ML, statistics and more. {total}+ questions with instant feedback and curated learning paths.",
+            # Social card carries the finalized 30-second brand pitch (M4), not the
+            # SEO snippet. No em-dashes (SEO-string rule). See docs/growth/gtm-strategy.md M4.
+            "og_description": "datathink is data-interview practice on real engines, across SQL, Python, pandas, stats, ML and more, that trains the judgment a data professional actually uses on the job. Interview success follows real mastery. It's the consequence, not the goal.",
         },
         "/learn": {
             "title": "Data Interview Learning Paths | datathink",
@@ -204,6 +207,10 @@ def _inject_seo(html: str, url_path: str) -> str:
 
     title = html_escape(m["title"])
     desc = html_escape(m["description"])
+    # og/twitter description can diverge from the SEO snippet: the meta
+    # description is length/keyword-tuned for the SERP, while the social card
+    # carries the brand pitch. Falls back to desc when no override is set.
+    og_desc = html_escape(m.get("og_description", m["description"]))
     canonical = f"{BASE_URL}{url_path}"
     og_image = f"{BASE_URL}/og-image.png?v=6"
 
@@ -222,7 +229,13 @@ def _inject_seo(html: str, url_path: str) -> str:
     )
     html = re.sub(
         r'(<meta\s+property="og:description"\s+content=")[^"]*(")',
-        rf"\g<1>{desc}\2",
+        rf"\g<1>{og_desc}\2",
+        html,
+        count=1,
+    )
+    html = re.sub(
+        r'(<meta\s+name="twitter:description"\s+content=")[^"]*(")',
+        rf"\g<1>{og_desc}\2",
         html,
         count=1,
     )
