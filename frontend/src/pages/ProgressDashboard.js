@@ -368,7 +368,7 @@ export default function ProgressDashboard() {
                                 className={`db-readiness-chip db-readiness-chip--${readiness.label.toLowerCase().replace(/\s+/g, '-')}`}
                                 title={readiness.mock_limited ? 'Practice-strong — log a few timed mocks to raise this score' : undefined}
                               >
-                                <span className="db-readiness-score">{readiness.score}</span>
+                                <span className="db-readiness-score">{readiness.score}<span className="db-readiness-score-scale">/100</span></span>
                                 <span className="db-readiness-label">{readiness.label}</span>
                               </div>
                             ) : !isElite ? (
