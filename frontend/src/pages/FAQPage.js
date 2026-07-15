@@ -25,7 +25,7 @@ const FAQ_JSON_LD = [
   {
     "@type": "Question",
     "name": "What tracks are available?",
-    "acceptedAnswer": { "@type": "Answer", "text": "Ten tracks: SQL, Python algorithms, Pandas, PySpark, Data Engineering, Data Modeling, Statistics, ML Fundamentals, Experimentation, and Product Sense. Each has easy, medium, and hard tiers. Code tracks (SQL, Python, Pandas) use a live execution environment; the remaining tracks use conceptual, scenario, predict-output, and debug formats. Beyond the free practice catalog, every track also has a deep pool of mock-exclusive questions — over 1,000 across the ten tracks, available only on Pro and Elite — reserved for mock interviews and never shown in the practice bank." }
+    "acceptedAnswer": { "@type": "Answer", "text": "Ten tracks: SQL, Python algorithms, Pandas, PySpark, Data Engineering, Data Modeling, Statistics, ML Fundamentals, Experimentation, and Product Sense. Each has easy, medium, and hard tiers. Code tracks (SQL, Python, Pandas) use a live execution environment; the remaining tracks use conceptual, scenario, predict-output, and debug formats. Beyond the free practice catalog, every track also has a deep pool of mock-exclusive questions — over 1,200 across the ten tracks, available only on Pro and Elite — reserved for mock interviews and never shown in the practice bank." }
   },
   {
     "@type": "Question",
@@ -40,7 +40,7 @@ const FAQ_JSON_LD = [
   {
     "@type": "Question",
     "name": "What are mock sessions?",
-    "acceptedAnswer": { "@type": "Answer", "text": "Mocks are timed interview simulations in three modes: benchmark (fixed-shape readiness signal), custom drill (1–5 questions, 10–90 min), and Interview Loop (Elite-only chain-driven follow-up sessions). On Pro and Elite, mocks draw from a dedicated pool of over 1,000 mock-exclusive questions — content reserved for mock interviews that never appears in the practice catalog, so every mock is a genuine unseen test. Free users get one easy benchmark per rolling 7 days, drawn from the practice pool. Pro users get three benchmarks per day plus three custom drills per day across difficulties. Elite users get unlimited sessions plus Interview Loop, focus-mode targeting, readiness analytics, and coaching debriefs." }
+    "acceptedAnswer": { "@type": "Answer", "text": "Mocks are timed interview simulations in three modes: benchmark (fixed-shape readiness signal), custom drill (1–5 questions, 10–90 min), and Interview Loop (Elite-only chain-driven follow-up sessions). On Pro and Elite, mocks draw from a dedicated pool of over 1,200 mock-exclusive questions — content reserved for mock interviews that never appears in the practice catalog, so every mock is a genuine unseen test. Free users get one easy benchmark per rolling 7 days, drawn from the practice pool. Pro users get three benchmarks per day plus three custom drills per day across difficulties. Elite users get unlimited sessions plus Interview Loop, focus-mode targeting, readiness analytics, and coaching debriefs." }
   },
   {
     "@type": "Question",
@@ -93,7 +93,7 @@ export default function FAQPage({ isModal = false }) {
           </div>
           <div className="faq-item">
             <dt className="faq-q">What tracks are available?</dt>
-            <dd className="faq-a">Ten tracks: SQL, Python algorithms, Pandas, PySpark, Data Engineering, Data Modeling, Statistics, ML Fundamentals, Experimentation, and Product Sense. Each has easy, medium, and hard tiers. Code tracks (SQL, Python, Pandas) use a live execution environment; the remaining tracks use conceptual, scenario, predict-output, and debug formats. Beyond the free practice catalog, every track also has a deep pool of <strong>mock-exclusive questions — over 1,000 across the ten tracks</strong>, available only on Pro and Elite, reserved for mock interviews and never shown in the practice bank.</dd>
+            <dd className="faq-a">Ten tracks: SQL, Python algorithms, Pandas, PySpark, Data Engineering, Data Modeling, Statistics, ML Fundamentals, Experimentation, and Product Sense. Each has easy, medium, and hard tiers. Code tracks (SQL, Python, Pandas) use a live execution environment; the remaining tracks use conceptual, scenario, predict-output, and debug formats. Beyond the free practice catalog, every track also has a deep pool of <strong>mock-exclusive questions — over 1,200 across the ten tracks</strong>, available only on Pro and Elite, reserved for mock interviews and never shown in the practice bank.</dd>
           </div>
           <div className="faq-item">
             <dt className="faq-q">Which companies' interview questions are covered?</dt>
@@ -105,7 +105,7 @@ export default function FAQPage({ isModal = false }) {
           </div>
           <div className="faq-item">
             <dt className="faq-q">What are mock sessions?</dt>
-            <dd className="faq-a">Mocks are timed interview simulations in three modes: <strong>benchmark</strong> (fixed-shape readiness signal), <strong>custom drill</strong> (1–5 questions, 10–90 min), and <strong>Interview Loop</strong> (Elite-only chain-driven follow-up sessions). On Pro and Elite, mocks draw from a <strong>dedicated pool of 1,000+ mock-exclusive questions</strong> — reserved for mock interviews and never shown in the practice catalog, so every mock is a genuine unseen test. Free users get one easy benchmark per rolling 7 days, drawn from the practice pool. Pro users get three benchmarks per day plus three custom drills per day across difficulties. Elite users get unlimited sessions plus Interview Loop, focus-mode targeting, readiness analytics, and coaching debriefs.</dd>
+            <dd className="faq-a">Mocks are timed interview simulations in three modes: <strong>benchmark</strong> (fixed-shape readiness signal), <strong>custom drill</strong> (1–5 questions, 10–90 min), and <strong>Interview Loop</strong> (Elite-only chain-driven follow-up sessions). On Pro and Elite, mocks draw from a <strong>dedicated pool of 1,200+ mock-exclusive questions</strong> — reserved for mock interviews and never shown in the practice catalog, so every mock is a genuine unseen test. Free users get one easy benchmark per rolling 7 days, drawn from the practice pool. Pro users get three benchmarks per day plus three custom drills per day across difficulties. Elite users get unlimited sessions plus Interview Loop, focus-mode targeting, readiness analytics, and coaching debriefs.</dd>
           </div>
           <div className="faq-item">
             <dt className="faq-q">What is the difference between Free, Pro, and Elite?</dt>
