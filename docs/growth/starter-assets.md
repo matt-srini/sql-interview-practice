@@ -4,9 +4,12 @@ Appendix to [`gtm-strategy.md`](gtm-strategy.md) (the canonical GTM SoT). The ac
 posts in the datathink voice, the subreddit target list + each sub's self-promo rule, the launch-day
 checklist, the brand-handle claim list, and a day-by-day first-two-weeks plan. Edit freely.
 
-> **Voice reminder.** datathink is pro-reasoning, never anti-competitor. Confident, calm, specific.
-> We show the *why* behind an answer; we never hype, never engagement-bait, never claim volume as
-> value. All example posts below are **original drafts** — adapt, don't paste blind.
+> **Voice reminder.** Write like a thoughtful senior data practitioner: calm, precise, curious,
+> generous, and quietly opinionated. Demonstrate the reasoning thesis through concrete problems more
+> often than naming it. We show the *why* behind an answer; we never hype, engagement-bait, invent
+> candidate statistics, or claim volume as value. Vary the ending rather than attaching a slogan and
+> product link to every cut. The canonical voice rules are in [`gtm-strategy.md`](gtm-strategy.md)
+> § 4. All example posts below are **original drafts** — adapt, don't paste blind.
 >
 > **Channel model reminder.** LinkedIn example posts below are written as **company-page posts** — the
 > brand speaks, not the founder's personal voice. The founder reshares each company post within ~60

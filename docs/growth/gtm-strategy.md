@@ -406,6 +406,47 @@ repurposed material, never 5/day from scratch.
 
 ## 4. Content engine
 
+### Editorial voice for the weekly cuts
+
+The weekly cuts should sound like **a thoughtful senior data practitioner who enjoys showing how
+problems really work**: calm, precise, curious, generous, and quietly opinionated. The brand has a
+point of view, but earns it through useful examples rather than repeating the positioning language.
+LinkedIn is company-published, but it should still feel like there is recognizable human judgment
+behind it — polished does not mean corporate.
+
+The default shape of a cut is:
+
+> **Concrete problem → plausible mistake → why it fails → transferable mental model → optional soft
+> invitation to practise.**
+
+Voice rules:
+
+- **Demonstrate the thesis more often than naming it.** "Reasoning vs. recall" is the strategic
+  frame, not a sign-off to repeat on every post. Most cuts should prove it through the teardown.
+- **Be specific and practitioner-level, but approachable.** Prefer one real technical tension and
+  one clear principle over generic advice, jargon, or a list of shallow tips.
+- **Be warm and curious, not clinical.** Phrases such as "the interesting part is..." or "this is
+  surprisingly easy to miss" invite the reader into the reasoning without talking down to them.
+- **Be pro-reasoning, never anti-competitor.** Critique weak approaches, not products or the people
+  using them. Never make the reader feel foolish for a plausible mistake.
+- **Stay understated and evidence-led.** No invented percentages, unsupported claims about what
+  "most candidates" do, guaranteed outcomes, manufactured urgency, or interview-coach theatre such
+  as "guess who got the offer."
+- **Vary the ending.** Land on the transferable principle, ask a genuine question, or use a soft
+  sample CTA. Not every post needs both a slogan and a product link.
+- **Adapt without changing character.** LinkedIn is polished and narrative; X is compressed and
+  sharper; Reddit is situational, fully human, disclosed, and useful before promotional; the
+  newsletter is warmer and more reflective.
+
+As an editorial balance across a month, aim for roughly **70% concrete technical teaching, 20%
+perspective on preparation/roles/professional judgment, and 10% product, build-in-public, or direct
+promotion**. This is a guardrail, not a quota.
+
+Avoid generic motivation, "top N hacks" language, excessive hype or emojis, engagement bait,
+contempt for the grind-market audience, and answers that show syntax without the underlying
+decision. The desired impression is not "a reasoning-premium brand explaining its manifesto"; it is
+**an experienced practitioner repeatedly proving the thesis by being useful.**
+
 ### Content pillars (derived from the product, not invented)
 
 Each pillar is a renewable well that maps to a § 1 messaging pillar and to a real product surface:
@@ -583,7 +624,7 @@ Reddit thread). Build it in PostHog on the wired events (M9) before first traffi
 
 ### What "working" looks like
 
-- **1 month:** Funnel + dashboard live; founder voice established on LinkedIn + X; Reddit value-first
+- **1 month:** Funnel + dashboard live; brand voice established on LinkedIn + X; Reddit value-first
   threshold crossed; first SEO pieces indexed; newsletter capturing. WAL is small but *measured and
   trending up week-over-week*. (At this stage, leading indicators matter more than absolute numbers.)
 - **3 months:** A repeatable weekly pillar→cuts rhythm; LinkedIn posts reliably driving sample clicks;
