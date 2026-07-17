@@ -65,3 +65,7 @@ backend/scripts/audit_*.json.partial.jsonl
 backend/scripts/_smoke_report.json
 backend/scripts/_smoke_nim*
 backend/scripts/_nim_sweep.log
+
+# Local social/marketing render assets (draft carousels, PDFs, captions).
+# Kept local, not committed. Rendered from a not-yet-official dark theme; colors are provisional.
+docs/growth/assets/
