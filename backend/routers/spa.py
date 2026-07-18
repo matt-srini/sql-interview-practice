@@ -3,7 +3,7 @@ import re
 from html import escape as html_escape
 
 from fastapi import APIRouter, HTTPException, Request, Response
-from fastapi.responses import FileResponse, HTMLResponse
+from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse
 
 from config import CANONICAL_BASE_URL, FRONTEND_BASE_URL, FRONTEND_DIST_DIR, VITE_BACKEND_URL, VITE_POSTHOG_HOST, VITE_POSTHOG_KEY, VITE_SENTRY_DSN
 from tracks import TRACKS
@@ -14,6 +14,20 @@ BASE_URL = CANONICAL_BASE_URL
 
 # Derived from the TRACKS registry (single SoT for the track list + display labels).
 _TRACK_LABELS = {t.slug: t.label for t in TRACKS}
+_TRACK_SLUGS = set(_TRACK_LABELS)
+
+# Matches /practice/<topic>/questions/<id> for any real track. _build_seo_meta only
+# maps *easy* questions for 4 tracks (see _EASY_TRACK_CFG) — every other question
+# detail page (medium/hard, or any difficulty on the 6 MCQ-only tracks) is a real,
+# linkable route that would otherwise silently inherit index.html's homepage meta
+# (title/description/canonical -> "/"), which is a duplicate-content generator at
+# scale. _inject_seo noindexes these instead of leaving them unmapped.
+_QUESTION_PATH_RE = re.compile(r"^/practice/([^/]+)/questions/[^/]+$")
+
+
+def _is_unmapped_question_path(url_path: str) -> bool:
+    m = _QUESTION_PATH_RE.match(url_path)
+    return bool(m) and m.group(1) in _TRACK_SLUGS
 
 # Cached at first use — filesystem reads only, no DB
 _INDEX_HTML_CACHE: str | None = None
@@ -113,6 +127,11 @@ def _build_seo_meta() -> dict:
         "description": "Common questions about datathink: free access, no-account practice, SQL and Python topics, company coverage, question unlocks, mock interviews, and plan differences.",
     }
 
+    meta["/pricing"] = {
+        "title": "Plans & Feature Comparison | datathink",
+        "description": "Compare datathink Free, Pro and Elite plans: question access by difficulty, mock interviews, and analytics.",
+    }
+
     meta["/interview-prep"] = {
         "title": "Data Interview Prep by Role: Analyst, Engineer & Scientist | datathink",
         "description": "Compare data interview prep by role: Data Analyst, Data Engineer, Analytics Engineer, and Data Scientist, with SQL, Product Sense, ML, systems, samples, and mocks.",
@@ -200,6 +219,8 @@ def _get_seo_meta() -> dict:
 def _inject_seo(html: str, url_path: str) -> str:
     m = _get_seo_meta().get(url_path)
     if not m:
+        if _is_unmapped_question_path(url_path):
+            return html.replace("</head>", '<meta name="robots" content="noindex, nofollow" /></head>', 1)
         return html
 
     if m.get("noindex"):
@@ -330,6 +351,56 @@ def _serve_frontend_path(asset_path: str, request: Request) -> Response:
 @router.get("/")
 def serve_frontend_root(request: Request) -> Response:
     return _serve_frontend_index(request)
+
+
+# --- Legacy path redirects: real HTTP 301s registered ahead of the catch-all so
+# every full page load (including every crawler request) resolves server-side,
+# never depending on the client-side <Navigate> fallbacks in frontend/src/App.js.
+
+@router.get("/questions/{question_id}")
+def redirect_legacy_question_root(question_id: str) -> Response:
+    return RedirectResponse(url=f"/practice/sql/questions/{question_id}", status_code=301)
+
+
+@router.get("/practice/questions/{question_id}")
+def redirect_legacy_question_practice(question_id: str) -> Response:
+    return RedirectResponse(url=f"/practice/sql/questions/{question_id}", status_code=301)
+
+
+@router.get("/practice/python-data")
+def redirect_python_data_practice_root() -> Response:
+    return RedirectResponse(url="/practice/pandas", status_code=301)
+
+
+@router.get("/practice/python-data/questions/{question_id}")
+def redirect_python_data_question(question_id: str) -> Response:
+    return RedirectResponse(url=f"/practice/pandas/questions/{question_id}", status_code=301)
+
+
+@router.get("/learn/python-data")
+def redirect_python_data_learn_root() -> Response:
+    return RedirectResponse(url="/learn/pandas", status_code=301)
+
+
+@router.get("/learn/python-data/{slug}")
+def redirect_python_data_learn_slug(slug: str) -> Response:
+    return RedirectResponse(url=f"/learn/pandas/{slug}", status_code=301)
+
+
+@router.get("/sample/python-data/{difficulty}")
+def redirect_python_data_sample(difficulty: str) -> Response:
+    return RedirectResponse(url=f"/sample/pandas/{difficulty}", status_code=301)
+
+
+@router.get("/sample/{difficulty}")
+def redirect_legacy_sample(difficulty: str) -> Response:
+    """Mirrors LegacySampleRedirect in frontend/src/App.js: known difficulty ->
+    /sample/sql/<difficulty>; known track slug -> /sample/<slug>/easy; else -> /sample."""
+    if difficulty in ("easy", "medium", "hard"):
+        return RedirectResponse(url=f"/sample/sql/{difficulty}", status_code=301)
+    if difficulty in _TRACK_SLUGS:
+        return RedirectResponse(url=f"/sample/{difficulty}/easy", status_code=301)
+    return RedirectResponse(url="/sample", status_code=301)
 
 
 @router.get("/{asset_path:path}")

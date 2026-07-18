@@ -124,3 +124,48 @@ def test_role_interview_prep_page(client):
     body = resp.text
     assert "<title>Data Engineer Interview Prep: SQL, Python, Spark &amp; Pipelines | datathink</title>" in body
     assert "interview-prep/data-engineer" in client.get("/sitemap.xml").text
+
+
+def test_pricing_page_indexed(client):
+    resp = client.get("/pricing")
+    assert resp.status_code == 200
+    body = resp.text
+    assert "<title>Plans &amp; Feature Comparison | datathink</title>" in body
+    # frontend/index.html's canonical <link> is self-closed with " />" (not bare
+    # ">") — _inject_seo rewrites only the href value in place, so that closing
+    # syntax carries through unchanged.
+    assert '<link rel="canonical" href="https://datathink.co/pricing" />' in body
+    assert "/pricing" in client.get("/sitemap.xml").text
+
+
+def test_unmapped_question_path_is_noindexed(client):
+    # Medium/hard question pages aren't in the SEO meta map (only easy questions
+    # are) but are real, linkable SPA routes — must be noindexed, not silently
+    # served with homepage meta/canonical.
+    resp = client.get("/practice/sql/questions/some-medium-question-id")
+    assert resp.status_code == 200
+    assert '<meta name="robots" content="noindex, nofollow" />' in resp.text
+
+    # Entire MCQ-only tracks have no per-question meta at all (any difficulty).
+    resp = client.get("/practice/statistics/questions/any-id")
+    assert resp.status_code == 200
+    assert '<meta name="robots" content="noindex, nofollow" />' in resp.text
+
+
+def test_legacy_path_redirects(client):
+    cases = [
+        ("/questions/abc123", "/practice/sql/questions/abc123"),
+        ("/practice/questions/abc123", "/practice/sql/questions/abc123"),
+        ("/practice/python-data", "/practice/pandas"),
+        ("/practice/python-data/questions/xyz", "/practice/pandas/questions/xyz"),
+        ("/learn/python-data", "/learn/pandas"),
+        ("/learn/python-data/some-path-slug", "/learn/pandas/some-path-slug"),
+        ("/sample/python-data/easy", "/sample/pandas/easy"),
+        ("/sample/easy", "/sample/sql/easy"),
+        ("/sample/pandas", "/sample/pandas/easy"),
+        ("/sample/not-a-real-thing", "/sample"),
+    ]
+    for src, expected_location in cases:
+        resp = client.get(src, follow_redirects=False)
+        assert resp.status_code == 301, (src, resp.status_code)
+        assert resp.headers["location"] == expected_location, (src, resp.headers["location"])

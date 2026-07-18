@@ -45,10 +45,10 @@ export default function PricingPage() {
   return (
     <div className="pricing-page">
       <Helmet>
-        <title>Plans &amp; feature comparison — datathink</title>
-        <meta name="description" content="Compare datathink Free, Pro and Elite — every feature spelled out. Free: all easy questions. Pro and Elite: every difficulty." />
-        <meta property="og:title" content="Plans & feature comparison — datathink" />
-        <meta property="og:description" content="Compare datathink Free, Pro and Elite — every feature spelled out. Free: all easy questions. Pro and Elite: every difficulty." />
+        <title>Plans &amp; Feature Comparison | datathink</title>
+        <meta name="description" content="Compare datathink Free, Pro and Elite plans: question access by difficulty, mock interviews, and analytics." />
+        <meta property="og:title" content="Plans & Feature Comparison | datathink" />
+        <meta property="og:description" content="Compare datathink Free, Pro and Elite plans: question access by difficulty, mock interviews, and analytics." />
         <meta property="og:image" content="https://datathink.co/og-image.png?v=4" />
         <meta property="og:url" content="https://datathink.co/pricing" />
         <meta name="twitter:card" content="summary_large_image" />

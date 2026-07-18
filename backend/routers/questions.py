@@ -24,7 +24,6 @@ def list_questions() -> list[dict[str, Any]]:
     return get_all_questions()
 
 
-@router.get("/questions/{question_id}")
 @router.get("/api/questions/{question_id}")
 async def get_question_detail(
     question_id: int,

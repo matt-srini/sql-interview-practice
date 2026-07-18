@@ -114,7 +114,7 @@ async def sitemap_xml() -> Response:
             return ("0.8", "weekly")
         if n == 3 and segments[0] == "learn":
             return ("0.7", "weekly")
-        if segments[0] == "sample" or path == "/faq":
+        if segments[0] == "sample" or path in ("/faq", "/pricing"):
             return ("0.6", "weekly")
         if n == 4 and segments[0] == "practice" and segments[2] == "questions":
             return ("0.5", "weekly")

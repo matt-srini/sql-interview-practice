@@ -65,14 +65,14 @@ class TestSQLEntitlements:
         with TestClient(app) as client:
             _make_user(client, plan="free")
             # 13030 is a hard mock-only SQL question
-            r = client.get("/questions/13030")
+            r = client.get("/api/questions/13030")
             assert r.status_code == 403, f"Expected 403, got {r.status_code}"
 
     def test_hard_sql_detail_preview_excludes_solution(self):
         """Hard SQL question detail for free user: preview mode, no solution field."""
         with TestClient(app) as client:
             _make_user(client, plan="free")
-            r = client.get("/questions/13001")
+            r = client.get("/api/questions/13001")
             assert r.status_code == 200
             body = r.json()
             assert body.get("unlocked") is False or body.get("progress", {}).get("unlocked") is False

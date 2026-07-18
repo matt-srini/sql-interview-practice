@@ -35,6 +35,13 @@ Keep entries to 4–6 lines. Friction kills logs; if it's longer than the change
 
 ## Entries
 
+## 2026-07-18 — Noindex unmapped question pages, real 301s for legacy paths, index /pricing
+**Area:** frontend · ops · **Status:** accepted
+**Decision:** Google Search Console flagged 150+ pages as duplicate/undiscovered. Root cause: the SPA catch-all (`backend/routers/spa.py`) served every unmapped route (medium/hard question pages, every question on the 6 MCQ-only tracks, `/pricing`) with the raw homepage meta/canonical, and 5 legacy path redirects were client-side-only `<Navigate>` (never a real HTTP 3xx). Fixed by: (1) pattern-matched auto-`noindex` for unmapped `/practice/<topic>/questions/<id>` paths, (2) real server-side 301s for all legacy paths registered before the catch-all, (3) added `/pricing` to `_build_seo_meta()` + sitemap. Also removed the undocumented bare `/questions/{id}` JSON API alias in `backend/routers/questions.py` (only `/api/questions/{id}` is in `docs/backend.md`; the bare alias shadowed the new `/questions/{id}` HTML redirect at the identical path template) and repointed its two test call-sites at `/api/questions/{id}`.
+**Rejected:** Leaving medium/hard question pages indexable with generic meta — considered, but they're Pro/Elite-gated content (`backend/unlock.py`) never meant to rank; indexing them as near-duplicates of the homepage only dilutes crawl signal for the pages that should rank.
+**Affects:** `docs/seo.md`, `backend/routers/spa.py`, `backend/routers/system.py`, `backend/routers/questions.py`, `backend/tests/test_entitlements.py`, `frontend/src/pages/PricingPage.js`
+**Supersedes:** none
+
 ## 2026-07-14 — Product Sense made explicit in DA/DS interview prep
 **Area:** growth · SEO · frontend · mock · **Status:** accepted
 **Decision:** Refreshed `/interview-prep`, `/interview-prep/data-analyst`, and `/interview-prep/data-scientist` copy so Product Sense is visible in the page body, track weights, and FAQs for Data Analyst and Data Scientist prep. Synced the mock blueprint doc mirror to include Product Sense in DA/DS mixed pools and times.

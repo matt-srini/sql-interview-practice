@@ -10,8 +10,8 @@ SoT siblings: [`backend.md`](backend.md) §System / §SPA-static (the endpoints)
 
 This is a React SPA. Crawlers and social unfurlers (LinkedIn, Slack, X, Facebook) often do **not** execute JS, so per-route `<meta>` must be present in the **server-rendered HTML**, not only set client-side. We have three layers, in precedence order:
 
-1. **`backend/routers/spa.py` — `_inject_seo()` — the crawler-visible per-route SoT.** For every known route the FastAPI SPA handler server-rewrites `<title>`, `meta description`, `og:title/description/url`, and the `canonical` href (rewritten **in place** so every page has exactly one self-referencing canonical — `index.html` ships a static homepage canonical that would otherwise conflict; regression-guarded in `test_seo_phase1.py`), and injects `og:image` + `twitter:image` (+ JSON-LD on the homepage) **before sending the HTML**. This is what Google and unfurlers see with zero JS. The route→meta map is `_build_seo_meta()`. **When the SERP title/description matters, this is the file that controls it.**
-2. **`frontend/index.html` — the static default.** Ships in the build as the fallback `<title>`/meta for any route `_inject_seo` does *not* map (it returns the HTML unchanged for unmapped routes — those are **not** auto-`noindex`'d). Keep its homepage values in sync with the spa.py `/` entry.
+1. **`backend/routers/spa.py` — `_inject_seo()` — the crawler-visible per-route SoT.** For every known route the FastAPI SPA handler server-rewrites `<title>`, `meta description`, `og:title/description/url`, and the `canonical` href (rewritten **in place** so every page has exactly one self-referencing canonical — `index.html` ships a static homepage canonical that would otherwise conflict; regression-guarded in `test_seo_phase1.py`), and injects `og:image` + `twitter:image` (+ JSON-LD on the homepage) **before sending the HTML**. This is what Google and unfurlers see with zero JS. The route→meta map is `_build_seo_meta()`. **When the SERP title/description matters, this is the file that controls it.** Routes NOT in that map fall through unchanged — *except* `/practice/<topic>/questions/<id>` paths, which `_inject_seo` pattern-matches via `_is_unmapped_question_path()` and auto-`noindex`s (medium/hard question pages, and every question on the 6 MCQ-only tracks, are real linkable SPA routes with no dedicated meta entry — without this they'd silently inherit the homepage's title/description/canonical, which is exactly the duplicate-content pattern Google Search Console flagged in July 2026).
+2. **`frontend/index.html` — the static default.** Ships in the build as the fallback `<title>`/meta for any route `_inject_seo` does *not* map. Most unmapped routes are **not** auto-`noindex`'d — the question-path pattern in layer 1 is the one exception. Keep its homepage values in sync with the spa.py `/` entry.
 3. **React Helmet (per page, `frontend/src/pages/*`) — client-nav meta.** Updates the tab title/meta on in-app SPA navigations (after JS loads). For shared routes (especially `/`) it must **mirror** layer 1, or the title flashes/drifts on client load.
 
 > **Drift hazard.** The homepage title/description lives in all three layers. They are kept identical by hand; spa.py is the declared SoT, the other two are renders of it. Change one → change all three in the same commit. This is the exact multi-source failure mode `CLAUDE.md` §Linked-docs warns about.
@@ -34,6 +34,7 @@ This is a React SPA. Crawlers and social unfurlers (LinkedIn, Slack, X, Facebook
 | `/learn` · `/learn/<track>` | `Data Interview Learning Paths \| datathink` · `<Track> Learning Paths \| datathink` |
 | `/sample/<track>/<diff>` | `Free <Track> Interview Questions (<Diff>) \| datathink` |
 | `/faq` | `Frequently Asked Questions \| datathink` |
+| `/pricing` | `Plans & Feature Comparison \| datathink` |
 
 Homepage description (premium positioning lives here, not in the title): *"Premium data interview practice on real execution engines: SQL, Python, ML, statistics and more. {N}+ questions with instant feedback and curated learning paths."* (`{N}` is the live non-mock question total in spa.py; the static layers use a safe `870+`.)
 
@@ -48,6 +49,10 @@ Unlike every other URL on datathink, `/guides` and `/guides/{slug}` are **fully 
   - Guide pages: `Article` (headline, datePublished, dateModified, author/publisher = datathink Organization) + `BreadcrumbList` (Home › Guides › title).
   - Index page: `BreadcrumbList` (Home › Guides) + `ItemList` of all non-draft guides.
 - **Sitemap:** `backend/routers/system.py` calls `get_all_guide_slugs()` from the guides router and appends `/guides` + each `/guides/{slug}` to the sitemap with the guide's own `updated` date as `lastmod` (priority 0.7, weekly). robots.txt does not disallow `/guides`.
+
+## Legacy path redirects (`backend/routers/spa.py`)
+
+Old/renamed URLs get real server-side **301** redirects registered ahead of the SPA catch-all: `/questions/<id>` and `/practice/questions/<id>` -> `/practice/sql/questions/<id>`; `/practice/python-data`, `/practice/python-data/questions/<id>`, `/learn/python-data`, `/learn/python-data/<slug>`, `/sample/python-data/<difficulty>` -> the equivalent `pandas` path (slug rename 2026-06-09); `/sample/<difficulty>` -> `/sample/sql/<difficulty>` if `<difficulty>` is a real difficulty, `/sample/<slug>/easy` if it's a real track slug, else `/sample`. `frontend/src/App.js` still carries matching `Legacy*Redirect` client components (`<Navigate>`) as a same-origin client-nav fallback, but every full page load — including every crawler request — now resolves server-side without depending on JS execution.
 
 ## robots.txt & sitemap.xml (`backend/routers/system.py`)
 
