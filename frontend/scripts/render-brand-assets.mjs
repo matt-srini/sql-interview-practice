@@ -34,6 +34,8 @@ const TARGETS = [
   { output: 'og-image-light.png',   source: 'og-image-light.svg', width: 1200, height: 630, colorScheme: 'light' },
   { output: 'branding/x-banner.png', source: 'branding/x-banner.svg', width: 1500, height: 500, colorScheme: 'dark', fonts: true },
   { output: 'branding/x-banner-light.png', source: 'branding/x-banner-light.svg', width: 1500, height: 500, colorScheme: 'light', fonts: true },
+  { output: 'branding/linkedin-banner.png', source: 'branding/linkedin-banner.svg', width: 1128, height: 191, colorScheme: 'dark', fonts: true },
+  { output: 'branding/linkedin-banner-light.png', source: 'branding/linkedin-banner-light.svg', width: 1128, height: 191, colorScheme: 'light', fonts: true },
 ];
 
 const only = process.argv[2];

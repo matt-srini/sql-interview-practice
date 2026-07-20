@@ -284,6 +284,10 @@ All brand icons derive from the canonical two-diagonal-squares mark on the Fores
 - `frontend/public/icon-maskable.svg` — 512×512 full-bleed (no corner rounding; platforms apply their own mask); source for `apple-touch-icon.png`, `icon-192.png`, `icon-512.png`
 - `frontend/public/og-image.svg` — 1200×630 social card with wordmark, tagline, and durable stat copy ("10 tracks · 950+ curated questions · 1,200+ mock-exclusive"); source for `og-image.png` (dark, the canonical share card)
 - `frontend/public/og-image-light.svg` — 1200×630 light-ground alternate of the OG card (same copy/layout, light palette); source for `og-image-light.png`. This is a standalone asset for light-background placements (emails, docs) — it is NOT wired into `og:image`/`twitter:image` (share platforms cannot switch by viewer theme; the dark card remains canonical).
+- `frontend/public/branding/x-banner.svg` — 1500×500 X (Twitter) profile banner; lockup + tagline + durable stat row, centered, within X's safe zone (bottom profile overlay + avatar never occlude it). Source for `x-banner.png`.
+- `frontend/public/branding/x-banner-light.svg` — 1500×500 light-ground alternate of the X banner. Source for `x-banner-light.png`. Standalone; not uploaded to X (the dark banner is canonical there).
+- `frontend/public/branding/linkedin-banner.svg` — 1128×191 LinkedIn Company Page cover; lockup + tagline only (no stat row — the format is too short at 191px to carry it cleanly). Composition is shifted right of true center (centered at x=700, not x=564) so it clears LinkedIn's bottom-left logo overlap. Source for `linkedin-banner.png`.
+- `frontend/public/branding/linkedin-banner-light.svg` — 1128×191 light-ground alternate of the LinkedIn banner. Source for `linkedin-banner-light.png`. Standalone, for light-background placements.
 
 **Rasterized PNGs** (generated; do not hand-edit — re-run the script instead):
 
@@ -291,6 +295,7 @@ Dark-scheme favicons: `favicon-16.png` (16×16), `favicon-32.png` (32×32), `fav
 Light-scheme favicons: `favicon-light-16.png` (16×16), `favicon-light-32.png` (32×32), `favicon-light-48.png` (48×48).
 PWA icons: `apple-touch-icon.png` (180×180), `icon-192.png` (192×192), `icon-512.png` (512×512).
 OG cards: `og-image.png` (1200×630, dark), `og-image-light.png` (1200×630, light).
+Social banners: `branding/x-banner.png` (1500×500, dark), `branding/x-banner-light.png` (1500×500, light), `branding/linkedin-banner.png` (1128×191, dark), `branding/linkedin-banner-light.png` (1128×191, light).
 
 **Render script:** `frontend/scripts/render-brand-assets.mjs` — Node ESM, uses Playwright Chromium. Run from `frontend/`: `node scripts/render-brand-assets.mjs`. Each TARGETS entry carries a `colorScheme` field (`'dark'` or `'light'`); before each screenshot the script calls `page.emulateMedia({ colorScheme })` so the adaptive `favicon.svg` renders in the correct scheme. The OG font-load branch triggers on `source.startsWith('og-image')`, covering both `og-image.svg` and `og-image-light.svg`. It inlines each SVG directly into the DOM (required for OG web-font pickup), sets an exact-pixel viewport, and screenshots with `deviceScaleFactor: 1`.
 

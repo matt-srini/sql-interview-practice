@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- datathink LinkedIn Company Page cover — Forest & Ink LIGHT variant (1128×191).
+     A light-ground alternate of linkedin-banner.svg for light-background
+     placements (docs, press, email). Same safe-zone reasoning: lockup
+     shifted right of true center, clear of LinkedIn's bottom-left logo
+     overlap. Source of truth for branding/linkedin-banner-light.png —
+     re-render via scripts/render-brand-assets.mjs. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="1128" height="191" viewBox="0 0 1128 191" role="img" aria-label="datathink — develop the reasoning that makes you effective with data">
+  <!-- Light page ground -->
+  <rect width="1128" height="191" fill="#F5F7F4"/>
+
+  <!-- Subtle hairline frame -->
+  <line x1="0" y1="1" x2="1128" y2="1" stroke="#14291B" stroke-opacity="0.06"/>
+  <line x1="0" y1="190" x2="1128" y2="190" stroke="#14291B" stroke-opacity="0.06"/>
+  <line x1="1" y1="0" x2="1" y2="191" stroke="#14291B" stroke-opacity="0.06"/>
+  <line x1="1127" y1="0" x2="1127" y2="191" stroke="#14291B" stroke-opacity="0.06"/>
+
+  <!-- Lockup: mark + wordmark, centered at x=700 (right of true center 564,
+       clear of the bottom-left logo overlap zone). -->
+  <g transform="translate(550.7,46.3) scale(1.68)">
+    <rect x="2" y="22" width="26" height="26" rx="6" fill="#166534"/>
+    <rect x="22" y="4" width="15" height="15" rx="4" fill="#4B6858"/>
+  </g>
+  <text x="630.9" y="108" text-anchor="start" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="50" letter-spacing="-1">
+    <tspan font-weight="300" fill="#4B6858">data</tspan><tspan font-weight="700" fill="#14291B">think</tspan>
+  </text>
+
+  <!-- Tagline -->
+  <text x="700" y="150" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-weight="400" font-size="19" fill="#4B6858">Develop the reasoning that makes you effective with data.</text>
+</svg>
