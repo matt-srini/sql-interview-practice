@@ -34,8 +34,8 @@ const TARGETS = [
   { output: 'og-image-light.png',   source: 'og-image-light.svg', width: 1200, height: 630, colorScheme: 'light' },
   { output: 'branding/x-banner.png', source: 'branding/x-banner.svg', width: 1500, height: 500, colorScheme: 'dark', fonts: true },
   { output: 'branding/x-banner-light.png', source: 'branding/x-banner-light.svg', width: 1500, height: 500, colorScheme: 'light', fonts: true },
-  { output: 'branding/linkedin-banner.png', source: 'branding/linkedin-banner.svg', width: 1128, height: 191, colorScheme: 'dark', fonts: true },
-  { output: 'branding/linkedin-banner-light.png', source: 'branding/linkedin-banner-light.svg', width: 1128, height: 191, colorScheme: 'light', fonts: true },
+  { output: 'branding/linkedin-banner.png', source: 'branding/linkedin-banner.svg', width: 1128, height: 191, colorScheme: 'dark', fonts: true, scale: 2 },
+  { output: 'branding/linkedin-banner-light.png', source: 'branding/linkedin-banner-light.svg', width: 1128, height: 191, colorScheme: 'light', fonts: true, scale: 2 },
 ];
 
 const only = process.argv[2];
@@ -43,7 +43,7 @@ const targets = only ? TARGETS.filter(t => t.output.includes(only)) : TARGETS;
 
 const browser = await chromium.launch();
 
-for (const { output, source, width, height, colorScheme = 'dark', fonts } of targets) {
+for (const { output, source, width, height, colorScheme = 'dark', fonts, scale = 1 } of targets) {
   const needsFonts = fonts || source.startsWith('og-image');
   const svgText = readFileSync(resolve(publicDir, source), 'utf8');
 
@@ -76,9 +76,9 @@ for (const { output, source, width, height, colorScheme = 'dark', fonts } of tar
   </body>
 </html>`;
 
-  const page = await browser.newPage();
+  const page = await browser.newPage({ deviceScaleFactor: scale });
   await page.emulateMedia({ colorScheme });
-  await page.setViewportSize({ width, height, deviceScaleFactor: 1 });
+  await page.setViewportSize({ width, height });
   await page.setContent(html, { waitUntil: 'networkidle' });
 
   if (needsFonts) {
@@ -94,7 +94,8 @@ for (const { output, source, width, height, colorScheme = 'dark', fonts } of tar
   await page.screenshot({ path: outputPath, clip: { x: 0, y: 0, width, height } });
   await page.close();
 
-  console.log(`✓ ${output.padEnd(24)} ${width}×${height}  →  ${outputPath}`);
+  const pixelDims = scale === 1 ? `${width}×${height}` : `${width}×${height} @${scale}x (${width * scale}×${height * scale}px)`;
+  console.log(`✓ ${output.padEnd(24)} ${pixelDims}  →  ${outputPath}`);
 }
 
 await browser.close();
