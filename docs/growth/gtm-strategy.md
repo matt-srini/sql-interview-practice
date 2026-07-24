@@ -427,6 +427,19 @@ Voice rules:
   one clear principle over generic advice, jargon, or a list of shallow tips.
 - **Be warm and curious, not clinical.** Phrases such as "the interesting part is..." or "this is
   surprisingly easy to miss" invite the reader into the reasoning without talking down to them.
+- **Warm at the edges, calm in the middle.** Let the empathy live in the opener and the close, where
+  you meet the reader in the difficulty ("preparing for this can feel like you need to be five experts
+  at once, you don't"). Keep the teaching body cool and precise. Reassure through structure ("you do
+  not have to learn it all at once", "one thing at a time"), not through cheerleading. Speak to the
+  reader (second person), not about "candidates" in the third person.
+- **Empathetic, never saccharine.** Encouragement stays quiet and earned. No exclamation marks, and
+  none of the interview-coach warmth-tells that read as theatre: "a kindness to yourself", "we'll walk
+  it together", "think about the rerun, kindly", "you've got this", "it's very learnable". If a line
+  would sound out of place from a senior colleague explaining something over coffee, cut it.
+- **Use the real term, and define it once.** Reach for the professional vocabulary (grain, fan-out,
+  shuffle, idempotency, SCD Type 2) rather than talking around it, and define each inline on first use
+  in the piece ("the grain, what one row represents"), then simply use it. Dodging the term reads as
+  dumbed-down; defining it once respects the reader and teaches the vocabulary the role actually uses.
 - **Be pro-reasoning, never anti-competitor.** Critique weak approaches, not products or the people
   using them. Never make the reader feel foolish for a plausible mistake.
 - **Stay understated and evidence-led.** No invented percentages, unsupported claims about what

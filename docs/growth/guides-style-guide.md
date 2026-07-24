@@ -64,6 +64,11 @@ the tells deliberately:
   business clothes") are human. Models sanitize these out; put some back.
 - **Stay concrete with domain nouns.** `ROW_NUMBER`, sample ratio mismatch, a learning curve, MERGE.
   Specificity reads as expertise.
+- **Define a loaded term once, then use it.** A broad search visitor may not know grain, fan-out,
+  shuffle, idempotency, or SCD Type 2. Introduce the term with a short inline gloss on first use ("the
+  grain, what one row represents"), then use it plainly. Avoiding the term reads as dumbed-down;
+  re-explaining it every time reads as padding. (The weekly-cut social register this mirrors is
+  canonical in [`gtm-strategy.md`](gtm-strategy.md) § 4; this doc owns the long-form guide voice.)
 - **Banned register.** No throat-clearing openers ("In today's data-driven world"), no listicle
   scaffolding ("Let's dive in"), no LLM-vocabulary tells (delve, leverage, robust, seamless, unlock,
   realm, tapestry, "it's worth noting"), no emoji, no exclamation marks.

@@ -8,7 +8,10 @@ checklist, the brand-handle claim list, and a day-by-day first-two-weeks plan. E
 > generous, and quietly opinionated. Demonstrate the reasoning thesis through concrete problems more
 > often than naming it. We show the *why* behind an answer; we never hype, engagement-bait, invent
 > candidate statistics, or claim volume as value. Vary the ending rather than attaching a slogan and
-> product link to every cut. The canonical voice rules are in [`gtm-strategy.md`](gtm-strategy.md)
+> product link to every cut. Aim for warm at the edges and calm in the middle: meet the reader in the
+> difficulty in the opener and close, keep the teaching precise, stay empathetic without tipping into
+> saccharine coaching, and use the real terms (grain, fan-out, shuffle, idempotency), defining each
+> once. The canonical voice rules are in [`gtm-strategy.md`](gtm-strategy.md)
 > § 4. All example posts below are **original drafts** — adapt, don't paste blind.
 >
 > **Channel model reminder.** LinkedIn example posts below are written as **company-page posts** — the
