@@ -34,6 +34,16 @@ then cut it. Same thinking, seven surfaces:
 **Batch tip:** design a month of carousels in one sitting (template once); schedule posts so posting
 day is mechanical. Reuse the pillar — never create per-channel from scratch.
 
+**Per-cut required elements** (fill these every week, not just the caption body):
+- **LinkedIn carousel → document title.** LinkedIn prompts for a *document title* when you upload the
+  carousel PDF; it is the label shown on the post in-feed. Keep it short (~under 60 chars),
+  descriptive, in the [`gtm-strategy.md`](gtm-strategy.md) § 4 voice, no em/en dashes. Record it in
+  the caption `.md` next to the post text.
+- **Per-platform hashtags.** Suggest hashtags per platform, following each platform's own convention
+  (never one block pasted everywhere): LinkedIn 3–5 (CamelCase, end of caption) · X 1–2 (final thread
+  tweet) · Threads 1–3 (mind the 500-char budget) · Instagram ~8 (lowercase) · Reddit none
+  (subreddit-based) · Newsletter none.
+
 ### Pillar rotation (cycle through these so content stays varied)
 
 1. Reasoning vs. recall · 2. The 10 tracks (one reasoning skill each) · 3. Role-true prep
