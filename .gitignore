@@ -37,6 +37,7 @@ yarn-error.log*
 *.swp
 *.swo
 .claude/
+.codex/
 
 # OS
 .DS_Store
