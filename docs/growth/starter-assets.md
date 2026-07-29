@@ -27,6 +27,30 @@ checklist, the brand-handle claim list, and a day-by-day first-two-weeks plan. E
 
 ---
 
+## Infographic asset kit
+
+The generated working assets live under the gitignored
+`docs/growth/assets/infographics/` directory. Keep LinkedIn single-image masters and PDF documents
+in `linkedin/`; keep each topic's ordered square PNGs in `instagram/<slug>/`. The exact dimensions,
+naming, three-page story shape, PDF reuse rule, and canonical logo requirement live in
+[`gtm-strategy.md`](gtm-strategy.md) § 3.1 and are not duplicated here.
+
+Current starter topics:
+
+- `sql-execution-order`: the written-vs-logical SQL order, why the order matters, and the
+  FROM/JOIN → WHERE → GROUP BY → HAVING → WINDOW → SELECT → DISTINCT → ORDER BY → LIMIT/OFFSET flow.
+  When the nine steps are split over three rows, the arrows must remain a continuous serpentine:
+  1→2→3, down to 4, 4→5→6 right-to-left, down to 7, then 7→8→9 left-to-right.
+- `week-01-running-total`: the hidden default window frame, the tied-date failure mode, and the
+  deterministic two-part fix.
+- `week-02-data-engineer-interview-map`: the interview-loop map, its first three reasoning surfaces,
+  and the cost/rerun judgment surface.
+
+For every topic, keep only the production master, the production PDF, and the ordered Instagram
+pages. Do not retain incorrect-logo renders or alternate drafts beside the final exports.
+
+---
+
 ## A. Example posts (10, in the datathink voice)
 
 ### LinkedIn — carousel anchor (company page; caption + slide skeleton)
@@ -40,9 +64,11 @@ checklist, the brand-handle claim list, and a day-by-day first-two-weeks plan. E
 >
 > (The full track runs on a real engine — you can try a sample, no login: [link to /sample/sql])
 
-**Slides:** 1) The question (a realistic running-total ask). 2) The naive answer + "this passes."
-3) The follow-up the interviewer actually asks. 4) Why the naive partition breaks. 5–9) The reasoned
-build, one decision per slide. 10) The principle + soft CTA ("Train the reasoning, not the template").
+**Deep-carousel slides:** 1) The question (a realistic running-total ask). 2) The naive answer +
+"this passes." 3) The follow-up the interviewer actually asks. 4) Why the naive partition breaks.
+5–9) The reasoned build, one decision per slide. 10) The principle + soft CTA ("Train the reasoning,
+not the template"). For the compact infographic variant, compress this to three earned pages using
+the contract above; do not squeeze ten pages of copy into three.
 
 ### LinkedIn — "recognition ≠ reasoning" story post (company page; text)
 

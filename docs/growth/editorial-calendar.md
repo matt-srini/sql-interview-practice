@@ -18,12 +18,13 @@ file). Reddit participation is a disclosed human, not a brand account.
 ## The production system (one pillar → many cuts)
 
 Each week you produce **one pillar artifact** (a reasoning teardown tied to a § 4 content pillar),
-then cut it. Same thinking, seven surfaces:
+then cut it. Same thinking, native surfaces:
 
 | Cut | Channel | Effort | Timing |
 |---|---|---|---|
 | Long-form article → `/guides` | SEO | (the pillar itself) | publish mid-week |
-| Document carousel (8–12 slides) | LinkedIn **company page** | ~1 hr | **anchor**, Tue–Thu AM |
+| Visual anchor: deep PDF (8–12 pages), compact infographic PDF (3 pages), or 4:5 single image | LinkedIn **company page** | ~1 hr | **anchor**, Tue–Thu AM |
+| Compact infographic carousel (same 3 square source pages) | Instagram | ~15 min incremental | after LinkedIn anchor |
 | Founder reshare of carousel | LinkedIn personal | ~5 min | within ~60 min of company post |
 | Story / text cut | LinkedIn **company page** | ~20 min | +2 days after anchor |
 | "Can you solve this?" thread | X | ~30 min | day after carousel |
@@ -32,13 +33,19 @@ then cut it. Same thinking, seven surfaces:
 | 60–90s screen capture (optional) | YouTube Short | ~1 hr | only above the floor |
 
 **Batch tip:** design a month of carousels in one sitting (template once); schedule posts so posting
-day is mechanical. Reuse the pillar — never create per-channel from scratch.
+day is mechanical. Reuse the pillar — never create per-channel from scratch. Follow the canonical
+format, folder, naming, logo, and aspect-ratio contract in
+[`gtm-strategy.md`](gtm-strategy.md) § 3.1.
 
 **Per-cut required elements** (fill these every week, not just the caption body):
 - **LinkedIn carousel → document title.** LinkedIn prompts for a *document title* when you upload the
   carousel PDF; it is the label shown on the post in-feed. Keep it short (~under 60 chars),
   descriptive, in the [`gtm-strategy.md`](gtm-strategy.md) § 4 voice, no em/en dashes. Record it in
   the caption `.md` next to the post text.
+- **Compact infographic → three-page narrative.** Page 1 earns the swipe with the concrete
+  problem/context; page 2 makes the mechanism visible; page 3 lands the fix, transferable principle,
+  or quiet CTA. Export the same ordered square pages to the Instagram folder and the LinkedIn PDF;
+  separately reflow a 1080 × 1350 summary only when a single-image LinkedIn post is useful.
 - **Per-platform hashtags.** Suggest hashtags per platform, following each platform's own convention
   (never one block pasted everywhere): LinkedIn 3–5 (CamelCase, end of caption) · X 1–2 (final thread
   tweet) · Threads 1–3 (mind the 500-char budget) · Instagram ~8 (lowercase) · Reddit none
@@ -134,8 +141,9 @@ to pillar-rotation theme **#2 (The 10 tracks)**; begins in Phase 4 (the "The 10 
 ## Weekly operating rhythm (the repeatable week)
 
 - **Mon:** Reddit/X value participation (no creation); pick the week's pillar.
-- **Tue:** Write + design the pillar teardown → LinkedIn carousel (anchor) posts AM; reply hard 1st hr.
-- **Wed:** Publish SEO long-form home of the pillar; X "can you solve this?" thread.
+- **Tue:** Write + design the pillar teardown → LinkedIn visual anchor posts AM; reply hard 1st hr.
+- **Wed:** Publish the same compact square pages on Instagram when the cut uses that format. Publish
+  the SEO long-form home of the pillar; X "can you solve this?" thread.
 - **Thu:** LinkedIn story cut; daily X replies.
 - **Fri:** Assemble + send newsletter; (optional) YouTube Short from the teardown.
 - **Sat/Sun:** Light Reddit participation; batch next month's assets occasionally; 30-min metrics review.

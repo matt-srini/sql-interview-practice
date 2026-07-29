@@ -54,9 +54,9 @@ This is the navigation hub for all platform documentation. Each doc below owns a
 
 | File | What it covers |
 |---|---|
-| [`growth/gtm-strategy.md`](growth/gtm-strategy.md) | **Canonical GTM SoT** — positioning→messaging, the reasoning-vs-grind wedge, ICP + anti-positioning, market-side launch checklist, channel strategy (LinkedIn / SEO / Reddit primary), the free-sample growth loop on the wired PostHog events, metrics/funnel, solo-founder cadence + the do-NOT list |
-| [`growth/editorial-calendar.md`](growth/editorial-calendar.md) | 12-week editorial calendar + the 1-pillar→many-cuts production system + weekly operating rhythm |
-| [`growth/starter-assets.md`](growth/starter-assets.md) | Example posts (LinkedIn/X/Reddit/newsletter/Show HN), subreddit target list + each sub's self-promo rule, brand-handle claim list, launch-day checklist, first-2-weeks day-by-day |
+| [`growth/gtm-strategy.md`](growth/gtm-strategy.md) | **Canonical GTM SoT** — positioning→messaging, the reasoning-vs-grind wedge, ICP + anti-positioning, channel strategy, social-infographic production contract, the free-sample growth loop, metrics/funnel, solo-founder cadence + the do-NOT list |
+| [`growth/editorial-calendar.md`](growth/editorial-calendar.md) | 12-week editorial calendar + the 1-pillar→many-cuts production system, visual-cut choices, and weekly operating rhythm |
+| [`growth/starter-assets.md`](growth/starter-assets.md) | Example posts and infographic topic inventory, subreddit rules, brand-handle claim list, launch-day checklist, first-2-weeks day-by-day |
 
 ## Process / runbooks
 

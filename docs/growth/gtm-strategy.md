@@ -5,7 +5,7 @@ This doc owns the *market* side of launch. It is the sibling of the *technical* 
 work (closed — see [`../../TODO.md`](../../TODO.md) P1 and [`../backlog/session-launch-readiness.md`](../backlog/session-launch-readiness.md))
 and it does not re-audit it.
 
-Status: canonical planning spec · Owner: founder / growth · Last updated: 2026-06-29
+Status: canonical planning spec · Owner: founder / growth · Last updated: 2026-07-29
 Appendices: [`editorial-calendar.md`](editorial-calendar.md) (the 3-month calendar + production system)
 · [`starter-assets.md`](starter-assets.md) (example posts, subreddit rules, launch-day + first-2-weeks plan).
 
@@ -195,11 +195,50 @@ is StrataScratch: a steady, growing contributor-presence that builds brand recog
 signals, not a flywheel of personal viral posts. That is the honest expectation, and it is enough —
 the brand advantage is that it compounds without being a single person's identity.
 
-**Content angle / format.** The 2026 algorithm rewards *dwell time* ("Depth Score"), and the formats
-that win are **native document/PDF carousels** (highest engagement of any format) and **multi-image
-carousels** — both mechanically reward swiping/reading. Our reasoning content is a natural fit: an
-8–12 slide carousel that poses a problem, walks the *reasoning* (not just the syntax), and lands on
-the insight + a soft CTA to the matching free sample track.
+**Content angle / format.** The 2026 algorithm rewards *dwell time* ("Depth Score"), and native
+document posts mechanically reward swiping/reading. Our reasoning content has two useful visual
+cuts: a deep **8–12-page document carousel** that poses a problem and walks the reasoning, and a
+compact **three-page infographic cut** for one focused mechanism. A LinkedIn multi-photo post is not
+the same surface as a document carousel: LinkedIn may arrange the photos as a grid/mosaic, while a
+PDF document preserves sequential page order.
+
+#### Social infographic production contract (canonical)
+
+This is the source of truth for the reusable assets under the gitignored
+`docs/growth/assets/infographics/` working directory:
+
+```text
+infographics/
+  linkedin/
+    <slug>.png
+    <slug>-carousel.pdf
+  instagram/
+    <slug>/
+      01-<hook>.png
+      02-<reasoning>.png
+      03-<takeaway>.png
+```
+
+- **LinkedIn single-image master:** export at **1080 × 1350 px (4:5)**. This is the tallest accepted
+  portrait ratio in [LinkedIn's photo guidance](https://www.linkedin.com/help/linkedin/answer/a527229/share-photos-or-videos?lang=en)
+  and therefore uses the feed width without becoming a narrow poster. Reflow the composition into
+  the canvas; never shrink a long infographic and pad it to 4:5.
+- **LinkedIn document carousel:** build `<slug>-carousel.pdf` from the same ordered square pages used
+  on Instagram. Keep every page the same dimensions. PDF is the preferred delivery format because
+  it preserves typography and order; upload it as a document post and add the required document
+  title. Do not upload the PDF and single-image master in the same post.
+- **Instagram carousel:** use three equal 1:1 PNG pages for a compact infographic cut:
+  hook/context → mechanism/reasoning → practical fix/takeaway. Preserve the `01`/`02`/`03` filename
+  order. A deeper argument may use more pages, but only when each additional page earns its place.
+- **One design source, two deliveries:** the square pages are the source for both the Instagram
+  carousel and LinkedIn PDF. The 4:5 LinkedIn image is a separately reflowed summary, not a
+  screenshot or stitched stack of those pages.
+- **Brand lockup:** use the canonical asset from
+  `frontend/public/branding/lockup-bar-no-bg.{png,svg}`. The mark is exactly two diagonal rounded
+  blocks (large deep-green lower-left, smaller muted-sage upper-right) plus the split-weight wordmark.
+  Never redraw, approximate, or image-generate the logo.
+- **Asset hygiene:** keep all topics under this one `infographics/` tree. Do not create a separate
+  topic-level asset root or retain alternate-logo, draft, and near-duplicate exports.
 
 Post archetypes (rotate; all ladder to a § 1 pillar):
 - **"Reasoning teardown" carousel** — a real question, then *why* the naive answer fails and the
@@ -492,7 +531,8 @@ surfaces.
 WEEKLY PILLAR ARTIFACT  (one reasoning teardown — the week's single creative act)
   │
   ├─ Long-form article → /guides .............. SEO landing target (internal-links role + sample)
-  ├─ LinkedIn carousel (company page, 8–12 slides) the week's anchor post; founder reshares ~60 min later
+  ├─ LinkedIn visual anchor (company page) ...... 8–12-page deep PDF, or a 3-page infographic PDF /
+  │                                                4:5 single image; founder reshares ~60 min later
   ├─ LinkedIn text "story" cut (company page) .. the recognition≠reasoning angle, comment-bait-free
   ├─ X thread ("can you solve this?" + reasoning) the hook format, sample link at the end
   ├─ Reddit value comment / discussion ......... disclosed human; reasoning as discussion, link only if allowed
