@@ -237,6 +237,9 @@ infographics/
   `frontend/public/branding/lockup-bar-no-bg.{png,svg}`. The mark is exactly two diagonal rounded
   blocks (large deep-green lower-left, smaller muted-sage upper-right) plus the split-weight wordmark.
   Never redraw, approximate, or image-generate the logo.
+- **Technical evidence:** prefer invariant mechanisms and operation/callback counts over universal
+  wall-time claims. Publish timings only when the benchmark environment and method are documented
+  and reproducible; otherwise hardware, data shape, and runtime make the number misleading.
 - **Asset hygiene:** keep all topics under this one `infographics/` tree. Do not create a separate
   topic-level asset root or retain alternate-logo, draft, and near-duplicate exports.
 

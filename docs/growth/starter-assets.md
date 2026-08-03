@@ -45,6 +45,9 @@ Current starter topics:
   deterministic two-part fix.
 - `week-02-data-engineer-interview-map`: the interview-loop map, its first three reasoning surfaces,
   and the cost/rerun judgment surface.
+- `week-03-pandas-vectorization`: the correct-on-a-sample row-wise answer, the one-Python-callback-
+  per-row mechanism, and the vectorized rewrite. Use callback counts to make scale concrete; do not
+  publish universal wall-time benchmarks because hardware, data, and environment change them.
 
 For every topic, keep only the production master, the production PDF, and the ordered Instagram
 pages. Do not retain incorrect-logo renders or alternate drafts beside the final exports.
