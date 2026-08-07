@@ -35,7 +35,81 @@ in `linkedin/`; keep each topic's ordered square PNGs in `instagram/<slug>/`. Th
 naming, three-page story shape, PDF reuse rule, and canonical logo requirement live in
 [`gtm-strategy.md`](gtm-strategy.md) § 3.1 and are not duplicated here.
 
-Current starter topics:
+### Visual design system (canonical — pixel-sampled from shipped assets, 2026-08)
+
+Nothing below was written down before week 3; it was reverse-engineered from the week-01/02 PNGs
+under time pressure and got the theme wrong on the first pass (built dark, should be light — see
+[`DECISIONS.md`](../decisions/DECISIONS.md)). This is now the single source — don't re-derive it from
+adjacent brand assets like `x-banner.svg` or `linkedin-banner.svg`; those are a **different, dark**
+system (profile banners), not this one.
+
+**Palette** — light "Forest & Ink" cream ground, not the dark banner theme:
+
+| Role | Hex | Use |
+|---|---|---|
+| Background | `#FDFCF8` | canvas |
+| Navy | `#001028` | headlines, strong text |
+| Body text | `#23293A` / `#3A4152` | primary / secondary copy |
+| Muted | `#7A8296` | captions, kickers, page counter |
+| Neutral border | `#D8D4C8` | plain card borders |
+| Green (good/correct/CTA) | `#4E9F58` border/title · `#337A3B` CTA icon fill | "this works" framing |
+| Red (bad/problem) | `#C93A22` | "this breaks" framing — deepened from a brighter sample for legibility on cream |
+| Blue (tip/nav/kicker) | `#0050E0` | tip-bar icon, nav-cue links, top-right kicker |
+| Purple (explanation) | `#6B21A8` | "why it happens" panel |
+| Editor dark bg | `#0B1220` | code-block mockup |
+| Editor text | `#E8EDF5` fg · `#A8B3C7` identifiers · `#7CA6FF` keywords · `#6EE7A0` highlighted token |
+| Traffic lights | `#F0564A` / `#F5C147` / `#62C370` | code-window dots |
+
+**Fonts** (Google Fonts; all but Anton/Kalam already match product tokens): **Anton** (condensed
+poster headlines, two-tone per page — navy + one accent), **Inter** 400–800 (body, matches
+`--font-sans`), **JetBrains Mono** 400–700 (code/stats, matches `--font-mono`), **Kalam** 700
+(hand-drawn annotation captions only).
+
+**Component library** (reuse these; don't invent new ones per week):
+- **Header** — inline lockup SVG top-left, literal markup from
+  `frontend/public/branding/lockup-bar-no-bg.svg` (never redraw/approximate). Page 1 only: blue
+  uppercase kicker + 5×2 dot-grid top-right. Pages 2–3: plain `N / 3` page-counter top-right instead.
+- **Code editor mockup** — rounded dark card, title bar with 3 traffic-light dots + mono filename,
+  syntax-tinted body (keywords blue, the pivotal method/token green, rest near-white).
+- **Comparison cards** (paired, color-bordered green/red) — **always preceded by an explicit
+  shared-axis kicker label stating what's being compared** (e.g. "Rows in the data this code runs
+  against:"). Two numbers with different-sounding captions and no shared label reads as two unrelated
+  facts, not a comparison — this shipped wrong on the week-3 first draft and was corrected. When one
+  side is the recommended choice, tag it "Preferred" (green tick) opposite "Avoid here" on the other —
+  don't rely on border color alone to carry the verdict.
+- **"Why it happens" panel** — purple-bordered card, purple circle icon, bold title, body with one
+  bold purple key term, optional 2-row mini pill-comparison underneath.
+- **Tip bar** — thin blue-bordered pill card, blue circle icon (lightbulb), one line with a bold blue
+  emphasis phrase.
+- **CTA bar** (final page only) — green-bordered card, green circle icon (arrow), text + solid green
+  pill containing the bare URL.
+- **Checklist box** — neutral-bordered card, dark circle icon, bold title, row of color-rotating pill
+  tags (green/blue/purple/orange).
+- **Hand-drawn annotation** — Kalam caption + a custom curved SVG arrow. The curve must **scoop
+  toward** what it's pointing at (concave relative to the target), not bow away from it (convex) — got
+  this backwards on the week-3 first draft; the fix mirrors the control points to the opposite side of
+  the chord.
+- **Footer nav cue** (pages 1–2 only, bottom-center) — bold colored "See X →" pointing to the next page.
+
+### Render & export pipeline
+
+No repo tooling renders these (deliberately — they're gitignored drafts, not app assets); rebuild this
+each time with Playwright, the same engine `frontend/scripts/render-brand-assets.mjs` uses for brand
+PNGs:
+1. Author each page as a standalone HTML file at its logical CSS size: square pages `1080×1080`, the
+   LinkedIn 4:5 master `1080×1350`.
+2. Render square/carousel pages with Playwright Chromium at `deviceScaleFactor: 2` (→ `2160×2160`
+   physical px). Render the 4:5 master at `deviceScaleFactor: 1` (→ native `1080×1350` — LinkedIn's own
+   accepted max photo width per § 3.1; there's no PDF-softening pipeline on a direct image upload, so
+   2x buys nothing there).
+3. Assemble the 3 square PNGs into `<slug>-carousel.pdf` with Pillow: JPEG-encode each page at
+   `quality=92`, save with `resolution=192.0`. That yields clean `11.25in × 11.25in` PDF pages
+   (`2160px ÷ 192dpi`) — this is the fix for the "looks soft in LinkedIn's document editor" issue;
+   don't re-render at a different resolution chasing softness, the recipe is correct.
+4. Place files per the § 3.1 contract, `sips -g pixelWidth -g pixelHeight` to confirm dimensions, then
+   delete the scratch render script/HTML — nothing in this pipeline is meant to persist in the repo.
+
+### Current starter topics
 
 - `sql-execution-order`: the written-vs-logical SQL order, why the order matters, and the
   FROM/JOIN → WHERE → GROUP BY → HAVING → WINDOW → SELECT → DISTINCT → ORDER BY → LIMIT/OFFSET flow.

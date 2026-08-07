@@ -486,7 +486,10 @@ Voice rules:
   using them. Never make the reader feel foolish for a plausible mistake.
 - **Stay understated and evidence-led.** No invented percentages, unsupported claims about what
   "most candidates" do, guaranteed outcomes, manufactured urgency, or interview-coach theatre such
-  as "guess who got the offer."
+  as "guess who got the offer." This extends to engineering claims: don't assert a specific wall-clock
+  duration or "N times faster" for a performance comparison (e.g. row-wise vs. vectorized code) unless
+  it's truly hardware/data-independent — hedge with "exact timing depends on hardware, data, and
+  environment," or make the comparison in units that don't need hedging (call counts, not seconds).
 - **Vary the ending.** Land on the transferable principle, ask a genuine question, or use a soft
   sample CTA. Not every post needs both a slogan and a product link.
 - **Adapt without changing character.** LinkedIn is polished and narrative; X is compressed and
