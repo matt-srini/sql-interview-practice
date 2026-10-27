@@ -4,7 +4,7 @@ from typing import Any
 from fastapi import APIRouter, Depends
 
 from tracks import TRACKS
-from db import get_recent_activity, get_solved_ids
+from db import get_all_solved_ids, get_recent_activity, get_solved_ids
 from deps import get_current_user, require_authenticated_user
 from middleware.request_context import get_request_id
 
@@ -137,9 +137,10 @@ async def get_dashboard(
 async def get_solved_total(
     current_user: dict[str, Any] = Depends(get_current_user),
 ) -> dict[str, Any]:
+    all_solved = await get_all_solved_ids(current_user["id"])
     total = 0
     for topic, module in _TOPIC_MODULES.items():
-        solved_ids = await get_solved_ids(current_user["id"], topic=topic)
+        solved_ids = all_solved.get(topic, set())
         catalog_ids = {
             int(q["id"])
             for qs in module.get_questions_by_difficulty().values()

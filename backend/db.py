@@ -746,6 +746,26 @@ async def get_solved_ids(user_id: str, topic: str = "sql") -> set[int]:
         return {int(row[0]) for row in result.fetchall()}
 
 
+async def get_all_solved_ids(user_id: str) -> dict[str, set[int]]:
+    """Return {topic: set[question_id]} for all topics in a single query."""
+    session_factory = _session_factory_or_raise()
+    async with session_factory() as session:
+        result = await session.execute(
+            text(
+                """
+                SELECT topic, question_id
+                FROM user_progress
+                WHERE user_id = CAST(:user_id AS UUID)
+                """
+            ),
+            {"user_id": user_id},
+        )
+        by_topic: dict[str, set[int]] = {}
+        for topic, qid in result.fetchall():
+            by_topic.setdefault(topic, set()).add(int(qid))
+        return by_topic
+
+
 async def mark_solved(user_id: str, question_id: int, topic: str = "sql") -> None:
     session_factory = _session_factory_or_raise()
     async with session_factory() as session:
